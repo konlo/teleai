@@ -19,13 +19,11 @@ from utils.session import (
 )
 
 
-if not st.session_state.get("_page_configured", False):
-    st.set_page_config(
-        page_title="DF Chatbot (Gemini)",
-        page_icon="✨",
-        layout="wide",
-    )
-    st.session_state["_page_configured"] = True
+st.set_page_config(
+    page_title="DF Chatbot (Gemini)",
+    page_icon="✨",
+    layout="wide",
+)
 st.title("✨ DataFrame Chatbot (Gemini + LangChain)")
 st.caption("두 CSV 비교 + 이상점 중심 EDA(원클릭) + SSD Telemetry 유틸")
 
