@@ -1,19 +1,17 @@
-import os
 from typing import List
 
 import streamlit as st
 
 from utils.session import (
-    DEFAULT_DATA_DIR,
-    DFB_DEFAULT_NAME,
-    SUPPORTED_EXTENSIONS,
-    load_df_a,
-    load_df_b,
     databricks_connector_available,
     list_databricks_catalogs_in_session,
     list_databricks_schemas_in_session,
     list_databricks_tables_in_session,
     load_df_from_databricks,
+    load_preview_from_databricks_query,
+    DEFAULT_TABLE_SUGGESTIONS,
+    generate_select_all_query,
+    update_databricks_namespace_from_table,
 )
 
 
@@ -31,89 +29,6 @@ def render_sidebar() -> None:
             options=lang_options,
             index=selected_idx,
         )
-
-        st.markdown("### 🗂️ 1. 데이터 폴더 설정")
-        new_data_dir = st.text_input(
-            "Enter Data Directory Path",
-            value=st.session_state["DATA_DIR"],
-            key="data_dir_input",
-        )
-        if st.button("Set Directory"):
-            if os.path.isdir(new_data_dir):
-                st.session_state["DATA_DIR"] = new_data_dir
-                st.session_state["df_A_data"] = None
-                st.session_state["df_A_name"] = "No Data"
-                st.session_state["csv_path"] = ""
-                st.session_state["df_B_data"] = None
-                st.session_state["df_B_name"] = "No Data"
-                st.session_state["csv_b_path"] = ""
-                st.success(f"Directory set to: `{new_data_dir}`")
-                st.rerun()
-            else:
-                st.error(f"Invalid directory path: `{new_data_dir}`")
-
-        data_dir = st.session_state["DATA_DIR"]
-        dfb_default = os.path.join(data_dir, DFB_DEFAULT_NAME)
-
-        st.markdown("---")
-        st.markdown("### 📄 2. df_A 파일 선택")
-        st.caption(f"Search directory: `{data_dir}`")
-        data_files: List[str] = []
-        try:
-            if os.path.isdir(data_dir):
-                for fname in os.listdir(data_dir):
-                    if fname.lower().endswith(SUPPORTED_EXTENSIONS):
-                        data_files.append(fname)
-                data_files.sort()
-            else:
-                st.warning("유효한 데이터 디렉토리를 설정해주세요.")
-        except Exception as exc:
-            st.error(f"폴더 접근 오류: {exc}")
-
-        selected_file = st.selectbox(
-            "Select data file for df_A",
-            options=["--- Select a file ---"] + data_files,
-            key="file_selector",
-        )
-        if st.button("Load Selected File (df_A)"):
-            if selected_file and selected_file != "--- Select a file ---":
-                file_path = os.path.join(data_dir, selected_file)
-                success, message = load_df_a(file_path, selected_file)
-                if success:
-                    st.success(message)
-                    st.rerun()
-                else:
-                    st.error(message)
-            else:
-                st.warning("df_A 파일을 선택해주세요.")
-
-        st.markdown("---")
-        st.markdown("### 📄 3. df_B 파일 선택 (비교용)")
-        selected_file_b = st.selectbox(
-            "Select data file for df_B",
-            options=["--- Select a file ---"] + data_files,
-            key="file_selector_b",
-        )
-        if st.button("Load Selected File (df_B)"):
-            if selected_file_b and selected_file_b != "--- Select a file ---":
-                file_path_b = os.path.join(data_dir, selected_file_b)
-                success, message = load_df_b(file_path_b, selected_file_b)
-                if success:
-                    st.success(message)
-                    st.rerun()
-                else:
-                    st.error(message)
-            else:
-                st.warning("df_B 파일을 선택해주세요.")
-
-        st.markdown("---")
-        st.caption(
-            f"**현재 로드 파일 경로(df_A):** `{st.session_state.get('csv_path', 'Not loaded')}`"
-        )
-        st.caption(
-            f"**현재 로드 파일 경로(df_B):** `{st.session_state.get('csv_b_path', 'Not loaded')}`"
-        )
-        st.caption(f"df_B 기본 가정 파일: `{os.path.basename(dfb_default)}`")
 
         st.markdown("---")
         st.markdown("### 🧱 Databricks Loader")
@@ -144,6 +59,72 @@ def render_sidebar() -> None:
                 st.write(f"• Catalog: `{catalog}`")
             if schema:
                 st.write(f"• Schema: `{schema}`")
+
+            st.markdown("---")
+            st.markdown("#### 🔍 테이블 선택")
+
+            prev_table_value = st.session_state.get("databricks_table_input", "")
+            table_input = st.text_input(
+                "조회할 테이블 이름을 입력하세요",
+                value=prev_table_value,
+                key="databricks_table_input_widget",
+                placeholder="catalog.schema.table",
+                help="예: samples.bakehouse.sales_franchises",
+            )
+            table_clean = table_input.strip()
+            table_changed = table_input != prev_table_value
+            st.session_state["databricks_table_input"] = table_input
+
+            if table_changed and table_clean:
+                update_databricks_namespace_from_table(table_clean)
+                try:
+                    st.session_state["databricks_sql_query"] = generate_select_all_query(table_clean)
+                except ValueError:
+                    st.session_state["databricks_sql_query"] = ""
+            elif table_changed and not table_clean:
+                st.session_state["databricks_sql_query"] = ""
+
+            if not table_clean:
+                st.caption("입력하지 않았을 경우 선택 가능한 테이블 예시입니다.")
+                st.write(", ".join(f"`{name}`" for name in DEFAULT_TABLE_SUGGESTIONS))
+
+            default_query = st.session_state.get("databricks_sql_query", "")
+            if table_clean and not default_query:
+                try:
+                    default_query = generate_select_all_query(table_clean)
+                except ValueError:
+                    default_query = ""
+            query_input = st.text_area(
+                "생성된 SQL (수정 가능)",
+                value=default_query,
+                height=140,
+                help="기본으로 SELECT * FROM {table} 형식으로 생성됩니다.",
+            )
+            st.session_state["databricks_sql_query"] = query_input
+            st.caption("Loading을 누르면 전체 데이터를 불러오고 화면에는 처음 10개의 행만 보여줍니다.")
+
+            preview_target = st.radio(
+                "Load 대상",
+                options=("df_A", "df_B"),
+                horizontal=True,
+                key="databricks_preview_target",
+            )
+
+            if st.button("Loading", type="primary", disabled=not table_clean):
+                success, message = load_preview_from_databricks_query(
+                    table_clean,
+                    query_input,
+                    target="A" if preview_target == "df_A" else "B",
+                    limit=10,
+                )
+                if success:
+                    st.success(message)
+                    st.rerun()
+                else:
+                    st.error(message)
+
+            st.markdown("---")
+            st.markdown("#### 🧭 Catalog / Schema 탐색")
 
             if st.button("List Catalogs"):
                 ok, catalogs_df, message = list_databricks_catalogs_in_session()

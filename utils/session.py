@@ -14,6 +14,7 @@ from modules.dataload.databricks_sql_loader import (
     connector_available as databricks_connector_available,
     list_tables as databricks_list_tables,
     load_table as databricks_load_table,
+    run_sql as databricks_run_sql,
 )
 
 
@@ -31,6 +32,13 @@ TIME_COLUMN_CANDIDATES = [
     "eventtime",
     "date",
     "created_at",
+]
+DEFAULT_TABLE_SUGGESTIONS = [
+    "samples.bakehouse.sales_franchises",
+    "samples.bakehouse.sales_customers",
+    "samples.bakehouse.sales_transactions",
+    "samples.accuweather.forecast_daily_calendar_imperial",
+    "samples.accuweather.forecast_hourly_imperial",
 ]
 
 
@@ -140,6 +148,9 @@ def ensure_session_state() -> None:
         ("databricks_schema_options", []),
         ("databricks_selected_schema", os.getenv("DATABRICKS_SCHEMA", "")),
         ("databricks_schemas_last", None),
+        ("databricks_table_input", ""),
+        ("databricks_sql_query", ""),
+        ("databricks_last_preview_message", ""),
     ]
     for key, default in defaults:
         if key not in st.session_state:
@@ -326,6 +337,97 @@ def load_df_from_databricks(
     return True, f"Loaded Databricks table '{table}' into df_{target}."
 
 
+def update_databricks_namespace_from_table(table: str) -> None:
+    """Update selected catalog/schema based on a fully qualified table."""
+    ensure_session_state()
+    parts = [part.strip() for part in (table or "").split(".") if part.strip()]
+    if not parts:
+        return
+    catalog = parts[0]
+    schema = parts[1] if len(parts) > 1 else ""
+    if catalog:
+        st.session_state["databricks_selected_catalog"] = catalog
+    if schema:
+        st.session_state["databricks_selected_schema"] = schema
+
+
+def generate_select_all_query(table: str) -> str:
+    """Return a canonical SELECT statement for the given table."""
+    table_clean = (table or "").strip()
+    if not table_clean:
+        raise ValueError("Table name must not be empty.")
+    update_databricks_namespace_from_table(table_clean)
+    return f"SELECT * FROM {table_clean}"
+
+
+def load_preview_from_databricks_query(
+    table: str,
+    query: Optional[str] = None,
+    *,
+    target: str = "A",
+    limit: int = 10,
+) -> Tuple[bool, str]:
+    """Execute a Databricks SQL preview and store the full result (display shows head)."""
+    ensure_session_state()
+    if target not in {"A", "B"}:
+        return False, "Target must be 'A' or 'B'."
+    if not databricks_connector_available():
+        return False, (
+            "databricks-sql-connector is not installed. "
+            "Install it with `pip install databricks-sql-connector`."
+        )
+
+    table_clean = (table or "").strip()
+    if not table_clean:
+        return False, "Table name must not be empty."
+
+    base_query = (query or "").strip()
+    if not base_query:
+        try:
+            base_query = generate_select_all_query(table_clean)
+        except ValueError as exc:
+            return False, str(exc)
+
+    try:
+        update_databricks_namespace_from_table(table_clean)
+        creds = get_databricks_credentials()
+        selected_catalog = st.session_state.get("databricks_selected_catalog", "")
+        selected_schema = st.session_state.get("databricks_selected_schema", "")
+        if selected_catalog:
+            creds.catalog = selected_catalog
+        if selected_schema:
+            creds.schema = selected_schema
+        else:
+            creds.schema = None
+        if (not creds.catalog or not creds.schema) and "." in table_clean:
+            parts = [part.strip() for part in table_clean.split(".") if part.strip()]
+            if len(parts) >= 3:
+                if not creds.catalog:
+                    creds.catalog = parts[0]
+                if not creds.schema:
+                    creds.schema = parts[1]
+        df = databricks_run_sql(base_query, creds)
+    except DatabricksConnectorError as exc:  # pragma: no cover
+        return False, str(exc)
+    except Exception as exc:  # pragma: no cover
+        return False, f"Databricks SQL 실행에 실패했습니다: {exc}"
+
+    name_key = "df_A_name" if target == "A" else "df_B_name"
+    data_key = "df_A_data" if target == "A" else "df_B_data"
+    path_key = "csv_path" if target == "A" else "csv_b_path"
+
+    st.session_state[data_key] = df
+    st.session_state[name_key] = f"{table_clean} (preview)"
+    st.session_state[path_key] = f"databricks://{table_clean}"
+    st.session_state["databricks_table_input"] = table_clean
+    st.session_state["databricks_sql_query"] = base_query
+    st.session_state["databricks_last_preview_message"] = (
+        f"{table_clean} – {len(df)} rows loaded (app shows first {limit})"
+    )
+
+    return True, f"Loaded data from '{table_clean}'. Showing first {limit} rows in the app."
+
+
 def dataframe_signature(df: Optional[pd.DataFrame], path: str) -> str:
     """Create a simple signature string for change detection."""
     if df is None:
@@ -354,4 +456,8 @@ __all__ = [
     "list_databricks_tables_in_session",
     "load_df_from_databricks",
     "databricks_connector_available",
+    "generate_select_all_query",
+    "load_preview_from_databricks_query",
+    "DEFAULT_TABLE_SUGGESTIONS",
+    "update_databricks_namespace_from_table",
 ]
