@@ -50,7 +50,9 @@ def build_react_prompt(
                 "- TWO-CSV comparison → propose_join_keys → compare_on_keys('machineID,datetime') → mismatch_report('...')\n"
                 "- SSD utilities → make_timesafe, create_features, rolling_stats, stl_decompose, anomaly_iqr, anomaly_isoforest, cohort_compare, topn_machines\n"
                 "- Outlier one-click → auto_outlier_eda, then plot_outliers on top columns\n"
+                "- Distribution → plot_distribution\n"
                 "- Custom compute/plots → python_repl_ast (do complex tasks in ONE call and print results)\n\n"
+                "Whenever the user requests a chart, plot, image, or visualisation, you MUST execute the relevant plotting tool (e.g., plot_distribution, plot_outliers, corr_heatmap) or run python_repl_ast with matplotlib code so the figure renders in Streamlit. Do not stop at textual descriptions.\n\n"
                 "For tools that take a column name (e.g., anomaly_iqr), pass ONLY the raw column name (e.g., temperature), "
                 "not 'column=temperature'. If you accidentally wrote 'column=...', immediately continue by outputting just the raw name.\n\n"
                 "Call compare_on_keys with just the keys string (e.g., 'machineID,datetime') or as JSON {{\"keys\":\"machineID,datetime\"}}.\n"
@@ -70,4 +72,3 @@ def build_react_prompt(
 
 
 __all__ = ["build_react_prompt"]
-

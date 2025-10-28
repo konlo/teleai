@@ -89,7 +89,7 @@ _agent, agent_with_history = build_agent(
 st.write("---")
 user_q = st.chat_input(
     "예) 이상점 EDA 해줘 / auto_outlier_eda() / plot_outliers('temperature') / "
-    "propose_join_keys / compare_on_keys('machineID,datetime') / mismatch_report('temperature') / "
+    "plot_distribution('temperature') / propose_join_keys / compare_on_keys('machineID,datetime') / mismatch_report('temperature') / "
     "rolling_stats(cols='temperature,uncorrectable_error_count', window='24H') / stl_decompose('temperature', 24)"
 )
 
