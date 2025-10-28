@@ -71,4 +71,44 @@ def build_react_prompt(
     return prompt.partial(tools=tool_desc, tool_names=tool_names)
 
 
-__all__ = ["build_react_prompt"]
+def build_sql_prompt(tools: Iterable[BaseTool]) -> ChatPromptTemplate:
+    """Construct the SQL generation prompt."""
+    prompt = ChatPromptTemplate.from_messages(
+        [
+            (
+                "system",
+                "You are a Databricks SQL expert. Respond decisively with a single, clean SQL statement that answers the user's request. "
+                "Only use helper tools when strictly needed to inspect catalog/schema/table metadata.\n\n"
+                "ALWAYS follow this EXACT format:\n"
+                "Question: <restated question>\n"
+                "Thought: <brief reasoning>\n"
+                "Action: <ONE tool name from {tool_names}>\n"
+                "Action Input: <valid input with NO backticks>\n"
+                "Observation: <tool result>\n"
+                "(Repeat Thought/Action/Action Input/Observation as needed)\n"
+                "Thought: I now know the final answer\n"
+                "Final Answer: SQL:\n"
+                "<single SQL statement with no markdown fences>\n"
+                "Explanation: <one short sentence describing the result>\n"
+                "Execution: <tell the user to reply with '실행', '수행', 'run', or 'execute' if they want you to load the data>\n\n"
+                "If you output anything outside this format, continue immediately by outputting ONLY a valid 'Action' and 'Action Input'.\n\n"
+                "Usage guidelines:\n"
+                "- Keep SQL straightforward—prefer a single SELECT with essential clauses.\n"
+                "- Call databricks_list_catalogs/schemas/tables only when you truly need metadata.\n"
+                "- Never wrap SQL in markdown fences or add extra commentary.\n"
+                "- Do NOT execute SQL unless the user explicitly confirms with words like '실행', '수행', 'run', or 'execute'.\n"
+                "- When the user clearly asks to run/load, reuse the SQL you produced (regenerate if needed), call databricks_preview_sql with a short label, and report the loading result.\n"
+                "- If Databricks credentials are unavailable, explain the issue and avoid tool calls that require them.\n",
+            ),
+            MessagesPlaceholder("chat_history", optional=True),
+            ("human", "{input}"),
+            ("assistant", "{agent_scratchpad}"),
+        ]
+    )
+
+    tool_desc = render_text_description(tools)
+    tool_names = ", ".join([tool.name for tool in tools])
+    return prompt.partial(tools=tool_desc, tool_names=tool_names)
+
+
+__all__ = ["build_react_prompt", "build_sql_prompt"]

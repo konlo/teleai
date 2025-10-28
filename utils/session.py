@@ -117,6 +117,10 @@ def read_table(path: str) -> pd.DataFrame:
 
 def ensure_session_state() -> None:
     """Populate Streamlit session_state with defaults required by the app."""
+    catalog_env = os.getenv("DATABRICKS_CATALOG", "")
+    schema_env = os.getenv("DATABRICKS_SCHEMA", "")
+    catalog_default = catalog_env or "hive_metastore"
+    schema_default = schema_env or "default"
     defaults: List[Tuple[str, Any]] = [
         ("DATA_DIR", DEFAULT_DATA_DIR),
         ("df_A_data", None),
@@ -134,8 +138,8 @@ def ensure_session_state() -> None:
                 "server_hostname": os.getenv("DATABRICKS_SERVER_HOSTNAME", ""),
                 "http_path": os.getenv("DATABRICKS_HTTP_PATH", ""),
                 "access_token": os.getenv("DATABRICKS_TOKEN", os.getenv("DATABRICKS_ACCESS_TOKEN", "")),
-                "catalog": os.getenv("DATABRICKS_CATALOG", ""),
-                "schema": os.getenv("DATABRICKS_SCHEMA", ""),
+                "catalog": catalog_default,
+                "schema": schema_default,
             },
         ),
         ("databricks_table_filter", ""),
@@ -144,13 +148,17 @@ def ensure_session_state() -> None:
         ("databricks_limit", 0),
         ("databricks_catalogs", None),
         ("databricks_catalog_options", []),
-        ("databricks_selected_catalog", os.getenv("DATABRICKS_CATALOG", "")),
+        ("databricks_selected_catalog", catalog_default),
         ("databricks_schema_options", []),
-        ("databricks_selected_schema", os.getenv("DATABRICKS_SCHEMA", "")),
+        ("databricks_selected_schema", schema_default),
         ("databricks_schemas_last", None),
         ("databricks_table_input", ""),
         ("databricks_sql_query", ""),
         ("databricks_last_preview_message", ""),
+        ("last_agent_mode", "SQL Builder"),
+        ("last_sql_statement", ""),
+        ("last_sql_label", "SQL Query"),
+        ("last_sql_table", ""),
     ]
     for key, default in defaults:
         if key not in st.session_state:
@@ -428,6 +436,62 @@ def load_preview_from_databricks_query(
     return True, f"Loaded data from '{table_clean}'. Showing first {limit} rows in the app."
 
 
+def preview_databricks_sql_query(
+    query: str,
+    *,
+    target: str = "A",
+    label: Optional[str] = None,
+) -> Tuple[bool, str]:
+    """Execute an arbitrary Databricks SQL query and store the result."""
+    ensure_session_state()
+    if target not in {"A", "B"}:
+        return False, "Target must be 'A' or 'B'."
+    if not databricks_connector_available():
+        return False, (
+            "databricks-sql-connector is not installed. "
+            "Install it with `pip install databricks-sql-connector`."
+        )
+
+    base_query = (query or "").strip()
+    if not base_query:
+        return False, "Query must not be empty."
+
+    try:
+        creds = get_databricks_credentials()
+        selected_catalog = st.session_state.get("databricks_selected_catalog", "")
+        selected_schema = st.session_state.get("databricks_selected_schema", "")
+        if selected_catalog:
+            creds.catalog = selected_catalog
+        if selected_schema:
+            creds.schema = selected_schema
+        df = databricks_run_sql(base_query, creds)
+    except DatabricksConnectorError as exc:  # pragma: no cover
+        return False, str(exc)
+    except Exception as exc:  # pragma: no cover
+        return False, f"Databricks SQL 실행에 실패했습니다: {exc}"
+
+    dataset_label = (label or "SQL Query").strip() or "SQL Query"
+    if len(dataset_label) > 80:
+        dataset_label = dataset_label[:77] + "..."
+
+    name_key = "df_A_name" if target == "A" else "df_B_name"
+    data_key = "df_A_data" if target == "A" else "df_B_data"
+    path_key = "csv_path" if target == "A" else "csv_b_path"
+
+    st.session_state[data_key] = df
+    st.session_state[name_key] = f"{dataset_label} (Databricks SQL)"
+    st.session_state[path_key] = "databricks-sql://query"
+    st.session_state["databricks_sql_query"] = base_query
+    st.session_state["databricks_last_preview_message"] = (
+        f"{dataset_label} – {len(df)} rows loaded (first 10 shown in app)"
+    )
+
+    return True, (
+        f"Executed SQL and loaded {len(df)} rows into df_{target}. "
+        "Showing the first 10 rows in the main view."
+    )
+
+
 def dataframe_signature(df: Optional[pd.DataFrame], path: str) -> str:
     """Create a simple signature string for change detection."""
     if df is None:
@@ -458,6 +522,7 @@ __all__ = [
     "databricks_connector_available",
     "generate_select_all_query",
     "load_preview_from_databricks_query",
+    "preview_databricks_sql_query",
     "DEFAULT_TABLE_SUGGESTIONS",
     "update_databricks_namespace_from_table",
 ]
