@@ -42,11 +42,6 @@ def build_agent(
         verbose=True,
         return_intermediate_steps=True,
         max_iterations=20,
-        handle_parsing_errors=(
-            "PARSING ERROR. DO NOT APOLOGIZE. Immediately continue by outputting ONLY:\n"
-            "Action: describe_columns\n"
-            "Action Input: {}\n"
-        ),
     )
 
     agent_with_history = RunnableWithMessageHistory(
