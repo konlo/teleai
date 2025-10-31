@@ -136,7 +136,7 @@ def ensure_session_state() -> None:
         (
             "databricks_config",
             {
-                "server_hostname": os.getenv("DATABRICKS_SERVER_HOSTNAME", ""),
+                "server_hostname": os.getenv("DATABRICKS_HOST", ""),
                 "http_path": os.getenv("DATABRICKS_HTTP_PATH", ""),
                 "access_token": os.getenv("DATABRICKS_TOKEN", os.getenv("DATABRICKS_ACCESS_TOKEN", "")),
                 "catalog": catalog_default,

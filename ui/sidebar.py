@@ -47,7 +47,7 @@ def render_sidebar() -> None:
 
             if not (server_hostname and http_path and access_token):
                 st.error(
-                    "환경 변수 DATABRICKS_SERVER_HOSTNAME / DATABRICKS_HTTP_PATH / "
+                    "환경 변수 DATABRICKS_HOST / DATABRICKS_HTTP_PATH / "
                     "DATABRICKS_TOKEN 값을 .env에 설정 후 앱을 재시작하세요."
                 )
                 return
