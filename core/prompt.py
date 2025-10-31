@@ -85,7 +85,7 @@ def build_sql_prompt(tools: Iterable[BaseTool]) -> ChatPromptTemplate:
                 "Action Input: <valid input for that tool, no backticks>\n\n"
                 "When you are ready to answer with the final SQL (and NOT call a tool), respond in EXACTLY this format:\n"
                 "Thought: I now know the final answer\n"
-                "Final Answer: <single SQL statement only, no markdown fences, no explanation>\n\n"
+                "Final Answer: SQL:\n <single SQL statement only, no markdown fences, no explanation>\n\n"
                 "Do NOT output any other fields such as Question:, Observation:, Explanation:, or Execution: unless the tool runner provides Observation: back to you.\n"
                 "Do NOT include markdown fences.",
             ),
