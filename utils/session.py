@@ -39,6 +39,7 @@ DEFAULT_TABLE_SUGGESTIONS = [
     "samples.bakehouse.sales_transactions",
     "samples.accuweather.forecast_daily_calendar_imperial",
     "samples.accuweather.forecast_hourly_imperial",
+    "v_msc_online_pm9a3",
 ]
 
 
