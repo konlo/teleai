@@ -12,6 +12,7 @@
    입력되어 있지 않을 경우 아래와 같이 내가 선택할 수 있는 테이블 이름을 보여준다. 
    ['samples.bakehouse.sales_franchises', 'samples.bakehouse.sales_customers', 'samples.bakehouse.sales_transactions'
     'samples.accuweather.forecast_daily_calendar_imperial', 'samples.accuweather.forecast_hourly_imperial '
+    'v_msc_online_pm9a3'
    ]
 2. 테이블이 잘 선택되었을 때 SQL문을 생성하고 생성된 SQL문을 확인하고 편지할 수 있도록 해줘.
    그리고 내가 loading 버튼을 수행하면 테이블 limit 10으로 데이타를 loading 하고 10개에 대해서는 table로 보여줘
