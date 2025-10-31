@@ -45,7 +45,7 @@ def build_agent(
         handle_parsing_errors=(
             "PARSING ERROR. DO NOT APOLOGIZE. Immediately continue by outputting ONLY:\n"
             "Action: describe_columns\n"
-            "Action Input: \n"
+            "Action Input: {}\n"
         ),
     )
 
