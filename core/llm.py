@@ -42,7 +42,7 @@ def _load_google_llm(
 def _load_azure_llm(*, temperature: float, max_tokens: Optional[int]) -> AzureChatOpenAI:
     api_key = os.getenv("AZURE_OPENAI_API_KEY")
     endpoint = os.getenv("AZURE_OPENAI_ENDPOINT")
-    deployment = os.getenv("AZURE_OPENAI_DEPLOYMENT_NAME")
+    deployment = os.getenv("AZURE_OPENAI_DEPLOYMENT")
     api_version = os.getenv("AZURE_OPENAI_API_VERSION", "2024-02-15-preview")
 
     missing_fields = [
@@ -50,7 +50,7 @@ def _load_azure_llm(*, temperature: float, max_tokens: Optional[int]) -> AzureCh
         for name, value in {
             "AZURE_OPENAI_API_KEY": api_key,
             "AZURE_OPENAI_ENDPOINT": endpoint,
-            "AZURE_OPENAI_DEPLOYMENT_NAME": deployment,
+            "AZURE_OPENAI_DEPLOYMENT": deployment,
         }.items()
         if not value
     ]
