@@ -1,3 +1,13 @@
+2025.11.02
+1. 기존에 있는 databricks에서 table를 선택하는 UI는 제거하고 효과적인 table 선택을 하고 싶어.
+   왼쪽 메뉴는 Access 할 수 있는 table list를 보여주고 사용자가 선택할 수 있도록 하고 싶어. 
+   catalog와 schema는 default에 .env에 있는 값을 가지고 사용하고 이 값을 읽어서 접근할 수있는 table list를 보여주 
+2. 여기에 선택한 table name을 session으로 저장하고 있다가 사용자가 prompt에 입력하는 data 관련 요청 사항은 이 값을 활용할 수 있도록 해줘
+
+3. prompt에서 이야기 하는 데이타에 대한 이야기는 table 에 대한 이야기야 
+   그래서 catalog나 schema를 물어 보는 경우는 없어. 그래서 catalog난 schema는 side menu에서 table list를 찾는 것으로만 사용해줘
+   
+
 2025.10.28
 1. 현재 sql를 생성하는 것과 EDA를 위한 prompt가 각각 나눠져 있는데 이것을 하나의 prompt에서 입력해서 모든 것을 처리할 수 있도록 수정 해줘
 2. 두 개의 agent를 만드는데 첫번째는 입력된 prompt를 통해서 SQL문을 만들어서 화면에 보여주고 사용자에게 수행할까요 ? 수행을 원할 때만 데이타를 loading 해줘

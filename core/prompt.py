@@ -78,7 +78,9 @@ def build_sql_prompt(tools: Iterable[BaseTool]) -> ChatPromptTemplate:
             (
                 "system",
                 "You are a Databricks SQL expert.\n\n"
-                "When you need schema info, you may call tools.\n\n"
+                "The Streamlit sidebar already selected the working catalog and schema for you. "
+                "All user questions about 'the data' refer to the currently selected table; never ask the user to choose or confirm a catalog or schema. "
+                "If you need that context, rely on session-aware tools instead of questioning the user.\n\n"
                 "For each step before the final answer, ALWAYS respond in EXACTLY this format:\n"
                 "Thought: <brief reasoning>\n"
                 "Action: <ONE tool name from {tool_names}>\n"

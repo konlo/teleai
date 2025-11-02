@@ -152,6 +152,7 @@ def ensure_session_state() -> None:
         ("databricks_selected_catalog", catalog_default),
         ("databricks_schema_options", []),
         ("databricks_selected_schema", schema_default),
+        ("databricks_selected_table", ""),
         ("databricks_schemas_last", None),
         ("databricks_table_input", ""),
         ("databricks_sql_query", ""),
@@ -259,7 +260,8 @@ def list_databricks_tables_in_session(pattern: str = "") -> Tuple[bool, Optional
             creds.schema = selected_schema
         else:
             creds.schema = None
-        df = databricks_list_tables(creds, like=pattern or None)
+        pattern_clean = (pattern or "").strip()
+        df = databricks_list_tables(creds, like=pattern_clean or None)
         if df.empty:
             table_options = []
         elif "full_name" in df.columns:
@@ -272,6 +274,20 @@ def list_databricks_tables_in_session(pattern: str = "") -> Tuple[bool, Optional
             table_options = df.iloc[:, 0].astype(str).tolist()
         st.session_state["databricks_table_options"] = table_options
         st.session_state["databricks_tables_last"] = df
+        current_selected = st.session_state.get("databricks_selected_table", "")
+        if table_options:
+            if pattern_clean:
+                # Agent-driven listing shouldn't override the current table selection.
+                pass
+            else:
+                if current_selected not in table_options:
+                    current_selected = table_options[0]
+                st.session_state["databricks_selected_table"] = current_selected
+                st.session_state["databricks_table_input"] = current_selected
+                update_databricks_namespace_from_table(current_selected)
+        else:
+            if not pattern_clean:
+                st.session_state["databricks_selected_table"] = ""
         if df.empty:
             return True, df, "No tables found for the current catalog/schema."
         return True, df, f"Loaded {len(table_options)} tables from Databricks."

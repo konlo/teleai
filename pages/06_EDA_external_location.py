@@ -201,9 +201,13 @@ if user_q:
             st.session_state.setdefault("databricks_selected_catalog", catalog)
             st.session_state.setdefault("databricks_selected_schema", schema)
             table_name_input = st.session_state.get("databricks_table_input", "").strip()
+            selected_table = st.session_state.get("databricks_selected_table", "").strip()
             table_name_inferred = _infer_table_from_sql(last_sql)
-            table_name = table_name_input or table_name_inferred or st.session_state.get(
-                "last_sql_table", ""
+            table_name = (
+                table_name_input
+                or selected_table
+                or table_name_inferred
+                or st.session_state.get("last_sql_table", "")
             )
             if not table_name:
                 st.warning(
@@ -228,6 +232,7 @@ if user_q:
                 st.session_state["last_agent_mode"] = "EDA Analyst"
                 st.session_state["last_sql_table"] = table_name
                 st.session_state["databricks_table_input"] = table_name
+                st.session_state["databricks_selected_table"] = table_name
         st.stop()
 
     agent_mode = _infer_agent(user_q)
@@ -320,11 +325,13 @@ if user_q:
                     st.session_state["last_sql_label"] = user_q.strip()[:80] or "SQL Query"
                     table_hint = (
                         st.session_state.get("databricks_table_input", "").strip()
+                        or st.session_state.get("databricks_selected_table", "").strip()
                         or _infer_table_from_sql(sql_capture)
                         or st.session_state.get("last_sql_table", "")
                     )
                     if table_hint:
                         st.session_state["last_sql_table"] = table_hint
+                        st.session_state["databricks_selected_table"] = table_hint
 
             if agent_mode == "EDA Analyst" and pytool_obj is not None:
                 render_visualizations(pytool_obj)

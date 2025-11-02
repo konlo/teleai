@@ -106,8 +106,12 @@ def databricks_preview_sql(
         st.session_state["databricks_selected_schema"] = schema
 
     table_name_input = st.session_state.get("databricks_table_input", "").strip()
-    table_name = table_name_input or _infer_table_from_sql(query) or st.session_state.get(
-        "last_sql_table", ""
+    selected_table = st.session_state.get("databricks_selected_table", "").strip()
+    table_name = (
+        table_name_input
+        or selected_table
+        or _infer_table_from_sql(query)
+        or st.session_state.get("last_sql_table", "")
     )
     if not table_name:
         return (
@@ -124,6 +128,7 @@ def databricks_preview_sql(
     if success:
         st.session_state["last_sql_table"] = table_name
         st.session_state["databricks_table_input"] = table_name
+        st.session_state["databricks_selected_table"] = table_name
         return message
 
     lowered = message.lower()
