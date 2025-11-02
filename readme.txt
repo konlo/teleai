@@ -7,6 +7,10 @@
 3. prompt에서 이야기 하는 데이타에 대한 이야기는 table 에 대한 이야기야 
    그래서 catalog나 schema를 물어 보는 경우는 없어. 그래서 catalog난 schema는 side menu에서 table list를 찾는 것으로만 사용해줘
    
+4. UI 확장을 위해서 화면에 tab를 추가 하고 싶어. 
+   1. data가 loading 되었으면 지금 화면에 보이는 데이타를 여기 tab으로 옮겨줘 
+   2. 사용자 입력 및 대답에 대한 history를 볼 수 있는 화면이면 좋겠어. 
+   3. 실시간 실행 로그도 tab으로 해줘
 
 2025.10.28
 1. 현재 sql를 생성하는 것과 EDA를 위한 prompt가 각각 나눠져 있는데 이것을 하나의 prompt에서 입력해서 모든 것을 처리할 수 있도록 수정 해줘

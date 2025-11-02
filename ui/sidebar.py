@@ -11,23 +11,10 @@ from utils.session import (
 
 
 def render_sidebar() -> None:
-    """Render the Streamlit sidebar controls for language and Databricks access."""
+    """Render the Streamlit sidebar controls for Databricks access."""
     ensure_session_state()
 
     with st.sidebar:
-        st.markdown("### 💬 EDA 설명 언어")
-        lang_options = ["English", "한국어"]
-        current_lang = st.session_state.get("explanation_lang", "English")
-        selected_idx = (
-            lang_options.index(current_lang) if current_lang in lang_options else 0
-        )
-        st.session_state["explanation_lang"] = st.selectbox(
-            "Agent 요약 언어",
-            options=lang_options,
-            index=selected_idx,
-        )
-
-        st.markdown("---")
         st.markdown("### 🧱 Databricks 테이블")
         if not databricks_connector_available():
             st.info(
@@ -68,9 +55,11 @@ def render_sidebar() -> None:
         refresh_clicked = st.button("🔄 테이블 새로고침", use_container_width=True)
 
         table_options: List[str] = st.session_state.get("databricks_table_options", [])
+        list_refreshed = False
         if refresh_clicked or not table_options:
             with st.spinner("Databricks 테이블 목록을 불러오는 중..."):
                 ok, _, message = list_databricks_tables_in_session()
+                list_refreshed = True
             if ok and message:
                 st.caption(message)
             if not ok:
@@ -86,7 +75,7 @@ def render_sidebar() -> None:
             )
             return
 
-        if selected_table not in table_options:
+        if list_refreshed or selected_table not in table_options:
             selected_table = table_options[0]
             st.session_state["databricks_selected_table"] = selected_table
             st.session_state["databricks_table_input"] = selected_table

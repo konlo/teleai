@@ -130,7 +130,7 @@ def ensure_session_state() -> None:
         ("df_B_data", None),
         ("df_B_name", "No Data"),
         ("csv_b_path", ""),
-        ("explanation_lang", "English"),
+        ("explanation_lang", "한국어"),
         ("df_A_signature", ""),
         ("df_B_signature", ""),
         (

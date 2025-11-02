@@ -1,3 +1,7 @@
+import base64
+from typing import Any, Dict, List
+from uuid import uuid4
+
 import streamlit as st
 import pandas as pd
 from langchain_community.callbacks.streamlit import StreamlitCallbackHandler
@@ -22,11 +26,11 @@ from utils.session import (
 
 
 st.set_page_config(
-    page_title="DF Chatbot (Gemini)",
+    page_title="Telemetry Chatbot Telly",
     page_icon="✨",
     layout="wide",
 )
-st.title("✨ DataFrame Chatbot (Gemini + LangChain)")
+st.title("✨ Telemetry Chatbot Telly")
 st.caption("두 CSV 비교 + 이상점 중심 EDA(원클릭) + SSD Telemetry 유틸")
 
 
@@ -51,29 +55,142 @@ def _get_dataframes():
 
 df_A, df_B, dataset_changed, df_b_changed = _get_dataframes()
 df_a_ready = isinstance(df_A, pd.DataFrame)
-
-st.subheader("Preview")
-if df_a_ready:
-    st.write(
-        f"**Loaded file for df_A:** `{st.session_state['df_A_name']}` (Shape: {df_A.shape})"
-    )
-    st.dataframe(df_A.head(10), width="stretch")
-    if isinstance(df_B, pd.DataFrame):
-        with st.expander(
-            f"df_B Preview — {st.session_state['df_B_name']} (Shape: {df_B.shape})",
-            expanded=False,
-        ):
-            st.dataframe(df_B.head(10), width="stretch")
-else:
-    st.info(
-        "df_A 데이터가 아직 로드되지 않았습니다. 왼쪽 Databricks Loader 또는 SQL Builder 에이전트를 사용해 데이터를 불러오세요."
-    )
-
+st.session_state.setdefault("log_has_content", False)
 
 sql_history = get_history("lc_msgs:sql")
 eda_history = get_history("lc_msgs:eda")
 if dataset_changed or df_b_changed:
     eda_history.clear()
+
+
+def _render_chat_history(title: str, history) -> None:
+    st.markdown(f"#### {title}")
+    messages = getattr(history, "messages", []) or []
+    if not messages:
+        st.info("대화 기록이 없습니다.")
+        return
+    for msg in messages:
+        role = getattr(msg, "type", "assistant")
+        if role == "human":
+            streamlit_role = "user"
+        elif role == "ai":
+            streamlit_role = "assistant"
+        else:
+            streamlit_role = role or "assistant"
+        content = msg.content if isinstance(msg.content, str) else str(msg.content)
+        with st.chat_message(streamlit_role):
+            st.markdown(content)
+
+
+def _ensure_conversation_store() -> None:
+    st.session_state.setdefault("conversation_log", [])
+    st.session_state.setdefault("active_run_id", None)
+
+
+def _append_user_message(run_id: str, content: str) -> None:
+    st.session_state["conversation_log"].append(
+        {"run_id": run_id, "role": "user", "content": content}
+    )
+
+
+def _append_assistant_message(run_id: str, content: str, mode: str) -> None:
+    st.session_state["conversation_log"].append(
+        {
+            "run_id": run_id,
+            "role": "assistant",
+            "mode": mode,
+            "content": content,
+            "figures": [],
+            "figures_attached": False,
+        }
+    )
+
+
+def _attach_figures_to_run(run_id: str, figures: List[Dict[str, Any]]) -> None:
+    if not run_id or not figures:
+        return
+    log = st.session_state.get("conversation_log", [])
+    for entry in reversed(log):
+        if entry.get("run_id") == run_id and entry.get("role") == "assistant":
+            if entry.get("figures_attached"):
+                return
+            entry.setdefault("figures", [])
+            entry["figures"].extend(figures)
+            entry["figures_attached"] = True
+            break
+
+
+def _render_conversation_log() -> None:
+    st.markdown("#### 대화 기록")
+    log = st.session_state.get("conversation_log", [])
+    if not log:
+        st.info("대화 기록이 없습니다.")
+        return
+    for entry in log:
+        role = entry.get("role", "assistant")
+        streamlit_role = "assistant" if role == "assistant" else "user"
+        with st.chat_message(streamlit_role):
+            mode = entry.get("mode")
+            if mode and role == "assistant":
+                st.caption(mode)
+            content = entry.get("content", "")
+            if content:
+                st.markdown(content)
+            for fig in entry.get("figures", []):
+                title = fig.get("title")
+                if title:
+                    st.markdown(f"**{title}**")
+                kind = fig.get("kind")
+                if kind == "bar_chart":
+                    st.bar_chart(fig.get("data"), use_container_width=True)
+                elif kind == "line_chart":
+                    st.line_chart(fig.get("data"), use_container_width=True)
+                elif kind == "dataframe":
+                    st.dataframe(fig.get("data"), use_container_width=True)
+                elif kind == "json":
+                    st.json(fig.get("data"))
+                elif kind == "matplotlib":
+                    image_b64 = fig.get("image")
+                    if image_b64:
+                        st.image(base64.b64decode(image_b64), use_column_width=True)
+
+
+_ensure_conversation_store()
+
+
+tab_preview, tab_history, tab_logs = st.tabs(
+    ["📊 Data Preview", "💬 대화 기록", "⚙️ 실시간 실행 로그"]
+)
+
+with tab_preview:
+    if df_a_ready:
+        st.write(
+            f"**Loaded file for df_A:** `{st.session_state['df_A_name']}` (Shape: {df_A.shape})"
+        )
+        st.dataframe(df_A.head(10), width="stretch")
+        if isinstance(df_B, pd.DataFrame):
+            st.markdown(
+                f"**df_B Preview —** `{st.session_state['df_B_name']}` (Shape: {df_B.shape})"
+            )
+            st.dataframe(df_B.head(10), width="stretch")
+    else:
+        st.info(
+            "df_A 데이터가 아직 로드되지 않았습니다. 왼쪽 Databricks Loader 또는 SQL Builder 에이전트를 사용해 데이터를 불러오세요."
+        )
+
+with tab_history:
+    _render_conversation_log()
+    with st.expander("원본 LangChain 히스토리", expanded=False):
+        _render_chat_history("SQL Builder History", sql_history)
+        st.divider()
+        _render_chat_history("EDA Analyst History", eda_history)
+
+with tab_logs:
+    st.markdown("#### 실시간 실행 로그")
+    log_placeholder = st.container()
+    if not st.session_state.get("log_has_content"):
+        with log_placeholder:
+            st.info("에이전트 실행 시 이 탭에서 로그가 표시됩니다.")
 
 
 llm = load_llm()
@@ -180,18 +297,24 @@ def _infer_table_from_sql(sql: str) -> str:
 user_q = st.chat_input(chat_placeholder)
 
 if user_q:
+    run_id = str(uuid4())
+    st.session_state["active_run_id"] = run_id
+    _append_user_message(run_id, user_q)
     normalized = user_q.strip().lower()
     if normalized in {"실행", "수행", "run", "execute"}:
         last_sql = st.session_state.get("last_sql_statement", "").strip()
         if not last_sql:
-            st.warning("실행할 SQL이 없습니다. 먼저 SQL Builder로 쿼리를 생성해주세요.")
+            warning_msg = "실행할 SQL이 없습니다. 먼저 SQL Builder로 쿼리를 생성해주세요."
+            st.warning(warning_msg)
+            _append_assistant_message(run_id, warning_msg, "SQL Builder")
+            st.session_state["active_run_id"] = None
         else:
             st.session_state["last_agent_mode"] = "SQL Builder"
-            left, right = st.columns([1, 1])
-            with left:
+            st.session_state["log_has_content"] = True
+            log_placeholder.empty()
+            with log_placeholder:
                 st.subheader("실시간 실행 로그")
                 st.write("SQL Builder의 마지막 쿼리를 Databricks에서 실행합니다.")
-            label = st.session_state.get("last_sql_label", "SQL Query")
             cfg = st.session_state.get("databricks_config", {})
             catalog = cfg.get("catalog") or "hive_metastore"
             schema = cfg.get("schema") or "default"
@@ -210,10 +333,14 @@ if user_q:
                 or st.session_state.get("last_sql_table", "")
             )
             if not table_name:
-                st.warning(
+                warning_msg = (
                     "실행할 테이블을 결정할 수 없습니다. SQL Builder에서 사용할 테이블을 지정하거나 Sidebar에서 테이블을 선택해주세요."
                 )
+                st.warning(warning_msg)
+                _append_assistant_message(run_id, warning_msg, "SQL Builder")
+                st.session_state["active_run_id"] = None
                 st.stop()
+            answer_container = st.container()
             with st.spinner("Databricks SQL 실행 중..."):
                 success, message = load_preview_from_databricks_query(
                     table_name,
@@ -221,7 +348,7 @@ if user_q:
                     target="A",
                     limit=10,
                 )
-            with right:
+            with answer_container:
                 st.subheader("Answer")
                 if success:
                     st.success(message)
@@ -233,21 +360,33 @@ if user_q:
                 st.session_state["last_sql_table"] = table_name
                 st.session_state["databricks_table_input"] = table_name
                 st.session_state["databricks_selected_table"] = table_name
+            _append_assistant_message(
+                run_id,
+                message,
+                "SQL Builder",
+            )
+            st.session_state["active_run_id"] = None
         st.stop()
 
     agent_mode = _infer_agent(user_q)
     st.session_state["last_agent_mode"] = agent_mode
 
     if agent_mode == "EDA Analyst" and not df_a_ready:
-        st.error(
+        error_msg = (
             "df_A 데이터가 없습니다. 먼저 SQL Builder 에이전트나 Databricks Loader로 데이터를 불러온 뒤 다시 시도하세요."
         )
+        st.error(error_msg)
+        _append_assistant_message(run_id, error_msg, agent_mode)
+        st.session_state["active_run_id"] = None
     else:
-        left, right = st.columns([1, 1])
-        with left:
+        st.session_state["log_has_content"] = True
+        log_placeholder.empty()
+        with log_placeholder:
             st.subheader("실시간 실행 로그")
-            st_cb = StreamlitCallbackHandler(st.container())
+            log_stream_container = st.container()
+        st_cb = StreamlitCallbackHandler(log_stream_container)
         collector = SimpleCollectCallback()
+        answer_container = st.container()
 
         agent_runner = (
             sql_agent_with_history if agent_mode == "SQL Builder" else eda_agent_with_history
@@ -290,12 +429,11 @@ if user_q:
         final = result.get(
             "output", "Agent가 최종 답변을 생성하지 못했습니다."
         )
-        with right:
+        with answer_container:
             st.subheader("Answer")
             final_text = final if isinstance(final, str) else str(final)
-            lang_choice = st.session_state.get("explanation_lang", "English")
             final_display = final_text
-            if lang_choice == "한국어" and final_text.strip():
+            if final_text.strip():
                 try:
                     translation_prompt = (
                         "다음 분석 결과를 자연스럽고 간결한 한국어로 설명해줘.\n\n"
@@ -309,6 +447,7 @@ if user_q:
                     st.warning(f"한국어 번역 중 오류가 발생했습니다: {exc}")
             st.caption(f"{agent_mode} 응답")
             st.write(final_display)
+            _append_assistant_message(run_id, final_display, agent_mode)
 
             if agent_mode == "SQL Builder":
                 sql_capture = ""
@@ -334,4 +473,6 @@ if user_q:
                         st.session_state["databricks_selected_table"] = table_hint
 
             if agent_mode == "EDA Analyst" and pytool_obj is not None:
-                render_visualizations(pytool_obj)
+                figure_payloads = render_visualizations(pytool_obj)
+                _attach_figures_to_run(run_id, figure_payloads)
+        st.session_state["active_run_id"] = None
