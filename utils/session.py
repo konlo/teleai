@@ -23,6 +23,7 @@ load_dotenv()
 DEFAULT_DATA_DIR = os.getenv("DATA_DIR", "/Users/najongseong/dataset")
 DFB_DEFAULT_NAME = "telemetry_raw.csv"
 SUPPORTED_EXTENSIONS = (".csv", ".parquet")
+DEFAULT_SQL_LIMIT = 2000
 TIME_COLUMN_CANDIDATES = [
     "datetime",
     "timestamp",
@@ -398,12 +399,12 @@ def update_databricks_namespace_from_table(table: str) -> None:
 
 
 def generate_select_all_query(table: str) -> str:
-    """Return a canonical SELECT statement for the given table."""
+    """Return a canonical SELECT statement for the given table with a LIMIT."""
     table_clean = (table or "").strip()
     if not table_clean:
         raise ValueError("Table name must not be empty.")
     update_databricks_namespace_from_table(table_clean)
-    return f"SELECT * FROM {table_clean}"
+    return f"SELECT * FROM {table_clean} LIMIT {DEFAULT_SQL_LIMIT}"
 
 
 def load_preview_from_databricks_query(
