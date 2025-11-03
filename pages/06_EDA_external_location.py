@@ -46,7 +46,7 @@ st.markdown(
     }
 
     .block-container {
-        max-width: 1100px;
+        max-width: 900px;
         margin: 0 auto;
         width: 100%;
         padding-left: 1.5rem;
@@ -55,7 +55,7 @@ st.markdown(
 
     [data-testid="stChatInput"] {
         width: 100%;
-        max-width: 1100px;
+        max-width: 1000px;
         margin: 0 auto;
         padding-left: 1.5rem;
         padding-right: 1.5rem;
