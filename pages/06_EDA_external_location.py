@@ -298,6 +298,10 @@ with st.sidebar:
         with log_placeholder.container():
             st.info("에이전트 실행 시 이 영역에서 로그가 표시됩니다.")
 
+st.write("---")
+
+_render_conversation_log()
+
 if df_a_ready:
     with st.popover("📊 Data Preview"):
         st.write(
@@ -313,10 +317,6 @@ else:
     st.info(
         "df_A 데이터가 아직 로드되지 않았습니다. 왼쪽 Databricks Loader 또는 SQL Builder 에이전트를 사용해 데이터를 불러오세요."
     )
-
-st.write("---")
-
-_render_conversation_log()
 
 
 user_q = st.chat_input(chat_placeholder)
