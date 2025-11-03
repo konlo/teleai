@@ -364,23 +364,10 @@ def load_df_from_databricks(
     st.session_state[path_key] = f"databricks://{table}"
     st.session_state["databricks_last_preview_table"] = table
 
-    limit_rows = None
-    if limit and int(limit) > 0:
-        limit_rows = int(limit)
+    st.session_state["databricks_last_preview_message"] = (
+        f"{table} – {len(df)} rows loaded into df_{target}."
+    )
 
-    if limit_rows:
-        st.session_state["databricks_last_preview_message"] = (
-            f"{table} – first {len(df)} rows loaded into df_{target} (limit {limit_rows})."
-        )
-    else:
-        st.session_state["databricks_last_preview_message"] = (
-            f"{table} – {len(df)} rows loaded into df_{target}."
-        )
-
-    if limit_rows:
-        return True, (
-            f"Loaded Databricks table '{table}' into df_{target} (first {len(df)} rows)."
-        )
     return True, f"Loaded Databricks table '{table}' into df_{target}."
 
 
@@ -459,11 +446,6 @@ def load_preview_from_databricks_query(
     except Exception as exc:  # pragma: no cover
         return False, f"Databricks SQL 실행에 실패했습니다: {exc}"
 
-    limit_rows = None
-    if limit and int(limit) > 0:
-        limit_rows = int(limit)
-        df = df.head(limit_rows)
-
     name_key = "df_A_name" if target == "A" else "df_B_name"
     data_key = "df_A_data" if target == "A" else "df_B_data"
     path_key = "csv_path" if target == "A" else "csv_b_path"
@@ -473,20 +455,11 @@ def load_preview_from_databricks_query(
     st.session_state[path_key] = f"databricks://{table_clean}"
     st.session_state["databricks_table_input"] = table_clean
     st.session_state["databricks_sql_query"] = base_query
-    if limit_rows:
-        st.session_state["databricks_last_preview_message"] = (
-            f"{table_clean} – {len(df)} rows loaded (preview limit {limit_rows})."
-        )
-    else:
-        st.session_state["databricks_last_preview_message"] = (
-            f"{table_clean} – {len(df)} rows loaded."
-        )
+    st.session_state["databricks_last_preview_message"] = (
+        f"{table_clean} – {len(df)} rows loaded."
+    )
     st.session_state["databricks_last_preview_table"] = table_clean
 
-    if limit_rows:
-        return True, (
-            f"Loaded data from '{table_clean}'. Showing first {limit_rows} rows in the app."
-        )
     return True, f"Loaded data from '{table_clean}'."
 
 
