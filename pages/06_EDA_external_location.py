@@ -62,12 +62,6 @@ eda_history = get_history("lc_msgs:eda")
 if dataset_changed or df_b_changed:
     eda_history.clear()
 
-if df_a_ready and dataset_changed:
-    _append_dataframe_preview_message("df_A", df_A, "A")
-if isinstance(df_B, pd.DataFrame) and df_b_changed:
-    _append_dataframe_preview_message("df_B", df_B, "B")
-
-
 def _render_chat_history(title: str, history) -> None:
     st.markdown(f"#### {title}")
     messages = getattr(history, "messages", []) or []
@@ -148,6 +142,12 @@ def _append_dataframe_preview_message(label: str, df: pd.DataFrame, key: str) ->
             }
         ],
     )
+
+
+if df_a_ready and dataset_changed:
+    _append_dataframe_preview_message("df_A", df_A, "A")
+if isinstance(df_B, pd.DataFrame) and df_b_changed:
+    _append_dataframe_preview_message("df_B", df_B, "B")
 
 
 def _render_conversation_log(show_header: bool = True) -> None:
