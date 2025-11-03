@@ -62,6 +62,11 @@ eda_history = get_history("lc_msgs:eda")
 if dataset_changed or df_b_changed:
     eda_history.clear()
 
+if df_a_ready and dataset_changed:
+    _append_dataframe_preview_message("df_A", df_A, "A")
+if isinstance(df_B, pd.DataFrame) and df_b_changed:
+    _append_dataframe_preview_message("df_B", df_B, "B")
+
 
 def _render_chat_history(title: str, history) -> None:
     st.markdown(f"#### {title}")
@@ -120,8 +125,34 @@ def _attach_figures_to_run(run_id: str, figures: List[Dict[str, Any]]) -> None:
             break
 
 
-def _render_conversation_log() -> None:
-    st.markdown("#### 대화 기록")
+def _append_dataframe_preview_message(label: str, df: pd.DataFrame, key: str) -> None:
+    if not isinstance(df, pd.DataFrame) or df.empty:
+        return
+    preview_df = df.head(10)
+    if preview_df.empty:
+        return
+    dataset_name_key = "df_A_name" if key == "A" else "df_B_name"
+    dataset_name = st.session_state.get(dataset_name_key, label)
+    message = (
+        f"**{label} Preview:** `{dataset_name}` (Shape: {df.shape})"
+    )
+    run_id = f"preview-{key}-{uuid4()}"
+    _append_assistant_message(run_id, message, "Data Preview")
+    _attach_figures_to_run(
+        run_id,
+        [
+            {
+                "kind": "dataframe",
+                "title": f"{label} Preview",
+                "data": preview_df,
+            }
+        ],
+    )
+
+
+def _render_conversation_log(show_header: bool = True) -> None:
+    if show_header:
+        st.markdown("#### 대화 기록")
     log = st.session_state.get("conversation_log", [])
     if not log:
         st.info("대화 기록이 없습니다.")
@@ -184,47 +215,52 @@ _sql_agent, sql_agent_with_history = build_agent(
 
 st.write("---")
 
+_render_conversation_log()
+
+log_placeholder = st.container()
+
+chat_tools_container = st.container()
+with chat_tools_container:
+    st.markdown("#### 대화 도구")
+    tool_cols = st.columns(3)
+
+    with tool_cols[0]:
+        with st.popover("💬 대화 기록"):
+            _render_conversation_log(show_header=False)
+            with st.expander("원본 LangChain 히스토리", expanded=False):
+                _render_chat_history("SQL Builder History", sql_history)
+                st.divider()
+                _render_chat_history("EDA Analyst History", eda_history)
+
+    with tool_cols[1]:
+        with st.popover("📊 Data Preview"):
+            if df_a_ready:
+                st.write(
+                    f"**Loaded file for df_A:** `{st.session_state['df_A_name']}` (Shape: {df_A.shape})"
+                )
+                st.dataframe(df_A.head(10), width="stretch")
+                if isinstance(df_B, pd.DataFrame):
+                    st.markdown(
+                        f"**df_B Preview —** `{st.session_state['df_B_name']}` (Shape: {df_B.shape})"
+                    )
+                    st.dataframe(df_B.head(10), width="stretch")
+            else:
+                st.info(
+                    "df_A 데이터가 아직 로드되지 않았습니다. 왼쪽 Databricks Loader 또는 SQL Builder 에이전트를 사용해 데이터를 불러오세요."
+                )
+
+    with tool_cols[2]:
+        with st.popover("⚙️ 실시간 실행 로그"):
+            st.markdown("#### 실시간 실행 로그")
+            if not st.session_state.get("log_has_content"):
+                with log_placeholder:
+                    st.info("에이전트 실행 시 이 영역에서 로그가 표시됩니다.")
+
 
 chat_placeholder = (
     "SQL) 예: sales_transactions에서 최근 7일간 매출 합계를 위한 SQL 작성해줘 / "
     "EDA) 예: auto_outlier_eda() / plot_outliers('temperature') / compare_on_keys('machineID,datetime')"
 )
-
-tabs_container = st.container()
-with tabs_container:
-    tab_history, tab_preview, tab_logs = st.tabs(
-        ["💬 대화 기록", "📊 Data Preview", "⚙️ 실시간 실행 로그"]
-    )
-
-    with tab_history:
-        _render_conversation_log()
-        with st.expander("원본 LangChain 히스토리", expanded=False):
-            _render_chat_history("SQL Builder History", sql_history)
-            st.divider()
-            _render_chat_history("EDA Analyst History", eda_history)
-
-    with tab_preview:
-        if df_a_ready:
-            st.write(
-                f"**Loaded file for df_A:** `{st.session_state['df_A_name']}` (Shape: {df_A.shape})"
-            )
-            st.dataframe(df_A.head(10), width="stretch")
-            if isinstance(df_B, pd.DataFrame):
-                st.markdown(
-                    f"**df_B Preview —** `{st.session_state['df_B_name']}` (Shape: {df_B.shape})"
-                )
-                st.dataframe(df_B.head(10), width="stretch")
-        else:
-            st.info(
-                "df_A 데이터가 아직 로드되지 않았습니다. 왼쪽 Databricks Loader 또는 SQL Builder 에이전트를 사용해 데이터를 불러오세요."
-            )
-
-    with tab_logs:
-        st.markdown("#### 실시간 실행 로그")
-        log_placeholder = st.container()
-        if not st.session_state.get("log_has_content"):
-            with log_placeholder:
-                st.info("에이전트 실행 시 이 탭에서 로그가 표시됩니다.")
 
 
 def _infer_agent(user_message: str) -> str:
