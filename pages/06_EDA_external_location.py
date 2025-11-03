@@ -210,11 +210,6 @@ _sql_agent, sql_agent_with_history = build_agent(
 )
 
 
-st.write("---")
-
-_render_conversation_log()
-
-
 chat_placeholder = (
     "SQL) 예: sales_transactions에서 최근 7일간 매출 합계를 위한 SQL 작성해줘 / "
     "EDA) 예: auto_outlier_eda() / plot_outliers('temperature') / compare_on_keys('machineID,datetime')"
@@ -290,22 +285,21 @@ def _infer_table_from_sql(sql: str) -> str:
     return candidate.strip()
 
 
-user_q = st.chat_input(chat_placeholder)
-
-st.markdown("#### 대화 도구")
-history_tab, preview_tab, log_tab = st.tabs(
-    ["💬 대화 기록", "📊 Data Preview", "⚙️ 실시간 실행 로그"]
-)
-
-with history_tab:
-    _render_conversation_log(show_header=False)
-    with st.expander("원본 LangChain 히스토리", expanded=False):
+with st.sidebar:
+    st.markdown("#### 원본 LangChain 히스토리")
+    with st.expander("SQL Builder History", expanded=False):
         _render_chat_history("SQL Builder History", sql_history)
-        st.divider()
+    with st.expander("EDA Analyst History", expanded=False):
         _render_chat_history("EDA Analyst History", eda_history)
 
-with preview_tab:
-    if df_a_ready:
+    st.markdown("#### ⚙️ 실시간 실행 로그")
+    log_placeholder = st.container()
+    if not st.session_state.get("log_has_content"):
+        with log_placeholder.container():
+            st.info("에이전트 실행 시 이 영역에서 로그가 표시됩니다.")
+
+if df_a_ready:
+    with st.popover("📊 Data Preview"):
         st.write(
             f"**Loaded file for df_A:** `{st.session_state['df_A_name']}` (Shape: {df_A.shape})"
         )
@@ -315,17 +309,17 @@ with preview_tab:
                 f"**df_B Preview —** `{st.session_state['df_B_name']}` (Shape: {df_B.shape})"
             )
             st.dataframe(df_B.head(10), width="stretch")
-    else:
-        st.info(
-            "df_A 데이터가 아직 로드되지 않았습니다. 왼쪽 Databricks Loader 또는 SQL Builder 에이전트를 사용해 데이터를 불러오세요."
-        )
+else:
+    st.info(
+        "df_A 데이터가 아직 로드되지 않았습니다. 왼쪽 Databricks Loader 또는 SQL Builder 에이전트를 사용해 데이터를 불러오세요."
+    )
 
-with log_tab:
-    st.markdown("#### 실시간 실행 로그")
-    log_placeholder = st.empty()
-    if not st.session_state.get("log_has_content"):
-        with log_placeholder.container():
-            st.info("에이전트 실행 시 이 영역에서 로그가 표시됩니다.")
+st.write("---")
+
+_render_conversation_log()
+
+
+user_q = st.chat_input(chat_placeholder)
 
 if user_q:
     run_id = str(uuid4())
@@ -386,7 +380,7 @@ if user_q:
                 else:
                     st.error(message)
             if success:
-                st.info("df_A 미리보기가 업데이트되었습니다. 상단 Preview 섹션을 확인하세요.")
+                st.info("df_A 미리보기가 업데이트되었습니다. 상단 Data Preview 팝오버를 확인하세요.")
                 st.session_state["last_agent_mode"] = "EDA Analyst"
                 st.session_state["last_sql_table"] = table_name
                 st.session_state["databricks_table_input"] = table_name
