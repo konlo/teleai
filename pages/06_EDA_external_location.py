@@ -1,4 +1,5 @@
 import base64
+import re
 from typing import Any, Dict, List
 from uuid import uuid4
 
@@ -335,6 +336,26 @@ def _infer_table_from_sql(sql: str) -> str:
     return candidate.strip()
 
 
+def _ensure_limit_clause(sql: str, limit: int = 2000) -> str:
+    text = (sql or "").strip()
+    if not text:
+        return sql
+
+    semicolon = "" if not text.endswith(";") else ";"
+    body = text[:-1].rstrip() if semicolon else text
+
+    pattern = re.compile(r"(?is)\blimit\s+\d+(\s+offset\s+\d+)?\s*$")
+    match = pattern.search(body)
+    if match:
+        prefix = body[: match.start()].rstrip()
+        offset_part = (match.group(1) or "").upper()
+        body = f"{prefix} LIMIT {limit}{offset_part}"
+    else:
+        body = f"{body.rstrip()} LIMIT {limit}"
+
+    return f"{body}{semicolon}"
+
+
 with st.sidebar:
     st.markdown("#### 원본 LangChain 히스토리")
     with st.expander("SQL Builder History", expanded=False):
@@ -507,6 +528,21 @@ if user_q:
         with answer_container:
             st.subheader("Answer")
             final_text = final if isinstance(final, str) else str(final)
+            sql_capture = ""
+            if agent_mode == "SQL Builder" and "SQL:" in final_text:
+                tail = final_text.split("SQL:", 1)[1]
+                if "Explanation:" in tail:
+                    sql_capture = tail.split("Explanation:", 1)[0].strip()
+                elif "Execution:" in tail:
+                    sql_capture = tail.split("Execution:", 1)[0].strip()
+                else:
+                    sql_capture = tail.strip()
+                if sql_capture:
+                    enforced_sql = _ensure_limit_clause(sql_capture)
+                    if enforced_sql != sql_capture:
+                        final_text = final_text.replace(sql_capture, enforced_sql, 1)
+                    sql_capture = enforced_sql
+
             final_display = final_text
             if final_text.strip():
                 try:
@@ -524,28 +560,18 @@ if user_q:
             st.write(final_display)
             _append_assistant_message(run_id, final_display, agent_mode)
 
-            if agent_mode == "SQL Builder":
-                sql_capture = ""
-                if "SQL:" in final_text:
-                    tail = final_text.split("SQL:", 1)[1]
-                    if "Explanation:" in tail:
-                        sql_capture = tail.split("Explanation:", 1)[0].strip()
-                    elif "Execution:" in tail:
-                        sql_capture = tail.split("Execution:", 1)[0].strip()
-                    else:
-                        sql_capture = tail.strip()
-                if sql_capture:
-                    st.session_state["last_sql_statement"] = sql_capture
-                    st.session_state["last_sql_label"] = user_q.strip()[:80] or "SQL Query"
-                    table_hint = (
-                        st.session_state.get("databricks_table_input", "").strip()
-                        or st.session_state.get("databricks_selected_table", "").strip()
-                        or _infer_table_from_sql(sql_capture)
-                        or st.session_state.get("last_sql_table", "")
-                    )
-                    if table_hint:
-                        st.session_state["last_sql_table"] = table_hint
-                        st.session_state["databricks_selected_table"] = table_hint
+            if agent_mode == "SQL Builder" and sql_capture:
+                st.session_state["last_sql_statement"] = sql_capture
+                st.session_state["last_sql_label"] = user_q.strip()[:80] or "SQL Query"
+                table_hint = (
+                    st.session_state.get("databricks_table_input", "").strip()
+                    or st.session_state.get("databricks_selected_table", "").strip()
+                    or _infer_table_from_sql(sql_capture)
+                    or st.session_state.get("last_sql_table", "")
+                )
+                if table_hint:
+                    st.session_state["last_sql_table"] = table_hint
+                    st.session_state["databricks_selected_table"] = table_hint
 
             if agent_mode == "EDA Analyst" and pytool_obj is not None:
                 figure_payloads = render_visualizations(pytool_obj)
