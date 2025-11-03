@@ -63,6 +63,7 @@ st.markdown(
 
     [data-testid="stChatInput"] > div {
         width: 100%;
+        min-height: 5rem;
     }
 
     [data-testid="stChatInputTextArea"] {
