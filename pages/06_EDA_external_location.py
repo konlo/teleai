@@ -158,41 +158,6 @@ def _render_conversation_log() -> None:
 _ensure_conversation_store()
 
 
-tab_preview, tab_history, tab_logs = st.tabs(
-    ["📊 Data Preview", "💬 대화 기록", "⚙️ 실시간 실행 로그"]
-)
-
-with tab_preview:
-    if df_a_ready:
-        st.write(
-            f"**Loaded file for df_A:** `{st.session_state['df_A_name']}` (Shape: {df_A.shape})"
-        )
-        st.dataframe(df_A.head(10), width="stretch")
-        if isinstance(df_B, pd.DataFrame):
-            st.markdown(
-                f"**df_B Preview —** `{st.session_state['df_B_name']}` (Shape: {df_B.shape})"
-            )
-            st.dataframe(df_B.head(10), width="stretch")
-    else:
-        st.info(
-            "df_A 데이터가 아직 로드되지 않았습니다. 왼쪽 Databricks Loader 또는 SQL Builder 에이전트를 사용해 데이터를 불러오세요."
-        )
-
-with tab_history:
-    _render_conversation_log()
-    with st.expander("원본 LangChain 히스토리", expanded=False):
-        _render_chat_history("SQL Builder History", sql_history)
-        st.divider()
-        _render_chat_history("EDA Analyst History", eda_history)
-
-with tab_logs:
-    st.markdown("#### 실시간 실행 로그")
-    log_placeholder = st.container()
-    if not st.session_state.get("log_has_content"):
-        with log_placeholder:
-            st.info("에이전트 실행 시 이 탭에서 로그가 표시됩니다.")
-
-
 llm = load_llm()
 
 pytool_obj = None
@@ -218,6 +183,48 @@ _sql_agent, sql_agent_with_history = build_agent(
 
 
 st.write("---")
+
+
+chat_placeholder = (
+    "SQL) 예: sales_transactions에서 최근 7일간 매출 합계를 위한 SQL 작성해줘 / "
+    "EDA) 예: auto_outlier_eda() / plot_outliers('temperature') / compare_on_keys('machineID,datetime')"
+)
+
+tabs_container = st.container()
+with tabs_container:
+    tab_history, tab_preview, tab_logs = st.tabs(
+        ["💬 대화 기록", "📊 Data Preview", "⚙️ 실시간 실행 로그"]
+    )
+
+    with tab_history:
+        _render_conversation_log()
+        with st.expander("원본 LangChain 히스토리", expanded=False):
+            _render_chat_history("SQL Builder History", sql_history)
+            st.divider()
+            _render_chat_history("EDA Analyst History", eda_history)
+
+    with tab_preview:
+        if df_a_ready:
+            st.write(
+                f"**Loaded file for df_A:** `{st.session_state['df_A_name']}` (Shape: {df_A.shape})"
+            )
+            st.dataframe(df_A.head(10), width="stretch")
+            if isinstance(df_B, pd.DataFrame):
+                st.markdown(
+                    f"**df_B Preview —** `{st.session_state['df_B_name']}` (Shape: {df_B.shape})"
+                )
+                st.dataframe(df_B.head(10), width="stretch")
+        else:
+            st.info(
+                "df_A 데이터가 아직 로드되지 않았습니다. 왼쪽 Databricks Loader 또는 SQL Builder 에이전트를 사용해 데이터를 불러오세요."
+            )
+
+    with tab_logs:
+        st.markdown("#### 실시간 실행 로그")
+        log_placeholder = st.container()
+        if not st.session_state.get("log_has_content"):
+            with log_placeholder:
+                st.info("에이전트 실행 시 이 탭에서 로그가 표시됩니다.")
 
 
 def _infer_agent(user_message: str) -> str:
@@ -267,11 +274,6 @@ def _infer_agent(user_message: str) -> str:
         return "SQL Builder"
     return "EDA Analyst"
 
-
-chat_placeholder = (
-    "SQL) 예: sales_transactions에서 최근 7일간 매출 합계를 위한 SQL 작성해줘 / "
-    "EDA) 예: auto_outlier_eda() / plot_outliers('temperature') / compare_on_keys('machineID,datetime')"
-)
 
 def _infer_table_from_sql(sql: str) -> str:
     text = (sql or "").strip()
