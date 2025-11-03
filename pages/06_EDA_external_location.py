@@ -197,9 +197,11 @@ def _append_dataframe_preview_message(label: str, df: pd.DataFrame, key: str) ->
 
 
 if df_a_ready and dataset_changed:
-    _append_dataframe_preview_message("df_A", df_A, "A")
+    if not st.session_state.pop("skip_next_df_a_preview", False):
+        _append_dataframe_preview_message("df_A", df_A, "A")
 if isinstance(df_B, pd.DataFrame) and df_b_changed:
-    _append_dataframe_preview_message("df_B", df_B, "B")
+    if not st.session_state.pop("skip_next_df_b_preview", False):
+        _append_dataframe_preview_message("df_B", df_B, "B")
 
 
 def _render_conversation_log(show_header: bool = True) -> None:
@@ -267,7 +269,7 @@ _sql_agent, sql_agent_with_history = build_agent(
 )
 
 
-chat_placeholder = (
+BASE_CHAT_PLACEHOLDER = (
     "SQL) 예: sales_transactions에서 최근 7일간 매출 합계를 위한 SQL 작성해줘 / "
     "EDA) 예: auto_outlier_eda() / plot_outliers('temperature') / compare_on_keys('machineID,datetime')"
 )
@@ -375,6 +377,105 @@ with st.sidebar:
         with log_placeholder.container():
             st.info("에이전트 실행 시 이 영역에서 로그가 표시됩니다.")
 
+
+def _execute_sql_preview(
+    run_id: str,
+    sql_text: str,
+    *,
+    log_container,
+    auto_trigger: bool = False,
+) -> bool:
+    sql_to_run = (sql_text or "").strip()
+    if not sql_to_run:
+        warning_msg = "실행할 SQL이 없습니다. 먼저 SQL Builder로 쿼리를 생성해주세요."
+        st.warning(warning_msg)
+        _append_assistant_message(run_id, warning_msg, "SQL Execution")
+        st.session_state["active_run_id"] = None
+        return False
+
+    st.session_state["last_sql_statement"] = sql_to_run
+    st.session_state["last_agent_mode"] = "SQL Builder"
+    st.session_state["log_has_content"] = True
+    log_container.empty()
+    with log_container.container():
+        st.subheader("실시간 실행 로그")
+        status_msg = (
+            "SQL Builder가 생성한 쿼리를 Databricks에서 실행합니다."
+            if auto_trigger
+            else "SQL Builder의 마지막 쿼리를 Databricks에서 실행합니다."
+        )
+        st.write(status_msg)
+
+    cfg = st.session_state.get("databricks_config", {})
+    catalog = cfg.get("catalog") or "hive_metastore"
+    schema = cfg.get("schema") or "default"
+    cfg["catalog"] = catalog
+    cfg["schema"] = schema
+    st.session_state["databricks_config"] = cfg
+    st.session_state.setdefault("databricks_selected_catalog", catalog)
+    st.session_state.setdefault("databricks_selected_schema", schema)
+
+    table_name_input = st.session_state.get("databricks_table_input", "").strip()
+    selected_table = st.session_state.get("databricks_selected_table", "").strip()
+    table_name_inferred = _infer_table_from_sql(sql_to_run)
+    table_name = (
+        table_name_input
+        or selected_table
+        or table_name_inferred
+        or st.session_state.get("last_sql_table", "")
+    )
+    if not table_name:
+        warning_msg = (
+            "실행할 테이블을 결정할 수 없습니다. SQL Builder에서 사용할 테이블을 지정하거나 Sidebar에서 테이블을 선택해주세요."
+        )
+        st.warning(warning_msg)
+        _append_assistant_message(run_id, warning_msg, "SQL Execution")
+        st.session_state["active_run_id"] = None
+        return False
+
+    answer_container = st.container()
+    with st.spinner("Databricks SQL 실행 중..."):
+        success, message = load_preview_from_databricks_query(
+            table_name,
+            query=sql_to_run,
+            target="A",
+            limit=10,
+        )
+    preview_payloads: List[Dict[str, Any]] = []
+    with answer_container:
+        st.subheader("Answer")
+        if success:
+            st.success(message)
+        else:
+            st.error(message)
+
+    if success:
+        st.session_state["last_agent_mode"] = "EDA Analyst"
+        st.session_state["last_sql_table"] = table_name
+        st.session_state["databricks_table_input"] = table_name
+        st.session_state["databricks_selected_table"] = table_name
+        st.session_state["skip_next_df_a_preview"] = True
+        df_latest = st.session_state.get("df_A_data")
+        if isinstance(df_latest, pd.DataFrame) and not df_latest.empty:
+            preview_payloads.append(
+                {
+                    "kind": "dataframe",
+                    "title": f"df_A Preview — {st.session_state.get('df_A_name', 'df_A')}",
+                    "data": df_latest.head(10),
+                }
+            )
+
+    mode_label = "SQL Execution" if auto_trigger else "SQL Builder"
+    _append_assistant_message(run_id, message, mode_label)
+    if preview_payloads:
+        _attach_figures_to_run(run_id, preview_payloads)
+    st.session_state["active_run_id"] = None
+    if success:
+        rerun_callable = getattr(st, "rerun", None) or getattr(st, "experimental_rerun", None)
+        if callable(rerun_callable):
+            rerun_callable()
+    return success
+
 st.write("---")
 
 _render_conversation_log()
@@ -395,83 +496,68 @@ else:
         "df_A 데이터가 아직 로드되지 않았습니다. 왼쪽 Databricks Loader 또는 SQL Builder 에이전트를 사용해 데이터를 불러오세요."
     )
 
+chat_placeholder = BASE_CHAT_PLACEHOLDER
 
-user_q = st.chat_input(chat_placeholder)
+chat_input_key = "main_chat_input"
+if chat_input_key not in st.session_state:
+    st.session_state[chat_input_key] = ""
+
+prefill_value = st.session_state.get("chat_input_prefill", "")
+if prefill_value:
+    st.session_state[chat_input_key] = prefill_value
+    st.session_state["chat_input_prefill"] = ""
+
+user_q = st.chat_input(chat_placeholder, key=chat_input_key)
 
 if user_q:
     run_id = str(uuid4())
     st.session_state["active_run_id"] = run_id
-    _append_user_message(run_id, user_q)
-    normalized = user_q.strip().lower()
-    if normalized in {"실행", "수행", "run", "execute"}:
-        last_sql = st.session_state.get("last_sql_statement", "").strip()
-        if not last_sql:
-            warning_msg = "실행할 SQL이 없습니다. 먼저 SQL Builder로 쿼리를 생성해주세요."
-            st.warning(warning_msg)
-            _append_assistant_message(run_id, warning_msg, "SQL Builder")
-            st.session_state["active_run_id"] = None
-        else:
-            st.session_state["last_agent_mode"] = "SQL Builder"
-            st.session_state["log_has_content"] = True
-            log_placeholder.empty()
-            with log_placeholder.container():
-                st.subheader("실시간 실행 로그")
-                st.write("SQL Builder의 마지막 쿼리를 Databricks에서 실행합니다.")
-            cfg = st.session_state.get("databricks_config", {})
-            catalog = cfg.get("catalog") or "hive_metastore"
-            schema = cfg.get("schema") or "default"
-            cfg["catalog"] = catalog
-            cfg["schema"] = schema
-            st.session_state["databricks_config"] = cfg
-            st.session_state.setdefault("databricks_selected_catalog", catalog)
-            st.session_state.setdefault("databricks_selected_schema", schema)
-            table_name_input = st.session_state.get("databricks_table_input", "").strip()
-            selected_table = st.session_state.get("databricks_selected_table", "").strip()
-            table_name_inferred = _infer_table_from_sql(last_sql)
-            table_name = (
-                table_name_input
-                or selected_table
-                or table_name_inferred
-                or st.session_state.get("last_sql_table", "")
-            )
-            if not table_name:
-                warning_msg = (
-                    "실행할 테이블을 결정할 수 없습니다. SQL Builder에서 사용할 테이블을 지정하거나 Sidebar에서 테이블을 선택해주세요."
-                )
-                st.warning(warning_msg)
-                _append_assistant_message(run_id, warning_msg, "SQL Builder")
-                st.session_state["active_run_id"] = None
-                st.stop()
-            answer_container = st.container()
-            with st.spinner("Databricks SQL 실행 중..."):
-                success, message = load_preview_from_databricks_query(
-                    table_name,
-                    query=last_sql,
-                    target="A",
-                    limit=10,
-                )
-            with answer_container:
-                st.subheader("Answer")
-                if success:
-                    st.success(message)
-                else:
-                    st.error(message)
-            if success:
-                st.info("df_A 미리보기가 업데이트되었습니다. 상단 Data Preview 팝오버를 확인하세요.")
-                st.session_state["last_agent_mode"] = "EDA Analyst"
-                st.session_state["last_sql_table"] = table_name
-                st.session_state["databricks_table_input"] = table_name
-                st.session_state["databricks_selected_table"] = table_name
-            _append_assistant_message(
-                run_id,
-                message,
-                "SQL Builder",
-            )
-            st.session_state["active_run_id"] = None
+    original_user_q = user_q
+    _append_user_message(run_id, original_user_q)
+
+    stripped_for_command = original_user_q.lstrip()
+    lowered_for_command = stripped_for_command.lower()
+    command_prefix = None
+    agent_request = original_user_q
+
+    if lowered_for_command.startswith("%sql"):
+        command_prefix = "sql"
+        agent_request = stripped_for_command[4:].lstrip()
+    elif lowered_for_command.startswith("%eda"):
+        command_prefix = "eda"
+        agent_request = stripped_for_command[4:].lstrip()
+
+    if command_prefix == "eda":
+        st.session_state["chat_input_prefill"] = "%eda "
+    else:
+        st.session_state["chat_input_prefill"] = ""
+
+    normalized_original = original_user_q.strip().lower()
+    if command_prefix is None and normalized_original in {"실행", "수행", "run", "execute"}:
+        _execute_sql_preview(
+            run_id,
+            st.session_state.get("last_sql_statement", ""),
+            log_container=log_placeholder,
+        )
         st.stop()
 
-    agent_mode = _infer_agent(user_q)
+    auto_execute_sql = command_prefix == "sql"
+
+    if command_prefix == "sql":
+        agent_mode = "SQL Builder"
+    elif command_prefix == "eda":
+        agent_mode = "EDA Analyst"
+    else:
+        agent_mode = _infer_agent(original_user_q)
     st.session_state["last_agent_mode"] = agent_mode
+
+    if not agent_request:
+        if command_prefix == "sql":
+            agent_request = "새로운 SQL 쿼리를 작성해줘."
+        elif command_prefix == "eda":
+            agent_request = "로드된 데이터프레임에 대해 기본 EDA를 수행해줘."
+        else:
+            agent_request = original_user_q
 
     if agent_mode == "EDA Analyst" and not df_a_ready:
         error_msg = (
@@ -507,7 +593,7 @@ if user_q:
         with st.spinner(spinner_text):
             try:
                 result = agent_runner.invoke(
-                    {"input": user_q},
+                    {"input": agent_request},
                     {
                         "callbacks": [st_cb, collector, StdOutCallbackHandler()],
                         "configurable": {"session_id": session_id},
@@ -568,7 +654,7 @@ if user_q:
 
             if agent_mode == "SQL Builder" and sql_capture:
                 st.session_state["last_sql_statement"] = sql_capture
-                st.session_state["last_sql_label"] = user_q.strip()[:80] or "SQL Query"
+                st.session_state["last_sql_label"] = original_user_q.strip()[:80] or "SQL Query"
                 table_hint = (
                     st.session_state.get("databricks_table_input", "").strip()
                     or st.session_state.get("databricks_selected_table", "").strip()
@@ -578,6 +664,13 @@ if user_q:
                 if table_hint:
                     st.session_state["last_sql_table"] = table_hint
                     st.session_state["databricks_selected_table"] = table_hint
+                if auto_execute_sql:
+                    _execute_sql_preview(
+                        run_id,
+                        sql_capture,
+                        log_container=log_placeholder,
+                        auto_trigger=True,
+                    )
 
             if agent_mode == "EDA Analyst" and pytool_obj is not None:
                 figure_payloads = render_visualizations(pytool_obj)
