@@ -53,6 +53,11 @@ def _get_dataframes():
     return df_a, df_b, dataset_changed, df_b_changed
 
 
+def _ensure_conversation_store() -> None:
+    st.session_state.setdefault("conversation_log", [])
+    st.session_state.setdefault("active_run_id", None)
+
+
 df_A, df_B, dataset_changed, df_b_changed = _get_dataframes()
 df_a_ready = isinstance(df_A, pd.DataFrame)
 st.session_state.setdefault("log_has_content", False)
@@ -81,13 +86,6 @@ def _render_chat_history(title: str, history) -> None:
         content = msg.content if isinstance(msg.content, str) else str(msg.content)
         with st.chat_message(streamlit_role):
             st.markdown(content)
-
-
-def _ensure_conversation_store() -> None:
-    st.session_state.setdefault("conversation_log", [])
-    st.session_state.setdefault("active_run_id", None)
-
-
 def _append_user_message(run_id: str, content: str) -> None:
     st.session_state["conversation_log"].append(
         {"run_id": run_id, "role": "user", "content": content}
