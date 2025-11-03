@@ -253,7 +253,12 @@ if df_a_ready:
     )
 
 sql_tools = build_sql_tools()
-sql_prompt = build_sql_prompt(sql_tools)
+sql_prompt = build_sql_prompt(
+    sql_tools,
+    selected_table=st.session_state.get("databricks_selected_table", ""),
+    selected_catalog=st.session_state.get("databricks_selected_catalog", ""),
+    selected_schema=st.session_state.get("databricks_selected_schema", ""),
+)
 _sql_agent, sql_agent_with_history = build_agent(
     llm,
     sql_tools,
