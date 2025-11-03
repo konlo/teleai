@@ -52,6 +52,21 @@ st.markdown(
         padding-right: 1.5rem;
     }
 
+    [data-testid="stChatInput"] {
+        width: 100%;
+        max-width: 100%;
+        margin-left: auto;
+        margin-right: auto;
+    }
+
+    [data-testid="stChatInput"] > div {
+        width: 100%;
+    }
+
+    [data-testid="stChatInputTextArea"] {
+        min-height: 10rem;
+    }
+
     @media (max-width: 1200px) {
         .block-container {
             padding-left: 1rem;
