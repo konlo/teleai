@@ -57,6 +57,8 @@ df_A, df_B, dataset_changed, df_b_changed = _get_dataframes()
 df_a_ready = isinstance(df_A, pd.DataFrame)
 st.session_state.setdefault("log_has_content", False)
 
+_ensure_conversation_store()
+
 sql_history = get_history("lc_msgs:sql")
 eda_history = get_history("lc_msgs:eda")
 if dataset_changed or df_b_changed:
@@ -184,9 +186,6 @@ def _render_conversation_log(show_header: bool = True) -> None:
                     image_b64 = fig.get("image")
                     if image_b64:
                         st.image(base64.b64decode(image_b64), use_column_width=True)
-
-
-_ensure_conversation_store()
 
 
 llm = load_llm()
