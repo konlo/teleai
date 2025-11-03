@@ -1,3 +1,4 @@
+import json
 from typing import Iterable
 
 import pandas as pd
@@ -5,8 +6,33 @@ from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
 from langchain_core.tools import BaseTool, render_text_description
 
 
+def _stringify_cell(value) -> str:
+    """Convert complex cell values (e.g. JSON blobs) into a compact string."""
+
+    if isinstance(value, (dict, list)):
+        value = json.dumps(value, ensure_ascii=False)
+    elif isinstance(value, str):
+        stripped = value.strip()
+        if stripped:
+            if stripped[0] in "[{" and stripped[-1] in "]}":
+                try:
+                    parsed = json.loads(stripped)
+                except json.JSONDecodeError:
+                    pass
+                else:
+                    value = json.dumps(parsed, ensure_ascii=False)
+
+    text = str(value)
+    if len(text) > 200:
+        return text[:197] + "..."
+    return text
+
+
 def _df_head(df: pd.DataFrame) -> str:
-    return df.head().to_string(index=False)
+    preview = df.head().copy()
+    preview = preview.apply(lambda column: column.map(_stringify_cell))
+    with pd.option_context("display.width", None, "display.max_colwidth", 200):
+        return preview.to_string(index=False)
 
 
 def build_react_prompt(
