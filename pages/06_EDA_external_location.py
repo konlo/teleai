@@ -30,6 +30,39 @@ st.set_page_config(
     page_icon="✨",
     layout="wide",
 )
+
+st.markdown(
+    """
+    <style>
+    :root {
+        font-size: 16px;
+    }
+
+    html,
+    body,
+    [data-testid="stAppViewContainer"] {
+        font-size: 16px;
+    }
+
+    .block-container {
+        max-width: 1100px;
+        margin: 0 auto;
+        width: 100%;
+        padding-left: 1.5rem;
+        padding-right: 1.5rem;
+    }
+
+    @media (max-width: 1200px) {
+        .block-container {
+            padding-left: 1rem;
+            padding-right: 1rem;
+        }
+    }
+    </style>
+    """,
+    unsafe_allow_html=True,
+)
+
 st.title("✨ Telemetry Chatbot Telly")
 st.caption("두 CSV 비교 + 이상점 중심 EDA(원클릭) + SSD Telemetry 유틸")
 
