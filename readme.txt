@@ -2,7 +2,8 @@
 1. UI를 개선하고 싶어 아래와 같이 개선 해줘 
    - %sql 로 prompt가 시작하면 이건 새로운 SQL문을 새롭게 LLM을 통해서 만들고 수행하고 Data Preview를 업데이트 해달라는 거야 
    - %eda 로 시작하면 이건 loading 된 데이타를 가지고 EDA를 수행한다는 의미 이고 loading data dataframe으로만 작업을 진행한다는 거야 
-     %eda 가 있으면 input 장에 이 값을 계속 default로 넣어줘서 계속해서 eda를 진행할 수 있도록 해줘
+     %eda 가 있으면 input 장에 이 값을 계속 default로 넣어줘서 계속해서 eda를 진행할 수 있도록 해줘 
+     --> %eda는 구지 넣을 필요 없을 것 같음 그냥 %sql 일 때만 새로운 SQL을 생성하고 실행하는 것으로 
 
 2025.11.02
 1. 기존에 있는 databricks에서 table를 선택하는 UI는 제거하고 효과적인 table 선택을 하고 싶어.
