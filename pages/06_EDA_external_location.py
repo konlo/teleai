@@ -217,45 +217,6 @@ st.write("---")
 
 _render_conversation_log()
 
-log_placeholder = st.container()
-
-chat_tools_container = st.container()
-with chat_tools_container:
-    st.markdown("#### 대화 도구")
-    tool_cols = st.columns(3)
-
-    with tool_cols[0]:
-        with st.popover("💬 대화 기록"):
-            _render_conversation_log(show_header=False)
-            with st.expander("원본 LangChain 히스토리", expanded=False):
-                _render_chat_history("SQL Builder History", sql_history)
-                st.divider()
-                _render_chat_history("EDA Analyst History", eda_history)
-
-    with tool_cols[1]:
-        with st.popover("📊 Data Preview"):
-            if df_a_ready:
-                st.write(
-                    f"**Loaded file for df_A:** `{st.session_state['df_A_name']}` (Shape: {df_A.shape})"
-                )
-                st.dataframe(df_A.head(10), width="stretch")
-                if isinstance(df_B, pd.DataFrame):
-                    st.markdown(
-                        f"**df_B Preview —** `{st.session_state['df_B_name']}` (Shape: {df_B.shape})"
-                    )
-                    st.dataframe(df_B.head(10), width="stretch")
-            else:
-                st.info(
-                    "df_A 데이터가 아직 로드되지 않았습니다. 왼쪽 Databricks Loader 또는 SQL Builder 에이전트를 사용해 데이터를 불러오세요."
-                )
-
-    with tool_cols[2]:
-        with st.popover("⚙️ 실시간 실행 로그"):
-            st.markdown("#### 실시간 실행 로그")
-            if not st.session_state.get("log_has_content"):
-                with log_placeholder:
-                    st.info("에이전트 실행 시 이 영역에서 로그가 표시됩니다.")
-
 
 chat_placeholder = (
     "SQL) 예: sales_transactions에서 최근 7일간 매출 합계를 위한 SQL 작성해줘 / "
@@ -334,6 +295,41 @@ def _infer_table_from_sql(sql: str) -> str:
 
 user_q = st.chat_input(chat_placeholder)
 
+st.markdown("#### 대화 도구")
+history_tab, preview_tab, log_tab = st.tabs(
+    ["💬 대화 기록", "📊 Data Preview", "⚙️ 실시간 실행 로그"]
+)
+
+with history_tab:
+    _render_conversation_log(show_header=False)
+    with st.expander("원본 LangChain 히스토리", expanded=False):
+        _render_chat_history("SQL Builder History", sql_history)
+        st.divider()
+        _render_chat_history("EDA Analyst History", eda_history)
+
+with preview_tab:
+    if df_a_ready:
+        st.write(
+            f"**Loaded file for df_A:** `{st.session_state['df_A_name']}` (Shape: {df_A.shape})"
+        )
+        st.dataframe(df_A.head(10), width="stretch")
+        if isinstance(df_B, pd.DataFrame):
+            st.markdown(
+                f"**df_B Preview —** `{st.session_state['df_B_name']}` (Shape: {df_B.shape})"
+            )
+            st.dataframe(df_B.head(10), width="stretch")
+    else:
+        st.info(
+            "df_A 데이터가 아직 로드되지 않았습니다. 왼쪽 Databricks Loader 또는 SQL Builder 에이전트를 사용해 데이터를 불러오세요."
+        )
+
+with log_tab:
+    st.markdown("#### 실시간 실행 로그")
+    log_placeholder = st.empty()
+    if not st.session_state.get("log_has_content"):
+        with log_placeholder.container():
+            st.info("에이전트 실행 시 이 영역에서 로그가 표시됩니다.")
+
 if user_q:
     run_id = str(uuid4())
     st.session_state["active_run_id"] = run_id
@@ -350,7 +346,7 @@ if user_q:
             st.session_state["last_agent_mode"] = "SQL Builder"
             st.session_state["log_has_content"] = True
             log_placeholder.empty()
-            with log_placeholder:
+            with log_placeholder.container():
                 st.subheader("실시간 실행 로그")
                 st.write("SQL Builder의 마지막 쿼리를 Databricks에서 실행합니다.")
             cfg = st.session_state.get("databricks_config", {})
@@ -419,7 +415,7 @@ if user_q:
     else:
         st.session_state["log_has_content"] = True
         log_placeholder.empty()
-        with log_placeholder:
+        with log_placeholder.container():
             st.subheader("실시간 실행 로그")
             log_stream_container = st.container()
         st_cb = StreamlitCallbackHandler(log_stream_container)
