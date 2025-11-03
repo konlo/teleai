@@ -6,6 +6,7 @@ from utils.session import (
     ensure_session_state,
     databricks_connector_available,
     list_databricks_tables_in_session,
+    load_df_from_databricks,
     update_databricks_namespace_from_table,
 )
 
@@ -53,6 +54,7 @@ def render_sidebar() -> None:
         st.markdown("---")
         st.markdown("#### 사용 가능한 테이블")
         refresh_clicked = st.button("🔄 테이블 새로고침", use_container_width=True)
+        preview_status = st.empty()
 
         table_options: List[str] = st.session_state.get("databricks_table_options", [])
         list_refreshed = False
@@ -64,6 +66,7 @@ def render_sidebar() -> None:
                 st.caption(message)
             if not ok:
                 st.error(message)
+            st.session_state["databricks_last_preview_table"] = ""
 
         table_options = st.session_state.get("databricks_table_options", [])
         selected_table = st.session_state.get("databricks_selected_table", "").strip()
@@ -91,8 +94,28 @@ def render_sidebar() -> None:
             st.session_state["databricks_selected_table"] = current_choice
             st.session_state["databricks_table_input"] = current_choice
             update_databricks_namespace_from_table(current_choice)
+            st.session_state["databricks_last_preview_table"] = ""
 
         st.caption(
             f"현재 선택된 테이블: `{st.session_state['databricks_selected_table']}` "
             "— 프롬프트에서 자동으로 사용됩니다."
         )
+
+        final_selection = st.session_state["databricks_selected_table"].strip()
+        last_preview_table = st.session_state.get("databricks_last_preview_table", "").strip()
+        df_a_data = st.session_state.get("df_A_data")
+        needs_preview = bool(final_selection) and (
+            final_selection != last_preview_table or df_a_data is None
+        )
+
+        if needs_preview:
+            with st.spinner("선택한 테이블 미리보기를 불러오는 중..."):
+                ok, message = load_df_from_databricks(final_selection, limit=10)
+            if ok:
+                preview_status.success(message)
+            else:
+                preview_status.error(message)
+        else:
+            last_message = st.session_state.get("databricks_last_preview_message", "")
+            if final_selection and last_message and final_selection == last_preview_table:
+                preview_status.caption(last_message)
