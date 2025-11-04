@@ -86,9 +86,9 @@ st.title("✨ Telemetry Chatbot Telly")
 st.caption("두 CSV 비교 + 이상점 중심 EDA(원클릭) + SSD Telemetry 유틸")
 
 
-def _get_dataframes():
+def _get_dataframes(debug_mode: bool):
     ensure_session_state()
-    render_sidebar()
+    render_sidebar(show_debug=debug_mode)
     df_a = st.session_state["df_A_data"]
     df_b = st.session_state["df_B_data"]
 
@@ -110,9 +110,14 @@ def _ensure_conversation_store() -> None:
     st.session_state.setdefault("active_run_id", None)
 
 
-df_A, df_B, dataset_changed, df_b_changed = _get_dataframes()
+st.session_state.setdefault("debug_mode", False)
+debug_mode = bool(st.session_state["debug_mode"])
+
+df_A, df_B, dataset_changed, df_b_changed = _get_dataframes(debug_mode)
 df_a_ready = isinstance(df_A, pd.DataFrame)
 st.session_state.setdefault("log_has_content", False)
+if not debug_mode:
+    st.session_state["log_has_content"] = False
 
 _ensure_conversation_store()
 
@@ -337,18 +342,20 @@ def _ensure_limit_clause(sql: str, limit: int = 2000) -> str:
     return f"{body}{semicolon}"
 
 
-with st.sidebar:
-    st.markdown("#### 원본 LangChain 히스토리")
-    with st.expander("SQL Builder History", expanded=False):
-        _render_chat_history("SQL Builder History", sql_history)
-    with st.expander("EDA Analyst History", expanded=False):
-        _render_chat_history("EDA Analyst History", eda_history)
+log_placeholder = None
+if debug_mode:
+    with st.sidebar:
+        st.markdown("#### 원본 LangChain 히스토리")
+        with st.expander("SQL Builder History", expanded=False):
+            _render_chat_history("SQL Builder History", sql_history)
+        with st.expander("EDA Analyst History", expanded=False):
+            _render_chat_history("EDA Analyst History", eda_history)
 
-    st.markdown("#### ⚙️ 실시간 실행 로그")
-    log_placeholder = st.container()
-    if not st.session_state.get("log_has_content"):
-        with log_placeholder.container():
-            st.info("에이전트 실행 시 이 영역에서 로그가 표시됩니다.")
+        st.markdown("#### ⚙️ 실시간 실행 로그")
+        log_placeholder = st.container()
+        if not st.session_state.get("log_has_content"):
+            with log_placeholder.container():
+                st.info("에이전트 실행 시 이 영역에서 로그가 표시됩니다.")
 
 
 def _execute_sql_preview(
@@ -356,6 +363,7 @@ def _execute_sql_preview(
     sql_text: str,
     *,
     log_container,
+    show_logs: bool = True,
     auto_trigger: bool = False,
 ) -> bool:
     sql_to_run = _sanitize_sql_text(sql_text)
@@ -368,16 +376,19 @@ def _execute_sql_preview(
 
     st.session_state["last_sql_statement"] = sql_to_run
     st.session_state["last_agent_mode"] = "SQL Builder"
-    st.session_state["log_has_content"] = True
-    log_container.empty()
-    with log_container.container():
-        st.subheader("실시간 실행 로그")
-        status_msg = (
-            "SQL Builder가 생성한 쿼리를 Databricks에서 실행합니다."
-            if auto_trigger
-            else "SQL Builder의 마지막 쿼리를 Databricks에서 실행합니다."
-        )
-        st.write(status_msg)
+    if show_logs and log_container is not None:
+        st.session_state["log_has_content"] = True
+        log_container.empty()
+        with log_container.container():
+            st.subheader("실시간 실행 로그")
+            status_msg = (
+                "SQL Builder가 생성한 쿼리를 Databricks에서 실행합니다."
+                if auto_trigger
+                else "SQL Builder의 마지막 쿼리를 Databricks에서 실행합니다."
+            )
+            st.write(status_msg)
+    else:
+        st.session_state["log_has_content"] = False
 
     cfg = st.session_state.get("databricks_config", {})
     catalog = cfg.get("catalog") or "hive_metastore"
@@ -494,18 +505,48 @@ if user_q:
     lowered_for_command = stripped_for_command.lower()
     command_prefix = None
     agent_request = original_user_q
+    handled_command = False
+    rerun_required = False
 
-    if lowered_for_command.startswith("%sql"):
+    if lowered_for_command.startswith("%debug"):
+        handled_command = True
+        debug_value = stripped_for_command[6:].strip().lower()
+        current_state = bool(debug_mode)
+        if debug_value in {"on", "off"}:
+            new_state = debug_value == "on"
+            st.session_state["debug_mode"] = new_state
+            if new_state == current_state:
+                ack_message = f"Debug 모드는 이미 {'ON' if new_state else 'OFF'} 상태입니다."
+            else:
+                ack_message = (
+                    "Debug 모드를 활성화했습니다." if new_state else "Debug 모드를 비활성화했습니다."
+                )
+                rerun_required = True
+        else:
+            ack_message = "`%debug on` 또는 `%debug off` 형태로 사용해주세요."
+        _append_assistant_message(run_id, ack_message, "Debug Mode")
+        st.session_state["active_run_id"] = None
+        if rerun_required:
+            rerun_callable = getattr(st, "rerun", None) or getattr(
+                st, "experimental_rerun", None
+            )
+            if callable(rerun_callable):
+                rerun_callable()
+    elif lowered_for_command.startswith("%sql"):
         command_prefix = "sql"
         agent_request = stripped_for_command[4:].lstrip()
 
-    handled_command = False
     normalized_original = original_user_q.strip().lower()
-    if command_prefix is None and normalized_original in {"실행", "수행", "run", "execute"}:
+    if (
+        not handled_command
+        and command_prefix is None
+        and normalized_original in {"실행", "수행", "run", "execute"}
+    ):
         _execute_sql_preview(
             run_id,
             st.session_state.get("last_sql_statement", ""),
             log_container=log_placeholder,
+            show_logs=debug_mode,
         )
         handled_command = True
 
@@ -533,14 +574,19 @@ if user_q:
             st.session_state["active_run_id"] = None
 
         else:
-            st.session_state["log_has_content"] = True
-            log_placeholder.empty()
-            with log_placeholder.container():
-                st.subheader("실시간 실행 로그")
-                log_stream_container = st.container()
-            st_cb = StreamlitCallbackHandler(log_stream_container)
             collector = SimpleCollectCallback()
+            callbacks = [collector, StdOutCallbackHandler()]
             answer_container = st.container()
+
+            if debug_mode and log_placeholder is not None:
+                st.session_state["log_has_content"] = True
+                log_placeholder.empty()
+                with log_placeholder.container():
+                    st.subheader("실시간 실행 로그")
+                    log_stream_container = st.container()
+                callbacks.insert(0, StreamlitCallbackHandler(log_stream_container))
+            else:
+                st.session_state["log_has_content"] = False
 
             agent_runner = (
                 sql_agent_with_history if agent_mode == "SQL Builder" else eda_agent_with_history
@@ -561,7 +607,7 @@ if user_q:
                     result = agent_runner.invoke(
                         {"input": agent_request},
                         {
-                            "callbacks": [st_cb, collector, StdOutCallbackHandler()],
+                            "callbacks": callbacks,
                             "configurable": {"session_id": session_id},
                         },
                     )
@@ -635,6 +681,7 @@ if user_q:
                             run_id,
                             sql_capture,
                             log_container=log_placeholder,
+                            show_logs=debug_mode,
                             auto_trigger=True,
                         )
 

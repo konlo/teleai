@@ -1,3 +1,19 @@
+2025.11.04
+1. debug on  off 기능을 넣고 싶어 
+   default 는 debug off 이고 
+   %debug on 이 되었을 때 debug mode 가 on이 되고 
+   %debug off 이면 debug mode가 off가 되는 거야 
+   debug on mode에서는 아래 정보가 화면에 보여주는 거야 
+    1. Databricks 테이블
+    2. 테이블 새로고침 버튼 
+    3. 원본 langchain 히스토리 
+    4. 실시간 실행 로그 
+   debug off mode에서는 위의 4가지 정보가 화면에서 보이면 안 됨 
+
+1.1 table을 선택하는 UI는 debug mode에 관계 없이 항상 있어야 해
+
+
+
 2025.11.03
 1. UI를 개선하고 싶어 아래와 같이 개선 해줘 
    - %sql 로 prompt가 시작하면 이건 새로운 SQL문을 새롭게 LLM을 통해서 만들고 수행하고 Data Preview를 업데이트 해달라는 거야 
@@ -39,3 +55,8 @@
    그리고 내가 loading 버튼을 수행하면 테이블 limit 10으로 데이타를 loading 하고 10개에 대해서는 table로 보여줘
 
 3. EDA를 위한 UI는 그대로 두고 데이타 loading 방식만 수정해줘
+
+
+google-key (11.04)
+https://aistudio.google.com/api-keys
+프로젝트 : Gemini API

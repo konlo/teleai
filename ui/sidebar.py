@@ -11,9 +11,20 @@ from utils.session import (
 )
 
 
-def render_sidebar() -> None:
+def render_sidebar(show_debug: bool = True) -> None:
     """Render the Streamlit sidebar controls for Databricks access."""
     ensure_session_state()
+
+    cfg = st.session_state.get("databricks_config", {})
+    catalog = cfg.get("catalog", "") or st.session_state.get(
+        "databricks_selected_catalog", ""
+    )
+    schema = cfg.get("schema", "") or st.session_state.get(
+        "databricks_selected_schema", ""
+    )
+
+    st.session_state.setdefault("databricks_selected_catalog", catalog or "hive_metastore")
+    st.session_state.setdefault("databricks_selected_schema", schema or "default")
 
     with st.sidebar:
         st.markdown("### 🧱 Databricks 테이블")
@@ -24,16 +35,9 @@ def render_sidebar() -> None:
             )
             return
 
-        cfg = st.session_state.get("databricks_config", {})
         server_hostname = cfg.get("server_hostname", "")
         http_path = cfg.get("http_path", "")
         access_token = cfg.get("access_token", "")
-        catalog = cfg.get("catalog", "") or st.session_state.get(
-            "databricks_selected_catalog", ""
-        )
-        schema = cfg.get("schema", "") or st.session_state.get(
-            "databricks_selected_schema", ""
-        )
 
         if not (server_hostname and http_path and access_token):
             st.error(
@@ -42,23 +46,19 @@ def render_sidebar() -> None:
             )
             return
 
-        st.session_state.setdefault("databricks_selected_catalog", catalog or "hive_metastore")
-        st.session_state.setdefault("databricks_selected_schema", schema or "default")
-
-        st.caption("Databricks Connection (.env)")
-        st.write(f"• Server Hostname: `{server_hostname}`")
-        st.write(f"• HTTP Path: `{http_path}`")
-        st.write(f"• Catalog: `{st.session_state['databricks_selected_catalog']}`")
-        st.write(f"• Schema: `{st.session_state['databricks_selected_schema']}`")
-
-        st.markdown("---")
+        if show_debug:
+            st.caption("Databricks Connection (.env)")
+            st.write(f"• Server Hostname: `{server_hostname}`")
+            st.write(f"• HTTP Path: `{http_path}`")
+            st.write(f"• Catalog: `{st.session_state['databricks_selected_catalog']}`")
+            st.write(f"• Schema: `{st.session_state['databricks_selected_schema']}`")
+            st.markdown("---")
         st.markdown("#### 사용 가능한 테이블")
-        refresh_clicked = st.button("🔄 테이블 새로고침", use_container_width=True)
         preview_status = st.empty()
 
         table_options: List[str] = st.session_state.get("databricks_table_options", [])
         list_refreshed = False
-        if refresh_clicked or not table_options:
+        if not table_options:
             with st.spinner("Databricks 테이블 목록을 불러오는 중..."):
                 ok, _, message = list_databricks_tables_in_session()
                 list_refreshed = True
@@ -74,7 +74,7 @@ def render_sidebar() -> None:
         if not table_options:
             st.info(
                 "접근 가능한 Databricks 테이블을 찾을 수 없습니다. "
-                "권한을 확인한 뒤 새로고침해주세요."
+                "환경 설정과 권한을 다시 확인해주세요."
             )
             return
 
