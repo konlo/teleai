@@ -1,5 +1,5 @@
 import json
-from typing import Iterable
+from typing import Iterable, Optional
 
 import pandas as pd
 from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
@@ -33,6 +33,20 @@ def _df_head(df: pd.DataFrame) -> str:
     preview = preview.apply(lambda column: column.map(_stringify_cell))
     with pd.option_context("display.width", None, "display.max_colwidth", 200):
         return preview.to_string(index=False)
+
+
+def _format_df_columns(df: pd.DataFrame) -> str:
+    columns = [str(column) for column in df.columns]
+    if not columns:
+        return "(no columns)"
+    return ", ".join(columns)
+
+
+def _format_df_dtypes(df: pd.DataFrame) -> str:
+    if len(df.columns) == 0:
+        return "(no columns)"
+    lines = [f"- {column}: {dtype}" for column, dtype in df.dtypes.items()]
+    return "\n".join(lines) if lines else "(no columns)"
 
 
 def build_react_prompt(
@@ -117,6 +131,8 @@ def build_sql_prompt(
     selected_table: str = "",
     selected_catalog: str = "",
     selected_schema: str = "",
+    df_preview: Optional[pd.DataFrame] = None,
+    df_name: str = "",
 ) -> ChatPromptTemplate:
     """Construct the SQL generation prompt."""
 
@@ -148,6 +164,26 @@ def build_sql_prompt(
                 f"Treat the currently selected table `{table_hint}` as the default table unless the user "
                 "explicitly requests another one. Do not fall back to an earlier default. "
             )
+        )
+
+    df_label = df_name.strip() or (table_hint if table_hint else "df_A")
+    if isinstance(df_preview, pd.DataFrame) and not df_preview.empty:
+        df_columns = _format_df_columns(df_preview)
+        df_dtypes = _format_df_dtypes(df_preview)
+        df_head_text = _df_head(df_preview)
+        context_lines.append(
+            "\nActive dataframe preview for SQL generation:\n"
+            f"- Source: {df_label}\n"
+            f"- Shape: {df_preview.shape[0]} rows × {df_preview.shape[1]} columns\n"
+            f"- Columns: {df_columns}\n"
+            "dtypes:\n"
+            f"{df_dtypes}\n"
+            "head():\n"
+            f"{df_head_text}\n\n"
+        )
+    else:
+        context_lines.append(
+            "\nActive dataframe preview for SQL generation: (no dataframe loaded)\n\n"
         )
 
     context_lines.append(
