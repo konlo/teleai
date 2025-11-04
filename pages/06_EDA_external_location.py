@@ -467,7 +467,11 @@ def _render_data_preview_section() -> None:
 
 st.write("---")
 
-_render_conversation_log()
+conversation_placeholder = st.empty()
+
+def _display_conversation_log() -> None:
+    with conversation_placeholder.container():
+        _render_conversation_log()
 
 chat_placeholder = BASE_CHAT_PLACEHOLDER
 
@@ -482,6 +486,7 @@ if user_q:
     st.session_state["active_run_id"] = run_id
     original_user_q = user_q
     _append_user_message(run_id, original_user_q)
+    _display_conversation_log()
 
     stripped_for_command = original_user_q.lstrip()
     lowered_for_command = stripped_for_command.lower()
@@ -546,7 +551,7 @@ if user_q:
             spinner_text = (
                 "Databricks SQL을 구상 중입니다..."
                 if agent_mode == "SQL Builder"
-                else "Thinking with Gemini..."
+                else "Thinking with AI..."
             )
 
             with st.spinner(spinner_text):
@@ -563,7 +568,7 @@ if user_q:
                     lower_error = error_text.lower()
                     if "serviceunavailable" in lower_error or "model is overloaded" in lower_error:
                         friendly = (
-                            "Gemini 모델이 일시적으로 과부하 상태입니다. 잠시 후 다시 시도해주세요."
+                            "AI 모델이 일시적으로 과부하 상태입니다. 잠시 후 다시 시도해주세요."
                         )
                         st.warning(friendly)
                         st.info("필요시 같은 요청을 조금 뒤에 다시 보내주세요.")
@@ -635,5 +640,10 @@ if user_q:
                 figure_payloads = render_visualizations(pytool_obj)
                 _attach_figures_to_run(run_id, figure_payloads)
         st.session_state["active_run_id"] = None
+
+    _display_conversation_log()
+
+else:
+    _display_conversation_log()
 
 _render_data_preview_section()
