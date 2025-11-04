@@ -260,6 +260,8 @@ sql_prompt = build_sql_prompt(
     selected_table=st.session_state.get("databricks_selected_table", ""),
     selected_catalog=st.session_state.get("databricks_selected_catalog", ""),
     selected_schema=st.session_state.get("databricks_selected_schema", ""),
+    df_preview=df_A if isinstance(df_A, pd.DataFrame) else None,
+    df_name=st.session_state.get("df_A_name", "df_A"),
 )
 _sql_agent, sql_agent_with_history = build_agent(
     llm,
