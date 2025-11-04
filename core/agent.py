@@ -42,6 +42,7 @@ def build_agent(
         verbose=True,
         return_intermediate_steps=True,
         max_iterations=20,
+        handle_parsing_errors=True,
     )
 
     agent_with_history = RunnableWithMessageHistory(

@@ -273,6 +273,9 @@ BASE_CHAT_PLACEHOLDER = (
     "SQL) 예: sales_transactions에서 최근 7일간 매출 합계를 위한 SQL 작성해줘 / "
     "EDA) 예: auto_outlier_eda() / plot_outliers('temperature') / compare_on_keys('machineID,datetime')"
 )
+CODE_FENCE_PATTERN = re.compile(r"```(?:sql)?\s*(.*?)\s*```", re.IGNORECASE | re.DOTALL)
+
+
 def _infer_table_from_sql(sql: str) -> str:
     text = (sql or "").strip()
     if not text:
@@ -294,10 +297,28 @@ def _infer_table_from_sql(sql: str) -> str:
     return candidate.strip()
 
 
-def _ensure_limit_clause(sql: str, limit: int = 2000) -> str:
+def _sanitize_sql_text(sql: str) -> str:
+    """Return SQL stripped of code fences and stray trailing backticks."""
+
     text = (sql or "").strip()
     if not text:
-        return sql
+        return ""
+
+    match = CODE_FENCE_PATTERN.search(text)
+    if match:
+        text = match.group(1).strip()
+
+    if text.count("`") % 2:
+        while text.endswith("`"):
+            text = text[:-1].rstrip()
+
+    return text
+
+
+def _ensure_limit_clause(sql: str, limit: int = 2000) -> str:
+    text = _sanitize_sql_text(sql)
+    if not text:
+        return text
 
     semicolon = "" if not text.endswith(";") else ";"
     body = text[:-1].rstrip() if semicolon else text
@@ -335,7 +356,7 @@ def _execute_sql_preview(
     log_container,
     auto_trigger: bool = False,
 ) -> bool:
-    sql_to_run = (sql_text or "").strip()
+    sql_to_run = _sanitize_sql_text(sql_text)
     if not sql_to_run:
         warning_msg = "실행할 SQL이 없습니다. 먼저 SQL Builder로 쿼리를 생성해주세요."
         st.warning(warning_msg)
