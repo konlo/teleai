@@ -85,10 +85,16 @@ def render_sidebar() -> None:
             update_databricks_namespace_from_table(selected_table)
 
         default_index = table_options.index(st.session_state["databricks_selected_table"])
+        def _table_display_name(table_ref: str) -> str:
+            """Return the table name portion for display in the select box."""
+
+            return table_ref.split(".")[-1] if table_ref else ""
+
         current_choice = st.selectbox(
             "테이블 선택",
             options=table_options,
             index=default_index,
+            format_func=_table_display_name,
         )
         if current_choice != st.session_state["databricks_selected_table"]:
             st.session_state["databricks_selected_table"] = current_choice
