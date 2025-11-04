@@ -20,7 +20,7 @@ from modules.dataload.databricks_sql_loader import (
 
 load_dotenv()
 
-DEFAULT_DATA_DIR = os.getenv("DATA_DIR", "/Users/najongseong/dataset")
+DEFAULT_DATA_DIR = os.environ.get("DATA_DIR", "/Users/najongseong/dataset")
 DFB_DEFAULT_NAME = "telemetry_raw.csv"
 SUPPORTED_EXTENSIONS = (".csv", ".parquet")
 DEFAULT_SQL_LIMIT = 2000
@@ -119,8 +119,8 @@ def read_table(path: str) -> pd.DataFrame:
 
 def ensure_session_state() -> None:
     """Populate Streamlit session_state with defaults required by the app."""
-    catalog_env = os.getenv("DATABRICKS_CATALOG", "")
-    schema_env = os.getenv("DATABRICKS_SCHEMA", "")
+    catalog_env = os.environ.get("DATABRICKS_CATALOG", "")
+    schema_env = os.environ.get("DATABRICKS_SCHEMA", "")
     catalog_default = catalog_env or "hive_metastore"
     schema_default = schema_env or "default"
     defaults: List[Tuple[str, Any]] = [
@@ -137,9 +137,9 @@ def ensure_session_state() -> None:
         (
             "databricks_config",
             {
-                "server_hostname": os.getenv("DATABRICKS_HOST", ""),
-                "http_path": os.getenv("DATABRICKS_HTTP_PATH", ""),
-                "access_token": os.getenv("DATABRICKS_TOKEN", os.getenv("DATABRICKS_ACCESS_TOKEN", "")),
+                "server_hostname": os.environ.get("DATABRICKS_HOST", ""),
+                "http_path": os.environ.get("DATABRICKS_HTTP_PATH", ""),
+                "access_token": os.environ.get("DATABRICKS_TOKEN", os.environ.get("DATABRICKS_ACCESS_TOKEN", "")),
                 "catalog": catalog_default,
                 "schema": schema_default,
             },

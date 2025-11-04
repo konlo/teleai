@@ -15,7 +15,7 @@ def load_llm(
 ) -> BaseChatModel:
     """Initialise the chat model using environment configuration."""
     load_dotenv()
-    provider = os.getenv("LLM_PROVIDER", "google").lower()
+    provider = os.environ.get("LLM_PROVIDER", "google").lower()
     if provider == "azure":
         return _load_azure_llm(temperature=temperature, max_tokens=max_tokens)
     return _load_google_llm(model=model, temperature=temperature, max_tokens=max_tokens)
@@ -24,7 +24,7 @@ def load_llm(
 def _load_google_llm(
     *, model: str, temperature: float, max_tokens: Optional[int]
 ) -> ChatGoogleGenerativeAI:
-    api_key = os.getenv("GOOGLE_API_KEY")
+    api_key = os.environ.get("GOOGLE_API_KEY")
     if not api_key:
         st.error("GOOGLE_API_KEY가 설정되어 있지 않습니다. .env 또는 환경변수를 확인하세요.")
         st.stop()
@@ -40,10 +40,10 @@ def _load_google_llm(
 
 
 def _load_azure_llm(*, temperature: float, max_tokens: Optional[int]) -> AzureChatOpenAI:
-    api_key = os.getenv("AZURE_OPENAI_API_KEY")
-    endpoint = os.getenv("AZURE_OPENAI_ENDPOINT")
-    deployment = os.getenv("AZURE_OPENAI_DEPLOYMENT")
-    api_version = os.getenv("AZURE_OPENAI_API_VERSION", "2024-02-15-preview")
+    api_key = os.environ.get("AZURE_OPENAI_API_KEY")
+    endpoint = os.environ.get("AZURE_OPENAI_ENDPOINT")
+    deployment = os.environ.get("AZURE_OPENAI_DEPLOYMENT")
+    api_version = os.environ.get("AZURE_OPENAI_API_VERSION", "2024-02-15-preview")
 
     missing_fields = [
         name
