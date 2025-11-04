@@ -83,7 +83,6 @@ st.markdown(
 )
 
 st.title("✨ Telemetry Chatbot Telly")
-st.caption("두 CSV 비교 + 이상점 중심 EDA(원클릭) + SSD Telemetry 유틸")
 
 
 def _get_dataframes(debug_mode: bool):
@@ -648,18 +647,6 @@ if user_q:
                         sql_capture = enforced_sql
 
                 final_display = final_text
-                if final_text.strip():
-                    try:
-                        translation_prompt = (
-                            "다음 분석 결과를 자연스럽고 간결한 한국어로 설명해줘.\n\n"
-                            f"{final_text}"
-                        )
-                        translated_msg = llm.invoke(translation_prompt)
-                        translated_text = getattr(translated_msg, "content", None)
-                        if translated_text:
-                            final_display = translated_text
-                    except Exception as exc:
-                        st.warning(f"한국어 번역 중 오류가 발생했습니다: {exc}")
                 st.caption(f"{agent_mode} 응답")
                 st.write(final_display)
                 _append_assistant_message(run_id, final_display, agent_mode)
