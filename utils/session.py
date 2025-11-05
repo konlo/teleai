@@ -23,7 +23,9 @@ load_dotenv()
 DEFAULT_DATA_DIR = os.environ.get("DATA_DIR", "/Users/najongseong/dataset")
 DFB_DEFAULT_NAME = "telemetry_raw.csv"
 SUPPORTED_EXTENSIONS = (".csv", ".parquet")
-DEFAULT_SQL_LIMIT = 2000
+DEFAULT_SQL_LIMIT_MIN = 1
+DEFAULT_SQL_LIMIT_MAX = 10_000_000
+_DEFAULT_SQL_LIMIT = 2000
 TIME_COLUMN_CANDIDATES = [
     "datetime",
     "timestamp",
@@ -42,6 +44,24 @@ DEFAULT_TABLE_SUGGESTIONS = [
     "samples.accuweather.forecast_hourly_imperial",
     "v_msc_online_pm9a3",
 ]
+
+
+def get_default_sql_limit() -> int:
+    """Return the current global SQL limit."""
+    return _DEFAULT_SQL_LIMIT
+
+
+def set_default_sql_limit(value: int) -> int:
+    """Set the global SQL limit after validating bounds."""
+    global _DEFAULT_SQL_LIMIT
+    if not isinstance(value, int):
+        raise TypeError("LIMIT 값은 정수여야 합니다.")
+    if not (DEFAULT_SQL_LIMIT_MIN <= value <= DEFAULT_SQL_LIMIT_MAX):
+        raise ValueError(
+            f"LIMIT 값은 {DEFAULT_SQL_LIMIT_MIN} 이상 {DEFAULT_SQL_LIMIT_MAX} 이하의 정수여야 합니다."
+        )
+    _DEFAULT_SQL_LIMIT = value
+    return _DEFAULT_SQL_LIMIT
 
 
 def parse_int(val: Any, default: int) -> int:
@@ -391,7 +411,7 @@ def generate_select_all_query(table: str) -> str:
     if not table_clean:
         raise ValueError("Table name must not be empty.")
     update_databricks_namespace_from_table(table_clean)
-    return f"SELECT * FROM {table_clean} LIMIT {DEFAULT_SQL_LIMIT}"
+    return f"SELECT * FROM {table_clean} LIMIT {get_default_sql_limit()}"
 
 
 def load_preview_from_databricks_query(
@@ -531,7 +551,11 @@ __all__ = [
     "DEFAULT_DATA_DIR",
     "DFB_DEFAULT_NAME",
     "SUPPORTED_EXTENSIONS",
+    "DEFAULT_SQL_LIMIT_MIN",
+    "DEFAULT_SQL_LIMIT_MAX",
     "TIME_COLUMN_CANDIDATES",
+    "get_default_sql_limit",
+    "set_default_sql_limit",
     "parse_int",
     "parse_float",
     "resolve_time_column",

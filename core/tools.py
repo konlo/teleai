@@ -17,6 +17,7 @@ from langchain_experimental.tools.python.tool import PythonAstREPLTool
 from utils.session import (
     DEFAULT_DATA_DIR,
     DFB_DEFAULT_NAME,
+    get_default_sql_limit,
     parse_float,
     parse_int,
     resolve_time_column,
@@ -1018,7 +1019,7 @@ def plot_distribution(
 
 
 @tool
-def plot_outliers(col: str, on: str = "datetime", sample: Any = 2000) -> str:
+def plot_outliers(col: str, on: str = "datetime", sample: Any = None) -> str:
     """
     Plot boxplot and time series with IQR outlier highlighting for df_A[col].
     """
@@ -1026,7 +1027,8 @@ def plot_outliers(col: str, on: str = "datetime", sample: Any = 2000) -> str:
     df_a = pt.globals.get("df_A")
     if df_a is None:
         return "df_A not loaded."
-    sample_val = parse_int(sample, 2000)
+    default_limit = get_default_sql_limit()
+    sample_val = parse_int(sample, default_limit)
     s = str(col).strip()
     if s not in df_a.columns:
         return f"Column '{s}' not found."

@@ -1,6 +1,6 @@
 import base64
 import re
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Optional
 from uuid import uuid4
 
 import streamlit as st
@@ -20,9 +20,13 @@ from ui.history import get_history
 from ui.sidebar import render_sidebar
 from ui.viz import render_visualizations
 from utils.session import (
+    DEFAULT_SQL_LIMIT_MAX,
+    DEFAULT_SQL_LIMIT_MIN,
     dataframe_signature,
     ensure_session_state,
+    get_default_sql_limit,
     load_preview_from_databricks_query,
+    set_default_sql_limit,
 )
 
 
@@ -282,6 +286,41 @@ BASE_CHAT_PLACEHOLDER = (
     "EDA) 예: auto_outlier_eda() / plot_outliers('temperature') / compare_on_keys('machineID,datetime')"
 )
 CODE_FENCE_PATTERN = re.compile(r"```(?:sql)?\s*(.*?)\s*```", re.IGNORECASE | re.DOTALL)
+CHAT_COMMAND_SPECS: List[Dict[str, str]] = [
+    {
+        "name": "debug",
+        "trigger": "%debug",
+        "usage": "`%debug on|off`",
+        "description": "Debug 모드를 켜거나 끄는 명령입니다.",
+    },
+    {
+        "name": "limit",
+        "trigger": "%limit",
+        "usage": "`%limit <정수>`",
+        "description": "SQL LIMIT 값을 {limit_range} 범위의 정수로 설정합니다.",
+    },
+    {
+        "name": "sql",
+        "trigger": "%sql",
+        "usage": "`%sql <질문>`",
+        "description": "SQL Builder 에이전트를 호출해 질문에 맞는 SQL을 생성합니다.",
+    },
+    {
+        "name": "help",
+        "trigger": "%help",
+        "usage": "`%help`",
+        "description": "지원되는 명령 목록과 사용법을 표시합니다.",
+    },
+]
+
+
+def _build_command_help_message() -> str:
+    limit_range = f"{DEFAULT_SQL_LIMIT_MIN}~{DEFAULT_SQL_LIMIT_MAX}"
+    lines = ["**사용 가능한 명령**"]
+    for spec in CHAT_COMMAND_SPECS:
+        description = spec["description"].format(limit_range=limit_range)
+        lines.append(f"- {spec['usage']}: {description}")
+    return "\n".join(lines)
 
 
 def _infer_table_from_sql(sql: str) -> str:
@@ -323,7 +362,8 @@ def _sanitize_sql_text(sql: str) -> str:
     return text
 
 
-def _ensure_limit_clause(sql: str, limit: int = 2000) -> str:
+def _ensure_limit_clause(sql: str, limit: Optional[int] = None) -> str:
+    limit_value = limit if limit is not None else get_default_sql_limit()
     text = _sanitize_sql_text(sql)
     if not text:
         return text
@@ -336,9 +376,9 @@ def _ensure_limit_clause(sql: str, limit: int = 2000) -> str:
     if match:
         prefix = body[: match.start()].rstrip()
         offset_part = (match.group(1) or "").upper()
-        body = f"{prefix} LIMIT {limit}{offset_part}"
+        body = f"{prefix} LIMIT {limit_value}{offset_part}"
     else:
-        body = f"{body.rstrip()} LIMIT {limit}"
+        body = f"{body.rstrip()} LIMIT {limit_value}"
 
     return f"{body}{semicolon}"
 
@@ -509,9 +549,16 @@ if user_q:
     handled_command = False
     rerun_required = False
 
-    if lowered_for_command.startswith("%debug"):
+    command_spec = next(
+        (spec for spec in CHAT_COMMAND_SPECS if lowered_for_command.startswith(spec["trigger"])),
+        None,
+    )
+    command_name = command_spec["name"] if command_spec else None
+
+    if command_name == "debug":
         handled_command = True
-        debug_value = stripped_for_command[6:].strip().lower()
+        trigger_len = len(command_spec["trigger"])
+        debug_value = stripped_for_command[trigger_len:].strip().lower()
         current_state = bool(debug_mode)
         if debug_value in {"on", "off"}:
             new_state = debug_value == "on"
@@ -524,7 +571,7 @@ if user_q:
                 )
                 rerun_required = True
         else:
-            ack_message = "`%debug on` 또는 `%debug off` 형태로 사용해주세요."
+            ack_message = f"{command_spec['usage']} 형태로 사용해주세요."
         _append_assistant_message(run_id, ack_message, "Debug Mode")
         st.session_state["active_run_id"] = None
         if rerun_required:
@@ -533,9 +580,43 @@ if user_q:
             )
             if callable(rerun_callable):
                 rerun_callable()
-    elif lowered_for_command.startswith("%sql"):
-        command_prefix = "sql"
-        agent_request = stripped_for_command[4:].lstrip()
+    elif command_name == "limit":
+        handled_command = True
+        trigger_len = len(command_spec["trigger"])
+        limit_value_text = stripped_for_command[trigger_len:].strip()
+        if not limit_value_text:
+            ack_message = (
+                f"사용법: {command_spec['usage']} (범위 {DEFAULT_SQL_LIMIT_MIN}~{DEFAULT_SQL_LIMIT_MAX})"
+            )
+        else:
+            sanitized = limit_value_text
+            if (
+                len(sanitized) >= 2
+                and sanitized[0] == sanitized[-1]
+                and sanitized[0] in {"'", '"'}
+            ):
+                sanitized = sanitized[1:-1].strip()
+            try:
+                candidate = int(sanitized)
+                new_limit = set_default_sql_limit(candidate)
+            except (TypeError, ValueError) as exc:
+                ack_message = f"LIMIT 변경 실패: {exc}"
+            else:
+                ack_message = (
+                    f"SQL LIMIT 값을 {new_limit}으로 설정했습니다. "
+                    "새로운 쿼리부터 적용됩니다."
+                )
+        _append_assistant_message(run_id, ack_message, "Settings")
+        st.session_state["active_run_id"] = None
+    elif command_name == "help":
+        handled_command = True
+        ack_message = _build_command_help_message()
+        _append_assistant_message(run_id, ack_message, "Command Help")
+        st.session_state["active_run_id"] = None
+    elif command_name == "sql":
+        command_prefix = command_name
+        trigger_len = len(command_spec["trigger"])
+        agent_request = stripped_for_command[trigger_len:].lstrip()
 
     normalized_original = original_user_q.strip().lower()
     if (

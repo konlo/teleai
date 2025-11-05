@@ -4,6 +4,7 @@ from typing import Iterable, Optional
 import pandas as pd
 from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
 from langchain_core.tools import BaseTool, render_text_description
+from utils.session import get_default_sql_limit
 
 
 def _stringify_cell(value) -> str:
@@ -201,8 +202,9 @@ def build_sql_prompt(
         "Thought: I now know the final answer\n"
         "Final Answer: SQL:\n <single SQL statement only, no markdown fences, no explanation>\n\n"
     )
+    limit_value = get_default_sql_limit()
     context_lines.append(
-        "Always cap result sets with 'LIMIT 2000' at the outermost query. If a LIMIT clause already exists, replace it with LIMIT 2000.\n\n"
+        f"Always cap result sets with 'LIMIT {limit_value}' at the outermost query. If a LIMIT clause already exists, replace it with LIMIT {limit_value}.\n\n"
     )
     context_lines.append(
         "Do NOT output any other fields such as Question:, Observation:, Explanation:, or Execution: unless the tool runner provides Observation: back to you.\n"
