@@ -241,7 +241,9 @@ def _render_conversation_log(show_header: bool = True) -> None:
                 elif kind == "matplotlib":
                     image_b64 = fig.get("image")
                     if image_b64:
-                        st.image(base64.b64decode(image_b64), use_column_width=True)
+                        st.image(
+                            base64.b64decode(image_b64), use_container_width=True
+                        )
 
 
 llm = load_llm()
