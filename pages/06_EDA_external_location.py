@@ -281,10 +281,7 @@ _sql_agent, sql_agent_with_history = build_agent(
 )
 
 
-BASE_CHAT_PLACEHOLDER = (
-    "SQL) 예: sales_transactions에서 최근 7일간 매출 합계를 위한 SQL 작성해줘 / "
-    "EDA) 예: auto_outlier_eda() / plot_outliers('temperature') / compare_on_keys('machineID,datetime')"
-)
+BASE_CHAT_PLACEHOLDER = "지원되는 명령을 확인하려면 `%help` 를 입력하세요."
 CODE_FENCE_PATTERN = re.compile(r"```(?:sql)?\s*(.*?)\s*```", re.IGNORECASE | re.DOTALL)
 CHAT_COMMAND_SPECS: List[Dict[str, str]] = [
     {
@@ -311,6 +308,19 @@ CHAT_COMMAND_SPECS: List[Dict[str, str]] = [
         "usage": "`%help`",
         "description": "지원되는 명령 목록과 사용법을 표시합니다.",
     },
+    {
+        "name": "example",
+        "trigger": "%example",
+        "usage": "`%example`",
+        "description": "자주 사용하는 명령 예시를 보여줍니다.",
+    },
+]
+
+COMMAND_EXAMPLE_LINES = [
+    "1. %sql cluster가 Huahai 인 것을 보고 싶어",
+    "2. cluster에 대한 histogram을 보여줘",
+    "3. balance 에 대한 이상점을 찾아줘",
+    "4. isolation 기법을 이용해서 이상점이 있는지 봐줘",
 ]
 
 
@@ -320,6 +330,12 @@ def _build_command_help_message() -> str:
     for spec in CHAT_COMMAND_SPECS:
         description = spec["description"].format(limit_range=limit_range)
         lines.append(f"- {spec['usage']}: {description}")
+    return "\n".join(lines)
+
+
+def _build_command_example_message() -> str:
+    lines = ["**예시 명령**"]
+    lines.extend(COMMAND_EXAMPLE_LINES)
     return "\n".join(lines)
 
 
@@ -612,6 +628,11 @@ if user_q:
         handled_command = True
         ack_message = _build_command_help_message()
         _append_assistant_message(run_id, ack_message, "Command Help")
+        st.session_state["active_run_id"] = None
+    elif command_name == "example":
+        handled_command = True
+        ack_message = _build_command_example_message()
+        _append_assistant_message(run_id, ack_message, "Command Examples")
         st.session_state["active_run_id"] = None
     elif command_name == "sql":
         command_prefix = command_name
