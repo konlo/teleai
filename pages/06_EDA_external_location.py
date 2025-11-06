@@ -1,7 +1,6 @@
 import base64
 import re
-import difflib
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional
 from uuid import uuid4
 
 import streamlit as st
@@ -27,7 +26,6 @@ from utils.session import (
     ensure_session_state,
     get_default_sql_limit,
     load_preview_from_databricks_query,
-    list_databricks_columns_in_session,
     set_default_sql_limit,
 )
 
@@ -320,106 +318,6 @@ CHAT_COMMAND_SPECS: List[Dict[str, str]] = [
 
 DATA_LOADING_KEYWORDS = ("데이타 로딩",)
 
-DATA_LOADING_COLUMN_PATTERN = re.compile(
-    r"(?:columns?|column_list|컬럼|칼럼)\s*(?:=|:)\s*([^\n\r]+)",
-    re.IGNORECASE,
-)
-DATA_LOADING_TABLE_PATTERN = re.compile(
-    r"(?:table|테이블)\s*(?:=|:)\s*([^\s,;]+)",
-    re.IGNORECASE,
-)
-DATA_LOADING_COLUMN_STOPWORDS = [
-    "해주세요",
-    "해줘",
-    "해 주세요",
-    "해줘요",
-    "원해",
-    "보고 싶어",
-    "알려줘",
-]
-DATA_LOADING_ALL_ALIASES = {"*", "all", "전체"}
-DATA_LOADING_COLUMN_SAMPLE_LIMIT = 10
-
-def _quote_identifier(identifier: str) -> str:
-    return f"`{identifier.replace('`', '``')}`"
-
-
-def _extract_table_hint(text: str) -> str:
-    match = DATA_LOADING_TABLE_PATTERN.search(text or "")
-    if not match:
-        return ""
-    value = match.group(1).strip().strip("'\"")
-    return value.strip()
-
-
-def _clean_column_value(raw: str) -> str:
-    value = (raw or "").strip()
-    for stopword in DATA_LOADING_COLUMN_STOPWORDS:
-        if stopword in value:
-            value = value.split(stopword, 1)[0].strip()
-    value = re.split(r"[.!?]\s*", value)[0].strip()
-    return value.strip(", ")
-
-
-def _parse_data_loading_columns(text: str) -> Optional[List[str]]:
-    match = DATA_LOADING_COLUMN_PATTERN.search(text or "")
-    if not match:
-        return None
-    raw_value = _clean_column_value(match.group(1))
-    if not raw_value:
-        return []
-    tokens = [token.strip("`'\"") for token in re.split(r"[,\s]+", raw_value) if token.strip()]
-    if not tokens:
-        return []
-    lowered = {token.lower() for token in tokens}
-    if lowered & DATA_LOADING_ALL_ALIASES:
-        return ['*']
-    stopword_lower = {s.lower() for s in DATA_LOADING_COLUMN_STOPWORDS}
-    filtered = [token for token in tokens if token.lower() not in stopword_lower]
-    return filtered
-
-
-def _match_requested_columns(
-    requested: List[str],
-    available: List[str],
-) -> Tuple[List[str], List[str]]:
-    if not requested:
-        return [], []
-    available_map = {col.lower(): col for col in available}
-    available_lower = list(available_map.keys())
-    resolved: List[str] = []
-    missing: List[str] = []
-    for item in requested:
-        key = item.lower()
-        if key in available_map:
-            resolved.append(available_map[key])
-            continue
-        candidates = difflib.get_close_matches(key, available_lower, n=1, cutoff=0.7)
-        if candidates:
-            resolved.append(available_map[candidates[0]])
-        else:
-            missing.append(item)
-    seen = set()
-    deduped: List[str] = []
-    for col in resolved:
-        lower_col = col.lower()
-        if lower_col in seen:
-            continue
-        deduped.append(col)
-        seen.add(lower_col)
-    return deduped, missing
-
-
-def _format_column_list(columns: List[str], max_items: int = 20) -> str:
-    if not columns:
-        return "(no columns)"
-    display = columns[:max_items]
-    joined = ", ".join(f"`{col}`" for col in display)
-    if len(columns) > max_items:
-        return f"{joined} … (총 {len(columns)}개)"
-    return joined
-
-
 COMMAND_EXAMPLE_LINES = [
     "1. %sql cluster가 Huahai 인 것을 보고 싶어",
     "2. cluster에 대한 histogram을 보여줘",
@@ -622,112 +520,6 @@ def _execute_sql_preview(
     return success
 
 
-def _handle_data_loading_command(
-    run_id: str,
-    user_text: str,
-    *,
-    log_container,
-    debug_mode: bool,
-) -> bool:
-    table_hint = _extract_table_hint(user_text)
-    table_name = (
-        table_hint
-        or st.session_state.get("databricks_table_input", "").strip()
-        or st.session_state.get("databricks_selected_table", "").strip()
-    )
-    if not table_name:
-        message = (
-            "데이타 로딩을 위해 사용할 테이블을 먼저 선택하거나 `table=` 정보로 지정해주세요."
-        )
-        st.warning(message)
-        _append_assistant_message(run_id, message, "Data Loading")
-        st.session_state["active_run_id"] = None
-        return True
-
-    ok, columns_df, column_message = list_databricks_columns_in_session(table_name)
-    if not ok:
-        st.error(column_message)
-        _append_assistant_message(run_id, column_message, "Data Loading")
-        st.session_state["active_run_id"] = None
-        return True
-
-    available_columns: List[str] = []
-    if isinstance(columns_df, pd.DataFrame) and not columns_df.empty:
-        column_field = "column" if "column" in columns_df.columns else columns_df.columns[0]
-        available_columns = columns_df[column_field].astype(str).tolist()
-
-    requested_columns = _parse_data_loading_columns(user_text)
-    if requested_columns is None:
-        guidance = (
-            "데이타 로딩을 위해 조회할 컬럼 정보를 `columns=col1, col2` 형식으로 입력해주세요."
-            " 전체 컬럼을 조회하려면 `columns=*` 로 요청할 수 있습니다."
-        )
-        if available_columns:
-            sample = _format_column_list(available_columns, DATA_LOADING_COLUMN_SAMPLE_LIMIT)
-            guidance += f"\n사용 가능한 컬럼 예시: {sample}"
-        st.info(guidance)
-        _append_assistant_message(run_id, guidance, "Data Loading")
-        st.session_state["active_run_id"] = None
-        return True
-
-    if requested_columns == ["*"] or not requested_columns:
-        resolved_columns = available_columns
-        column_clause = "*"
-    else:
-        resolved_columns, missing_columns = _match_requested_columns(
-            requested_columns,
-            available_columns,
-        )
-        if missing_columns:
-            preview = _format_column_list(
-                available_columns,
-                DATA_LOADING_COLUMN_SAMPLE_LIMIT,
-            )
-            message = (
-                "다음 컬럼을 찾을 수 없습니다: "
-                + ", ".join(f"`{col}`" for col in missing_columns)
-            )
-            if available_columns:
-                message += f"\n사용 가능한 컬럼 목록: {preview}"
-            st.error(message)
-            _append_assistant_message(run_id, message, "Data Loading")
-            st.session_state["active_run_id"] = None
-            return True
-        column_clause = ", ".join(_quote_identifier(col) for col in resolved_columns) or "*"
-
-    limit_value = get_default_sql_limit()
-    st.session_state["databricks_table_input"] = table_name
-    st.session_state["databricks_selected_table"] = table_name
-    st.session_state["last_sql_table"] = table_name
-    st.session_state["last_sql_label"] = "데이타 로딩"
-
-    if column_clause == "*":
-        column_desc = "모든 컬럼"
-    else:
-        column_desc = _format_column_list(
-            resolved_columns,
-            DATA_LOADING_COLUMN_SAMPLE_LIMIT,
-        )
-
-    prep_message = (
-        f"데이타 로딩을 위해 `{table_name}` 테이블에서 {column_desc}을(를) 조회합니다. "
-        f"(LIMIT {limit_value})"
-    )
-    _append_assistant_message(run_id, prep_message, "Data Loading")
-
-    query = f"SELECT {column_clause} FROM {table_name} LIMIT {limit_value}"
-    st.session_state["last_sql_statement"] = query
-
-    _execute_sql_preview(
-        run_id,
-        query,
-        log_container=log_container,
-        show_logs=debug_mode,
-        auto_trigger=True,
-    )
-    return True
-
-
 def _render_data_preview_section() -> None:
     if df_a_ready:
         with st.popover("📊 Data Preview"):
@@ -848,15 +640,6 @@ if user_q:
         command_prefix = command_name
         trigger_len = len(command_spec["trigger"])
         agent_request = stripped_for_command[trigger_len:].lstrip()
-
-    data_loading_requested = "데이타 로딩" in original_user_q
-    if not handled_command and data_loading_requested:
-        handled_command = _handle_data_loading_command(
-            run_id,
-            original_user_q,
-            log_container=log_placeholder,
-            debug_mode=debug_mode,
-        )
 
     if (
         not handled_command

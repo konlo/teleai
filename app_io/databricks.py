@@ -172,30 +172,6 @@ def list_tables(
     return tables
 
 
-def list_columns(config: DatabricksConfig, table: str) -> pd.DataFrame:
-    """Return column metadata for a given table."""
-    _ensure_connector()
-    identifier = config.table_identifier(table)
-    statement = f"SHOW COLUMNS IN {identifier}"
-    columns = run_query(statement, config)
-    if columns.empty:
-        return columns
-    rename_map = {
-        "col_name": "column",
-        "column_name": "column",
-        "columnname": "column",
-        "column": "column",
-        "data_type": "data_type",
-        "type": "data_type",
-    }
-    columns = columns.rename(columns={k: v for k, v in rename_map.items() if k in columns.columns})
-    if "column" not in columns.columns and columns.columns.tolist():
-        first = columns.columns[0]
-        columns = columns.rename(columns={first: "column"})
-    columns["column"] = columns["column"].astype(str)
-    return columns
-
-
 def load_table(
     table: str,
     config: DatabricksConfig,
@@ -216,6 +192,22 @@ __all__ = [
     "list_schemas",
     "run_query",
     "list_tables",
-    "list_columns",
     "load_table",
 ]
+
+
+def list_catalogs(config: DatabricksConfig) -> pd.DataFrame:
+    """Return available catalogs in the workspace."""
+    _ensure_connector()
+    cfg = DatabricksConfig(
+        server_hostname=config.server_hostname,
+        http_path=config.http_path,
+        access_token=config.access_token,
+        catalog=None,
+        schema=None,
+    )
+    catalogs = run_query("SHOW CATALOGS", cfg)
+    if catalogs.empty:
+        return catalogs
+    rename_map = {"catalog": "name", "catalog_name": "name"}
+    return catalogs.rename(columns=rename_map)
