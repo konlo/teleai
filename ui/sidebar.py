@@ -132,6 +132,13 @@ def render_sidebar(show_debug: bool = True) -> None:
         with column_select_container:
             column_key = "databricks_selected_column"
             df_a_data = st.session_state.get("df_A_data")
+            label_col, button_col = st.columns([1, 0.12])
+            with label_col:
+                st.markdown("**컬럼 선택**")
+            selected_column_value = ""
+            column_options: List[str] = []
+            copy_disabled = True
+
             if isinstance(df_a_data, pd.DataFrame) and not df_a_data.empty:
                 column_options = list(df_a_data.columns)
                 selected_column = st.session_state.get(column_key, "")
@@ -141,12 +148,14 @@ def render_sidebar(show_debug: bool = True) -> None:
                 placeholder_key = f"{column_key}_placeholder"
                 if placeholder_key in st.session_state:
                     del st.session_state[placeholder_key]
-                st.selectbox(
+                selected_column_value = st.selectbox(
                     "컬럼 선택",
                     options=column_options,
                     key=column_key,
                     help="불러온 테이블의 컬럼을 확인하세요.",
+                    label_visibility="collapsed",
                 )
+                copy_disabled = False
             else:
                 st.session_state[column_key] = ""
                 st.selectbox(
@@ -155,4 +164,21 @@ def render_sidebar(show_debug: bool = True) -> None:
                     index=0,
                     disabled=True,
                     key=f"{column_key}_placeholder",
+                    label_visibility="collapsed",
                 )
+
+            with button_col:
+                copy_clicked = st.button(
+                    "📋",
+                    key="copy_selected_column_button",
+                    help="선택한 컬럼명을 복사합니다.",
+                    disabled=copy_disabled,
+                    type="secondary",
+                )
+                if copy_clicked:
+                    selected_column_value = selected_column_value or st.session_state.get(
+                        column_key, ""
+                    )
+                    if selected_column_value:
+                        st.clipboard(selected_column_value)
+                        st.toast(f"`{selected_column_value}` 컬럼명이 복사되었습니다.")
