@@ -121,6 +121,9 @@ def render_sidebar(show_debug: bool = True) -> None:
             with st.spinner("선택한 테이블 미리보기를 불러오는 중..."):
                 ok, message = load_df_from_databricks(final_selection, limit=10)
             if ok:
+                df_init = st.session_state.get("df_A_data")
+                if isinstance(df_init, pd.DataFrame):
+                    st.session_state["df_A_initial"] = df_init.copy(deep=True)
                 preview_status.success(message)
             else:
                 preview_status.error(message)
