@@ -16,7 +16,6 @@ from app_io.databricks import (
     list_schemas as _list_schemas,
     connector_available as _connector_available,
     list_tables as _list_tables,
-    list_columns as _list_columns,
     load_table as _load_table,
     run_query as _run_query,
 )
@@ -69,14 +68,6 @@ def list_tables(
     return _list_tables(creds.to_config(), like=like)
 
 
-def list_columns(
-    table: str,
-    creds: DatabricksCredentials,
-) -> pd.DataFrame:
-    """Return column metadata for a given table."""
-    return _list_columns(creds.to_config(), table)
-
-
 def load_table(
     table: str,
     creds: DatabricksCredentials,
@@ -106,7 +97,6 @@ __all__ = [
     "list_catalogs",
     "list_schemas",
     "list_tables",
-    "list_columns",
     "load_table",
     "run_sql",
     "to_csv_bytes",
