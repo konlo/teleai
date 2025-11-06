@@ -67,6 +67,8 @@ def _load_azure_llm(*, temperature: float, max_tokens: Optional[int]) -> AzureCh
         "api_version": api_version,
         "api_key": api_key,
         "temperature": temperature,
+        "top_p": 0.1,
+        "seed": 42,
         "max_retries": 2,
     }
     if max_tokens is not None:
