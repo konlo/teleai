@@ -1,10 +1,7 @@
 from typing import List
 
-import json
-
 import pandas as pd
 import streamlit as st
-import streamlit.components.v1 as components
 
 from utils.session import (
     ensure_session_state,
@@ -187,8 +184,5 @@ def render_sidebar(show_debug: bool = True) -> None:
                         column_key, ""
                     )
                     if selected_column_value:
-                        components.html(
-                            f"<script>navigator.clipboard.writeText({json.dumps(selected_column_value)});</script>",
-                            height=0,
-                        )
+                        st.clipboard(selected_column_value)
                         st.toast(f"`{selected_column_value}` 컬럼명이 복사되었습니다.")
