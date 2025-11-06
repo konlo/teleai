@@ -94,6 +94,7 @@ def _get_dataframes(debug_mode: bool):
     render_sidebar(show_debug=debug_mode)
     df_a = st.session_state["df_A_data"]
     df_b = st.session_state["df_B_data"]
+    df_init = st.session_state["df_init_data"]
 
     sig_a = dataframe_signature(df_a, st.session_state.get("csv_path", ""))
     sig_a_prev = st.session_state.get("df_A_signature", "")
@@ -105,7 +106,8 @@ def _get_dataframes(debug_mode: bool):
     df_b_changed = sig_b != sig_b_prev
     st.session_state["df_B_signature"] = sig_b
 
-    return df_a, df_b, dataset_changed, df_b_changed
+    # df_init은 table loading 될 때 수정 되는 값임 
+    return df_a, df_b, dataset_changed, df_b_changed, df_init
 
 
 def _ensure_conversation_store() -> None:
@@ -116,7 +118,7 @@ def _ensure_conversation_store() -> None:
 st.session_state.setdefault("debug_mode", False)
 debug_mode = bool(st.session_state["debug_mode"])
 
-df_A, df_B, dataset_changed, df_b_changed = _get_dataframes(debug_mode)
+df_A, df_B, dataset_changed, df_b_changed, df_init = _get_dataframes(debug_mode)
 df_a_ready = isinstance(df_A, pd.DataFrame)
 st.session_state.setdefault("log_has_content", False)
 if not debug_mode:
@@ -270,7 +272,7 @@ sql_prompt = build_sql_prompt(
     selected_table=st.session_state.get("databricks_selected_table", ""),
     selected_catalog=st.session_state.get("databricks_selected_catalog", ""),
     selected_schema=st.session_state.get("databricks_selected_schema", ""),
-    df_preview=df_A if isinstance(df_A, pd.DataFrame) else None,
+    df_preview=df_init if isinstance(df_init, pd.DataFrame) else None,
     df_name=st.session_state.get("df_A_name", "df_A"),
 )
 _sql_agent, sql_agent_with_history = build_agent(

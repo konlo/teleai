@@ -123,7 +123,7 @@ def render_sidebar(show_debug: bool = True) -> None:
             if ok:
                 df_init = st.session_state.get("df_A_data")
                 if isinstance(df_init, pd.DataFrame):
-                    st.session_state["df_A_initial"] = df_init.copy(deep=True)
+                    st.session_state["df_init_data"] = df_init.copy(deep=True)
                 preview_status.success(message)
             else:
                 preview_status.error(message)
