@@ -183,6 +183,7 @@ def ensure_session_state() -> None:
         ("last_sql_statement", ""),
         ("last_sql_label", "SQL Query"),
         ("last_sql_table", ""),
+        ("databricks_selected_column", ""),
     ]
     for key, default in defaults:
         if key not in st.session_state:

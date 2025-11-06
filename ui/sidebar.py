@@ -1,5 +1,6 @@
 from typing import List
 
+import pandas as pd
 import streamlit as st
 
 from utils.session import (
@@ -102,6 +103,8 @@ def render_sidebar(show_debug: bool = True) -> None:
             update_databricks_namespace_from_table(current_choice)
             st.session_state["databricks_last_preview_table"] = ""
 
+        column_select_container = st.container()
+
         st.caption(
             f"현재 선택된 테이블: `{st.session_state['databricks_selected_table']}` "
             "— 프롬프트에서 자동으로 사용됩니다."
@@ -125,3 +128,31 @@ def render_sidebar(show_debug: bool = True) -> None:
             last_message = st.session_state.get("databricks_last_preview_message", "")
             if final_selection and last_message and final_selection == last_preview_table:
                 preview_status.caption(last_message)
+
+        with column_select_container:
+            column_key = "databricks_selected_column"
+            df_a_data = st.session_state.get("df_A_data")
+            if isinstance(df_a_data, pd.DataFrame) and not df_a_data.empty:
+                column_options = list(df_a_data.columns)
+                selected_column = st.session_state.get(column_key, "")
+                if selected_column not in column_options:
+                    selected_column = column_options[0]
+                    st.session_state[column_key] = selected_column
+                placeholder_key = f"{column_key}_placeholder"
+                if placeholder_key in st.session_state:
+                    del st.session_state[placeholder_key]
+                st.selectbox(
+                    "컬럼 선택",
+                    options=column_options,
+                    key=column_key,
+                    help="불러온 테이블의 컬럼을 확인하세요.",
+                )
+            else:
+                st.session_state[column_key] = ""
+                st.selectbox(
+                    "컬럼 선택",
+                    options=["컬럼 정보를 불러오는 중..."],
+                    index=0,
+                    disabled=True,
+                    key=f"{column_key}_placeholder",
+                )
