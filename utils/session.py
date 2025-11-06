@@ -13,6 +13,7 @@ from modules.dataload.databricks_sql_loader import (
     list_schemas as databricks_list_schemas,
     connector_available as databricks_connector_available,
     list_tables as databricks_list_tables,
+    list_columns as databricks_list_columns,
     load_table as databricks_load_table,
     run_sql as databricks_run_sql,
 )
@@ -184,6 +185,7 @@ def ensure_session_state() -> None:
         ("last_sql_label", "SQL Query"),
         ("last_sql_table", ""),
         ("databricks_selected_column", ""),
+        ("databricks_table_columns_cache", {}),
     ]
     for key, default in defaults:
         if key not in st.session_state:
@@ -320,6 +322,53 @@ def list_databricks_tables_in_session(pattern: str = "") -> Tuple[bool, Optional
         return False, None, str(exc)
     except Exception as exc:  # pragma: no cover - external dependency errors
         return False, None, f"Failed to list tables: {exc}"
+
+
+def list_databricks_columns_in_session(
+    table: str,
+) -> Tuple[bool, Optional[pd.DataFrame], str]:
+    """List columns for a table and cache them in session state."""
+    if not databricks_connector_available():
+        return False, None, "databricks-sql-connector is not installed."
+    table_clean = (table or "").strip()
+    if not table_clean:
+        return False, None, "Table name must not be empty."
+    try:
+        cache = st.session_state.setdefault("databricks_table_columns_cache", {})
+        cache_key = table_clean.lower()
+        cached_df = cache.get(cache_key)
+        if isinstance(cached_df, pd.DataFrame):
+            return True, cached_df.copy(), f"Loaded {len(cached_df)} columns (cached)."
+
+        update_databricks_namespace_from_table(table_clean)
+        creds = get_databricks_credentials()
+        selected_catalog = st.session_state.get("databricks_selected_catalog", "")
+        selected_schema = st.session_state.get("databricks_selected_schema", "")
+        if selected_catalog:
+            creds.catalog = selected_catalog
+        if selected_schema:
+            creds.schema = selected_schema
+        else:
+            creds.schema = None
+        if (not creds.catalog or not creds.schema) and "." in table_clean:
+            parts = [part.strip() for part in table_clean.split(".") if part.strip()]
+            if len(parts) >= 3:
+                if not creds.catalog:
+                    creds.catalog = parts[0]
+                if not creds.schema:
+                    creds.schema = parts[1]
+
+        df = databricks_list_columns(table_clean, creds)
+        if isinstance(df, pd.DataFrame):
+            cache[cache_key] = df
+            st.session_state["databricks_table_columns_cache"] = cache
+        if df is None or df.empty:
+            return True, df, f"No columns found for '{table_clean}'."
+        return True, df, f"Loaded {len(df)} columns for '{table_clean}'."
+    except DatabricksConnectorError as exc:  # pragma: no cover
+        return False, None, str(exc)
+    except Exception as exc:  # pragma: no cover
+        return False, None, f"Failed to list columns: {exc}"
 
 
 def list_databricks_catalogs_in_session() -> Tuple[bool, Optional[pd.DataFrame], str]:
@@ -570,6 +619,7 @@ __all__ = [
     "list_databricks_catalogs_in_session",
     "list_databricks_schemas_in_session",
     "list_databricks_tables_in_session",
+    "list_databricks_columns_in_session",
     "load_df_from_databricks",
     "databricks_connector_available",
     "generate_select_all_query",
