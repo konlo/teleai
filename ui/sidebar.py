@@ -1,5 +1,7 @@
 from typing import List
 
+import json
+
 import pandas as pd
 import streamlit as st
 
@@ -10,6 +12,48 @@ from utils.session import (
     load_df_from_databricks,
     update_databricks_namespace_from_table,
 )
+
+
+def _copy_text_to_clipboard(text: str) -> None:
+    """Inject client-side script to copy text to the clipboard."""
+    if not text:
+        return
+
+    escaped_text = json.dumps(text)
+    st.markdown(
+        f"""
+        <script>
+        (function() {{
+            const text = {escaped_text};
+            async function copyText(value) {{
+                try {{
+                    if (navigator.clipboard && navigator.clipboard.writeText) {{
+                        await navigator.clipboard.writeText(value);
+                        return;
+                    }}
+                    throw new Error("Clipboard API not available");
+                }} catch (error) {{
+                    const textarea = document.createElement("textarea");
+                    textarea.value = value;
+                    textarea.setAttribute("readonly", "");
+                    textarea.style.position = "absolute";
+                    textarea.style.left = "-9999px";
+                    document.body.appendChild(textarea);
+                    textarea.select();
+                    try {{
+                        document.execCommand("copy");
+                    }} finally {{
+                        document.body.removeChild(textarea);
+                    }}
+                }}
+            }}
+
+            copyText(text);
+        }})();
+        </script>
+        """,
+        unsafe_allow_html=True,
+    )
 
 
 def render_sidebar(show_debug: bool = True) -> None:
@@ -132,37 +176,57 @@ def render_sidebar(show_debug: bool = True) -> None:
         with column_select_container:
             column_key = "databricks_selected_column"
             df_a_data = st.session_state.get("df_A_data")
+            label_col, button_col = st.columns([1, 0.12])
             selected_column_value = ""
             column_options: List[str] = []
+            copy_disabled = True
 
-            st.markdown("**컬럼 선택**")
+            with label_col:
+                st.markdown("**컬럼 선택**")
 
-            if isinstance(df_a_data, pd.DataFrame) and not df_a_data.empty:
-                column_options = list(df_a_data.columns)
-                selected_column = st.session_state.get(column_key, "")
-                if selected_column not in column_options:
-                    selected_column = column_options[0]
-                    st.session_state[column_key] = selected_column
-                placeholder_key = f"{column_key}_placeholder"
-                if placeholder_key in st.session_state:
-                    del st.session_state[placeholder_key]
-                selected_column_value = st.selectbox(
-                    "컬럼 선택",
-                    options=column_options,
-                    key=column_key,
-                    help="불러온 테이블의 컬럼을 확인하세요.",
-                    label_visibility="collapsed",
+                if isinstance(df_a_data, pd.DataFrame) and not df_a_data.empty:
+                    column_options = list(df_a_data.columns)
+                    selected_column = st.session_state.get(column_key, "")
+                    if selected_column not in column_options:
+                        selected_column = column_options[0]
+                        st.session_state[column_key] = selected_column
+                    placeholder_key = f"{column_key}_placeholder"
+                    if placeholder_key in st.session_state:
+                        del st.session_state[placeholder_key]
+                    selected_column_value = st.selectbox(
+                        "컬럼 선택",
+                        options=column_options,
+                        key=column_key,
+                        help="불러온 테이블의 컬럼을 확인하세요.",
+                        label_visibility="collapsed",
+                    )
+                    copy_disabled = False
+
+                    if selected_column_value:
+                        st.code(selected_column_value, language="text")
+                else:
+                    st.session_state[column_key] = ""
+                    st.selectbox(
+                        "컬럼 선택",
+                        options=["컬럼 정보를 불러오는 중..."],
+                        index=0,
+                        disabled=True,
+                        key=f"{column_key}_placeholder",
+                        label_visibility="collapsed",
+                    )
+
+            with button_col:
+                copy_clicked = st.button(
+                    "📋",
+                    key="copy_selected_column_button",
+                    help="선택한 컬럼명을 복사합니다.",
+                    disabled=copy_disabled,
+                    type="secondary",
                 )
-
-                if selected_column_value:
-                    st.code(selected_column_value, language="text")
-            else:
-                st.session_state[column_key] = ""
-                st.selectbox(
-                    "컬럼 선택",
-                    options=["컬럼 정보를 불러오는 중..."],
-                    index=0,
-                    disabled=True,
-                    key=f"{column_key}_placeholder",
-                    label_visibility="collapsed",
-                )
+                if copy_clicked:
+                    selected_column_value = selected_column_value or st.session_state.get(
+                        column_key, ""
+                    )
+                    if selected_column_value:
+                        _copy_text_to_clipboard(selected_column_value)
+                        st.toast(f"`{selected_column_value}` 컬럼명이 복사되었습니다.")
