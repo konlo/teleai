@@ -4,6 +4,7 @@ import json
 
 import pandas as pd
 import streamlit as st
+import streamlit.components.v1 as components
 
 from utils.session import (
     ensure_session_state,
@@ -12,48 +13,6 @@ from utils.session import (
     load_df_from_databricks,
     update_databricks_namespace_from_table,
 )
-
-
-def _copy_text_to_clipboard(text: str) -> None:
-    """Inject client-side script to copy text to the clipboard."""
-    if not text:
-        return
-
-    escaped_text = json.dumps(text)
-    st.markdown(
-        f"""
-        <script>
-        (function() {{
-            const text = {escaped_text};
-            async function copyText(value) {{
-                try {{
-                    if (navigator.clipboard && navigator.clipboard.writeText) {{
-                        await navigator.clipboard.writeText(value);
-                        return;
-                    }}
-                    throw new Error("Clipboard API not available");
-                }} catch (error) {{
-                    const textarea = document.createElement("textarea");
-                    textarea.value = value;
-                    textarea.setAttribute("readonly", "");
-                    textarea.style.position = "absolute";
-                    textarea.style.left = "-9999px";
-                    document.body.appendChild(textarea);
-                    textarea.select();
-                    try {{
-                        document.execCommand("copy");
-                    }} finally {{
-                        document.body.removeChild(textarea);
-                    }}
-                }}
-            }}
-
-            copyText(text);
-        }})();
-        </script>
-        """,
-        unsafe_allow_html=True,
-    )
 
 
 def render_sidebar(show_debug: bool = True) -> None:
@@ -228,5 +187,8 @@ def render_sidebar(show_debug: bool = True) -> None:
                         column_key, ""
                     )
                     if selected_column_value:
-                        _copy_text_to_clipboard(selected_column_value)
+                        components.html(
+                            f"<script>navigator.clipboard.writeText({json.dumps(selected_column_value)});</script>",
+                            height=0,
+                        )
                         st.toast(f"`{selected_column_value}` 컬럼명이 복사되었습니다.")
