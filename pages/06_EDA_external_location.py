@@ -316,6 +316,8 @@ CHAT_COMMAND_SPECS: List[Dict[str, str]] = [
     },
 ]
 
+DATA_LOADING_KEYWORDS = ("데이타 로딩",)
+
 COMMAND_EXAMPLE_LINES = [
     "1. %sql cluster가 Huahai 인 것을 보고 싶어",
     "2. cluster에 대한 histogram을 보여줘",
@@ -638,6 +640,13 @@ if user_q:
         command_prefix = command_name
         trigger_len = len(command_spec["trigger"])
         agent_request = stripped_for_command[trigger_len:].lstrip()
+
+    if (
+        not handled_command
+        and command_prefix is None
+        and any(keyword in original_user_q for keyword in DATA_LOADING_KEYWORDS)
+    ):
+        command_prefix = "sql"
 
     normalized_original = original_user_q.strip().lower()
     if (
