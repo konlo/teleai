@@ -83,7 +83,7 @@ def build_react_prompt(
         "If you output anything outside this format, continue immediately by outputting ONLY a valid 'Action' and 'Action Input'.\n\n"
         "Tool routing guide:\n"
         "- Schema/summary → describe_columns, describe_columns_on\n"
-        "- File load → load_loading_csv, load_df_b\n"
+        "- File load → load_df_b\n"
         "- SQL/join/aggregation → sql_on_dfs\n"
         "- TWO-CSV comparison → propose_join_keys → compare_on_keys('machineID,datetime') → mismatch_report('...')\n"
         "- SSD utilities → make_timesafe, create_features, rolling_stats, stl_decompose, anomaly_iqr, anomaly_isoforest, cohort_compare, topn_machines\n"

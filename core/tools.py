@@ -72,7 +72,6 @@ def build_tools(
     pt = _init_pytool(df_a, df_b)
     tools: List[BaseTool] = [
         pt,
-        load_loading_csv,
         describe_columns,
         save_plots_zip,
         load_df_b,
@@ -101,25 +100,6 @@ def build_tools(
         auto_outlier_eda,
     ]
     return pt, tools
-
-
-@tool
-def load_loading_csv(filename: str) -> str:
-    """Load a CSV or Parquet from DATA_DIR into 'loading_df'. Pass only file name."""
-    pt = _ensure_pytool()
-    current_data_dir = st.session_state.get("DATA_DIR", DEFAULT_DATA_DIR)
-    path = os.path.join(current_data_dir, filename)
-    try:
-        new_df = read_table(path)
-    except Exception as exc:  # pragma: no cover - surface message to agent
-        return f"Failed to load {path}: {exc}"
-    pt.globals["loading_df"] = new_df
-    preview = new_df.head(10).to_markdown(index=False)
-    shape = f"{new_df.shape[0]} rows x {new_df.shape[1]} cols"
-    return (
-        f"Loaded {filename} from {current_data_dir} into loading_df\n"
-        f"Shape: {shape}\n\nPreview (head):\n{preview}"
-    )
 
 
 @tool
