@@ -92,7 +92,6 @@ def build_tools(
         topn_machines,
         select_numeric_candidates,
         rank_outlier_columns,
-        plot_distribution,
         plot_outliers,
         plot_outlier_overview,
         plot_outliers_multi,
@@ -932,90 +931,6 @@ def rank_outlier_columns(method: str = "iqr_ratio", top_n: Any = 20) -> str:
     )
     pt.globals["df_outlier_rank"] = rank_df
     return rank_df.to_markdown(index=False)
-
-
-@tool
-def plot_distribution(
-    col: str,
-    bins: Any = 30,
-    target: str = "A",
-    sample: Any = 5000,
-) -> str:
-    """Plot a histogram for a numeric column from df_A/df_B/loading_df."""
-    pt = _ensure_pytool()
-
-    target_key = "df_A"
-    target_label = "df_A"
-    if isinstance(target, str):
-        t = target.strip().lower()
-        if t in {"b", "df_b"}:
-            target_key = "df_B"
-            target_label = "df_B"
-        elif t in {"loading", "loading_df", "load"}:
-            target_key = "loading_df"
-            target_label = "loading_df"
-
-    df_candidate = pt.globals.get(target_key)
-    if df_candidate is None or not isinstance(df_candidate, pd.DataFrame):
-        return f"{target_label} not loaded."
-
-    raw = col
-    s = str(raw).strip()
-    try:
-        if s.startswith("{") and s.endswith("}"):
-            obj = json.loads(s)
-            candidate = (
-                obj.get("col")
-                or obj.get("column")
-                or obj.get("name")
-                or obj.get("value")
-            )
-            if candidate:
-                s = str(candidate).strip()
-    except Exception:
-        pass
-    for prefix in ("col=", "column=", "name="):
-        if s.lower().startswith(prefix):
-            s = s.split("=", 1)[1].strip()
-            break
-    if (s.startswith("'") and s.endswith("'")) or (
-        s.startswith('"') and s.endswith('"')
-    ):
-        s = s[1:-1]
-
-    if s not in df_candidate.columns:
-        return f"Column '{s}' not found in {target_label}."
-
-    series = pd.to_numeric(df_candidate[s], errors="coerce").dropna()
-    if series.empty:
-        return f"Column '{s}' in {target_label} has no numeric values."
-
-    bins_val = max(1, parse_int(bins, 30))
-    sample_val = parse_int(sample, 5000)
-    if sample_val > 0 and len(series) > sample_val:
-        step = max(1, len(series) // sample_val)
-        series = series.iloc[::step]
-
-    plt.figure(figsize=(8.5, 4.2))
-    plt.hist(series, bins=bins_val, alpha=0.8, edgecolor="black")
-    plt.title(f"Distribution of {s} ({target_label})")
-    plt.xlabel(s)
-    plt.ylabel("Frequency")
-    plt.tight_layout()
-
-    stats = {
-        "count": int(series.count()),
-        "mean": float(series.mean()),
-        "std": float(series.std(ddof=0)),
-        "min": float(series.min()),
-        "median": float(series.median()),
-        "max": float(series.max()),
-    }
-    return (
-        f"[plot_distribution] source={target_label}, col='{s}', bins={bins_val}, "
-        f"rows={stats['count']}\n"
-        f"stats={stats}"
-    )
 
 
 @tool

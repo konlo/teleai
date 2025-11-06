@@ -9,7 +9,7 @@ from langchain_core.language_models import BaseChatModel
 
 
 def load_llm(
-    model: str = "gemini-2.5-flash-lite",
+    model: str = "gemini-2.5-flash",
     temperature: float = 0.0,
     max_tokens: Optional[int] = None,
 ) -> BaseChatModel:
