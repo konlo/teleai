@@ -207,6 +207,10 @@ def build_sql_prompt(
         f"Always cap result sets with 'LIMIT {limit_value}' at the outermost query. If a LIMIT clause already exists, replace it with LIMIT {limit_value}.\n\n"
     )
     context_lines.append(
+        "Whenever you create a COUNT() aggregation, alias the resulting column as `stat_count` "
+        "(e.g., COUNT(*) AS stat_count). Do not invent alternative aliases for COUNT outputs.\n\n"
+    )
+    context_lines.append(
         "Do NOT output any other fields such as Question:, Observation:, Explanation:, or Execution: unless the tool runner provides Observation: back to you.\n"
         "Do NOT include markdown fences."
     )
