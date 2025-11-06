@@ -179,6 +179,8 @@ def ensure_session_state() -> None:
         ("databricks_sql_query", ""),
         ("databricks_last_preview_message", ""),
         ("databricks_last_preview_table", ""),
+        ("databricks_column_source_table", ""),
+        ("databricks_column_options", []),
         ("last_agent_mode", "SQL Builder"),
         ("last_sql_statement", ""),
         ("last_sql_label", "SQL Query"),
@@ -388,6 +390,10 @@ def load_df_from_databricks(
     st.session_state["databricks_last_preview_message"] = (
         f"{table} – {len(df)} rows loaded into df_{target}."
     )
+
+    if target == "A":
+        st.session_state["databricks_column_source_table"] = table
+        st.session_state["databricks_column_options"] = [str(col) for col in df.columns]
 
     return True, f"Loaded Databricks table '{table}' into df_{target}."
 

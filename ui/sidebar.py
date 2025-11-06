@@ -133,12 +133,19 @@ def render_sidebar(show_debug: bool = True) -> None:
             column_key = "databricks_selected_column"
             df_a_data = st.session_state.get("df_A_data")
             selected_column_value = ""
+
+            column_source_table = st.session_state.get("databricks_column_source_table", "")
+            stored_columns = st.session_state.get("databricks_column_options", []) or []
             column_options: List[str] = []
 
             st.markdown("**컬럼 선택**")
 
-            if isinstance(df_a_data, pd.DataFrame) and not df_a_data.empty:
+            if final_selection and final_selection == column_source_table:
+                column_options = list(stored_columns)
+            elif not final_selection and isinstance(df_a_data, pd.DataFrame) and not df_a_data.empty:
                 column_options = list(df_a_data.columns)
+
+            if column_options:
                 selected_column = st.session_state.get(column_key, "")
                 if selected_column not in column_options:
                     selected_column = column_options[0]
@@ -158,9 +165,10 @@ def render_sidebar(show_debug: bool = True) -> None:
                     st.code(selected_column_value, language="text")
             else:
                 st.session_state[column_key] = ""
+                placeholder_options = ["컬럼 정보를 불러오는 중..."] if final_selection else ["불러온 데이터가 없습니다."]
                 st.selectbox(
                     "컬럼 선택",
-                    options=["컬럼 정보를 불러오는 중..."],
+                    options=placeholder_options,
                     index=0,
                     disabled=True,
                     key=f"{column_key}_placeholder",

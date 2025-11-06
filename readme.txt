@@ -1,3 +1,13 @@
+2025.11.06
+1. distribution tool 제거 
+2. load csv tool 제거 
+3. payload image 출력 제거 
+4. agent_mode 가 SQL Builder 일 때는 table을 선택할 때 사용했던 table과 이 때의 column들을 
+   기준으로 SQL문을 작성해야해 그래서 처음에 table에 loading해서 column list 확인할 때 이 데이타를 
+   변수에 저장하고 SQL문을 만들에 이 변수를 바탕으로 SQL문이 작성될 수있도록 해줘
+
+** 어떤 기능을 tool로 사용하지 System prompt로 처리할지 설계할 때 기능별로 정의를 해야할 것 같음 
+
 2025.11.05
 1. DEFAULT_SQL_LIMIT 값을 global로 변수로 사용하고 초기 값을 2000으로 해줘.
    그리고 현재 limit에 관련된 2000은 모두 이 global 변수로 변경해줘
