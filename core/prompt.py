@@ -7,6 +7,10 @@ from langchain_core.tools import BaseTool, render_text_description
 from utils.session import get_default_sql_limit
 
 
+def escape_braces(text: str) -> str:
+    return text.replace("{", "{{").replace("}", "}}")
+
+
 def _stringify_cell(value) -> str:
     """Convert complex cell values (e.g. JSON blobs) into a compact string."""
 
@@ -136,9 +140,12 @@ def build_sql_prompt(
 ) -> ChatPromptTemplate:
     """Construct the SQL generation prompt."""
 
-    table_hint = selected_table.strip()
-    catalog_hint = selected_catalog.strip()
-    schema_hint = selected_schema.strip()
+    table_hint_raw = (selected_table or "").strip()
+    catalog_hint_raw = (selected_catalog or "").strip()
+    schema_hint_raw = (selected_schema or "").strip()
+    table_hint = escape_braces(table_hint_raw)
+    catalog_hint = escape_braces(catalog_hint_raw)
+    schema_hint = escape_braces(schema_hint_raw)
 
     context_lines = ["You are a Databricks SQL expert.\n\n"]
 
@@ -166,11 +173,15 @@ def build_sql_prompt(
             )
         )
 
-    df_label = df_name.strip() or (table_hint if table_hint else "df_A")
+    df_name_hint = (df_name or "").strip()
+    df_label_source = df_name_hint or (table_hint_raw if table_hint_raw else "df_A")
+    df_label = escape_braces(df_label_source)
     if isinstance(df_preview, pd.DataFrame) and not df_preview.empty:
         df_columns = _format_df_columns(df_preview)
         df_dtypes = _format_df_dtypes(df_preview)
-        df_head_text = _df_head(df_preview)
+        df_columns = escape_braces(df_columns)
+        df_dtypes = escape_braces(df_dtypes)
+        df_head_text = escape_braces(_df_head(df_preview))
         context_lines.append(
             "\nActive dataframe preview for SQL generation:\n"
             f"- Source: {df_label}\n"

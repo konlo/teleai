@@ -12,8 +12,8 @@ except Exception:  # pragma: no cover - matplotlib optional
 
 def render_visualizations(pytool: Any) -> List[Dict[str, Any]]:
     """Render charts and tables based on intermediate DataFrames."""
-    st.markdown("---")
-    st.subheader("EDA Visualizations")
+    # st.markdown("---")s
+    # st.subheader("EDA Visualizations")
     visuals_rendered = False
     figure_payloads: List[Dict[str, Any]] = []
 
@@ -155,11 +155,11 @@ def render_visualizations(pytool: Any) -> List[Dict[str, Any]]:
         fig_ids = plt.get_fignums()
         if fig_ids:
             visuals_rendered = True
-            st.markdown("**Matplotlib Figures**")
+            # st.markdown("**Matplotlib Figures**")
             for fig_id in fig_ids:
                 fig = plt.figure(fig_id)
                 fig.set_size_inches(12, 6, forward=True)
-                st.pyplot(fig, use_container_width=True)
+                # st.pyplot(fig, use_container_width=True)
                 buffer = io.BytesIO()
                 fig.savefig(buffer, format="png", bbox_inches="tight")
                 buffer.seek(0)

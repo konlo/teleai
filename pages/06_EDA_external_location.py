@@ -789,7 +789,7 @@ if user_q:
 
             if agent_mode == "EDA Analyst" and pytool_obj is not None:
                 figure_payloads = render_visualizations(pytool_obj)
-                # _attach_figures_to_run(run_id, figure_payloads)
+                _attach_figures_to_run(run_id, figure_payloads)
         st.session_state["active_run_id"] = None
 
     _display_conversation_log()
