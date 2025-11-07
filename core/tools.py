@@ -51,6 +51,7 @@ def _init_pytool(df_a: pd.DataFrame, df_b: Optional[pd.DataFrame]) -> PythonAstR
             "df_B": df_b,
             "df_join": None,
             "duckdb": duckdb,
+            "df_init": None,
         },
         name="python_repl_ast",
         description="Execute Python on df_A/df_B/df_join with pandas/matplotlib.",
@@ -70,6 +71,8 @@ def build_tools(
 ) -> Tuple[PythonAstREPLTool, Sequence[BaseTool]]:
     """Initialise the Python REPL tool and return the full tool list."""
     pt = _init_pytool(df_a, df_b)
+    df_init = st.session_state.get("df_init_data")
+    pt.globals["df_init"] = df_init if isinstance(df_init, pd.DataFrame) else None
     tools: List[BaseTool] = [
         pt,
         describe_columns,
@@ -106,10 +109,14 @@ def build_tools(
 def describe_columns(cols: str = "") -> str:
     """
     Describe selected columns (comma-separated).
-    Uses 'loading_df' if available; otherwise uses 'df_A'.
+    Uses session 'df_init' if available, otherwise falls back to 'loading_df' or 'df_A'.
     """
     pt = _ensure_pytool()
-    if "loading_df" in pt.globals and pt.globals["loading_df"] is not None:
+    session_df_init = st.session_state.get("df_init_data")
+    if isinstance(session_df_init, pd.DataFrame):
+        current_df = session_df_init
+        source = "df_init"
+    elif "loading_df" in pt.globals and pt.globals["loading_df"] is not None:
         current_df = pt.globals["loading_df"]
         source = "loading_df"
     else:
