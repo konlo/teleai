@@ -14,4 +14,4 @@
 # importlib.import_module("app.pages.06_EDA_external_location")
 import streamlit as st
 
-st.title("PandasAI Streamlit App")
+st.title("Data Science")

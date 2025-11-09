@@ -212,6 +212,9 @@ def build_sql_prompt(
         "Thought: I now know the final answer\n"
         "Final Answer: SQL:\n <single SQL statement only, no markdown fences, no explanation>\n\n"
     )
+    context_lines.append(
+        "Generate strictly read-only SELECT queries. Do NOT emit INSERT, UPDATE, DELETE, CREATE, DROP, ALTER, MERGE, TRUNCATE, or any non-SELECT statements under any circumstance.\n\n"
+    )
     limit_value = get_default_sql_limit()
     context_lines.append(
         f"Always cap result sets with 'LIMIT {limit_value}' at the outermost query. If a LIMIT clause already exists, replace it with LIMIT {limit_value}.\n\n"
