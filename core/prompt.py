@@ -60,8 +60,8 @@ def build_react_prompt(
     tools: Iterable[BaseTool],
 ) -> ChatPromptTemplate:
     """Construct the ReAct system prompt with up-to-date dataframe heads."""
-    head_a = _df_head(df_a)
-    head_b = _df_head(df_b) if df_b is not None else "(df_B not loaded)"
+    head_a = escape_braces(_df_head(df_a))
+    head_b = escape_braces(_df_head(df_b)) if df_b is not None else "(df_B not loaded)"
 
     system_template = (
         "You are an expert data analyst for SSD telemetry and tabular data. "
