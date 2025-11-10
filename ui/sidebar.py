@@ -28,7 +28,7 @@ def render_sidebar(show_debug: bool = True) -> None:
     st.session_state.setdefault("databricks_selected_schema", schema or "default")
 
     with st.sidebar:
-        st.markdown("### 🧱 Databricks 테이블")
+        st.markdown("### 고객사 Telemetry Database")
         if not databricks_connector_available():
             st.info(
                 "databricks-sql-connector가 설치되어 있지 않습니다. "
@@ -54,7 +54,7 @@ def render_sidebar(show_debug: bool = True) -> None:
             st.write(f"• Catalog: `{st.session_state['databricks_selected_catalog']}`")
             st.write(f"• Schema: `{st.session_state['databricks_selected_schema']}`")
             st.markdown("---")
-        st.markdown("#### 사용 가능한 테이블")
+        st.markdown("#### 현재 선택된 Data")
         preview_status = st.empty()
 
         table_options: List[str] = st.session_state.get("databricks_table_options", [])
