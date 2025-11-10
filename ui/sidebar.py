@@ -141,7 +141,7 @@ def render_sidebar(show_debug: bool = True) -> None:
             stored_columns = st.session_state.get("databricks_column_options", []) or []
             column_options: List[str] = []
 
-            st.markdown("**컬럼 선택**")
+            st.markdown("**Telemetry 항목**")
 
             if final_selection and final_selection == column_source_table:
                 column_options = list(stored_columns)
@@ -157,7 +157,7 @@ def render_sidebar(show_debug: bool = True) -> None:
                 if placeholder_key in st.session_state:
                     del st.session_state[placeholder_key]
                 selected_column_value = st.selectbox(
-                    "컬럼 선택",
+                    "Telemetry 항목",
                     options=column_options,
                     key=column_key,
                     help="불러온 테이블의 컬럼을 확인하세요.",
@@ -170,7 +170,7 @@ def render_sidebar(show_debug: bool = True) -> None:
                 st.session_state[column_key] = ""
                 placeholder_options = ["컬럼 정보를 불러오는 중..."] if final_selection else ["불러온 데이터가 없습니다."]
                 st.selectbox(
-                    "컬럼 선택",
+                    "Telemetry 항목",
                     options=placeholder_options,
                     index=0,
                     disabled=True,
