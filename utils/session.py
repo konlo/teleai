@@ -37,16 +37,6 @@ TIME_COLUMN_CANDIDATES = [
     "date",
     "created_at",
 ]
-DEFAULT_TABLE_SUGGESTIONS = [
-    "samples.bakehouse.sales_franchises",
-    "samples.bakehouse.sales_customers",
-    "samples.bakehouse.sales_transactions",
-    "samples.accuweather.forecast_daily_calendar_imperial",
-    "samples.accuweather.forecast_hourly_imperial",
-    "v_msc_online_pm9a3",
-]
-
-
 def get_default_sql_limit() -> int:
     """Return the session-scoped SQL limit with a global fallback."""
     if SESSION_SQL_LIMIT_KEY in st.session_state:
@@ -531,6 +521,5 @@ __all__ = [
     "databricks_connector_available",
     "generate_select_all_query",
     "load_preview_from_databricks_query",
-    "DEFAULT_TABLE_SUGGESTIONS",
     "update_databricks_namespace_from_table",
 ]
