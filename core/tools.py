@@ -36,12 +36,11 @@ except Exception:  # pragma: no cover - optional dependency
     STL = None
 
 
-pytool: Optional[PythonAstREPLTool] = None
+PYTOOL_SESSION_KEY = "python_ast_repl_tool"
 
 
 def _init_pytool(df_a: pd.DataFrame, df_b: Optional[pd.DataFrame]) -> PythonAstREPLTool:
-    global pytool
-    pytool = PythonAstREPLTool(
+    pt = PythonAstREPLTool(
         globals={
             "pd": pd,
             "np": np,
@@ -56,13 +55,15 @@ def _init_pytool(df_a: pd.DataFrame, df_b: Optional[pd.DataFrame]) -> PythonAstR
         name="python_repl_ast",
         description="Execute Python on df_A/df_B/df_join with pandas/matplotlib.",
     )
-    return pytool
+    st.session_state[PYTOOL_SESSION_KEY] = pt
+    return pt
 
 
 def _ensure_pytool() -> PythonAstREPLTool:
-    if pytool is None:
+    pt = st.session_state.get(PYTOOL_SESSION_KEY)
+    if not isinstance(pt, PythonAstREPLTool):
         raise RuntimeError("Toolset not initialised. Call build_tools first.")
-    return pytool
+    return pt
 
 
 def build_tools(
@@ -1305,4 +1306,4 @@ def auto_outlier_eda(top_n: Any = 10, on: str = "datetime") -> str:
     return "\n\n".join(summary)
 
 
-__all__ = ["build_tools", "pytool"]
+__all__ = ["build_tools"]
