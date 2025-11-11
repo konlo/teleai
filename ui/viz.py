@@ -26,7 +26,7 @@ def render_visualizations(pytool: Any) -> List[Dict[str, Any]]:
                 .set_index("column")["outlier_rate_%"]
             )
             st.markdown("**Top Outlier Columns (IQR %)**")
-            st.bar_chart(top_outliers, use_container_width=True)
+            st.bar_chart(top_outliers)
             figure_payloads.append(
                 {
                     "kind": "bar_chart",
@@ -57,7 +57,7 @@ def render_visualizations(pytool: Any) -> List[Dict[str, Any]]:
                 visuals_rendered = True
                 st.markdown("**STL Decomposition Components**")
                 chart_df = stl_chart[numeric_cols]
-                st.line_chart(chart_df, use_container_width=True)
+                st.line_chart(chart_df)
                 figure_payloads.append(
                     {
                         "kind": "line_chart",
@@ -88,7 +88,7 @@ def render_visualizations(pytool: Any) -> List[Dict[str, Any]]:
                 visuals_rendered = True
                 st.markdown("**Rolling Statistics**")
                 chart_df = roll_chart[metric_cols]
-                st.line_chart(chart_df, use_container_width=True)
+                st.line_chart(chart_df)
                 figure_payloads.append(
                     {
                         "kind": "line_chart",
@@ -101,7 +101,7 @@ def render_visualizations(pytool: Any) -> List[Dict[str, Any]]:
     if isinstance(topn_df, pd.DataFrame) and not topn_df.empty:
         visuals_rendered = True
         st.markdown("**Top-N Entities**")
-        st.dataframe(topn_df, use_container_width=True)
+        st.dataframe(topn_df)
         figure_payloads.append(
             {
                 "kind": "dataframe",

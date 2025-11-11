@@ -237,18 +237,18 @@ def _render_conversation_log(show_header: bool = True) -> None:
                     st.markdown(f"**{title}**")
                 kind = fig.get("kind")
                 if kind == "bar_chart":
-                    st.bar_chart(fig.get("data"), use_container_width=True)
+                    st.bar_chart(fig.get("data"))
                 elif kind == "line_chart":
-                    st.line_chart(fig.get("data"), use_container_width=True)
+                    st.line_chart(fig.get("data"))
                 elif kind == "dataframe":
-                    st.dataframe(fig.get("data"), use_container_width=True)
+                    st.dataframe(fig.get("data"))
                 elif kind == "json":
                     st.json(fig.get("data"))
                 elif kind == "matplotlib":
                     image_b64 = fig.get("image")
                     if image_b64:
                         st.image(
-                            base64.b64decode(image_b64), use_container_width=True
+                            base64.b64decode(image_b64)
                         )
 
 
