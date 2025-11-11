@@ -26,6 +26,7 @@ SUPPORTED_EXTENSIONS = (".csv", ".parquet")
 DEFAULT_SQL_LIMIT_MIN = 1
 DEFAULT_SQL_LIMIT_MAX = 10_000_000
 _DEFAULT_SQL_LIMIT = 2000
+SESSION_SQL_LIMIT_KEY = "sql_limit"
 TIME_COLUMN_CANDIDATES = [
     "datetime",
     "timestamp",
@@ -47,21 +48,25 @@ DEFAULT_TABLE_SUGGESTIONS = [
 
 
 def get_default_sql_limit() -> int:
-    """Return the current global SQL limit."""
+    """Return the session-scoped SQL limit with a global fallback."""
+    if SESSION_SQL_LIMIT_KEY in st.session_state:
+        candidate = st.session_state[SESSION_SQL_LIMIT_KEY]
+        coerced = parse_int(candidate, _DEFAULT_SQL_LIMIT)
+        if DEFAULT_SQL_LIMIT_MIN <= coerced <= DEFAULT_SQL_LIMIT_MAX:
+            return coerced
     return _DEFAULT_SQL_LIMIT
 
 
 def set_default_sql_limit(value: int) -> int:
-    """Set the global SQL limit after validating bounds."""
-    global _DEFAULT_SQL_LIMIT
+    """Persist the SQL limit to the active session after validation."""
     if not isinstance(value, int):
         raise TypeError("LIMIT 값은 정수여야 합니다.")
     if not (DEFAULT_SQL_LIMIT_MIN <= value <= DEFAULT_SQL_LIMIT_MAX):
         raise ValueError(
             f"LIMIT 값은 {DEFAULT_SQL_LIMIT_MIN} 이상 {DEFAULT_SQL_LIMIT_MAX} 이하의 정수여야 합니다."
         )
-    _DEFAULT_SQL_LIMIT = value
-    return _DEFAULT_SQL_LIMIT
+    st.session_state[SESSION_SQL_LIMIT_KEY] = value
+    return value
 
 
 def parse_int(val: Any, default: int) -> int:
@@ -187,6 +192,7 @@ def ensure_session_state() -> None:
         ("last_sql_label", "SQL Query"),
         ("last_sql_table", ""),
         ("databricks_selected_column", ""),
+        (SESSION_SQL_LIMIT_KEY, _DEFAULT_SQL_LIMIT),
     ]
     for key, default in defaults:
         if key not in st.session_state:
