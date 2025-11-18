@@ -1,5 +1,6 @@
 import base64
 import re
+from pathlib import Path
 from typing import Any, Dict, List, Optional
 from uuid import uuid4
 
@@ -16,6 +17,7 @@ from core.llm import load_llm
 from core.prompt import build_react_prompt, build_sql_prompt
 from core.sql_tools import build_sql_tools
 from core.tools import build_tools
+from modules.dataload.databricks_sql_loader import to_csv_bytes
 from ui.history import get_history
 from ui.sidebar import render_sidebar
 from ui.viz import render_visualizations
@@ -522,6 +524,30 @@ def _execute_sql_preview(
     return success
 
 
+def _render_download_controls(
+    label: str, df: pd.DataFrame, path: str, key_prefix: str
+) -> None:
+    if not isinstance(df, pd.DataFrame) or df.empty:
+        return
+
+    download_name = Path(path).name if path else f"{key_prefix}.csv"
+    st.download_button(
+        label=f"⬇️ {label} CSV 다운로드",
+        data=to_csv_bytes(df),
+        file_name=download_name,
+        mime="text/csv",
+        key=f"{key_prefix}_download_button",
+    )
+
+    if path:
+        st.caption("Full link to the current dataset")
+        st.code(path, language="text")
+        link_target = (
+            path if re.match(r"^[a-zA-Z][a-zA-Z0-9+.-]*://", path) else f"file://{path}"
+        )
+        st.markdown(f"[{path}]({link_target})")
+
+
 def _render_data_preview_section() -> None:
     if df_a_ready:
         with st.popover("📊 Data Preview"):
@@ -529,11 +555,23 @@ def _render_data_preview_section() -> None:
                 f"**Loaded file for df_A:** `{st.session_state['df_A_name']}` (Shape: {df_A.shape})"
             )
             st.dataframe(df_A.head(10), width="stretch")
+            _render_download_controls(
+                "df_A",
+                df_A,
+                st.session_state.get("csv_path", ""),
+                "df_a",
+            )
             if isinstance(df_B, pd.DataFrame):
                 st.markdown(
                     f"**df_B Preview —** `{st.session_state['df_B_name']}` (Shape: {df_B.shape})"
                 )
                 st.dataframe(df_B.head(10), width="stretch")
+                _render_download_controls(
+                    "df_B",
+                    df_B,
+                    st.session_state.get("csv_b_path", ""),
+                    "df_b",
+                )
     else:
         st.info(
             "df_A 데이터가 아직 로드되지 않았습니다. 왼쪽 Databricks Loader 또는 SQL Builder 에이전트를 사용해 데이터를 불러오세요."
