@@ -1,7 +1,11 @@
 import base64
 import re
+import os
 from typing import Any, Dict, List, Optional
 from uuid import uuid4
+import time
+import datetime
+import json
 
 import streamlit as st
 import pandas as pd
@@ -19,6 +23,7 @@ from core.tools import build_tools
 from ui.history import get_history
 from ui.sidebar import render_sidebar
 from ui.viz import render_visualizations
+from utils.turn_logger import log_turn, build_turn_payload
 from utils.session import (
     DEFAULT_SQL_LIMIT_MAX,
     DEFAULT_SQL_LIMIT_MIN,
@@ -117,6 +122,14 @@ def _ensure_conversation_store() -> None:
 
 st.session_state.setdefault("debug_mode", False)
 debug_mode = bool(st.session_state["debug_mode"])
+st.session_state.setdefault("conversation_id", str(uuid4()))
+st.session_state.setdefault("turn_counter", 0)
+st.session_state.setdefault("user_id_hash", os.environ.get("USER_ID_HASH", "konlo.na"))
+st.session_state.setdefault("pending_rerun", False)
+
+def _next_turn_id() -> int:
+    st.session_state["turn_counter"] = st.session_state.get("turn_counter", 0) + 1
+    return st.session_state["turn_counter"]
 
 df_A, df_B, dataset_changed, df_b_changed, df_init = _get_dataframes(debug_mode)
 df_a_ready = isinstance(df_A, pd.DataFrame)
@@ -529,10 +542,10 @@ def _execute_sql_preview(
     if preview_payloads:
         _attach_figures_to_run(run_id, preview_payloads)
     st.session_state["active_run_id"] = None
-    if success:
-        rerun_callable = getattr(st, "rerun", None) or getattr(st, "experimental_rerun", None)
-        if callable(rerun_callable):
-            rerun_callable()
+    st.session_state["last_sql_status"] = "success" if success else "fail"
+    st.session_state["last_sql_error"] = "" if success else message
+    if success and auto_trigger:
+        st.session_state["pending_rerun"] = True
     return success
 
 
@@ -574,6 +587,8 @@ if chat_input_key not in st.session_state:
 user_q = st.chat_input(chat_placeholder, key=chat_input_key)
 
 if user_q:
+    turn_id = _next_turn_id()
+    turn_started = time.time()
     run_id = str(uuid4())
     st.session_state["active_run_id"] = run_id
     original_user_q = user_q
@@ -592,6 +607,18 @@ if user_q:
         None,
     )
     command_name = command_spec["name"] if command_spec else None
+    assistant_response_for_log: Optional[str] = None
+    sql_capture_for_log: str = ""
+    sql_execution_status_for_log: Optional[str] = None
+    result_row_count: Optional[int] = None
+    result_schema_json: Optional[str] = None
+    result_sample_json: Optional[str] = None
+    intent_for_log: str = ""
+    tools_used_for_log = []
+    generated_python_for_log: str = ""
+    python_status_for_log: Optional[str] = None
+    python_error_for_log: str = ""
+    python_output_summary_for_log: str = ""
 
     if command_name == "debug":
         handled_command = True
@@ -618,6 +645,8 @@ if user_q:
             )
             if callable(rerun_callable):
                 rerun_callable()
+        assistant_response_for_log = ack_message
+        intent_for_log = "debug"
     elif command_name == "limit":
         handled_command = True
         trigger_len = len(command_spec["trigger"])
@@ -646,16 +675,22 @@ if user_q:
                 )
         _append_assistant_message(run_id, ack_message, "Settings")
         st.session_state["active_run_id"] = None
+        assistant_response_for_log = ack_message
+        intent_for_log = "limit"
     elif command_name == "help":
         handled_command = True
         ack_message = _build_command_help_message()
         _append_assistant_message(run_id, ack_message, "Command Help")
         st.session_state["active_run_id"] = None
+        assistant_response_for_log = ack_message
+        intent_for_log = "help"
     elif command_name == "example":
         handled_command = True
         ack_message = _build_command_example_message()
         _append_assistant_message(run_id, ack_message, "Command Examples")
         st.session_state["active_run_id"] = None
+        assistant_response_for_log = ack_message
+        intent_for_log = "example"
     elif command_name == "sql":
         command_prefix = command_name
         trigger_len = len(command_spec["trigger"])
@@ -674,21 +709,27 @@ if user_q:
         and command_prefix is None
         and normalized_original in {"실행", "수행", "run", "execute"}
     ):
-        _execute_sql_preview(
+        exec_success = _execute_sql_preview(
             run_id,
             st.session_state.get("last_sql_statement", ""),
             log_container=log_placeholder,
             show_logs=debug_mode,
         )
         handled_command = True
+        sql_execution_status_for_log = "success" if exec_success else "fail"
+        assistant_response_for_log = st.session_state.get("last_sql_error", "")
+        intent_for_log = "sql_execute"
+        tools_used_for_log.append("databricks_preview_sql")
 
     if not handled_command:
         auto_execute_sql = command_prefix == "sql"
 
         if command_prefix == "sql":
             agent_mode = "SQL Builder"
+            tools_used_for_log.append("sql_builder_agent")
         else:
             agent_mode = "EDA Analyst"
+            tools_used_for_log.append("eda_agent")
         st.session_state["last_agent_mode"] = agent_mode
 
         if not agent_request:
@@ -704,6 +745,8 @@ if user_q:
             st.error(error_msg)
             _append_assistant_message(run_id, error_msg, agent_mode)
             st.session_state["active_run_id"] = None
+            assistant_response_for_log = error_msg
+            intent_for_log = "eda"
 
         else:
             collector = SimpleCollectCallback()
@@ -761,6 +804,29 @@ if user_q:
             final = result.get(
                 "output", "Agent가 최종 답변을 생성하지 못했습니다."
             )
+            intermediate_steps = result.get("intermediate_steps", [])
+            for step in intermediate_steps:
+                try:
+                    action, observation = step
+                except Exception:
+                    continue
+                tool_name = getattr(action, "tool", "") or ""
+                if tool_name != "python_repl_ast":
+                    continue
+                tools_used_for_log.append("python_repl_ast")
+                generated_python_for_log = getattr(action, "tool_input", "") or ""
+                observation_text = (
+                    observation if isinstance(observation, str) else str(observation)
+                )
+                python_output_summary_for_log = observation_text[:1000]
+                lower_obs = observation_text.lower()
+                if "traceback" in lower_obs or "error" in lower_obs:
+                    python_status_for_log = "fail"
+                    python_error_for_log = observation_text[:1000]
+                else:
+                    python_status_for_log = "success"
+                    python_error_for_log = ""
+                # keep last python call in the turn
             with answer_container:
                 st.subheader("Answer")
                 final_text = final if isinstance(final, str) else str(final)
@@ -783,6 +849,9 @@ if user_q:
                 st.caption(f"{agent_mode} 응답")
                 st.write(final_display)
                 _append_assistant_message(run_id, final_display, agent_mode)
+                assistant_response_for_log = final_display
+                sql_capture_for_log = sql_capture
+                intent_for_log = "sql" if agent_mode == "SQL Builder" else "eda"
 
                 if agent_mode == "SQL Builder" and sql_capture:
                     st.session_state["last_sql_statement"] = sql_capture
@@ -797,13 +866,15 @@ if user_q:
                         st.session_state["last_sql_table"] = table_hint
                         st.session_state["databricks_selected_table"] = table_hint
                     if auto_execute_sql:
-                        _execute_sql_preview(
+                        exec_success = _execute_sql_preview(
                             run_id,
                             sql_capture,
                             log_container=log_placeholder,
                             show_logs=debug_mode,
                             auto_trigger=True,
                         )
+                        sql_execution_status_for_log = "success" if exec_success else "fail"
+                        tools_used_for_log.append("databricks_preview_sql")
 
             if agent_mode == "EDA Analyst" and pytool_obj is not None:
                 figure_payloads = render_visualizations(pytool_obj)
@@ -811,8 +882,37 @@ if user_q:
         st.session_state["active_run_id"] = None
 
     _display_conversation_log()
+    if assistant_response_for_log is not None:
+        payload = build_turn_payload(
+            llm=llm,
+            conversation_id=st.session_state.get("conversation_id"),
+            turn_id=turn_id,
+            user_message=original_user_q,
+            assistant_message=assistant_response_for_log,
+            intent=intent_for_log,
+            tools_used=tools_used_for_log,
+            generated_sql=sql_capture_for_log or st.session_state.get("last_sql_statement", ""),
+            sql_execution_status=sql_execution_status_for_log,
+            sql_error_message=st.session_state.get("last_sql_error", ""),
+            result_row_count=result_row_count,
+            result_schema_json=result_schema_json,
+            result_sample_json=result_sample_json,
+            latency_ms=int((time.time() - turn_started) * 1000),
+            df_latest=st.session_state.get("df_A_data"),
+            generated_python=generated_python_for_log,
+            python_execution_status=python_status_for_log,
+            python_error_message=python_error_for_log,
+            python_output_summary=python_output_summary_for_log,
+        )
+        log_turn(payload)
 
 else:
     _display_conversation_log()
 
 _render_data_preview_section()
+
+if st.session_state.get("pending_rerun"):
+    st.session_state["pending_rerun"] = False
+    rerun_callable = getattr(st, "rerun", None) or getattr(st, "experimental_rerun", None)
+    if callable(rerun_callable):
+        rerun_callable()
