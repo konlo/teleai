@@ -1,6 +1,5 @@
-import base64
 import os
-from typing import Any, Dict, List, Optional
+from typing import Optional
 from uuid import uuid4
 import time
 import datetime
@@ -25,6 +24,15 @@ from core.sql_utils import (
 from core.sql_tools import build_sql_tools
 from core.tools import build_tools
 from ui.history import get_history
+from ui.chat_log import (
+    append_assistant_message,
+    append_dataframe_preview_message,
+    append_user_message,
+    attach_figures_to_run,
+    ensure_conversation_store,
+    render_chat_history,
+    render_conversation_log,
+)
 from ui.sidebar import render_sidebar
 from ui.viz import render_visualizations
 from utils.turn_logger import log_turn, build_turn_payload
@@ -125,11 +133,6 @@ def _get_dataframes(debug_mode: bool):
     return df_a, df_b, dataset_changed, df_b_changed, df_init
 
 
-def _ensure_conversation_store() -> None:
-    st.session_state.setdefault("conversation_log", [])
-    st.session_state.setdefault("active_run_id", None)
-
-
 st.session_state.setdefault("debug_mode", False)
 debug_mode = bool(st.session_state["debug_mode"])
 st.session_state.setdefault("conversation_id", str(uuid4()))
@@ -147,62 +150,12 @@ st.session_state.setdefault("log_has_content", False)
 if not debug_mode:
     st.session_state["log_has_content"] = False
 
-_ensure_conversation_store()
+ensure_conversation_store()
 
 sql_history = get_history("lc_msgs:sql")
 eda_history = get_history("lc_msgs:eda")
 if dataset_changed or df_b_changed:
     eda_history.clear()
-
-def _render_chat_history(title: str, history) -> None:
-    st.markdown(f"#### {title}")
-    messages = getattr(history, "messages", []) or []
-    if not messages:
-        st.info("대화 기록이 없습니다.")
-        return
-    for msg in messages:
-        role = getattr(msg, "type", "assistant")
-        if role == "human":
-            streamlit_role = "user"
-        elif role == "ai":
-            streamlit_role = "assistant"
-        else:
-            streamlit_role = role or "assistant"
-        content = msg.content if isinstance(msg.content, str) else str(msg.content)
-        with st.chat_message(streamlit_role):
-            st.markdown(content)
-def _append_user_message(run_id: str, content: str) -> None:
-    st.session_state["conversation_log"].append(
-        {"run_id": run_id, "role": "user", "content": content}
-    )
-
-
-def _append_assistant_message(run_id: str, content: str, mode: str) -> None:
-    st.session_state["conversation_log"].append(
-        {
-            "run_id": run_id,
-            "role": "assistant",
-            "mode": mode,
-            "content": content,
-            "figures": [],
-            "figures_attached": False,
-        }
-    )
-
-
-def _attach_figures_to_run(run_id: str, figures: List[Dict[str, Any]]) -> None:
-    if not run_id or not figures:
-        return
-    log = st.session_state.get("conversation_log", [])
-    for entry in reversed(log):
-        if entry.get("run_id") == run_id and entry.get("role") == "assistant":
-            if entry.get("figures_attached"):
-                return
-            entry.setdefault("figures", [])
-            entry["figures"].extend(figures)
-            entry["figures_attached"] = True
-            break
-
 
 def _render_csv_download_button(label: str, df: pd.DataFrame, dataset_name: str) -> None:
     if not isinstance(df, pd.DataFrame) or df.empty:
@@ -218,75 +171,24 @@ def _render_csv_download_button(label: str, df: pd.DataFrame, dataset_name: str)
     )
 
 
-def _append_dataframe_preview_message(label: str, df: pd.DataFrame, key: str) -> None:
-    if not isinstance(df, pd.DataFrame) or df.empty:
-        return
-    preview_df = df.head(10)
-    if preview_df.empty:
-        return
-    dataset_name_key = "df_A_name" if key == "A" else "df_B_name"
-    dataset_name = st.session_state.get(dataset_name_key, label)
-    message = (
-        f"**{label} Preview:** `{dataset_name}` (Shape: {df.shape})"
-    )
-    run_id = f"preview-{key}-{uuid4()}"
-    _append_assistant_message(run_id, message, "Data Preview")
-    _attach_figures_to_run(
-        run_id,
-        [
-            {
-                "kind": "dataframe",
-                "title": f"{label} Preview",
-                "data": preview_df,
-            }
-        ],
-    )
-
-
 if df_a_ready and dataset_changed:
     if not st.session_state.pop("skip_next_df_a_preview", False):
-        _append_dataframe_preview_message("df_A", df_A, "A")
+        append_dataframe_preview_message(
+            "df_A",
+            df_A,
+            "A",
+            append_assistant_message,
+            attach_figures_to_run,
+        )
 if isinstance(df_B, pd.DataFrame) and df_b_changed:
     if not st.session_state.pop("skip_next_df_b_preview", False):
-        _append_dataframe_preview_message("df_B", df_B, "B")
-
-
-def _render_conversation_log(show_header: bool = True) -> None:
-    if show_header:
-        st.markdown("#### 대화 기록")
-    log = st.session_state.get("conversation_log", [])
-    if not log:
-        st.info("대화 기록이 없습니다.")
-        return
-    for entry in log:
-        role = entry.get("role", "assistant")
-        streamlit_role = "assistant" if role == "assistant" else "user"
-        with st.chat_message(streamlit_role):
-            mode = entry.get("mode")
-            if mode and role == "assistant":
-                st.caption(mode)
-            content = entry.get("content", "")
-            if content:
-                st.markdown(content)
-            for fig in entry.get("figures", []):
-                title = fig.get("title")
-                if title:
-                    st.markdown(f"**{title}**")
-                kind = fig.get("kind")
-                if kind == "bar_chart":
-                    st.bar_chart(fig.get("data"))
-                elif kind == "line_chart":
-                    st.line_chart(fig.get("data"))
-                elif kind == "dataframe":
-                    st.dataframe(fig.get("data"))
-                elif kind == "json":
-                    st.json(fig.get("data"))
-                elif kind == "matplotlib":
-                    image_b64 = fig.get("image")
-                    if image_b64:
-                        st.image(
-                            base64.b64decode(image_b64)
-                        )
+        append_dataframe_preview_message(
+            "df_B",
+            df_B,
+            "B",
+            append_assistant_message,
+            attach_figures_to_run,
+        )
 
 
 llm = load_llm()
@@ -325,9 +227,9 @@ if debug_mode:
     with st.sidebar:
         st.markdown("#### 원본 LangChain 히스토리")
         with st.expander("SQL Builder History", expanded=False):
-            _render_chat_history("SQL Builder History", sql_history)
+            render_chat_history("SQL Builder History", sql_history)
         with st.expander("EDA Analyst History", expanded=False):
-            _render_chat_history("EDA Analyst History", eda_history)
+            render_chat_history("EDA Analyst History", eda_history)
 
         st.markdown("#### ⚙️ 실시간 실행 로그")
         log_placeholder = st.container()
@@ -363,7 +265,7 @@ conversation_placeholder = st.empty()
 
 def _display_conversation_log() -> None:
     with conversation_placeholder.container():
-        _render_conversation_log()
+        render_conversation_log()
 
 chat_placeholder = BASE_CHAT_PLACEHOLDER
 
@@ -379,7 +281,7 @@ if user_q:
     run_id = str(uuid4())
     st.session_state["active_run_id"] = run_id
     original_user_q = user_q
-    _append_user_message(run_id, original_user_q)
+    append_user_message(run_id, original_user_q)
     _display_conversation_log()
 
     stripped_for_command = original_user_q.lstrip()
@@ -424,7 +326,7 @@ if user_q:
                 rerun_required = True
         else:
             ack_message = f"{command_spec['usage']} 형태로 사용해주세요."
-        _append_assistant_message(run_id, ack_message, "Debug Mode")
+        append_assistant_message(run_id, ack_message, "Debug Mode")
         st.session_state["active_run_id"] = None
         if rerun_required:
             rerun_callable = getattr(st, "rerun", None) or getattr(
@@ -460,21 +362,21 @@ if user_q:
                     f"SQL LIMIT 값을 {new_limit}으로 설정했습니다. "
                     "새로운 쿼리부터 적용됩니다."
                 )
-        _append_assistant_message(run_id, ack_message, "Settings")
+        append_assistant_message(run_id, ack_message, "Settings")
         st.session_state["active_run_id"] = None
         assistant_response_for_log = ack_message
         intent_for_log = "limit"
     elif command_name == "help":
         handled_command = True
         ack_message = build_command_help_message()
-        _append_assistant_message(run_id, ack_message, "Command Help")
+        append_assistant_message(run_id, ack_message, "Command Help")
         st.session_state["active_run_id"] = None
         assistant_response_for_log = ack_message
         intent_for_log = "help"
     elif command_name == "example":
         handled_command = True
         ack_message = build_command_example_message()
-        _append_assistant_message(run_id, ack_message, "Command Examples")
+        append_assistant_message(run_id, ack_message, "Command Examples")
         st.session_state["active_run_id"] = None
         assistant_response_for_log = ack_message
         intent_for_log = "example"
@@ -501,8 +403,8 @@ if user_q:
             sql_text=st.session_state.get("last_sql_statement", ""),
             log_container=log_placeholder,
             show_logs=debug_mode,
-            append_assistant_message=_append_assistant_message,
-            attach_figures_to_run=_attach_figures_to_run,
+            append_assistant_message=append_assistant_message,
+            attach_figures_to_run=attach_figures_to_run,
         )
         handled_command = True
         sql_execution_status_for_log = "success" if exec_success else "fail"
@@ -532,7 +434,7 @@ if user_q:
                 "df_A 데이터가 없습니다. 먼저 SQL Builder 에이전트나 Databricks Loader로 데이터를 불러온 뒤 다시 시도하세요."
             )
             st.error(error_msg)
-            _append_assistant_message(run_id, error_msg, agent_mode)
+            append_assistant_message(run_id, error_msg, agent_mode)
             st.session_state["active_run_id"] = None
             assistant_response_for_log = error_msg
             intent_for_log = "eda"
@@ -637,7 +539,7 @@ if user_q:
                 final_display = final_text
                 st.caption(f"{agent_mode} 응답")
                 st.write(final_display)
-                _append_assistant_message(run_id, final_display, agent_mode)
+                append_assistant_message(run_id, final_display, agent_mode)
                 assistant_response_for_log = final_display
                 sql_capture_for_log = sql_capture
                 intent_for_log = "sql" if agent_mode == "SQL Builder" else "eda"
@@ -661,15 +563,15 @@ if user_q:
                             log_container=log_placeholder,
                             show_logs=debug_mode,
                             auto_trigger=True,
-                            append_assistant_message=_append_assistant_message,
-                            attach_figures_to_run=_attach_figures_to_run,
+                            append_assistant_message=append_assistant_message,
+                            attach_figures_to_run=attach_figures_to_run,
                         )
                         sql_execution_status_for_log = "success" if exec_success else "fail"
                         tools_used_for_log.append("databricks_preview_sql")
 
             if agent_mode == "EDA Analyst" and pytool_obj is not None:
                 figure_payloads = render_visualizations(pytool_obj)
-                _attach_figures_to_run(run_id, figure_payloads)
+                attach_figures_to_run(run_id, figure_payloads)
         st.session_state["active_run_id"] = None
 
     _display_conversation_log()
