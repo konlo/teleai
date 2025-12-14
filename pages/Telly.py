@@ -34,6 +34,7 @@ st.set_page_config(
     layout="wide",
 )
 
+# 전역 스타일 적용
 inject_base_styles()
 
 st.title("✨ Telemetry Chatbot Telly")
@@ -46,19 +47,23 @@ st.session_state.setdefault("turn_counter", 0)
 st.session_state.setdefault("user_id_hash", os.environ.get("USER_ID_HASH", "konlo.na"))
 st.session_state.setdefault("pending_rerun", False)
 
+# 세션 데이터 로드 및 변경 감지
 df_A, df_B, dataset_changed, df_b_changed, df_init = load_dataframes(debug_mode)
 df_a_ready = isinstance(df_A, pd.DataFrame)
 st.session_state.setdefault("log_has_content", False)
 if not debug_mode:
     st.session_state["log_has_content"] = False
 
+# 대화 로그 관련 세션 스토어 초기화
 ensure_conversation_store()
 
+# LangChain 히스토리 로딩 및 데이터 변경 시 EDA 히스토리 초기화
 sql_history = get_history("lc_msgs:sql")
 eda_history = get_history("lc_msgs:eda")
 if dataset_changed or df_b_changed:
     eda_history.clear()
 
+# 데이터 변경 시 미리보기 메시지 추가
 if df_a_ready and dataset_changed:
     if not st.session_state.pop("skip_next_df_a_preview", False):
         append_dataframe_preview_message(
@@ -83,6 +88,7 @@ llm = load_llm()
 
 pytool_obj = None
 eda_agent_with_history = None
+# df_A가 준비된 경우 EDA 도구/에이전트 준비
 if df_a_ready:
     pytool_obj, eda_tools = build_tools(df_A, df_B)
     eda_prompt = build_react_prompt(df_A, df_B, eda_tools)
@@ -93,6 +99,7 @@ if df_a_ready:
         lambda session_id: eda_history,
     )
 
+# SQL 에이전트 도구/프롬프트 준비
 sql_tools = build_sql_tools()
 sql_prompt = build_sql_prompt(
     sql_tools,
@@ -110,6 +117,7 @@ _sql_agent, sql_agent_with_history = build_agent(
 )
 
 
+# Debug 사이드바: 원본 히스토리 + 실시간 로그
 log_placeholder = None
 if debug_mode:
     with st.sidebar:
@@ -128,6 +136,7 @@ if debug_mode:
 
 st.write("---")
 
+# 대화 표시용 플레이스홀더/렌더러
 conversation_placeholder = st.empty()
 conversation_log_renderer = lambda: display_conversation_log(conversation_placeholder)
 
@@ -140,6 +149,7 @@ if chat_input_key not in st.session_state:
 user_q = st.chat_input(chat_placeholder, key=chat_input_key)
 
 if user_q:
+    # 단일 턴 처리: 명령 파싱/에이전트 호출/로그 기록
     handle_user_query(
         user_q,
         debug_mode=debug_mode,
@@ -155,6 +165,7 @@ if user_q:
 else:
     conversation_log_renderer()
 
+# 데이터 미리보기 팝오버 + 다운로드 버튼
 render_data_preview_section(df_a_ready, df_A, df_B)
 
 if st.session_state.get("pending_rerun"):
