@@ -101,6 +101,13 @@ def render_conversation_log(show_header: bool = True) -> None:
                         st.image(base64.b64decode(image_b64))
 
 
+def display_conversation_log(placeholder, show_header: bool = True) -> None:
+    """Render the conversation log inside a provided Streamlit container placeholder."""
+
+    with placeholder.container():
+        render_conversation_log(show_header=show_header)
+
+
 def append_dataframe_preview_message(
     label: str,
     df: pd.DataFrame,
@@ -130,12 +137,21 @@ def append_dataframe_preview_message(
     )
 
 
+def next_turn_id() -> int:
+    """Increment and return the conversation turn counter."""
+
+    st.session_state["turn_counter"] = st.session_state.get("turn_counter", 0) + 1
+    return st.session_state["turn_counter"]
+
+
 __all__ = [
     "append_assistant_message",
     "append_dataframe_preview_message",
     "append_user_message",
     "attach_figures_to_run",
+    "display_conversation_log",
     "ensure_conversation_store",
+    "next_turn_id",
     "render_chat_history",
     "render_conversation_log",
 ]
