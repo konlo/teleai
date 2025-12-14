@@ -6,6 +6,7 @@ import pandas as pd
 import streamlit as st
 from langchain_core.tools import BaseTool, tool
 
+from core.sql_utils import infer_table_from_sql
 from utils.session import (
     list_databricks_catalogs_in_session,
     list_databricks_schemas_in_session,
@@ -13,28 +14,6 @@ from utils.session import (
     load_preview_from_databricks_query,
 )
 
-
-
-
-def _infer_table_from_sql(sql: str) -> str:
-    text = (sql or "").strip()
-    if not text:
-        return ""
-    lowered = text.lower()
-    marker = " from "
-    idx = lowered.find(marker)
-    if idx == -1:
-        if lowered.startswith("from "):
-            idx = 0
-        else:
-            return ""
-    idx += len(marker)
-    remainder = text[idx:].strip()
-    if not remainder:
-        return ""
-    candidate = remainder.split()[0]
-    candidate = candidate.rstrip(";,)")
-    return candidate.strip()
 
 def _df_preview_markdown(df: pd.DataFrame, max_rows: int = 20) -> str:
     if df is None or df.empty:
@@ -110,7 +89,7 @@ def databricks_preview_sql(
     table_name = (
         table_name_input
         or selected_table
-        or _infer_table_from_sql(query)
+        or infer_table_from_sql(query)
         or st.session_state.get("last_sql_table", "")
     )
     if not table_name:
