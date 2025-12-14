@@ -5,6 +5,7 @@ from uuid import uuid4
 import pandas as pd
 import streamlit as st
 
+from utils.turn_logger import update_user_rating
 
 def ensure_conversation_store() -> None:
     """Initialize conversation-related session state keys."""
@@ -19,13 +20,14 @@ def append_user_message(run_id: str, content: str) -> None:
     )
 
 
-def append_assistant_message(run_id: str, content: str, mode: str) -> None:
+def append_assistant_message(run_id: str, content: str, mode: str, turn_id: Optional[int] = None) -> None:
     st.session_state["conversation_log"].append(
         {
             "run_id": run_id,
             "role": "assistant",
             "mode": mode,
             "content": content,
+            "turn_id": turn_id,
             "figures": [],
             "figures_attached": False,
         }
@@ -99,6 +101,8 @@ def render_conversation_log(show_header: bool = True) -> None:
                     image_b64 = fig.get("image")
                     if image_b64:
                         st.image(base64.b64decode(image_b64))
+            if role == "assistant":
+                _render_rating_buttons(entry.get("run_id", ""), entry.get("turn_id"))
 
 
 def display_conversation_log(placeholder, show_header: bool = True) -> None:
@@ -135,6 +139,47 @@ def append_dataframe_preview_message(
             }
         ],
     )
+
+
+def _record_rating(rating_key: Any, turn_id: Optional[int], rating: int) -> None:
+    """Handle like/dislike click and persist rating."""
+
+    if rating_key is None:
+        return
+    if turn_id is None:
+        return
+    conversation_id = st.session_state.get("conversation_id")
+    if not conversation_id:
+        return
+    update_user_rating(conversation_id, turn_id, rating)
+    ratings = st.session_state.setdefault("ratings_given", {})
+    ratings[rating_key] = rating
+    st.session_state["ratings_given"] = ratings
+
+
+def _render_rating_buttons(run_id: str, turn_id: Optional[int]) -> None:
+    """Render 좋아요/싫어요 버튼 (conversation_id, turn_id 기반 key 사용)."""
+
+    ratings = st.session_state.get("ratings_given", {})
+    conversation_id = st.session_state.get("conversation_id") or ""
+    rating_key = (conversation_id, turn_id) if turn_id is not None else (conversation_id, run_id)
+    if rating_key in ratings:
+        submitted = ratings[rating_key]
+        label = "👍 좋아요" if submitted == 1 else "👎 싫어요"
+        st.caption(f"평가 완료: {label}")
+        return
+
+    conv = conversation_id or "no-conv"
+    turn_part = str(turn_id) if turn_id is not None else "no-turn"
+    key_base = f"{conv}-{turn_part}-{run_id}"
+
+    cols = st.columns(2)
+    with cols[0]:
+        if st.button("👍 좋아요", key=f"like-{key_base}", use_container_width=True):
+            _record_rating(rating_key, turn_id, 1)
+    with cols[1]:
+        if st.button("👎 싫어요", key=f"dislike-{key_base}", use_container_width=True):
+            _record_rating(rating_key, turn_id, -1)
 
 
 def next_turn_id() -> int:

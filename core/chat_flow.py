@@ -52,6 +52,7 @@ def _handle_builtin_commands(
     stripped_for_command: str,
     debug_mode: bool,
     run_id: str,
+    turn_id: int,
 ) -> Dict[str, Optional[str]]:
     """debug/limit/help/example/SQL 프리픽스와 같은 빌트인 명령을 처리합니다."""
 
@@ -66,7 +67,9 @@ def _handle_builtin_commands(
     def _ack_and_finish(message: str, intent: str) -> Dict[str, Optional[str]]:
         """공통 응답/로그 세팅 후 반환."""
 
-        append_assistant_message(run_id, message, intent if intent != "debug" else "Debug Mode")
+        append_assistant_message(
+            run_id, message, intent if intent != "debug" else "Debug Mode", turn_id=turn_id
+        )
         st.session_state["active_run_id"] = None
         result["handled_command"] = True
         result["assistant_response_for_log"] = message
@@ -92,7 +95,7 @@ def _handle_builtin_commands(
                 rerun_required = True
         else:
             ack_message = f"{command_spec['usage']} 형태로 사용해주세요."
-        append_assistant_message(run_id, ack_message, "Debug Mode")
+        append_assistant_message(run_id, ack_message, "Debug Mode", turn_id=turn_id)
         st.session_state["active_run_id"] = None
         if rerun_required:
             rerun_callable = getattr(st, "rerun", None) or getattr(
@@ -251,6 +254,7 @@ def _render_agent_answer(
     final_text: str,
     run_id: str,
     log_updates: Dict[str, Optional[str]],
+    turn_id: int,
 ) -> str:
     """에이전트 응답을 렌더링하고 SQL 추출/보정 결과를 반환합니다."""
 
@@ -271,7 +275,7 @@ def _render_agent_answer(
 
     st.caption(f"{agent_mode} 응답")
     st.write(final_text)
-    append_assistant_message(run_id, final_text, agent_mode)
+    append_assistant_message(run_id, final_text, agent_mode, turn_id=turn_id)
     log_updates["assistant_response_for_log"] = final_text
     log_updates["sql_capture_for_log"] = sql_capture
     log_updates["intent_for_log"] = "sql" if agent_mode == "SQL Builder" else "eda"
@@ -318,6 +322,7 @@ def _run_agent_interaction(
     pytool_obj,
     llm,
     tools_used_for_log: List[str],
+    turn_id: int,
 ) -> Dict[str, Optional[str]]:
     """SQL/EDA 에이전트를 실행하고 UI/로그 업데이트를 수행합니다."""
 
@@ -332,7 +337,7 @@ def _run_agent_interaction(
             "df_A 데이터가 없습니다. 먼저 SQL Builder 에이전트나 Databricks Loader로 데이터를 불러온 뒤 다시 시도하세요."
         )
         st.error(error_msg)
-        append_assistant_message(run_id, error_msg, agent_mode)
+        append_assistant_message(run_id, error_msg, agent_mode, turn_id=turn_id)
         st.session_state["active_run_id"] = None
         log_updates["assistant_response_for_log"] = error_msg
         log_updates["intent_for_log"] = "eda"
@@ -371,6 +376,7 @@ def _run_agent_interaction(
             final_text=final_text,
             run_id=run_id,
             log_updates=log_updates,
+            turn_id=turn_id,
         )
 
         # SQL Builder일 때 추출한 SQL 메모리/자동 실행 처리
@@ -441,6 +447,7 @@ def handle_user_query(
         stripped_for_command=stripped_for_command,
         debug_mode=debug_mode,
         run_id=run_id,
+        turn_id=turn_id,
     )
 
     log_state = _default_log_state()
@@ -512,6 +519,7 @@ def handle_user_query(
             pytool_obj=pytool_obj,
             llm=llm,
             tools_used_for_log=tools_used_for_log,
+            turn_id=turn_id,
         )
         for key, value in agent_updates.items():
             if key == "tools_used_for_log":

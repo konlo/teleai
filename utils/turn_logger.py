@@ -159,3 +159,33 @@ def log_turn(payload: Dict[str, Any]) -> None:
         run_sql(statement, creds)
     except Exception as exc:  # pragma: no cover - network/SQL errors
         st.warning(f"로그 저장 실패: {exc}")
+
+
+def update_user_rating(conversation_id: str, turn_id: int, rating: int) -> None:
+    """
+    Update user_rating for a given conversation/turn.
+
+    Args:
+        conversation_id: 고유 대화 ID
+        turn_id: 턴 ID
+        rating: 1 (좋아요) 또는 -1 (싫어요)
+    """
+
+    if not databricks_connector_available():
+        return
+    try:
+        _ensure_log_table()
+    except Exception:
+        return
+
+    stmt = (
+        f"UPDATE {LOG_TABLE} "
+        f"SET user_rating = {_literal(rating)} "
+        f"WHERE conversation_id = {_literal(conversation_id)} "
+        f"AND turn_id = {_literal(turn_id)}"
+    )
+    try:
+        creds = get_databricks_credentials()
+        run_sql(stmt, creds)
+    except Exception as exc:  # pragma: no cover - network/SQL errors
+        st.warning(f"평가 저장 실패: {exc}")

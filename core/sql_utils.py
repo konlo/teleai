@@ -10,7 +10,7 @@ from utils.session import (
 )
 
 
-AssistantAppender = Callable[[str, str, str], None]
+AssistantAppender = Callable[[str, str, str, Optional[int]], None]
 FigureAttacher = Callable[[str, List[Dict[str, Any]]], None]
 
 CODE_FENCE_PATTERN = re.compile(r"```(?:sql)?\s*(.*?)\s*```", re.IGNORECASE | re.DOTALL)
