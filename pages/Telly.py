@@ -138,7 +138,11 @@ st.write("---")
 
 # 대화 표시용 플레이스홀더/렌더러
 conversation_placeholder = st.empty()
-conversation_log_renderer = lambda: display_conversation_log(conversation_placeholder)
+conversation_log_renderer = (
+    lambda show_ratings=True, ratings_position="last_assistant": display_conversation_log(
+        conversation_placeholder, show_ratings=show_ratings, ratings_position=ratings_position
+    )
+)
 
 chat_placeholder = BASE_CHAT_PLACEHOLDER
 

@@ -421,17 +421,18 @@ def handle_user_query(
     pytool_obj,
     llm,
     next_turn_id_fn: Callable[[], int],
-    display_conversation_log: Callable[[], None],
+    display_conversation_log: Callable[[bool], None],
 ) -> None:
     """단일 턴 처리: 명령 파싱 → SQL 실행 여부 판단 → 에이전트 호출 → 로그 기록."""
 
     turn_id = next_turn_id_fn()
+    st.session_state["turn_id"] = turn_id
     turn_started = time.time()
     run_id = str(uuid4())
     st.session_state["active_run_id"] = run_id
     original_user_q = user_q
     append_user_message(run_id, original_user_q)
-    display_conversation_log()
+    display_conversation_log(show_ratings=False)
 
     stripped_for_command = original_user_q.lstrip()
     lowered_for_command = stripped_for_command.lower()
