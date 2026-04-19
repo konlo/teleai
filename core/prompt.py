@@ -225,8 +225,23 @@ def build_sql_prompt(
     )
     context_lines.append(
         "Do NOT output any other fields such as Question:, Observation:, Explanation:, or Execution: unless the tool runner provides Observation: back to you.\n"
-        "Do NOT include markdown fences."
+        "Do NOT include markdown fences.\n\n"
     )
+
+    try:
+        from core.learning_memory import get_successful_examples
+        examples = get_successful_examples(intent="sql_execute")
+        if not examples:
+            examples = get_successful_examples(intent="sql")
+        
+        if examples:
+            context_lines.append("Here are some previous successful queries as examples:\n")
+            for ex in examples:
+                user_q = escape_braces(ex["original_query"])
+                ans_sql = escape_braces(ex["generated_sql"])
+                context_lines.append(f"User: {user_q}\nSQL:\n{ans_sql}\n\n")
+    except Exception:
+        pass
 
     prompt = ChatPromptTemplate.from_messages(
         [

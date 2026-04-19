@@ -177,6 +177,22 @@ def _record_rating(rating_key: Any, turn_id: Optional[int], rating: int) -> None
     if not conversation_id:
         return
     update_user_rating(conversation_id, turn_id, rating)
+    
+    try:
+        from core.learning_memory import update_rating_by_query
+        # Attempt to find the original user query for this turn
+        log = st.session_state.get("conversation_log", [])
+        # Iterate backwards to find the user message just before this turn's assistant message
+        for entry in reversed(log):
+            if entry.get("role") == "user":
+                original_user_q = entry.get("content")
+                if original_user_q:
+                    # Update local learning memory
+                    update_rating_by_query(original_user_q, rating)
+                break
+    except Exception as e:
+        pass
+
     ratings = st.session_state.setdefault("ratings_given", {})
     ratings[rating_key] = rating
     st.session_state["ratings_given"] = ratings

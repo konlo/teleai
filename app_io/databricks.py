@@ -91,6 +91,7 @@ def _collect_rows(cursor) -> pd.DataFrame:
 def run_query(query: str, config: DatabricksConfig) -> pd.DataFrame:
     """Execute an arbitrary SQL statement and return a DataFrame."""
     _ensure_connector()
+    print(f"[Databricks] Connecting to {config.server_hostname}...")
     with databricks_sql.connect(
         server_hostname=config.server_hostname,
         http_path=config.http_path,
@@ -98,8 +99,10 @@ def run_query(query: str, config: DatabricksConfig) -> pd.DataFrame:
         catalog=config.catalog,
         schema=config.schema,
     ) as connection:
+        print("[Databricks] Connection established. Executing query...")
         with connection.cursor() as cursor:
             cursor.execute(query)
+            print("[Databricks] Query executed. Fetching results...")
             return _collect_rows(cursor)
 
 
@@ -184,6 +187,7 @@ def load_table(
     return run_query(query, config)
 
 
+
 __all__ = [
     "DatabricksConfig",
     "DatabricksConnectorError",
@@ -194,20 +198,3 @@ __all__ = [
     "list_tables",
     "load_table",
 ]
-
-
-def list_catalogs(config: DatabricksConfig) -> pd.DataFrame:
-    """Return available catalogs in the workspace."""
-    _ensure_connector()
-    cfg = DatabricksConfig(
-        server_hostname=config.server_hostname,
-        http_path=config.http_path,
-        access_token=config.access_token,
-        catalog=None,
-        schema=None,
-    )
-    catalogs = run_query("SHOW CATALOGS", cfg)
-    if catalogs.empty:
-        return catalogs
-    rename_map = {"catalog": "name", "catalog_name": "name"}
-    return catalogs.rename(columns=rename_map)

@@ -38,7 +38,14 @@ CHAT_COMMAND_SPECS: List[Dict[str, str]] = [
     },
 ]
 
-DATA_LOADING_KEYWORDS = ("데이타 로딩",)
+AUTO_SQL_KEYWORDS = (
+    "데이타 로딩", "조회", "본포", "분포", "통계", "평균", "최대", "최소", 
+    "가져와", "보여줘", "리스트", "찾아", "데이터", "테이블", "전체"
+)
+
+VIZ_KEYWORDS = (
+    "분포", "본포", "그려", "그래프", "시각화", "차트", "플롯", "plot", "chart", "graph", "추이", "상관관계"
+)
 
 COMMAND_EXAMPLE_LINES = [
     "1. %sql cluster가 Huahai 인 것을 보고 싶어",

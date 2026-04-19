@@ -1,3 +1,30 @@
+🚀 Telemetry Chatbot Telly
+==========================
+
+### How to Run
+1. Install dependencies:
+   ```bash
+   pip install -r requirements.txt
+   ```
+2. Set up your environment variables in `.env`:
+   - `GOOGLE_API_KEY`: Your Gemini API Key
+   - `DATABRICKS_HOST`: Databricks Server Hostname
+   - `DATABRICKS_HTTP_PATH`: Databricks HTTP Path
+   - `DATABRICKS_TOKEN`: Databricks Personal Access Token
+3. Launch the application:
+   ```bash
+   streamlit run main.py
+   ```
+
+2026.04.19
+1. Refactored `main.py` into a premium landing page with a dedicated "Launch Dashboard" button.
+2. Upgraded the design system in `ui/style.py` with modern typography (Inter/Outfit) and gradients.
+3. Fixed a redundant code bug in `app_io/databricks.py`.
+4. Verified that the SQL Builder utilizes the initial table schema persistently (Requirement #4).
+5. 지능형 에이전트 라우팅(Intelligent Routing) 도입:
+   - 사용자가 `%sql` 프리픽스 없이 질문하더라도 키워드(분포, 조회 등)나 현재 데이터 상태(미리보기 10건 이하)를 감지하여 자동으로 SQL Builder를 호출하도록 개선.
+   - 이를 통해 자연어 질문만으로도 데이터 로딩과 분석이 유기적으로 이어지도록 UX 고도화.
+
 2025.11.06
 1. distribution tool 제거 
 2. load csv tool 제거 

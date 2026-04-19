@@ -2,6 +2,7 @@ import time
 from typing import Callable, Dict, List, Optional
 from uuid import uuid4
 
+import pandas as pd
 import streamlit as st
 from langchain_community.callbacks.streamlit import StreamlitCallbackHandler
 
@@ -15,7 +16,8 @@ from ui.chat_log import (
 from ui.viz import render_visualizations
 from utils.prompt_help import (
     CHAT_COMMAND_SPECS,
-    DATA_LOADING_KEYWORDS,
+    AUTO_SQL_KEYWORDS,
+    VIZ_KEYWORDS,
     build_command_example_message,
     build_command_help_message,
 )
@@ -425,6 +427,11 @@ def handle_user_query(
 ) -> None:
     """단일 턴 처리: 명령 파싱 → SQL 실행 여부 판단 → 에이전트 호출 → 로그 기록."""
 
+    # 자동 연쇄 분석 처리: SQL 로딩 후 EDA가 필요한 경우를 위해 저장해둔 질문 복구
+    auto_pending = st.session_state.pop("auto_eda_pending", None)
+    if auto_pending:
+        user_q = auto_pending
+
     turn_id = next_turn_id_fn()
     st.session_state["turn_id"] = turn_id
     turn_started = time.time()
@@ -467,7 +474,7 @@ def handle_user_query(
     if (
         not handled_command
         and command_prefix is None
-        and any(keyword in original_user_q for keyword in DATA_LOADING_KEYWORDS)
+        and any(keyword in original_user_q for keyword in AUTO_SQL_KEYWORDS)
     ):
         command_prefix = "sql"
 
@@ -489,16 +496,36 @@ def handle_user_query(
         log_state["intent_for_log"] = execute_result["intent_for_log"]
         tools_used_for_log.extend(execute_result.get("tools_used_for_log", []))
 
-    # 빌트인 명령 외의 일반 질의 처리
+    # 프리픽스가 없고 빌트인 명령도 아닌 경우: 지능형 라우팅 (SQL Builder vs EDA Analyst)
     if not handled_command:
-        if command_prefix == "sql":
-            agent_mode = "SQL Builder"
-            tools_used_for_log.append("sql_builder_agent")
-            st.session_state["command_prefix"] = "sql"
-        else:
+        df_a_data = st.session_state.get("df_A_data")
+        is_preview_state = (df_a_data is None) or (isinstance(df_a_data, pd.DataFrame) and len(df_a_data) <= 10)
+        
+        force_eda_due_to_chaining = (auto_pending is not None)
+        
+        if force_eda_due_to_chaining:
             agent_mode = "EDA Analyst"
             tools_used_for_log.append("eda_agent")
             st.session_state["command_prefix"] = None
+        else:
+            from core.llm_router import route_query
+            with st.spinner("Telly가 의도를 분석 중입니다..."):
+                plan = route_query(llm, original_user_q, is_preview_state)
+            
+            # Intent Confirmation UI
+            st.info(f"💡 **Telly의 의도 파악**: {plan.reasoning}")
+            
+            # Follow suggested_agents
+            first_agent = plan.suggested_agents[0] if plan.suggested_agents else "EDA Analyst"
+            agent_mode = first_agent
+            st.session_state["command_prefix"] = "sql" if agent_mode == "SQL Builder" else None
+            tools_used_for_log.append("sql_builder_agent" if agent_mode == "SQL Builder" else "eda_agent")
+            
+            # Setup for Chaining
+            if len(plan.suggested_agents) > 1 and plan.suggested_agents[1] == "EDA Analyst":
+                st.session_state["llm_router_suggested_chaining"] = True
+            else:
+                st.session_state["llm_router_suggested_chaining"] = False
 
         st.session_state["last_agent_mode"] = agent_mode
 
@@ -553,6 +580,41 @@ def handle_user_query(
             python_output_summary=log_state["python_output_summary_for_log"],
         )
         log_turn(payload)
+
+    # SQL 로딩 후 LLM 라우터가 분석/시각화를 제안했다면 데이터를 로드한 직후 자동으로 EDA 트리거
+    if (
+        not handled_command
+        and st.session_state.get("last_agent_mode") == "SQL Builder"
+        and st.session_state.get("last_sql_status") == "success"
+        and st.session_state.get("llm_router_suggested_chaining", False)
+    ):
+        st.session_state["auto_eda_pending"] = original_user_q
+        st.rerun()
+
+    # 사후 결과 판단 및 검증 UI 추가 (Human-in-the-Loop)
+    if not handled_command and st.session_state.get("auto_eda_pending") is None:
+        st.markdown("---")
+        st.markdown(f"**🤖 이 결과가 처음 의도하셨던 '{original_user_q[:20]}...'와(과) 정확히 일치하나요?**")
+        st.caption("여러분의 피드백은 Telly가 도메인 지식을 학습하는 데 활용됩니다.")
+        
+        # Record interaction into the local learning DB
+        from core.learning_memory import record_interaction
+        from core.llm_router import ExecutionPlan
+        
+        # Determine intent name
+        intent_val = log_state.get("intent_for_log", "OTHER")
+        sql_val = log_state.get("sql_capture_for_log")
+        py_val = log_state.get("generated_python_for_log")
+        
+        # Save to SQLite and store the row ID in session state for rating updates
+        # Only record if we actually executed an agent
+        if st.session_state.get("active_run_id") is None:
+            db_row_id = record_interaction(
+                original_query=original_user_q,
+                classified_intent=intent_val,
+                generated_sql=sql_val if sql_val else None,
+                generated_python=py_val if py_val else None,
+            )
 
 
 __all__ = ["handle_user_query"]
