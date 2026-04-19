@@ -29,7 +29,32 @@ def init_db():
             )
             """
         )
+        conn.execute(
+            """
+            CREATE TABLE IF NOT EXISTS perf_logs (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                timestamp TEXT,
+                operation_name TEXT,
+                duration_ms REAL,
+                run_id TEXT
+            )
+            """
+        )
         conn.commit()
+
+def record_performance(operation_name: str, duration_ms: float, run_id: Optional[str] = None):
+    """Record performance metrics for an operation."""
+    with _get_connection() as conn:
+        timestamp = datetime.datetime.utcnow().isoformat()
+        conn.execute(
+            """
+            INSERT INTO perf_logs (timestamp, operation_name, duration_ms, run_id)
+            VALUES (?, ?, ?, ?)
+            """,
+            (timestamp, operation_name, duration_ms, run_id)
+        )
+        conn.commit()
+
 
 def record_interaction(
     original_query: str,

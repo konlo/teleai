@@ -9,6 +9,8 @@ from typing import Optional
 
 import pandas as pd
 
+from utils.perf_monitor import track_time
+
 try:  # pragma: no cover - optional dependency
     from databricks import sql as databricks_sql
 except ImportError:  # pragma: no cover - handled at runtime
@@ -88,6 +90,7 @@ def _collect_rows(cursor) -> pd.DataFrame:
     return pd.DataFrame(rows, columns=columns)
 
 
+@track_time("databricks_run_query")
 def run_query(query: str, config: DatabricksConfig) -> pd.DataFrame:
     """Execute an arbitrary SQL statement and return a DataFrame."""
     _ensure_connector()

@@ -4,11 +4,14 @@ from typing import List, Optional
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.pydantic_v1 import BaseModel, Field
 
+from utils.perf_monitor import track_time
+
 class ExecutionPlan(BaseModel):
     intent_type: str = Field(description="One of: LOAD_DATA, SUMMARIZE, VISUALIZE, DRILL_DOWN, FORECAST, OTHER")
     reasoning: str = Field(description="Short explanation of why this intent was chosen (in Korean). Example: '데이터 분포 확인을 위해 테이블 조회를 진행한 뒤, 시각화를 수행합니다.'")
     suggested_agents: List[str] = Field(description="Ordered list of agents to run, e.g., ['SQL Builder'], or ['SQL Builder', 'EDA Analyst']")
 
+@track_time("llm_intent_routing")
 def route_query(llm, user_query: str, is_preview_state: bool) -> ExecutionPlan:
     """Classify the user intent and provide an execution plan."""
     

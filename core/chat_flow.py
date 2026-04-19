@@ -204,16 +204,18 @@ def _build_callbacks(debug_mode: bool, log_placeholder):
 def _invoke_agent_runner(agent_runner, agent_request, callbacks, session_id, spinner_text):
     """에이전트를 실행하고 예외를 사용자 친화적으로 처리합니다."""
 
+    from utils.perf_monitor import TimeTracker
     with st.spinner(spinner_text):
-        try:
-            return agent_runner.invoke(
-                {"input": agent_request},
-                {
-                    "callbacks": callbacks,
-                    "configurable": {"session_id": session_id},
-                },
-            )
-        except Exception as exc:
+        with TimeTracker("agent_execution"):
+            try:
+                return agent_runner.invoke(
+                    {"input": agent_request},
+                    {
+                        "callbacks": callbacks,
+                        "configurable": {"session_id": session_id},
+                    },
+                )
+            except Exception as exc:
             error_text = str(exc)
             lower_error = error_text.lower()
             if "serviceunavailable" in lower_error or "model is overloaded" in lower_error:

@@ -80,6 +80,9 @@ def ensure_limit_clause(sql: str, limit: Optional[int] = None) -> str:
     return f"{body}{semicolon}"
 
 
+from utils.perf_monitor import track_time
+
+@track_time("execute_sql_preview")
 def execute_sql_preview(
     *,
     run_id: str,
