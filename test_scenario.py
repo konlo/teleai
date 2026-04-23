@@ -41,6 +41,24 @@ def run_tests():
             "query": "데이터의 요약 통계를 보여줘",
             "is_preview_state": False,
             "expected_agents": ["EDA Analyst"]
+        },
+        {
+            "description": "5-1. [다단계-1] 20~30대 데이터 로딩 요청",
+            "query": "나이가 20대에서 30대 사이의 데이타를 로딩해줘",
+            "is_preview_state": True,
+            "expected_agents": ["SQL Builder"]
+        },
+        {
+            "description": "5-2. [다단계-2] 데이터 로드 후 시각화 요청",
+            "query": "age에 따른 job 분포를 시각화 해줘",
+            "is_preview_state": False,
+            "expected_agents": ["EDA Analyst"]
+        },
+        {
+            "description": "5-3. [다단계-3] 필터링 추가 시각화 요청",
+            "query": "여기에서 unknown은 제거 해서 그려줘",
+            "is_preview_state": False,
+            "expected_agents": ["EDA Analyst"]
         }
     ]
 

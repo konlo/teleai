@@ -536,17 +536,30 @@ def handle_user_query(
             st.session_state["command_prefix"] = None
             st.session_state["llm_router_suggested_chaining"] = False
             _tlog("ROUTING", f"✅ Force EDA due to chaining. agent_mode={agent_mode}")
+            st.info("🔗 SQL 데이터 로딩 완료 → **EDA Analyst** 자동 시각화 단계로 진입합니다.")
         else:
             from core.llm_router import route_query
-            with st.spinner("Telly가 의도를 분석 중입니다..."):
+            with st.status("🧠 Telly가 의도를 분석 중입니다...", expanded=True) as status:
+                st.write("📡 LLM 라우터에 질문을 전송합니다...")
+                st.write(f"   질문: `{original_user_q[:60]}...`")
+                st.write(f"   현재 데이터 상태: {'미리보기 (10행 이하)' if is_preview_state else '전체 데이터 로드됨'}")
+                
                 plan = route_query(llm, original_user_q, is_preview_state)
+                
+                st.write(f"✅ 의도 분석 완료!")
+                st.write(f"   - 의도 유형: **{plan.intent_type}**")
+                st.write(f"   - 추론: {plan.reasoning}")
+                st.write(f"   - 실행 계획: `{' → '.join(plan.suggested_agents)}`")
+                
+                # Follow suggested_agents
+                first_agent = plan.suggested_agents[0] if plan.suggested_agents else "EDA Analyst"
+                agent_mode = first_agent
+                
+                if len(plan.suggested_agents) > 1:
+                    st.write(f"🔗 **연쇄 실행 모드**: 먼저 `{plan.suggested_agents[0]}`으로 데이터를 로드한 뒤, 자동으로 `{plan.suggested_agents[1]}`로 분석/시각화합니다.")
+                
+                status.update(label=f"✅ 의도 분석 완료 → **{agent_mode}** 실행 준비", state="complete")
             
-            # Intent Confirmation UI
-            st.info(f"💡 **Telly의 의도 파악**: {plan.reasoning}")
-            
-            # Follow suggested_agents
-            first_agent = plan.suggested_agents[0] if plan.suggested_agents else "EDA Analyst"
-            agent_mode = first_agent
             st.session_state["command_prefix"] = "sql" if agent_mode == "SQL Builder" else None
             tools_used_for_log.append("sql_builder_agent" if agent_mode == "SQL Builder" else "eda_agent")
             
