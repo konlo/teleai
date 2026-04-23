@@ -2,52 +2,165 @@ import streamlit as st
 
 
 def inject_base_styles() -> None:
-    """Apply base layout/typography styles for the Telly app."""
+    """Apply premium design system styles for the Telly app."""
 
     st.markdown(
         """
         <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Outfit:wght@400;600;700&display=swap');
+
         :root {
-            font-size: 16px;
+            --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --accent-color: #00f2fe;
+            --bg-dark: #0f172a;
+            --card-bg: rgba(30, 41, 59, 0.7);
+            --text-main: #f8fafc;
         }
 
-        html,
-        body,
-        [data-testid="stAppViewContainer"] {
-            font-size: 16px;
+        /* Global Reset */
+        html, body, [data-testid="stAppViewContainer"] {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-dark);
+            color: var(--text-main);
         }
 
-        .block-container {
-            max-width: 900px;
-            margin: 0 auto;
-            width: 100%;
-            padding-left: 1.5rem;
-            padding-right: 1.5rem;
+        h1, h2, h3 {
+            font-family: 'Outfit', sans-serif;
+            font-weight: 700;
         }
 
-        [data-testid="stChatInput"] {
-            width: 100%;
-            max-width: 1000px;
-            margin: 0 auto;
-            padding-left: 1.5rem;
-            padding-right: 1.5rem;
+        /* Hero Section */
+        .hero-container {
+            position: relative;
+            padding: 6rem 2rem;
+            text-align: center;
+            background: var(--primary-gradient);
+            border-radius: 1.5rem;
+            margin-bottom: 3rem;
+            overflow: hidden;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
         }
 
-        [data-testid="stChatInput"] > div {
-            width: 100%;
-            min-height: 5rem;
+        .hero-overlay {
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: url('https://www.transparenttextures.com/patterns/carbon-fibre.png');
+            opacity: 0.1;
         }
 
-        [data-testid="stChatInputTextArea"] {
-            min-height: 5rem;
+        .hero-content {
+            position: relative;
+            z-index: 10;
         }
 
-        @media (max-width: 1200px) {
-            .block-container,
-            [data-testid="stChatInput"] {
-                padding-left: 1rem;
-                padding-right: 1rem;
-            }
+        .hero-title {
+            font-size: 3.5rem !important;
+            margin-bottom: 1rem;
+            color: white;
+            text-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .hero-subtitle {
+            font-size: 1.25rem;
+            color: rgba(255, 255, 255, 0.9);
+            margin-bottom: 2rem;
+        }
+
+        /* Feature Grid */
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 4rem;
+        }
+
+        .feature-card {
+            background: var(--card-bg);
+            padding: 2rem;
+            border-radius: 1rem;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+            border-color: var(--accent-color);
+        }
+
+        .feature-card h3 {
+            margin-bottom: 0.75rem;
+            color: var(--accent-color);
+        }
+
+        /* Buttons */
+        .primary-button {
+            display: inline-block;
+            background: white;
+            color: #764ba2;
+            padding: 0.75rem 2rem;
+            border-radius: 9999px;
+            font-weight: 600;
+            text-decoration: none;
+            transition: all 0.2s ease;
+        }
+
+        .primary-button:hover {
+            transform: scale(1.05);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.2);
+            color: #667eea;
+        }
+
+        /* Chat Message Styling */
+        [data-testid="stChatMessage"] {
+            border-radius: 1rem;
+            margin-bottom: 1rem;
+            padding: 1rem;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        [data-testid="chatAvatarIcon-user"] {
+            background-color: #667eea !important;
+        }
+
+        [data-testid="chatAvatarIcon-assistant"] {
+            background-color: var(--accent-color) !important;
+        }
+
+        .stChatMessage.ad-hoc-callout {
+            border-left: 5px solid var(--accent-color);
+            background-color: rgba(0, 242, 254, 0.05);
+        }
+
+        /* Sidebar Styling */
+        [data-testid="stSidebar"] {
+            background-color: #0f172a !important;
+            border-right: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        /* Accent text */
+        .accent-text {
+            color: var(--accent-color);
+            font-weight: 600;
+        }
+
+        /* Hide Streamlit components */
+        #MainMenu {visibility: hidden;}
+        footer {visibility: hidden;}
+        
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #0f172a;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #334155;
+            border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #475569;
         }
         </style>
         """,

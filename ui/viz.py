@@ -9,7 +9,9 @@ try:
 except Exception:  # pragma: no cover - matplotlib optional
     plt = None
 
+from utils.perf_monitor import track_time
 
+@track_time("render_visualizations")
 def render_visualizations(pytool: Any) -> List[Dict[str, Any]]:
     """Render charts and tables based on intermediate DataFrames."""
     # st.markdown("---")s

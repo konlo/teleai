@@ -9,6 +9,8 @@ from typing import Optional
 
 import pandas as pd
 
+from utils.perf_monitor import track_time
+
 try:  # pragma: no cover - optional dependency
     from databricks import sql as databricks_sql
 except ImportError:  # pragma: no cover - handled at runtime
@@ -88,9 +90,11 @@ def _collect_rows(cursor) -> pd.DataFrame:
     return pd.DataFrame(rows, columns=columns)
 
 
+@track_time("databricks_run_query")
 def run_query(query: str, config: DatabricksConfig) -> pd.DataFrame:
     """Execute an arbitrary SQL statement and return a DataFrame."""
     _ensure_connector()
+    print(f"[Databricks] Connecting to {config.server_hostname}...")
     with databricks_sql.connect(
         server_hostname=config.server_hostname,
         http_path=config.http_path,
@@ -98,8 +102,10 @@ def run_query(query: str, config: DatabricksConfig) -> pd.DataFrame:
         catalog=config.catalog,
         schema=config.schema,
     ) as connection:
+        print("[Databricks] Connection established. Executing query...")
         with connection.cursor() as cursor:
             cursor.execute(query)
+            print("[Databricks] Query executed. Fetching results...")
             return _collect_rows(cursor)
 
 
@@ -184,6 +190,7 @@ def load_table(
     return run_query(query, config)
 
 
+
 __all__ = [
     "DatabricksConfig",
     "DatabricksConnectorError",
@@ -194,20 +201,3 @@ __all__ = [
     "list_tables",
     "load_table",
 ]
-
-
-def list_catalogs(config: DatabricksConfig) -> pd.DataFrame:
-    """Return available catalogs in the workspace."""
-    _ensure_connector()
-    cfg = DatabricksConfig(
-        server_hostname=config.server_hostname,
-        http_path=config.http_path,
-        access_token=config.access_token,
-        catalog=None,
-        schema=None,
-    )
-    catalogs = run_query("SHOW CATALOGS", cfg)
-    if catalogs.empty:
-        return catalogs
-    rename_map = {"catalog": "name", "catalog_name": "name"}
-    return catalogs.rename(columns=rename_map)

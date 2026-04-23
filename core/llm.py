@@ -5,6 +5,7 @@ import streamlit as st
 from dotenv import load_dotenv
 from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain_openai import AzureChatOpenAI
+from langchain_community.chat_models import ChatOllama
 from langchain_core.language_models import BaseChatModel
 
 
@@ -18,6 +19,9 @@ def load_llm(
     provider = os.environ.get("LLM_PROVIDER", "google").lower()
     if provider == "azure":
         return _load_azure_llm(temperature=temperature, max_tokens=max_tokens)
+    elif provider == "ollama":
+        ollama_model = os.environ.get("OLLAMA_MODEL", "gemma4:e4b")
+        return _load_ollama_llm(model=ollama_model, temperature=temperature)
     return _load_google_llm(model=model, temperature=temperature, max_tokens=max_tokens)
 
 
@@ -74,6 +78,15 @@ def _load_azure_llm(*, temperature: float, max_tokens: Optional[int]) -> AzureCh
     if max_tokens is not None:
         kwargs["max_tokens"] = max_tokens
     return AzureChatOpenAI(**kwargs)
+
+
+def _load_ollama_llm(*, model: str, temperature: float) -> ChatOllama:
+    base_url = os.environ.get("OLLAMA_BASE_URL", "http://localhost:11434")
+    return ChatOllama(
+        model=model,
+        temperature=temperature,
+        base_url=base_url
+    )
 
 
 __all__ = ["load_llm"]
