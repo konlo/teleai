@@ -28,6 +28,19 @@ from utils.session import (
 )
 from utils.turn_logger import build_turn_payload, log_turn
 
+import datetime as _dt
+
+_TLOG_PATH = "/tmp/telly_debug.log"
+
+def _tlog(tag: str, msg: str) -> None:
+    """Append a timestamped debug line to /tmp/telly_debug.log"""
+    line = f"[{_dt.datetime.now().strftime('%H:%M:%S.%f')}] [{tag}] {msg}"
+    try:
+        with open(_TLOG_PATH, "a") as f:
+            f.write(line + "\n")
+    except Exception:
+        pass
+
 
 def _default_log_state() -> Dict[str, Optional[str]]:
     """턴 단위 로깅에 사용할 기본 상태를 생성합니다."""
@@ -216,15 +229,15 @@ def _invoke_agent_runner(agent_runner, agent_request, callbacks, session_id, spi
                     },
                 )
             except Exception as exc:
-            error_text = str(exc)
-            lower_error = error_text.lower()
-            if "serviceunavailable" in lower_error or "model is overloaded" in lower_error:
-                friendly = "AI 모델이 일시적으로 과부하 상태입니다. 잠시 후 다시 시도해주세요."
-                st.warning(friendly)
-                st.info("필요시 같은 요청을 조금 뒤에 다시 보내주세요.")
-                return {"output": friendly}
-            st.error(f"Agent 실행 중 오류: {error_text}")
-            return {"output": f"Agent 실행 중 오류: {error_text}"}
+                error_text = str(exc)
+                lower_error = error_text.lower()
+                if "serviceunavailable" in lower_error or "model is overloaded" in lower_error:
+                    friendly = "AI 모델이 일시적으로 과부하 상태입니다. 잠시 후 다시 시도해주세요."
+                    st.warning(friendly)
+                    st.info("필요시 같은 요청을 조금 뒤에 다시 보내주세요.")
+                    return {"output": friendly}
+                st.error(f"Agent 실행 중 오류: {error_text}")
+                return {"output": f"Agent 실행 중 오류: {error_text}"}
 
 
 def _capture_python_steps(intermediate_steps, tools_used_for_log: List[str], log_updates: Dict):
@@ -429,8 +442,14 @@ def handle_user_query(
 ) -> None:
     """단일 턴 처리: 명령 파싱 → SQL 실행 여부 판단 → 에이전트 호출 → 로그 기록."""
 
+    _tlog("ENTRY", f"========== 새 턴 시작 ==========")
+    _tlog("ENTRY", f"user_q={user_q[:80]}")
+    _tlog("ENTRY", f"df_a_ready={df_a_ready}, debug_mode={debug_mode}")
+    _tlog("ENTRY", f"session: last_sql_status={st.session_state.get('last_sql_status')}, llm_router_suggested_chaining={st.session_state.get('llm_router_suggested_chaining')}, auto_eda_pending={st.session_state.get('auto_eda_pending')}")
+
     # 자동 연쇄 분석 처리: SQL 로딩 후 EDA가 필요한 경우를 위해 저장해둔 질문 복구
     auto_pending = st.session_state.pop("auto_eda_pending", None)
+    _tlog("AUTO_PENDING", f"auto_pending popped = {auto_pending}")
     if auto_pending:
         user_q = auto_pending
 
@@ -473,12 +492,17 @@ def handle_user_query(
     agent_request = command_result["agent_request"] or original_user_q
 
     # 데이터 로딩 키워드가 있으면 SQL 빌더로 강제 전환
+    # (단, auto_eda_pending 으로 연쇄 실행 중일 때는 건너뛴다)
+    _kw_matched = [kw for kw in AUTO_SQL_KEYWORDS if kw in original_user_q]
+    _tlog("KEYWORD", f"handled_command={handled_command}, command_prefix={command_prefix}, auto_pending={auto_pending}, matched_keywords={_kw_matched}")
     if (
         not handled_command
         and command_prefix is None
-        and any(keyword in original_user_q for keyword in AUTO_SQL_KEYWORDS)
+        and auto_pending is None
+        and _kw_matched
     ):
         command_prefix = "sql"
+        _tlog("KEYWORD", f"→ command_prefix 강제 sql 전환")
 
     normalized_original = original_user_q.strip().lower()
     # 실행/수행/run/execute 입력 시 마지막 SQL 바로 실행
@@ -504,11 +528,14 @@ def handle_user_query(
         is_preview_state = (df_a_data is None) or (isinstance(df_a_data, pd.DataFrame) and len(df_a_data) <= 10)
         
         force_eda_due_to_chaining = (auto_pending is not None)
+        _tlog("ROUTING", f"is_preview_state={is_preview_state}, force_eda_due_to_chaining={force_eda_due_to_chaining}, df_a shape={df_a_data.shape if isinstance(df_a_data, pd.DataFrame) else 'None'}")
         
         if force_eda_due_to_chaining:
             agent_mode = "EDA Analyst"
             tools_used_for_log.append("eda_agent")
             st.session_state["command_prefix"] = None
+            st.session_state["llm_router_suggested_chaining"] = False
+            _tlog("ROUTING", f"✅ Force EDA due to chaining. agent_mode={agent_mode}")
         else:
             from core.llm_router import route_query
             with st.spinner("Telly가 의도를 분석 중입니다..."):
@@ -528,13 +555,24 @@ def handle_user_query(
                 st.session_state["llm_router_suggested_chaining"] = True
             else:
                 st.session_state["llm_router_suggested_chaining"] = False
+            _tlog("ROUTING", f"LLM Router result: intent={plan.intent_type}, agents={plan.suggested_agents}, reasoning={plan.reasoning[:80]}")
+            _tlog("ROUTING", f"→ agent_mode={agent_mode}, chaining={st.session_state.get('llm_router_suggested_chaining')}")
 
         st.session_state["last_agent_mode"] = agent_mode
 
-        if not agent_request:
-            agent_request = (
-                "새로운 SQL 쿼리를 작성해줘." if command_prefix == "sql" else original_user_q
-            )
+        if not agent_request or force_eda_due_to_chaining:
+            if force_eda_due_to_chaining:
+                # EDA 체이닝 시, SQL 결과 df_A의 실제 컬럼 정보를 포함하여 에이전트에게 전달
+                _df_now = st.session_state.get("df_A_data")
+                _cols_info = ""
+                if _df_now is not None and hasattr(_df_now, "columns"):
+                    _cols_info = f"\n\n[중요 컨텍스트] 현재 df_A에는 SQL 실행 결과가 이미 로드되어 있습니다. df_A의 칼럼은 {list(_df_now.columns)} 이며, {len(_df_now)}개의 행이 있습니다. SQL에서 이미 필터링이 완료되었으므로, df_A 데이터를 추가 필터링 없이 그대로 사용하여 시각화해주세요."
+                agent_request = original_user_q + _cols_info
+            else:
+                agent_request = "새로운 SQL 쿼리를 작성해줘." if command_prefix == "sql" else original_user_q
+
+        _tlog("AGENT_REQ", f"agent_mode={agent_mode}, command_prefix={command_prefix}")
+        _tlog("AGENT_REQ", f"agent_request={agent_request[:120]}")
 
         agent_updates = _run_agent_interaction(
             agent_mode=agent_mode,
@@ -551,6 +589,11 @@ def handle_user_query(
             tools_used_for_log=tools_used_for_log,
             turn_id=turn_id,
         )
+        _tlog("AGENT_DONE", f"agent_mode={agent_mode} 실행 완료")
+        _tlog("AGENT_DONE", f"sql_capture={agent_updates.get('sql_capture_for_log', '')[:80]}")
+        _tlog("AGENT_DONE", f"python_code={agent_updates.get('generated_python_for_log', '')[:120]}")
+        _tlog("AGENT_DONE", f"python_status={agent_updates.get('python_status_for_log')}")
+        _tlog("AGENT_DONE", f"python_error={agent_updates.get('python_error_for_log', '')[:120]}")
         for key, value in agent_updates.items():
             if key == "tools_used_for_log":
                 continue
@@ -584,14 +627,20 @@ def handle_user_query(
         log_turn(payload)
 
     # SQL 로딩 후 LLM 라우터가 분석/시각화를 제안했다면 데이터를 로드한 직후 자동으로 EDA 트리거
+    _chaining_flag = st.session_state.get("llm_router_suggested_chaining", False)
+    _sql_status = st.session_state.get("last_sql_status")
+    _tlog("CHAIN_CHECK", f"handled_command={handled_command}, last_sql_status={_sql_status}, chaining_flag={_chaining_flag}, auto_pending_was={auto_pending}")
     if (
         not handled_command
-        and st.session_state.get("last_agent_mode") == "SQL Builder"
-        and st.session_state.get("last_sql_status") == "success"
-        and st.session_state.get("llm_router_suggested_chaining", False)
+        and _sql_status == "success"
+        and _chaining_flag
     ):
+        _tlog("CHAIN_CHECK", f"✅ 체이닝 트리거! auto_eda_pending에 질문 저장 후 st.rerun() 호출")
+        _tlog("CHAIN_CHECK", f"원래 질문: {original_user_q}")
         st.session_state["auto_eda_pending"] = original_user_q
         st.rerun()
+    else:
+        _tlog("CHAIN_CHECK", f"❌ 체이닝 미트리거. 조건 미충족: handled={handled_command}, sql_status={_sql_status}, flag={_chaining_flag}")
 
     # 사후 결과 판단 및 검증 UI 추가 (Human-in-the-Loop)
     if not handled_command and st.session_state.get("auto_eda_pending") is None:

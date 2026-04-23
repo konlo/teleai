@@ -2,7 +2,7 @@ import json
 from typing import List, Optional
 
 from langchain_core.prompts import ChatPromptTemplate
-from langchain_core.pydantic_v1 import BaseModel, Field
+from pydantic import BaseModel, Field
 
 from utils.perf_monitor import track_time
 
@@ -15,11 +15,7 @@ class ExecutionPlan(BaseModel):
 def route_query(llm, user_query: str, is_preview_state: bool) -> ExecutionPlan:
     """Classify the user intent and provide an execution plan."""
     
-    prompt = ChatPromptTemplate.from_messages(
-        [
-            (
-                "system",
-                """You are an advanced Intent Router for a Telemetry Chatbot.
+    system_text = """You are an advanced Intent Router for a Telemetry Chatbot.
 Your goal is to parse the user's natural language request and determine the execution plan.
 
 Available Agents:
@@ -37,26 +33,52 @@ Intent Types:
 
 Provide a logical plan. If they want to draw a distribution and `is_preview_state` is True, suggested_agents should be ['SQL Builder', 'EDA Analyst'].
 If they just want to write a SQL query, suggested_agents is ['SQL Builder'].
-If `is_preview_state` is False, and they want to draw a graph, suggested_agents is ['EDA Analyst'].
-""",
-            ),
+If `is_preview_state` is False, and they want to draw a graph, suggested_agents is ['EDA Analyst']."""
+
+    prompt = ChatPromptTemplate.from_messages(
+        [
+            ("system", system_text),
             ("human", "{user_query}"),
         ]
     )
 
-    # Use the LLM to output structured data
-    chain = prompt | llm.with_structured_output(ExecutionPlan)
-    
     try:
-        result = chain.invoke({
+        # Use the LLM to output structured data
+        chain = prompt | llm.with_structured_output(ExecutionPlan)
+        return chain.invoke({
             "user_query": user_query,
             "is_preview_state": str(is_preview_state)
         })
-        return result
+    except NotImplementedError:
+        from langchain_core.output_parsers import PydanticOutputParser
+        parser = PydanticOutputParser(pydantic_object=ExecutionPlan)
+        fallback_prompt = ChatPromptTemplate.from_messages(
+            [
+                ("system", system_text + "\n\n{format_instructions}"),
+                ("human", "{user_query}"),
+            ]
+        )
+        fallback_chain = fallback_prompt | llm | parser
+        try:
+            return fallback_chain.invoke({
+                "user_query": user_query,
+                "is_preview_state": str(is_preview_state),
+                "format_instructions": parser.get_format_instructions()
+            })
+        except Exception as json_exc:
+            needs_eda = any(kw in user_query.lower() for kw in ["차트", "그려", "그래프", "plot", "chart", "시각화", "분포", "요약"])
+            agents = ["SQL Builder", "EDA Analyst"] if needs_eda and is_preview_state else (["EDA Analyst"] if not is_preview_state else ["SQL Builder"])
+            return ExecutionPlan(
+                intent_type="OTHER",
+                reasoning=f"시스템 내부 파싱 오류로 키워드 기반 라우팅을 수행합니다.",
+                suggested_agents=agents
+            )
     except Exception as e:
         # Fallback in case of parsing errors
+        needs_eda = any(kw in user_query.lower() for kw in ["차트", "그려", "그래프", "plot", "chart", "시각화", "분포", "요약"])
+        agents = ["SQL Builder", "EDA Analyst"] if needs_eda and is_preview_state else (["EDA Analyst"] if not is_preview_state else ["SQL Builder"])
         return ExecutionPlan(
             intent_type="OTHER",
-            reasoning="시스템 내부 오류로 기본 분석 모드로 진입합니다.",
-            suggested_agents=["EDA Analyst"] if not is_preview_state else ["SQL Builder"]
+            reasoning=f"시스템 내부 파싱 오류로 키워드 기반 라우팅을 수행합니다.",
+            suggested_agents=agents
         )
