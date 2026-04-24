@@ -246,6 +246,36 @@ def next_turn_id() -> int:
     return st.session_state["turn_counter"]
 
 
+def render_thinking_log() -> None:
+    """session_state에 저장된 Telly의 사고 과정(thinking_log)을 영구적으로 표시한다.
+
+    새로운 프롬프트가 실행되기 전까지 이전 실행의 사고 과정이 유지된다.
+    """
+
+    thinking_log = st.session_state.get("thinking_log_for_display", [])
+    if not thinking_log:
+        return
+
+    with st.expander("🧠 Telly의 사고 과정 (Thinking Log)", expanded=False):
+        for entry in thinking_log:
+            ts = entry.get("ts", "")
+            icon = entry.get("icon", "💭")
+            tag = entry.get("tag", "")
+            msg = entry.get("msg", "")
+
+            # 태그별 색상 구분
+            if tag in ("ERROR",):
+                st.markdown(f"`{ts}` {icon} **{msg}**")
+            elif tag in ("PLAN", "AGENT_DONE"):
+                st.markdown(f"`{ts}` {icon} **{msg}**")
+            elif tag in ("TOOL_CALL", "TOOL_RESULT"):
+                st.markdown(f"`{ts}` {icon} {msg}")
+            elif tag in ("SQL",):
+                st.code(msg.replace("생성된 SQL: ", ""), language="sql")
+            else:
+                st.markdown(f"`{ts}` {icon} {msg}")
+
+
 __all__ = [
     "append_assistant_message",
     "append_dataframe_preview_message",
@@ -256,4 +286,5 @@ __all__ = [
     "next_turn_id",
     "render_chat_history",
     "render_conversation_log",
+    "render_thinking_log",
 ]

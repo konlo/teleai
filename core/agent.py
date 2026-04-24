@@ -1,6 +1,6 @@
 from typing import Sequence
 
-from langchain.agents import AgentExecutor, create_react_agent
+from langchain.agents import AgentExecutor, create_structured_chat_agent
 from langchain.callbacks import StdOutCallbackHandler
 from langchain_core.callbacks.base import BaseCallbackHandler
 from langchain_core.prompts import ChatPromptTemplate
@@ -26,6 +26,18 @@ class SimpleCollectCallback(BaseCallbackHandler):
         self.events.append({"type": "llm_end"})
 
 
+_PARSING_ERROR_GUIDANCE = (
+    "올바른 형식으로 다시 응답해주세요. 반드시 아래 JSON 형식을 사용하세요:\n"
+    "```\n"
+    '{"action": "도구이름", "action_input": "입력값"}\n'
+    "```\n"
+    "또는 최종 답변이라면:\n"
+    "```\n"
+    '{"action": "Final Answer", "action_input": "최종 응답 내용"}\n'
+    "```"
+)
+
+
 def build_agent(
     llm,
     tools: Sequence[BaseTool],
@@ -34,15 +46,17 @@ def build_agent(
 ):
     """
     Build an AgentExecutor with message history support.
+    Uses create_structured_chat_agent (JSON-based) for better
+    compatibility with local LLMs that struggle with text-based ReAct format.
     """
-    react_runnable = create_react_agent(llm, tools, prompt=prompt)
+    structured_runnable = create_structured_chat_agent(llm, tools, prompt=prompt)
     agent = AgentExecutor(
-        agent=react_runnable,
+        agent=structured_runnable,
         tools=list(tools),
         verbose=True,
         return_intermediate_steps=True,
         max_iterations=20,
-        handle_parsing_errors=True,
+        handle_parsing_errors=_PARSING_ERROR_GUIDANCE,
     )
 
     agent_with_history = RunnableWithMessageHistory(
@@ -55,3 +69,4 @@ def build_agent(
 
 
 __all__ = ["SimpleCollectCallback", "build_agent", "StdOutCallbackHandler"]
+

@@ -42,6 +42,45 @@ def _tlog(tag: str, msg: str) -> None:
         pass
 
 
+# ── Persistent Thinking Log (session_state 기반) ──────────────────────
+_THINKING_ICONS = {
+    "CONTEXT": "🔍",
+    "ROUTING": "🤖",
+    "PLAN": "📋",
+    "AGENT_START": "🚀",
+    "TOOL_CALL": "🛠️",
+    "TOOL_RESULT": "📦",
+    "AGENT_DONE": "✅",
+    "SQL": "🗃️",
+    "EDA": "📊",
+    "CHAIN": "🔗",
+    "ERROR": "❌",
+    "INFO": "ℹ️",
+}
+
+
+def _thinking_log_init() -> None:
+    """세션에 thinking_log 키가 없으면 초기화한다."""
+    st.session_state.setdefault("thinking_log", [])
+
+
+def _thinking_log_clear() -> None:
+    """새 프롬프트 시작 시 이전 thinking log를 클리어한다."""
+    st.session_state["thinking_log"] = []
+
+
+def _think(tag: str, msg: str) -> None:
+    """Thinking log에 한 줄을 추가한다. UI에서 지속적으로 표시된다."""
+    _thinking_log_init()
+    icon = _THINKING_ICONS.get(tag, "💭")
+    ts = _dt.datetime.now().strftime("%H:%M:%S")
+    st.session_state["thinking_log"].append(
+        {"ts": ts, "tag": tag, "icon": icon, "msg": msg}
+    )
+    # 디버그 파일에도 동시 기록
+    _tlog(tag, msg)
+
+
 def _default_log_state() -> Dict[str, Optional[str]]:
     """턴 단위 로깅에 사용할 기본 상태를 생성합니다."""
     return {
@@ -218,25 +257,48 @@ def _invoke_agent_runner(agent_runner, agent_request, callbacks, session_id, spi
     """에이전트를 실행하고 예외를 사용자 친화적으로 처리합니다."""
 
     from utils.perf_monitor import TimeTracker
-    with st.spinner(spinner_text):
+    _think("AGENT_START", f"{spinner_text}")
+    status_label = f"🚀 {spinner_text}"
+    with st.status(status_label, expanded=True) as status:
         with TimeTracker("agent_execution"):
             try:
-                return agent_runner.invoke(
+                st.write("🛠️ 에이전트가 도구를 사용하여 작업을 수행 중입니다...")
+                t0 = time.time()
+                result = agent_runner.invoke(
                     {"input": agent_request},
                     {
                         "callbacks": callbacks,
                         "configurable": {"session_id": session_id},
                     },
                 )
+                elapsed = time.time() - t0
+                _think("AGENT_DONE", f"에이전트 실행 완료 ({elapsed:.1f}초 소요)")
+                # intermediate_steps가 있으면 도구 호출 내역 기록
+                for step in result.get("intermediate_steps", []):
+                    try:
+                        action, observation = step
+                        tool_name = getattr(action, "tool", "unknown")
+                        tool_input_raw = getattr(action, "tool_input", "")
+                        tool_input_str = tool_input_raw if isinstance(tool_input_raw, str) else str(tool_input_raw)
+                        obs_str = observation if isinstance(observation, str) else str(observation)
+                        _think("TOOL_CALL", f"도구 `{tool_name}` 호출 → 입력: {tool_input_str[:120]}")
+                        _think("TOOL_RESULT", f"도구 `{tool_name}` 결과: {obs_str[:200]}")
+                    except Exception:
+                        pass
+                status.update(label=f"✅ {spinner_text} 완료 ({elapsed:.1f}s)", state="complete")
+                return result
             except Exception as exc:
                 error_text = str(exc)
+                _think("ERROR", f"에이전트 실행 오류: {error_text[:200]}")
                 lower_error = error_text.lower()
                 if "serviceunavailable" in lower_error or "model is overloaded" in lower_error:
                     friendly = "AI 모델이 일시적으로 과부하 상태입니다. 잠시 후 다시 시도해주세요."
                     st.warning(friendly)
                     st.info("필요시 같은 요청을 조금 뒤에 다시 보내주세요.")
+                    status.update(label="❌ 실행 중단됨 (AI 과부하)", state="error")
                     return {"output": friendly}
                 st.error(f"Agent 실행 중 오류: {error_text}")
+                status.update(label="❌ 실행 중 오류 발생", state="error")
                 return {"output": f"Agent 실행 중 오류: {error_text}"}
 
 
@@ -447,6 +509,11 @@ def handle_user_query(
     _tlog("ENTRY", f"df_a_ready={df_a_ready}, debug_mode={debug_mode}")
     _tlog("ENTRY", f"session: last_sql_status={st.session_state.get('last_sql_status')}, llm_router_suggested_chaining={st.session_state.get('llm_router_suggested_chaining')}, auto_eda_pending={st.session_state.get('auto_eda_pending')}")
 
+    # 새 프롬프트 시작 시 이전 thinking log를 클리어 (chaining rerun 제외)
+    if st.session_state.get("auto_eda_pending") is None:
+        _thinking_log_clear()
+    _thinking_log_init()
+
     # 자동 연쇄 분석 처리: SQL 로딩 후 EDA가 필요한 경우를 위해 저장해둔 질문 복구
     auto_pending = st.session_state.pop("auto_eda_pending", None)
     _tlog("AUTO_PENDING", f"auto_pending popped = {auto_pending}")
@@ -535,30 +602,39 @@ def handle_user_query(
             tools_used_for_log.append("eda_agent")
             st.session_state["command_prefix"] = None
             st.session_state["llm_router_suggested_chaining"] = False
-            _tlog("ROUTING", f"✅ Force EDA due to chaining. agent_mode={agent_mode}")
+            _think("CHAIN", "SQL 데이터 로딩 완료 → EDA Analyst 자동 시각화 단계로 진입")
             st.info("🔗 SQL 데이터 로딩 완료 → **EDA Analyst** 자동 시각화 단계로 진입합니다.")
         else:
             from core.llm_router import route_query
+            _think("CONTEXT", f"데이터 상태: {'미리보기 (샘플 10행)' if is_preview_state else '전체 데이터 로드됨'}")
+            _think("ROUTING", "사용자 질문 의도를 분석하여 최적의 분석 엔진(Agent) 선정 중...")
+
             with st.status("🧠 Telly가 의도를 분석 중입니다...", expanded=True) as status:
-                st.write("📡 LLM 라우터에 질문을 전송합니다...")
-                st.write(f"   질문: `{original_user_q[:60]}...`")
-                st.write(f"   현재 데이터 상태: {'미리보기 (10행 이하)' if is_preview_state else '전체 데이터 로드됨'}")
+                st.write("🔍 **1단계: 현재 데이터 컨텍스트 확인**")
+                st.write(f"   - 메모리 상태: `{'미리보기 (샘플 10행)' if is_preview_state else '전체 데이터 로드됨'}`")
+                
+                st.write("🤖 **2단계: 최적의 분석 엔진(Agent) 선정**")
+                st.write("   - 사용자의 질문 의도를 분석하여 `SQL Builder` 또는 `EDA Analyst` 중 가장 적합한 경로를 결정하고 있습니다.")
+                st.caption("💡 로컬 AI 모델을 사용 중인 경우 이 과정에서 약 5~10초 정도 소요될 수 있습니다.")
                 
                 plan = route_query(llm, original_user_q, is_preview_state)
                 
-                st.write(f"✅ 의도 분석 완료!")
-                st.write(f"   - 의도 유형: **{plan.intent_type}**")
-                st.write(f"   - 추론: {plan.reasoning}")
-                st.write(f"   - 실행 계획: `{' → '.join(plan.suggested_agents)}`")
+                st.write(f"✅ **3단계: 분석 전략 수립 완료**")
+                st.write(f"   - **분류된 의도**: `{plan.intent_type}`")
+                st.write(f"   - **AI 추론**: {plan.reasoning}")
+                st.write(f"   - **실행 계획**: `{' → '.join(plan.suggested_agents)}` 요청 처리 예정")
                 
                 # Follow suggested_agents
                 first_agent = plan.suggested_agents[0] if plan.suggested_agents else "EDA Analyst"
                 agent_mode = first_agent
                 
                 if len(plan.suggested_agents) > 1:
-                    st.write(f"🔗 **연쇄 실행 모드**: 먼저 `{plan.suggested_agents[0]}`으로 데이터를 로드한 뒤, 자동으로 `{plan.suggested_agents[1]}`로 분석/시각화합니다.")
+                    st.write(f"🔗 **연쇄 실행 모드**: `{plan.suggested_agents[0]}` 로딩 후 자동으로 `{plan.suggested_agents[1]}` 시각화 단계로 이어집니다.")
                 
-                status.update(label=f"✅ 의도 분석 완료 → **{agent_mode}** 실행 준비", state="complete")
+                status.update(label=f"✅ 의도 분석 완료 → **{agent_mode}** 실행 단계로 진입합니다.", state="complete")
+
+            _think("PLAN", f"의도: {plan.intent_type} | 추론: {plan.reasoning}")
+            _think("PLAN", f"실행 계획: {' → '.join(plan.suggested_agents)}")
             
             st.session_state["command_prefix"] = "sql" if agent_mode == "SQL Builder" else None
             tools_used_for_log.append("sql_builder_agent" if agent_mode == "SQL Builder" else "eda_agent")
@@ -566,6 +642,7 @@ def handle_user_query(
             # Setup for Chaining
             if len(plan.suggested_agents) > 1 and plan.suggested_agents[1] == "EDA Analyst":
                 st.session_state["llm_router_suggested_chaining"] = True
+                _think("CHAIN", "연쇄 실행 모드 활성화: SQL Builder → EDA Analyst")
             else:
                 st.session_state["llm_router_suggested_chaining"] = False
             _tlog("ROUTING", f"LLM Router result: intent={plan.intent_type}, agents={plan.suggested_agents}, reasoning={plan.reasoning[:80]}")
@@ -587,6 +664,8 @@ def handle_user_query(
         _tlog("AGENT_REQ", f"agent_mode={agent_mode}, command_prefix={command_prefix}")
         _tlog("AGENT_REQ", f"agent_request={agent_request[:120]}")
 
+        _think("AGENT_START", f"{agent_mode} 에이전트에 요청 전달: {agent_request[:80]}...")
+
         agent_updates = _run_agent_interaction(
             agent_mode=agent_mode,
             agent_request=agent_request,
@@ -607,11 +686,24 @@ def handle_user_query(
         _tlog("AGENT_DONE", f"python_code={agent_updates.get('generated_python_for_log', '')[:120]}")
         _tlog("AGENT_DONE", f"python_status={agent_updates.get('python_status_for_log')}")
         _tlog("AGENT_DONE", f"python_error={agent_updates.get('python_error_for_log', '')[:120]}")
+
+        # Thinking log에 결과 요약 기록
+        _sql = agent_updates.get('sql_capture_for_log', '')
+        _py_status = agent_updates.get('python_status_for_log')
+        if _sql:
+            _think("SQL", f"생성된 SQL: {_sql[:150]}")
+        if _py_status:
+            _think("EDA", f"Python 실행 결과: {_py_status} | 코드: {agent_updates.get('generated_python_for_log', '')[:100]}")
+        _think("AGENT_DONE", f"{agent_mode} 작업 완료")
+
         for key, value in agent_updates.items():
             if key == "tools_used_for_log":
                 continue
             if value:
                 log_state[key] = value
+
+    # Thinking log를 session_state에 보존 (다음 렌더 때 표시하기 위해)
+    st.session_state["thinking_log_for_display"] = list(st.session_state.get("thinking_log", []))
 
     display_conversation_log()
     if log_state["assistant_response_for_log"] is not None:

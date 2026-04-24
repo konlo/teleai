@@ -19,6 +19,7 @@ from ui.chat_log import (
     ensure_conversation_store,
     next_turn_id,
     render_chat_history,
+    render_thinking_log,
 )
 from ui.data_preview import render_data_preview_section
 from ui.data_state import load_dataframes
@@ -168,6 +169,9 @@ if user_q:
     )
 else:
     conversation_log_renderer()
+
+# Telly의 사고 과정을 영구적으로 표시 (다음 프롬프트까지 유지)
+render_thinking_log()
 
 # 데이터 미리보기 팝오버 + 다운로드 버튼
 render_data_preview_section(df_a_ready, df_A, df_B)
