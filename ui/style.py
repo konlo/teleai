@@ -11,22 +11,24 @@ def inject_base_styles() -> None:
 
         :root {
             --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            --accent-color: #00f2fe;
-            --bg-dark: #0f172a;
-            --card-bg: rgba(30, 41, 59, 0.7);
-            --text-main: #f8fafc;
+            --accent-color: #4f46e5;
+            --bg-white: #ffffff;
+            --card-bg: rgba(248, 250, 252, 0.8);
+            --text-main: #0f172a;
+            --text-muted: #64748b;
         }
 
         /* Global Reset */
         html, body, [data-testid="stAppViewContainer"] {
             font-family: 'Inter', sans-serif;
-            background-color: var(--bg-dark);
+            background-color: var(--bg-white);
             color: var(--text-main);
         }
 
         h1, h2, h3 {
             font-family: 'Outfit', sans-serif;
             font-weight: 700;
+            color: var(--text-main);
         }
 
         /* Hero Section */
@@ -38,7 +40,7 @@ def inject_base_styles() -> None:
             border-radius: 1.5rem;
             margin-bottom: 3rem;
             overflow: hidden;
-            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
         }
 
         .hero-overlay {
@@ -78,13 +80,13 @@ def inject_base_styles() -> None:
             background: var(--card-bg);
             padding: 2rem;
             border-radius: 1rem;
-            border: 1px solid rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(0, 0, 0, 0.05);
             transition: transform 0.3s ease, box-shadow 0.3s ease;
         }
 
         .feature-card:hover {
             transform: translateY(-5px);
-            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05);
             border-color: var(--accent-color);
         }
 
@@ -107,7 +109,7 @@ def inject_base_styles() -> None:
 
         .primary-button:hover {
             transform: scale(1.05);
-            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.2);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
             color: #667eea;
         }
 
@@ -116,7 +118,8 @@ def inject_base_styles() -> None:
             border-radius: 1rem;
             margin-bottom: 1rem;
             padding: 1rem;
-            border: 1px solid rgba(255, 255, 255, 0.05);
+            background-color: #f8fafc;
+            border: 1px solid #e2e8f0;
         }
 
         [data-testid="chatAvatarIcon-user"] {
@@ -129,13 +132,13 @@ def inject_base_styles() -> None:
 
         .stChatMessage.ad-hoc-callout {
             border-left: 5px solid var(--accent-color);
-            background-color: rgba(0, 242, 254, 0.05);
+            background-color: rgba(79, 70, 229, 0.05);
         }
 
         /* Sidebar Styling */
         [data-testid="stSidebar"] {
-            background-color: #0f172a !important;
-            border-right: 1px solid rgba(255, 255, 255, 0.1);
+            background-color: #f1f5f9 !important;
+            border-right: 1px solid #e2e8f0;
         }
 
         /* Accent text */
@@ -153,14 +156,14 @@ def inject_base_styles() -> None:
             width: 8px;
         }
         ::-webkit-scrollbar-track {
-            background: #0f172a;
+            background: #f1f5f9;
         }
         ::-webkit-scrollbar-thumb {
-            background: #334155;
+            background: #cbd5e1;
             border-radius: 10px;
         }
         ::-webkit-scrollbar-thumb:hover {
-            background: #475569;
+            background: #94a3b8;
         }
         </style>
         """,

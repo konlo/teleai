@@ -3,7 +3,7 @@ from typing import Iterable, Optional
 
 import pandas as pd
 from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
-from langchain_core.tools import BaseTool, render_text_description
+from langchain_core.tools import BaseTool, render_text_description_and_args
 from utils.session import get_default_sql_limit
 
 
@@ -59,7 +59,7 @@ def build_react_prompt(
     df_b,
     tools: Iterable[BaseTool],
 ) -> ChatPromptTemplate:
-    """Construct the ReAct system prompt with up-to-date dataframe heads."""
+    """Construct the structured-chat system prompt with up-to-date dataframe heads."""
     head_a = escape_braces(_df_head(df_a))
     head_b = escape_braces(_df_head(df_b)) if df_b is not None else "(df_B not loaded)"
 
@@ -75,17 +75,6 @@ def build_react_prompt(
         "  6) cohort_compare(by='model,fw', agg='mean') if columns exist\n"
         "  7) Summarize: top outlier columns + time spikes + cohort outliers + next steps.\n"
         "If df_B is loaded and user mentions comparison, use propose_join_keys then compare_on_keys.\n\n"
-        "CRITICAL: ALWAYS follow this EXACT format for EVERY response. NEVER skip the 'Action:' or 'Final Answer:' lines.\n\n"
-        "Question: <restated question>\n"
-        "Thought: <brief reasoning in English>\n"
-        "Action: <ONE tool name from {tool_names}>\n"
-        "Action Input: <valid input with NO backticks>\n"
-        "Observation: <tool result>\n"
-        "(Repeat Thought/Action/Action Input/Observation as needed)\n\n"
-        "When you have the final result or after a successful plot:\n"
-        "Thought: I have completed the task/visualization.\n"
-        "Final Answer: <your final response and explanation in KOREAN>\n\n"
-        "If you output anything outside this format, continue immediately by outputting ONLY a valid 'Action' and 'Action Input'.\n\n"
         "Tool routing guide:\n"
         "- Schema/summary → describe_columns, describe_columns_on\n"
         "- File load → load_df_b\n"
@@ -96,14 +85,73 @@ def build_react_prompt(
         "- Custom compute/plots → python_repl_ast (do complex tasks in ONE call and print results)\n\n"
         "When preparing any time-series or trend visualisation, ALWAYS sort the data by the relevant time column in ascending order before plotting to prevent back-and-forth lines.\n\n"
         "Whenever the user requests a chart, plot, image, or visualisation, you MUST execute the relevant plotting tool (e.g., plot_outliers, corr_heatmap) or run python_repl_ast with matplotlib/seaborn code so the figure renders in Streamlit. Do not stop at textual descriptions.\n"
-        "### 📊 VISUALIZATION GUIDELINES (STRICT):\n"
+        "### 📊 VISUALIZATION GUIDELINES (STRICT):\n\n"
+        "#### Phase 1: DATA TYPE ASSESSMENT (MANDATORY FIRST STEP)\n"
+        "Before creating ANY visualization, you MUST determine the nature of the dataset:\n"
+        "- **Raw data**: Each row represents an individual observation/record (e.g., one row per device per timestamp). Raw data has many rows and individual-level values.\n"
+        "- **Aggregated data**: Each row represents a summary statistic (e.g., COUNT, AVG, SUM grouped by category). Aggregated data typically has few rows with columns like 'count', 'avg', 'sum', 'stat_count', or was produced by a GROUP BY query.\n"
+        "To determine this, inspect `df.shape`, `df.columns`, and `df.head()` in your Thought step. Look for clues:\n"
+        "  - Column names containing 'count', 'sum', 'avg', 'mean', 'total', 'stat_' → likely aggregated\n"
+        "  - Very few rows (< 50) with categorical grouping columns → likely aggregated\n"
+        "  - Many rows with individual measurements → likely raw\n\n"
+        "#### Phase 2: CHART TYPE SELECTION\n"
+        "Choose the visualization type based on the data nature:\n"
+        "- **If AGGREGATED data**:\n"
+        "  - ❌ DO NOT use: histogram, KDE, boxplot, violin plot, swarm plot (these require raw individual observations)\n"
+        "  - ✅ USE instead: bar chart, horizontal bar chart, pie chart, treemap, heatmap, line chart (for trends), table display\n"
+        "  - If the user explicitly requests a distribution plot on aggregated data, EXPLAIN the limitation clearly: '현재 데이터는 집계(aggregated) 데이터입니다. 히스토그램/박스플롯은 개별 관측값(raw data)이 필요합니다. 대신 막대 차트로 시각화하겠습니다.'\n"
+        "- **If RAW data**:\n"
+        "  - ✅ All chart types are valid: histogram, KDE, boxplot, scatter, violin, bar, line, heatmap, etc.\n\n"
+        "#### Phase 3: VISUALIZATION BEST PRACTICES\n"
         "1. **Prefer Seaborn**: Use `import seaborn as sns` for statistical plots. It handles categorical data and missing values more gracefully than pandas .plot().\n"
         "2. **Defensive Check**: ALWAYS verify data existence before plotting: `if df.empty: print('No data available to plot'); exit()`.\n"
         "3. **Pre-flight Inspection**: Before `plt.show()`, always print `df.shape` and `df.info()` to ensure the plotting data is valid.\n"
         "4. **Robust Filtering**: When removing 'unknown' or specific values, use row-wise logic: `df[~(df[cols] == 'unknown').any(axis=1)]`.\n"
         "5. **Chain of Thought**: Describe your data processing steps in 'Thought' before writing the 'Action Input'.\n"
         "6. **Error Diagnosis**: If a plot fails, use `df.info()` and `df.describe()` in the next step to diagnose the cause.\n\n"
-        "When preparing any time-series or trend visualisation, ALWAYS sort the data by the relevant time column in ascending order before plotting.\n\n"
+        "#### Phase 4: POST-VISUALIZATION SELF-REVIEW\n"
+        "After generating the visualization code, review whether the visualization is valid:\n"
+        "- Does the chart type match the data nature (raw vs aggregated)?\n"
+        "- Are axis labels meaningful and in the correct language (Korean preferred for user-facing labels)?\n"
+        "- Is the data sorted appropriately (e.g., time series in ascending order)?\n"
+        "- Would the chart be misleading with the current data? If so, explain and propose an alternative.\n\n"
+        "You have access to the following tools:\n\n{tools}\n\n"
+        "Use a json blob to specify a tool by providing an action key (tool name) and an action_input key (tool input).\n\n"
+        'Valid "action" values: "Final Answer" or {tool_names}\n\n'
+        "STRICT OUTPUT RULES:\n"
+        "- Return ONLY JSON for every action: {\"action\": \"...\", \"action_input\": \"...\"}.\n"
+        "- Do not output any explanation, analysis, markdown, or prose outside the JSON action object.\n"
+        "- Never output '<channel|>' or any channel marker.\n"
+        "- Never output standalone Python fenced code. Python code must be the string value of action_input for python_repl_ast.\n"
+        "- Never use keys such as 'content', 'text', or 'message'. Only 'action' and 'action_input' are valid.\n"
+        "- Never nest Final Answer objects inside action_input. Final Answer action_input must be a plain string.\n"
+        "- If you use python_repl_ast, the action must look like this exactly:\n"
+        "```\n"
+        "{{{{\n"
+        '  "action": "python_repl_ast",\n'
+        '  "action_input": "import matplotlib.pyplot as plt\\nplt.figure(figsize=(10, 5))\\ndf_A[\\"balance\\"].dropna().plot(kind=\\"hist\\", bins=30)\\nplt.title(\\"balance distribution\\")\\nplt.show()"\n'
+        "}}}}\n"
+        "```\n\n"
+        "Provide only ONE action per $JSON_BLOB, as shown:\n\n"
+        "```\n"
+        "{{{{\n"
+        '  "action": $TOOL_NAME,\n'
+        '  "action_input": $INPUT\n'
+        "}}}}\n"
+        "```\n\n"
+        "For each step, output only this Action JSON:\n"
+        "```\n"
+        "$JSON_BLOB\n"
+        "```\n"
+        "Observation: action result\n"
+        "... (repeat JSON action and Observation only when another tool call is needed)\n"
+        "Final response JSON:\n"
+        "```\n"
+        "{{{{\n"
+        '  "action": "Final Answer",\n'
+        '  "action_input": "최종 응답을 한국어로 작성하세요"\n'
+        "}}}}\n"
+        "```\n\n"
         "df_A.head():\n{df_a_head}\n\n"
         "df_B.head():\n{df_b_head}\n"
     )
@@ -112,12 +160,11 @@ def build_react_prompt(
         [
             ("system", system_template),
             MessagesPlaceholder("chat_history", optional=True),
-            ("human", "{input}"),
-            ("assistant", "{agent_scratchpad}"),
+            ("human", "{input}\n\n{agent_scratchpad}"),
         ]
     )
 
-    tool_desc = render_text_description(tools)
+    tool_desc = render_text_description_and_args(tools)
     tool_names = ", ".join([tool.name for tool in tools])
     return prompt.partial(
         tools=tool_desc,
@@ -175,20 +222,18 @@ def build_sql_prompt(
     df_label_source = df_name_hint or (table_hint_raw if table_hint_raw else "df_A")
     df_label = escape_braces(df_label_source)
     if isinstance(df_preview, pd.DataFrame) and not df_preview.empty:
-        df_columns = _format_df_columns(df_preview)
-        df_dtypes = _format_df_dtypes(df_preview)
-        df_columns = escape_braces(df_columns)
-        df_dtypes = escape_braces(df_dtypes)
+        df_columns = escape_braces(_format_df_columns(df_preview))
+        df_dtypes = escape_braces(_format_df_dtypes(df_preview))
         df_head_text = escape_braces(_df_head(df_preview))
         context_lines.append(
             "\nActive dataframe preview for SQL generation:\n"
             f"- Source: {df_label}\n"
             f"- Shape: {df_preview.shape[0]} rows × {df_preview.shape[1]} columns\n"
-            f"- Columns: {df_columns}\n"
+            "- Columns: {df_columns}\n"
             "dtypes:\n"
-            f"{df_dtypes}\n"
+            "{df_dtypes}\n"
             "head():\n"
-            f"{df_head_text}\n\n"
+            "{df_head}\n\n"
         )
     else:
         context_lines.append(
@@ -200,17 +245,6 @@ def build_sql_prompt(
         "catalog or schema. If you need that context, rely on session-aware tools instead of questioning the user.\n\n"
     )
     context_lines.append(
-        "For each step before the final answer, ALWAYS respond in EXACTLY this format:\n"
-        "Thought: <brief reasoning>\n"
-        "Action: <ONE tool name from {tool_names}>\n"
-        "Action Input: <valid input for that tool, no backticks>\n\n"
-    )
-    context_lines.append(
-        "When you are ready to answer with the final SQL (and NOT call a tool), respond in EXACTLY this format:\n"
-        "Thought: I now know the final answer\n"
-        "Final Answer: SQL:\n <single SQL statement only, no markdown fences, no explanation>\n\n"
-    )
-    context_lines.append(
         "Generate strictly read-only SELECT queries. Do NOT emit INSERT, UPDATE, DELETE, CREATE, DROP, ALTER, MERGE, TRUNCATE, or any non-SELECT statements under any circumstance.\n\n"
     )
     limit_value = get_default_sql_limit()
@@ -220,10 +254,6 @@ def build_sql_prompt(
     context_lines.append(
         "Whenever you create a COUNT() aggregation, alias the resulting column as `stat_count` "
         "(e.g., COUNT(*) AS stat_count). Do not invent alternative aliases for COUNT outputs.\n\n"
-    )
-    context_lines.append(
-        "Do NOT output any other fields such as Question:, Observation:, Explanation:, or Execution: unless the tool runner provides Observation: back to you.\n"
-        "Do NOT include markdown fences.\n\n"
     )
 
     try:
@@ -241,18 +271,62 @@ def build_sql_prompt(
     except Exception:
         pass
 
+    # JSON-based format instructions for structured chat agent
+    context_lines.append(
+        "You have access to the following tools:\n\n{tools}\n\n"
+    )
+    context_lines.append(
+        "Use a json blob to specify a tool by providing an action key (tool name) and an action_input key (tool input).\n\n"
+        'Valid "action" values: "Final Answer" or {tool_names}\n\n'
+        "Provide only ONE action per $JSON_BLOB, as shown:\n\n"
+        "```\n"
+        "{{{{\n"
+        '  "action": $TOOL_NAME,\n'
+        '  "action_input": $INPUT\n'
+        "}}}}\n"
+        "```\n\n"
+        "Follow this format:\n\n"
+        "Question: input question to answer\n"
+        "Thought: consider previous and subsequent steps\n"
+        "Action:\n"
+        "```\n"
+        "$JSON_BLOB\n"
+        "```\n"
+        "Observation: action result\n"
+        "... (repeat Thought/Action/Observation N times)\n"
+        "Thought: I know what to respond\n"
+        "Action:\n"
+        "```\n"
+        "{{{{\n"
+        '  "action": "Final Answer",\n'
+        '  "action_input": "SQL:\\n<single SQL statement, no markdown fences>"\n'
+        "}}}}\n"
+        "```\n\n"
+        "Do NOT output any other fields such as Question:, Observation:, Explanation:, or Execution: unless the tool runner provides Observation: back to you.\n"
+        "Do NOT include markdown fences in your SQL output.\n\n"
+    )
+
     prompt = ChatPromptTemplate.from_messages(
         [
             ("system", "".join(context_lines)),
             MessagesPlaceholder("chat_history", optional=True),
-            ("human", "{input}"),
-            ("assistant", "{agent_scratchpad}"),
+            ("human", "{input}\n\n{agent_scratchpad}"),
         ]
     )
 
-    tool_desc = render_text_description(tools)
+    tool_desc = render_text_description_and_args(tools)
     tool_names = ", ".join([tool.name for tool in tools])
-    return prompt.partial(tools=tool_desc, tool_names=tool_names)
+    
+    partial_vars = {
+        "tools": tool_desc,
+        "tool_names": tool_names,
+    }
+    if isinstance(df_preview, pd.DataFrame) and not df_preview.empty:
+        partial_vars["df_columns"] = df_columns
+        partial_vars["df_dtypes"] = df_dtypes
+        partial_vars["df_head"] = df_head_text
+
+    return prompt.partial(**partial_vars)
 
 
 __all__ = ["build_react_prompt", "build_sql_prompt"]
