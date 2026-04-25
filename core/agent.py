@@ -43,6 +43,9 @@ def build_agent(
     tools: Sequence[BaseTool],
     prompt: ChatPromptTemplate,
     history_getter,
+    *,
+    max_iterations: int = 10,
+    max_execution_time: int = 120,
 ):
     """
     Build an AgentExecutor with message history support.
@@ -55,7 +58,8 @@ def build_agent(
         tools=list(tools),
         verbose=True,
         return_intermediate_steps=True,
-        max_iterations=20,
+        max_iterations=max_iterations,
+        max_execution_time=max_execution_time,
         handle_parsing_errors=_PARSING_ERROR_GUIDANCE,
     )
 
@@ -69,4 +73,3 @@ def build_agent(
 
 
 __all__ = ["SimpleCollectCallback", "build_agent", "StdOutCallbackHandler"]
-

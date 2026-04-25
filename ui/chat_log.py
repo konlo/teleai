@@ -5,6 +5,7 @@ from uuid import uuid4
 import pandas as pd
 import streamlit as st
 
+from utils.conversation_figures import attach_figures_to_log
 from utils.turn_logger import update_user_rating
 
 def ensure_conversation_store() -> None:
@@ -37,17 +38,8 @@ def append_assistant_message(run_id: str, content: str, mode: str, turn_id: Opti
 
 
 def attach_figures_to_run(run_id: str, figures: List[Dict[str, Any]]) -> None:
-    if not run_id or not figures:
-        return
     log = st.session_state.get("conversation_log", [])
-    for entry in reversed(log):
-        if entry.get("run_id") == run_id and entry.get("role") == "assistant":
-            if entry.get("figures_attached"):
-                return
-            entry.setdefault("figures", [])
-            entry["figures"].extend(figures)
-            entry["figures_attached"] = True
-            break
+    attach_figures_to_log(log, run_id, figures)
 
 
 def render_chat_history(title: str, history) -> None:

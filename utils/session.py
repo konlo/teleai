@@ -16,6 +16,7 @@ from modules.dataload.databricks_sql_loader import (
     load_table as databricks_load_table,
     run_sql as databricks_run_sql,
 )
+from utils.data_context import make_dataframe_state
 
 
 load_dotenv()
@@ -141,9 +142,11 @@ def ensure_session_state() -> None:
     defaults: List[Tuple[str, Any]] = [
         ("DATA_DIR", DEFAULT_DATA_DIR),
         ("df_A_data", None),
+        ("df_A_state", None),
         ("df_A_name", "No Data"),
         ("csv_path", os.path.join(DEFAULT_DATA_DIR, "stormtrooper.csv")),
         ("df_B_data", None),
+        ("df_B_state", None),
         ("df_B_name", "No Data"),
         ("csv_b_path", ""),
         ("df_init_data", None),
@@ -195,11 +198,20 @@ def load_df_a(path: str, display_name: str) -> Tuple[bool, str]:
     try:
         new_df = read_table(path)
         st.session_state["df_A_data"] = new_df
+        st.session_state["df_A_state"] = make_dataframe_state(
+            new_df,
+            role="file_table",
+            source_table=display_name,
+            query="",
+            created_by="file_loader",
+            is_preview=False,
+        )
         st.session_state["df_A_name"] = display_name
         st.session_state["csv_path"] = path
         return True, f"Loaded file: {display_name} (Shape: {new_df.shape})"
     except Exception as exc:
         st.session_state["df_A_data"] = None
+        st.session_state["df_A_state"] = None
         st.session_state["df_A_name"] = "Load Failed"
         st.session_state["csv_path"] = ""
         return False, f"Failed to load data: {path}\n{exc}"
@@ -210,11 +222,20 @@ def load_df_b(path: str, display_name: str) -> Tuple[bool, str]:
     try:
         new_df = read_table(path)
         st.session_state["df_B_data"] = new_df
+        st.session_state["df_B_state"] = make_dataframe_state(
+            new_df,
+            role="file_table",
+            source_table=display_name,
+            query="",
+            created_by="file_loader",
+            is_preview=False,
+        )
         st.session_state["df_B_name"] = display_name
         st.session_state["csv_b_path"] = path
         return True, f"Loaded file (df_B): {display_name} (Shape: {new_df.shape})"
     except Exception as exc:
         st.session_state["df_B_data"] = None
+        st.session_state["df_B_state"] = None
         st.session_state["df_B_name"] = "Load Failed"
         st.session_state["csv_b_path"] = ""
         return False, f"Failed to load df_B: {path}\n{exc}"
@@ -381,6 +402,16 @@ def load_df_from_databricks(
     path_key = "csv_path" if target == "A" else "csv_b_path"
 
     st.session_state[data_key] = df
+    state_key = "df_A_state" if target == "A" else "df_B_state"
+    is_preview_load = limit is not None
+    st.session_state[state_key] = make_dataframe_state(
+        df,
+        role="preview" if is_preview_load else "base_table",
+        source_table=table,
+        query=f"SELECT * FROM {table}" + (f" LIMIT {limit}" if limit else ""),
+        created_by="databricks_loader",
+        is_preview=is_preview_load,
+    )
     st.session_state[name_key] = f"{table} (Databricks)"
     st.session_state[path_key] = f"databricks://{table}"
     st.session_state["databricks_last_preview_table"] = table
@@ -476,6 +507,16 @@ def load_preview_from_databricks_query(
     path_key = "csv_path" if target == "A" else "csv_b_path"
 
     st.session_state[data_key] = df
+    state_key = "df_A_state" if target == "A" else "df_B_state"
+    st.session_state[state_key] = make_dataframe_state(
+        df,
+        role="query_result" if query else "preview",
+        source_table=table_clean,
+        query=base_query,
+        parent_query=query or "",
+        created_by="databricks_sql" if query else "databricks_preview",
+        is_preview=not bool(query),
+    )
     st.session_state[name_key] = f"{table_clean} (preview)"
     st.session_state[path_key] = f"databricks://{table_clean}"
     st.session_state["databricks_table_input"] = table_clean

@@ -1,4 +1,6 @@
 import time
+import json
+from dataclasses import replace
 from typing import Callable, Dict, List, Optional
 from uuid import uuid4
 
@@ -14,6 +16,24 @@ from ui.chat_log import (
     attach_figures_to_run,
 )
 from ui.viz import render_visualizations
+from utils.agent_output import detect_agent_parser_loop
+from utils.agent_routing import resolve_forced_agent_mode
+from utils.chatbot_plan import (
+    build_controlled_plan,
+    build_sql_from_plan,
+    select_visualization_config,
+)
+from utils.data_context import (
+    DataReadinessDecision,
+    evaluate_data_readiness,
+    format_dataframe_state_for_log,
+    requirement_from_controlled_plan,
+    resolve_source_table,
+)
+from utils.eda_validation import (
+    find_exact_prompt_column,
+    validate_eda_visualization_request,
+)
 from utils.prompt_help import (
     CHAT_COMMAND_SPECS,
     AUTO_SQL_KEYWORDS,
@@ -233,6 +253,181 @@ def _maybe_execute_last_sql(
     }
 
 
+def _plot_controlled_visualization(df: pd.DataFrame, config) -> str:
+    import matplotlib.pyplot as plt
+
+    column = config.column
+    series = df[column].dropna()
+    if series.empty:
+        raise ValueError(f"`{column}` 컬럼에 시각화 가능한 값이 없습니다.")
+
+    plt.figure(figsize=(10, 5))
+    if config.plot_type == "histogram":
+        series.plot(kind="hist", bins=min(50, max(10, int(len(series) ** 0.5))))
+        plt.ylabel("Frequency")
+    elif config.plot_type == "boxplot":
+        series.plot(kind="box")
+        plt.ylabel(column)
+    elif config.plot_type == "bar":
+        series.astype(str).value_counts().head(30).plot(kind="bar")
+        plt.ylabel("Count")
+    else:
+        raise ValueError(f"지원하지 않는 plot_type입니다: {config.plot_type}")
+    plt.title(f"{column} distribution")
+    plt.xlabel(column)
+    plt.tight_layout()
+    return (
+        f"plot_type={config.plot_type}, column={column}, "
+        f"rows={len(df)}, non_null={len(series)}"
+    )
+
+
+def _try_run_controlled_production_flow(
+    *,
+    user_query: str,
+    run_id: str,
+    turn_id: int,
+    log_placeholder,
+    debug_mode: bool,
+    pytool_obj,
+    tools_used_for_log: List[str],
+    log_state: Dict[str, Optional[str]],
+) -> bool:
+    default_table = (
+        st.session_state.get("databricks_selected_table", "").strip()
+        or st.session_state.get("databricks_table_input", "").strip()
+        or st.session_state.get("last_sql_table", "").strip()
+    )
+    plan = build_controlled_plan(user_query, default_table=default_table)
+    if plan is None:
+        return False
+
+    _think("PLAN", f"Controlled JSON Plan: {json.dumps(plan.__dict__, ensure_ascii=False)}")
+    current_state = st.session_state.get("df_A_state")
+    requirement = requirement_from_controlled_plan(plan)
+    readiness = evaluate_data_readiness(current_state, requirement)
+    _think("CONTEXT", format_dataframe_state_for_log(current_state))
+    _think(
+        "PLAN",
+        (
+            "Data readiness: "
+            f"{readiness.decision.value} | required={list(requirement.columns)} | "
+            f"missing={list(readiness.missing_columns)} | reason={readiness.reason}"
+        ),
+    )
+    tools_used_for_log.extend(["controlled_planner", "data_readiness_gate"])
+    st.session_state["last_agent_mode"] = "Controlled Executor"
+    st.session_state["last_sql_label"] = user_query.strip()[:80] or "Controlled SQL"
+
+    sql = ""
+    if readiness.decision == DataReadinessDecision.FAIL:
+        message = f"요청을 수행할 원본 테이블을 결정할 수 없습니다: {readiness.reason}"
+        _think("ERROR", message)
+        st.error(message)
+        append_assistant_message(run_id, message, "Controlled Executor", turn_id=turn_id)
+        log_state["assistant_response_for_log"] = message
+        log_state["intent_for_log"] = "data_readiness"
+        log_state["python_status_for_log"] = "fail"
+        log_state["python_error_for_log"] = message
+        return True
+
+    if readiness.decision == DataReadinessDecision.RELOAD_REQUIRED:
+        source_table = resolve_source_table(
+            current_state,
+            requirement_source=requirement.source_table,
+            last_sql_table=st.session_state.get("last_sql_table", ""),
+            selected_table=st.session_state.get("databricks_selected_table", ""),
+        )
+        if not source_table:
+            message = "요청에 필요한 데이터를 다시 로드해야 하지만 원본 테이블을 결정할 수 없습니다."
+            _think("ERROR", message)
+            st.error(message)
+            append_assistant_message(run_id, message, "Controlled Executor", turn_id=turn_id)
+            log_state["assistant_response_for_log"] = message
+            log_state["intent_for_log"] = "data_readiness"
+            log_state["python_status_for_log"] = "fail"
+            log_state["python_error_for_log"] = message
+            return True
+
+        plan_for_sql = replace(plan, table=source_table)
+        sql = build_sql_from_plan(plan_for_sql)
+        _think("SQL", f"Deterministic reload SQL 생성: {sql}")
+        st.session_state["last_sql_statement"] = sql
+        st.session_state["last_sql_table"] = source_table
+        st.session_state["databricks_table_input"] = source_table
+        st.session_state["databricks_selected_table"] = source_table
+        tools_used_for_log.extend(["deterministic_sql_builder", "databricks_preview_sql"])
+
+        success = execute_sql_preview(
+            run_id=run_id,
+            sql_text=sql,
+            log_container=log_placeholder,
+            show_logs=debug_mode,
+            auto_trigger=False,
+            append_assistant_message=append_assistant_message,
+            attach_figures_to_run=attach_figures_to_run,
+        )
+        log_state["sql_execution_status_for_log"] = "success" if success else "fail"
+        if not success:
+            log_state["assistant_response_for_log"] = st.session_state.get("last_sql_error", "")
+            log_state["intent_for_log"] = "sql_execute"
+            return True
+    else:
+        _think("SQL", "현재 df_A가 요청에 필요한 컬럼/행 조건을 만족하여 SQL reload를 생략")
+        log_state["sql_execution_status_for_log"] = "skipped"
+
+    df = st.session_state.get("df_A_data")
+    validation = validate_eda_visualization_request(df, user_query)
+    if not validation.ok:
+        message = f"Controlled EDA validation 실패: {validation.reason}"
+        _think("ERROR", message)
+        st.error(message)
+        append_assistant_message(run_id, message, "Controlled Executor", turn_id=turn_id)
+        log_state["assistant_response_for_log"] = message
+        log_state["intent_for_log"] = "eda"
+        log_state["python_status_for_log"] = "fail"
+        log_state["python_error_for_log"] = message
+        return True
+
+    try:
+        config = select_visualization_config(plan, df)
+        _think("EDA", f"Controlled Viz Config: {json.dumps(config.__dict__, ensure_ascii=False)}")
+        summary = _plot_controlled_visualization(df, config)
+        figure_payloads = []
+        if pytool_obj is not None and hasattr(pytool_obj, "globals"):
+            import matplotlib.pyplot as plt
+
+            pytool_obj.globals["df_A"] = df
+            pytool_obj.globals["df"] = df
+            pytool_obj.globals["plt"] = plt
+            figure_payloads = render_visualizations(pytool_obj)
+        message = (
+            "Controlled production flow로 실행했습니다. "
+            "LLM은 계획만 만들고 SQL/시각화 실행은 코드로 처리했습니다. "
+            f"({summary})"
+        )
+        st.success(message)
+        append_assistant_message(run_id, message, "Controlled Executor", turn_id=turn_id)
+        attach_figures_to_run(run_id, figure_payloads)
+        tools_used_for_log.extend(["rule_based_visualization_selector", "deterministic_python_plot"])
+        log_state["assistant_response_for_log"] = message
+        log_state["intent_for_log"] = "eda"
+        log_state["sql_capture_for_log"] = sql
+        log_state["generated_python_for_log"] = summary
+        log_state["python_status_for_log"] = "success"
+        return True
+    except Exception as exc:
+        message = f"Controlled visualization 실행 실패: {exc}"
+        _think("ERROR", message)
+        st.error(message)
+        append_assistant_message(run_id, message, "Controlled Executor", turn_id=turn_id)
+        log_state["assistant_response_for_log"] = message
+        log_state["intent_for_log"] = "eda"
+        log_state["python_status_for_log"] = "fail"
+        log_state["python_error_for_log"] = message
+        return True
+
+
 def _build_callbacks(debug_mode: bool, log_placeholder):
     """Streamlit/LangChain 콜백 설정을 구성합니다."""
 
@@ -387,6 +582,126 @@ def _maybe_auto_execute_sql(
         tools_used_for_log.append("databricks_preview_sql")
 
 
+def _is_visualization_request(text: str) -> bool:
+    lowered = (text or "").lower()
+    return any(keyword.lower() in lowered for keyword in VIZ_KEYWORDS)
+
+
+def _render_eda_parser_fallback(
+    *,
+    prompt: str,
+    run_id: str,
+    log_updates: Dict[str, Optional[str]],
+    tools_used_for_log: List[str],
+    turn_id: int,
+    pytool_obj,
+) -> bool:
+    """Render a narrow deterministic chart when the EDA agent loops on JSON parsing."""
+
+    if not _is_visualization_request(prompt):
+        return False
+
+    df = st.session_state.get("df_A_data")
+    if not isinstance(df, pd.DataFrame) or df.empty:
+        return False
+
+    column = find_exact_prompt_column(df, prompt)
+    if not column:
+        return False
+
+    try:
+        import matplotlib.pyplot as plt
+
+        series = df[column].dropna()
+        if series.empty:
+            return False
+
+        plt.figure(figsize=(10, 5))
+        if pd.api.types.is_numeric_dtype(series):
+            if len(series) > 100:
+                series.plot(kind="hist", bins=min(50, max(10, int(len(series) ** 0.5))))
+                plt.ylabel("Frequency")
+                chart_desc = f"`{column}` 컬럼의 히스토그램"
+                generated_code = (
+                    f"df_A[{column!r}].dropna().plot(kind='hist', "
+                    "bins=min(50, max(10, int(len(df_A) ** 0.5))))"
+                )
+            else:
+                series.plot(kind="box")
+                plt.ylabel(column)
+                chart_desc = f"`{column}` 컬럼의 박스플롯"
+                generated_code = f"df_A[{column!r}].dropna().plot(kind='box')"
+        else:
+            counts = series.astype(str).value_counts().head(30)
+            counts.plot(kind="bar")
+            plt.ylabel("Count")
+            chart_desc = f"`{column}` 컬럼의 상위 값 빈도 막대 차트"
+            generated_code = f"df_A[{column!r}].dropna().astype(str).value_counts().head(30).plot(kind='bar')"
+        plt.title(f"{column} distribution")
+        plt.xlabel(column)
+        plt.tight_layout()
+
+        if pytool_obj is not None and hasattr(pytool_obj, "globals"):
+            pytool_obj.globals["df_A"] = df
+            pytool_obj.globals["df"] = df
+            pytool_obj.globals["plt"] = plt
+
+        message = (
+            "Agent 응답 형식 오류로 자동 시각화 fallback을 사용했습니다. "
+            f"{chart_desc}을(를) 생성했습니다."
+        )
+        _think("ERROR", "EDA Agent 파싱 루프 감지 → deterministic visualization fallback 사용")
+        st.warning(message)
+        append_assistant_message(run_id, message, "EDA Analyst", turn_id=turn_id)
+        tools_used_for_log.append("deterministic_visualization_fallback")
+        log_updates["assistant_response_for_log"] = message
+        log_updates["intent_for_log"] = "eda"
+        log_updates["generated_python_for_log"] = generated_code
+        log_updates["python_status_for_log"] = "success"
+        log_updates["python_error_for_log"] = ""
+        return True
+    except Exception as exc:
+        _think("ERROR", f"자동 시각화 fallback 실패: {str(exc)[:160]}")
+        return False
+
+
+def _validate_eda_before_agent(
+    *,
+    agent_mode: str,
+    agent_request: str,
+    run_id: str,
+    log_updates: Dict[str, Optional[str]],
+    turn_id: int,
+) -> bool:
+    if agent_mode != "EDA Analyst" or not _is_visualization_request(agent_request):
+        return True
+
+    validation = validate_eda_visualization_request(
+        st.session_state.get("df_A_data"),
+        agent_request,
+    )
+    if validation.ok:
+        if validation.column is not None:
+            _think(
+                "EDA",
+                f"시각화 전 검증 통과: column={validation.column}, dtype={validation.dtype}, chart={validation.chart_type}",
+            )
+        else:
+            _think("EDA", validation.reason)
+        return True
+
+    message = f"EDA 실행 전 검증 실패: {validation.reason}"
+    _think("ERROR", message)
+    st.error(message)
+    append_assistant_message(run_id, message, agent_mode, turn_id=turn_id)
+    st.session_state["active_run_id"] = None
+    log_updates["assistant_response_for_log"] = message
+    log_updates["intent_for_log"] = "eda"
+    log_updates["python_status_for_log"] = "fail"
+    log_updates["python_error_for_log"] = message
+    return False
+
+
 def _run_agent_interaction(
     *,
     agent_mode: str,
@@ -422,6 +737,15 @@ def _run_agent_interaction(
         log_updates["intent_for_log"] = "eda"
         return log_updates
 
+    if not _validate_eda_before_agent(
+        agent_mode=agent_mode,
+        agent_request=agent_request,
+        run_id=run_id,
+        log_updates=log_updates,
+        turn_id=turn_id,
+    ):
+        return log_updates
+
     answer_container = st.container()
     callbacks = _build_callbacks(debug_mode, log_placeholder)
 
@@ -448,6 +772,33 @@ def _run_agent_interaction(
 
     with answer_container:
         st.subheader("Answer")
+        if agent_mode == "EDA Analyst" and detect_agent_parser_loop(result):
+            if _render_eda_parser_fallback(
+                prompt=agent_request,
+                run_id=run_id,
+                log_updates=log_updates,
+                tools_used_for_log=tools_used_for_log,
+                turn_id=turn_id,
+                pytool_obj=pytool_obj,
+            ):
+                if pytool_obj is not None:
+                    figure_payloads = render_visualizations(pytool_obj)
+                    attach_figures_to_run(run_id, figure_payloads)
+                st.session_state["active_run_id"] = None
+                return log_updates
+
+            message = (
+                "EDA Agent 응답 형식 오류가 반복되어 실행을 중단했습니다. "
+                "단일 컬럼명이 포함된 시각화 요청은 자동 fallback으로 처리할 수 있습니다."
+            )
+            _think("ERROR", "EDA Agent 파싱 루프 감지 → fallback 불가, 실행 중단")
+            st.error(message)
+            append_assistant_message(run_id, message, agent_mode, turn_id=turn_id)
+            log_updates["assistant_response_for_log"] = message
+            log_updates["intent_for_log"] = "eda"
+            st.session_state["active_run_id"] = None
+            return log_updates
+
         final_text = final if isinstance(final, str) else str(final)
         sql_capture = _render_agent_answer(
             agent_mode=agent_mode,
@@ -517,7 +868,7 @@ def handle_user_query(
     # 자동 연쇄 분석 처리: SQL 로딩 후 EDA가 필요한 경우를 위해 저장해둔 질문 복구
     auto_pending = st.session_state.pop("auto_eda_pending", None)
     _tlog("AUTO_PENDING", f"auto_pending popped = {auto_pending}")
-    if auto_pending:
+    if auto_pending and not user_q:
         user_q = auto_pending
 
     turn_id = next_turn_id_fn()
@@ -589,6 +940,23 @@ def handle_user_query(
         log_state["intent_for_log"] = execute_result["intent_for_log"]
         tools_used_for_log.extend(execute_result.get("tools_used_for_log", []))
 
+    # Production path: LLM/heuristic plan only, deterministic SQL + deterministic plotting.
+    if (
+        not handled_command
+        and command_prefix is None
+        and auto_pending is None
+    ):
+        handled_command = _try_run_controlled_production_flow(
+            user_query=original_user_q,
+            run_id=run_id,
+            turn_id=turn_id,
+            log_placeholder=log_placeholder,
+            debug_mode=debug_mode,
+            pytool_obj=pytool_obj,
+            tools_used_for_log=tools_used_for_log,
+            log_state=log_state,
+        )
+
     # 프리픽스가 없고 빌트인 명령도 아닌 경우: 지능형 라우팅 (SQL Builder vs EDA Analyst)
     if not handled_command:
         df_a_data = st.session_state.get("df_A_data")
@@ -605,13 +973,33 @@ def handle_user_query(
             _think("CHAIN", "SQL 데이터 로딩 완료 → EDA Analyst 자동 시각화 단계로 진입")
             st.info("🔗 SQL 데이터 로딩 완료 → **EDA Analyst** 자동 시각화 단계로 진입합니다.")
         else:
+            forced_agent_mode = resolve_forced_agent_mode(command_prefix)
+            if forced_agent_mode:
+                agent_mode = forced_agent_mode
+            else:
+                agent_mode = None
+
+        if not force_eda_due_to_chaining and agent_mode == "SQL Builder":
+            tools_used_for_log.append("sql_builder_agent")
+            st.session_state["command_prefix"] = "sql"
+            st.session_state["llm_router_suggested_chaining"] = False
+            _think("ROUTING", "%sql 명령 감지 → LLM Router를 건너뛰고 SQL Builder로 직접 진입")
+            st.info("`%sql` 명령을 감지하여 **SQL Builder**로 직접 실행합니다.")
+        elif not force_eda_due_to_chaining and agent_mode is None:
             from core.llm_router import route_query
-            _think("CONTEXT", f"데이터 상태: {'미리보기 (샘플 10행)' if is_preview_state else '전체 데이터 로드됨'}")
+            data_context_message = format_dataframe_state_for_log(
+                st.session_state.get("df_A_state")
+            )
+            if data_context_message == "현재 데이터: none":
+                data_context_message = (
+                    f"데이터 상태: {'미리보기 (샘플 10행)' if is_preview_state else '전체 데이터 로드됨'}"
+                )
+            _think("CONTEXT", data_context_message)
             _think("ROUTING", "사용자 질문 의도를 분석하여 최적의 분석 엔진(Agent) 선정 중...")
 
             with st.status("🧠 Telly가 의도를 분석 중입니다...", expanded=True) as status:
                 st.write("🔍 **1단계: 현재 데이터 컨텍스트 확인**")
-                st.write(f"   - 메모리 상태: `{'미리보기 (샘플 10행)' if is_preview_state else '전체 데이터 로드됨'}`")
+                st.write(f"   - 메모리 상태: `{data_context_message}`")
                 
                 st.write("🤖 **2단계: 최적의 분석 엔진(Agent) 선정**")
                 st.write("   - 사용자의 질문 의도를 분석하여 `SQL Builder` 또는 `EDA Analyst` 중 가장 적합한 경로를 결정하고 있습니다.")

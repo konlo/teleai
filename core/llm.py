@@ -12,7 +12,7 @@ from langchain_core.language_models import BaseChatModel
 def load_llm(
     model: str = "gemini-2.5-flash",
     temperature: float = 0.0,
-    max_tokens: Optional[int] = None,
+    max_tokens: Optional[int] = 1024,
 ) -> BaseChatModel:
     """Initialise the chat model using environment configuration."""
     load_dotenv()
@@ -90,4 +90,3 @@ def _load_ollama_llm(*, model: str, temperature: float) -> ChatOllama:
 
 
 __all__ = ["load_llm"]
-

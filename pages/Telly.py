@@ -27,6 +27,7 @@ from ui.style import inject_base_styles
 from utils.prompt_help import (
     BASE_CHAT_PLACEHOLDER
 )
+from utils.chat_turn import resolve_chat_turn_query, should_process_chat_turn
 
 
 st.set_page_config(
@@ -98,6 +99,8 @@ if df_a_ready:
         eda_tools,
         eda_prompt,
         lambda session_id: eda_history,
+        max_iterations=6,
+        max_execution_time=90,
     )
 
 # SQL 에이전트 도구/프롬프트 준비
@@ -115,6 +118,8 @@ _sql_agent, sql_agent_with_history = build_agent(
     sql_tools,
     sql_prompt,
     lambda session_id: sql_history,
+    max_iterations=10,
+    max_execution_time=120,
 )
 
 
@@ -152,11 +157,12 @@ if chat_input_key not in st.session_state:
     st.session_state[chat_input_key] = ""
 
 user_q = st.chat_input(chat_placeholder, key=chat_input_key)
+auto_eda_pending = st.session_state.get("auto_eda_pending")
 
-if user_q:
+if should_process_chat_turn(user_q, auto_eda_pending):
     # 단일 턴 처리: 명령 파싱/에이전트 호출/로그 기록
     handle_user_query(
-        user_q,
+        resolve_chat_turn_query(user_q, auto_eda_pending),
         debug_mode=debug_mode,
         df_a_ready=df_a_ready,
         log_placeholder=log_placeholder,
