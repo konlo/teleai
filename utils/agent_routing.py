@@ -15,6 +15,23 @@ def resolve_forced_agent_mode(command_prefix: Optional[str]) -> Optional[str]:
     return None
 
 
+def should_force_sql_from_keywords(
+    *,
+    matched_keywords: list[str],
+    is_visualization_request: bool,
+    handled_command: bool = False,
+    command_prefix: Optional[str] = None,
+    auto_pending: Optional[str] = None,
+) -> bool:
+    """Return True when non-command keyword routing should force SQL Builder."""
+
+    if handled_command or command_prefix is not None or auto_pending is not None:
+        return False
+    if is_visualization_request:
+        return False
+    return bool(matched_keywords)
+
+
 def parse_command_prefix(user_input: str) -> tuple[Optional[str], str]:
     """Parse lightweight command prefixes without importing Streamlit chat flow."""
 
@@ -37,4 +54,5 @@ __all__ = [
     "resolve_agent_mode_for_input",
     "resolve_forced_agent_mode",
     "should_force_sql_builder",
+    "should_force_sql_from_keywords",
 ]

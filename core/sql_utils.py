@@ -8,6 +8,7 @@ from utils.session import (
     get_default_sql_limit,
     load_preview_from_databricks_query,
 )
+from utils.runtime_trace import record_trace_event, snapshot_session_state
 
 
 AssistantAppender = Callable[[str, str, str, Optional[int]], None]
@@ -181,13 +182,24 @@ def execute_sql_preview(
                 }
             )
 
+    st.session_state["active_run_id"] = None
+    st.session_state["last_sql_status"] = "success" if success else "fail"
+    st.session_state["last_sql_error"] = "" if success else message
+    record_trace_event(
+        "sql_execution",
+        sql=sql_to_run,
+        status=st.session_state["last_sql_status"],
+        auto_trigger=auto_trigger,
+        table_name=table_name,
+        df_A_state=st.session_state.get("df_A_state"),
+        session=snapshot_session_state(),
+        error="" if success else message,
+    )
+
     mode_label = "SQL Execution" if auto_trigger else "SQL Builder"
     append_assistant_message(run_id, message, mode_label)
     if preview_payloads:
         attach_figures_to_run(run_id, preview_payloads)
-    st.session_state["active_run_id"] = None
-    st.session_state["last_sql_status"] = "success" if success else "fail"
-    st.session_state["last_sql_error"] = "" if success else message
     if success and auto_trigger:
         st.session_state["pending_rerun"] = True
     return success

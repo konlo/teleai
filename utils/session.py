@@ -17,6 +17,19 @@ from modules.dataload.databricks_sql_loader import (
     run_sql as databricks_run_sql,
 )
 from utils.data_context import make_dataframe_state
+from utils.table_context import (
+    TableContext,
+    build_schema_only_context,
+    build_trained_context,
+    ensure_table_context_override_file,
+    load_saved_table_context,
+    load_table_context_for_selection,
+    save_table_context,
+)
+from utils.table_training_sql import (
+    build_bulk_profile_stats_sql,
+    build_bulk_top_values_sql,
+)
 
 
 load_dotenv()
@@ -27,6 +40,7 @@ SUPPORTED_EXTENSIONS = (".csv", ".parquet")
 DEFAULT_SQL_LIMIT_MIN = 1
 DEFAULT_SQL_LIMIT_MAX = 10_000_000
 _DEFAULT_SQL_LIMIT = 2000
+_TABLE_TRAINING_TOP_VALUE_DISTINCT_LIMIT = 500
 SESSION_SQL_LIMIT_KEY = "sql_limit"
 TIME_COLUMN_CANDIDATES = [
     "datetime",
@@ -181,6 +195,8 @@ def ensure_session_state() -> None:
         ("databricks_last_preview_table", ""),
         ("databricks_column_source_table", ""),
         ("databricks_column_options", []),
+        ("active_table_context", None),
+        ("active_table_context_table", ""),
         ("last_agent_mode", "SQL Builder"),
         ("last_sql_statement", ""),
         ("last_sql_label", "SQL Query"),
@@ -191,6 +207,215 @@ def ensure_session_state() -> None:
     for key, default in defaults:
         if key not in st.session_state:
             st.session_state[key] = default
+
+
+def _quote_identifier(identifier: str) -> str:
+    return f"`{str(identifier).replace('`', '``')}`"
+
+
+def _table_sql_reference(table: str) -> str:
+    parts = [part.strip("` ").strip() for part in (table or "").split(".") if part.strip()]
+    return ".".join(_quote_identifier(part) for part in parts)
+
+
+def _scalar_value(df: pd.DataFrame, column: str, default: Any = None) -> Any:
+    if df is None or df.empty or column not in df.columns:
+        return default
+    value = df.iloc[0][column]
+    try:
+        if pd.isna(value):
+            return default
+    except Exception:
+        pass
+    return value
+
+
+def _coerce_optional_int(value: Any) -> Optional[int]:
+    if value is None:
+        return None
+    try:
+        if pd.isna(value):
+            return None
+    except Exception:
+        pass
+    try:
+        return int(value)
+    except Exception:
+        return None
+
+
+def load_table_context_for_selected_table(
+    table: str,
+    *,
+    preview_df: Optional[pd.DataFrame] = None,
+) -> Optional[TableContext]:
+    """Load saved table context or create schema-only context for the selected table."""
+
+    ensure_session_state()
+    table_clean = (table or "").strip()
+    if not table_clean:
+        st.session_state["active_table_context"] = None
+        st.session_state["active_table_context_table"] = ""
+        return None
+    context = load_table_context_for_selection(
+        table_clean,
+        preview_df=preview_df,
+        catalog=st.session_state.get("databricks_selected_catalog", ""),
+        schema=st.session_state.get("databricks_selected_schema", ""),
+    )
+    st.session_state["active_table_context"] = context
+    st.session_state["active_table_context_table"] = table_clean
+    st.session_state["databricks_column_source_table"] = table_clean
+    st.session_state["databricks_column_options"] = [column.name for column in context.columns]
+    return context
+
+
+def _parse_bulk_profile_stats(
+    stats_df: pd.DataFrame,
+    aliases: dict[str, dict[str, str]],
+) -> tuple[Optional[int], dict[str, dict[str, Any]]]:
+    row_count = _coerce_optional_int(_scalar_value(stats_df, "__row_count"))
+    profiles: dict[str, dict[str, Any]] = {}
+    for column_name, column_aliases in aliases.items():
+        profile: dict[str, Any] = {}
+        null_count = _coerce_optional_int(_scalar_value(stats_df, column_aliases["null_count"]))
+        distinct_count = _coerce_optional_int(_scalar_value(stats_df, column_aliases["distinct_count"]))
+        profile["null_count"] = null_count
+        profile["distinct_count"] = distinct_count
+        profile["nullable"] = None if null_count is None else null_count > 0
+        if "min_value" in column_aliases and column_aliases["min_value"] in stats_df.columns:
+            profile["min_value"] = _scalar_value(stats_df, column_aliases["min_value"])
+        if "max_value" in column_aliases and column_aliases["max_value"] in stats_df.columns:
+            profile["max_value"] = _scalar_value(stats_df, column_aliases["max_value"])
+        profile["top_values"] = []
+        profiles[column_name] = profile
+    return row_count, profiles
+
+
+def _should_collect_top_values(column: Any, profile: dict[str, Any]) -> bool:
+    distinct_count = profile.get("distinct_count")
+    if distinct_count is None:
+        return False
+    if distinct_count <= 0:
+        return False
+    if distinct_count > _TABLE_TRAINING_TOP_VALUE_DISTINCT_LIMIT:
+        return False
+    return True
+
+
+def _fetch_table_column_profiles(
+    table_ref: str,
+    columns: List[Any],
+    creds: DatabricksCredentials,
+) -> tuple[Optional[int], dict[str, dict[str, Any]], int]:
+    column_names = [str(column.name) for column in columns if getattr(column, "name", "")]
+    if not column_names:
+        row_count_df = databricks_run_sql(f"SELECT COUNT(*) AS `__row_count` FROM {table_ref}", creds)
+        return _coerce_optional_int(_scalar_value(row_count_df, "__row_count")), {}, 1
+
+    stats_sql, aliases = build_bulk_profile_stats_sql(table_ref, column_names, include_min_max=True)
+    query_count = 1
+    try:
+        stats_df = databricks_run_sql(stats_sql, creds)
+    except Exception:
+        fallback_sql, aliases = build_bulk_profile_stats_sql(table_ref, column_names, include_min_max=False)
+        query_count += 1
+        try:
+            stats_df = databricks_run_sql(fallback_sql, creds)
+        except Exception:
+            stats_df = pd.DataFrame()
+
+    row_count, profiles = _parse_bulk_profile_stats(stats_df, aliases)
+    top_columns = [
+        str(column.name)
+        for column in columns
+        if getattr(column, "name", "") and _should_collect_top_values(column, profiles.get(str(column.name), {}))
+    ]
+    if top_columns:
+        top_sql = build_bulk_top_values_sql(table_ref, top_columns)
+        query_count += 1
+        try:
+            top_df = databricks_run_sql(top_sql, creds)
+        except Exception:
+            top_df = pd.DataFrame(columns=["column_name", "value", "stat_count"])
+        for _, row in top_df.iterrows():
+            column_name = "" if pd.isna(row.get("column_name")) else str(row.get("column_name"))
+            if column_name not in profiles:
+                continue
+            profiles[column_name].setdefault("top_values", []).append(
+                {
+                    "value": "" if pd.isna(row.get("value")) else str(row.get("value")),
+                    "count": _coerce_optional_int(row.get("stat_count")) or 0,
+                }
+            )
+    return row_count, profiles, query_count
+
+
+def train_selected_table_context(table: Optional[str] = None) -> Tuple[bool, str]:
+    """Build a safe table profile from Databricks and persist it as JSON."""
+
+    ensure_session_state()
+    table_clean = (table or st.session_state.get("databricks_selected_table", "")).strip()
+    if not table_clean:
+        return False, "학습할 테이블이 선택되어 있지 않습니다."
+    if not databricks_connector_available():
+        return False, "databricks-sql-connector is not installed."
+
+    try:
+        creds = get_databricks_credentials()
+        selected_catalog = st.session_state.get("databricks_selected_catalog", "")
+        selected_schema = st.session_state.get("databricks_selected_schema", "")
+        if selected_catalog:
+            creds.catalog = selected_catalog
+        if selected_schema:
+            creds.schema = selected_schema
+        else:
+            creds.schema = None
+        if (not creds.catalog or not creds.schema) and "." in table_clean:
+            parts = [part.strip("` ").strip() for part in table_clean.split(".") if part.strip()]
+            if len(parts) >= 3:
+                creds.catalog = creds.catalog or parts[0]
+                creds.schema = creds.schema or parts[1]
+
+        active_context = st.session_state.get("active_table_context")
+        if not isinstance(active_context, TableContext) or active_context.table_fqn != table_clean:
+            active_context = load_saved_table_context(table_clean)
+        if active_context is None:
+            preview_df = databricks_load_table(table_clean, creds, limit=10)
+            active_context = build_schema_only_context(
+                table_clean,
+                preview_df,
+                catalog=st.session_state.get("databricks_selected_catalog", ""),
+                schema=st.session_state.get("databricks_selected_schema", ""),
+            )
+
+        table_ref = _table_sql_reference(table_clean)
+        row_count, column_profiles, query_count = _fetch_table_column_profiles(
+            table_ref,
+            active_context.columns,
+            creds,
+        )
+        trained_context = build_trained_context(
+            active_context,
+            row_count=row_count,
+            column_profiles=column_profiles,
+        )
+        path = save_table_context(trained_context)
+        override_path = ensure_table_context_override_file(trained_context)
+        st.session_state["active_table_context"] = trained_context
+        st.session_state["active_table_context_table"] = table_clean
+        st.session_state["databricks_column_source_table"] = table_clean
+        st.session_state["databricks_column_options"] = [column.name for column in trained_context.columns]
+        return (
+            True,
+            "Table context training 완료: "
+            f"`{table_clean}` ({len(trained_context.columns)} columns, {query_count} profile queries) "
+            f"→ {path} | aliases override: {override_path}",
+        )
+    except DatabricksConnectorError as exc:  # pragma: no cover
+        return False, str(exc)
+    except Exception as exc:  # pragma: no cover
+        return False, f"Table context training 실패: {exc}"
 
 
 def load_df_a(path: str, display_name: str) -> Tuple[bool, str]:
@@ -423,6 +648,7 @@ def load_df_from_databricks(
     if target == "A":
         st.session_state["databricks_column_source_table"] = table
         st.session_state["databricks_column_options"] = [str(col) for col in df.columns]
+        load_table_context_for_selected_table(table, preview_df=df)
 
     return True, f"Loaded Databricks table '{table}' into df_{target}."
 
@@ -526,6 +752,18 @@ def load_preview_from_databricks_query(
     )
     st.session_state["databricks_last_preview_table"] = table_clean
 
+    if target == "A":
+        if not query:
+            context = load_table_context_for_selected_table(table_clean, preview_df=df)
+            if context is not None:
+                st.session_state["databricks_column_source_table"] = table_clean
+                st.session_state["databricks_column_options"] = [column.name for column in context.columns]
+        elif st.session_state.get("active_table_context_table") != table_clean:
+            saved_context = load_saved_table_context(table_clean)
+            if saved_context is not None:
+                st.session_state["active_table_context"] = saved_context
+                st.session_state["active_table_context_table"] = table_clean
+
     return True, f"Loaded data from '{table_clean}'."
 
 
@@ -560,6 +798,8 @@ __all__ = [
     "list_databricks_schemas_in_session",
     "list_databricks_tables_in_session",
     "load_df_from_databricks",
+    "load_table_context_for_selected_table",
+    "train_selected_table_context",
     "databricks_connector_available",
     "generate_select_all_query",
     "load_preview_from_databricks_query",

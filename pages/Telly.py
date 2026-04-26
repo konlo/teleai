@@ -23,6 +23,7 @@ from ui.chat_log import (
 )
 from ui.data_preview import render_data_preview_section
 from ui.data_state import load_dataframes
+from ui.runtime_trace_view import render_runtime_trace_debug_panel
 from ui.style import inject_base_styles
 from utils.prompt_help import (
     BASE_CHAT_PLACEHOLDER
@@ -112,6 +113,7 @@ sql_prompt = build_sql_prompt(
     selected_schema=st.session_state.get("databricks_selected_schema", ""),
     df_preview=df_init if isinstance(df_init, pd.DataFrame) else None,
     df_name=st.session_state.get("df_A_name", "df_A"),
+    table_context=st.session_state.get("active_table_context"),
 )
 _sql_agent, sql_agent_with_history = build_agent(
     llm,
@@ -178,6 +180,10 @@ else:
 
 # Telly의 사고 과정을 영구적으로 표시 (다음 프롬프트까지 유지)
 render_thinking_log()
+
+if debug_mode:
+    with st.sidebar:
+        render_runtime_trace_debug_panel()
 
 # 데이터 미리보기 팝오버 + 다운로드 버튼
 render_data_preview_section(df_a_ready, df_A, df_B)
