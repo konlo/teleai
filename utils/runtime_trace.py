@@ -236,6 +236,16 @@ def _summary_fields_for_event(event_type: str, event: Mapping[str, Any]) -> Dict
             "missing_columns": event.get("missing_columns"),
             "df_A_state": event.get("df_A_state"),
         }
+    if event_type == "controlled_plan":
+        plan = event.get("plan") if isinstance(event.get("plan"), Mapping) else {}
+        return {
+            "controlled_plan_generated": event.get("generated"),
+            "controlled_target_column": event.get("target_column") or plan.get("target_column"),
+            "controlled_group_column": event.get("group_column") or plan.get("group_column"),
+            "table_context_source": event.get("table_context_source"),
+            "training_status": event.get("training_status"),
+            "resolved_from_training": event.get("resolved_from_training"),
+        }
     if event_type == "table_training_result":
         return {
             "table_training_status": event.get("status"),

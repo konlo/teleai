@@ -65,6 +65,7 @@ from utils.table_context import (
     table_context_override_path,
     table_context_summary,
     table_context_to_dict,
+    table_training_work_log_fields,
 )
 from utils.table_training_sql import build_bulk_profile_stats_sql, build_bulk_top_values_sql
 
@@ -110,13 +111,91 @@ def _bank_schema_context() -> TableContext:
 def _bank_table_context() -> TableContext:
     """Return a trained-context fixture with manual aliases, like %table training overrides."""
 
-    return apply_table_context_overrides(
+    trained = build_trained_context(
         _bank_schema_context(),
+        row_count=750000,
+        column_profiles={
+            "age": {"null_count": 0, "distinct_count": 70, "min_value": 18, "max_value": 95},
+            "job": {"null_count": 0, "distinct_count": 12, "top_values": []},
+            "education": {"null_count": 0, "distinct_count": 4, "top_values": [{"value": "secondary", "count": 100}]},
+            "balance": {"null_count": 0, "distinct_count": 5000, "min_value": -8019, "max_value": 102127},
+            "housing": {"null_count": 0, "distinct_count": 2, "top_values": [{"value": "yes", "count": 100}]},
+            "loan": {"null_count": 0, "distinct_count": 2, "top_values": [{"value": "no", "count": 100}]},
+            "duration": {"null_count": 0, "distinct_count": 1500, "min_value": 0, "max_value": 4918},
+        },
+    )
+    return apply_table_context_overrides(
+        trained,
         overrides={
             "age": ["나이", "연령", "20대", "30대"],
             "job": ["직업", "직업군", "Job"],
             "loan": ["대출"],
             "housing": ["주택", "housing"],
+        },
+    )
+
+
+def _titanic_schema_context() -> TableContext:
+    return build_schema_only_context(
+        "workspace.default.titanic",
+        columns=[
+            "PassengerId",
+            "Survived",
+            "Pclass",
+            "Name",
+            "Sex",
+            "Age",
+            "SibSp",
+            "Parch",
+            "Ticket",
+            "Fare",
+            "Cabin",
+            "Embarked",
+        ],
+        dtypes={
+            "PassengerId": "int64",
+            "Survived": "int64",
+            "Pclass": "int64",
+            "Name": "object",
+            "Sex": "object",
+            "Age": "float64",
+            "SibSp": "int64",
+            "Parch": "int64",
+            "Ticket": "object",
+            "Fare": "float64",
+            "Cabin": "object",
+            "Embarked": "object",
+        },
+    )
+
+
+def _titanic_table_context() -> TableContext:
+    return build_trained_context(
+        _titanic_schema_context(),
+        row_count=891,
+        column_profiles={
+            "PassengerId": {"null_count": 0, "distinct_count": 891, "min_value": 1, "max_value": 891},
+            "Survived": {
+                "null_count": 0,
+                "distinct_count": 2,
+                "top_values": [{"value": "0", "count": 549}, {"value": "1", "count": 342}],
+                "min_value": 0,
+                "max_value": 1,
+            },
+            "Pclass": {"null_count": 0, "distinct_count": 3, "min_value": 1, "max_value": 3},
+            "Name": {"null_count": 0, "distinct_count": 891},
+            "Sex": {
+                "null_count": 0,
+                "distinct_count": 2,
+                "top_values": [{"value": "male", "count": 577}, {"value": "female", "count": 314}],
+            },
+            "Age": {"null_count": 177, "distinct_count": 88, "min_value": 0.42, "max_value": 80},
+            "SibSp": {"null_count": 0, "distinct_count": 7, "min_value": 0, "max_value": 8},
+            "Parch": {"null_count": 0, "distinct_count": 7, "min_value": 0, "max_value": 6},
+            "Ticket": {"null_count": 0, "distinct_count": 681},
+            "Fare": {"null_count": 0, "distinct_count": 248, "min_value": 0, "max_value": 512.3292},
+            "Cabin": {"null_count": 687, "distinct_count": 147},
+            "Embarked": {"null_count": 2, "distinct_count": 3},
         },
     )
 
@@ -208,6 +287,7 @@ def run_static_tests():
     failed += run_figure_attachment_tests()
     failed += run_explicit_sql_routing_tests()
     failed += run_external_llm_config_tests()
+    failed += run_sql_prompt_tests()
     failed += run_table_context_tests()
     failed += run_runtime_trace_tests()
     return failed
@@ -498,6 +578,124 @@ def run_controlled_plan_tests():
         default_table="workspace.default.bank_loan",
         table_context=_bank_schema_context(),
     )
+    titanic_context = _titanic_table_context()
+    grouped_prompt = "survived 값이 1인사람들과 0인 사람들의 Sex(성별) 분포를 각각 시각화 해줘."
+    grouped_plan = build_controlled_plan(
+        grouped_prompt,
+        default_table="workspace.default.titanic",
+        table_context=titanic_context,
+    )
+    mismatched_table_grouped_plan = build_controlled_plan(
+        grouped_prompt,
+        default_table="workspace.default.bank_loan",
+        table_context=bank_context,
+    )
+    grouped_requirement = requirement_from_controlled_plan(grouped_plan) if grouped_plan else DataRequirement()
+    grouped_state = DataFrameState(
+        role="query_result",
+        source_table="workspace.default.titanic",
+        query="SELECT * FROM workspace.default.titanic LIMIT 2000",
+        columns=tuple(column.name for column in titanic_context.columns),
+        row_count=891,
+        created_by="test",
+    )
+    grouped_readiness = evaluate_data_readiness(grouped_state, grouped_requirement)
+    grouped_missing_target_state = DataFrameState(
+        role="query_result",
+        source_table="workspace.default.titanic",
+        query="SELECT Survived FROM workspace.default.titanic LIMIT 2000",
+        columns=("Survived",),
+        row_count=891,
+        created_by="test",
+    )
+    grouped_missing_target_readiness = evaluate_data_readiness(
+        grouped_missing_target_state,
+        grouped_requirement,
+    )
+    grouped_wrong_source_state = DataFrameState(
+        role="query_result",
+        source_table="workspace.default.bank_loan",
+        query="SELECT * FROM workspace.default.bank_loan LIMIT 2000",
+        columns=tuple(column.name for column in bank_context.columns),
+        row_count=2000,
+        created_by="test",
+    )
+    grouped_wrong_source_readiness = evaluate_data_readiness(
+        grouped_wrong_source_state,
+        grouped_requirement,
+    )
+    grouped_sql = build_sql_from_plan(grouped_plan) if grouped_plan else ""
+    grouped_config = (
+        select_visualization_config(
+            grouped_plan,
+            pd.DataFrame(
+                {
+                    "Survived": [1, 1, 0, 0],
+                    "Sex": ["female", "male", "male", "female"],
+                    "stat_count": [200, 100, 400, 100],
+                }
+            ),
+        )
+        if grouped_plan
+        else None
+    )
+    grouped_trace_event = (
+        build_trace_event(
+            {
+                "trace_id": "trace",
+                "conversation_id": "conv",
+                "turn_id": 1,
+                "run_id": "run",
+                "event_seq": 1,
+            },
+            "controlled_plan",
+            generated=True,
+            plan=grouped_plan,
+            table_context_source=titanic_context.source,
+            training_status=titanic_context.training_status,
+            context_hash="context-hash",
+            resolved_from_training=True,
+            **(grouped_plan.resolution_debug if grouped_plan else {}),
+        )
+        if grouped_plan
+        else {}
+    )
+    survived_plan = build_controlled_plan(
+        "Survived 분포를 그려줘",
+        default_table="workspace.default.titanic",
+        table_context=titanic_context,
+    )
+    sex_parenthetical_plan = build_controlled_plan(
+        "Sex(성별) 분포를 보고 싶어",
+        default_table="workspace.default.titanic",
+        table_context=titanic_context,
+    )
+    untrained_grouped_plan = build_controlled_plan(
+        grouped_prompt,
+        default_table="workspace.default.titanic",
+        table_context=_titanic_schema_context(),
+    )
+    planner_source = open(
+        os.path.join(os.path.dirname(os.path.abspath(__file__)), "utils", "chatbot_plan.py"),
+        encoding="utf-8",
+    ).read()
+    forbidden_planner_literals = [
+        '"job"',
+        "'job'",
+        '"Sex"',
+        "'Sex'",
+        '"Survived"',
+        "'Survived'",
+        '"duration"',
+        "'duration'",
+        '"balance"',
+        "'balance'",
+        "직업군",
+        "성별",
+    ]
+    leaked_planner_literals = [
+        literal for literal in forbidden_planner_literals if literal in planner_source
+    ]
 
     test_cases = [
         {
@@ -647,6 +845,108 @@ def run_controlled_plan_tests():
             "description": "직업군 alias가 없는 TableContext에서는 코드 하드코딩으로 job을 추측하지 않는다",
             "actual": no_alias_duration_job_plan is None,
             "expected": True,
+        },
+        {
+            "description": "trained TableContext가 없으면 prompt의 실제 컬럼명도 controlled resolver가 추측하지 않는다",
+            "actual": untrained_grouped_plan is None,
+            "expected": True,
+        },
+        {
+            "description": "정확한 survived/Sex(성별) prompt는 선택된 titanic TableContext 기준으로만 plan을 만든다",
+            "actual": (
+                grouped_prompt,
+                grouped_plan.table if grouped_plan else "",
+                mismatched_table_grouped_plan is None,
+            ),
+            "expected": (
+                "survived 값이 1인사람들과 0인 사람들의 Sex(성별) 분포를 각각 시각화 해줘.",
+                "workspace.default.titanic",
+                True,
+            ),
+        },
+        {
+            "description": "값이 1/0인 사람들의 target 분포는 group/filter와 target 역할을 분리한다",
+            "actual": (
+                grouped_plan.task if grouped_plan else "",
+                grouped_plan.target_column if grouped_plan else "",
+                grouped_plan.group_column if grouped_plan else "",
+                list(grouped_plan.group_values) if grouped_plan else [],
+                grouped_plan.group_mode if grouped_plan else "",
+            ),
+            "expected": ("grouped_distribution", "Sex", "Survived", [1, 0], "separate"),
+        },
+        {
+            "description": "grouped distribution requirement는 target과 group 컬럼을 모두 요구한다",
+            "actual": list(grouped_requirement.columns),
+            "expected": ["Sex", "Survived"],
+        },
+        {
+            "description": "현재 df_A가 grouped distribution 컬럼을 모두 갖고 있으면 USE_CURRENT가 된다",
+            "actual": grouped_readiness.decision,
+            "expected": DataReadinessDecision.USE_CURRENT,
+        },
+        {
+            "description": "현재 df_A가 group 컬럼만 갖고 target이 없으면 reload가 필요하다",
+            "actual": grouped_missing_target_readiness.decision,
+            "expected": DataReadinessDecision.RELOAD_REQUIRED,
+        },
+        {
+            "description": "현재 df_A source가 선택된 table과 다르면 selected table 기준으로 reload가 필요하다",
+            "actual": grouped_wrong_source_readiness.decision,
+            "expected": DataReadinessDecision.RELOAD_REQUIRED,
+        },
+        {
+            "description": "grouped distribution SQL은 group/target COUNT 집계로 생성된다",
+            "actual": (
+                grouped_sql.startswith("SELECT Survived, Sex, COUNT(*) AS stat_count FROM workspace.default.titanic"),
+                "WHERE Survived IN (1, 0)" in grouped_sql,
+                "GROUP BY Survived, Sex" in grouped_sql,
+                "ORDER BY Survived, stat_count DESC" in grouped_sql,
+            ),
+            "expected": (True, True, True, True),
+        },
+        {
+            "description": "grouped distribution은 grouped_bar config를 선택한다",
+            "actual": (
+                grouped_config.plot_type if grouped_config else "",
+                grouped_config.column if grouped_config else "",
+                grouped_config.group_column if grouped_config else "",
+                list(grouped_config.group_values) if grouped_config else [],
+                grouped_config.group_mode if grouped_config else "",
+            ),
+            "expected": ("grouped_bar", "Sex", "Survived", [1, 0], "separate"),
+        },
+        {
+            "description": "단일 컬럼 분포 요청은 group 없이 해당 컬럼을 target으로 유지한다",
+            "actual": (
+                survived_plan.task if survived_plan else "",
+                survived_plan.target_column if survived_plan else "",
+                survived_plan.group_column if survived_plan else "",
+            ),
+            "expected": ("distribution", "Survived", ""),
+        },
+        {
+            "description": "컬럼명(설명) 표현은 trained TableContext에 실제 컬럼명이 있을 때만 target으로 인정된다",
+            "actual": sex_parenthetical_plan.target_column if sex_parenthetical_plan else "",
+            "expected": "Sex",
+        },
+        {
+            "description": "runtime trace에는 training 기반 target/group 선택 근거가 남는다",
+            "actual": (
+                grouped_trace_event.get("resolved_from_training"),
+                grouped_trace_event.get("training_status"),
+                grouped_trace_event.get("target_column"),
+                grouped_trace_event.get("group_column"),
+                grouped_trace_event.get("group_values"),
+                bool(grouped_trace_event.get("column_mentions")),
+                bool(grouped_trace_event.get("target_candidates")),
+            ),
+            "expected": (True, "trained", "Sex", "Survived", [1, 0], True, True),
+        },
+        {
+            "description": "planner production code에는 table-specific 컬럼/alias literal을 넣지 않는다",
+            "actual": leaked_planner_literals,
+            "expected": [],
         },
     ]
 
@@ -988,6 +1288,153 @@ def run_external_llm_config_tests():
     return failed
 
 
+def _format_sql_prompt_system_text(**kwargs):
+    from core.prompt import build_sql_prompt
+
+    prompt = build_sql_prompt([], **kwargs)
+    messages = prompt.format_messages(
+        input="테이블 분포를 보여줘",
+        agent_scratchpad="",
+    )
+    return "\n".join(str(getattr(message, "content", "")) for message in messages)
+
+
+def run_sql_prompt_tests():
+    print("🧪 SQL prompt TableContext construction 테스트 실행...\n")
+
+    import importlib.util
+    import pandas as pd
+
+    prompt_source = open(
+        os.path.join(os.path.dirname(os.path.abspath(__file__)), "core", "prompt.py"),
+        encoding="utf-8",
+    ).read()
+    dependency_available = importlib.util.find_spec("langchain_core") is not None
+    if not dependency_available:
+        test_cases = [
+            {
+                "description": "core/prompt.py는 더 이상 df_columns partial var를 조건 없이 주입하지 않는다",
+                "actual": 'partial_vars["df_columns"]' in prompt_source,
+                "expected": False,
+            },
+        ]
+        passed = 0
+        failed = 0
+        for idx, tc in enumerate(test_cases, 1):
+            print(f"[sql-prompt-{idx}] {tc['description']}")
+            if tc["actual"] == tc["expected"]:
+                print("   ✅ PASS\n")
+                passed += 1
+            else:
+                print(f"   ❌ FAIL (Expected: {tc['expected']}, Got: {tc['actual']})\n")
+                failed += 1
+        print("   ℹ️ langchain_core가 없어 runtime prompt 생성 테스트는 venv/full scenario에서 검증합니다.\n")
+        print("-" * 50)
+        print(f"🎯 SQL prompt 테스트 결과: {passed} 통과, {failed} 실패\n")
+        return failed
+
+    preview_df = pd.DataFrame(
+        {
+            "Survived": [1, 0],
+            "Sex": ["female", "male"],
+        }
+    )
+    trained_context = _titanic_table_context()
+    schema_only_context = _titanic_schema_context()
+
+    try:
+        trained_prompt_text = _format_sql_prompt_system_text(
+            selected_table="workspace.default.titanic",
+            selected_catalog="workspace",
+            selected_schema="default",
+            df_preview=preview_df,
+            df_name="workspace.default.titanic",
+            table_context=trained_context,
+        )
+        trained_prompt_error = ""
+    except Exception as exc:
+        trained_prompt_text = ""
+        trained_prompt_error = type(exc).__name__
+
+    try:
+        schema_only_prompt_text = _format_sql_prompt_system_text(
+            selected_table="workspace.default.titanic",
+            selected_catalog="workspace",
+            selected_schema="default",
+            df_preview=preview_df,
+            df_name="workspace.default.titanic",
+            table_context=schema_only_context,
+        )
+        schema_only_prompt_error = ""
+    except Exception as exc:
+        schema_only_prompt_text = ""
+        schema_only_prompt_error = type(exc).__name__
+
+    try:
+        file_prompt_text = _format_sql_prompt_system_text(
+            selected_table="",
+            df_preview=preview_df,
+            df_name="local preview",
+            table_context=None,
+        )
+        file_prompt_error = ""
+    except Exception as exc:
+        file_prompt_text = ""
+        file_prompt_error = type(exc).__name__
+
+    test_cases = [
+        {
+            "description": "core/prompt.py는 더 이상 df_columns partial var를 조건 없이 주입하지 않는다",
+            "actual": 'partial_vars["df_columns"]' in prompt_source,
+            "expected": False,
+        },
+        {
+            "description": "selected table + trained TableContext + df_preview가 있어도 df_columns UnboundLocalError 없이 prompt를 만든다",
+            "actual": (
+                trained_prompt_error,
+                "Selected table context for SQL generation:" in trained_prompt_text,
+                "source-table schema/profile must come from the trained TableContext below" in trained_prompt_text,
+                "head():" in trained_prompt_text,
+            ),
+            "expected": ("", True, True, False),
+        },
+        {
+            "description": "selected table + schema_only context는 preview row로 table 컬럼 의미를 추론하지 말고 training 안내를 넣는다",
+            "actual": (
+                schema_only_prompt_error,
+                "%table training" in schema_only_prompt_text,
+                "head():" in schema_only_prompt_text,
+                "Selected table context for SQL generation:" in schema_only_prompt_text,
+            ),
+            "expected": ("", True, False, False),
+        },
+        {
+            "description": "selected table이 없는 local dataframe prompt는 기존 preview 정보를 안전하게 포함한다",
+            "actual": (
+                file_prompt_error,
+                "Active dataframe preview for SQL generation:" in file_prompt_text,
+                "head():" in file_prompt_text,
+            ),
+            "expected": ("", True, True),
+        },
+    ]
+
+    passed = 0
+    failed = 0
+    for idx, tc in enumerate(test_cases, 1):
+        print(f"[sql-prompt-{idx}] {tc['description']}")
+        if tc["actual"] == tc["expected"]:
+            print("   ✅ PASS\n")
+            passed += 1
+        else:
+            print(f"   ❌ FAIL (Expected: {tc['expected']}, Got: {tc['actual']})\n")
+            failed += 1
+
+    print("-" * 50)
+    print(f"🎯 SQL prompt 테스트 결과: {passed} 통과, {failed} 실패\n")
+    return failed
+
+
 def run_table_context_tests():
     print("🧪 TableContext training/cache 테스트 실행...\n")
 
@@ -1068,6 +1515,23 @@ def run_table_context_tests():
             },
         )
         alias_context_payload = table_context_to_dict(reloaded_alias_context)
+        titanic_trained_context = _titanic_table_context()
+        save_table_context(titanic_trained_context, storage_dir=temp_dir)
+        selected_titanic_context = load_table_context_for_selection(
+            "workspace.default.titanic",
+            storage_dir=temp_dir,
+        )
+        exact_titanic_prompt = "survived 값이 1인사람들과 0인 사람들의 Sex(성별) 분포를 각각 시각화 해줘."
+        selected_titanic_plan = build_controlled_plan(
+            exact_titanic_prompt,
+            default_table="workspace.default.titanic",
+            table_context=selected_titanic_context,
+        )
+        selected_bank_plan_for_titanic_prompt = build_controlled_plan(
+            exact_titanic_prompt,
+            default_table="workspace.default.bank_loan",
+            table_context=reloaded_alias_context,
+        )
 
     table_command_spec = next(
         (spec for spec in CHAT_COMMAND_SPECS if spec["name"] == "table"),
@@ -1096,6 +1560,16 @@ def run_table_context_tests():
         "duration이 500 넘는 사람들의 직업군이 어떻게 되는지 시각화 해줘",
         default_table="workspace.default.bank_loan",
         table_context=_bank_schema_context(),
+    )
+    training_success_log_fields = table_training_work_log_fields(
+        "workspace.default.bank_loan",
+        True,
+        "Table context training 완료",
+    )
+    training_fail_log_fields = table_training_work_log_fields(
+        "",
+        False,
+        "학습할 테이블이 선택되어 있지 않습니다.",
     )
 
     test_cases = [
@@ -1201,6 +1675,47 @@ def run_table_context_tests():
                 aliasless_duration_plan is None,
             ),
             "expected": ("job", [("duration", ">", 500)], True),
+        },
+        {
+            "description": "선택된 table이 titanic이면 저장된 training file을 로딩해 exact survived/Sex prompt를 해석한다",
+            "actual": (
+                selected_titanic_context.table_fqn,
+                selected_titanic_context.training_status,
+                selected_titanic_plan.table if selected_titanic_plan else "",
+                selected_titanic_plan.target_column if selected_titanic_plan else "",
+                selected_titanic_plan.group_column if selected_titanic_plan else "",
+            ),
+            "expected": (
+                "workspace.default.titanic",
+                "trained",
+                "workspace.default.titanic",
+                "Sex",
+                "Survived",
+            ),
+        },
+        {
+            "description": "선택된 table이 bank_loan이면 titanic prompt를 이전 table context로 오해하지 않는다",
+            "actual": selected_bank_plan_for_titanic_prompt is None,
+            "expected": True,
+        },
+        {
+            "description": "%table training 성공은 turn work log에 intent/tool/status/summary를 남긴다",
+            "actual": (
+                training_success_log_fields.get("intent_for_log"),
+                training_success_log_fields.get("tools_used_for_log"),
+                training_success_log_fields.get("python_status_for_log"),
+                "workspace.default.bank_loan" in training_success_log_fields.get("python_output_summary_for_log", ""),
+            ),
+            "expected": ("table_training", ["table_context_training"], "success", True),
+        },
+        {
+            "description": "%table training 실패도 turn work log에 fail status와 error message를 남긴다",
+            "actual": (
+                training_fail_log_fields.get("python_status_for_log"),
+                training_fail_log_fields.get("python_error_for_log"),
+                "(no table selected)" in training_fail_log_fields.get("python_output_summary_for_log", ""),
+            ),
+            "expected": ("fail", "학습할 테이블이 선택되어 있지 않습니다.", True),
         },
     ]
 

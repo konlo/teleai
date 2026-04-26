@@ -5,7 +5,7 @@ from typing import Any, Dict, Iterable, List, Optional, Tuple
 import pandas as pd
 
 from utils.eda_validation import choose_distribution_chart
-from utils.table_context import coerce_table_context, get_column_names, resolve_column_from_prompt
+from utils.table_context import coerce_table_context, get_column_names, is_trained_table_context, strip_internal_prompt_context
 
 
 DEFAULT_CONTROLLED_SQL_LIMIT = 2000
@@ -49,12 +49,19 @@ class ControlledPlan:
     rank_direction: str = ""
     filter_conditions: Tuple[FilterCondition, ...] = ()
     target_semantic_type: str = ""
+    group_column: str = ""
+    group_values: Tuple[Any, ...] = ()
+    group_mode: str = ""
+    resolution_debug: Dict[str, Any] = field(default_factory=dict)
 
 
 @dataclass(frozen=True)
 class VisualizationConfig:
     plot_type: str
     column: str
+    group_column: str = ""
+    group_values: Tuple[Any, ...] = ()
+    group_mode: str = ""
 
 
 def _semantic_types(table_context) -> dict[str, str]:
@@ -85,7 +92,7 @@ def _column_terms(table_context) -> dict[str, list[str]]:
 
 
 def _find_column_mentions(text: str, table_context, *, excluded_columns: Optional[Iterable[str]] = None) -> list[tuple[int, str, str]]:
-    lowered = (text or "").lower()
+    lowered = strip_internal_prompt_context(text or "").lower()
     excluded = {str(column).lower() for column in (excluded_columns or [])}
     mentions: list[tuple[int, str, str]] = []
     for column, terms in _column_terms(table_context).items():
@@ -97,6 +104,110 @@ def _find_column_mentions(text: str, table_context, *, excluded_columns: Optiona
                 mentions.append((position, column, term))
     mentions.sort()
     return mentions
+
+
+def _visual_token_position(text: str) -> int:
+    lowered = strip_internal_prompt_context(text or "").lower()
+    positions = [
+        lowered.find(token)
+        for token in ("분포", "본포", "시각화", "그래프", "차트", "그려", "plot", "chart", "graph")
+        if lowered.find(token) >= 0
+    ]
+    return min(positions) if positions else -1
+
+
+def _unique_mentions(mentions: Iterable[tuple[int, str, str]]) -> list[tuple[int, str, str]]:
+    seen: set[str] = set()
+    unique: list[tuple[int, str, str]] = []
+    for position, column, term in sorted(mentions):
+        key = column.lower()
+        if key in seen:
+            continue
+        seen.add(key)
+        unique.append((position, column, term))
+    return unique
+
+
+def _parenthetical_target_candidate(
+    text: str,
+    table_context,
+    *,
+    excluded_columns: Iterable[str],
+) -> str:
+    lowered = strip_internal_prompt_context(text or "").lower()
+    excluded = {str(column).lower() for column in excluded_columns}
+    candidates: list[tuple[int, str]] = []
+    for column, terms in _column_terms(table_context).items():
+        if column.lower() in excluded:
+            continue
+        for term in sorted(terms, key=len, reverse=True):
+            term_pattern = rf"(?<![A-Za-z0-9_]){re.escape(term.lower())}(?![A-Za-z0-9_])"
+            match = re.search(term_pattern + r"\s*\(", lowered)
+            if match:
+                candidates.append((match.start(), column))
+                break
+    candidates.sort()
+    return candidates[0][1] if candidates else ""
+
+
+def _resolve_target_column(
+    text: str,
+    table_context,
+    *,
+    excluded_columns: Iterable[str],
+) -> tuple[str, list[dict[str, Any]]]:
+    excluded = {str(column).lower() for column in excluded_columns}
+    parenthetical = _parenthetical_target_candidate(
+        text,
+        table_context,
+        excluded_columns=excluded,
+    )
+    mentions = _unique_mentions(
+        _find_column_mentions(text, table_context, excluded_columns=excluded)
+    )
+    candidates = [
+        {
+            "column": column,
+            "term": term,
+            "position": position,
+        }
+        for position, column, term in mentions
+    ]
+    if parenthetical:
+        return parenthetical, candidates
+    if not mentions:
+        return "", candidates
+
+    visual_position = _visual_token_position(text)
+    if visual_position < 0:
+        return mentions[0][1], candidates
+    ranked_mentions = sorted(
+        mentions,
+        key=lambda item: (
+            abs(item[0] - visual_position),
+            item[0],
+        ),
+    )
+    return ranked_mentions[0][1], candidates
+
+
+def _parse_group_value_condition(text: str, table_context) -> tuple[str, Tuple[Any, ...]]:
+    lowered = strip_internal_prompt_context(text or "").lower()
+    for position, column, _ in _find_column_mentions(lowered, table_context):
+        window = lowered[position : position + 160]
+        if "값" not in window[:40]:
+            continue
+        raw_values = re.findall(r"(-?\d+(?:\.\d+)?)\s*인\s*사람", window)
+        if len(raw_values) < 2:
+            raw_values = re.findall(r"(-?\d+(?:\.\d+)?)\s*인", window)
+        values: list[Any] = []
+        for raw_value in raw_values:
+            parsed = _parse_numeric_value(raw_value)
+            if parsed not in values:
+                values.append(parsed)
+        if len(values) >= 2:
+            return column, tuple(values)
+    return "", ()
 
 
 def _parse_rank_percent(text: str) -> tuple[str, Optional[float]]:
@@ -189,31 +300,37 @@ def build_controlled_plan(
     if not wants_visual:
         return None
 
-    candidates = get_column_names(table_context)
+    if not is_trained_table_context(table_context):
+        return None
+
+    context = coerce_table_context(table_context)
+    candidates = get_column_names(context)
     if not candidates:
         return None
-    semantic_types = _semantic_types(table_context)
+    semantic_types = _semantic_types(context)
     rank_direction, rank_percent = _parse_rank_percent(text)
     rank_column = ""
     if rank_direction and rank_percent is not None:
-        rank_column = _resolve_rank_column_from_context(text, table_context, semantic_types)
-    comparison_filters = _parse_comparison_filters(text, table_context, semantic_types)
-    range_filters = _parse_decade_range_filters(text, table_context, semantic_types)
+        rank_column = _resolve_rank_column_from_context(text, context, semantic_types)
+    group_column, group_values = _parse_group_value_condition(text, context)
+    comparison_filters = _parse_comparison_filters(text, context, semantic_types)
+    range_filters = _parse_decade_range_filters(text, context, semantic_types)
 
     explicit_filter_columns = {
         column
         for column in candidates
-        if any(_has_yes_filter(text, term) or _has_positive_filter(text, term) for term in _column_terms(table_context).get(column, [column]))
+        if any(_has_yes_filter(text, term) or _has_positive_filter(text, term) for term in _column_terms(context).get(column, [column]))
     }
     excluded_columns = sorted(
         set(explicit_filter_columns)
         | ({rank_column} if rank_column else set())
+        | ({group_column} if group_column else set())
         | {condition.column for condition in comparison_filters}
         | set(range_filters.keys())
     )
-    target_column = resolve_column_from_prompt(
-        lowered,
-        table_context,
+    target_column, target_candidates = _resolve_target_column(
+        text,
+        context,
         excluded_columns=excluded_columns,
     )
     if not target_column:
@@ -224,9 +341,28 @@ def build_controlled_plan(
         if column != target_column:
             filters[column] = "yes"
 
+    task = "distribution"
+    if group_column and group_values:
+        task = "grouped_distribution"
+    elif rank_column and rank_percent is not None:
+        task = "ranked_distribution"
+
+    column_mentions = [
+        {"position": position, "column": column, "term": term}
+        for position, column, term in _find_column_mentions(text, context)
+    ]
+    resolution_debug = {
+        "column_mentions": column_mentions,
+        "excluded_columns": excluded_columns,
+        "target_candidates": target_candidates,
+        "target_column": target_column,
+        "group_column": group_column,
+        "group_values": list(group_values),
+    }
+
     return ControlledPlan(
         intent="VISUALIZE",
-        task="ranked_distribution" if rank_column and rank_percent is not None else "distribution",
+        task=task,
         target_column=target_column,
         filters=filters,
         table=(default_table or "").strip(),
@@ -235,6 +371,10 @@ def build_controlled_plan(
         rank_direction=rank_direction,
         filter_conditions=comparison_filters,
         target_semantic_type=semantic_types.get(target_column, ""),
+        group_column=group_column,
+        group_values=group_values,
+        group_mode="separate" if "각각" in lowered else "grouped",
+        resolution_debug=resolution_debug,
     )
 
 
@@ -248,6 +388,22 @@ def build_sql_from_plan(plan: ControlledPlan, *, limit: Optional[int] = None) ->
 
     clauses = _filter_clauses(plan.filters, plan.filter_conditions)
     limit_value = limit if limit is not None else DEFAULT_CONTROLLED_SQL_LIMIT
+
+    if plan.task == "grouped_distribution":
+        if not plan.group_column:
+            raise ValueError("Grouped distribution plan has no group column.")
+        where_clauses = [*clauses]
+        if plan.group_values:
+            values = ", ".join(_format_sql_value(value) for value in plan.group_values)
+            where_clauses.append(f"{plan.group_column} IN ({values})")
+        where_sql = f" WHERE {' AND '.join(where_clauses)}" if where_clauses else ""
+        return (
+            f"SELECT {plan.group_column}, {plan.target_column}, COUNT(*) AS stat_count "
+            f"FROM {plan.table}{where_sql} "
+            f"GROUP BY {plan.group_column}, {plan.target_column} "
+            f"ORDER BY {plan.group_column}, stat_count DESC "
+            f"LIMIT {limit_value}"
+        )
 
     should_aggregate = (
         bool(plan.rank_column and plan.rank_percent is not None)
@@ -332,6 +488,8 @@ def _filter_clauses(filters: Dict[str, Any], filter_conditions: Iterable[FilterC
 
 def required_columns_for_plan(plan: ControlledPlan) -> list[str]:
     columns = [plan.target_column]
+    if getattr(plan, "group_column", ""):
+        columns.append(plan.group_column)
     columns.extend(str(column) for column in plan.filters.keys())
     columns.extend(condition.column for condition in getattr(plan, "filter_conditions", ()) or ())
     if getattr(plan, "rank_column", ""):
@@ -346,6 +504,17 @@ def controlled_plan_to_dict(plan: ControlledPlan) -> dict[str, Any]:
 def select_visualization_config(plan: ControlledPlan, df: pd.DataFrame) -> VisualizationConfig:
     if plan.target_column not in df.columns:
         raise ValueError(f"Column not found: {plan.target_column}")
+
+    if plan.task == "grouped_distribution":
+        if not plan.group_column or plan.group_column not in df.columns:
+            raise ValueError(f"Group column not found: {plan.group_column}")
+        return VisualizationConfig(
+            plot_type="grouped_bar",
+            column=plan.target_column,
+            group_column=plan.group_column,
+            group_values=tuple(plan.group_values or ()),
+            group_mode=plan.group_mode or "grouped",
+        )
 
     chart_type = choose_distribution_chart(df[plan.target_column])
     if chart_type == "hist":

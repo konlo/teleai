@@ -5,7 +5,7 @@ import pandas as pd
 from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
 from langchain_core.tools import BaseTool, render_text_description_and_args
 from utils.session import get_default_sql_limit
-from utils.table_context import table_context_summary
+from utils.table_context import coerce_table_context, table_context_summary
 
 
 def escape_braces(text: str) -> str:
@@ -108,7 +108,7 @@ def build_react_prompt(
         "2. **Defensive Check**: ALWAYS verify data existence before plotting: `if df.empty: print('No data available to plot'); exit()`.\n"
         "3. **Pre-flight Inspection**: Before `plt.show()`, always print `df.shape` and `df.info()` to ensure the plotting data is valid.\n"
         "4. **Robust Filtering**: When removing 'unknown' or specific values, use row-wise logic: `df[~(df[cols] == 'unknown').any(axis=1)]`.\n"
-        "5. **Chain of Thought**: Describe your data processing steps in 'Thought' before writing the 'Action Input'.\n"
+        "5. **No Chain of Thought Output**: Never output `Thought:` or hidden reasoning text. Return only the required JSON action object.\n"
         "6. **Error Diagnosis**: If a plot fails, use `df.info()` and `df.describe()` in the next step to diagnose the cause.\n\n"
         "#### Phase 4: POST-VISUALIZATION SELF-REVIEW\n"
         "After generating the visualization code, review whether the visualization is valid:\n"
@@ -130,7 +130,7 @@ def build_react_prompt(
         "```\n"
         "{{{{\n"
         '  "action": "python_repl_ast",\n'
-        '  "action_input": "import matplotlib.pyplot as plt\\nplt.figure(figsize=(10, 5))\\ndf_A[\\"balance\\"].dropna().plot(kind=\\"hist\\", bins=30)\\nplt.title(\\"balance distribution\\")\\nplt.show()"\n'
+        '  "action_input": "import matplotlib.pyplot as plt\\nnumeric_cols = df_A.select_dtypes(include=\\"number\\").columns\\ncolumn = numeric_cols[0]\\nplt.figure(figsize=(10, 5))\\ndf_A[column].dropna().plot(kind=\\"hist\\", bins=30)\\nplt.title(f\\"{column} distribution\\")\\nplt.show()"\n'
         "}}}}\n"
         "```\n\n"
         "Provide only ONE action per $JSON_BLOB, as shown:\n\n"
@@ -223,7 +223,11 @@ def build_sql_prompt(
     df_name_hint = (df_name or "").strip()
     df_label_source = df_name_hint or (table_hint_raw if table_hint_raw else "df_A")
     df_label = escape_braces(df_label_source)
-    if isinstance(df_preview, pd.DataFrame) and not df_preview.empty:
+    coerced_table_context = coerce_table_context(table_context)
+    has_trained_table_context = (
+        coerced_table_context is not None and coerced_table_context.training_status == "trained"
+    )
+    if isinstance(df_preview, pd.DataFrame) and not df_preview.empty and not table_hint:
         df_columns = escape_braces(_format_df_columns(df_preview))
         df_dtypes = escape_braces(_format_df_dtypes(df_preview))
         df_head_text = escape_braces(_df_head(df_preview))
@@ -231,18 +235,32 @@ def build_sql_prompt(
             "\nActive dataframe preview for SQL generation:\n"
             f"- Source: {df_label}\n"
             f"- Shape: {df_preview.shape[0]} rows × {df_preview.shape[1]} columns\n"
-            "- Columns: {df_columns}\n"
+            f"- Columns: {df_columns}\n"
             "dtypes:\n"
-            "{df_dtypes}\n"
+            f"{df_dtypes}\n"
             "head():\n"
-            "{df_head}\n\n"
+            f"{df_head_text}\n\n"
+        )
+    elif isinstance(df_preview, pd.DataFrame) and not df_preview.empty and has_trained_table_context:
+        context_lines.append(
+            "\nActive dataframe is loaded, but source-table schema/profile must come from the trained TableContext below. "
+            "Do not infer table columns or meanings from dataframe preview rows.\n\n"
+        )
+    elif isinstance(df_preview, pd.DataFrame) and not df_preview.empty:
+        context_lines.append(
+            "\nActive dataframe is loaded, but no trained TableContext is available for the selected table. "
+            "Do not infer table columns or meanings from dataframe preview rows; ask the user to run `%table training` first.\n\n"
         )
     else:
         context_lines.append(
             "\nActive dataframe preview for SQL generation: (no dataframe loaded)\n\n"
         )
 
-    context_summary = table_context_summary(table_context)
+    context_summary = (
+        table_context_summary(coerced_table_context)
+        if coerced_table_context is not None and coerced_table_context.training_status == "trained"
+        else ""
+    )
     if context_summary:
         safe_context_summary = escape_braces(context_summary)
         context_lines.append(
@@ -333,10 +351,6 @@ def build_sql_prompt(
         "tools": tool_desc,
         "tool_names": tool_names,
     }
-    if isinstance(df_preview, pd.DataFrame) and not df_preview.empty:
-        partial_vars["df_columns"] = df_columns
-        partial_vars["df_dtypes"] = df_dtypes
-        partial_vars["df_head"] = df_head_text
 
     return prompt.partial(**partial_vars)
 

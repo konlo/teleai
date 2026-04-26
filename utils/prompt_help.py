@@ -56,7 +56,7 @@ VIZ_KEYWORDS = (
 COMMAND_EXAMPLE_LINES = [
     "1. %sql cluster가 Huahai 인 것을 보고 싶어",
     "2. cluster에 대한 histogram을 보여줘",
-    "3. balance 에 대한 이상점을 찾아줘",
+    "3. 숫자형 컬럼에 대한 이상점을 찾아줘",
     "4. isolation 기법을 이용해서 이상점이 있는지 봐줘",
 ]
 
