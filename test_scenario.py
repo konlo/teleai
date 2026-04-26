@@ -1,3 +1,4 @@
+import json
 import os
 import sys
 
@@ -9,7 +10,11 @@ from utils.agent_output import (
     has_invalid_action_schema,
     unwrap_final_answer_payload,
 )
-from utils.agent_routing import resolve_agent_mode_for_input, should_force_sql_builder
+from utils.agent_routing import (
+    resolve_agent_mode_for_input,
+    should_force_sql_builder,
+    should_force_sql_from_keywords,
+)
 from utils.chat_turn import resolve_chat_turn_query, should_process_chat_turn
 from utils.chatbot_plan import (
     build_controlled_plan,
@@ -30,12 +35,90 @@ from utils.data_context import (
 )
 from utils.eda_validation import (
     choose_distribution_chart,
+    strip_internal_eda_context,
     validate_data_sufficiency,
     validate_eda_visualization_request,
 )
+from utils.runtime_trace import (
+    build_trace_event,
+    finish_turn_trace,
+    read_latest_trace,
+    read_recent_traces,
+    record_trace_event,
+    runtime_trace_fixture_for_keyword_sql,
+    sanitize_for_trace,
+    start_turn_trace,
+)
+from utils.prompt_help import CHAT_COMMAND_SPECS
+from utils.sql_text import extract_sql_from_text
+from utils.table_context import (
+    TableContext,
+    apply_table_context_overrides,
+    build_schema_only_context,
+    build_trained_context,
+    contains_raw_sample_rows,
+    ensure_table_context_override_file,
+    load_table_context_for_selection,
+    load_table_context_overrides,
+    resolve_column_from_prompt,
+    save_table_context,
+    table_context_override_path,
+    table_context_summary,
+    table_context_to_dict,
+)
+from utils.table_training_sql import build_bulk_profile_stats_sql, build_bulk_top_values_sql
 
 
 EXTERNAL_LLM_PROVIDERS = {"google", "azure"}
+
+
+def _bank_schema_context() -> TableContext:
+    return build_schema_only_context(
+        "workspace.default.bank_loan",
+        columns=[
+            "id",
+            "age",
+            "job",
+            "marital",
+            "education",
+            "default",
+            "balance",
+            "housing",
+            "loan",
+            "contact",
+            "day",
+            "month",
+            "duration",
+            "campaign",
+            "pdays",
+            "previous",
+            "poutcome",
+            "y",
+        ],
+        dtypes={
+            "age": "int64",
+            "balance": "int64",
+            "job": "object",
+            "education": "object",
+            "housing": "object",
+            "loan": "object",
+            "duration": "int64",
+        },
+    )
+
+
+def _bank_table_context() -> TableContext:
+    """Return a trained-context fixture with manual aliases, like %table training overrides."""
+
+    return apply_table_context_overrides(
+        _bank_schema_context(),
+        overrides={
+            "age": ["나이", "연령", "20대", "30대"],
+            "job": ["직업", "직업군", "Job"],
+            "loan": ["대출"],
+            "housing": ["주택", "housing"],
+        },
+    )
 
 
 def external_llm_config_errors(provider=None, env=None):
@@ -125,6 +208,8 @@ def run_static_tests():
     failed += run_figure_attachment_tests()
     failed += run_explicit_sql_routing_tests()
     failed += run_external_llm_config_tests()
+    failed += run_table_context_tests()
+    failed += run_runtime_trace_tests()
     return failed
 
 
@@ -232,6 +317,17 @@ def run_eda_validation_tests():
         pd.DataFrame({"age": [20, 30]}),
         prompt,
     )
+    education_chain_prompt = (
+        "전체 education의 분포를 보고 싶어"
+        "\n\n[중요 컨텍스트] 현재 df_A에는 SQL 실행 결과가 이미 로드되어 있습니다. "
+        "df_A의 칼럼은 ['education', 'stat_count'] 이며, 4개의 행이 있습니다. "
+        "SQL에서 이미 필터링이 완료되었으므로, df_A 데이터를 추가 필터링 없이 그대로 사용하여 시각화해주세요."
+    )
+    education_chain_validation = validate_eda_visualization_request(
+        pd.DataFrame({"education": ["secondary", "primary"], "stat_count": [401683, 99510]}),
+        education_chain_prompt,
+        table_context=_bank_table_context(),
+    )
 
     test_cases = [
         {
@@ -278,6 +374,20 @@ def run_eda_validation_tests():
             "actual": validate_data_sufficiency(pd.DataFrame({"balance": [100, 200]}), ["balance"]).sufficient,
             "expected": True,
         },
+        {
+            "description": "자동 EDA 내부 컨텍스트는 컬럼 추출 대상에서 제외한다",
+            "actual": strip_internal_eda_context(education_chain_prompt),
+            "expected": "전체 education의 분포를 보고 싶어",
+        },
+        {
+            "description": "education SQL 결과 자동 EDA 검증은 내부 SQL 컨텍스트의 `SQL` 토큰을 컬럼으로 오인하지 않는다",
+            "actual": (
+                education_chain_validation.ok,
+                education_chain_validation.column,
+                education_chain_validation.chart_type,
+            ),
+            "expected": (True, "education", "bar"),
+        },
     ]
 
     passed = 0
@@ -301,11 +411,93 @@ def run_controlled_plan_tests():
 
     import pandas as pd
 
+    bank_context = _bank_table_context()
     prompt = "20대에서 30대 사이의 대출을 가지고 있는 사람들의 balance에 대해서 시각화해줘"
-    plan = build_controlled_plan(prompt, default_table="workspace.default.bank_loan")
+    plan = build_controlled_plan(
+        prompt,
+        default_table="workspace.default.bank_loan",
+        table_context=bank_context,
+    )
     sql = build_sql_from_plan(plan) if plan else ""
     large_config = select_visualization_config(plan, pd.DataFrame({"balance": range(101)})) if plan else None
     small_config = select_visualization_config(plan, pd.DataFrame({"balance": range(100)})) if plan else None
+    housing_loan_prompt = "housing이 yes 인사람들의 loan 분포를 그려줘"
+    housing_loan_plan = build_controlled_plan(
+        housing_loan_prompt,
+        default_table="workspace.default.bank_loan",
+        table_context=bank_context,
+    )
+    housing_loan_sql = build_sql_from_plan(housing_loan_plan) if housing_loan_plan else ""
+    housing_loan_config = (
+        select_visualization_config(
+            housing_loan_plan,
+            pd.DataFrame({"loan": ["yes", "no", "no"], "housing": ["yes", "yes", "yes"]}),
+        )
+        if housing_loan_plan
+        else None
+    )
+    education_prompt = "전체 education의 분포를 보고 싶어"
+    education_plan = build_controlled_plan(
+        education_prompt,
+        default_table="workspace.default.bank_loan",
+        table_context=bank_context,
+    )
+    education_sql = build_sql_from_plan(education_plan) if education_plan else ""
+    education_config = (
+        select_visualization_config(
+            education_plan,
+            pd.DataFrame({"education": ["secondary", "primary", "tertiary"]}),
+        )
+        if education_plan
+        else None
+    )
+    top_balance_job_prompt = "balance 가 가장 높은 상위 10%의 사람들의 직업이 어떻게 되는지 분포를 그려줘"
+    top_balance_job_plan = build_controlled_plan(
+        top_balance_job_prompt,
+        default_table="workspace.default.bank_loan",
+        table_context=bank_context,
+    )
+    top_balance_job_sql = build_sql_from_plan(top_balance_job_plan) if top_balance_job_plan else ""
+    top_balance_job_config = (
+        select_visualization_config(
+            top_balance_job_plan,
+            pd.DataFrame({"job": ["management", "technician"], "stat_count": [20, 10]}),
+        )
+        if top_balance_job_plan
+        else None
+    )
+    duration_job_prompt = "duration이 500 넘는 사람들의 직업군이 어떻게 되는지 시각화 해줘"
+    duration_job_plan = build_controlled_plan(
+        duration_job_prompt,
+        default_table="workspace.default.bank_loan",
+        table_context=bank_context,
+    )
+    duration_job_sql = build_sql_from_plan(duration_job_plan) if duration_job_plan else ""
+    duration_only_state = DataFrameState(
+        role="query_result",
+        source_table="workspace.default.bank_loan",
+        query="SELECT duration FROM workspace.default.bank_loan LIMIT 2000",
+        columns=("duration",),
+        row_count=2000,
+        created_by="test",
+    )
+    duration_job_requirement = (
+        requirement_from_controlled_plan(duration_job_plan) if duration_job_plan else DataRequirement()
+    )
+    duration_job_readiness = evaluate_data_readiness(duration_only_state, duration_job_requirement)
+    duration_job_config = (
+        select_visualization_config(
+            duration_job_plan,
+            pd.DataFrame({"job": ["management", "technician"], "stat_count": [20, 10]}),
+        )
+        if duration_job_plan
+        else None
+    )
+    no_alias_duration_job_plan = build_controlled_plan(
+        duration_job_prompt,
+        default_table="workspace.default.bank_loan",
+        table_context=_bank_schema_context(),
+    )
 
     test_cases = [
         {
@@ -348,6 +540,114 @@ def run_controlled_plan_tests():
             "actual": small_config.plot_type if small_config else "",
             "expected": "boxplot",
         },
+        {
+            "description": "housing=yes loan 분포 prompt는 loan을 target으로, housing을 filter로 해석한다",
+            "actual": (
+                housing_loan_plan.target_column if housing_loan_plan else "",
+                housing_loan_plan.filters if housing_loan_plan else {},
+            ),
+            "expected": ("loan", {"housing": "yes"}),
+        },
+        {
+            "description": "housing=yes loan 분포 SQL은 집계 SQL로 생성하고 loan='yes'를 잘못 붙이지 않는다",
+            "actual": (
+                housing_loan_sql.startswith("SELECT loan, COUNT(*) AS stat_count FROM workspace.default.bank_loan"),
+                "housing = 'yes'" in housing_loan_sql,
+                "loan = 'yes'" in housing_loan_sql,
+                "GROUP BY loan" in housing_loan_sql,
+            ),
+            "expected": (True, True, False, True),
+        },
+        {
+            "description": "housing=yes loan 분포는 categorical bar config를 선택한다",
+            "actual": housing_loan_config.plot_type if housing_loan_config else "",
+            "expected": "bar",
+        },
+        {
+            "description": "전체 education 분포 prompt는 LLM chain 대신 controlled plan으로 변환된다",
+            "actual": (
+                education_plan.target_column if education_plan else "",
+                education_plan.filters if education_plan else {},
+            ),
+            "expected": ("education", {}),
+        },
+        {
+            "description": "전체 education 분포 SQL은 education만 reload한다",
+            "actual": education_sql,
+            "expected": "SELECT education FROM workspace.default.bank_loan LIMIT 2000",
+        },
+        {
+            "description": "전체 education 분포는 categorical bar config를 선택한다",
+            "actual": education_config.plot_type if education_config else "",
+            "expected": "bar",
+        },
+        {
+            "description": "상위 10% balance 직업 분포 prompt는 job target과 balance rank filter로 변환된다",
+            "actual": (
+                top_balance_job_plan.task if top_balance_job_plan else "",
+                top_balance_job_plan.target_column if top_balance_job_plan else "",
+                top_balance_job_plan.rank_column if top_balance_job_plan else "",
+                top_balance_job_plan.rank_percent if top_balance_job_plan else None,
+                top_balance_job_plan.rank_direction if top_balance_job_plan else "",
+            ),
+            "expected": ("ranked_distribution", "job", "balance", 10.0, "top"),
+        },
+        {
+            "description": "상위 10% balance 직업 분포 SQL은 percentile_approx와 집계 count를 사용한다",
+            "actual": (
+                top_balance_job_sql.startswith("SELECT job, COUNT(*) AS stat_count FROM workspace.default.bank_loan"),
+                "percentile_approx(balance, 0.9)" in top_balance_job_sql,
+                "GROUP BY job" in top_balance_job_sql,
+                "ORDER BY stat_count DESC" in top_balance_job_sql,
+            ),
+            "expected": (True, True, True, True),
+        },
+        {
+            "description": "상위 10% balance 직업 분포 결과는 categorical bar config를 선택한다",
+            "actual": top_balance_job_config.plot_type if top_balance_job_config else "",
+            "expected": "bar",
+        },
+        {
+            "description": "duration > 500 직업군 분포는 TableContext alias로 target=job, condition=duration > 500을 만든다",
+            "actual": (
+                duration_job_plan.target_column if duration_job_plan else "",
+                [
+                    (condition.column, condition.op, condition.value)
+                    for condition in (duration_job_plan.filter_conditions if duration_job_plan else ())
+                ],
+            ),
+            "expected": ("job", [("duration", ">", 500)]),
+        },
+        {
+            "description": "duration > 500 직업군 분포 requirement는 target과 filter 컬럼을 모두 요구한다",
+            "actual": list(duration_job_requirement.columns),
+            "expected": ["job", "duration"],
+        },
+        {
+            "description": "현재 df_A가 duration만 갖고 있으면 job 분포 요청은 reload가 필요하다",
+            "actual": duration_job_readiness.decision,
+            "expected": DataReadinessDecision.RELOAD_REQUIRED,
+        },
+        {
+            "description": "duration > 500 직업군 분포 SQL은 조건부 categorical 집계 SQL을 생성한다",
+            "actual": (
+                duration_job_sql.startswith("SELECT job, COUNT(*) AS stat_count FROM workspace.default.bank_loan"),
+                "WHERE duration > 500" in duration_job_sql,
+                "GROUP BY job" in duration_job_sql,
+                "ORDER BY stat_count DESC" in duration_job_sql,
+            ),
+            "expected": (True, True, True, True),
+        },
+        {
+            "description": "duration > 500 직업군 분포 결과는 bar config를 선택한다",
+            "actual": duration_job_config.plot_type if duration_job_config else "",
+            "expected": "bar",
+        },
+        {
+            "description": "직업군 alias가 없는 TableContext에서는 코드 하드코딩으로 job을 추측하지 않는다",
+            "actual": no_alias_duration_job_plan is None,
+            "expected": True,
+        },
     ]
 
     passed = 0
@@ -387,6 +687,15 @@ def run_data_context_tests():
         row_count=10,
         created_by="test",
     )
+    preview_full_columns_state = DataFrameState(
+        role="preview",
+        source_table="workspace.default.bank_loan",
+        query="SELECT * FROM workspace.default.bank_loan LIMIT 10",
+        columns=("balance", "age", "loan"),
+        row_count=10,
+        is_preview=True,
+        created_by="test",
+    )
     job_requirement = DataRequirement(columns=("job",), task="distribution")
     balance_requirement = DataRequirement(columns=("balance",), task="distribution")
     filtered_balance_requirement = DataRequirement(
@@ -394,8 +703,17 @@ def run_data_context_tests():
         filters={"age": [20, 30], "loan": "yes"},
         task="distribution",
     )
+    ranked_job_requirement = DataRequirement(
+        columns=("job", "balance"),
+        task="ranked_distribution",
+        source_table="workspace.default.bank_loan",
+    )
     prompt = "20대에서 30대 사이의 대출을 가지고 있는 사람들의 balance에 대해서 시각화해줘"
-    plan = build_controlled_plan(prompt, default_table="workspace.default.bank_loan")
+    plan = build_controlled_plan(
+        prompt,
+        default_table="workspace.default.bank_loan",
+        table_context=_bank_table_context(),
+    )
     plan_requirement = requirement_from_controlled_plan(plan) if plan else DataRequirement()
     plan_sql = build_sql_from_plan(plan) if plan else ""
     reload_sql = build_reload_sql_for_requirement(
@@ -437,6 +755,11 @@ def run_data_context_tests():
             "expected": DataReadinessDecision.RELOAD_REQUIRED,
         },
         {
+            "description": "preview df_A는 필요한 컬럼을 모두 갖고 있어도 전체 분포 요청에는 reload가 필요하다",
+            "actual": evaluate_data_readiness(preview_full_columns_state, filtered_balance_requirement).decision,
+            "expected": DataReadinessDecision.RELOAD_REQUIRED,
+        },
+        {
             "description": "source table이 없고 요청 컬럼이 부족하면 EDA 실패 대신 명확한 FAIL decision을 반환한다",
             "actual": evaluate_data_readiness(unknown_source_state, job_requirement).decision,
             "expected": DataReadinessDecision.FAIL,
@@ -460,6 +783,21 @@ def run_data_context_tests():
             "description": "controlled balance SQL은 requirement 컬럼 세 개를 SELECT에 반영한다",
             "actual": plan_sql.startswith("SELECT balance, age, loan FROM workspace.default.bank_loan"),
             "expected": True,
+        },
+        {
+            "description": "ranked_distribution 요청은 현재 df_A가 컬럼을 갖고 있어도 source table에서 재계산한다",
+            "actual": evaluate_data_readiness(
+                DataFrameState(
+                    role="query_result",
+                    source_table="workspace.default.bank_loan",
+                    query="SELECT job, balance FROM workspace.default.bank_loan LIMIT 2000",
+                    columns=("job", "balance"),
+                    row_count=2000,
+                    created_by="test",
+                ),
+                ranked_job_requirement,
+            ).decision,
+            "expected": DataReadinessDecision.RELOAD_REQUIRED,
         },
     ]
 
@@ -561,6 +899,29 @@ def run_explicit_sql_routing_tests():
             "actual": resolve_agent_mode_for_input("%sql job에 대한 분포 데이타"),
             "expected": ("SQL Builder", "job에 대한 분포 데이타"),
         },
+        {
+            "description": "자연어 시각화 요청의 `분포` 키워드는 SQL Builder 강제 전환을 하지 않는다",
+            "actual": should_force_sql_from_keywords(
+                matched_keywords=["분포"],
+                is_visualization_request=True,
+            ),
+            "expected": False,
+        },
+        {
+            "description": "비시각화 데이터 조회 키워드는 기존처럼 SQL Builder 강제 전환을 유지한다",
+            "actual": should_force_sql_from_keywords(
+                matched_keywords=["찾아"],
+                is_visualization_request=False,
+            ),
+            "expected": True,
+        },
+        {
+            "description": "SQL Builder가 `SQL:` 라벨 없이 plain SELECT만 반환해도 SQL로 추출한다",
+            "actual": extract_sql_from_text(
+                "SELECT job, COUNT(*) AS job_count FROM workspace.default.bank_loan GROUP BY job LIMIT 2000"
+            ),
+            "expected": "SELECT job, COUNT(*) AS job_count FROM workspace.default.bank_loan GROUP BY job LIMIT 2000",
+        },
     ]
 
     passed = 0
@@ -624,6 +985,369 @@ def run_external_llm_config_tests():
 
     print("-" * 50)
     print(f"🎯 External LLM config preflight 테스트 결과: {passed} 통과, {failed} 실패\n")
+    return failed
+
+
+def run_table_context_tests():
+    print("🧪 TableContext training/cache 테스트 실행...\n")
+
+    import pandas as pd
+    import tempfile
+
+    with tempfile.TemporaryDirectory() as temp_dir:
+        preview_df = pd.DataFrame(
+            {
+                "education": ["secondary", "primary"],
+                "balance": [100, 200],
+            }
+        )
+        schema_context = load_table_context_for_selection(
+            "workspace.default.bank_loan",
+            preview_df=preview_df,
+            storage_dir=temp_dir,
+        )
+        trained_context = build_trained_context(
+            schema_context,
+            row_count=750000,
+            column_profiles={
+                "education": {
+                    "null_count": 0,
+                    "distinct_count": 4,
+                    "top_values": [{"value": "secondary", "count": 401683}],
+                },
+                "balance": {
+                    "null_count": 0,
+                    "distinct_count": 1200,
+                    "min_value": -8019,
+                    "max_value": 102127,
+                    "top_values": [],
+                },
+            },
+        )
+        saved_path = save_table_context(trained_context, storage_dir=temp_dir)
+        reloaded_context = load_table_context_for_selection(
+            "workspace.default.bank_loan",
+            storage_dir=temp_dir,
+        )
+        other_table_context = build_schema_only_context(
+            "workspace.default.device_telemetry",
+            columns=["device_id", "temperature"],
+            dtypes={"device_id": "object", "temperature": "float64"},
+        )
+        saved_payload = table_context_to_dict(reloaded_context)
+        alias_trained_context = build_trained_context(
+            _bank_schema_context(),
+            row_count=750000,
+            column_profiles={
+                "job": {"null_count": 0, "distinct_count": 12, "top_values": []},
+                "duration": {"null_count": 0, "distinct_count": 1500, "min_value": 0, "max_value": 4918},
+            },
+        )
+        save_table_context(alias_trained_context, storage_dir=temp_dir)
+        alias_override_path = ensure_table_context_override_file(alias_trained_context, storage_dir=temp_dir)
+        alias_override_payload = json.loads(alias_override_path.read_text(encoding="utf-8"))
+        alias_override_payload["columns"]["job"]["aliases"] = ["직업", "직업군", "Job"]
+        alias_override_path.write_text(
+            json.dumps(alias_override_payload, ensure_ascii=False, indent=2) + "\n",
+            encoding="utf-8",
+        )
+        reloaded_alias_context = load_table_context_for_selection(
+            "workspace.default.bank_loan",
+            storage_dir=temp_dir,
+        )
+        alias_override_map = load_table_context_overrides(
+            "workspace.default.bank_loan",
+            storage_dir=temp_dir,
+        )
+        retrained_alias_context = build_trained_context(
+            reloaded_alias_context,
+            row_count=760000,
+            column_profiles={
+                "job": {"null_count": 0, "distinct_count": 12, "top_values": []},
+                "duration": {"null_count": 0, "distinct_count": 1500, "min_value": 0, "max_value": 4918},
+            },
+        )
+        alias_context_payload = table_context_to_dict(reloaded_alias_context)
+
+    table_command_spec = next(
+        (spec for spec in CHAT_COMMAND_SPECS if spec["name"] == "table"),
+        {},
+    )
+    context_plan = build_controlled_plan(
+        "전체 education의 분포를 보고 싶어",
+        default_table="workspace.default.bank_loan",
+        table_context=reloaded_context,
+    )
+    context_summary = table_context_summary(reloaded_context)
+    bulk_stats_sql, bulk_stats_aliases = build_bulk_profile_stats_sql(
+        "`workspace`.`default`.`bank_loan`",
+        ["education", "balance"],
+    )
+    bulk_top_sql = build_bulk_top_values_sql(
+        "`workspace`.`default`.`bank_loan`",
+        ["education", "housing"],
+    )
+    alias_duration_plan = build_controlled_plan(
+        "duration이 500 넘는 사람들의 직업군이 어떻게 되는지 시각화 해줘",
+        default_table="workspace.default.bank_loan",
+        table_context=reloaded_alias_context,
+    )
+    aliasless_duration_plan = build_controlled_plan(
+        "duration이 500 넘는 사람들의 직업군이 어떻게 되는지 시각화 해줘",
+        default_table="workspace.default.bank_loan",
+        table_context=_bank_schema_context(),
+    )
+
+    test_cases = [
+        {
+            "description": "training file이 없으면 preview df로 schema_only context를 만든다",
+            "actual": (
+                schema_context.training_status,
+                [column.name for column in schema_context.columns],
+            ),
+            "expected": ("schema_only", ["education", "balance"]),
+        },
+        {
+            "description": "%table training 명령 spec이 현재 테이블 학습 명령으로 등록된다",
+            "actual": (table_command_spec.get("trigger"), table_command_spec.get("usage")),
+            "expected": ("%table", "`%table training`"),
+        },
+        {
+            "description": "trained TableContext JSON에는 raw sample row 키를 저장하지 않는다",
+            "actual": (saved_path.name.endswith(".json"), contains_raw_sample_rows(saved_payload)),
+            "expected": (True, False),
+        },
+        {
+            "description": "education 컬럼은 hardcoded 후보가 아니라 TableContext에서 resolve된다",
+            "actual": resolve_column_from_prompt("전체 education의 분포를 보고 싶어", reloaded_context),
+            "expected": "education",
+        },
+        {
+            "description": "다른 table context에서는 이전 table 컬럼 education을 재사용하지 않는다",
+            "actual": resolve_column_from_prompt("전체 education의 분포를 보고 싶어", other_table_context),
+            "expected": None,
+        },
+        {
+            "description": "df_A가 집계 결과여도 원본 TableContext summary는 원본 table/profile을 유지한다",
+            "actual": (
+                "workspace.default.bank_loan" in context_summary,
+                "education: categorical" in context_summary,
+                "secondary" in context_summary,
+            ),
+            "expected": (True, True, True),
+        },
+        {
+            "description": "controlled plan은 TableContext 기반으로 education target을 만든다",
+            "actual": (
+                context_plan.target_column if context_plan else "",
+                context_plan.table if context_plan else "",
+            ),
+            "expected": ("education", "workspace.default.bank_loan"),
+        },
+        {
+            "description": "table training stats SQL은 컬럼별 쿼리 대신 단일 bulk SELECT로 생성된다",
+            "actual": (
+                bulk_stats_sql.count("FROM `workspace`.`default`.`bank_loan`"),
+                "c0_null_count" in bulk_stats_sql,
+                "c1_distinct_count" in bulk_stats_sql,
+                sorted(bulk_stats_aliases.keys()),
+            ),
+            "expected": (1, True, True, ["balance", "education"]),
+        },
+        {
+            "description": "table training top-values SQL은 컬럼별 접속 대신 하나의 UNION 쿼리로 생성된다",
+            "actual": (
+                bulk_top_sql.count("WITH value_counts AS"),
+                bulk_top_sql.count("UNION ALL"),
+                "ROW_NUMBER() OVER (PARTITION BY column_name" in bulk_top_sql,
+            ),
+            "expected": (1, 1, True),
+        },
+        {
+            "description": "%table training override 파일은 table hash 경로에 저장되고 column alias를 관리한다",
+            "actual": (
+                alias_override_path == table_context_override_path("workspace.default.bank_loan", storage_dir=temp_dir),
+                alias_override_map.get("job"),
+            ),
+            "expected": (True, ["직업", "직업군", "Job"]),
+        },
+        {
+            "description": "training 결과 JSON에는 aliases가 저장되고 raw/sample rows는 저장되지 않는다",
+            "actual": (
+                any(
+                    column.get("name") == "job" and "직업군" in column.get("aliases", [])
+                    for column in alias_context_payload.get("columns", [])
+                ),
+                contains_raw_sample_rows(alias_context_payload),
+            ),
+            "expected": (True, False),
+        },
+        {
+            "description": "manual override alias는 training 재실행용 context에도 보존된다",
+            "actual": any(
+                column.name == "job" and "직업군" in column.aliases
+                for column in retrained_alias_context.columns
+            ),
+            "expected": True,
+        },
+        {
+            "description": "직업군 alias가 있는 TableContext에서만 duration 조건 + job target을 resolve한다",
+            "actual": (
+                alias_duration_plan.target_column if alias_duration_plan else "",
+                [
+                    (condition.column, condition.op, condition.value)
+                    for condition in (alias_duration_plan.filter_conditions if alias_duration_plan else ())
+                ],
+                aliasless_duration_plan is None,
+            ),
+            "expected": ("job", [("duration", ">", 500)], True),
+        },
+    ]
+
+    passed = 0
+    failed = 0
+    for idx, tc in enumerate(test_cases, 1):
+        print(f"[table-context-{idx}] {tc['description']}")
+        if tc["actual"] == tc["expected"]:
+            print("   ✅ PASS\n")
+            passed += 1
+        else:
+            print(f"   ❌ FAIL (Expected: {tc['expected']}, Got: {tc['actual']})\n")
+            failed += 1
+
+    print("-" * 50)
+    print(f"🎯 TableContext 테스트 결과: {passed} 통과, {failed} 실패\n")
+    return failed
+
+
+def run_runtime_trace_tests():
+    print("🧪 Runtime trace 테스트 실행...\n")
+
+    import pandas as pd
+    import tempfile
+
+    context = {
+        "trace_id": "trace-1",
+        "conversation_id": "conv-1",
+        "turn_id": 7,
+        "run_id": "run-1",
+        "event_seq": 1,
+    }
+    event = build_trace_event(context, "router_result", intent_type="VISUALIZE")
+    df_payload = sanitize_for_trace(pd.DataFrame({"loan": ["yes", "no", "yes"], "count": [2, 1, 3]}))
+    redacted_payload = sanitize_for_trace(
+        {
+            "api_key": "secret-key",
+            "nested": {"access_token": "secret-token", "safe": "visible"},
+        }
+    )
+    fixture = runtime_trace_fixture_for_keyword_sql()
+    fixed_keyword_decision = should_force_sql_from_keywords(
+        matched_keywords=["분포"],
+        is_visualization_request=True,
+    )
+
+    with tempfile.TemporaryDirectory() as temp_dir:
+        start_turn_trace(
+            conversation_id="conv-file",
+            turn_id=3,
+            run_id="run-file",
+            user_message="housing이 yes 인사람들의 loan 분포를 그려줘",
+            storage_dir=temp_dir,
+        )
+        record_trace_event(
+            "keyword_forced_sql",
+            matched_keywords=["분포"],
+            keyword_forced_sql=fixed_keyword_decision,
+            actual_command_prefix=False,
+        )
+        finish_turn_trace(final_status="completed", chain_triggered=False)
+        recent_events = read_recent_traces(limit=5, storage_dir=temp_dir)
+        latest_trace = read_latest_trace(storage_dir=temp_dir)
+
+    sql_command_event = build_trace_event(
+        {**context, "event_seq": 2},
+        "command_detected",
+        command_name="sql",
+        actual_command_prefix=True,
+        command_prefix="sql",
+    )
+    natural_keyword_event = fixture["keyword_forced_sql"]
+
+    test_cases = [
+        {
+            "description": "trace event는 conversation_id, turn_id, run_id, event_type을 포함한다",
+            "actual": (
+                event.get("conversation_id"),
+                event.get("turn_id"),
+                event.get("run_id"),
+                event.get("event_type"),
+            ),
+            "expected": ("conv-1", 7, "run-1", "router_result"),
+        },
+        {
+            "description": "DataFrame은 전체 저장 대신 row_count, columns, dtypes, sample로 제한된다",
+            "actual": (
+                df_payload.get("kind"),
+                df_payload.get("row_count"),
+                df_payload.get("columns"),
+                len(df_payload.get("sample", [])),
+            ),
+            "expected": ("dataframe", 3, ["loan", "count"], 3),
+        },
+        {
+            "description": "민감 키워드 token/api_key/password/secret 값은 redaction된다",
+            "actual": (
+                redacted_payload.get("api_key"),
+                redacted_payload.get("nested", {}).get("access_token"),
+                redacted_payload.get("nested", {}).get("safe"),
+            ),
+            "expected": ("[REDACTED]", "[REDACTED]", "visible"),
+        },
+        {
+            "description": "과거 housing loan 분포 재현 fixture는 분포 keyword forced SQL과 chaining false를 남긴다",
+            "actual": (
+                fixture["keyword_forced_sql"].get("matched_keywords"),
+                fixture["keyword_forced_sql"].get("keyword_forced_sql"),
+                fixture["chain_check"].get("llm_router_suggested_chaining"),
+                fixture["chain_check"].get("chain_triggered"),
+            ),
+            "expected": (["분포"], True, False, False),
+        },
+        {
+            "description": "%sql 명령과 과거 자연어 분포 keyword forced SQL은 trace에서 구분된다",
+            "actual": (
+                sql_command_event.get("actual_command_prefix"),
+                sql_command_event.get("command_name"),
+                natural_keyword_event.get("actual_command_prefix"),
+                natural_keyword_event.get("keyword_forced_sql"),
+            ),
+            "expected": (True, "sql", False, True),
+        },
+        {
+            "description": "수정 후 자연어 시각화 분포 trace는 keyword_forced_sql=False로 저장된다",
+            "actual": (
+                bool(recent_events),
+                latest_trace.get("summary", {}).get("keyword_forced_sql"),
+                latest_trace.get("summary", {}).get("chain_triggered"),
+            ),
+            "expected": (True, False, False),
+        },
+    ]
+
+    passed = 0
+    failed = 0
+    for idx, tc in enumerate(test_cases, 1):
+        print(f"[runtime-trace-{idx}] {tc['description']}")
+        if tc["actual"] == tc["expected"]:
+            print("   ✅ PASS\n")
+            passed += 1
+        else:
+            print(f"   ❌ FAIL (Expected: {tc['expected']}, Got: {tc['actual']})\n")
+            failed += 1
+
+    print("-" * 50)
+    print(f"🎯 Runtime trace 테스트 결과: {passed} 통과, {failed} 실패\n")
     return failed
 
 

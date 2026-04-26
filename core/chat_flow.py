@@ -17,10 +17,11 @@ from ui.chat_log import (
 )
 from ui.viz import render_visualizations
 from utils.agent_output import detect_agent_parser_loop
-from utils.agent_routing import resolve_forced_agent_mode
+from utils.agent_routing import resolve_forced_agent_mode, should_force_sql_from_keywords
 from utils.chatbot_plan import (
     build_controlled_plan,
     build_sql_from_plan,
+    controlled_plan_to_dict,
     select_visualization_config,
 )
 from utils.data_context import (
@@ -41,10 +42,18 @@ from utils.prompt_help import (
     build_command_example_message,
     build_command_help_message,
 )
+from utils.runtime_trace import (
+    finish_turn_trace,
+    record_trace_event,
+    snapshot_session_state,
+    start_turn_trace,
+)
+from utils.sql_text import extract_sql_from_text
 from utils.session import (
     DEFAULT_SQL_LIMIT_MAX,
     DEFAULT_SQL_LIMIT_MIN,
     set_default_sql_limit,
+    train_selected_table_context,
 )
 from utils.turn_logger import build_turn_payload, log_turn
 
@@ -76,6 +85,7 @@ _THINKING_ICONS = {
     "CHAIN": "🔗",
     "ERROR": "❌",
     "INFO": "ℹ️",
+    "TABLE": "🧾",
 }
 
 
@@ -219,6 +229,31 @@ def _handle_builtin_commands(
         ack_message = build_command_example_message()
         return _ack_and_finish(ack_message, "example")
 
+    if command_name == "table":
+        trigger_len = len(command_spec["trigger"])
+        table_command = stripped_for_command[trigger_len:].strip().lower()
+        if table_command != "training":
+            ack_message = f"사용법: {command_spec['usage']}"
+            return _ack_and_finish(ack_message, "table")
+        selected_table = st.session_state.get("databricks_selected_table", "").strip()
+        record_trace_event("table_training_start", table=selected_table)
+        _think("TABLE", f"TableContext training 시작: {selected_table or '(no table selected)'}")
+        ok, message = train_selected_table_context(selected_table)
+        record_trace_event(
+            "table_training_result",
+            table=selected_table,
+            status="success" if ok else "fail",
+            message=message,
+            active_table_context=st.session_state.get("active_table_context"),
+        )
+        if ok:
+            _think("TABLE", message)
+            st.success(message)
+        else:
+            _think("ERROR", message)
+            st.error(message)
+        return _ack_and_finish(message, "table_training")
+
     # sql 프리픽스는 뒤를 에이전트 입력으로 넘긴다
     if command_name == "sql":
         result["command_prefix"] = command_name
@@ -269,7 +304,19 @@ def _plot_controlled_visualization(df: pd.DataFrame, config) -> str:
         series.plot(kind="box")
         plt.ylabel(column)
     elif config.plot_type == "bar":
-        series.astype(str).value_counts().head(30).plot(kind="bar")
+        if "stat_count" in df.columns and pd.api.types.is_numeric_dtype(df["stat_count"]):
+            counts = (
+                df[[column, "stat_count"]]
+                .dropna()
+                .assign(**{column: lambda frame: frame[column].astype(str)})
+                .groupby(column, sort=False)["stat_count"]
+                .sum()
+                .sort_values(ascending=False)
+                .head(30)
+            )
+            counts.plot(kind="bar")
+        else:
+            series.astype(str).value_counts().head(30).plot(kind="bar")
         plt.ylabel("Count")
     else:
         raise ValueError(f"지원하지 않는 plot_type입니다: {config.plot_type}")
@@ -298,14 +345,28 @@ def _try_run_controlled_production_flow(
         or st.session_state.get("databricks_table_input", "").strip()
         or st.session_state.get("last_sql_table", "").strip()
     )
-    plan = build_controlled_plan(user_query, default_table=default_table)
+    plan = build_controlled_plan(
+        user_query,
+        default_table=default_table,
+        table_context=st.session_state.get("active_table_context"),
+    )
     if plan is None:
+        record_trace_event("controlled_plan", generated=False, user_query=user_query)
         return False
 
-    _think("PLAN", f"Controlled JSON Plan: {json.dumps(plan.__dict__, ensure_ascii=False)}")
+    _think("PLAN", f"Controlled JSON Plan: {json.dumps(controlled_plan_to_dict(plan), ensure_ascii=False)}")
+    record_trace_event("controlled_plan", generated=True, plan=plan)
     current_state = st.session_state.get("df_A_state")
     requirement = requirement_from_controlled_plan(plan)
     readiness = evaluate_data_readiness(current_state, requirement)
+    record_trace_event(
+        "data_readiness",
+        decision=readiness.decision,
+        reason=readiness.reason,
+        required_columns=list(requirement.columns),
+        missing_columns=list(readiness.missing_columns),
+        df_A_state=current_state,
+    )
     _think("CONTEXT", format_dataframe_state_for_log(current_state))
     _think(
         "PLAN",
@@ -322,6 +383,7 @@ def _try_run_controlled_production_flow(
     sql = ""
     if readiness.decision == DataReadinessDecision.FAIL:
         message = f"요청을 수행할 원본 테이블을 결정할 수 없습니다: {readiness.reason}"
+        record_trace_event("controlled_result", status="fail", error=message)
         _think("ERROR", message)
         st.error(message)
         append_assistant_message(run_id, message, "Controlled Executor", turn_id=turn_id)
@@ -340,6 +402,7 @@ def _try_run_controlled_production_flow(
         )
         if not source_table:
             message = "요청에 필요한 데이터를 다시 로드해야 하지만 원본 테이블을 결정할 수 없습니다."
+            record_trace_event("controlled_result", status="fail", error=message)
             _think("ERROR", message)
             st.error(message)
             append_assistant_message(run_id, message, "Controlled Executor", turn_id=turn_id)
@@ -351,6 +414,7 @@ def _try_run_controlled_production_flow(
 
         plan_for_sql = replace(plan, table=source_table)
         sql = build_sql_from_plan(plan_for_sql)
+        record_trace_event("controlled_reload_sql", sql=sql, source_table=source_table)
         _think("SQL", f"Deterministic reload SQL 생성: {sql}")
         st.session_state["last_sql_statement"] = sql
         st.session_state["last_sql_table"] = source_table
@@ -377,7 +441,20 @@ def _try_run_controlled_production_flow(
         log_state["sql_execution_status_for_log"] = "skipped"
 
     df = st.session_state.get("df_A_data")
-    validation = validate_eda_visualization_request(df, user_query)
+    validation = validate_eda_visualization_request(
+        df,
+        plan.target_column,
+        table_context=None,
+    )
+    record_trace_event(
+        "eda_validation",
+        ok=validation.ok,
+        reason=validation.reason,
+        column=validation.column,
+        dtype=validation.dtype,
+        chart_type=validation.chart_type,
+        error="" if validation.ok else validation.reason,
+    )
     if not validation.ok:
         message = f"Controlled EDA validation 실패: {validation.reason}"
         _think("ERROR", message)
@@ -391,6 +468,7 @@ def _try_run_controlled_production_flow(
 
     try:
         config = select_visualization_config(plan, df)
+        record_trace_event("visualization_config", config=config)
         _think("EDA", f"Controlled Viz Config: {json.dumps(config.__dict__, ensure_ascii=False)}")
         summary = _plot_controlled_visualization(df, config)
         figure_payloads = []
@@ -415,9 +493,16 @@ def _try_run_controlled_production_flow(
         log_state["sql_capture_for_log"] = sql
         log_state["generated_python_for_log"] = summary
         log_state["python_status_for_log"] = "success"
+        record_trace_event(
+            "controlled_result",
+            status="success",
+            summary=summary,
+            figure_count=len(figure_payloads),
+        )
         return True
     except Exception as exc:
         message = f"Controlled visualization 실행 실패: {exc}"
+        record_trace_event("controlled_result", status="fail", error=message)
         _think("ERROR", message)
         st.error(message)
         append_assistant_message(run_id, message, "Controlled Executor", turn_id=turn_id)
@@ -533,14 +618,8 @@ def _render_agent_answer(
     """에이전트 응답을 렌더링하고 SQL 추출/보정 결과를 반환합니다."""
 
     sql_capture = ""
-    if agent_mode == "SQL Builder" and "SQL:" in final_text:
-        tail = final_text.split("SQL:", 1)[1]
-        if "Explanation:" in tail:
-            sql_capture = tail.split("Explanation:", 1)[0].strip()
-        elif "Execution:" in tail:
-            sql_capture = tail.split("Execution:", 1)[0].strip()
-        else:
-            sql_capture = tail.strip()
+    if agent_mode == "SQL Builder":
+        sql_capture = extract_sql_from_text(final_text)
         if sql_capture:
             enforced_sql = ensure_limit_clause(sql_capture)
             if enforced_sql != sql_capture:
@@ -679,6 +758,16 @@ def _validate_eda_before_agent(
     validation = validate_eda_visualization_request(
         st.session_state.get("df_A_data"),
         agent_request,
+        table_context=st.session_state.get("active_table_context"),
+    )
+    record_trace_event(
+        "eda_validation",
+        ok=validation.ok,
+        reason=validation.reason,
+        column=validation.column,
+        dtype=validation.dtype,
+        chart_type=validation.chart_type,
+        error="" if validation.ok else validation.reason,
     )
     if validation.ok:
         if validation.column is not None:
@@ -730,6 +819,12 @@ def _run_agent_interaction(
         error_msg = (
             "df_A 데이터가 없습니다. 먼저 SQL Builder 에이전트나 Databricks Loader로 데이터를 불러온 뒤 다시 시도하세요."
         )
+        record_trace_event(
+            "agent_result",
+            agent_mode=agent_mode,
+            status="fail",
+            error=error_msg,
+        )
         st.error(error_msg)
         append_assistant_message(run_id, error_msg, agent_mode, turn_id=turn_id)
         st.session_state["active_run_id"] = None
@@ -757,6 +852,14 @@ def _run_agent_interaction(
         "Databricks SQL을 구상 중입니다..." if agent_mode == "SQL Builder" else "Thinking with AI..."
     )
 
+    record_trace_event(
+        "agent_start",
+        agent_mode=agent_mode,
+        agent_request=agent_request,
+        auto_execute_sql=auto_execute_sql,
+        df_a_ready=df_a_ready,
+    )
+    agent_started = time.time()
     result = _invoke_agent_runner(
         agent_runner,
         agent_request,
@@ -766,6 +869,7 @@ def _run_agent_interaction(
     )
 
     st.success("Done.")
+    agent_elapsed_ms = int((time.time() - agent_started) * 1000)
     final = result.get("output", "Agent가 최종 답변을 생성하지 못했습니다.")
     intermediate_steps = result.get("intermediate_steps", [])
     _capture_python_steps(intermediate_steps, tools_used_for_log, log_updates)
@@ -784,6 +888,16 @@ def _run_agent_interaction(
                 if pytool_obj is not None:
                     figure_payloads = render_visualizations(pytool_obj)
                     attach_figures_to_run(run_id, figure_payloads)
+                record_trace_event(
+                    "agent_result",
+                    agent_mode=agent_mode,
+                    elapsed_ms=agent_elapsed_ms,
+                    parser_loop=True,
+                    fallback_used=True,
+                    generated_python=log_updates.get("generated_python_for_log", ""),
+                    python_execution_status=log_updates.get("python_status_for_log"),
+                    error=log_updates.get("python_error_for_log", ""),
+                )
                 st.session_state["active_run_id"] = None
                 return log_updates
 
@@ -796,6 +910,14 @@ def _run_agent_interaction(
             append_assistant_message(run_id, message, agent_mode, turn_id=turn_id)
             log_updates["assistant_response_for_log"] = message
             log_updates["intent_for_log"] = "eda"
+            record_trace_event(
+                "agent_result",
+                agent_mode=agent_mode,
+                elapsed_ms=agent_elapsed_ms,
+                parser_loop=True,
+                fallback_used=False,
+                error=message,
+            )
             st.session_state["active_run_id"] = None
             return log_updates
 
@@ -831,6 +953,35 @@ def _run_agent_interaction(
                 log_updates=log_updates,
                 tools_used_for_log=tools_used_for_log,
             )
+            record_trace_event(
+                "agent_result",
+                agent_mode=agent_mode,
+                elapsed_ms=agent_elapsed_ms,
+                sql=sql_capture,
+                generated_python=log_updates.get("generated_python_for_log", ""),
+                python_execution_status=log_updates.get("python_status_for_log"),
+                error=log_updates.get("python_error_for_log", ""),
+            )
+
+    if agent_mode == "SQL Builder" and not log_updates.get("sql_capture_for_log"):
+        record_trace_event(
+            "agent_result",
+            agent_mode=agent_mode,
+            elapsed_ms=agent_elapsed_ms,
+            sql="",
+            generated_python=log_updates.get("generated_python_for_log", ""),
+            python_execution_status=log_updates.get("python_status_for_log"),
+            error=log_updates.get("python_error_for_log", ""),
+        )
+    elif agent_mode != "SQL Builder":
+        record_trace_event(
+            "agent_result",
+            agent_mode=agent_mode,
+            elapsed_ms=agent_elapsed_ms,
+            generated_python=log_updates.get("generated_python_for_log", ""),
+            python_execution_status=log_updates.get("python_status_for_log"),
+            error=log_updates.get("python_error_for_log", ""),
+        )
 
     if agent_mode == "EDA Analyst" and pytool_obj is not None:
         figure_payloads = render_visualizations(pytool_obj)
@@ -877,6 +1028,16 @@ def handle_user_query(
     run_id = str(uuid4())
     st.session_state["active_run_id"] = run_id
     original_user_q = user_q
+    start_turn_trace(
+        conversation_id=st.session_state.get("conversation_id", ""),
+        turn_id=turn_id,
+        run_id=run_id,
+        user_message=original_user_q,
+        df_a_ready=df_a_ready,
+        debug_mode=debug_mode,
+        auto_eda_pending=auto_pending,
+        session=snapshot_session_state(),
+    )
     append_user_message(run_id, original_user_q)
     display_conversation_log(show_ratings=False)
 
@@ -896,6 +1057,14 @@ def handle_user_query(
         run_id=run_id,
         turn_id=turn_id,
     )
+    record_trace_event(
+        "command_detected",
+        command_name=command_name,
+        command_prefix=command_result.get("command_prefix"),
+        handled_command=command_result.get("handled_command"),
+        trigger=command_spec.get("trigger") if command_spec else "",
+        actual_command_prefix=bool(command_spec),
+    )
 
     log_state = _default_log_state()
     tools_used_for_log: List[str] = []
@@ -913,14 +1082,26 @@ def handle_user_query(
     # (단, auto_eda_pending 으로 연쇄 실행 중일 때는 건너뛴다)
     _kw_matched = [kw for kw in AUTO_SQL_KEYWORDS if kw in original_user_q]
     _tlog("KEYWORD", f"handled_command={handled_command}, command_prefix={command_prefix}, auto_pending={auto_pending}, matched_keywords={_kw_matched}")
-    if (
-        not handled_command
-        and command_prefix is None
-        and auto_pending is None
-        and _kw_matched
-    ):
+    command_prefix_before_keyword = command_prefix
+    keyword_forced_sql = should_force_sql_from_keywords(
+        matched_keywords=_kw_matched,
+        is_visualization_request=_is_visualization_request(original_user_q),
+        handled_command=handled_command,
+        command_prefix=command_prefix,
+        auto_pending=auto_pending,
+    )
+    if keyword_forced_sql:
         command_prefix = "sql"
         _tlog("KEYWORD", f"→ command_prefix 강제 sql 전환")
+    record_trace_event(
+        "keyword_forced_sql",
+        matched_keywords=_kw_matched,
+        keyword_forced_sql=keyword_forced_sql,
+        command_prefix_before=command_prefix_before_keyword,
+        command_prefix_after=command_prefix,
+        actual_command_prefix=bool(command_spec),
+        auto_pending=auto_pending,
+    )
 
     normalized_original = original_user_q.strip().lower()
     # 실행/수행/run/execute 입력 시 마지막 SQL 바로 실행
@@ -939,6 +1120,7 @@ def handle_user_query(
         log_state["assistant_response_for_log"] = execute_result["assistant_response_for_log"]
         log_state["intent_for_log"] = execute_result["intent_for_log"]
         tools_used_for_log.extend(execute_result.get("tools_used_for_log", []))
+        record_trace_event("last_sql_execute", result=execute_result)
 
     # Production path: LLM/heuristic plan only, deterministic SQL + deterministic plotting.
     if (
@@ -970,6 +1152,13 @@ def handle_user_query(
             tools_used_for_log.append("eda_agent")
             st.session_state["command_prefix"] = None
             st.session_state["llm_router_suggested_chaining"] = False
+            record_trace_event(
+                "router_result",
+                route_source="auto_eda_pending",
+                agent_mode=agent_mode,
+                suggested_agents=["EDA Analyst"],
+                llm_router_suggested_chaining=False,
+            )
             _think("CHAIN", "SQL 데이터 로딩 완료 → EDA Analyst 자동 시각화 단계로 진입")
             st.info("🔗 SQL 데이터 로딩 완료 → **EDA Analyst** 자동 시각화 단계로 진입합니다.")
         else:
@@ -983,6 +1172,14 @@ def handle_user_query(
             tools_used_for_log.append("sql_builder_agent")
             st.session_state["command_prefix"] = "sql"
             st.session_state["llm_router_suggested_chaining"] = False
+            record_trace_event(
+                "router_result",
+                route_source="forced_sql",
+                agent_mode=agent_mode,
+                command_prefix=command_prefix,
+                suggested_agents=["SQL Builder"],
+                llm_router_suggested_chaining=False,
+            )
             _think("ROUTING", "%sql 명령 감지 → LLM Router를 건너뛰고 SQL Builder로 직접 진입")
             st.info("`%sql` 명령을 감지하여 **SQL Builder**로 직접 실행합니다.")
         elif not force_eda_due_to_chaining and agent_mode is None:
@@ -1033,6 +1230,16 @@ def handle_user_query(
                 _think("CHAIN", "연쇄 실행 모드 활성화: SQL Builder → EDA Analyst")
             else:
                 st.session_state["llm_router_suggested_chaining"] = False
+            record_trace_event(
+                "router_result",
+                route_source="llm_router",
+                intent_type=plan.intent_type,
+                reasoning=plan.reasoning,
+                suggested_agents=plan.suggested_agents,
+                agent_mode=agent_mode,
+                is_preview_state=is_preview_state,
+                llm_router_suggested_chaining=st.session_state.get("llm_router_suggested_chaining"),
+            )
             _tlog("ROUTING", f"LLM Router result: intent={plan.intent_type}, agents={plan.suggested_agents}, reasoning={plan.reasoning[:80]}")
             _tlog("ROUTING", f"→ agent_mode={agent_mode}, chaining={st.session_state.get('llm_router_suggested_chaining')}")
 
@@ -1123,14 +1330,36 @@ def handle_user_query(
     _chaining_flag = st.session_state.get("llm_router_suggested_chaining", False)
     _sql_status = st.session_state.get("last_sql_status")
     _tlog("CHAIN_CHECK", f"handled_command={handled_command}, last_sql_status={_sql_status}, chaining_flag={_chaining_flag}, auto_pending_was={auto_pending}")
-    if (
+    chain_triggered = (
         not handled_command
         and _sql_status == "success"
         and _chaining_flag
-    ):
+    )
+    record_trace_event(
+        "chain_check",
+        handled_command=handled_command,
+        last_sql_status=_sql_status,
+        llm_router_suggested_chaining=_chaining_flag,
+        auto_pending_was=auto_pending,
+        chain_triggered=chain_triggered,
+    )
+    if chain_triggered:
         _tlog("CHAIN_CHECK", f"✅ 체이닝 트리거! auto_eda_pending에 질문 저장 후 st.rerun() 호출")
         _tlog("CHAIN_CHECK", f"원래 질문: {original_user_q}")
         st.session_state["auto_eda_pending"] = original_user_q
+        finish_turn_trace(
+            final_status="rerun_for_auto_eda",
+            assistant_response=log_state.get("assistant_response_for_log"),
+            sql=log_state.get("sql_capture_for_log") or st.session_state.get("last_sql_statement", ""),
+            sql_execution_status=log_state.get("sql_execution_status_for_log"),
+            python_execution_status=log_state.get("python_status_for_log"),
+            error=log_state.get("python_error_for_log") or st.session_state.get("last_sql_error", ""),
+            figure_count=sum(
+                len(entry.get("figures", []))
+                for entry in st.session_state.get("conversation_log", [])
+                if entry.get("run_id") == run_id
+            ),
+        )
         st.rerun()
     else:
         _tlog("CHAIN_CHECK", f"❌ 체이닝 미트리거. 조건 미충족: handled={handled_command}, sql_status={_sql_status}, flag={_chaining_flag}")
@@ -1159,6 +1388,20 @@ def handle_user_query(
                 generated_sql=sql_val if sql_val else None,
                 generated_python=py_val if py_val else None,
             )
+
+    finish_turn_trace(
+        final_status="completed",
+        assistant_response=log_state.get("assistant_response_for_log"),
+        sql=log_state.get("sql_capture_for_log") or st.session_state.get("last_sql_statement", ""),
+        sql_execution_status=log_state.get("sql_execution_status_for_log"),
+        python_execution_status=log_state.get("python_status_for_log"),
+        error=log_state.get("python_error_for_log") or st.session_state.get("last_sql_error", ""),
+        figure_count=sum(
+            len(entry.get("figures", []))
+            for entry in st.session_state.get("conversation_log", [])
+            if entry.get("run_id") == run_id
+        ),
+    )
 
 
 __all__ = ["handle_user_query"]

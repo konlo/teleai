@@ -103,8 +103,12 @@ def requirement_from_controlled_plan(plan: Any, *, min_rows: int = 1) -> DataReq
     target_column = str(getattr(plan, "target_column", "") or "").strip()
     filters = getattr(plan, "filters", {}) or {}
     filter_columns = [str(column).strip() for column in filters.keys()]
+    condition_columns = [
+        str(getattr(condition, "column", "") or "").strip()
+        for condition in (getattr(plan, "filter_conditions", ()) or ())
+    ]
     return DataRequirement(
-        columns=normalize_columns([target_column, *filter_columns]),
+        columns=normalize_columns([target_column, *filter_columns, *condition_columns]),
         filters=filters,
         task=str(getattr(plan, "task", "") or ""),
         source_table=str(getattr(plan, "table", "") or ""),
@@ -129,6 +133,22 @@ def evaluate_data_readiness(
     available_source = requirement.source_table or (
         coerced_state.source_table if coerced_state else ""
     )
+    if requirement.task == "ranked_distribution":
+        if available_source:
+            return DataReadinessResult(
+                decision=DataReadinessDecision.RELOAD_REQUIRED,
+                reason="Ranked distribution requests must be recomputed from the source table.",
+                state=coerced_state,
+                requirement=requirement,
+            )
+        return DataReadinessResult(
+            decision=DataReadinessDecision.FAIL,
+            reason="Ranked distribution request needs a source table.",
+            missing_columns=required_columns,
+            state=coerced_state,
+            requirement=requirement,
+        )
+
     if coerced_state is None:
         if available_source:
             return DataReadinessResult(
@@ -155,6 +175,21 @@ def evaluate_data_readiness(
             decision=DataReadinessDecision.RELOAD_REQUIRED,
             reason="Current dataframe source table differs from request source table.",
             missing_columns=required_columns,
+            state=coerced_state,
+            requirement=requirement,
+        )
+
+    if coerced_state.is_preview:
+        if available_source:
+            return DataReadinessResult(
+                decision=DataReadinessDecision.RELOAD_REQUIRED,
+                reason="Current dataframe is only a preview; reload full request data from source table.",
+                state=coerced_state,
+                requirement=requirement,
+            )
+        return DataReadinessResult(
+            decision=DataReadinessDecision.FAIL,
+            reason="Current dataframe is only a preview and source table is unknown.",
             state=coerced_state,
             requirement=requirement,
         )

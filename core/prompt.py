@@ -5,6 +5,7 @@ import pandas as pd
 from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
 from langchain_core.tools import BaseTool, render_text_description_and_args
 from utils.session import get_default_sql_limit
+from utils.table_context import table_context_summary
 
 
 def escape_braces(text: str) -> str:
@@ -182,6 +183,7 @@ def build_sql_prompt(
     selected_schema: str = "",
     df_preview: Optional[pd.DataFrame] = None,
     df_name: str = "",
+    table_context=None,
 ) -> ChatPromptTemplate:
     """Construct the SQL generation prompt."""
 
@@ -238,6 +240,16 @@ def build_sql_prompt(
     else:
         context_lines.append(
             "\nActive dataframe preview for SQL generation: (no dataframe loaded)\n\n"
+        )
+
+    context_summary = table_context_summary(table_context)
+    if context_summary:
+        safe_context_summary = escape_braces(context_summary)
+        context_lines.append(
+            "Selected table context for SQL generation:\n"
+            f"{safe_context_summary}\n"
+            "Use only columns listed in this table context unless the user explicitly names another table and column. "
+            "Do not invent columns that are absent from the selected table context.\n\n"
         )
 
     context_lines.append(

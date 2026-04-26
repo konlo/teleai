@@ -8,6 +8,7 @@ from utils.session import (
     databricks_connector_available,
     list_databricks_tables_in_session,
     load_df_from_databricks,
+    load_table_context_for_selected_table,
     update_databricks_namespace_from_table,
 )
 
@@ -131,6 +132,12 @@ def render_sidebar(show_debug: bool = True) -> None:
             last_message = st.session_state.get("databricks_last_preview_message", "")
             if final_selection and last_message and final_selection == last_preview_table:
                 preview_status.caption(last_message)
+
+        if final_selection and st.session_state.get("active_table_context_table") != final_selection:
+            preview_df = st.session_state.get("df_A_data")
+            if not isinstance(preview_df, pd.DataFrame):
+                preview_df = None
+            load_table_context_for_selected_table(final_selection, preview_df=preview_df)
 
         with column_select_container:
             column_key = "databricks_selected_column"

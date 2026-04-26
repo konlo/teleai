@@ -4,6 +4,11 @@ from typing import Any, Optional, Sequence
 
 import pandas as pd
 
+from utils.table_context import resolve_column_from_prompt
+
+
+INTERNAL_CONTEXT_MARKER = "\n\n[중요 컨텍스트]"
+
 
 @dataclass(frozen=True)
 class EDAValidationResult:
@@ -21,12 +26,23 @@ class DataSufficiencyResult:
     reason: str = ""
 
 
-def find_exact_prompt_column(df: pd.DataFrame, prompt: str) -> Optional[Any]:
-    lowered = (prompt or "").lower()
+def strip_internal_eda_context(prompt: str) -> str:
+    """Return only the user-authored part of an EDA prompt."""
+
+    return (prompt or "").split(INTERNAL_CONTEXT_MARKER, 1)[0]
+
+
+def find_exact_prompt_column(df: pd.DataFrame, prompt: str, *, table_context=None) -> Optional[Any]:
+    context_column = resolve_column_from_prompt(prompt, table_context)
+    if context_column is not None:
+        return context_column
+
+    user_prompt = strip_internal_eda_context(prompt)
+    lowered = user_prompt.lower()
     matches = [
         column
         for column in df.columns
-        if str(column) in prompt or str(column).lower() in lowered
+        if str(column) in user_prompt or str(column).lower() in lowered
     ]
     return matches[0] if len(matches) == 1 else None
 
@@ -43,8 +59,10 @@ def _requested_identifier_tokens(prompt: str) -> list[str]:
         "box",
         "boxplot",
         "kde",
+        "sql",
     }
-    tokens = re.findall(r"[A-Za-z_][A-Za-z0-9_]*", prompt or "")
+    user_prompt = strip_internal_eda_context(prompt)
+    tokens = re.findall(r"[A-Za-z_][A-Za-z0-9_]*", user_prompt)
     return [token for token in tokens if token.lower() not in ignore]
 
 
@@ -57,11 +75,11 @@ def choose_distribution_chart(series: pd.Series) -> str:
     return "bar"
 
 
-def validate_eda_visualization_request(df: Any, prompt: str) -> EDAValidationResult:
+def validate_eda_visualization_request(df: Any, prompt: str, *, table_context=None) -> EDAValidationResult:
     if not isinstance(df, pd.DataFrame) or df.empty:
         return EDAValidationResult(ok=False, reason="df_A 데이터가 비어 있어 시각화할 수 없습니다.")
 
-    column = find_exact_prompt_column(df, prompt)
+    column = find_exact_prompt_column(df, prompt, table_context=table_context)
     if column is None:
         requested_tokens = _requested_identifier_tokens(prompt)
         if requested_tokens:
@@ -137,6 +155,7 @@ __all__ = [
     "DataSufficiencyResult",
     "choose_distribution_chart",
     "find_exact_prompt_column",
+    "strip_internal_eda_context",
     "validate_data_sufficiency",
     "validate_eda_visualization_request",
 ]

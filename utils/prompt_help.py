@@ -1,8 +1,8 @@
 from typing import Dict, List
 
-from utils.session import DEFAULT_SQL_LIMIT_MIN, DEFAULT_SQL_LIMIT_MAX
 
-
+DEFAULT_SQL_LIMIT_MIN = 1
+DEFAULT_SQL_LIMIT_MAX = 10_000_000
 BASE_CHAT_PLACEHOLDER = "지원되는 명령을 확인하려면 `%help` 를 입력하세요."
 
 CHAT_COMMAND_SPECS: List[Dict[str, str]] = [
@@ -25,6 +25,12 @@ CHAT_COMMAND_SPECS: List[Dict[str, str]] = [
         "description": "SQL Builder 에이전트를 호출해 질문에 맞는 SQL을 생성합니다.",
     },
     {
+        "name": "table",
+        "trigger": "%table",
+        "usage": "`%table training`",
+        "description": "현재 선택된 Databricks 테이블의 안전한 TableContext profile을 JSON 파일로 저장합니다.",
+    },
+    {
         "name": "help",
         "trigger": "%help",
         "usage": "`%help`",
@@ -39,7 +45,7 @@ CHAT_COMMAND_SPECS: List[Dict[str, str]] = [
 ]
 
 AUTO_SQL_KEYWORDS = (
-    "데이타 로딩", "조회", "본포", "분포", "통계", "평균", "최대", "최소", 
+    "데이타 로딩", "조회", "본포", "분포", "통계", "평균", "최대", "최소",
     "가져와", "보여줘", "리스트", "찾아", "데이터", "테이블", "전체"
 )
 
