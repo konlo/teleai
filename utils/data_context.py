@@ -107,8 +107,9 @@ def requirement_from_controlled_plan(plan: Any, *, min_rows: int = 1) -> DataReq
         str(getattr(condition, "column", "") or "").strip()
         for condition in (getattr(plan, "filter_conditions", ()) or ())
     ]
+    group_column = str(getattr(plan, "group_column", "") or "").strip()
     return DataRequirement(
-        columns=normalize_columns([target_column, *filter_columns, *condition_columns]),
+        columns=normalize_columns([target_column, group_column, *filter_columns, *condition_columns]),
         filters=filters,
         task=str(getattr(plan, "task", "") or ""),
         source_table=str(getattr(plan, "table", "") or ""),

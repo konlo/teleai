@@ -189,6 +189,11 @@ def coerce_table_context(value: Any) -> Optional[TableContext]:
     return None
 
 
+def is_trained_table_context(value: Any) -> bool:
+    context = coerce_table_context(value)
+    return bool(context is not None and context.training_status == "trained")
+
+
 def table_context_to_dict(context: TableContext) -> dict[str, Any]:
     return asdict(context)
 
@@ -509,6 +514,21 @@ def contains_raw_sample_rows(payload: Any) -> bool:
     return False
 
 
+def table_training_work_log_fields(table_fqn: str, ok: bool, message: str) -> dict[str, Any]:
+    """Return turn-log fields that make table training visible in work logs."""
+
+    status = "success" if ok else "fail"
+    table_label = (table_fqn or "").strip() or "(no table selected)"
+    summary = f"TableContext training {status}: table={table_label}; {message}"
+    return {
+        "intent_for_log": "table_training",
+        "tools_used_for_log": ["table_context_training"],
+        "python_status_for_log": status,
+        "python_error_for_log": "" if ok else message,
+        "python_output_summary_for_log": summary,
+    }
+
+
 __all__ = [
     "ColumnContext",
     "INTERNAL_CONTEXT_MARKER",
@@ -528,6 +548,7 @@ __all__ = [
     "generate_column_aliases",
     "get_column_names",
     "infer_semantic_type",
+    "is_trained_table_context",
     "load_saved_table_context",
     "load_table_context_for_selection",
     "load_table_context_overrides",
@@ -541,4 +562,5 @@ __all__ = [
     "table_context_path",
     "table_context_summary",
     "table_context_to_dict",
+    "table_training_work_log_fields",
 ]

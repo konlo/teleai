@@ -49,6 +49,12 @@ from utils.runtime_trace import (
     start_turn_trace,
 )
 from utils.sql_text import extract_sql_from_text
+from utils.table_context import (
+    coerce_table_context,
+    is_trained_table_context,
+    table_context_hash,
+    table_training_work_log_fields,
+)
 from utils.session import (
     DEFAULT_SQL_LIMIT_MAX,
     DEFAULT_SQL_LIMIT_MIN,
@@ -146,6 +152,10 @@ def _handle_builtin_commands(
         "agent_request": stripped_for_command,
         "assistant_response_for_log": None,
         "intent_for_log": "",
+        "tools_used_for_log": [],
+        "python_status_for_log": None,
+        "python_error_for_log": "",
+        "python_output_summary_for_log": "",
     }
 
     def _ack_and_finish(message: str, intent: str) -> Dict[str, Optional[str]]:
@@ -252,7 +262,9 @@ def _handle_builtin_commands(
         else:
             _think("ERROR", message)
             st.error(message)
-        return _ack_and_finish(message, "table_training")
+        ack_result = _ack_and_finish(message, "table_training")
+        ack_result.update(table_training_work_log_fields(selected_table, ok, message))
+        return ack_result
 
     # sql 프리픽스는 뒤를 에이전트 입력으로 넘긴다
     if command_name == "sql":
@@ -292,6 +304,92 @@ def _plot_controlled_visualization(df: pd.DataFrame, config) -> str:
     import matplotlib.pyplot as plt
 
     column = config.column
+    if config.plot_type == "grouped_bar":
+        group_column = getattr(config, "group_column", "") or ""
+        if not group_column or group_column not in df.columns:
+            raise ValueError(f"`{group_column}` 그룹 컬럼을 찾을 수 없습니다.")
+        if column not in df.columns:
+            raise ValueError(f"`{column}` 컬럼을 찾을 수 없습니다.")
+
+        if "stat_count" in df.columns and pd.api.types.is_numeric_dtype(df["stat_count"]):
+            plot_rows = (
+                df[[group_column, column, "stat_count"]]
+                .dropna()
+                .assign(
+                    **{
+                        group_column: lambda frame: frame[group_column].astype(str),
+                        column: lambda frame: frame[column].astype(str),
+                    }
+                )
+                .groupby([group_column, column], sort=False)["stat_count"]
+                .sum()
+                .reset_index(name="count")
+            )
+        else:
+            plot_rows = (
+                df[[group_column, column]]
+                .dropna()
+                .assign(
+                    **{
+                        group_column: lambda frame: frame[group_column].astype(str),
+                        column: lambda frame: frame[column].astype(str),
+                    }
+                )
+                .groupby([group_column, column], sort=False)
+                .size()
+                .reset_index(name="count")
+            )
+
+        group_values = tuple(getattr(config, "group_values", ()) or ())
+        if group_values:
+            allowed = {str(value) for value in group_values}
+            plot_rows = plot_rows[plot_rows[group_column].astype(str).isin(allowed)]
+        if plot_rows.empty:
+            raise ValueError(f"`{column}` 컬럼에 그룹별 시각화 가능한 값이 없습니다.")
+
+        pivot = plot_rows.pivot_table(
+            index=column,
+            columns=group_column,
+            values="count",
+            aggfunc="sum",
+            fill_value=0,
+        )
+        if group_values:
+            ordered_columns = [
+                actual
+                for expected in group_values
+                for actual in pivot.columns
+                if str(actual) == str(expected)
+            ]
+            if ordered_columns:
+                pivot = pivot[ordered_columns]
+
+        if getattr(config, "group_mode", "") == "separate" and len(pivot.columns) > 1:
+            fig, axes = plt.subplots(
+                1,
+                len(pivot.columns),
+                figsize=(max(10, 4 * len(pivot.columns)), 5),
+                sharey=True,
+            )
+            if len(pivot.columns) == 1:
+                axes = [axes]
+            for axis, group_value in zip(axes, pivot.columns):
+                pivot[group_value].sort_values(ascending=False).head(30).plot(kind="bar", ax=axis)
+                axis.set_title(f"{group_column}={group_value}")
+                axis.set_xlabel(column)
+                axis.set_ylabel("Count")
+        else:
+            plt.figure(figsize=(10, 5))
+            pivot.head(30).plot(kind="bar")
+            plt.ylabel("Count")
+            plt.title(f"{column} distribution by {group_column}")
+            plt.xlabel(column)
+        plt.tight_layout()
+        return (
+            f"plot_type={config.plot_type}, column={column}, group_column={group_column}, "
+            f"groups={list(pivot.columns)}, rows={len(df)}"
+        )
+
     series = df[column].dropna()
     if series.empty:
         raise ValueError(f"`{column}` 컬럼에 시각화 가능한 값이 없습니다.")
@@ -340,22 +438,78 @@ def _try_run_controlled_production_flow(
     tools_used_for_log: List[str],
     log_state: Dict[str, Optional[str]],
 ) -> bool:
+    active_table_context = coerce_table_context(st.session_state.get("active_table_context"))
     default_table = (
         st.session_state.get("databricks_selected_table", "").strip()
         or st.session_state.get("databricks_table_input", "").strip()
         or st.session_state.get("last_sql_table", "").strip()
+        or (active_table_context.table_fqn if active_table_context else "")
     )
+    training_status = active_table_context.training_status if active_table_context else "none"
+    context_source = active_table_context.source if active_table_context else ""
+    context_hash = table_context_hash(active_table_context.table_fqn) if active_table_context else ""
+    wants_visual = any(token in (user_query or "").lower() for token in VIZ_KEYWORDS)
+    if wants_visual and not is_trained_table_context(active_table_context):
+        message = (
+            "선택한 테이블의 `%table training` 정보가 없어 controlled visualization을 실행하지 않습니다. "
+            "먼저 `%table training`을 실행한 뒤 다시 요청해주세요."
+        )
+        record_trace_event(
+            "controlled_plan",
+            generated=False,
+            reason="trained_table_context_required",
+            user_query=user_query,
+            table_context_source=context_source,
+            training_status=training_status,
+            context_hash=context_hash,
+            resolved_from_training=False,
+        )
+        _think("ERROR", message)
+        st.warning(message)
+        append_assistant_message(run_id, message, "Controlled Executor", turn_id=turn_id)
+        log_state["assistant_response_for_log"] = message
+        log_state["intent_for_log"] = "table_context_required"
+        log_state["python_status_for_log"] = "fail"
+        log_state["python_error_for_log"] = message
+        return True
+
     plan = build_controlled_plan(
         user_query,
         default_table=default_table,
-        table_context=st.session_state.get("active_table_context"),
+        table_context=active_table_context,
     )
     if plan is None:
-        record_trace_event("controlled_plan", generated=False, user_query=user_query)
+        record_trace_event(
+            "controlled_plan",
+            generated=False,
+            user_query=user_query,
+            table_context_source=context_source,
+            training_status=training_status,
+            context_hash=context_hash,
+            resolved_from_training=False,
+        )
         return False
 
     _think("PLAN", f"Controlled JSON Plan: {json.dumps(controlled_plan_to_dict(plan), ensure_ascii=False)}")
-    record_trace_event("controlled_plan", generated=True, plan=plan)
+    record_trace_event(
+        "controlled_plan",
+        generated=True,
+        plan=plan,
+        table_context_source=context_source,
+        training_status=training_status,
+        context_hash=context_hash,
+        resolved_from_training=True,
+        **(getattr(plan, "resolution_debug", {}) or {}),
+    )
+    if getattr(plan, "resolution_debug", None):
+        _think(
+            "PLAN",
+            (
+                "Target resolution: "
+                f"target={plan.target_column}, group={plan.group_column or '-'}, "
+                f"values={list(plan.group_values or ())}"
+            ),
+        )
     current_state = st.session_state.get("df_A_state")
     requirement = requirement_from_controlled_plan(plan)
     readiness = evaluate_data_readiness(current_state, requirement)
@@ -1069,10 +1223,13 @@ def handle_user_query(
     log_state = _default_log_state()
     tools_used_for_log: List[str] = []
 
-    if command_result["assistant_response_for_log"]:
-        log_state["assistant_response_for_log"] = command_result["assistant_response_for_log"]
-    if command_result["intent_for_log"]:
-        log_state["intent_for_log"] = command_result["intent_for_log"]
+    tools_used_for_log.extend(command_result.get("tools_used_for_log", []) or [])
+    for key in log_state:
+        if key == "tools_used_for_log":
+            continue
+        value = command_result.get(key)
+        if value not in (None, "", []):
+            log_state[key] = value
 
     handled_command = command_result["handled_command"]
     command_prefix = command_result["command_prefix"]

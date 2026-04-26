@@ -28,6 +28,58 @@
 
 ## Log Entries
 
+### [2026-04-26 22:47:19] [Agent: Codex] User Request: Update chatbot skill to require data/code separation and loadable external data context
+- **Action** [Agent: Codex]: Reviewing the chatbot project skill and project logger skill before updating the skill guidance.
+- **Planned Artifact Update**: Add explicit chatbot-skill rules that data-related knowledge, profiles, schemas, aliases, prompts, examples, and runtime datasets must be stored separately from code and loaded on demand through managed context files.
+- **Artifact Update**: Added `Keep Data And Code Separate` guidance to `/Users/najongseong/git_repository/skills-registry/project_management/chatbot_project_manager/SKILL.md`.
+- **Decision**: Future chatbot work must store data-related knowledge in external loadable context artifacts and keep production code/prompt templates generic.
+- **Outcome**: Skill now requires matching selected tables/datasets to managed context files before SQL, EDA, visualization, or prompt construction, with negative tests to prevent hardcoded dataset-specific columns or aliases.
+
+### [2026-04-26 22:44:18] [Agent: Codex] User Request: Fix `build_sql_prompt` UnboundLocalError and add regression coverage
+- **Action** [Agent: Codex]: Investigating the Streamlit traceback where `build_sql_prompt()` references `df_columns` after the trained TableContext prompt branch skips dataframe-preview variable assignment.
+- **Planned Artifact Update**: Initialize or avoid unused preview partial variables, add `test_scenario.py` coverage for selected-table/trained-context prompt construction, then run static and LLM-including scenario suites.
+- **Artifact Update**: Removed obsolete `df_columns`/`df_dtypes`/`df_head` partial variable injection from `build_sql_prompt()`; prompt text already embeds preview text directly when that branch is allowed.
+- **Artifact Update**: Added SQL prompt construction regression tests covering selected table + trained TableContext + nonempty preview, selected table + schema-only context, and local dataframe preview mode.
+- **Action** [Agent: Codex]: Ran `python3 test_scenario.py --static-only`, `.venv/bin/python test_scenario.py`, `PYTHONPYCACHEPREFIX=/tmp/teleai_pycache python3 -m py_compile core/prompt.py test_scenario.py`, and `git diff --check`.
+- **Outcome**: All checks passed. The venv/full scenario exercised the runtime prompt generation path with `langchain_core` installed and no `UnboundLocalError`.
+
+### [2026-04-26 22:41:36] [Agent: Codex] User Request: Add exact `survived/Sex(성별)` grouped visualization prompt to test_scenario with table-selection coverage
+- **Action** [Agent: Codex]: Checking existing grouped distribution tests and TableContext loading helpers before adding the exact prompt with selected table context assertions.
+- **Planned Artifact Update**: Strengthen `test_scenario.py` so the exact prompt with trailing period is tested against the currently selected/trained table context, and does not pass through a mismatched table context.
+- **Artifact Update**: Added the exact prompt `survived 값이 1인사람들과 0인 사람들의 Sex(성별) 분포를 각각 시각화 해줘.` to controlled-plan regression tests with `workspace.default.titanic` as the selected table.
+- **Artifact Update**: Added table-selection tests proving the prompt resolves only after loading the saved trained `workspace.default.titanic` TableContext and does not resolve when the selected context is `workspace.default.bank_loan`.
+- **Action** [Agent: Codex]: Ran `python3 test_scenario.py --static-only`, `.venv/bin/python test_scenario.py`, Python compile check for `test_scenario.py`, and `git diff --check`.
+- **Outcome**: All checks passed; the scenario now verifies both the exact prompt and selected-table context behavior.
+
+### [2026-04-26 22:15:53] [Agent: Codex] User Request: Implement trained TableContext-only target resolver and grouped distribution fix
+- **Action** [Agent: Codex]: Starting implementation of the approved plan: table-specific column knowledge must come only from `%table training` TableContext files, not hardcoded planner code or static prompts.
+- **Planned Artifact Update**: Enforce trained TableContext loading for controlled planning, add role-aware grouped distribution parsing, update readiness/SQL/visualization/runtime trace, and add regression tests for the `Survived`/`Sex` grouped distribution case plus negative no-training cases.
+- **Artifact Update**: Updated controlled planning so it only resolves target/filter/group columns from trained TableContext metadata, returns no controlled plan for schema-only contexts, and records target-resolution evidence in runtime trace.
+- **Artifact Update**: Added grouped distribution support across plan, SQL, readiness, visualization config, and deterministic plotting; grouped requests now require both target and group columns before using current `df_A`.
+- **Artifact Update**: Updated SQL/EDA prompts so selected Databricks table schema/profile summaries are injected only from trained `active_table_context`, and removed table-specific example column names from static prompt/help text.
+- **Artifact Update**: Added regression coverage for the grouped `값이 1/0인 사람들의 target 분포` pattern, trained-context-only resolution, parenthetical column names, trace fields, missing-target reload, and static planner hardcoding checks.
+- **Action** [Agent: Codex]: Ran `python3 test_scenario.py --static-only`, `.venv/bin/python test_scenario.py`, `PYTHONPYCACHEPREFIX=/tmp/teleai_pycache python3 -m py_compile ...`, `git diff --check`, and static grep checks for table-specific literals in planner/prompt surfaces.
+- **Outcome**: All verification passed. Controlled visualization now refuses schema-only table guessing and requires `%table training` before resolving table-specific columns.
+
+### [2026-04-26 21:35:32] [Agent: Codex] User Request: Diagnose why `duration이 500 넘는 사람들의 Job에 대한 분포를 그려줘` did not draw a job distribution
+- **Action** [Agent: Codex]: Inspecting latest runtime trace, debug logs, trained TableContext files, and prior `project_progress.md` entries before making any fix.
+- **Planned Artifact Update**: Identify the immediate root cause, quantify how often similar routing/context/visualization issues have occurred in the project log, and explain why the pattern keeps recurring.
+- **Finding**: `.telly_runtime/latest_trace.json` for turn 4 shows the actual prompt, but the controlled plan selected `target_column="duration"` with required columns `["duration"]`, then skipped reload because current `df_A_state.columns=["duration"]`.
+- **Finding**: The same trace shows `active_table_context` loaded for `workspace.default.bank_loan`, but every column has `aliases=[]`; `.telly_table_context/overrides/` does not exist, so Korean aliases like `직업군` were not available in the live app.
+- **Finding**: Running the current repository code directly with the saved trained context resolves the English prompt correctly as `target_column="job"`, `filter_conditions=[duration > 500]`, required columns `["job", "duration"]`, and SQL `SELECT job, COUNT(*) ... WHERE duration > 500 GROUP BY job ...`.
+- **Finding**: The live Streamlit process was started at 10:16 AM and the latest trace plan lacks the newer `filter_conditions`/`target_semantic_type` fields, indicating the running app was using stale planner code when the user reproduced the issue.
+- **Finding**: `project_progress.md` currently has 28 logged requests; at least 10 are directly about visualization/routing/context/state failures, and about 5 are specifically "distribution/visualization did not draw or drew the wrong thing" incidents.
+- **Outcome**: Immediate cause is a stale running Streamlit app combined with an uninitialized alias override store. The repeated pattern comes from tests passing against static/current code while the live app can still run older imported code and local trained context can be missing aliases.
+
+### [2026-04-26 11:35:49] [Agent: Codex] User Request: Ensure table training is always recorded in work logs
+- **Action** [Agent: Codex]: Checking `%table training` command handling, runtime trace, Thinking Log, and turn-level work logging to ensure training operations are not missed.
+- **Planned Artifact Update**: Add explicit table-training work-log fields and regression coverage so `%table training` records intent, tool usage, status, and summary in the normal turn log path.
+- **Artifact Update**: Added `table_training_work_log_fields()` so table training produces explicit turn-log fields: `intent=table_training`, `tools_used=['table_context_training']`, success/fail status, summary, and error message when needed.
+- **Artifact Update**: Updated `%table training` command handling to merge those fields into the normal `build_turn_payload()` path, in addition to existing Thinking Log and runtime trace events.
+- **Artifact Update**: Added static tests proving successful and failed `%table training` runs are represented in turn work-log fields.
+- **Action** [Agent: Codex]: Ran `python3 test_scenario.py --static-only`, `.venv/bin/python test_scenario.py`, Python compile checks, and `git diff --check`.
+- **Outcome**: All checks passed; table training is now visible in project progress, Thinking Log/runtime trace, and the chatbot turn work-log payload.
+
 ### [2026-04-26 11:22:44] [Agent: Codex] User Request: Implement TableContext alias/compare-filter plan without table-specific code
 - **Action** [Agent: Codex]: Starting implementation of TableContext-driven natural-language column/filter handling, preserving the constraint that table-specific meanings must live in `%table training` context or overrides, not code.
 - **Planned Artifact Update**: Remove hardcoded column aliases, add TableContext override alias support, add generic comparison filters, update readiness/SQL generation, and add exact regression tests for `duration > 500` job distribution.
