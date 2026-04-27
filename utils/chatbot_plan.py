@@ -286,6 +286,95 @@ def _parse_comparison_filters(text: str, table_context, semantic_types: dict[str
     return tuple(conditions)
 
 
+def _top_value_text(value: Any) -> str:
+    if isinstance(value, dict):
+        value = value.get("value")
+    return str(value or "").strip()
+
+
+def _find_phrase_positions(text: str, phrase: str) -> list[int]:
+    lowered = strip_internal_prompt_context(text or "").lower()
+    normalized = str(phrase or "").strip().lower()
+    if not normalized:
+        return []
+    pattern = rf"(?<![A-Za-z0-9_]){re.escape(normalized)}(?![A-Za-z0-9_])"
+    return [match.start() for match in re.finditer(pattern, lowered)]
+
+
+def _parse_categorical_value_filters(
+    text: str,
+    table_context,
+    semantic_types: dict[str, str],
+) -> tuple[dict[str, str], list[dict[str, Any]]]:
+    context = coerce_table_context(table_context)
+    if context is None:
+        return {}, []
+
+    mentions_by_column: dict[str, list[tuple[int, str]]] = {}
+    for position, column, term in _find_column_mentions(text, context):
+        mentions_by_column.setdefault(column, []).append((position, term))
+
+    value_matches_by_text: dict[str, set[str]] = {}
+    column_value_candidates: list[dict[str, Any]] = []
+    for column in context.columns:
+        column_name = str(getattr(column, "name", "") or "").strip()
+        if not column_name or semantic_types.get(column_name) != "categorical":
+            continue
+        if not mentions_by_column.get(column_name):
+            continue
+        for top_value in getattr(column, "top_values", []) or []:
+            value_text = _top_value_text(top_value)
+            positions = _find_phrase_positions(text, value_text)
+            if not positions:
+                continue
+            normalized_value = value_text.lower()
+            value_matches_by_text.setdefault(normalized_value, set()).add(column_name)
+            column_value_candidates.append(
+                {
+                    "column": column_name,
+                    "value": value_text,
+                    "value_positions": positions,
+                    "column_mentions": [
+                        {"position": position, "term": term}
+                        for position, term in mentions_by_column.get(column_name, [])
+                    ],
+                }
+            )
+
+    filters: dict[str, str] = {}
+    debug: list[dict[str, Any]] = []
+    for candidate in column_value_candidates:
+        column = candidate["column"]
+        value = candidate["value"]
+        normalized_value = value.lower()
+        matched_columns = sorted(value_matches_by_text.get(normalized_value, set()))
+        mention_positions = [item["position"] for item in candidate["column_mentions"]]
+        value_positions = candidate["value_positions"]
+        distances = [
+            value_position - mention_position
+            for mention_position in mention_positions
+            for value_position in value_positions
+        ]
+        forward_distances = [distance for distance in distances if 0 <= distance <= 160]
+        reverse_distances = [abs(distance) for distance in distances if -40 <= distance < 0]
+        accepted = bool(forward_distances or reverse_distances)
+        reason = "matched_explicit_column_top_value" if accepted else "value_not_near_column_mention"
+        if accepted and len(matched_columns) > 1:
+            reason = "matched_explicit_column_top_value_with_shared_value"
+        if accepted and column not in filters:
+            filters[column] = value
+        debug.append(
+            {
+                "column": column,
+                "value": value,
+                "matched_columns": matched_columns,
+                "accepted": accepted,
+                "reason": reason,
+            }
+        )
+    return filters, debug
+
+
 def build_controlled_plan(
     user_query: str,
     *,
@@ -314,6 +403,11 @@ def build_controlled_plan(
         rank_column = _resolve_rank_column_from_context(text, context, semantic_types)
     group_column, group_values = _parse_group_value_condition(text, context)
     comparison_filters = _parse_comparison_filters(text, context, semantic_types)
+    categorical_filters, categorical_filter_debug = _parse_categorical_value_filters(
+        text,
+        context,
+        semantic_types,
+    )
     range_filters = _parse_decade_range_filters(text, context, semantic_types)
 
     explicit_filter_columns = {
@@ -326,6 +420,7 @@ def build_controlled_plan(
         | ({rank_column} if rank_column else set())
         | ({group_column} if group_column else set())
         | {condition.column for condition in comparison_filters}
+        | set(categorical_filters.keys())
         | set(range_filters.keys())
     )
     target_column, target_candidates = _resolve_target_column(
@@ -337,6 +432,7 @@ def build_controlled_plan(
         return None
 
     filters: Dict[str, Any] = dict(range_filters)
+    filters.update(categorical_filters)
     for column in sorted(explicit_filter_columns):
         if column != target_column:
             filters[column] = "yes"
@@ -358,6 +454,7 @@ def build_controlled_plan(
         "target_column": target_column,
         "group_column": group_column,
         "group_values": list(group_values),
+        "categorical_value_filters": categorical_filter_debug,
     }
 
     return ControlledPlan(

@@ -28,6 +28,130 @@
 
 ## Log Entries
 
+### [2026-04-27 22:48:15] [Agent: Codex] User Request: Implement direct matplotlib payload capture for controlled visualization and add prompt-level test coverage
+- **Action** [Agent: Codex]: Updating controlled visualization so chart attachment does not depend on a pre-existing EDA `pytool_obj` when `df_A` is loaded during the same prompt turn.
+- **Planned Artifact Update**: Add a direct matplotlib-to-chat-payload helper, wire it into controlled executor, and add a prompt-input scenario that starts with no current dataframe but still produces a chart payload.
+- **Artifact Update**: Added `collect_matplotlib_figure_payloads()` to convert open matplotlib figures directly into chat-log image payloads.
+- **Artifact Update**: Updated controlled executor to close stale figures, create the controlled plot, collect payloads directly, and only fall back to `render_visualizations(pytool_obj)` if direct capture returns no figures.
+- **Artifact Update**: Added a prompt-input regression for `전체 marital 분포를 시각화 해줘` where no current `df_A` exists, reload is required, and the controlled chart is attached as a `matplotlib` image payload.
+- **Action** [Agent: Codex]: Ran `PYTHONPYCACHEPREFIX=/tmp/teleai_pycache python3 -m py_compile utils/controlled_visualization.py core/chat_flow.py test_scenario.py`.
+- **Action** [Agent: Codex]: Ran `python3 test_scenario.py --static-only`.
+- **Outcome**: Static scenario suite passes; prompt-input controlled flow now has 14 passing checks including direct chart payload attachment without `pytool_obj`.
+
+### [2026-04-27 22:44:47] [Agent: Codex] User Request: Recheck why `전체 marital 분포를 시각화 해줘` reports controlled execution but no visualization appears
+- **Action** [Agent: Codex]: Inspecting controlled plotting, figure attachment, and chat log rendering paths because the latest Thinking Log shows training, planning, reload, and visualization config all completed.
+- **Decision**: No code changes requested yet; first determine whether the plot is not being generated, not being attached to the chat run, or not being rendered in the UI.
+- **Finding**: The controlled path creates the matplotlib plot, but only calls `render_visualizations(pytool_obj)` when `pytool_obj` exists. In this turn `df_a_ready=false` at page start, so `pages/Telly.py` never builds `pytool_obj`; after controlled SQL reload creates `df_A`, the same turn still has `pytool_obj=None`.
+- **Finding**: The latest trace confirms this: `controlled_result.figure_count=0`, while final `summary.figure_count=1` comes from the SQL preview dataframe payload, not from the matplotlib chart.
+- **Outcome**: The missing chart is caused by controlled visualization depending on pre-existing EDA `pytool_obj`; when `df_A` is loaded during the same controlled turn, the plot is generated but not converted into an attached image payload.
+
+
+### [2026-04-27 22:40:03] [Agent: Codex] User Request: Investigate why controlled visualization says `%table training` information is missing despite prior training
+- **Action** [Agent: Codex]: Checking persisted TableContext files, manifest entries, selected-table context loading logic, and recent sample-preview changes.
+- **Decision**: No code changes requested yet; diagnose whether training files are missing or not being loaded into active session state.
+- **Finding**: Training files still exist under `.telly_table_context/`; `manifest.json` includes `workspace.default.bank_loan`, `workspace.default.titanic`, `workspace.default.ncr_ride`, and `workspace.default.stormtrooper` with `training_status="trained"`.
+- **Finding**: The latest runtime trace for `전체 marital 분포를 시각화 해줘` shows `active_table_context` serialized as trained for `workspace.default.bank_loan`, but the controlled-plan event recorded `training_status="none"` and refused execution.
+- **Finding**: This mismatch is consistent with the Streamlit session holding an older/stale dataclass instance after code reload: runtime tracing can serialize it with `dataclasses.asdict()`, while `coerce_table_context()` only accepts the current `TableContext` class or a mapping, so it can treat the stale object as missing.
+- **Outcome**: Prior `%table training` data did not disappear; the immediate failure is likely session/context coercion or active-context loading, not deleted training artifacts.
+
+### [2026-04-27 22:37:21] [Agent: Codex] User Request: Align the two preview buttons to the left with only about 3px between them
+- **Action** [Agent: Codex]: Updating the preview popover layout to use a compact left-aligned button row.
+- **Artifact Update**: Updated `ui/data_preview.py` to render `Sample Data` and `Preview Data` in a compact left-aligned row using narrow columns and 3px CSS gap.
+- **Artifact Update**: Updated Table Sample UI source tests to assert compact columns, 3px gap styling, and sample-first order.
+- **Action** [Agent: Codex]: Ran `PYTHONPYCACHEPREFIX=/tmp/teleai_pycache python3 -m py_compile ui/data_preview.py test_scenario.py`.
+- **Action** [Agent: Codex]: Ran `python3 test_scenario.py --static-only`.
+- **Outcome**: Table Sample tests pass with 7 checks and full static suite exits successfully.
+
+### [2026-04-27 22:35:08] [Agent: Codex] User Request: Show Sample Data and Preview Data buttons on one row, in sample-first order
+- **Action** [Agent: Codex]: Updating preview popover layout so Table Sample and Data Preview controls are rendered side-by-side with sample first.
+- **Artifact Update**: Wrapped preview controls in `st.columns(2)` and ordered them as `Table Sample` then `Data Preview`.
+- **Artifact Update**: Updated Table Sample UI source test to assert one-row column layout and sample-first popover order.
+- **Action** [Agent: Codex]: Ran `PYTHONPYCACHEPREFIX=/tmp/teleai_pycache python3 -m py_compile ui/data_preview.py test_scenario.py`.
+- **Action** [Agent: Codex]: Ran `python3 test_scenario.py --static-only`.
+- **Outcome**: Table Sample tests pass with 7 checks and full static suite exits successfully.
+
+### [2026-04-27 22:31:29] [Agent: Codex] User Request: Keep the Data Preview button visible after adding separate Table Sample
+- **Action** [Agent: Codex]: Fixing the preview UI so `Data Preview` remains available even when `df_A_data` is not currently loaded, while `Table Sample` remains separate.
+- **Artifact Update**: Updated `ui/data_preview.py` so `Data Preview` popover always renders; when `df_A` is unavailable it shows an informational message inside the popover.
+- **Artifact Update**: Strengthened the Table Sample UI source test to assert the `Data Preview` popover remains present.
+- **Action** [Agent: Codex]: Ran `PYTHONPYCACHEPREFIX=/tmp/teleai_pycache python3 -m py_compile ui/data_preview.py test_scenario.py`.
+- **Action** [Agent: Codex]: Ran `python3 test_scenario.py --static-only`.
+- **Outcome**: Table Sample tests pass with 7 checks and full static suite exits successfully.
+
+### [2026-04-27 22:22:05] [Agent: Codex] User Request: Add a test scenario proving sample data updates whenever the sidebar table selection changes
+- **Action** [Agent: Codex]: Adding a Table Sample regression scenario that simulates changing the selected table and verifies `df_table_sample` refreshes without mutating `df_A_data`.
+- **Artifact Update**: Extended `run_table_sample_tests()` with a two-table sample loader fixture for `workspace.default.bank_loan` and `workspace.default.titanic`.
+- **Action** [Agent: Codex]: Added an assertion that switching selected tables replaces `df_table_sample`, updates `df_table_sample_table`, and leaves `df_A_data`/`df_A_state` unchanged.
+- **Action** [Agent: Codex]: Ran `PYTHONPYCACHEPREFIX=/tmp/teleai_pycache python3 -m py_compile test_scenario.py`.
+- **Action** [Agent: Codex]: Ran `python3 test_scenario.py --static-only`.
+- **Outcome**: Table Sample tests now pass with 7 checks, including the sidebar table-selection refresh scenario; full static suite exits successfully.
+
+### [2026-04-27 22:17:39] [Agent: Codex] User Request: Implement separate `df_table_sample` preview storage and UI
+- **Action** [Agent: Codex]: Starting implementation of the approved Table Sample Preview separation plan.
+- **Planned Artifact Update**: Add sample session state, sample loader, sidebar sample loading, separate Table Sample UI, and static regression tests without changing `df_A_data` semantics.
+- **Artifact Update**: Added `df_table_sample`, `df_table_sample_table`, and `df_table_sample_message` session defaults plus a `load_table_sample_from_databricks()` loader that does not mutate `df_A_data`.
+- **Artifact Update**: Updated sidebar selection to load table samples into `df_table_sample` and use that sample for TableContext preview/schema loading.
+- **Artifact Update**: Updated Data Preview UI to keep `Data Preview` for current working `df_A` and add a separate `Table Sample` popover for selected-table sample rows.
+- **Artifact Update**: Added `run_table_sample_tests()` static coverage for sample defaults, loader isolation, reload decisions, TableContext preview use, and UI source separation.
+- **Action** [Agent: Codex]: Ran `PYTHONPYCACHEPREFIX=/tmp/teleai_pycache python3 -m py_compile utils/session.py ui/sidebar.py ui/data_preview.py test_scenario.py`.
+- **Action** [Agent: Codex]: Ran `python3 test_scenario.py --static-only`.
+- **Outcome**: Table Sample tests pass with 6 checks; full static suite exits successfully and existing prompt-input controlled visualization tests still pass.
+
+### [2026-04-27 22:11:33] [Agent: Codex] User Request: Explain what data is shown in the Data Preview UI
+- **Action** [Agent: Codex]: Inspecting the Streamlit preview rendering and dataframe/session loading paths.
+- **Decision**: No code changes requested; provide explanation only.
+- **Action** [Agent: Codex]: Checked `ui/data_preview.py`, `ui/chat_log.py`, `utils/session.py`, and `core/sql_utils.py`.
+- **Outcome**: Data Preview renders the current session `df_A_data.head(10)`/`df_B_data.head(10)`, where `df_A_data` may be the selected table preview, full/base table load, or the latest SQL/controlled query result depending on the most recent load path.
+
+### [2026-04-27 21:10:23] [Agent: Codex] User Request: Convert all `test_scenario` coverage toward actual prompt-input scenarios and verify visualization execution results
+- **Action** [Agent: Codex]: Investigating current scenario structure, prompt handling, and visualization execution paths to design and implement an executable prompt-level harness.
+- **Decision**: Preserve existing static unit checks while adding prompt-input execution scenarios first, because some tests cover low-level helpers that do not map directly to user prompts.
+- **Artifact Update**: Extracted controlled plotting into `utils/controlled_visualization.py` so both the app and tests execute the same matplotlib plotting logic without importing Streamlit.
+- **Artifact Update**: Expanded `run_prompt_input_controlled_flow_tests()` to feed real prompt strings, load trained TableContext, record plan/readiness/reload trace events, execute controlled visualization, and assert matplotlib figure creation.
+- **Action** [Agent: Codex]: Added prompt-level visualization checks for `job=technician housing`, balance histogram, housing→loan bar, duration→job bar, education bar, top balance job bar, Titanic grouped bar, Titanic survived, and Titanic Sex parenthetical scenarios.
+- **Action** [Agent: Codex]: Ran `PYTHONPYCACHEPREFIX=/tmp/teleai_pycache python3 -m py_compile utils/controlled_visualization.py core/chat_flow.py test_scenario.py`.
+- **Action** [Agent: Codex]: Ran `python3 test_scenario.py --static-only`.
+- **Outcome**: Prompt input controlled flow scenario now has 13 passing checks, including actual figure generation; full static suite exits successfully.
+
+### [2026-04-27 21:07:21] [Agent: Codex] User Request: Add a prompt-input-style scenario because the live prompt still reproduces the issue despite static planner tests passing
+- **Action** [Agent: Codex]: Investigating the current scenario harness to add a higher-level test that exercises the actual user prompt path rather than only isolated planner assertions.
+- **Planned Artifact Update**: Add a regression scenario that feeds the exact prompt through the same controlled prompt planning/readiness path used by the app and asserts the logged plan/readiness/SQL behavior.
+- **Artifact Update**: Added `run_prompt_input_controlled_flow_tests()` to `test_scenario.py`; it saves/loads a trained TableContext, feeds the exact prompt, records controlled plan/readiness/reload SQL trace events, and verifies `job=technician`.
+- **Action** [Agent: Codex]: Ran `PYTHONPYCACHEPREFIX=/tmp/teleai_pycache python3 -m py_compile test_scenario.py`.
+- **Action** [Agent: Codex]: Ran `python3 test_scenario.py --static-only`.
+- **Outcome**: New prompt-input controlled flow scenario passed with 4 checks; full static suite exits successfully.
+
+### [2026-04-27 21:05:07] [Agent: Codex] User Request: Ensure the categorical `job=technician` case is in `test_scenario.py` and run tests
+- **Action** [Agent: Codex]: Confirming the regression scenario exists and rerunning the static test suite.
+- **Action** [Agent: Codex]: Confirmed `test_scenario.py` includes the exact `job column이 technician 인 사람들의 housing 여부를 시각화 해줘` prompt and related SQL/readiness/top_values regression checks.
+- **Action** [Agent: Codex]: Ran `python3 test_scenario.py --static-only`.
+- **Outcome**: Static scenario suite passed; controlled planner now includes 41 passing checks including the new `job=technician` cases.
+
+### [2026-04-27 21:01:45] [Agent: Codex] User Request: Implement categorical value filter resolver using TableContext `top_values`
+- **Action** [Agent: Codex]: Starting implementation of the approved plan: parse stored categorical top values such as `technician` into equality filters such as `job = 'technician'`.
+- **Planned Artifact Update**: Update `utils/chatbot_plan.py` and `test_scenario.py --static-only` coverage while preserving existing controlled planner behavior.
+- **Artifact Update**: Added a TableContext `top_values` based categorical equality resolver to `utils/chatbot_plan.py` and debug output under `resolution_debug.categorical_value_filters`.
+- **Artifact Update**: Added static regression coverage for `job=technician -> housing`, generated SQL, reload readiness, missing top-value behavior, and ambiguous value behavior.
+- **Action** [Agent: Codex]: Ran `PYTHONPYCACHEPREFIX=/tmp/teleai_pycache python3 -m py_compile utils/chatbot_plan.py test_scenario.py`.
+- **Action** [Agent: Codex]: Ran `python3 test_scenario.py --static-only`.
+- **Outcome**: The exact prompt now plans `filters={'job': 'technician'}` and SQL `WHERE job = 'technician'`; static regression checks pass.
+
+### [2026-04-27 20:49:55] [Agent: Codex] User Request: Explain why “job column이 technician 인 사람들의 housing 여부를 시각화 해줘” ignored the `job=technician` condition without modifying code
+- **Action** [Agent: Codex]: Started code-path inspection for controlled visualization planning, filter extraction, and dataframe readiness reuse.
+- **Decision**: No code changes requested; limit work to diagnosis and verification guidance.
+- **Action** [Agent: Codex]: Inspected `utils/chatbot_plan.py`, `utils/data_context.py`, and `core/chat_flow.py`; reproduced the plan for the exact prompt against the trained bank table context.
+- **Outcome**: Root cause is in controlled plan construction: `job` is detected only as a column mention, while `technician` is not parsed as a categorical equality filter, so the plan contains `filters={}` and only requires `housing`.
+
+### [2026-04-27 20:52:10] [Agent: Codex] User Request: Confirm why the system did not check `Controlled JSON Plan.filters == {}` as evidence that the condition was omitted
+- **Action** [Agent: Codex]: Inspecting whether controlled flow has a post-plan validation step that compares user-mentioned filter-like columns/values against `filters` and `filter_conditions`.
+- **Decision**: No code changes requested; limit work to verification.
+- **Outcome**: Confirmed there is no post-plan semantic completeness check. The flow logs `Controlled JSON Plan`, derives requirements from the plan, and validates dataframe columns/visualization target only; it does not compare mentioned columns/values such as `job`/`technician` against planned filters.
+
+### [2026-04-27 20:53:43] [Agent: Codex] User Request: Discuss whether `%table training` should train categorical column values
+- **Action** [Agent: Codex]: Reviewing current TableContext categorical profiling behavior before recommending a design direction.
+- **Decision**: No code changes requested; provide design analysis only.
+- **Outcome**: Current training already stores capped categorical `top_values` for columns with `distinct_count <= 500`, limited to top 5 values per column. The gap is not collection for `job=technician`; the trained value exists, but controlled planning does not use `top_values` to parse categorical equality filters.
+
 ### [2026-04-26 22:47:19] [Agent: Codex] User Request: Update chatbot skill to require data/code separation and loadable external data context
 - **Action** [Agent: Codex]: Reviewing the chatbot project skill and project logger skill before updating the skill guidance.
 - **Planned Artifact Update**: Add explicit chatbot-skill rules that data-related knowledge, profiles, schemas, aliases, prompts, examples, and runtime datasets must be stored separately from code and loaded on demand through managed context files.

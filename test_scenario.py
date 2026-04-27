@@ -1,9 +1,13 @@
 import json
 import os
 import sys
+import tempfile
+import types
 
 # 프로젝트 루트를 경로에 추가
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+
+import pandas as pd
 
 from utils.agent_output import (
     detect_agent_parser_loop,
@@ -19,10 +23,15 @@ from utils.chat_turn import resolve_chat_turn_query, should_process_chat_turn
 from utils.chatbot_plan import (
     build_controlled_plan,
     build_sql_from_plan,
+    controlled_plan_to_dict,
     required_columns_for_plan,
     select_visualization_config,
 )
 from utils.conversation_figures import attach_figures_to_log
+from utils.controlled_visualization import (
+    collect_matplotlib_figure_payloads,
+    plot_controlled_visualization,
+)
 from utils.data_context import (
     DataFrameState,
     DataReadinessDecision,
@@ -116,7 +125,14 @@ def _bank_table_context() -> TableContext:
         row_count=750000,
         column_profiles={
             "age": {"null_count": 0, "distinct_count": 70, "min_value": 18, "max_value": 95},
-            "job": {"null_count": 0, "distinct_count": 12, "top_values": []},
+            "job": {
+                "null_count": 0,
+                "distinct_count": 12,
+                "top_values": [
+                    {"value": "management", "count": 100},
+                    {"value": "technician", "count": 80},
+                ],
+            },
             "education": {"null_count": 0, "distinct_count": 4, "top_values": [{"value": "secondary", "count": 100}]},
             "balance": {"null_count": 0, "distinct_count": 5000, "min_value": -8019, "max_value": 102127},
             "housing": {"null_count": 0, "distinct_count": 2, "top_values": [{"value": "yes", "count": 100}]},
@@ -283,13 +299,375 @@ def run_static_tests():
     failed += run_agent_output_tests()
     failed += run_eda_validation_tests()
     failed += run_controlled_plan_tests()
+    failed += run_prompt_input_controlled_flow_tests()
     failed += run_data_context_tests()
     failed += run_figure_attachment_tests()
     failed += run_explicit_sql_routing_tests()
     failed += run_external_llm_config_tests()
     failed += run_sql_prompt_tests()
     failed += run_table_context_tests()
+    failed += run_table_sample_tests()
     failed += run_runtime_trace_tests()
+    return failed
+
+
+def run_prompt_input_controlled_flow_tests():
+    print("🧪 Prompt input controlled flow 시나리오 테스트 실행...\n")
+
+    os.environ.setdefault("XDG_CACHE_HOME", "/tmp/teleai_xdg_cache")
+    os.environ.setdefault("MPLCONFIGDIR", "/tmp/teleai_mplconfig")
+    os.environ.setdefault("MPLBACKEND", "Agg")
+
+    import matplotlib.pyplot as plt
+    import pandas as pd
+    import tempfile
+
+    prompt = "job column이 technician 인 사람들의 housing 여부를 시각화 해줘"
+    with tempfile.TemporaryDirectory() as temp_dir:
+        save_table_context(_bank_table_context(), storage_dir=temp_dir)
+        active_context = load_table_context_for_selection(
+            "workspace.default.bank_loan",
+            storage_dir=temp_dir,
+        )
+        current_state = DataFrameState(
+            role="query_result",
+            source_table="workspace.default.bank_loan",
+            query="SELECT housing FROM workspace.default.bank_loan LIMIT 2000",
+            columns=("housing",),
+            row_count=2000,
+            created_by="prompt_input_test",
+        )
+
+        start_turn_trace(
+            conversation_id="prompt-input",
+            turn_id=1,
+            run_id="run-prompt",
+            user_message=prompt,
+            selected_table="workspace.default.bank_loan",
+            storage_dir=temp_dir,
+        )
+        plan = build_controlled_plan(
+            prompt,
+            default_table="workspace.default.bank_loan",
+            table_context=active_context,
+        )
+        record_trace_event(
+            "controlled_plan",
+            generated=plan is not None,
+            plan=controlled_plan_to_dict(plan) if plan else {},
+            table_context_source=active_context.source,
+            training_status=active_context.training_status,
+            resolved_from_training=plan is not None,
+            **(getattr(plan, "resolution_debug", {}) if plan else {}),
+        )
+        requirement = requirement_from_controlled_plan(plan) if plan else DataRequirement()
+        readiness = evaluate_data_readiness(current_state, requirement)
+        record_trace_event(
+            "data_readiness",
+            decision=readiness.decision,
+            reason=readiness.reason,
+            required_columns=list(requirement.columns),
+            missing_columns=list(readiness.missing_columns),
+            df_A_state=current_state,
+        )
+        reload_sql = ""
+        if plan and readiness.decision == DataReadinessDecision.RELOAD_REQUIRED:
+            reload_sql = build_sql_from_plan(plan)
+            record_trace_event(
+                "controlled_reload_sql",
+                sql=reload_sql,
+                source_table="workspace.default.bank_loan",
+            )
+        result_df = pd.DataFrame({"housing": ["yes", "no"], "stat_count": [120, 80]})
+        plt.close("all")
+        config = select_visualization_config(plan, result_df) if plan else None
+        summary = plot_controlled_visualization(result_df, config) if config else ""
+        figure_count = len(plt.get_fignums())
+        record_trace_event(
+            "visualization_config",
+            config=config,
+        )
+        record_trace_event(
+            "controlled_result",
+            status="success" if figure_count > 0 else "fail",
+            summary=summary,
+            figure_count=figure_count,
+        )
+        plt.close("all")
+        finish_turn_trace(final_status="completed")
+        latest_trace = read_latest_trace(storage_dir=temp_dir) or {}
+        events = latest_trace.get("events", [])
+        controlled_event = next(
+            (event for event in events if event.get("event_type") == "controlled_plan"),
+            {},
+        )
+        readiness_event = next(
+            (event for event in events if event.get("event_type") == "data_readiness"),
+            {},
+        )
+        reload_event = next(
+            (event for event in events if event.get("event_type") == "controlled_reload_sql"),
+            {},
+        )
+        result_event = next(
+            (event for event in events if event.get("event_type") == "controlled_result"),
+            {},
+        )
+
+        marital_prompt = "전체 marital 분포를 시각화 해줘"
+        start_turn_trace(
+            conversation_id="prompt-input-marital",
+            turn_id=2,
+            run_id="run-prompt-marital",
+            user_message=marital_prompt,
+            selected_table="workspace.default.bank_loan",
+            storage_dir=temp_dir,
+        )
+        marital_plan = build_controlled_plan(
+            marital_prompt,
+            default_table="workspace.default.bank_loan",
+            table_context=active_context,
+        )
+        marital_requirement = (
+            requirement_from_controlled_plan(marital_plan)
+            if marital_plan
+            else DataRequirement()
+        )
+        marital_readiness = evaluate_data_readiness(None, marital_requirement)
+        if marital_plan and marital_readiness.decision == DataReadinessDecision.RELOAD_REQUIRED:
+            record_trace_event(
+                "controlled_reload_sql",
+                sql=build_sql_from_plan(marital_plan),
+                source_table="workspace.default.bank_loan",
+            )
+        marital_result_df = pd.DataFrame(
+            {"marital": ["married", "single", "divorced"], "stat_count": [120, 60, 20]}
+        )
+        marital_config = select_visualization_config(marital_plan, marital_result_df) if marital_plan else None
+        plt.close("all")
+        marital_summary = (
+            plot_controlled_visualization(marital_result_df, marital_config)
+            if marital_config
+            else ""
+        )
+        marital_payloads = collect_matplotlib_figure_payloads()
+        marital_log = [
+            {
+                "run_id": "run-prompt-marital",
+                "role": "assistant",
+                "content": "controlled result",
+                "figures": [],
+                "figures_attached": False,
+            }
+        ]
+        marital_attached = attach_figures_to_log(
+            marital_log,
+            "run-prompt-marital",
+            marital_payloads,
+        )
+        record_trace_event(
+            "controlled_result",
+            status="success" if marital_payloads else "fail",
+            summary=marital_summary,
+            figure_count=len(marital_payloads),
+        )
+        finish_turn_trace(final_status="completed")
+        marital_attached_figures = marital_log[0].get("figures", [])
+
+    prompt_visual_scenarios = [
+        {
+            "name": "balance histogram",
+            "prompt": "20대에서 30대 사이의 대출을 가지고 있는 사람들의 balance에 대해서 시각화해줘",
+            "context": _bank_table_context(),
+            "table": "workspace.default.bank_loan",
+            "df": pd.DataFrame({"balance": range(101), "age": [20 + (idx % 11) for idx in range(101)], "loan": ["yes"] * 101}),
+            "expected": ("balance", {"age": [20, 30], "loan": "yes"}, "histogram"),
+        },
+        {
+            "name": "housing yes loan bar",
+            "prompt": "housing이 yes 인사람들의 loan 분포를 그려줘",
+            "context": _bank_table_context(),
+            "table": "workspace.default.bank_loan",
+            "df": pd.DataFrame({"loan": ["yes", "no"], "stat_count": [30, 70]}),
+            "expected": ("loan", {"housing": "yes"}, "bar"),
+        },
+        {
+            "name": "duration job bar",
+            "prompt": "duration이 500 넘는 사람들의 직업군이 어떻게 되는지 시각화 해줘",
+            "context": _bank_table_context(),
+            "table": "workspace.default.bank_loan",
+            "df": pd.DataFrame({"job": ["management", "technician"], "stat_count": [20, 10]}),
+            "expected": ("job", {}, "bar"),
+        },
+        {
+            "name": "education bar",
+            "prompt": "전체 education의 분포를 보고 싶어",
+            "context": _bank_table_context(),
+            "table": "workspace.default.bank_loan",
+            "df": pd.DataFrame({"education": ["secondary", "primary", "tertiary"]}),
+            "expected": ("education", {}, "bar"),
+        },
+        {
+            "name": "top balance job bar",
+            "prompt": "balance 가 가장 높은 상위 10%의 사람들의 직업이 어떻게 되는지 분포를 그려줘",
+            "context": _bank_table_context(),
+            "table": "workspace.default.bank_loan",
+            "df": pd.DataFrame({"job": ["management", "technician"], "stat_count": [20, 10]}),
+            "expected": ("job", {}, "bar"),
+        },
+        {
+            "name": "titanic grouped bar",
+            "prompt": "survived 값이 1인사람들과 0인 사람들의 Sex(성별) 분포를 각각 시각화 해줘.",
+            "context": _titanic_table_context(),
+            "table": "workspace.default.titanic",
+            "df": pd.DataFrame(
+                {
+                    "Survived": [1, 1, 0, 0],
+                    "Sex": ["female", "male", "male", "female"],
+                    "stat_count": [200, 100, 400, 100],
+                }
+            ),
+            "expected": ("Sex", {}, "grouped_bar"),
+        },
+        {
+            "name": "titanic survived bar",
+            "prompt": "Survived 분포를 그려줘",
+            "context": _titanic_table_context(),
+            "table": "workspace.default.titanic",
+            "df": pd.DataFrame({"Survived": [0, 1, 0, 1]}),
+            "expected": ("Survived", {}, "boxplot"),
+        },
+        {
+            "name": "titanic sex parenthetical bar",
+            "prompt": "Sex(성별) 분포를 보고 싶어",
+            "context": _titanic_table_context(),
+            "table": "workspace.default.titanic",
+            "df": pd.DataFrame({"Sex": ["male", "female", "male"]}),
+            "expected": ("Sex", {}, "bar"),
+        },
+    ]
+    prompt_visual_results = []
+    for scenario in prompt_visual_scenarios:
+        scenario_plan = build_controlled_plan(
+            scenario["prompt"],
+            default_table=scenario["table"],
+            table_context=scenario["context"],
+        )
+        scenario_config = select_visualization_config(scenario_plan, scenario["df"]) if scenario_plan else None
+        plt.close("all")
+        scenario_summary = plot_controlled_visualization(scenario["df"], scenario_config) if scenario_config else ""
+        scenario_figure_count = len(plt.get_fignums())
+        plt.close("all")
+        prompt_visual_results.append(
+            (
+                scenario["name"],
+                scenario_plan.target_column if scenario_plan else "",
+                scenario_plan.filters if scenario_plan else {},
+                scenario_config.plot_type if scenario_config else "",
+                scenario_figure_count > 0,
+                bool(scenario_summary),
+                scenario["expected"],
+            )
+        )
+
+    test_cases = [
+        {
+            "description": "실제 사용자 prompt 문자열이 저장된 trained TableContext를 거쳐 controlled plan을 만든다",
+            "actual": (
+                latest_trace.get("summary", {}).get("user_message"),
+                latest_trace.get("summary", {}).get("controlled_plan_generated"),
+                latest_trace.get("summary", {}).get("controlled_target_column"),
+                controlled_event.get("training_status"),
+            ),
+            "expected": (prompt, True, "housing", "trained"),
+        },
+        {
+            "description": "prompt 입력 경로의 Controlled JSON Plan에 job=technician filter가 포함된다",
+            "actual": (
+                plan.target_column if plan else "",
+                plan.filters if plan else {},
+                controlled_event.get("categorical_value_filters", [{}])[0].get("accepted")
+                if controlled_event.get("categorical_value_filters")
+                else False,
+            ),
+            "expected": ("housing", {"job": "technician"}, True),
+        },
+        {
+            "description": "prompt 입력 경로의 readiness는 housing-only df_A를 충분하다고 보지 않는다",
+            "actual": (
+                readiness_event.get("decision"),
+                readiness_event.get("missing_columns"),
+                list(requirement.columns),
+            ),
+            "expected": (
+                DataReadinessDecision.RELOAD_REQUIRED,
+                ["job"],
+                ["housing", "job"],
+            ),
+        },
+        {
+            "description": "prompt 입력 경로에서 reload SQL은 job=technician 조건을 포함한다",
+            "actual": (
+                reload_event.get("sql", "").startswith(
+                    "SELECT housing, COUNT(*) AS stat_count FROM workspace.default.bank_loan"
+                ),
+                "WHERE job = 'technician'" in reload_event.get("sql", ""),
+                "GROUP BY housing" in reload_event.get("sql", ""),
+            ),
+            "expected": (True, True, True),
+        },
+        {
+            "description": "prompt 입력 경로에서 실제 controlled visualization 실행 결과 figure가 생성된다",
+            "actual": (
+                result_event.get("status"),
+                result_event.get("figure_count", 0) > 0,
+                "plot_type=bar" in result_event.get("summary", ""),
+            ),
+            "expected": ("success", True, True),
+        },
+        {
+            "description": "df_A가 없는 실제 prompt 입력 흐름에서도 controlled chart image payload가 chat log에 붙는다",
+            "actual": (
+                marital_plan.target_column if marital_plan else "",
+                marital_readiness.decision,
+                len(marital_payloads),
+                marital_attached,
+                marital_attached_figures[0].get("kind") if marital_attached_figures else "",
+                bool(marital_attached_figures[0].get("image")) if marital_attached_figures else False,
+            ),
+            "expected": (
+                "marital",
+                DataReadinessDecision.RELOAD_REQUIRED,
+                1,
+                True,
+                "matplotlib",
+                True,
+            ),
+        },
+    ]
+    for name, target, filters, plot_type, has_figure, has_summary, expected in prompt_visual_results:
+        expected_target, expected_filters, expected_plot_type = expected
+        test_cases.append(
+            {
+                "description": f"실제 prompt 시각화 실행 결과를 검증한다: {name}",
+                "actual": (target, filters, plot_type, has_figure, has_summary),
+                "expected": (expected_target, expected_filters, expected_plot_type, True, True),
+            }
+        )
+
+    passed = 0
+    failed = 0
+    for idx, tc in enumerate(test_cases, 1):
+        print(f"[prompt-input-{idx}] {tc['description']}")
+        if tc["actual"] == tc["expected"]:
+            print("   ✅ PASS\n")
+            passed += 1
+        else:
+            print(f"   ❌ FAIL (Expected: {tc['expected']}, Got: {tc['actual']})\n")
+            failed += 1
+
+    print("-" * 50)
+    print(f"🎯 Prompt input controlled flow 테스트 결과: {passed} 통과, {failed} 실패\n")
     return failed
 
 
@@ -515,6 +893,77 @@ def run_controlled_plan_tests():
         )
         if housing_loan_plan
         else None
+    )
+    technician_housing_prompt = "job column이 technician 인 사람들의 housing 여부를 시각화 해줘"
+    technician_housing_plan = build_controlled_plan(
+        technician_housing_prompt,
+        default_table="workspace.default.bank_loan",
+        table_context=bank_context,
+    )
+    technician_housing_sql = build_sql_from_plan(technician_housing_plan) if technician_housing_plan else ""
+    technician_housing_requirement = (
+        requirement_from_controlled_plan(technician_housing_plan)
+        if technician_housing_plan
+        else DataRequirement()
+    )
+    housing_only_state = DataFrameState(
+        role="query_result",
+        source_table="workspace.default.bank_loan",
+        query="SELECT housing FROM workspace.default.bank_loan LIMIT 2000",
+        columns=("housing",),
+        row_count=2000,
+        created_by="test",
+    )
+    technician_housing_readiness = evaluate_data_readiness(
+        housing_only_state,
+        technician_housing_requirement,
+    )
+    job_without_technician_context = build_trained_context(
+        _bank_schema_context(),
+        row_count=750000,
+        column_profiles={
+            "job": {
+                "null_count": 0,
+                "distinct_count": 12,
+                "top_values": [{"value": "management", "count": 100}],
+            },
+            "housing": {
+                "null_count": 0,
+                "distinct_count": 2,
+                "top_values": [{"value": "yes", "count": 100}],
+            },
+        },
+    )
+    missing_top_value_plan = build_controlled_plan(
+        technician_housing_prompt,
+        default_table="workspace.default.bank_loan",
+        table_context=job_without_technician_context,
+    )
+    shared_value_context = build_trained_context(
+        _bank_schema_context(),
+        row_count=750000,
+        column_profiles={
+            "job": {
+                "null_count": 0,
+                "distinct_count": 12,
+                "top_values": [{"value": "technician", "count": 80}],
+            },
+            "education": {
+                "null_count": 0,
+                "distinct_count": 4,
+                "top_values": [{"value": "technician", "count": 5}],
+            },
+            "housing": {
+                "null_count": 0,
+                "distinct_count": 2,
+                "top_values": [{"value": "yes", "count": 100}],
+            },
+        },
+    )
+    ambiguous_value_plan = build_controlled_plan(
+        "technician 인 사람들의 housing 여부를 시각화 해줘",
+        default_table="workspace.default.bank_loan",
+        table_context=shared_value_context,
     )
     education_prompt = "전체 education의 분포를 보고 싶어"
     education_plan = build_controlled_plan(
@@ -760,6 +1209,45 @@ def run_controlled_plan_tests():
             "description": "housing=yes loan 분포는 categorical bar config를 선택한다",
             "actual": housing_loan_config.plot_type if housing_loan_config else "",
             "expected": "bar",
+        },
+        {
+            "description": "TableContext top_values의 categorical 값은 명시된 컬럼 equality filter로 변환된다",
+            "actual": (
+                technician_housing_plan.target_column if technician_housing_plan else "",
+                technician_housing_plan.filters if technician_housing_plan else {},
+            ),
+            "expected": ("housing", {"job": "technician"}),
+        },
+        {
+            "description": "categorical value filter SQL은 target categorical count 집계와 WHERE 조건을 생성한다",
+            "actual": (
+                technician_housing_sql.startswith(
+                    "SELECT housing, COUNT(*) AS stat_count FROM workspace.default.bank_loan"
+                ),
+                "WHERE job = 'technician'" in technician_housing_sql,
+                "GROUP BY housing" in technician_housing_sql,
+            ),
+            "expected": (True, True, True),
+        },
+        {
+            "description": "categorical value filter requirement는 target과 filter 컬럼을 모두 요구한다",
+            "actual": list(technician_housing_requirement.columns),
+            "expected": ["housing", "job"],
+        },
+        {
+            "description": "현재 df_A가 housing만 갖고 있으면 job=technician 요청은 reload가 필요하다",
+            "actual": technician_housing_readiness.decision,
+            "expected": DataReadinessDecision.RELOAD_REQUIRED,
+        },
+        {
+            "description": "top_values에 없는 categorical 값은 추측해서 filter로 만들지 않는다",
+            "actual": missing_top_value_plan.filters if missing_top_value_plan else {},
+            "expected": {},
+        },
+        {
+            "description": "동일 categorical 값이 여러 컬럼에 있어도 컬럼 언급이 없으면 filter로 만들지 않는다",
+            "actual": ambiguous_value_plan.filters if ambiguous_value_plan else {},
+            "expected": {},
         },
         {
             "description": "전체 education 분포 prompt는 LLM chain 대신 controlled plan으로 변환된다",
@@ -1732,6 +2220,214 @@ def run_table_context_tests():
 
     print("-" * 50)
     print(f"🎯 TableContext 테스트 결과: {passed} 통과, {failed} 실패\n")
+    return failed
+
+
+def run_table_sample_tests():
+    print("🧪 Table Sample 분리 테스트 실행...\n")
+
+    if "streamlit" not in sys.modules:
+        sys.modules["streamlit"] = types.SimpleNamespace(session_state={})
+    if "dotenv" not in sys.modules:
+        sys.modules["dotenv"] = types.SimpleNamespace(load_dotenv=lambda: None)
+    import utils.session as session_utils
+
+    session_utils.ensure_session_state()
+    original_connector_available = session_utils.databricks_connector_available
+    original_load_table = session_utils.databricks_load_table
+    original_get_credentials = session_utils.get_databricks_credentials
+
+    original_df_a = pd.DataFrame({"current_result": [999]})
+    original_df_a_state = DataFrameState(
+        role="query_result",
+        source_table="workspace.default.bank_loan",
+        query="SELECT current_result FROM workspace.default.bank_loan LIMIT 1",
+        columns=("current_result",),
+        row_count=1,
+        created_by="test",
+    )
+    session_utils.st.session_state["df_A_data"] = original_df_a
+    session_utils.st.session_state["df_A_state"] = original_df_a_state
+    session_utils.st.session_state["df_A_name"] = "query_result"
+    session_utils.st.session_state["csv_path"] = "databricks://query_result"
+    session_utils.st.session_state["df_table_sample"] = None
+    session_utils.st.session_state["df_table_sample_table"] = ""
+    session_utils.st.session_state["df_table_sample_message"] = ""
+
+    sample_by_table = {
+        "workspace.default.bank_loan": pd.DataFrame(
+            {
+                "job": ["technician", "management", "services"],
+                "housing": ["yes", "no", "yes"],
+            }
+        ),
+        "workspace.default.titanic": pd.DataFrame(
+            {
+                "Survived": [1, 0, 1],
+                "Sex": ["female", "male", "female"],
+            }
+        ),
+    }
+    load_calls = []
+
+    def fake_load_table(table, creds, limit=None):
+        load_calls.append((table, limit))
+        return sample_by_table[table].head(limit or 10).copy()
+
+    try:
+        session_utils.databricks_connector_available = lambda: True
+        session_utils.get_databricks_credentials = lambda: types.SimpleNamespace(catalog="", schema="")
+        session_utils.databricks_load_table = fake_load_table
+
+        default_keys_present = all(
+            key in session_utils.st.session_state
+            for key in ("df_table_sample", "df_table_sample_table", "df_table_sample_message")
+        )
+        should_load_initial = session_utils.should_load_table_sample("workspace.default.bank_loan")
+        ok, message = session_utils.load_table_sample_from_databricks(
+            "workspace.default.bank_loan",
+            limit=10,
+        )
+        loaded_sample = session_utils.st.session_state.get("df_table_sample")
+        df_a_after = session_utils.st.session_state.get("df_A_data")
+        df_a_state_after = session_utils.st.session_state.get("df_A_state")
+        should_load_same_table = session_utils.should_load_table_sample("workspace.default.bank_loan")
+        should_load_other_table = session_utils.should_load_table_sample("workspace.default.titanic")
+        ok_changed, changed_message = session_utils.load_table_sample_from_databricks(
+            "workspace.default.titanic",
+            limit=10,
+        )
+        changed_sample = session_utils.st.session_state.get("df_table_sample")
+        changed_sample_table = session_utils.st.session_state.get("df_table_sample_table", "")
+        should_load_changed_same_table = session_utils.should_load_table_sample("workspace.default.titanic")
+        df_a_after_changed_sample = session_utils.st.session_state.get("df_A_data")
+        df_a_state_after_changed_sample = session_utils.st.session_state.get("df_A_state")
+
+        with tempfile.TemporaryDirectory() as temp_dir:
+            context = load_table_context_for_selection(
+                "workspace.default.bank_loan",
+                preview_df=loaded_sample,
+                storage_dir=temp_dir,
+            )
+
+        ui_source = open(
+            os.path.join(os.path.dirname(os.path.abspath(__file__)), "ui", "data_preview.py"),
+            encoding="utf-8",
+        ).read()
+    finally:
+        session_utils.databricks_connector_available = original_connector_available
+        session_utils.databricks_load_table = original_load_table
+        session_utils.get_databricks_credentials = original_get_credentials
+
+    test_cases = [
+        {
+            "description": "session defaults에는 Table Sample 전용 키가 존재한다",
+            "actual": default_keys_present,
+            "expected": True,
+        },
+        {
+            "description": "sample loader는 선택 테이블 10행 sample을 df_table_sample에만 저장한다",
+            "actual": (
+                should_load_initial,
+                ok,
+                load_calls[:1],
+                isinstance(loaded_sample, pd.DataFrame),
+                loaded_sample.equals(sample_by_table["workspace.default.bank_loan"])
+                if isinstance(loaded_sample, pd.DataFrame)
+                else False,
+                "workspace.default.bank_loan",
+                "sample rows loaded" in message,
+            ),
+            "expected": (
+                True,
+                True,
+                [("workspace.default.bank_loan", 10)],
+                True,
+                True,
+                "workspace.default.bank_loan",
+                True,
+            ),
+        },
+        {
+            "description": "sample loader는 현재 작업 데이터 df_A_data/df_A_state를 변경하지 않는다",
+            "actual": (
+                df_a_after.equals(original_df_a) if isinstance(df_a_after, pd.DataFrame) else False,
+                df_a_state_after == original_df_a_state,
+                df_a_after_changed_sample.equals(original_df_a)
+                if isinstance(df_a_after_changed_sample, pd.DataFrame)
+                else False,
+                df_a_state_after_changed_sample == original_df_a_state,
+                session_utils.st.session_state.get("df_A_name"),
+                session_utils.st.session_state.get("csv_path"),
+            ),
+            "expected": (True, True, True, True, "query_result", "databricks://query_result"),
+        },
+        {
+            "description": "같은 테이블은 sample reload가 불필요하고 다른 테이블은 reload가 필요하다",
+            "actual": (should_load_same_table, should_load_other_table),
+            "expected": (False, True),
+        },
+        {
+            "description": "sidebar table 선택이 바뀌면 df_table_sample도 새 테이블 sample로 교체된다",
+            "actual": (
+                ok_changed,
+                changed_sample_table,
+                changed_sample.equals(sample_by_table["workspace.default.titanic"])
+                if isinstance(changed_sample, pd.DataFrame)
+                else False,
+                load_calls,
+                should_load_changed_same_table,
+                "sample rows loaded" in changed_message,
+            ),
+            "expected": (
+                True,
+                "workspace.default.titanic",
+                True,
+                [("workspace.default.bank_loan", 10), ("workspace.default.titanic", 10)],
+                False,
+                True,
+            ),
+        },
+        {
+            "description": "TableContext schema-only 생성은 df_table_sample preview columns를 사용할 수 있다",
+            "actual": (
+                context.training_status,
+                [column.name for column in context.columns],
+            ),
+            "expected": ("schema_only", ["job", "housing"]),
+        },
+        {
+            "description": "UI 렌더링 코드는 Data Preview와 Table Sample 표시 대상을 분리한다",
+            "actual": (
+                "Current working df_A" in ui_source,
+                "Selected table sample" in ui_source,
+                "df_table_sample" in ui_source,
+                'with st.popover("📊 Preview Data")' in ui_source,
+                "sample_col, preview_col, _ = st.columns([1, 1, 12], gap=None)" in ui_source,
+                "gap: 3px !important" in ui_source,
+                'with st.popover("🔎 Sample Data")' in ui_source
+                and ui_source.index('with st.popover("🔎 Sample Data")')
+                < ui_source.index('with st.popover("📊 Preview Data")'),
+                "df_A.head(10)" in ui_source,
+                "table_sample.head(10)" in ui_source,
+            ),
+            "expected": (True, True, True, True, True, True, True, True, True),
+        },
+    ]
+
+    passed = 0
+    failed = 0
+    for idx, tc in enumerate(test_cases, 1):
+        print(f"[table-sample-{idx}] {tc['description']}")
+        if tc["actual"] == tc["expected"]:
+            print("   ✅ PASS\n")
+            passed += 1
+        else:
+            print(f"   ❌ FAIL (Expected: {tc['expected']}, Got: {tc['actual']})\n")
+            failed += 1
+
+    print("-" * 50)
+    print(f"🎯 Table Sample 테스트 결과: {passed} 통과, {failed} 실패\n")
     return failed
 
 

@@ -7,8 +7,9 @@ from utils.session import (
     ensure_session_state,
     databricks_connector_available,
     list_databricks_tables_in_session,
-    load_df_from_databricks,
+    load_table_sample_from_databricks,
     load_table_context_for_selected_table,
+    should_load_table_sample,
     update_databricks_namespace_from_table,
 )
 
@@ -103,6 +104,9 @@ def render_sidebar(show_debug: bool = True) -> None:
             st.session_state["databricks_table_input"] = current_choice
             update_databricks_namespace_from_table(current_choice)
             st.session_state["databricks_last_preview_table"] = ""
+            st.session_state["df_table_sample"] = None
+            st.session_state["df_table_sample_table"] = ""
+            st.session_state["df_table_sample_message"] = ""
 
         column_select_container = st.container()
 
@@ -112,29 +116,26 @@ def render_sidebar(show_debug: bool = True) -> None:
         )
 
         final_selection = st.session_state["databricks_selected_table"].strip()
-        last_preview_table = st.session_state.get("databricks_last_preview_table", "").strip()
-        df_a_data = st.session_state.get("df_A_data")
-        needs_preview = bool(final_selection) and (
-            final_selection != last_preview_table or df_a_data is None
-        )
+        needs_sample = should_load_table_sample(final_selection)
 
-        if needs_preview:
-            with st.spinner("선택한 테이블 미리보기를 불러오는 중..."):
-                ok, message = load_df_from_databricks(final_selection, limit=10)
+        if needs_sample:
+            with st.spinner("선택한 테이블 샘플을 불러오는 중..."):
+                ok, message = load_table_sample_from_databricks(final_selection, limit=10)
             if ok:
-                df_init = st.session_state.get("df_A_data")
-                if isinstance(df_init, pd.DataFrame):
-                    st.session_state["df_init_data"] = df_init.copy(deep=True)
+                table_sample = st.session_state.get("df_table_sample")
+                if isinstance(table_sample, pd.DataFrame):
+                    st.session_state["df_init_data"] = table_sample.copy(deep=True)
                 preview_status.success(message)
             else:
                 preview_status.error(message)
         else:
-            last_message = st.session_state.get("databricks_last_preview_message", "")
-            if final_selection and last_message and final_selection == last_preview_table:
-                preview_status.caption(last_message)
+            sample_message = st.session_state.get("df_table_sample_message", "")
+            sample_table = st.session_state.get("df_table_sample_table", "").strip()
+            if final_selection and sample_message and final_selection == sample_table:
+                preview_status.caption(sample_message)
 
         if final_selection and st.session_state.get("active_table_context_table") != final_selection:
-            preview_df = st.session_state.get("df_A_data")
+            preview_df = st.session_state.get("df_table_sample")
             if not isinstance(preview_df, pd.DataFrame):
                 preview_df = None
             load_table_context_for_selected_table(final_selection, preview_df=preview_df)
