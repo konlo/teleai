@@ -28,6 +28,61 @@
 
 ## Log Entries
 
+### [2026-04-27 22:11:33] [Agent: Codex] User Request: Explain what data is shown in the Data Preview UI
+- **Action** [Agent: Codex]: Inspecting the Streamlit preview rendering and dataframe/session loading paths.
+- **Decision**: No code changes requested; provide explanation only.
+- **Action** [Agent: Codex]: Checked `ui/data_preview.py`, `ui/chat_log.py`, `utils/session.py`, and `core/sql_utils.py`.
+- **Outcome**: Data Preview renders the current session `df_A_data.head(10)`/`df_B_data.head(10)`, where `df_A_data` may be the selected table preview, full/base table load, or the latest SQL/controlled query result depending on the most recent load path.
+
+### [2026-04-27 21:10:23] [Agent: Codex] User Request: Convert all `test_scenario` coverage toward actual prompt-input scenarios and verify visualization execution results
+- **Action** [Agent: Codex]: Investigating current scenario structure, prompt handling, and visualization execution paths to design and implement an executable prompt-level harness.
+- **Decision**: Preserve existing static unit checks while adding prompt-input execution scenarios first, because some tests cover low-level helpers that do not map directly to user prompts.
+- **Artifact Update**: Extracted controlled plotting into `utils/controlled_visualization.py` so both the app and tests execute the same matplotlib plotting logic without importing Streamlit.
+- **Artifact Update**: Expanded `run_prompt_input_controlled_flow_tests()` to feed real prompt strings, load trained TableContext, record plan/readiness/reload trace events, execute controlled visualization, and assert matplotlib figure creation.
+- **Action** [Agent: Codex]: Added prompt-level visualization checks for `job=technician housing`, balance histogram, housing→loan bar, duration→job bar, education bar, top balance job bar, Titanic grouped bar, Titanic survived, and Titanic Sex parenthetical scenarios.
+- **Action** [Agent: Codex]: Ran `PYTHONPYCACHEPREFIX=/tmp/teleai_pycache python3 -m py_compile utils/controlled_visualization.py core/chat_flow.py test_scenario.py`.
+- **Action** [Agent: Codex]: Ran `python3 test_scenario.py --static-only`.
+- **Outcome**: Prompt input controlled flow scenario now has 13 passing checks, including actual figure generation; full static suite exits successfully.
+
+### [2026-04-27 21:07:21] [Agent: Codex] User Request: Add a prompt-input-style scenario because the live prompt still reproduces the issue despite static planner tests passing
+- **Action** [Agent: Codex]: Investigating the current scenario harness to add a higher-level test that exercises the actual user prompt path rather than only isolated planner assertions.
+- **Planned Artifact Update**: Add a regression scenario that feeds the exact prompt through the same controlled prompt planning/readiness path used by the app and asserts the logged plan/readiness/SQL behavior.
+- **Artifact Update**: Added `run_prompt_input_controlled_flow_tests()` to `test_scenario.py`; it saves/loads a trained TableContext, feeds the exact prompt, records controlled plan/readiness/reload SQL trace events, and verifies `job=technician`.
+- **Action** [Agent: Codex]: Ran `PYTHONPYCACHEPREFIX=/tmp/teleai_pycache python3 -m py_compile test_scenario.py`.
+- **Action** [Agent: Codex]: Ran `python3 test_scenario.py --static-only`.
+- **Outcome**: New prompt-input controlled flow scenario passed with 4 checks; full static suite exits successfully.
+
+### [2026-04-27 21:05:07] [Agent: Codex] User Request: Ensure the categorical `job=technician` case is in `test_scenario.py` and run tests
+- **Action** [Agent: Codex]: Confirming the regression scenario exists and rerunning the static test suite.
+- **Action** [Agent: Codex]: Confirmed `test_scenario.py` includes the exact `job column이 technician 인 사람들의 housing 여부를 시각화 해줘` prompt and related SQL/readiness/top_values regression checks.
+- **Action** [Agent: Codex]: Ran `python3 test_scenario.py --static-only`.
+- **Outcome**: Static scenario suite passed; controlled planner now includes 41 passing checks including the new `job=technician` cases.
+
+### [2026-04-27 21:01:45] [Agent: Codex] User Request: Implement categorical value filter resolver using TableContext `top_values`
+- **Action** [Agent: Codex]: Starting implementation of the approved plan: parse stored categorical top values such as `technician` into equality filters such as `job = 'technician'`.
+- **Planned Artifact Update**: Update `utils/chatbot_plan.py` and `test_scenario.py --static-only` coverage while preserving existing controlled planner behavior.
+- **Artifact Update**: Added a TableContext `top_values` based categorical equality resolver to `utils/chatbot_plan.py` and debug output under `resolution_debug.categorical_value_filters`.
+- **Artifact Update**: Added static regression coverage for `job=technician -> housing`, generated SQL, reload readiness, missing top-value behavior, and ambiguous value behavior.
+- **Action** [Agent: Codex]: Ran `PYTHONPYCACHEPREFIX=/tmp/teleai_pycache python3 -m py_compile utils/chatbot_plan.py test_scenario.py`.
+- **Action** [Agent: Codex]: Ran `python3 test_scenario.py --static-only`.
+- **Outcome**: The exact prompt now plans `filters={'job': 'technician'}` and SQL `WHERE job = 'technician'`; static regression checks pass.
+
+### [2026-04-27 20:49:55] [Agent: Codex] User Request: Explain why “job column이 technician 인 사람들의 housing 여부를 시각화 해줘” ignored the `job=technician` condition without modifying code
+- **Action** [Agent: Codex]: Started code-path inspection for controlled visualization planning, filter extraction, and dataframe readiness reuse.
+- **Decision**: No code changes requested; limit work to diagnosis and verification guidance.
+- **Action** [Agent: Codex]: Inspected `utils/chatbot_plan.py`, `utils/data_context.py`, and `core/chat_flow.py`; reproduced the plan for the exact prompt against the trained bank table context.
+- **Outcome**: Root cause is in controlled plan construction: `job` is detected only as a column mention, while `technician` is not parsed as a categorical equality filter, so the plan contains `filters={}` and only requires `housing`.
+
+### [2026-04-27 20:52:10] [Agent: Codex] User Request: Confirm why the system did not check `Controlled JSON Plan.filters == {}` as evidence that the condition was omitted
+- **Action** [Agent: Codex]: Inspecting whether controlled flow has a post-plan validation step that compares user-mentioned filter-like columns/values against `filters` and `filter_conditions`.
+- **Decision**: No code changes requested; limit work to verification.
+- **Outcome**: Confirmed there is no post-plan semantic completeness check. The flow logs `Controlled JSON Plan`, derives requirements from the plan, and validates dataframe columns/visualization target only; it does not compare mentioned columns/values such as `job`/`technician` against planned filters.
+
+### [2026-04-27 20:53:43] [Agent: Codex] User Request: Discuss whether `%table training` should train categorical column values
+- **Action** [Agent: Codex]: Reviewing current TableContext categorical profiling behavior before recommending a design direction.
+- **Decision**: No code changes requested; provide design analysis only.
+- **Outcome**: Current training already stores capped categorical `top_values` for columns with `distinct_count <= 500`, limited to top 5 values per column. The gap is not collection for `job=technician`; the trained value exists, but controlled planning does not use `top_values` to parse categorical equality filters.
+
 ### [2026-04-26 22:47:19] [Agent: Codex] User Request: Update chatbot skill to require data/code separation and loadable external data context
 - **Action** [Agent: Codex]: Reviewing the chatbot project skill and project logger skill before updating the skill guidance.
 - **Planned Artifact Update**: Add explicit chatbot-skill rules that data-related knowledge, profiles, schemas, aliases, prompts, examples, and runtime datasets must be stored separately from code and loaded on demand through managed context files.

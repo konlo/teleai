@@ -19,10 +19,12 @@ from utils.chat_turn import resolve_chat_turn_query, should_process_chat_turn
 from utils.chatbot_plan import (
     build_controlled_plan,
     build_sql_from_plan,
+    controlled_plan_to_dict,
     required_columns_for_plan,
     select_visualization_config,
 )
 from utils.conversation_figures import attach_figures_to_log
+from utils.controlled_visualization import plot_controlled_visualization
 from utils.data_context import (
     DataFrameState,
     DataReadinessDecision,
@@ -116,7 +118,14 @@ def _bank_table_context() -> TableContext:
         row_count=750000,
         column_profiles={
             "age": {"null_count": 0, "distinct_count": 70, "min_value": 18, "max_value": 95},
-            "job": {"null_count": 0, "distinct_count": 12, "top_values": []},
+            "job": {
+                "null_count": 0,
+                "distinct_count": 12,
+                "top_values": [
+                    {"value": "management", "count": 100},
+                    {"value": "technician", "count": 80},
+                ],
+            },
             "education": {"null_count": 0, "distinct_count": 4, "top_values": [{"value": "secondary", "count": 100}]},
             "balance": {"null_count": 0, "distinct_count": 5000, "min_value": -8019, "max_value": 102127},
             "housing": {"null_count": 0, "distinct_count": 2, "top_values": [{"value": "yes", "count": 100}]},
@@ -283,6 +292,7 @@ def run_static_tests():
     failed += run_agent_output_tests()
     failed += run_eda_validation_tests()
     failed += run_controlled_plan_tests()
+    failed += run_prompt_input_controlled_flow_tests()
     failed += run_data_context_tests()
     failed += run_figure_attachment_tests()
     failed += run_explicit_sql_routing_tests()
@@ -290,6 +300,287 @@ def run_static_tests():
     failed += run_sql_prompt_tests()
     failed += run_table_context_tests()
     failed += run_runtime_trace_tests()
+    return failed
+
+
+def run_prompt_input_controlled_flow_tests():
+    print("🧪 Prompt input controlled flow 시나리오 테스트 실행...\n")
+
+    os.environ.setdefault("XDG_CACHE_HOME", "/tmp/teleai_xdg_cache")
+    os.environ.setdefault("MPLCONFIGDIR", "/tmp/teleai_mplconfig")
+    os.environ.setdefault("MPLBACKEND", "Agg")
+
+    import matplotlib.pyplot as plt
+    import pandas as pd
+    import tempfile
+
+    prompt = "job column이 technician 인 사람들의 housing 여부를 시각화 해줘"
+    with tempfile.TemporaryDirectory() as temp_dir:
+        save_table_context(_bank_table_context(), storage_dir=temp_dir)
+        active_context = load_table_context_for_selection(
+            "workspace.default.bank_loan",
+            storage_dir=temp_dir,
+        )
+        current_state = DataFrameState(
+            role="query_result",
+            source_table="workspace.default.bank_loan",
+            query="SELECT housing FROM workspace.default.bank_loan LIMIT 2000",
+            columns=("housing",),
+            row_count=2000,
+            created_by="prompt_input_test",
+        )
+
+        start_turn_trace(
+            conversation_id="prompt-input",
+            turn_id=1,
+            run_id="run-prompt",
+            user_message=prompt,
+            selected_table="workspace.default.bank_loan",
+            storage_dir=temp_dir,
+        )
+        plan = build_controlled_plan(
+            prompt,
+            default_table="workspace.default.bank_loan",
+            table_context=active_context,
+        )
+        record_trace_event(
+            "controlled_plan",
+            generated=plan is not None,
+            plan=controlled_plan_to_dict(plan) if plan else {},
+            table_context_source=active_context.source,
+            training_status=active_context.training_status,
+            resolved_from_training=plan is not None,
+            **(getattr(plan, "resolution_debug", {}) if plan else {}),
+        )
+        requirement = requirement_from_controlled_plan(plan) if plan else DataRequirement()
+        readiness = evaluate_data_readiness(current_state, requirement)
+        record_trace_event(
+            "data_readiness",
+            decision=readiness.decision,
+            reason=readiness.reason,
+            required_columns=list(requirement.columns),
+            missing_columns=list(readiness.missing_columns),
+            df_A_state=current_state,
+        )
+        reload_sql = ""
+        if plan and readiness.decision == DataReadinessDecision.RELOAD_REQUIRED:
+            reload_sql = build_sql_from_plan(plan)
+            record_trace_event(
+                "controlled_reload_sql",
+                sql=reload_sql,
+                source_table="workspace.default.bank_loan",
+            )
+        result_df = pd.DataFrame({"housing": ["yes", "no"], "stat_count": [120, 80]})
+        plt.close("all")
+        config = select_visualization_config(plan, result_df) if plan else None
+        summary = plot_controlled_visualization(result_df, config) if config else ""
+        figure_count = len(plt.get_fignums())
+        record_trace_event(
+            "visualization_config",
+            config=config,
+        )
+        record_trace_event(
+            "controlled_result",
+            status="success" if figure_count > 0 else "fail",
+            summary=summary,
+            figure_count=figure_count,
+        )
+        plt.close("all")
+        finish_turn_trace(final_status="completed")
+        latest_trace = read_latest_trace(storage_dir=temp_dir) or {}
+        events = latest_trace.get("events", [])
+        controlled_event = next(
+            (event for event in events if event.get("event_type") == "controlled_plan"),
+            {},
+        )
+        readiness_event = next(
+            (event for event in events if event.get("event_type") == "data_readiness"),
+            {},
+        )
+        reload_event = next(
+            (event for event in events if event.get("event_type") == "controlled_reload_sql"),
+            {},
+        )
+        result_event = next(
+            (event for event in events if event.get("event_type") == "controlled_result"),
+            {},
+        )
+
+    prompt_visual_scenarios = [
+        {
+            "name": "balance histogram",
+            "prompt": "20대에서 30대 사이의 대출을 가지고 있는 사람들의 balance에 대해서 시각화해줘",
+            "context": _bank_table_context(),
+            "table": "workspace.default.bank_loan",
+            "df": pd.DataFrame({"balance": range(101), "age": [20 + (idx % 11) for idx in range(101)], "loan": ["yes"] * 101}),
+            "expected": ("balance", {"age": [20, 30], "loan": "yes"}, "histogram"),
+        },
+        {
+            "name": "housing yes loan bar",
+            "prompt": "housing이 yes 인사람들의 loan 분포를 그려줘",
+            "context": _bank_table_context(),
+            "table": "workspace.default.bank_loan",
+            "df": pd.DataFrame({"loan": ["yes", "no"], "stat_count": [30, 70]}),
+            "expected": ("loan", {"housing": "yes"}, "bar"),
+        },
+        {
+            "name": "duration job bar",
+            "prompt": "duration이 500 넘는 사람들의 직업군이 어떻게 되는지 시각화 해줘",
+            "context": _bank_table_context(),
+            "table": "workspace.default.bank_loan",
+            "df": pd.DataFrame({"job": ["management", "technician"], "stat_count": [20, 10]}),
+            "expected": ("job", {}, "bar"),
+        },
+        {
+            "name": "education bar",
+            "prompt": "전체 education의 분포를 보고 싶어",
+            "context": _bank_table_context(),
+            "table": "workspace.default.bank_loan",
+            "df": pd.DataFrame({"education": ["secondary", "primary", "tertiary"]}),
+            "expected": ("education", {}, "bar"),
+        },
+        {
+            "name": "top balance job bar",
+            "prompt": "balance 가 가장 높은 상위 10%의 사람들의 직업이 어떻게 되는지 분포를 그려줘",
+            "context": _bank_table_context(),
+            "table": "workspace.default.bank_loan",
+            "df": pd.DataFrame({"job": ["management", "technician"], "stat_count": [20, 10]}),
+            "expected": ("job", {}, "bar"),
+        },
+        {
+            "name": "titanic grouped bar",
+            "prompt": "survived 값이 1인사람들과 0인 사람들의 Sex(성별) 분포를 각각 시각화 해줘.",
+            "context": _titanic_table_context(),
+            "table": "workspace.default.titanic",
+            "df": pd.DataFrame(
+                {
+                    "Survived": [1, 1, 0, 0],
+                    "Sex": ["female", "male", "male", "female"],
+                    "stat_count": [200, 100, 400, 100],
+                }
+            ),
+            "expected": ("Sex", {}, "grouped_bar"),
+        },
+        {
+            "name": "titanic survived bar",
+            "prompt": "Survived 분포를 그려줘",
+            "context": _titanic_table_context(),
+            "table": "workspace.default.titanic",
+            "df": pd.DataFrame({"Survived": [0, 1, 0, 1]}),
+            "expected": ("Survived", {}, "boxplot"),
+        },
+        {
+            "name": "titanic sex parenthetical bar",
+            "prompt": "Sex(성별) 분포를 보고 싶어",
+            "context": _titanic_table_context(),
+            "table": "workspace.default.titanic",
+            "df": pd.DataFrame({"Sex": ["male", "female", "male"]}),
+            "expected": ("Sex", {}, "bar"),
+        },
+    ]
+    prompt_visual_results = []
+    for scenario in prompt_visual_scenarios:
+        scenario_plan = build_controlled_plan(
+            scenario["prompt"],
+            default_table=scenario["table"],
+            table_context=scenario["context"],
+        )
+        scenario_config = select_visualization_config(scenario_plan, scenario["df"]) if scenario_plan else None
+        plt.close("all")
+        scenario_summary = plot_controlled_visualization(scenario["df"], scenario_config) if scenario_config else ""
+        scenario_figure_count = len(plt.get_fignums())
+        plt.close("all")
+        prompt_visual_results.append(
+            (
+                scenario["name"],
+                scenario_plan.target_column if scenario_plan else "",
+                scenario_plan.filters if scenario_plan else {},
+                scenario_config.plot_type if scenario_config else "",
+                scenario_figure_count > 0,
+                bool(scenario_summary),
+                scenario["expected"],
+            )
+        )
+
+    test_cases = [
+        {
+            "description": "실제 사용자 prompt 문자열이 저장된 trained TableContext를 거쳐 controlled plan을 만든다",
+            "actual": (
+                latest_trace.get("summary", {}).get("user_message"),
+                latest_trace.get("summary", {}).get("controlled_plan_generated"),
+                latest_trace.get("summary", {}).get("controlled_target_column"),
+                controlled_event.get("training_status"),
+            ),
+            "expected": (prompt, True, "housing", "trained"),
+        },
+        {
+            "description": "prompt 입력 경로의 Controlled JSON Plan에 job=technician filter가 포함된다",
+            "actual": (
+                plan.target_column if plan else "",
+                plan.filters if plan else {},
+                controlled_event.get("categorical_value_filters", [{}])[0].get("accepted")
+                if controlled_event.get("categorical_value_filters")
+                else False,
+            ),
+            "expected": ("housing", {"job": "technician"}, True),
+        },
+        {
+            "description": "prompt 입력 경로의 readiness는 housing-only df_A를 충분하다고 보지 않는다",
+            "actual": (
+                readiness_event.get("decision"),
+                readiness_event.get("missing_columns"),
+                list(requirement.columns),
+            ),
+            "expected": (
+                DataReadinessDecision.RELOAD_REQUIRED,
+                ["job"],
+                ["housing", "job"],
+            ),
+        },
+        {
+            "description": "prompt 입력 경로에서 reload SQL은 job=technician 조건을 포함한다",
+            "actual": (
+                reload_event.get("sql", "").startswith(
+                    "SELECT housing, COUNT(*) AS stat_count FROM workspace.default.bank_loan"
+                ),
+                "WHERE job = 'technician'" in reload_event.get("sql", ""),
+                "GROUP BY housing" in reload_event.get("sql", ""),
+            ),
+            "expected": (True, True, True),
+        },
+        {
+            "description": "prompt 입력 경로에서 실제 controlled visualization 실행 결과 figure가 생성된다",
+            "actual": (
+                result_event.get("status"),
+                result_event.get("figure_count", 0) > 0,
+                "plot_type=bar" in result_event.get("summary", ""),
+            ),
+            "expected": ("success", True, True),
+        },
+    ]
+    for name, target, filters, plot_type, has_figure, has_summary, expected in prompt_visual_results:
+        expected_target, expected_filters, expected_plot_type = expected
+        test_cases.append(
+            {
+                "description": f"실제 prompt 시각화 실행 결과를 검증한다: {name}",
+                "actual": (target, filters, plot_type, has_figure, has_summary),
+                "expected": (expected_target, expected_filters, expected_plot_type, True, True),
+            }
+        )
+
+    passed = 0
+    failed = 0
+    for idx, tc in enumerate(test_cases, 1):
+        print(f"[prompt-input-{idx}] {tc['description']}")
+        if tc["actual"] == tc["expected"]:
+            print("   ✅ PASS\n")
+            passed += 1
+        else:
+            print(f"   ❌ FAIL (Expected: {tc['expected']}, Got: {tc['actual']})\n")
+            failed += 1
+
+    print("-" * 50)
+    print(f"🎯 Prompt input controlled flow 테스트 결과: {passed} 통과, {failed} 실패\n")
     return failed
 
 
@@ -515,6 +806,77 @@ def run_controlled_plan_tests():
         )
         if housing_loan_plan
         else None
+    )
+    technician_housing_prompt = "job column이 technician 인 사람들의 housing 여부를 시각화 해줘"
+    technician_housing_plan = build_controlled_plan(
+        technician_housing_prompt,
+        default_table="workspace.default.bank_loan",
+        table_context=bank_context,
+    )
+    technician_housing_sql = build_sql_from_plan(technician_housing_plan) if technician_housing_plan else ""
+    technician_housing_requirement = (
+        requirement_from_controlled_plan(technician_housing_plan)
+        if technician_housing_plan
+        else DataRequirement()
+    )
+    housing_only_state = DataFrameState(
+        role="query_result",
+        source_table="workspace.default.bank_loan",
+        query="SELECT housing FROM workspace.default.bank_loan LIMIT 2000",
+        columns=("housing",),
+        row_count=2000,
+        created_by="test",
+    )
+    technician_housing_readiness = evaluate_data_readiness(
+        housing_only_state,
+        technician_housing_requirement,
+    )
+    job_without_technician_context = build_trained_context(
+        _bank_schema_context(),
+        row_count=750000,
+        column_profiles={
+            "job": {
+                "null_count": 0,
+                "distinct_count": 12,
+                "top_values": [{"value": "management", "count": 100}],
+            },
+            "housing": {
+                "null_count": 0,
+                "distinct_count": 2,
+                "top_values": [{"value": "yes", "count": 100}],
+            },
+        },
+    )
+    missing_top_value_plan = build_controlled_plan(
+        technician_housing_prompt,
+        default_table="workspace.default.bank_loan",
+        table_context=job_without_technician_context,
+    )
+    shared_value_context = build_trained_context(
+        _bank_schema_context(),
+        row_count=750000,
+        column_profiles={
+            "job": {
+                "null_count": 0,
+                "distinct_count": 12,
+                "top_values": [{"value": "technician", "count": 80}],
+            },
+            "education": {
+                "null_count": 0,
+                "distinct_count": 4,
+                "top_values": [{"value": "technician", "count": 5}],
+            },
+            "housing": {
+                "null_count": 0,
+                "distinct_count": 2,
+                "top_values": [{"value": "yes", "count": 100}],
+            },
+        },
+    )
+    ambiguous_value_plan = build_controlled_plan(
+        "technician 인 사람들의 housing 여부를 시각화 해줘",
+        default_table="workspace.default.bank_loan",
+        table_context=shared_value_context,
     )
     education_prompt = "전체 education의 분포를 보고 싶어"
     education_plan = build_controlled_plan(
@@ -760,6 +1122,45 @@ def run_controlled_plan_tests():
             "description": "housing=yes loan 분포는 categorical bar config를 선택한다",
             "actual": housing_loan_config.plot_type if housing_loan_config else "",
             "expected": "bar",
+        },
+        {
+            "description": "TableContext top_values의 categorical 값은 명시된 컬럼 equality filter로 변환된다",
+            "actual": (
+                technician_housing_plan.target_column if technician_housing_plan else "",
+                technician_housing_plan.filters if technician_housing_plan else {},
+            ),
+            "expected": ("housing", {"job": "technician"}),
+        },
+        {
+            "description": "categorical value filter SQL은 target categorical count 집계와 WHERE 조건을 생성한다",
+            "actual": (
+                technician_housing_sql.startswith(
+                    "SELECT housing, COUNT(*) AS stat_count FROM workspace.default.bank_loan"
+                ),
+                "WHERE job = 'technician'" in technician_housing_sql,
+                "GROUP BY housing" in technician_housing_sql,
+            ),
+            "expected": (True, True, True),
+        },
+        {
+            "description": "categorical value filter requirement는 target과 filter 컬럼을 모두 요구한다",
+            "actual": list(technician_housing_requirement.columns),
+            "expected": ["housing", "job"],
+        },
+        {
+            "description": "현재 df_A가 housing만 갖고 있으면 job=technician 요청은 reload가 필요하다",
+            "actual": technician_housing_readiness.decision,
+            "expected": DataReadinessDecision.RELOAD_REQUIRED,
+        },
+        {
+            "description": "top_values에 없는 categorical 값은 추측해서 filter로 만들지 않는다",
+            "actual": missing_top_value_plan.filters if missing_top_value_plan else {},
+            "expected": {},
+        },
+        {
+            "description": "동일 categorical 값이 여러 컬럼에 있어도 컬럼 언급이 없으면 filter로 만들지 않는다",
+            "actual": ambiguous_value_plan.filters if ambiguous_value_plan else {},
+            "expected": {},
         },
         {
             "description": "전체 education 분포 prompt는 LLM chain 대신 controlled plan으로 변환된다",
