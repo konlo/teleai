@@ -28,6 +28,75 @@
 
 ## Log Entries
 
+### [2026-04-27 22:48:15] [Agent: Codex] User Request: Implement direct matplotlib payload capture for controlled visualization and add prompt-level test coverage
+- **Action** [Agent: Codex]: Updating controlled visualization so chart attachment does not depend on a pre-existing EDA `pytool_obj` when `df_A` is loaded during the same prompt turn.
+- **Planned Artifact Update**: Add a direct matplotlib-to-chat-payload helper, wire it into controlled executor, and add a prompt-input scenario that starts with no current dataframe but still produces a chart payload.
+- **Artifact Update**: Added `collect_matplotlib_figure_payloads()` to convert open matplotlib figures directly into chat-log image payloads.
+- **Artifact Update**: Updated controlled executor to close stale figures, create the controlled plot, collect payloads directly, and only fall back to `render_visualizations(pytool_obj)` if direct capture returns no figures.
+- **Artifact Update**: Added a prompt-input regression for `전체 marital 분포를 시각화 해줘` where no current `df_A` exists, reload is required, and the controlled chart is attached as a `matplotlib` image payload.
+- **Action** [Agent: Codex]: Ran `PYTHONPYCACHEPREFIX=/tmp/teleai_pycache python3 -m py_compile utils/controlled_visualization.py core/chat_flow.py test_scenario.py`.
+- **Action** [Agent: Codex]: Ran `python3 test_scenario.py --static-only`.
+- **Outcome**: Static scenario suite passes; prompt-input controlled flow now has 14 passing checks including direct chart payload attachment without `pytool_obj`.
+
+### [2026-04-27 22:44:47] [Agent: Codex] User Request: Recheck why `전체 marital 분포를 시각화 해줘` reports controlled execution but no visualization appears
+- **Action** [Agent: Codex]: Inspecting controlled plotting, figure attachment, and chat log rendering paths because the latest Thinking Log shows training, planning, reload, and visualization config all completed.
+- **Decision**: No code changes requested yet; first determine whether the plot is not being generated, not being attached to the chat run, or not being rendered in the UI.
+- **Finding**: The controlled path creates the matplotlib plot, but only calls `render_visualizations(pytool_obj)` when `pytool_obj` exists. In this turn `df_a_ready=false` at page start, so `pages/Telly.py` never builds `pytool_obj`; after controlled SQL reload creates `df_A`, the same turn still has `pytool_obj=None`.
+- **Finding**: The latest trace confirms this: `controlled_result.figure_count=0`, while final `summary.figure_count=1` comes from the SQL preview dataframe payload, not from the matplotlib chart.
+- **Outcome**: The missing chart is caused by controlled visualization depending on pre-existing EDA `pytool_obj`; when `df_A` is loaded during the same controlled turn, the plot is generated but not converted into an attached image payload.
+
+
+### [2026-04-27 22:40:03] [Agent: Codex] User Request: Investigate why controlled visualization says `%table training` information is missing despite prior training
+- **Action** [Agent: Codex]: Checking persisted TableContext files, manifest entries, selected-table context loading logic, and recent sample-preview changes.
+- **Decision**: No code changes requested yet; diagnose whether training files are missing or not being loaded into active session state.
+- **Finding**: Training files still exist under `.telly_table_context/`; `manifest.json` includes `workspace.default.bank_loan`, `workspace.default.titanic`, `workspace.default.ncr_ride`, and `workspace.default.stormtrooper` with `training_status="trained"`.
+- **Finding**: The latest runtime trace for `전체 marital 분포를 시각화 해줘` shows `active_table_context` serialized as trained for `workspace.default.bank_loan`, but the controlled-plan event recorded `training_status="none"` and refused execution.
+- **Finding**: This mismatch is consistent with the Streamlit session holding an older/stale dataclass instance after code reload: runtime tracing can serialize it with `dataclasses.asdict()`, while `coerce_table_context()` only accepts the current `TableContext` class or a mapping, so it can treat the stale object as missing.
+- **Outcome**: Prior `%table training` data did not disappear; the immediate failure is likely session/context coercion or active-context loading, not deleted training artifacts.
+
+### [2026-04-27 22:37:21] [Agent: Codex] User Request: Align the two preview buttons to the left with only about 3px between them
+- **Action** [Agent: Codex]: Updating the preview popover layout to use a compact left-aligned button row.
+- **Artifact Update**: Updated `ui/data_preview.py` to render `Sample Data` and `Preview Data` in a compact left-aligned row using narrow columns and 3px CSS gap.
+- **Artifact Update**: Updated Table Sample UI source tests to assert compact columns, 3px gap styling, and sample-first order.
+- **Action** [Agent: Codex]: Ran `PYTHONPYCACHEPREFIX=/tmp/teleai_pycache python3 -m py_compile ui/data_preview.py test_scenario.py`.
+- **Action** [Agent: Codex]: Ran `python3 test_scenario.py --static-only`.
+- **Outcome**: Table Sample tests pass with 7 checks and full static suite exits successfully.
+
+### [2026-04-27 22:35:08] [Agent: Codex] User Request: Show Sample Data and Preview Data buttons on one row, in sample-first order
+- **Action** [Agent: Codex]: Updating preview popover layout so Table Sample and Data Preview controls are rendered side-by-side with sample first.
+- **Artifact Update**: Wrapped preview controls in `st.columns(2)` and ordered them as `Table Sample` then `Data Preview`.
+- **Artifact Update**: Updated Table Sample UI source test to assert one-row column layout and sample-first popover order.
+- **Action** [Agent: Codex]: Ran `PYTHONPYCACHEPREFIX=/tmp/teleai_pycache python3 -m py_compile ui/data_preview.py test_scenario.py`.
+- **Action** [Agent: Codex]: Ran `python3 test_scenario.py --static-only`.
+- **Outcome**: Table Sample tests pass with 7 checks and full static suite exits successfully.
+
+### [2026-04-27 22:31:29] [Agent: Codex] User Request: Keep the Data Preview button visible after adding separate Table Sample
+- **Action** [Agent: Codex]: Fixing the preview UI so `Data Preview` remains available even when `df_A_data` is not currently loaded, while `Table Sample` remains separate.
+- **Artifact Update**: Updated `ui/data_preview.py` so `Data Preview` popover always renders; when `df_A` is unavailable it shows an informational message inside the popover.
+- **Artifact Update**: Strengthened the Table Sample UI source test to assert the `Data Preview` popover remains present.
+- **Action** [Agent: Codex]: Ran `PYTHONPYCACHEPREFIX=/tmp/teleai_pycache python3 -m py_compile ui/data_preview.py test_scenario.py`.
+- **Action** [Agent: Codex]: Ran `python3 test_scenario.py --static-only`.
+- **Outcome**: Table Sample tests pass with 7 checks and full static suite exits successfully.
+
+### [2026-04-27 22:22:05] [Agent: Codex] User Request: Add a test scenario proving sample data updates whenever the sidebar table selection changes
+- **Action** [Agent: Codex]: Adding a Table Sample regression scenario that simulates changing the selected table and verifies `df_table_sample` refreshes without mutating `df_A_data`.
+- **Artifact Update**: Extended `run_table_sample_tests()` with a two-table sample loader fixture for `workspace.default.bank_loan` and `workspace.default.titanic`.
+- **Action** [Agent: Codex]: Added an assertion that switching selected tables replaces `df_table_sample`, updates `df_table_sample_table`, and leaves `df_A_data`/`df_A_state` unchanged.
+- **Action** [Agent: Codex]: Ran `PYTHONPYCACHEPREFIX=/tmp/teleai_pycache python3 -m py_compile test_scenario.py`.
+- **Action** [Agent: Codex]: Ran `python3 test_scenario.py --static-only`.
+- **Outcome**: Table Sample tests now pass with 7 checks, including the sidebar table-selection refresh scenario; full static suite exits successfully.
+
+### [2026-04-27 22:17:39] [Agent: Codex] User Request: Implement separate `df_table_sample` preview storage and UI
+- **Action** [Agent: Codex]: Starting implementation of the approved Table Sample Preview separation plan.
+- **Planned Artifact Update**: Add sample session state, sample loader, sidebar sample loading, separate Table Sample UI, and static regression tests without changing `df_A_data` semantics.
+- **Artifact Update**: Added `df_table_sample`, `df_table_sample_table`, and `df_table_sample_message` session defaults plus a `load_table_sample_from_databricks()` loader that does not mutate `df_A_data`.
+- **Artifact Update**: Updated sidebar selection to load table samples into `df_table_sample` and use that sample for TableContext preview/schema loading.
+- **Artifact Update**: Updated Data Preview UI to keep `Data Preview` for current working `df_A` and add a separate `Table Sample` popover for selected-table sample rows.
+- **Artifact Update**: Added `run_table_sample_tests()` static coverage for sample defaults, loader isolation, reload decisions, TableContext preview use, and UI source separation.
+- **Action** [Agent: Codex]: Ran `PYTHONPYCACHEPREFIX=/tmp/teleai_pycache python3 -m py_compile utils/session.py ui/sidebar.py ui/data_preview.py test_scenario.py`.
+- **Action** [Agent: Codex]: Ran `python3 test_scenario.py --static-only`.
+- **Outcome**: Table Sample tests pass with 6 checks; full static suite exits successfully and existing prompt-input controlled visualization tests still pass.
+
 ### [2026-04-27 22:11:33] [Agent: Codex] User Request: Explain what data is shown in the Data Preview UI
 - **Action** [Agent: Codex]: Inspecting the Streamlit preview rendering and dataframe/session loading paths.
 - **Decision**: No code changes requested; provide explanation only.

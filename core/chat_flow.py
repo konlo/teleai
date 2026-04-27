@@ -24,7 +24,10 @@ from utils.chatbot_plan import (
     controlled_plan_to_dict,
     select_visualization_config,
 )
-from utils.controlled_visualization import plot_controlled_visualization
+from utils.controlled_visualization import (
+    collect_matplotlib_figure_payloads,
+    plot_controlled_visualization,
+)
 from utils.data_context import (
     DataReadinessDecision,
     evaluate_data_readiness,
@@ -502,11 +505,12 @@ def _try_run_controlled_production_flow(
         config = select_visualization_config(plan, df)
         record_trace_event("visualization_config", config=config)
         _think("EDA", f"Controlled Viz Config: {json.dumps(config.__dict__, ensure_ascii=False)}")
-        summary = _plot_controlled_visualization(df, config)
-        figure_payloads = []
-        if pytool_obj is not None and hasattr(pytool_obj, "globals"):
-            import matplotlib.pyplot as plt
+        import matplotlib.pyplot as plt
 
+        plt.close("all")
+        summary = _plot_controlled_visualization(df, config)
+        figure_payloads = collect_matplotlib_figure_payloads()
+        if not figure_payloads and pytool_obj is not None and hasattr(pytool_obj, "globals"):
             pytool_obj.globals["df_A"] = df
             pytool_obj.globals["df"] = df
             pytool_obj.globals["plt"] = plt

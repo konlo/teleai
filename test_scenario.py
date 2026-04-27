@@ -1,9 +1,13 @@
 import json
 import os
 import sys
+import tempfile
+import types
 
 # 프로젝트 루트를 경로에 추가
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+
+import pandas as pd
 
 from utils.agent_output import (
     detect_agent_parser_loop,
@@ -24,7 +28,10 @@ from utils.chatbot_plan import (
     select_visualization_config,
 )
 from utils.conversation_figures import attach_figures_to_log
-from utils.controlled_visualization import plot_controlled_visualization
+from utils.controlled_visualization import (
+    collect_matplotlib_figure_payloads,
+    plot_controlled_visualization,
+)
 from utils.data_context import (
     DataFrameState,
     DataReadinessDecision,
@@ -299,6 +306,7 @@ def run_static_tests():
     failed += run_external_llm_config_tests()
     failed += run_sql_prompt_tests()
     failed += run_table_context_tests()
+    failed += run_table_sample_tests()
     failed += run_runtime_trace_tests()
     return failed
 
@@ -405,6 +413,66 @@ def run_prompt_input_controlled_flow_tests():
             (event for event in events if event.get("event_type") == "controlled_result"),
             {},
         )
+
+        marital_prompt = "전체 marital 분포를 시각화 해줘"
+        start_turn_trace(
+            conversation_id="prompt-input-marital",
+            turn_id=2,
+            run_id="run-prompt-marital",
+            user_message=marital_prompt,
+            selected_table="workspace.default.bank_loan",
+            storage_dir=temp_dir,
+        )
+        marital_plan = build_controlled_plan(
+            marital_prompt,
+            default_table="workspace.default.bank_loan",
+            table_context=active_context,
+        )
+        marital_requirement = (
+            requirement_from_controlled_plan(marital_plan)
+            if marital_plan
+            else DataRequirement()
+        )
+        marital_readiness = evaluate_data_readiness(None, marital_requirement)
+        if marital_plan and marital_readiness.decision == DataReadinessDecision.RELOAD_REQUIRED:
+            record_trace_event(
+                "controlled_reload_sql",
+                sql=build_sql_from_plan(marital_plan),
+                source_table="workspace.default.bank_loan",
+            )
+        marital_result_df = pd.DataFrame(
+            {"marital": ["married", "single", "divorced"], "stat_count": [120, 60, 20]}
+        )
+        marital_config = select_visualization_config(marital_plan, marital_result_df) if marital_plan else None
+        plt.close("all")
+        marital_summary = (
+            plot_controlled_visualization(marital_result_df, marital_config)
+            if marital_config
+            else ""
+        )
+        marital_payloads = collect_matplotlib_figure_payloads()
+        marital_log = [
+            {
+                "run_id": "run-prompt-marital",
+                "role": "assistant",
+                "content": "controlled result",
+                "figures": [],
+                "figures_attached": False,
+            }
+        ]
+        marital_attached = attach_figures_to_log(
+            marital_log,
+            "run-prompt-marital",
+            marital_payloads,
+        )
+        record_trace_event(
+            "controlled_result",
+            status="success" if marital_payloads else "fail",
+            summary=marital_summary,
+            figure_count=len(marital_payloads),
+        )
+        finish_turn_trace(final_status="completed")
+        marital_attached_figures = marital_log[0].get("figures", [])
 
     prompt_visual_scenarios = [
         {
@@ -556,6 +624,25 @@ def run_prompt_input_controlled_flow_tests():
                 "plot_type=bar" in result_event.get("summary", ""),
             ),
             "expected": ("success", True, True),
+        },
+        {
+            "description": "df_A가 없는 실제 prompt 입력 흐름에서도 controlled chart image payload가 chat log에 붙는다",
+            "actual": (
+                marital_plan.target_column if marital_plan else "",
+                marital_readiness.decision,
+                len(marital_payloads),
+                marital_attached,
+                marital_attached_figures[0].get("kind") if marital_attached_figures else "",
+                bool(marital_attached_figures[0].get("image")) if marital_attached_figures else False,
+            ),
+            "expected": (
+                "marital",
+                DataReadinessDecision.RELOAD_REQUIRED,
+                1,
+                True,
+                "matplotlib",
+                True,
+            ),
         },
     ]
     for name, target, filters, plot_type, has_figure, has_summary, expected in prompt_visual_results:
@@ -2133,6 +2220,214 @@ def run_table_context_tests():
 
     print("-" * 50)
     print(f"🎯 TableContext 테스트 결과: {passed} 통과, {failed} 실패\n")
+    return failed
+
+
+def run_table_sample_tests():
+    print("🧪 Table Sample 분리 테스트 실행...\n")
+
+    if "streamlit" not in sys.modules:
+        sys.modules["streamlit"] = types.SimpleNamespace(session_state={})
+    if "dotenv" not in sys.modules:
+        sys.modules["dotenv"] = types.SimpleNamespace(load_dotenv=lambda: None)
+    import utils.session as session_utils
+
+    session_utils.ensure_session_state()
+    original_connector_available = session_utils.databricks_connector_available
+    original_load_table = session_utils.databricks_load_table
+    original_get_credentials = session_utils.get_databricks_credentials
+
+    original_df_a = pd.DataFrame({"current_result": [999]})
+    original_df_a_state = DataFrameState(
+        role="query_result",
+        source_table="workspace.default.bank_loan",
+        query="SELECT current_result FROM workspace.default.bank_loan LIMIT 1",
+        columns=("current_result",),
+        row_count=1,
+        created_by="test",
+    )
+    session_utils.st.session_state["df_A_data"] = original_df_a
+    session_utils.st.session_state["df_A_state"] = original_df_a_state
+    session_utils.st.session_state["df_A_name"] = "query_result"
+    session_utils.st.session_state["csv_path"] = "databricks://query_result"
+    session_utils.st.session_state["df_table_sample"] = None
+    session_utils.st.session_state["df_table_sample_table"] = ""
+    session_utils.st.session_state["df_table_sample_message"] = ""
+
+    sample_by_table = {
+        "workspace.default.bank_loan": pd.DataFrame(
+            {
+                "job": ["technician", "management", "services"],
+                "housing": ["yes", "no", "yes"],
+            }
+        ),
+        "workspace.default.titanic": pd.DataFrame(
+            {
+                "Survived": [1, 0, 1],
+                "Sex": ["female", "male", "female"],
+            }
+        ),
+    }
+    load_calls = []
+
+    def fake_load_table(table, creds, limit=None):
+        load_calls.append((table, limit))
+        return sample_by_table[table].head(limit or 10).copy()
+
+    try:
+        session_utils.databricks_connector_available = lambda: True
+        session_utils.get_databricks_credentials = lambda: types.SimpleNamespace(catalog="", schema="")
+        session_utils.databricks_load_table = fake_load_table
+
+        default_keys_present = all(
+            key in session_utils.st.session_state
+            for key in ("df_table_sample", "df_table_sample_table", "df_table_sample_message")
+        )
+        should_load_initial = session_utils.should_load_table_sample("workspace.default.bank_loan")
+        ok, message = session_utils.load_table_sample_from_databricks(
+            "workspace.default.bank_loan",
+            limit=10,
+        )
+        loaded_sample = session_utils.st.session_state.get("df_table_sample")
+        df_a_after = session_utils.st.session_state.get("df_A_data")
+        df_a_state_after = session_utils.st.session_state.get("df_A_state")
+        should_load_same_table = session_utils.should_load_table_sample("workspace.default.bank_loan")
+        should_load_other_table = session_utils.should_load_table_sample("workspace.default.titanic")
+        ok_changed, changed_message = session_utils.load_table_sample_from_databricks(
+            "workspace.default.titanic",
+            limit=10,
+        )
+        changed_sample = session_utils.st.session_state.get("df_table_sample")
+        changed_sample_table = session_utils.st.session_state.get("df_table_sample_table", "")
+        should_load_changed_same_table = session_utils.should_load_table_sample("workspace.default.titanic")
+        df_a_after_changed_sample = session_utils.st.session_state.get("df_A_data")
+        df_a_state_after_changed_sample = session_utils.st.session_state.get("df_A_state")
+
+        with tempfile.TemporaryDirectory() as temp_dir:
+            context = load_table_context_for_selection(
+                "workspace.default.bank_loan",
+                preview_df=loaded_sample,
+                storage_dir=temp_dir,
+            )
+
+        ui_source = open(
+            os.path.join(os.path.dirname(os.path.abspath(__file__)), "ui", "data_preview.py"),
+            encoding="utf-8",
+        ).read()
+    finally:
+        session_utils.databricks_connector_available = original_connector_available
+        session_utils.databricks_load_table = original_load_table
+        session_utils.get_databricks_credentials = original_get_credentials
+
+    test_cases = [
+        {
+            "description": "session defaults에는 Table Sample 전용 키가 존재한다",
+            "actual": default_keys_present,
+            "expected": True,
+        },
+        {
+            "description": "sample loader는 선택 테이블 10행 sample을 df_table_sample에만 저장한다",
+            "actual": (
+                should_load_initial,
+                ok,
+                load_calls[:1],
+                isinstance(loaded_sample, pd.DataFrame),
+                loaded_sample.equals(sample_by_table["workspace.default.bank_loan"])
+                if isinstance(loaded_sample, pd.DataFrame)
+                else False,
+                "workspace.default.bank_loan",
+                "sample rows loaded" in message,
+            ),
+            "expected": (
+                True,
+                True,
+                [("workspace.default.bank_loan", 10)],
+                True,
+                True,
+                "workspace.default.bank_loan",
+                True,
+            ),
+        },
+        {
+            "description": "sample loader는 현재 작업 데이터 df_A_data/df_A_state를 변경하지 않는다",
+            "actual": (
+                df_a_after.equals(original_df_a) if isinstance(df_a_after, pd.DataFrame) else False,
+                df_a_state_after == original_df_a_state,
+                df_a_after_changed_sample.equals(original_df_a)
+                if isinstance(df_a_after_changed_sample, pd.DataFrame)
+                else False,
+                df_a_state_after_changed_sample == original_df_a_state,
+                session_utils.st.session_state.get("df_A_name"),
+                session_utils.st.session_state.get("csv_path"),
+            ),
+            "expected": (True, True, True, True, "query_result", "databricks://query_result"),
+        },
+        {
+            "description": "같은 테이블은 sample reload가 불필요하고 다른 테이블은 reload가 필요하다",
+            "actual": (should_load_same_table, should_load_other_table),
+            "expected": (False, True),
+        },
+        {
+            "description": "sidebar table 선택이 바뀌면 df_table_sample도 새 테이블 sample로 교체된다",
+            "actual": (
+                ok_changed,
+                changed_sample_table,
+                changed_sample.equals(sample_by_table["workspace.default.titanic"])
+                if isinstance(changed_sample, pd.DataFrame)
+                else False,
+                load_calls,
+                should_load_changed_same_table,
+                "sample rows loaded" in changed_message,
+            ),
+            "expected": (
+                True,
+                "workspace.default.titanic",
+                True,
+                [("workspace.default.bank_loan", 10), ("workspace.default.titanic", 10)],
+                False,
+                True,
+            ),
+        },
+        {
+            "description": "TableContext schema-only 생성은 df_table_sample preview columns를 사용할 수 있다",
+            "actual": (
+                context.training_status,
+                [column.name for column in context.columns],
+            ),
+            "expected": ("schema_only", ["job", "housing"]),
+        },
+        {
+            "description": "UI 렌더링 코드는 Data Preview와 Table Sample 표시 대상을 분리한다",
+            "actual": (
+                "Current working df_A" in ui_source,
+                "Selected table sample" in ui_source,
+                "df_table_sample" in ui_source,
+                'with st.popover("📊 Preview Data")' in ui_source,
+                "sample_col, preview_col, _ = st.columns([1, 1, 12], gap=None)" in ui_source,
+                "gap: 3px !important" in ui_source,
+                'with st.popover("🔎 Sample Data")' in ui_source
+                and ui_source.index('with st.popover("🔎 Sample Data")')
+                < ui_source.index('with st.popover("📊 Preview Data")'),
+                "df_A.head(10)" in ui_source,
+                "table_sample.head(10)" in ui_source,
+            ),
+            "expected": (True, True, True, True, True, True, True, True, True),
+        },
+    ]
+
+    passed = 0
+    failed = 0
+    for idx, tc in enumerate(test_cases, 1):
+        print(f"[table-sample-{idx}] {tc['description']}")
+        if tc["actual"] == tc["expected"]:
+            print("   ✅ PASS\n")
+            passed += 1
+        else:
+            print(f"   ❌ FAIL (Expected: {tc['expected']}, Got: {tc['actual']})\n")
+            failed += 1
+
+    print("-" * 50)
+    print(f"🎯 Table Sample 테스트 결과: {passed} 통과, {failed} 실패\n")
     return failed
 
 

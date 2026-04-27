@@ -1,5 +1,9 @@
 from __future__ import annotations
 
+import base64
+import io
+from typing import Any, Dict, List
+
 import pandas as pd
 
 
@@ -130,4 +134,34 @@ def plot_controlled_visualization(df: pd.DataFrame, config) -> str:
     )
 
 
-__all__ = ["plot_controlled_visualization"]
+def collect_matplotlib_figure_payloads(*, close: bool = True) -> List[Dict[str, Any]]:
+    """Convert currently open matplotlib figures into chat-log image payloads."""
+
+    import matplotlib.pyplot as plt
+
+    payloads: List[Dict[str, Any]] = []
+    for fig_id in plt.get_fignums():
+        fig = plt.figure(fig_id)
+        buffer = io.BytesIO()
+        fig.savefig(buffer, format="png", bbox_inches="tight")
+        buffer.seek(0)
+        suptitle = getattr(fig, "_suptitle", None)
+        if suptitle is not None:
+            title_text = suptitle.get_text()
+        elif fig.axes:
+            title_text = fig.axes[0].get_title()
+        else:
+            title_text = "Matplotlib Figure"
+        payloads.append(
+            {
+                "kind": "matplotlib",
+                "title": title_text,
+                "image": base64.b64encode(buffer.read()).decode("utf-8"),
+            }
+        )
+    if close:
+        plt.close("all")
+    return payloads
+
+
+__all__ = ["collect_matplotlib_figure_payloads", "plot_controlled_visualization"]

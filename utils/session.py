@@ -164,6 +164,9 @@ def ensure_session_state() -> None:
         ("df_B_name", "No Data"),
         ("csv_b_path", ""),
         ("df_init_data", None),
+        ("df_table_sample", None),
+        ("df_table_sample_table", ""),
+        ("df_table_sample_message", ""),
         ("explanation_lang", "한국어"),
         ("df_A_initial", None),
         ("df_A_signature", ""),
@@ -653,6 +656,48 @@ def load_df_from_databricks(
     return True, f"Loaded Databricks table '{table}' into df_{target}."
 
 
+def should_load_table_sample(table: str) -> bool:
+    """Return whether the selected table sample should be loaded or refreshed."""
+    table_clean = (table or "").strip()
+    current_sample = st.session_state.get("df_table_sample")
+    sample_table = st.session_state.get("df_table_sample_table", "").strip()
+    return bool(table_clean) and (
+        table_clean != sample_table or not isinstance(current_sample, pd.DataFrame)
+    )
+
+
+def load_table_sample_from_databricks(table: str, limit: int = 10) -> Tuple[bool, str]:
+    """Load a small read-only sample for the selected table without touching df_A."""
+    ensure_session_state()
+    table_clean = (table or "").strip()
+    if not table_clean:
+        return False, "Table name must not be empty."
+    if not databricks_connector_available():
+        return False, "databricks-sql-connector is not installed."
+
+    try:
+        creds = get_databricks_credentials()
+        selected_catalog = st.session_state.get("databricks_selected_catalog", "")
+        selected_schema = st.session_state.get("databricks_selected_schema", "")
+        if selected_catalog:
+            creds.catalog = selected_catalog
+        if selected_schema:
+            creds.schema = selected_schema
+        else:
+            creds.schema = None
+        df = databricks_load_table(table_clean, creds, limit=max(1, int(limit or 10)))
+    except DatabricksConnectorError as exc:  # pragma: no cover
+        return False, str(exc)
+    except Exception as exc:  # pragma: no cover
+        return False, f"Failed to load Databricks table sample: {exc}"
+
+    st.session_state["df_table_sample"] = df
+    st.session_state["df_table_sample_table"] = table_clean
+    message = f"{table_clean} – {len(df)} sample rows loaded."
+    st.session_state["df_table_sample_message"] = message
+    return True, message
+
+
 def update_databricks_namespace_from_table(table: str) -> None:
     """Update selected catalog/schema based on a fully qualified table."""
     ensure_session_state()
@@ -798,6 +843,8 @@ __all__ = [
     "list_databricks_schemas_in_session",
     "list_databricks_tables_in_session",
     "load_df_from_databricks",
+    "load_table_sample_from_databricks",
+    "should_load_table_sample",
     "load_table_context_for_selected_table",
     "train_selected_table_context",
     "databricks_connector_available",
