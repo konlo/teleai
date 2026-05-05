@@ -18,6 +18,42 @@ def _escape(value: str) -> str:
     return value.replace("'", "''")
 
 
+# Maximum character length for free-text SQL literal columns.
+# Keeps INSERT statements within Databricks SQL parser limits and avoids
+# PARSE_SYNTAX_ERROR when error messages contain already-escaped quotes.
+_MAX_TEXT_LEN = 4000
+
+_TEXT_FIELDS = {
+    "user_message",
+    "assistant_message",
+    "sql_error_message",
+    "python_error_message",
+    "python_output_summary",
+}
+
+
+def _safe_text(value: str) -> str:
+    """Normalise, re-escape, and truncate a free-text value for SQL insertion.
+
+    Error messages forwarded from LangChain often contain Python repr-style
+    strings where single quotes have already been doubled (e.g. ''column'').
+    Calling _escape() on top of that produces quadruple quotes (''''  ) which
+    Databricks' SQL parser rejects with PARSE_SYNTAX_ERROR.
+
+    Strategy:
+    1. Collapse any run of two or more consecutive single-quotes to one.
+    2. Re-apply _escape() so the single remaining quote is safely doubled.
+    3. Truncate to _MAX_TEXT_LEN characters to stay within parser limits.
+    """
+    import re
+    normalised = re.sub(r"'{2,}", "'", value)
+    escaped = _escape(normalised)
+    if len(escaped) > _MAX_TEXT_LEN:
+        # Truncate and close the SQL string safely.
+        escaped = escaped[:_MAX_TEXT_LEN] + "...(truncated)"
+    return escaped
+
+
 def _literal(value: Any) -> str:
     """Best-effort conversion to a SQL literal."""
     if value is None:
@@ -140,6 +176,10 @@ def log_turn(payload: Dict[str, Any]) -> None:
             value, str
         ):
             literal = _literal(json.dumps(value, ensure_ascii=False))
+        elif key in _TEXT_FIELDS and isinstance(value, str):
+            # Use _safe_text to avoid PARSE_SYNTAX_ERROR caused by
+            # already-escaped quotes inside error/message strings.
+            literal = f"'{_safe_text(value)}'"
         else:
             literal = _literal(value)
         if literal is None:

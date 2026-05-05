@@ -37,11 +37,13 @@ load_dotenv()
 DEFAULT_DATA_DIR = os.environ.get("DATA_DIR", "/Users/najongseong/dataset")
 DFB_DEFAULT_NAME = "telemetry_raw.csv"
 SUPPORTED_EXTENSIONS = (".csv", ".parquet")
-DEFAULT_SQL_LIMIT_MIN = 1
-DEFAULT_SQL_LIMIT_MAX = 10_000_000
-_DEFAULT_SQL_LIMIT = 2000
+from utils.config import (
+    SQL_LIMIT_DEFAULT as _DEFAULT_SQL_LIMIT,
+    SQL_LIMIT_MAX as DEFAULT_SQL_LIMIT_MAX,
+    SQL_LIMIT_MIN as DEFAULT_SQL_LIMIT_MIN,
+    SQL_LIMIT_SESSION_KEY as SESSION_SQL_LIMIT_KEY,
+)
 _TABLE_TRAINING_TOP_VALUE_DISTINCT_LIMIT = 500
-SESSION_SQL_LIMIT_KEY = "sql_limit"
 TIME_COLUMN_CANDIDATES = [
     "datetime",
     "timestamp",
@@ -826,6 +828,7 @@ __all__ = [
     "SUPPORTED_EXTENSIONS",
     "DEFAULT_SQL_LIMIT_MIN",
     "DEFAULT_SQL_LIMIT_MAX",
+    "SESSION_SQL_LIMIT_KEY",
     "TIME_COLUMN_CANDIDATES",
     "get_default_sql_limit",
     "set_default_sql_limit",

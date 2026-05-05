@@ -130,7 +130,7 @@ def build_react_prompt(
         "```\n"
         "{{{{\n"
         '  "action": "python_repl_ast",\n'
-        '  "action_input": "import matplotlib.pyplot as plt\\nnumeric_cols = df_A.select_dtypes(include=\\"number\\").columns\\ncolumn = numeric_cols[0]\\nplt.figure(figsize=(10, 5))\\ndf_A[column].dropna().plot(kind=\\"hist\\", bins=30)\\nplt.title(f\\"{column} distribution\\")\\nplt.show()"\n'
+        '  "action_input": "import matplotlib.pyplot as plt\\nnumeric_cols = df_A.select_dtypes(include=\\"number\\").columns\\ncolumn = numeric_cols[0]\\nplt.figure(figsize=(10, 5))\\ndf_A[column].dropna().plot(kind=\\"hist\\", bins=30)\\nplt.title(f\\"{{column}} distribution\\")\\nplt.show()"\n'
         "}}}}\n"
         "```\n\n"
         "Provide only ONE action per $JSON_BLOB, as shown:\n\n"

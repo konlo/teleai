@@ -22,7 +22,9 @@ from utils.chatbot_plan import (
     build_controlled_plan,
     build_sql_from_plan,
     controlled_plan_to_dict,
+    explain_controlled_plan_failure,
     select_visualization_config,
+    validate_condition_coverage,
 )
 from utils.controlled_visualization import (
     collect_matplotlib_figure_payloads,
@@ -59,9 +61,8 @@ from utils.table_context import (
     table_context_hash,
     table_training_work_log_fields,
 )
+from utils.config import SQL_LIMIT_MAX as DEFAULT_SQL_LIMIT_MAX, SQL_LIMIT_MIN as DEFAULT_SQL_LIMIT_MIN
 from utils.session import (
-    DEFAULT_SQL_LIMIT_MAX,
-    DEFAULT_SQL_LIMIT_MIN,
     set_default_sql_limit,
     train_selected_table_context,
 )
@@ -360,6 +361,10 @@ def _try_run_controlled_production_flow(
         table_context=active_table_context,
     )
     if plan is None:
+        failure_debug = explain_controlled_plan_failure(
+            user_query,
+            table_context=active_table_context,
+        )
         record_trace_event(
             "controlled_plan",
             generated=False,
@@ -368,6 +373,7 @@ def _try_run_controlled_production_flow(
             training_status=training_status,
             context_hash=context_hash,
             resolved_from_training=False,
+            **failure_debug,
         )
         return False
 
@@ -392,6 +398,35 @@ def _try_run_controlled_production_flow(
             ),
         )
     current_state = st.session_state.get("df_A_state")
+    condition_coverage = validate_condition_coverage(
+        user_query,
+        plan,
+        active_table_context,
+    )
+    if not condition_coverage.get("ok", True):
+        unused_conditions = condition_coverage.get("unused_conditions", [])
+        hints = condition_coverage.get("missing_context_hints", [])
+        message = (
+            "다음 조건이 사용되지 않아 controlled visualization을 실행하지 않았습니다: "
+            f"{', '.join(unused_conditions)}"
+        )
+        if hints:
+            message += "\n\n필요한 context 정보:\n- " + "\n- ".join(hints)
+        record_trace_event(
+            "controlled_result",
+            status="blocked_unused_conditions",
+            condition_coverage=condition_coverage,
+            error=message,
+        )
+        _think("ERROR", message)
+        st.warning(message)
+        append_assistant_message(run_id, message, "Controlled Executor", turn_id=turn_id)
+        log_state["assistant_response_for_log"] = message
+        log_state["intent_for_log"] = "condition_coverage"
+        log_state["python_status_for_log"] = "fail"
+        log_state["python_error_for_log"] = message
+        return True
+
     requirement = requirement_from_controlled_plan(plan)
     readiness = evaluate_data_readiness(current_state, requirement)
     record_trace_event(

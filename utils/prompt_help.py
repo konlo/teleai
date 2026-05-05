@@ -1,8 +1,7 @@
 from typing import Dict, List
 
 
-DEFAULT_SQL_LIMIT_MIN = 1
-DEFAULT_SQL_LIMIT_MAX = 10_000_000
+from utils.config import SQL_LIMIT_MAX as DEFAULT_SQL_LIMIT_MAX, SQL_LIMIT_MIN as DEFAULT_SQL_LIMIT_MIN
 BASE_CHAT_PLACEHOLDER = "지원되는 명령을 확인하려면 `%help` 를 입력하세요."
 
 CHAT_COMMAND_SPECS: List[Dict[str, str]] = [

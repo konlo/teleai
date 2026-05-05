@@ -24,9 +24,12 @@ from utils.chatbot_plan import (
     build_controlled_plan,
     build_sql_from_plan,
     controlled_plan_to_dict,
+    explain_controlled_plan_failure,
     required_columns_for_plan,
     select_visualization_config,
+    validate_condition_coverage,
 )
+from utils.config import SQL_LIMIT_DEFAULT
 from utils.conversation_figures import attach_figures_to_log
 from utils.controlled_visualization import (
     collect_matplotlib_figure_payloads,
@@ -135,8 +138,16 @@ def _bank_table_context() -> TableContext:
             },
             "education": {"null_count": 0, "distinct_count": 4, "top_values": [{"value": "secondary", "count": 100}]},
             "balance": {"null_count": 0, "distinct_count": 5000, "min_value": -8019, "max_value": 102127},
-            "housing": {"null_count": 0, "distinct_count": 2, "top_values": [{"value": "yes", "count": 100}]},
-            "loan": {"null_count": 0, "distinct_count": 2, "top_values": [{"value": "no", "count": 100}]},
+            "housing": {
+                "null_count": 0,
+                "distinct_count": 2,
+                "top_values": [{"value": "yes", "count": 100}, {"value": "no", "count": 90}],
+            },
+            "loan": {
+                "null_count": 0,
+                "distinct_count": 2,
+                "top_values": [{"value": "no", "count": 100}, {"value": "yes", "count": 30}],
+            },
             "duration": {"null_count": 0, "distinct_count": 1500, "min_value": 0, "max_value": 4918},
         },
     )
@@ -147,6 +158,24 @@ def _bank_table_context() -> TableContext:
             "job": ["직업", "직업군", "Job"],
             "loan": ["대출"],
             "housing": ["주택", "housing"],
+        },
+    )
+
+
+def _bank_table_context_without_aliases() -> TableContext:
+    """Return a trained-context fixture shaped like live training without manual aliases."""
+
+    return build_trained_context(
+        _bank_schema_context(),
+        row_count=750000,
+        column_profiles={
+            "age": {"null_count": 0, "distinct_count": 70, "min_value": 18, "max_value": 95},
+            "balance": {"null_count": 0, "distinct_count": 5000, "min_value": -8019, "max_value": 102127},
+            "loan": {
+                "null_count": 0,
+                "distinct_count": 2,
+                "top_values": [{"value": "no", "count": 100}, {"value": "yes", "count": 30}],
+            },
         },
     )
 
@@ -474,6 +503,309 @@ def run_prompt_input_controlled_flow_tests():
         finish_turn_trace(final_status="completed")
         marital_attached_figures = marital_log[0].get("figures", [])
 
+        housing_loan_prompt = "housing이 yes 인사람들의 loan 분포를 그려줘"
+        start_turn_trace(
+            conversation_id="prompt-input-housing-loan",
+            turn_id=3,
+            run_id="run-prompt-housing-loan",
+            user_message=housing_loan_prompt,
+            selected_table="workspace.default.bank_loan",
+            storage_dir=temp_dir,
+        )
+        housing_loan_plan = build_controlled_plan(
+            housing_loan_prompt,
+            default_table="workspace.default.bank_loan",
+            table_context=active_context,
+        )
+        record_trace_event(
+            "controlled_plan",
+            generated=housing_loan_plan is not None,
+            plan=controlled_plan_to_dict(housing_loan_plan) if housing_loan_plan else {},
+            table_context_source=active_context.source,
+            training_status=active_context.training_status,
+            resolved_from_training=housing_loan_plan is not None,
+            **(getattr(housing_loan_plan, "resolution_debug", {}) if housing_loan_plan else {}),
+        )
+        housing_loan_requirement = (
+            requirement_from_controlled_plan(housing_loan_plan)
+            if housing_loan_plan
+            else DataRequirement()
+        )
+        housing_loan_state = DataFrameState(
+            role="query_result",
+            source_table="workspace.default.bank_loan",
+            query=f"SELECT balance FROM workspace.default.bank_loan LIMIT {SQL_LIMIT_DEFAULT}",
+            columns=("balance",),
+            row_count=750000,
+            created_by="prompt_input_test",
+        )
+        housing_loan_readiness = evaluate_data_readiness(
+            housing_loan_state,
+            housing_loan_requirement,
+        )
+        record_trace_event(
+            "data_readiness",
+            decision=housing_loan_readiness.decision,
+            reason=housing_loan_readiness.reason,
+            required_columns=list(housing_loan_requirement.columns),
+            missing_columns=list(housing_loan_readiness.missing_columns),
+            df_A_state=housing_loan_state,
+        )
+        housing_loan_reload_sql = ""
+        if housing_loan_plan and housing_loan_readiness.decision == DataReadinessDecision.RELOAD_REQUIRED:
+            housing_loan_reload_sql = build_sql_from_plan(housing_loan_plan)
+            record_trace_event(
+                "controlled_reload_sql",
+                sql=housing_loan_reload_sql,
+                source_table="workspace.default.bank_loan",
+            )
+        housing_loan_result_df = pd.DataFrame(
+            {"loan": ["no", "yes"], "stat_count": [345428, 65860]}
+        )
+        housing_loan_config = (
+            select_visualization_config(housing_loan_plan, housing_loan_result_df)
+            if housing_loan_plan
+            else None
+        )
+        plt.close("all")
+        housing_loan_summary = (
+            plot_controlled_visualization(housing_loan_result_df, housing_loan_config)
+            if housing_loan_config
+            else ""
+        )
+        housing_loan_payloads = collect_matplotlib_figure_payloads()
+        record_trace_event(
+            "controlled_result",
+            status="success" if housing_loan_payloads else "fail",
+            summary=housing_loan_summary,
+            figure_count=len(housing_loan_payloads),
+        )
+        finish_turn_trace(final_status="completed")
+        housing_loan_trace = read_latest_trace(storage_dir=temp_dir) or {}
+        housing_loan_events = housing_loan_trace.get("events", [])
+        housing_loan_controlled_event = next(
+            (event for event in housing_loan_events if event.get("event_type") == "controlled_plan"),
+            {},
+        )
+        housing_loan_result_event = next(
+            (event for event in housing_loan_events if event.get("event_type") == "controlled_result"),
+            {},
+        )
+        housing_loan_router_events = [
+            event for event in housing_loan_events if event.get("event_type") == "router_result"
+        ]
+
+        numeric_range_prompt = "age가 20~ 30 사이의 loan 값이 yes인 사람들의 balance에 대해서 시각화해줘"
+        start_turn_trace(
+            conversation_id="prompt-input-numeric-range",
+            turn_id=4,
+            run_id="run-prompt-numeric-range",
+            user_message=numeric_range_prompt,
+            selected_table="workspace.default.bank_loan",
+            storage_dir=temp_dir,
+        )
+        numeric_range_plan = build_controlled_plan(
+            numeric_range_prompt,
+            default_table="workspace.default.bank_loan",
+            table_context=active_context,
+        )
+        record_trace_event(
+            "controlled_plan",
+            generated=numeric_range_plan is not None,
+            plan=controlled_plan_to_dict(numeric_range_plan) if numeric_range_plan else {},
+            table_context_source=active_context.source,
+            training_status=active_context.training_status,
+            resolved_from_training=numeric_range_plan is not None,
+            **(getattr(numeric_range_plan, "resolution_debug", {}) if numeric_range_plan else {}),
+        )
+        numeric_range_requirement = (
+            requirement_from_controlled_plan(numeric_range_plan)
+            if numeric_range_plan
+            else DataRequirement()
+        )
+        numeric_range_state = DataFrameState(
+            role="query_result",
+            source_table="workspace.default.bank_loan",
+            query=f"SELECT marital FROM workspace.default.bank_loan LIMIT {SQL_LIMIT_DEFAULT}",
+            columns=("marital",),
+            row_count=750000,
+            created_by="prompt_input_test",
+        )
+        numeric_range_readiness = evaluate_data_readiness(
+            numeric_range_state,
+            numeric_range_requirement,
+        )
+        record_trace_event(
+            "data_readiness",
+            decision=numeric_range_readiness.decision,
+            reason=numeric_range_readiness.reason,
+            required_columns=list(numeric_range_requirement.columns),
+            missing_columns=list(numeric_range_readiness.missing_columns),
+            df_A_state=numeric_range_state,
+        )
+        numeric_range_reload_sql = ""
+        if numeric_range_plan and numeric_range_readiness.decision == DataReadinessDecision.RELOAD_REQUIRED:
+            numeric_range_reload_sql = build_sql_from_plan(numeric_range_plan)
+            record_trace_event(
+                "controlled_reload_sql",
+                sql=numeric_range_reload_sql,
+                source_table="workspace.default.bank_loan",
+            )
+        numeric_range_result_df = pd.DataFrame(
+            {
+                "balance": list(range(101)),
+                "age": [20 + (idx % 11) for idx in range(101)],
+                "loan": ["yes"] * 101,
+            }
+        )
+        numeric_range_config = (
+            select_visualization_config(numeric_range_plan, numeric_range_result_df)
+            if numeric_range_plan
+            else None
+        )
+        plt.close("all")
+        numeric_range_summary = (
+            plot_controlled_visualization(numeric_range_result_df, numeric_range_config)
+            if numeric_range_config
+            else ""
+        )
+        numeric_range_payloads = collect_matplotlib_figure_payloads()
+        record_trace_event(
+            "controlled_result",
+            status="success" if numeric_range_payloads else "fail",
+            summary=numeric_range_summary,
+            figure_count=len(numeric_range_payloads),
+        )
+        finish_turn_trace(final_status="completed")
+        numeric_range_trace = read_latest_trace(storage_dir=temp_dir) or {}
+        numeric_range_events = numeric_range_trace.get("events", [])
+        numeric_range_controlled_event = next(
+            (event for event in numeric_range_events if event.get("event_type") == "controlled_plan"),
+            {},
+        )
+        numeric_range_readiness_event = next(
+            (event for event in numeric_range_events if event.get("event_type") == "data_readiness"),
+            {},
+        )
+        numeric_range_reload_event = next(
+            (event for event in numeric_range_events if event.get("event_type") == "controlled_reload_sql"),
+            {},
+        )
+        numeric_range_result_event = next(
+            (event for event in numeric_range_events if event.get("event_type") == "controlled_result"),
+            {},
+        )
+        numeric_range_router_events = [
+            event for event in numeric_range_events if event.get("event_type") == "router_result"
+        ]
+
+        aliasless_balance_prompt = "20대에서 30대 사이의 대출을 가지고 있는 사람들의 balance에 대해서 시각화해줘"
+        aliasless_context = _bank_table_context_without_aliases()
+        start_turn_trace(
+            conversation_id="prompt-input-unused-conditions",
+            turn_id=5,
+            run_id="run-prompt-unused-conditions",
+            user_message=aliasless_balance_prompt,
+            selected_table="workspace.default.bank_loan",
+            storage_dir=temp_dir,
+        )
+        aliasless_balance_plan = build_controlled_plan(
+            aliasless_balance_prompt,
+            default_table="workspace.default.bank_loan",
+            table_context=aliasless_context,
+        )
+        record_trace_event(
+            "controlled_plan",
+            generated=aliasless_balance_plan is not None,
+            plan=controlled_plan_to_dict(aliasless_balance_plan) if aliasless_balance_plan else {},
+            table_context_source=aliasless_context.source,
+            training_status=aliasless_context.training_status,
+            resolved_from_training=aliasless_balance_plan is not None,
+            **(getattr(aliasless_balance_plan, "resolution_debug", {}) if aliasless_balance_plan else {}),
+        )
+        aliasless_balance_coverage = validate_condition_coverage(
+            aliasless_balance_prompt,
+            aliasless_balance_plan,
+            aliasless_context,
+        )
+        if not aliasless_balance_coverage.get("ok", True):
+            record_trace_event(
+                "controlled_result",
+                status="blocked_unused_conditions",
+                condition_coverage=aliasless_balance_coverage,
+                figure_count=0,
+            )
+        finish_turn_trace(final_status="completed")
+        aliasless_balance_trace = read_latest_trace(storage_dir=temp_dir) or {}
+        aliasless_balance_events = aliasless_balance_trace.get("events", [])
+        aliasless_balance_controlled_event = next(
+            (event for event in aliasless_balance_events if event.get("event_type") == "controlled_plan"),
+            {},
+        )
+        aliasless_balance_result_event = next(
+            (event for event in aliasless_balance_events if event.get("event_type") == "controlled_result"),
+            {},
+        )
+        aliasless_balance_reload_events = [
+            event for event in aliasless_balance_events if event.get("event_type") == "controlled_reload_sql"
+        ]
+
+        unresolved_numeric_range_prompt = "나이가 20~ 30 사이의 loan 값이 yes인 사람들의 balance에 대해서 시각화해줘"
+        start_turn_trace(
+            conversation_id="prompt-input-unresolved-numeric-range",
+            turn_id=6,
+            run_id="run-prompt-unresolved-numeric-range",
+            user_message=unresolved_numeric_range_prompt,
+            selected_table="workspace.default.bank_loan",
+            storage_dir=temp_dir,
+        )
+        unresolved_numeric_range_plan = build_controlled_plan(
+            unresolved_numeric_range_prompt,
+            default_table="workspace.default.bank_loan",
+            table_context=aliasless_context,
+        )
+        record_trace_event(
+            "controlled_plan",
+            generated=unresolved_numeric_range_plan is not None,
+            plan=controlled_plan_to_dict(unresolved_numeric_range_plan) if unresolved_numeric_range_plan else {},
+            table_context_source=aliasless_context.source,
+            training_status=aliasless_context.training_status,
+            resolved_from_training=unresolved_numeric_range_plan is not None,
+            **(
+                getattr(unresolved_numeric_range_plan, "resolution_debug", {})
+                if unresolved_numeric_range_plan
+                else {}
+            ),
+        )
+        unresolved_numeric_range_coverage = validate_condition_coverage(
+            unresolved_numeric_range_prompt,
+            unresolved_numeric_range_plan,
+            aliasless_context,
+        )
+        if not unresolved_numeric_range_coverage.get("ok", True):
+            record_trace_event(
+                "controlled_result",
+                status="blocked_unused_conditions",
+                condition_coverage=unresolved_numeric_range_coverage,
+                figure_count=0,
+            )
+        finish_turn_trace(final_status="completed")
+        unresolved_numeric_range_trace = read_latest_trace(storage_dir=temp_dir) or {}
+        unresolved_numeric_range_events = unresolved_numeric_range_trace.get("events", [])
+        unresolved_numeric_range_result_event = next(
+            (
+                event
+                for event in unresolved_numeric_range_events
+                if event.get("event_type") == "controlled_result"
+            ),
+            {},
+        )
+        unresolved_numeric_range_reload_events = [
+            event
+            for event in unresolved_numeric_range_events
+            if event.get("event_type") == "controlled_reload_sql"
+        ]
+
     prompt_visual_scenarios = [
         {
             "name": "balance histogram",
@@ -481,6 +813,20 @@ def run_prompt_input_controlled_flow_tests():
             "context": _bank_table_context(),
             "table": "workspace.default.bank_loan",
             "df": pd.DataFrame({"balance": range(101), "age": [20 + (idx % 11) for idx in range(101)], "loan": ["yes"] * 101}),
+            "expected": ("balance", {"age": [20, 30], "loan": "yes"}, "histogram"),
+        },
+        {
+            "name": "explicit numeric range balance histogram",
+            "prompt": "age가 20~ 30 사이의 loan 값이 yes인 사람들의 balance에 대해서 시각화해줘",
+            "context": _bank_table_context(),
+            "table": "workspace.default.bank_loan",
+            "df": pd.DataFrame(
+                {
+                    "balance": range(101),
+                    "age": [20 + (idx % 11) for idx in range(101)],
+                    "loan": ["yes"] * 101,
+                }
+            ),
             "expected": ("balance", {"age": [20, 30], "loan": "yes"}, "histogram"),
         },
         {
@@ -644,6 +990,98 @@ def run_prompt_input_controlled_flow_tests():
                 True,
             ),
         },
+        {
+            "description": "housing=yes loan prompt 입력 흐름은 Router로 떨어지지 않고 controlled result를 만든다",
+            "actual": (
+                housing_loan_controlled_event.get("generated"),
+                housing_loan_plan.target_column if housing_loan_plan else "",
+                housing_loan_plan.filters if housing_loan_plan else {},
+                housing_loan_readiness.decision,
+                "WHERE housing = 'yes'" in housing_loan_reload_sql,
+                "GROUP BY loan" in housing_loan_reload_sql,
+                len(housing_loan_router_events),
+                housing_loan_result_event.get("status"),
+                housing_loan_result_event.get("figure_count", 0) > 0,
+            ),
+            "expected": (
+                True,
+                "loan",
+                {"housing": "yes"},
+                DataReadinessDecision.RELOAD_REQUIRED,
+                True,
+                True,
+                0,
+                "success",
+                True,
+            ),
+        },
+        {
+            "description": "명시적 numeric range prompt 입력 흐름은 age BETWEEN 조건을 누락하지 않는다",
+            "actual": (
+                numeric_range_controlled_event.get("generated"),
+                numeric_range_plan.target_column if numeric_range_plan else "",
+                numeric_range_plan.filters if numeric_range_plan else {},
+                numeric_range_controlled_event.get("condition_coverage", {}).get("ok"),
+                numeric_range_readiness_event.get("decision"),
+                list(numeric_range_requirement.columns),
+                "WHERE age BETWEEN 20 AND 30 AND loan = 'yes'" in numeric_range_reload_event.get("sql", ""),
+                len(numeric_range_router_events),
+                numeric_range_result_event.get("status"),
+                numeric_range_result_event.get("figure_count", 0) > 0,
+            ),
+            "expected": (
+                True,
+                "balance",
+                {"age": [20, 30], "loan": "yes"},
+                True,
+                DataReadinessDecision.RELOAD_REQUIRED,
+                ["balance", "age", "loan"],
+                True,
+                0,
+                "success",
+                True,
+            ),
+        },
+        {
+            "description": "조건 표현이 미사용이면 prompt 입력 흐름에서 reload/figure 없이 차단한다",
+            "actual": (
+                aliasless_balance_controlled_event.get("generated"),
+                aliasless_balance_plan.target_column if aliasless_balance_plan else "",
+                aliasless_balance_plan.filters if aliasless_balance_plan else {},
+                aliasless_balance_result_event.get("status"),
+                aliasless_balance_result_event.get("condition_coverage", {}).get("unused_conditions"),
+                len(aliasless_balance_reload_events),
+                aliasless_balance_result_event.get("figure_count"),
+            ),
+            "expected": (
+                True,
+                "balance",
+                {},
+                "blocked_unused_conditions",
+                ["20대에서 30대 사이", "대출을 가지고 있는"],
+                0,
+                0,
+            ),
+        },
+        {
+            "description": "컬럼/alias와 연결되지 않은 numeric range는 prompt 입력 흐름에서 차단한다",
+            "actual": (
+                unresolved_numeric_range_plan.target_column if unresolved_numeric_range_plan else "",
+                unresolved_numeric_range_plan.filters if unresolved_numeric_range_plan else {},
+                unresolved_numeric_range_result_event.get("status"),
+                unresolved_numeric_range_result_event.get("condition_coverage", {}).get("unused_conditions"),
+                len(unresolved_numeric_range_reload_events),
+                unresolved_numeric_range_result_event.get("figure_count"),
+            ),
+            "expected": (
+                "balance",
+                {"loan": "yes"},
+                "blocked_unused_conditions",
+                ["나이가 20~ 30 사이"],
+                0,
+                0,
+            ),
+        },
     ]
     for name, target, filters, plot_type, has_figure, has_summary, expected in prompt_visual_results:
         expected_target, expected_filters, expected_plot_type = expected
@@ -786,6 +1224,11 @@ def run_eda_validation_tests():
         education_chain_prompt,
         table_context=_bank_table_context(),
     )
+    housing_loan_chain_validation = validate_eda_visualization_request(
+        pd.DataFrame({"loan": ["no", "yes"], "stat_count": [345428, 65860]}),
+        "housing이 yes 인사람들의 loan 분포를 그려줘",
+        table_context=_bank_table_context(),
+    )
 
     test_cases = [
         {
@@ -846,6 +1289,15 @@ def run_eda_validation_tests():
             ),
             "expected": (True, "education", "bar"),
         },
+        {
+            "description": "집계 SQL 결과 자동 EDA 검증은 원문 filter 컬럼 대신 df_A의 target/stat_count를 사용한다",
+            "actual": (
+                housing_loan_chain_validation.ok,
+                housing_loan_chain_validation.column,
+                housing_loan_chain_validation.chart_type,
+            ),
+            "expected": (True, "loan", "bar"),
+        },
     ]
 
     passed = 0
@@ -877,6 +1329,46 @@ def run_controlled_plan_tests():
         table_context=bank_context,
     )
     sql = build_sql_from_plan(plan) if plan else ""
+    condition_coverage = validate_condition_coverage(prompt, plan, bank_context)
+    aliasless_bank_context = _bank_table_context_without_aliases()
+    aliasless_plan = build_controlled_plan(
+        prompt,
+        default_table="workspace.default.bank_loan",
+        table_context=aliasless_bank_context,
+    )
+    aliasless_condition_coverage = validate_condition_coverage(
+        prompt,
+        aliasless_plan,
+        aliasless_bank_context,
+    )
+    numeric_range_prompt = "age가 20~ 30 사이의 loan 값이 yes인 사람들의 balance에 대해서 시각화해줘"
+    numeric_range_plan = build_controlled_plan(
+        numeric_range_prompt,
+        default_table="workspace.default.bank_loan",
+        table_context=bank_context,
+    )
+    numeric_range_sql = build_sql_from_plan(numeric_range_plan) if numeric_range_plan else ""
+    numeric_range_requirement = (
+        requirement_from_controlled_plan(numeric_range_plan)
+        if numeric_range_plan
+        else DataRequirement()
+    )
+    numeric_range_condition_coverage = validate_condition_coverage(
+        numeric_range_prompt,
+        numeric_range_plan,
+        bank_context,
+    )
+    unresolved_numeric_range_prompt = "나이가 20~ 30 사이의 loan 값이 yes인 사람들의 balance에 대해서 시각화해줘"
+    unresolved_numeric_range_plan = build_controlled_plan(
+        unresolved_numeric_range_prompt,
+        default_table="workspace.default.bank_loan",
+        table_context=aliasless_bank_context,
+    )
+    unresolved_numeric_range_condition_coverage = validate_condition_coverage(
+        unresolved_numeric_range_prompt,
+        unresolved_numeric_range_plan,
+        aliasless_bank_context,
+    )
     large_config = select_visualization_config(plan, pd.DataFrame({"balance": range(101)})) if plan else None
     small_config = select_visualization_config(plan, pd.DataFrame({"balance": range(100)})) if plan else None
     housing_loan_prompt = "housing이 yes 인사람들의 loan 분포를 그려줘"
@@ -893,6 +1385,23 @@ def run_controlled_plan_tests():
         )
         if housing_loan_plan
         else None
+    )
+    housing_loan_requirement = (
+        requirement_from_controlled_plan(housing_loan_plan)
+        if housing_loan_plan
+        else DataRequirement()
+    )
+    balance_only_state = DataFrameState(
+        role="query_result",
+        source_table="workspace.default.bank_loan",
+        query=f"SELECT balance FROM workspace.default.bank_loan LIMIT {SQL_LIMIT_DEFAULT}",
+        columns=("balance",),
+        row_count=750000,
+        created_by="test",
+    )
+    housing_loan_readiness = evaluate_data_readiness(
+        balance_only_state,
+        housing_loan_requirement,
     )
     technician_housing_prompt = "job column이 technician 인 사람들의 housing 여부를 시각화 해줘"
     technician_housing_plan = build_controlled_plan(
@@ -1128,6 +1637,10 @@ def run_controlled_plan_tests():
         os.path.join(os.path.dirname(os.path.abspath(__file__)), "utils", "chatbot_plan.py"),
         encoding="utf-8",
     ).read()
+    missing_target_debug = explain_controlled_plan_failure(
+        "분포를 보여줘",
+        table_context=bank_context,
+    )
     forbidden_planner_literals = [
         '"job"',
         "'job'",
@@ -1163,6 +1676,36 @@ def run_controlled_plan_tests():
             "expected": True,
         },
         {
+            "description": "alias가 있으면 조건 coverage는 20대~30대와 대출 보유 조건을 사용된 조건으로 기록한다",
+            "actual": (
+                condition_coverage.get("ok"),
+                condition_coverage.get("used_conditions"),
+                condition_coverage.get("unused_conditions"),
+            ),
+            "expected": (
+                True,
+                ["20대에서 30대 사이", "대출을 가지고 있는"],
+                [],
+            ),
+        },
+        {
+            "description": "live training처럼 alias가 없으면 조건 coverage가 누락 조건을 감지한다",
+            "actual": (
+                aliasless_plan.target_column if aliasless_plan else "",
+                aliasless_plan.filters if aliasless_plan else {},
+                aliasless_condition_coverage.get("ok"),
+                aliasless_condition_coverage.get("unused_conditions"),
+                len(aliasless_condition_coverage.get("missing_context_hints", [])),
+            ),
+            "expected": (
+                "balance",
+                {},
+                False,
+                ["20대에서 30대 사이", "대출을 가지고 있는"],
+                2,
+            ),
+        },
+        {
             "description": "요청 대비 충분성 검증을 위해 plan의 target/filter 컬럼 목록을 산출한다",
             "actual": required_columns_for_plan(plan) if plan else [],
             "expected": ["balance", "age", "loan"],
@@ -1176,6 +1719,51 @@ def run_controlled_plan_tests():
             "description": "controlled balance SQL은 target/filter 컬럼을 모두 SELECT하여 df_A_state가 요청 대비 충분해지게 한다",
             "actual": sql.startswith("SELECT balance, age, loan FROM workspace.default.bank_loan"),
             "expected": True,
+        },
+        {
+            "description": "명시적 numeric range prompt는 age range와 loan=yes를 JSON plan에 포함한다",
+            "actual": (
+                numeric_range_plan.target_column if numeric_range_plan else "",
+                numeric_range_plan.filters if numeric_range_plan else {},
+                numeric_range_condition_coverage.get("ok"),
+                numeric_range_condition_coverage.get("used_conditions"),
+            ),
+            "expected": (
+                "balance",
+                {"age": [20, 30], "loan": "yes"},
+                True,
+                ["age가 20~ 30 사이"],
+            ),
+        },
+        {
+            "description": "명시적 numeric range SQL은 age BETWEEN과 loan=yes를 누락하지 않는다",
+            "actual": (
+                list(numeric_range_requirement.columns),
+                numeric_range_sql.startswith("SELECT balance, age, loan FROM workspace.default.bank_loan"),
+                "WHERE age BETWEEN 20 AND 30 AND loan = 'yes'" in numeric_range_sql,
+            ),
+            "expected": (
+                ["balance", "age", "loan"],
+                True,
+                True,
+            ),
+        },
+        {
+            "description": "컬럼/alias와 연결되지 않은 numeric range 표현은 coverage에서 미사용 조건으로 감지한다",
+            "actual": (
+                unresolved_numeric_range_plan.target_column if unresolved_numeric_range_plan else "",
+                unresolved_numeric_range_plan.filters if unresolved_numeric_range_plan else {},
+                unresolved_numeric_range_condition_coverage.get("ok"),
+                unresolved_numeric_range_condition_coverage.get("unused_conditions"),
+                len(unresolved_numeric_range_condition_coverage.get("missing_context_hints", [])),
+            ),
+            "expected": (
+                "balance",
+                {"loan": "yes"},
+                False,
+                ["나이가 20~ 30 사이"],
+                1,
+            ),
         },
         {
             "description": "100행 초과 numeric dataframe은 histogram config를 선택한다",
@@ -1209,6 +1797,19 @@ def run_controlled_plan_tests():
             "description": "housing=yes loan 분포는 categorical bar config를 선택한다",
             "actual": housing_loan_config.plot_type if housing_loan_config else "",
             "expected": "bar",
+        },
+        {
+            "description": "현재 df_A가 balance만 있으면 housing=yes loan 분포 요청은 controlled reload가 필요하다",
+            "actual": (
+                list(housing_loan_requirement.columns),
+                housing_loan_readiness.decision,
+                housing_loan_readiness.missing_columns,
+            ),
+            "expected": (
+                ["loan", "housing"],
+                DataReadinessDecision.RELOAD_REQUIRED,
+                ("loan", "housing"),
+            ),
         },
         {
             "description": "TableContext top_values의 categorical 값은 명시된 컬럼 equality filter로 변환된다",
@@ -1260,7 +1861,7 @@ def run_controlled_plan_tests():
         {
             "description": "전체 education 분포 SQL은 education만 reload한다",
             "actual": education_sql,
-            "expected": "SELECT education FROM workspace.default.bank_loan LIMIT 2000",
+            "expected": f"SELECT education FROM workspace.default.bank_loan LIMIT {SQL_LIMIT_DEFAULT}",
         },
         {
             "description": "전체 education 분포는 categorical bar config를 선택한다",
@@ -1430,6 +2031,15 @@ def run_controlled_plan_tests():
                 bool(grouped_trace_event.get("target_candidates")),
             ),
             "expected": (True, "trained", "Sex", "Survived", [1, 0], True, True),
+        },
+        {
+            "description": "controlled plan 생성 실패 debug에는 target 미해결 사유가 남는다",
+            "actual": (
+                missing_target_debug.get("failure_reason"),
+                missing_target_debug.get("target_column"),
+                missing_target_debug.get("target_candidates"),
+            ),
+            "expected": ("target_column_not_resolved", "", []),
         },
         {
             "description": "planner production code에는 table-specific 컬럼/alias literal을 넣지 않는다",

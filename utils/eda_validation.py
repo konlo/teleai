@@ -32,7 +32,49 @@ def strip_internal_eda_context(prompt: str) -> str:
     return (prompt or "").split(INTERNAL_CONTEXT_MARKER, 1)[0]
 
 
+def _visual_token_position(prompt: str) -> int:
+    lowered = strip_internal_eda_context(prompt).lower()
+    positions = [
+        lowered.find(token)
+        for token in ("분포", "시각화", "그래프", "차트", "그려", "plot", "chart", "graph")
+        if lowered.find(token) >= 0
+    ]
+    return min(positions) if positions else -1
+
+
+def _aggregate_result_target_column(df: pd.DataFrame, prompt: str) -> Optional[Any]:
+    if "stat_count" not in {str(column) for column in df.columns}:
+        return None
+    stat_count = next((column for column in df.columns if str(column) == "stat_count"), None)
+    if stat_count is None or not pd.api.types.is_numeric_dtype(df[stat_count]):
+        return None
+
+    user_prompt = strip_internal_eda_context(prompt)
+    lowered = user_prompt.lower()
+    candidates = [column for column in df.columns if str(column) != "stat_count"]
+    mentioned: list[tuple[int, Any]] = []
+    for column in candidates:
+        column_text = str(column)
+        position = lowered.find(column_text.lower())
+        if position >= 0:
+            mentioned.append((position, column))
+    if len(mentioned) == 1:
+        return mentioned[0][1]
+    if len(mentioned) > 1:
+        visual_position = _visual_token_position(prompt)
+        if visual_position >= 0:
+            return sorted(mentioned, key=lambda item: (abs(item[0] - visual_position), item[0]))[0][1]
+        return sorted(mentioned)[0][1]
+    if len(candidates) == 1:
+        return candidates[0]
+    return None
+
+
 def find_exact_prompt_column(df: pd.DataFrame, prompt: str, *, table_context=None) -> Optional[Any]:
+    aggregate_target = _aggregate_result_target_column(df, prompt)
+    if aggregate_target is not None:
+        return aggregate_target
+
     context_column = resolve_column_from_prompt(prompt, table_context)
     if context_column is not None:
         return context_column
