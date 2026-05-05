@@ -1,7 +1,7 @@
 # Project Progress Log
 
 ## Current Status
-- **Last Updated**: 2026-04-26
+- **Last Updated**: 2026-05-05
 - **Status**: In Progress
 - **Summary**: Telly chatbot agent chaining and EDA parser-loop reliability fixes are being implemented and regression-tested.
 - **Next Session Focus**: Continue hardening Telly agent workflows and keep request/action logs current.
@@ -27,6 +27,71 @@
 ---
 
 ## Log Entries
+
+### [2026-05-05 22:51:42] [Agent: Codex] User Request: Implement numeric range condition resolver and coverage blocking
+- **Action** [Agent: Codex]: Implementing numeric range parsing so explicit column conditions like `age가 20~30 사이` become deterministic `BETWEEN` filters instead of being silently dropped.
+- **Planned Artifact Update**: Update `utils/chatbot_plan.py` range resolver/coverage logic and add static prompt-input scenarios in `test_scenario.py` for successful numeric range use and blocked unused range conditions.
+- **Artifact Update**: Added TableContext-driven numeric range parsing for `~`, hyphen/to, `between ... and ...`, and `이상 ... 이하` expressions tied to numeric/unknown columns.
+- **Artifact Update**: Extended condition coverage to report unresolved numeric range phrases and block controlled execution through the existing unused-condition path.
+- **Artifact Update**: Added controlled-plan and prompt-input regression scenarios proving `age가 20~ 30 사이 ... loan 값이 yes ... balance` generates `age BETWEEN 20 AND 30 AND loan = 'yes'`, and aliasless `나이가 20~ 30 사이` is blocked without reload/figure generation.
+- **Action** [Agent: Codex]: Ran `PYTHONPYCACHEPREFIX=/tmp/teleai_pycache python3 -m py_compile utils/chatbot_plan.py core/chat_flow.py test_scenario.py`.
+- **Action** [Agent: Codex]: Ran `python3 test_scenario.py --static-only`.
+- **Action** [Agent: Codex]: Ran `git diff --check`.
+- **Outcome**: All checks pass. Controlled plan tests now pass 48 checks and prompt-input controlled flow passes 19 checks, including explicit numeric range success and unresolved numeric range blocking.
+
+### [2026-05-05 22:35:22] [Agent: Codex] User Request: Implement unused-condition detection and fail-fast blocking for controlled visualization
+- **Action** [Agent: Codex]: Implementing coverage validation so condition-like prompt phrases such as age ranges or possession filters cannot be silently dropped from controlled SQL/visualization.
+- **Planned Artifact Update**: Add condition coverage checks, block controlled execution before reload/plot when conditions are unused, and add static/prompt scenarios for both blocked and alias-resolved cases.
+- **Artifact Update**: Added `validate_condition_coverage()` to detect unused decade-range and possession conditions, and added coverage output into controlled plan `resolution_debug`.
+- **Artifact Update**: Updated controlled executor to stop before data readiness/reload/plot when coverage has unused conditions, returning a user-facing context/alias hint.
+- **Artifact Update**: Added aliasless live-training-style fixtures and prompt-input tests proving unused conditions are blocked with no reload or figure generation, while alias-backed prompts still resolve to `age BETWEEN 20 AND 30` and `loan='yes'`.
+- **Action** [Agent: Codex]: Ran `PYTHONPYCACHEPREFIX=/tmp/teleai_pycache python3 -m py_compile utils/chatbot_plan.py core/chat_flow.py test_scenario.py`.
+- **Action** [Agent: Codex]: Ran `python3 test_scenario.py --static-only`.
+- **Action** [Agent: Codex]: Ran `git diff --check`.
+- **Outcome**: All checks pass. Controlled plan tests now pass 45 checks and prompt-input controlled flow passes 16 checks, including blocked unused-condition coverage.
+
+### [2026-05-05 22:28:50] [Agent: Codex] User Request: Check whether age/loan conditions were applied to the balance visualization prompt
+- **Action** [Agent: Codex]: Compared the provided Thinking Log with the current saved `workspace.default.bank_loan` TableContext and reproduced the controlled plan for the exact prompt.
+- **Finding**: The plan has `filters={}` and SQL `SELECT balance ...` with no `WHERE`, so `20대~30대` and `대출 보유` conditions were not applied.
+- **Finding**: The saved trained context has no aliases for `age` or `loan`, so Korean phrases like `20대/30대` and `대출` are not resolvable from the live TableContext.
+- **Decision**: No code changes requested in this turn; explain the diagnosis and what would need to be fixed.
+
+### [2026-05-05 22:14:19] [Agent: Codex] User Request: Implement controlled visualization routing/filter resolver structural fix
+- **Action** [Agent: Codex]: Implementing the approved plan to keep `housing=yes -> loan distribution` in deterministic controlled flow, prevent shared `yes/no` categorical values from turning target columns into filters, and add aggregate SQL-to-EDA fallback protection.
+- **Planned Artifact Update**: Update `utils/chatbot_plan.py`, EDA validation, controlled trace diagnostics, and `test_scenario.py --static-only` coverage while preserving existing LIMIT/config changes and unrelated edits.
+- **Artifact Update**: Made categorical value filter resolution target-aware so shared `yes/no` top_values do not convert the visual target column into a filter.
+- **Artifact Update**: Added controlled-plan failure diagnostics to trace events, including unresolved target reason and resolver debug fields.
+- **Artifact Update**: Updated EDA validation for aggregate SQL results so `loan, stat_count` can validate against the target column instead of requiring the original filter column `housing`.
+- **Artifact Update**: Strengthened prompt-input and static scenario coverage for `housing이 yes 인사람들의 loan 분포를 그려줘`, shared yes/no top_values, controlled reload, no Router fallback, and figure generation.
+- **Action** [Agent: Codex]: Ran `PYTHONPYCACHEPREFIX=/tmp/teleai_pycache python3 -m py_compile utils/chatbot_plan.py utils/eda_validation.py core/chat_flow.py test_scenario.py`.
+- **Action** [Agent: Codex]: Ran `python3 test_scenario.py --static-only`.
+- **Outcome**: Static scenario suite passes. Controlled plan tests now pass 43 checks, EDA validation 11 checks, and prompt-input controlled flow 15 checks including the exact housing=yes loan prompt.
+
+### [2026-05-05 21:58:25] [Agent: Codex] User Request: Show the prompts currently covered in `test_scenario.py`
+- **Action** [Agent: Codex]: Searched `test_scenario.py` for prompt variables, scenario prompt dictionaries, and trace `user_message` prompt fixtures.
+- **Decision**: No code changes requested; provide the prompt list only.
+
+### [2026-05-05 21:52:30] [Agent: Antigravity] User Request: SQL LIMIT 설정을 단일 설정 파일에서 관리
+- **Action**: `utils/config.py` 신규 생성 — `SQL_LIMIT_MIN`, `SQL_LIMIT_MAX`, `SQL_LIMIT_DEFAULT`, `SQL_LIMIT_SESSION_KEY` 상수 집중 관리.
+- **Action**: `utils/session.py` — 로컬 상수 4개 제거, `config.py`에서 import (alias 유지로 하위 호환성 보존).
+- **Action**: `utils/chatbot_plan.py` — `DEFAULT_CONTROLLED_SQL_LIMIT` 로컬 정의 제거, `config.py`에서 import.
+- **Action**: `utils/prompt_help.py` — `DEFAULT_SQL_LIMIT_MIN/MAX` 로컬 정의 제거, `config.py`에서 import.
+- **Action**: `core/chat_flow.py` — LIMIT 상수 import를 `session.py` 대신 `config.py`에서 직접 참조.
+- **Outcome**: `py_compile` 5개 파일 모두 통과. 이후 LIMIT 값 변경은 `utils/config.py`만 수정하면 됨.
+
+### [2026-05-05 21:51:20] [Agent: Antigravity] User Request: SQL LIMIT을 1,000,000으로 수정
+
+- **Action**: `utils/session.py`의 `_DEFAULT_SQL_LIMIT`을 `2000` → `1_000_000`으로 변경.
+- **Action**: `utils/chatbot_plan.py`의 `DEFAULT_CONTROLLED_SQL_LIMIT`을 `2000` → `1_000_000`으로 변경.
+- **Outcome**: 세션 기본값 및 제어 플랜 LIMIT이 모두 1,000,000으로 통일됨.
+
+### [2026-05-05 21:45:00] [Agent: Antigravity] User Request: 두 가지 에러 원인 파악 및 수정
+
+- **에러 1**: `ChatPromptTemplate is missing variables {'column', '"action"'}` — `core/prompt.py` line 133의 EDA 프롬프트 예제 코드 안에 `{column}` 이 LangChain 템플릿 변수로 인식됨. `{{column}}`으로 이스케이프 수정.
+- **에러 2**: `로그 저장 실패: [PARSE_SYNTAX_ERROR] Syntax error at or near ''` — `utils/turn_logger.py`의 `_escape()`가 LangChain 에러 메시지에 이미 포함된 Python repr 이중 따옴표(`''column''`)를 한 번 더 이스케이프해서 Databricks SQL 파서가 `''''`를 파싱 실패. `_safe_text()` 헬퍼 추가: 연속 따옴표 정규화 → 재이스케이프 → 4000자 truncation.
+- **Artifact Update**: `core/prompt.py` — `{column}` → `{{column}}` 이스케이프.
+- **Artifact Update**: `utils/turn_logger.py` — `_safe_text()`, `_TEXT_FIELDS`, `_MAX_TEXT_LEN` 추가; `log_turn()`에서 free-text 컬럼에 `_safe_text()` 적용.
+- **Action**: `py_compile` 통과, `test_scenario.py --static-only` 전체 통과 (exit 0).
 
 ### [2026-04-27 22:48:15] [Agent: Codex] User Request: Implement direct matplotlib payload capture for controlled visualization and add prompt-level test coverage
 - **Action** [Agent: Codex]: Updating controlled visualization so chart attachment does not depend on a pre-existing EDA `pytool_obj` when `df_A` is loaded during the same prompt turn.
