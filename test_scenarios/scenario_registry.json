@@ -1,0 +1,259 @@
+{
+  "version": 1,
+  "description": "Numbered chatbot quality scenarios for routing, planning, visualization, context, trace, and manual live checks.",
+  "scenarios": [
+    {
+      "id": "ROUTE-001",
+      "title": "새 사용자 입력은 일반 턴으로 처리한다",
+      "suite": "route",
+      "priority": "P0",
+      "prompt": "balance를 시각화해줘",
+      "executor": "routing_static",
+      "table": "",
+      "dataset": "",
+      "expects": {
+        "process": true,
+        "query": "balance를 시각화해줘"
+      },
+      "artifacts": {},
+      "tags": ["static", "routing"],
+      "enabled": true
+    },
+    {
+      "id": "PLAN-001",
+      "title": "latitude/longitude 요청은 longitude histogram으로 퇴행하지 않는다",
+      "suite": "plan",
+      "priority": "P0",
+      "prompt": "latitude X축 longitude Y축 scatter plot를 그려줘",
+      "executor": "visual_self_eval",
+      "table": "workspace.default.stormtrooper",
+      "dataset": "",
+      "case_name": "scatter_lat_lon",
+      "expects": {
+        "plot_type": "scatter",
+        "x_column": "latitude",
+        "y_column": "longitude",
+        "sql_contains": ["longitude", "latitude"],
+        "figure_required": true
+      },
+      "artifacts": {},
+      "tags": ["static", "visual", "regression"],
+      "enabled": true
+    },
+    {
+      "id": "VIZ-001",
+      "title": "실제 CSV numeric histogram",
+      "suite": "visual",
+      "priority": "P0",
+      "prompt": "pressure_altitude 분포를 histogram으로 그려줘",
+      "executor": "visual_chat_e2e",
+      "table": "workspace.default.stormtrooper",
+      "dataset": "/Users/najongseong/dataset/stormtrooper.csv",
+      "expects": {
+        "plot_type": "histogram",
+        "column": "pressure_altitude",
+        "sql_contains": ["pressure_altitude"],
+        "df_columns": ["pressure_altitude"],
+        "trace_events": ["controlled_plan", "controlled_reload_sql", "sql_execution", "visualization_config", "controlled_result"],
+        "figure_required": true
+      },
+      "artifacts": {
+        "figure_dir": "/tmp/teleai_visual_chat_e2e"
+      },
+      "tags": ["e2e", "visual", "csv"],
+      "enabled": true
+    },
+    {
+      "id": "VIZ-002",
+      "title": "datetime X축 numeric Y축 line chart",
+      "suite": "visual",
+      "priority": "P1",
+      "prompt": "event_time X축 metric_a Y축 line chart를 그려줘",
+      "executor": "visual_self_eval",
+      "table": "workspace.default.visual_fixture",
+      "dataset": "",
+      "case_name": "line_time_metric",
+      "expects": {
+        "plot_type": "line",
+        "x_column": "event_time",
+        "y_column": "metric_a",
+        "figure_required": true
+      },
+      "artifacts": {},
+      "tags": ["static", "visual"],
+      "enabled": true
+    },
+    {
+      "id": "VIZ-003",
+      "title": "numeric correlation heatmap",
+      "suite": "visual",
+      "priority": "P1",
+      "prompt": "metric_a metric_b metric_c 상관 heatmap을 그려줘",
+      "executor": "visual_self_eval",
+      "table": "workspace.default.visual_fixture",
+      "dataset": "",
+      "case_name": "correlation_heatmap",
+      "expects": {
+        "plot_type": "heatmap",
+        "columns": ["metric_a", "metric_b", "metric_c"],
+        "aggregation": "correlation",
+        "figure_required": true
+      },
+      "artifacts": {},
+      "tags": ["static", "visual"],
+      "enabled": true
+    },
+    {
+      "id": "VIZ-004",
+      "title": "categorical pivot heatmap",
+      "suite": "visual",
+      "priority": "P1",
+      "prompt": "category X축 segment Y축 amount heatmap을 그려줘",
+      "executor": "visual_self_eval",
+      "table": "workspace.default.visual_fixture",
+      "dataset": "",
+      "case_name": "pivot_heatmap",
+      "expects": {
+        "plot_type": "heatmap",
+        "x_column": "category",
+        "y_column": "segment",
+        "value_column": "amount",
+        "sql_contains": ["AVG(amount) AS stat_value", "GROUP BY category, segment"],
+        "figure_required": true
+      },
+      "artifacts": {},
+      "tags": ["static", "visual"],
+      "enabled": true
+    },
+    {
+      "id": "VIZ-005",
+      "title": "multi numeric pairplot",
+      "suite": "visual",
+      "priority": "P1",
+      "prompt": "metric_a metric_b metric_c pairplot을 그려줘",
+      "executor": "visual_self_eval",
+      "table": "workspace.default.visual_fixture",
+      "dataset": "",
+      "case_name": "pairplot_metrics",
+      "expects": {
+        "plot_type": "pairplot",
+        "columns": ["metric_a", "metric_b", "metric_c"],
+        "figure_required": true
+      },
+      "artifacts": {},
+      "tags": ["static", "visual"],
+      "enabled": true
+    },
+    {
+      "id": "VIZ-006",
+      "title": "grouped/stacked bar 역할 분리",
+      "suite": "visual",
+      "priority": "P1",
+      "prompt": "category 기준 segment grouped/stacked bar chart를 검증한다",
+      "executor": "visual_self_eval",
+      "table": "workspace.default.visual_fixture",
+      "dataset": "",
+      "case_names": ["grouped_bar_category_segment", "stacked_bar_category_segment"],
+      "expects": {
+        "plot_types": ["grouped_bar", "stacked_bar"],
+        "column": "category",
+        "group_column": "segment",
+        "figure_required": true
+      },
+      "artifacts": {},
+      "tags": ["static", "visual"],
+      "enabled": true
+    },
+    {
+      "id": "VIZ-007",
+      "title": "모호한 시각화 요청은 되묻는다",
+      "suite": "visual",
+      "priority": "P0",
+      "prompt": "이 데이터 시각화해줘",
+      "executor": "visual_self_eval",
+      "table": "workspace.default.visual_fixture",
+      "dataset": "",
+      "case_name": "ambiguous_visualization",
+      "expects": {
+        "status": "clarification_required",
+        "figure_required": false
+      },
+      "artifacts": {},
+      "tags": ["static", "visual", "clarification"],
+      "enabled": true
+    },
+    {
+      "id": "CHAT-E2E-001",
+      "title": "실제 CSV 기반 chatbot scatter E2E",
+      "suite": "chat_e2e",
+      "priority": "P0",
+      "prompt": "latitude X축 longitude Y축 scatter plot를 그려줘",
+      "executor": "visual_chat_e2e",
+      "table": "workspace.default.stormtrooper",
+      "dataset": "/Users/najongseong/dataset/stormtrooper.csv",
+      "expects": {
+        "plot_type": "scatter",
+        "x_column": "latitude",
+        "y_column": "longitude",
+        "sql_contains": ["latitude", "longitude"],
+        "df_columns": ["latitude", "longitude"],
+        "trace_events": ["controlled_plan", "controlled_reload_sql", "sql_execution", "visualization_config", "controlled_result"],
+        "figure_required": true
+      },
+      "artifacts": {
+        "figure_dir": "/tmp/teleai_visual_chat_e2e"
+      },
+      "tags": ["e2e", "visual", "csv"],
+      "enabled": true
+    },
+    {
+      "id": "CTX-001",
+      "title": "DataContext는 부족한 컬럼이면 reload를 요구한다",
+      "suite": "context",
+      "priority": "P0",
+      "prompt": "df_A_state columns=['balance'], requirement=['job']",
+      "executor": "data_context_static",
+      "table": "workspace.default.bank_loan",
+      "dataset": "",
+      "expects": {
+        "decision": "RELOAD_REQUIRED"
+      },
+      "artifacts": {},
+      "tags": ["static", "context"],
+      "enabled": true
+    },
+    {
+      "id": "TRACE-001",
+      "title": "runtime trace 필수 이벤트 계약",
+      "suite": "trace",
+      "priority": "P0",
+      "prompt": "trace event contract",
+      "executor": "runtime_trace_static",
+      "table": "",
+      "dataset": "",
+      "expects": {
+        "trace_events": ["turn_start", "controlled_plan", "sql_execution", "turn_end"],
+        "final_status": "completed"
+      },
+      "artifacts": {},
+      "tags": ["static", "trace"],
+      "enabled": true
+    },
+    {
+      "id": "LIVE-001",
+      "title": "외부 LLM/Databricks 수동 검증",
+      "suite": "live",
+      "priority": "P2",
+      "prompt": "20대에서 30대 사이의 대출을 가지고 있는 사람들의 balance에 대해서 시각화해줘",
+      "executor": "external_llm",
+      "table": "workspace.default.bank_loan",
+      "dataset": "Databricks live",
+      "expects": {
+        "manual": true
+      },
+      "artifacts": {},
+      "tags": ["manual", "live", "external"],
+      "enabled": false
+    }
+  ]
+}

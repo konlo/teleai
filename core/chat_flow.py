@@ -19,7 +19,7 @@ from ui.viz import render_visualizations
 from utils.agent_output import detect_agent_parser_loop
 from utils.agent_routing import resolve_forced_agent_mode, should_force_sql_from_keywords
 from utils.chatbot_plan import (
-    build_controlled_plan,
+    build_llm_visualization_plan,
     build_sql_from_plan,
     controlled_plan_to_dict,
     explain_controlled_plan_failure,
@@ -312,6 +312,7 @@ def _plot_controlled_visualization(df: pd.DataFrame, config) -> str:
 def _try_run_controlled_production_flow(
     *,
     user_query: str,
+    llm,
     run_id: str,
     turn_id: int,
     log_placeholder,
@@ -355,7 +356,8 @@ def _try_run_controlled_production_flow(
         log_state["python_error_for_log"] = message
         return True
 
-    plan = build_controlled_plan(
+    plan = build_llm_visualization_plan(
+        llm,
         user_query,
         default_table=default_table,
         table_context=active_table_context,
@@ -397,6 +399,22 @@ def _try_run_controlled_production_flow(
                 f"values={list(plan.group_values or ())}"
             ),
         )
+    if getattr(plan, "task", "") == "clarification_required" or getattr(plan, "clarification_question", ""):
+        message = plan.clarification_question or "시각화할 컬럼이나 차트 유형을 지정해주세요."
+        record_trace_event(
+            "controlled_result",
+            status="clarification_required",
+            plot_type=getattr(plan, "plot_type", ""),
+            clarification_question=message,
+        )
+        _think("PLAN", f"Clarification required: {message}")
+        st.info(message)
+        append_assistant_message(run_id, message, "Controlled Executor", turn_id=turn_id)
+        log_state["assistant_response_for_log"] = message
+        log_state["intent_for_log"] = "clarification_required"
+        log_state["python_status_for_log"] = "skipped"
+        return True
+
     current_state = st.session_state.get("df_A_state")
     condition_coverage = validate_condition_coverage(
         user_query,
@@ -511,9 +529,15 @@ def _try_run_controlled_production_flow(
         log_state["sql_execution_status_for_log"] = "skipped"
 
     df = st.session_state.get("df_A_data")
+    validation_column = (
+        getattr(plan, "target_column", "")
+        or getattr(plan, "y_column", "")
+        or getattr(plan, "x_column", "")
+        or next(iter(getattr(plan, "columns", ()) or ()), "")
+    )
     validation = validate_eda_visualization_request(
         df,
-        plan.target_column,
+        validation_column,
         table_context=None,
     )
     record_trace_event(
@@ -1204,6 +1228,7 @@ def handle_user_query(
     ):
         handled_command = _try_run_controlled_production_flow(
             user_query=original_user_q,
+            llm=llm,
             run_id=run_id,
             turn_id=turn_id,
             log_placeholder=log_placeholder,
