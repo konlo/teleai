@@ -3,12 +3,60 @@ import re
 from typing import Any, Dict, Iterable, List, Optional, Tuple
 
 import pandas as pd
+try:
+    from pydantic import BaseModel, Field
+    _PYDANTIC_AVAILABLE = True
+except Exception:
+    _PYDANTIC_AVAILABLE = False
+
+    class BaseModel:
+        def __init__(self, **kwargs):
+            for key, value in kwargs.items():
+                setattr(self, key, value)
+
+    def Field(default=None, default_factory=None, **_kwargs):
+        if default_factory is not None:
+            return default_factory()
+        return default
 
 from utils.eda_validation import choose_distribution_chart
 from utils.table_context import coerce_table_context, get_column_names, is_trained_table_context, strip_internal_prompt_context
 
 
 from utils.config import SQL_LIMIT_DEFAULT as DEFAULT_CONTROLLED_SQL_LIMIT
+
+
+SUPPORTED_PLOT_TYPES = {
+    "histogram",
+    "boxplot",
+    "violin",
+    "bar",
+    "grouped_bar",
+    "stacked_bar",
+    "scatter",
+    "line",
+    "heatmap",
+    "pairplot",
+}
+
+AGGREGATIONS = {"count", "sum", "avg", "mean", "min", "max", "correlation"}
+VISUAL_REQUEST_TOKENS = (
+    "시각화",
+    "분포",
+    "그래프",
+    "차트",
+    "plot",
+    "chart",
+    "scatter",
+    "산점도",
+    "line",
+    "heatmap",
+    "히트맵",
+    "pairplot",
+    "막대",
+    "상관",
+    "correlation",
+)
 
 
 @dataclass(frozen=True)
@@ -52,6 +100,17 @@ class ControlledPlan:
     group_column: str = ""
     group_values: Tuple[Any, ...] = ()
     group_mode: str = ""
+    plot_type: str = ""
+    x_column: str = ""
+    y_column: str = ""
+    columns: Tuple[str, ...] = ()
+    color_column: str = ""
+    value_column: str = ""
+    aggregation: str = ""
+    top_n: Optional[int] = None
+    sort_direction: str = ""
+    clarification_question: str = ""
+    confidence: float = 0.0
     resolution_debug: Dict[str, Any] = field(default_factory=dict)
 
 
@@ -62,6 +121,35 @@ class VisualizationConfig:
     group_column: str = ""
     group_values: Tuple[Any, ...] = ()
     group_mode: str = ""
+    x_column: str = ""
+    y_column: str = ""
+    columns: Tuple[str, ...] = ()
+    color_column: str = ""
+    value_column: str = ""
+    aggregation: str = ""
+    top_n: Optional[int] = None
+    sort_direction: str = ""
+
+
+class LLMVisualizationPlan(BaseModel):
+    plot_type: str = Field(
+        description=(
+            "One of histogram, boxplot, violin, bar, grouped_bar, stacked_bar, "
+            "scatter, line, heatmap, pairplot, or clarification_required."
+        )
+    )
+    target_column: str = Field(default="", description="Primary target column for single-column charts.")
+    x_column: str = Field(default="", description="X-axis column when applicable.")
+    y_column: str = Field(default="", description="Y-axis column when applicable.")
+    columns: List[str] = Field(default_factory=list, description="Multiple columns for heatmap or pairplot.")
+    group_column: str = Field(default="", description="Grouping or series/color column.")
+    color_column: str = Field(default="", description="Color encoding column.")
+    value_column: str = Field(default="", description="Measure column for aggregation charts.")
+    aggregation: str = Field(default="", description="count, sum, avg, min, max, or correlation.")
+    top_n: Optional[int] = Field(default=None, description="Top-N limit when requested.")
+    sort_direction: str = Field(default="", description="asc or desc when requested.")
+    clarification_question: str = Field(default="", description="Question to ask if the request is ambiguous.")
+    confidence: float = Field(default=0.0, description="Confidence from 0.0 to 1.0.")
 
 
 def _condition_coverage_dict(
@@ -140,6 +228,171 @@ def _unique_mentions(mentions: Iterable[tuple[int, str, str]]) -> list[tuple[int
         seen.add(key)
         unique.append((position, column, term))
     return unique
+
+
+def _resolve_column_reference(value: Any, table_context) -> str:
+    reference = str(value or "").strip()
+    if not reference:
+        return ""
+    lowered = reference.lower()
+    for column, terms in _column_terms(table_context).items():
+        if lowered == column.lower():
+            return column
+        if any(lowered == str(term or "").strip().lower() for term in terms):
+            return column
+    return ""
+
+
+def _resolve_column_list(values: Iterable[Any], table_context) -> tuple[str, ...]:
+    resolved: list[str] = []
+    for value in values or ():
+        column = _resolve_column_reference(value, table_context)
+        if column and column not in resolved:
+            resolved.append(column)
+    return tuple(resolved)
+
+
+def _requested_plot_type(text: str) -> str:
+    lowered = strip_internal_prompt_context(text or "").lower()
+    if any(token in lowered for token in ("pairplot", "pair plot", "scatter matrix", "산점도 행렬")):
+        return "pairplot"
+    if any(token in lowered for token in ("stacked bar", "stacked_bar", "누적 막대", "누적막대")):
+        return "stacked_bar"
+    if any(token in lowered for token in ("grouped bar", "grouped_bar", "그룹 막대", "그룹막대")):
+        return "grouped_bar"
+    if any(token in lowered for token in ("scatter", "산점도")):
+        return "scatter"
+    if any(token in lowered for token in ("heatmap", "히트맵", "상관", "correlation", "corr")):
+        return "heatmap"
+    if any(token in lowered for token in ("line", "라인", "시계열", "추이", "trend")):
+        return "line"
+    if any(token in lowered for token in ("violin", "바이올린")):
+        return "violin"
+    if any(token in lowered for token in ("boxplot", "box plot", "박스플롯", "상자그림")):
+        return "boxplot"
+    if any(token in lowered for token in ("histogram", "hist", "히스토그램")):
+        return "histogram"
+    if any(token in lowered for token in ("bar", "막대")):
+        return "bar"
+    return ""
+
+
+def _unmatched_identifier_tokens(text: str) -> list[str]:
+    ignore = {
+        "chart",
+        "plot",
+        "scatter",
+        "line",
+        "heatmap",
+        "pairplot",
+        "bar",
+        "boxplot",
+        "histogram",
+        "x",
+        "y",
+    }
+    tokens = re.findall(r"[A-Za-z_][A-Za-z0-9_]*", strip_internal_prompt_context(text or ""))
+    return [token for token in tokens if token.lower() not in ignore]
+
+
+def _axis_token_spans(text: str, axis: str) -> list[tuple[int, int]]:
+    lowered = strip_internal_prompt_context(text or "").lower()
+    axis_text = axis.lower()
+    patterns = [
+        rf"{axis_text}\s*(?:축|axis|-axis)",
+        rf"{axis_text}\s*=",
+    ]
+    spans: list[tuple[int, int]] = []
+    for pattern in patterns:
+        spans.extend((match.start(), match.end()) for match in re.finditer(pattern, lowered))
+    return sorted(spans)
+
+
+def _resolve_axis_column(text: str, table_context, axis: str) -> str:
+    mentions = _unique_mentions(_find_column_mentions(text, table_context))
+    if not mentions:
+        return ""
+    for start, end in _axis_token_spans(text, axis):
+        preceding = [
+            (start - position, column)
+            for position, column, term in mentions
+            if position <= start and start - position <= max(80, len(str(term)) + 20)
+        ]
+        if preceding:
+            return sorted(preceding)[0][1]
+        following = [
+            (position - end, column)
+            for position, column, _ in mentions
+            if position >= end and position - end <= 80
+        ]
+        if following:
+            return sorted(following)[0][1]
+    return ""
+
+
+def _mentioned_columns_by_semantic(
+    text: str,
+    table_context,
+    semantic_types: dict[str, str],
+    semantic_type: str,
+) -> list[str]:
+    columns: list[str] = []
+    for _, column, _ in _unique_mentions(_find_column_mentions(text, table_context)):
+        if semantic_types.get(column) == semantic_type and column not in columns:
+            columns.append(column)
+    return columns
+
+
+def _build_clarification_plan(
+    text: str,
+    *,
+    default_table: str,
+    question: str,
+    resolution_debug: Optional[dict[str, Any]] = None,
+) -> ControlledPlan:
+    return ControlledPlan(
+        intent="VISUALIZE",
+        task="clarification_required",
+        target_column="",
+        table=(default_table or "").strip(),
+        plot_type="clarification_required",
+        clarification_question=question,
+        confidence=0.0,
+        resolution_debug={
+            **(resolution_debug or {}),
+            "failure_reason": "clarification_required",
+            "user_query": text,
+        },
+    )
+
+
+def _parse_top_n(text: str) -> Optional[int]:
+    lowered = strip_internal_prompt_context(text or "").lower()
+    match = re.search(r"(?:top|상위)\s*(\d+)\s*(?:개|건|명)?", lowered)
+    if match:
+        return int(match.group(1))
+    return None
+
+
+def _normalize_plot_type(value: Any) -> str:
+    plot_type = str(value or "").strip().lower().replace("-", "_").replace(" ", "_")
+    aliases = {
+        "hist": "histogram",
+        "corr": "heatmap",
+        "correlation": "heatmap",
+        "correlation_heatmap": "heatmap",
+        "grouped": "grouped_bar",
+        "stacked": "stacked_bar",
+        "clarify": "clarification_required",
+    }
+    return aliases.get(plot_type, plot_type)
+
+
+def _normalize_aggregation(value: Any, *, default: str = "") -> str:
+    aggregation = str(value or "").strip().lower()
+    if aggregation == "mean":
+        aggregation = "avg"
+    return aggregation if aggregation in AGGREGATIONS else default
 
 
 def _parenthetical_target_candidate(
@@ -753,6 +1006,313 @@ def _resolve_plan_parts(text: str, context) -> dict[str, Any]:
     }
 
 
+def _explicit_visualization_plan(
+    text: str,
+    *,
+    default_table: str,
+    context,
+    parts: dict[str, Any],
+) -> Optional[ControlledPlan]:
+    requested_plot = _requested_plot_type(text)
+    if not requested_plot:
+        return None
+
+    semantic_types = parts["semantic_types"]
+    mentions = _unique_mentions(_find_column_mentions(text, context))
+    mentioned_columns = [column for _, column, _ in mentions]
+    numeric_mentions = _mentioned_columns_by_semantic(text, context, semantic_types, "numeric")
+    datetime_mentions = _mentioned_columns_by_semantic(text, context, semantic_types, "datetime")
+    categorical_mentions = _mentioned_columns_by_semantic(text, context, semantic_types, "categorical")
+    x_column = _resolve_axis_column(text, context, "x")
+    y_column = _resolve_axis_column(text, context, "y")
+    filters: Dict[str, Any] = dict(parts["range_filters"])
+    filters.update(parts["categorical_filters"])
+    for column in sorted(parts["explicit_filter_columns"]):
+        if column not in {x_column, y_column, parts["target_column"]}:
+            filters[column] = "yes"
+    top_n = _parse_top_n(text)
+    debug = {
+        **(parts["resolution_debug"] or {}),
+        "requested_plot_type": requested_plot,
+        "x_column": x_column,
+        "y_column": y_column,
+        "mentioned_columns": mentioned_columns,
+    }
+
+    if requested_plot == "scatter":
+        if not x_column and not y_column and len(numeric_mentions) >= 2:
+            x_column, y_column = numeric_mentions[0], numeric_mentions[1]
+        if x_column and y_column:
+            return ControlledPlan(
+                intent="VISUALIZE",
+                task="relationship",
+                target_column=y_column,
+                filters=filters,
+                table=(default_table or "").strip(),
+                filter_conditions=parts["comparison_filters"],
+                target_semantic_type=semantic_types.get(y_column, ""),
+                plot_type="scatter",
+                x_column=x_column,
+                y_column=y_column,
+                color_column=next((column for column in categorical_mentions if column not in {x_column, y_column}), ""),
+                top_n=top_n,
+                confidence=0.95,
+                resolution_debug=debug,
+            )
+        return _build_clarification_plan(
+            text,
+            default_table=default_table,
+            question="산점도를 그릴 X축 컬럼과 Y축 컬럼을 지정해주세요.",
+            resolution_debug=debug,
+        )
+
+    if requested_plot == "line":
+        if not x_column and datetime_mentions:
+            x_column = datetime_mentions[0]
+        if not y_column:
+            y_column = next((column for column in numeric_mentions if column != x_column), "")
+        if not x_column and len(mentioned_columns) >= 2:
+            x_column = mentioned_columns[0]
+            y_column = y_column or mentioned_columns[1]
+        if x_column and y_column:
+            return ControlledPlan(
+                intent="VISUALIZE",
+                task="trend",
+                target_column=y_column,
+                filters=filters,
+                table=(default_table or "").strip(),
+                filter_conditions=parts["comparison_filters"],
+                target_semantic_type=semantic_types.get(y_column, ""),
+                plot_type="line",
+                x_column=x_column,
+                y_column=y_column,
+                aggregation=_normalize_aggregation("", default=""),
+                confidence=0.9,
+                resolution_debug=debug,
+            )
+        return _build_clarification_plan(
+            text,
+            default_table=default_table,
+            question="라인 차트를 그릴 시간/순서 X축 컬럼과 값 Y축 컬럼을 지정해주세요.",
+            resolution_debug=debug,
+        )
+
+    if requested_plot == "heatmap":
+        aggregation = "correlation" if any(token in strip_internal_prompt_context(text).lower() for token in ("상관", "correlation", "corr")) else ""
+        if aggregation == "correlation":
+            columns = tuple(numeric_mentions)
+            if len(columns) >= 2:
+                return ControlledPlan(
+                    intent="VISUALIZE",
+                    task="correlation",
+                    target_column=columns[0],
+                    filters=filters,
+                    table=(default_table or "").strip(),
+                    filter_conditions=parts["comparison_filters"],
+                    target_semantic_type=semantic_types.get(columns[0], ""),
+                    plot_type="heatmap",
+                    columns=columns[:8],
+                    aggregation="correlation",
+                    confidence=0.9,
+                    resolution_debug=debug,
+                )
+        if not x_column and len(categorical_mentions) >= 1:
+            x_column = categorical_mentions[0]
+        if not y_column and len(categorical_mentions) >= 2:
+            y_column = categorical_mentions[1]
+        value_column = next((column for column in numeric_mentions if column not in {x_column, y_column}), "")
+        if x_column and y_column:
+            return ControlledPlan(
+                intent="VISUALIZE",
+                task="pivot_heatmap",
+                target_column=value_column or x_column,
+                filters=filters,
+                table=(default_table or "").strip(),
+                filter_conditions=parts["comparison_filters"],
+                target_semantic_type=semantic_types.get(value_column or x_column, ""),
+                plot_type="heatmap",
+                x_column=x_column,
+                y_column=y_column,
+                value_column=value_column,
+                aggregation="avg" if value_column else "count",
+                confidence=0.85,
+                resolution_debug=debug,
+            )
+        return _build_clarification_plan(
+            text,
+            default_table=default_table,
+            question="히트맵을 만들 컬럼을 2개 이상 지정해주세요. 상관 히트맵이면 numeric 컬럼들을, 피벗 히트맵이면 X/Y 컬럼을 알려주세요.",
+            resolution_debug=debug,
+        )
+
+    if requested_plot == "pairplot":
+        columns = tuple(numeric_mentions[:5])
+        if len(columns) >= 2:
+            return ControlledPlan(
+                intent="VISUALIZE",
+                task="pairplot",
+                target_column=columns[0],
+                filters=filters,
+                table=(default_table or "").strip(),
+                filter_conditions=parts["comparison_filters"],
+                target_semantic_type=semantic_types.get(columns[0], ""),
+                plot_type="pairplot",
+                columns=columns,
+                confidence=0.85,
+                resolution_debug=debug,
+            )
+        return _build_clarification_plan(
+            text,
+            default_table=default_table,
+            question="pairplot을 만들 numeric 컬럼을 2개 이상 지정해주세요.",
+            resolution_debug=debug,
+        )
+
+    if requested_plot in {"grouped_bar", "stacked_bar"}:
+        if not x_column and categorical_mentions:
+            x_column = categorical_mentions[0]
+        group_column = parts.get("group_column") or next(
+            (column for column in categorical_mentions if column != x_column),
+            "",
+        )
+        value_column = next((column for column in numeric_mentions if column not in {x_column, group_column}), "")
+        if x_column and group_column:
+            return ControlledPlan(
+                intent="VISUALIZE",
+                task=requested_plot,
+                target_column=x_column,
+                filters=filters,
+                table=(default_table or "").strip(),
+                filter_conditions=parts["comparison_filters"],
+                target_semantic_type=semantic_types.get(x_column, ""),
+                group_column=group_column,
+                plot_type=requested_plot,
+                x_column=x_column,
+                value_column=value_column,
+                aggregation="sum" if value_column else "count",
+                top_n=top_n,
+                confidence=0.85,
+                resolution_debug=debug,
+            )
+        return _build_clarification_plan(
+            text,
+            default_table=default_table,
+            question="막대를 나눌 기준 컬럼과 그룹 컬럼을 지정해주세요.",
+            resolution_debug=debug,
+        )
+
+    if requested_plot in {"histogram", "boxplot", "violin", "bar"}:
+        target_column = parts["target_column"]
+        if target_column:
+            return ControlledPlan(
+                intent="VISUALIZE",
+                task="distribution",
+                target_column=target_column,
+                filters=filters,
+                table=(default_table or "").strip(),
+                rank_column=parts["rank_column"],
+                rank_percent=parts["rank_percent"],
+                rank_direction=parts["rank_direction"],
+                filter_conditions=parts["comparison_filters"],
+                target_semantic_type=semantic_types.get(target_column, ""),
+                group_column=parts["group_column"],
+                group_values=parts["group_values"],
+                group_mode="separate" if "각각" in strip_internal_prompt_context(text).lower() else "grouped",
+                plot_type=requested_plot,
+                top_n=top_n,
+                confidence=0.85,
+                resolution_debug=debug,
+            )
+        return _build_clarification_plan(
+            text,
+            default_table=default_table,
+            question="시각화할 컬럼을 지정해주세요.",
+            resolution_debug=debug,
+        )
+
+    return None
+
+
+def _validate_llm_plan(
+    llm_plan: LLMVisualizationPlan,
+    *,
+    user_query: str,
+    default_table: str,
+    table_context,
+) -> Optional[ControlledPlan]:
+    plot_type = _normalize_plot_type(llm_plan.plot_type)
+    if plot_type == "clarification_required":
+        return _build_clarification_plan(
+            user_query,
+            default_table=default_table,
+            question=llm_plan.clarification_question or "어떤 컬럼과 차트 유형으로 시각화할지 지정해주세요.",
+            resolution_debug={"planner_source": "llm", "llm_plot_type": llm_plan.plot_type},
+        )
+    if plot_type not in SUPPORTED_PLOT_TYPES:
+        return None
+
+    context = coerce_table_context(table_context)
+    semantic_types = _semantic_types(context)
+    target_column = _resolve_column_reference(llm_plan.target_column, context)
+    x_column = _resolve_column_reference(llm_plan.x_column, context)
+    y_column = _resolve_column_reference(llm_plan.y_column, context)
+    group_column = _resolve_column_reference(llm_plan.group_column, context)
+    color_column = _resolve_column_reference(llm_plan.color_column, context)
+    value_column = _resolve_column_reference(llm_plan.value_column, context)
+    columns = _resolve_column_list(llm_plan.columns, context)
+    aggregation = _normalize_aggregation(
+        llm_plan.aggregation,
+        default="correlation" if plot_type == "heatmap" and columns and not x_column else "",
+    )
+
+    if plot_type in {"scatter", "line"} and not (x_column and y_column):
+        return None
+    if plot_type in {"histogram", "boxplot", "violin", "bar"} and not target_column:
+        target_column = y_column or x_column or (columns[0] if columns else "")
+    if plot_type in {"grouped_bar", "stacked_bar"}:
+        target_column = target_column or x_column
+        if not (target_column and group_column):
+            return None
+    if plot_type == "heatmap" and not (len(columns) >= 2 or (x_column and y_column)):
+        return None
+    if plot_type == "pairplot" and len(columns) < 2:
+        return None
+
+    return ControlledPlan(
+        intent="VISUALIZE",
+        task=(
+            "correlation" if plot_type == "heatmap" and columns
+            else "pivot_heatmap" if plot_type == "heatmap"
+            else "pairplot" if plot_type == "pairplot"
+            else "relationship" if plot_type == "scatter"
+            else "trend" if plot_type == "line"
+            else plot_type if plot_type in {"grouped_bar", "stacked_bar"}
+            else "distribution"
+        ),
+        target_column=target_column or y_column or x_column or (columns[0] if columns else ""),
+        filters={},
+        table=(default_table or "").strip(),
+        target_semantic_type=semantic_types.get(target_column or y_column or x_column or (columns[0] if columns else ""), ""),
+        group_column=group_column,
+        plot_type=plot_type,
+        x_column=x_column,
+        y_column=y_column,
+        columns=columns,
+        color_column=color_column,
+        value_column=value_column,
+        aggregation=aggregation,
+        top_n=llm_plan.top_n,
+        sort_direction=str(llm_plan.sort_direction or "").strip().lower(),
+        clarification_question=llm_plan.clarification_question,
+        confidence=max(0.0, min(1.0, float(llm_plan.confidence or 0.0))),
+        resolution_debug={
+            "planner_source": "llm",
+            "llm_plot_type": llm_plan.plot_type,
+            "validated_plot_type": plot_type,
+        },
+    )
+
+
 def explain_controlled_plan_failure(
     user_query: str,
     *,
@@ -760,7 +1320,7 @@ def explain_controlled_plan_failure(
 ) -> dict[str, Any]:
     text = user_query or ""
     lowered = text.lower()
-    wants_visual = any(token in lowered for token in ("시각화", "분포", "그래프", "차트", "plot", "chart"))
+    wants_visual = any(token in lowered for token in VISUAL_REQUEST_TOKENS)
     if not wants_visual:
         return {"failure_reason": "not_visual_request"}
     if not is_trained_table_context(table_context):
@@ -782,7 +1342,7 @@ def build_controlled_plan(
 
     text = user_query or ""
     lowered = text.lower()
-    wants_visual = any(token in lowered for token in ("시각화", "분포", "그래프", "차트", "plot", "chart"))
+    wants_visual = any(token in lowered for token in VISUAL_REQUEST_TOKENS)
     if not wants_visual:
         return None
 
@@ -794,6 +1354,15 @@ def build_controlled_plan(
     if not candidates:
         return None
     parts = _resolve_plan_parts(text, context)
+    explicit_plan = _explicit_visualization_plan(
+        text,
+        default_table=default_table,
+        context=context,
+        parts=parts,
+    )
+    if explicit_plan is not None:
+        return explicit_plan
+
     semantic_types = parts["semantic_types"]
     rank_direction = parts["rank_direction"]
     rank_percent = parts["rank_percent"]
@@ -806,7 +1375,14 @@ def build_controlled_plan(
     explicit_filter_columns = parts["explicit_filter_columns"]
     target_column = parts["target_column"]
     if not target_column:
-        return None
+        if _unmatched_identifier_tokens(text) and not parts["resolution_debug"].get("column_mentions"):
+            return None
+        return _build_clarification_plan(
+            text,
+            default_table=default_table,
+            question="시각화할 컬럼이나 원하는 차트 유형을 지정해주세요.",
+            resolution_debug=parts["resolution_debug"],
+        )
 
     filters: Dict[str, Any] = dict(range_filters)
     filters.update(categorical_filters)
@@ -815,8 +1391,10 @@ def build_controlled_plan(
             filters[column] = "yes"
 
     task = "distribution"
+    plot_type = ""
     if group_column and group_values:
         task = "grouped_distribution"
+        plot_type = "grouped_bar"
     elif rank_column and rank_percent is not None:
         task = "ranked_distribution"
 
@@ -834,12 +1412,148 @@ def build_controlled_plan(
         group_column=group_column,
         group_values=group_values,
         group_mode="separate" if "각각" in lowered else "grouped",
+        plot_type=plot_type,
+        top_n=_parse_top_n(text),
+        confidence=0.8,
         resolution_debug=parts["resolution_debug"],
     )
 
 
+def build_llm_visualization_plan(
+    llm,
+    user_query: str,
+    *,
+    default_table: str = "",
+    table_context=None,
+) -> Optional[ControlledPlan]:
+    """Ask the LLM for chart roles, then validate against TableContext and deterministic rules."""
+
+    if not is_trained_table_context(table_context):
+        return None
+
+    fallback_plan = build_controlled_plan(
+        user_query,
+        default_table=default_table,
+        table_context=table_context,
+    )
+    if llm is None or not _PYDANTIC_AVAILABLE:
+        return fallback_plan
+
+    try:
+        from langchain_core.prompts import ChatPromptTemplate
+    except Exception:
+        return fallback_plan
+
+    context = coerce_table_context(table_context)
+    columns_summary = []
+    for column in getattr(context, "columns", []) or []:
+        if not getattr(column, "name", ""):
+            continue
+        aliases = ", ".join(getattr(column, "aliases", [])[:5])
+        alias_text = f"; aliases={aliases}" if aliases else ""
+        columns_summary.append(
+            f"- {column.name}: dtype={column.dtype}, semantic={column.semantic_type}{alias_text}"
+        )
+
+    system_text = """You are Telly's visualization planner.
+Choose the best chart type and column roles for the user's request.
+
+Supported chart types:
+histogram, boxplot, violin, bar, grouped_bar, stacked_bar, scatter, line, heatmap, pairplot.
+
+Rules:
+- Use only columns from the provided table context.
+- If the user explicitly names a chart type or axis, preserve it.
+- For scatter and line, provide x_column and y_column.
+- For correlation heatmap or pairplot, provide columns.
+- For grouped_bar or stacked_bar, provide target/x column plus group_column.
+- If the request is too ambiguous, return plot_type=clarification_required and ask one concise Korean question.
+- Do not create SQL or code."""
+
+    prompt = ChatPromptTemplate.from_messages(
+        [
+            ("system", system_text + "\n\nTable context:\n{columns_summary}"),
+            ("human", "{user_query}"),
+        ]
+    )
+
+    try:
+        chain = prompt | llm.with_structured_output(LLMVisualizationPlan)
+        llm_plan = chain.invoke(
+            {
+                "columns_summary": "\n".join(columns_summary),
+                "user_query": user_query,
+            }
+        )
+    except NotImplementedError:
+        try:
+            from langchain_core.output_parsers import PydanticOutputParser
+
+            parser = PydanticOutputParser(pydantic_object=LLMVisualizationPlan)
+            fallback_prompt = ChatPromptTemplate.from_messages(
+                [
+                    ("system", system_text + "\n\nTable context:\n{columns_summary}\n\n{format_instructions}"),
+                    ("human", "{user_query}"),
+                ]
+            )
+            fallback_chain = fallback_prompt | llm | parser
+            llm_plan = fallback_chain.invoke(
+                {
+                    "columns_summary": "\n".join(columns_summary),
+                    "user_query": user_query,
+                    "format_instructions": parser.get_format_instructions(),
+                }
+            )
+        except Exception:
+            return fallback_plan
+    except Exception:
+        return fallback_plan
+
+    validated = _validate_llm_plan(
+        llm_plan,
+        user_query=user_query,
+        default_table=default_table,
+        table_context=context,
+    )
+    if validated is None:
+        return fallback_plan
+    if (
+        validated.task == "clarification_required"
+        and fallback_plan is not None
+        and getattr(fallback_plan, "task", "") != "clarification_required"
+        and getattr(fallback_plan, "plot_type", "")
+    ):
+        return ControlledPlan(
+            **{
+                **asdict(fallback_plan),
+                "resolution_debug": {
+                    **(getattr(fallback_plan, "resolution_debug", {}) or {}),
+                    "planner_source": "deterministic_fallback",
+                    "fallback_reason": "llm_requested_clarification_for_explicit_visualization",
+                },
+            }
+        )
+
+    fallback_debug = getattr(fallback_plan, "resolution_debug", {}) if fallback_plan is not None else {}
+    return ControlledPlan(
+        **{
+            **asdict(validated),
+            "filters": getattr(fallback_plan, "filters", {}) if fallback_plan is not None else {},
+            "filter_conditions": getattr(fallback_plan, "filter_conditions", ()) if fallback_plan is not None else (),
+            "rank_column": getattr(fallback_plan, "rank_column", ""),
+            "rank_percent": getattr(fallback_plan, "rank_percent", None),
+            "rank_direction": getattr(fallback_plan, "rank_direction", ""),
+            "resolution_debug": {
+                **fallback_debug,
+                **(validated.resolution_debug or {}),
+                "fallback_plan_task": getattr(fallback_plan, "task", "") if fallback_plan is not None else "",
+            },
+        }
+    )
+
+
 def build_sql_from_plan(plan: ControlledPlan, *, limit: Optional[int] = None) -> str:
-    if plan.intent != "VISUALIZE" or not plan.target_column or not plan.table:
+    if plan.intent != "VISUALIZE" or not plan.table:
         raise ValueError("Unsupported controlled plan.")
 
     selected_columns = required_columns_for_plan(plan)
@@ -848,6 +1562,10 @@ def build_sql_from_plan(plan: ControlledPlan, *, limit: Optional[int] = None) ->
 
     clauses = _filter_clauses(plan.filters, plan.filter_conditions)
     limit_value = limit if limit is not None else DEFAULT_CONTROLLED_SQL_LIMIT
+    plot_type = _normalize_plot_type(getattr(plan, "plot_type", ""))
+
+    if getattr(plan, "task", "") == "clarification_required" or plot_type == "clarification_required":
+        raise ValueError("Clarification plan cannot be converted to SQL.")
 
     if plan.task == "grouped_distribution":
         if not plan.group_column:
@@ -862,6 +1580,40 @@ def build_sql_from_plan(plan: ControlledPlan, *, limit: Optional[int] = None) ->
             f"FROM {plan.table}{where_sql} "
             f"GROUP BY {plan.group_column}, {plan.target_column} "
             f"ORDER BY {plan.group_column}, stat_count DESC "
+            f"LIMIT {limit_value}"
+        )
+
+    if plot_type in {"grouped_bar", "stacked_bar"} and plan.group_column:
+        x_column = plan.x_column or plan.target_column
+        if not x_column:
+            raise ValueError("Grouped bar plan has no x column.")
+        aggregation = _normalize_aggregation(plan.aggregation, default="count")
+        value_column = plan.value_column
+        where_sql = f" WHERE {' AND '.join(clauses)}" if clauses else ""
+        if value_column and aggregation != "count":
+            stat_expr = f"{aggregation.upper()}({value_column}) AS stat_value"
+        else:
+            stat_expr = "COUNT(*) AS stat_count"
+        order_column = "stat_value" if "stat_value" in stat_expr else "stat_count"
+        return (
+            f"SELECT {x_column}, {plan.group_column}, {stat_expr} "
+            f"FROM {plan.table}{where_sql} "
+            f"GROUP BY {x_column}, {plan.group_column} "
+            f"ORDER BY {x_column}, {order_column} DESC "
+            f"LIMIT {limit_value}"
+        )
+
+    if plot_type == "heatmap" and plan.x_column and plan.y_column:
+        aggregation = _normalize_aggregation(plan.aggregation, default="count")
+        where_sql = f" WHERE {' AND '.join(clauses)}" if clauses else ""
+        if plan.value_column and aggregation != "count":
+            stat_expr = f"{aggregation.upper()}({plan.value_column}) AS stat_value"
+        else:
+            stat_expr = "COUNT(*) AS stat_count"
+        return (
+            f"SELECT {plan.x_column}, {plan.y_column}, {stat_expr} "
+            f"FROM {plan.table}{where_sql} "
+            f"GROUP BY {plan.x_column}, {plan.y_column} "
             f"LIMIT {limit_value}"
         )
 
@@ -947,9 +1699,15 @@ def _filter_clauses(filters: Dict[str, Any], filter_conditions: Iterable[FilterC
 
 
 def required_columns_for_plan(plan: ControlledPlan) -> list[str]:
-    columns = [plan.target_column]
-    if getattr(plan, "group_column", ""):
-        columns.append(plan.group_column)
+    columns = [
+        getattr(plan, "target_column", ""),
+        getattr(plan, "x_column", ""),
+        getattr(plan, "y_column", ""),
+        getattr(plan, "group_column", ""),
+        getattr(plan, "color_column", ""),
+        getattr(plan, "value_column", ""),
+    ]
+    columns.extend(str(column) for column in getattr(plan, "columns", ()) or ())
     columns.extend(str(column) for column in plan.filters.keys())
     columns.extend(condition.column for condition in getattr(plan, "filter_conditions", ()) or ())
     if getattr(plan, "rank_column", ""):
@@ -961,13 +1719,22 @@ def controlled_plan_to_dict(plan: ControlledPlan) -> dict[str, Any]:
     return asdict(plan)
 
 
+def _require_columns(df: pd.DataFrame, columns: Iterable[str]) -> None:
+    missing = [column for column in columns if column and column not in df.columns]
+    if missing:
+        raise ValueError(f"Column not found: {missing}")
+
+
 def select_visualization_config(plan: ControlledPlan, df: pd.DataFrame) -> VisualizationConfig:
-    if plan.target_column not in df.columns:
-        raise ValueError(f"Column not found: {plan.target_column}")
+    plot_type = _normalize_plot_type(getattr(plan, "plot_type", ""))
+    if getattr(plan, "task", "") == "clarification_required" or plot_type == "clarification_required":
+        raise ValueError("Clarification required before visualization.")
 
     if plan.task == "grouped_distribution":
         if not plan.group_column or plan.group_column not in df.columns:
             raise ValueError(f"Group column not found: {plan.group_column}")
+        if plan.target_column not in df.columns:
+            raise ValueError(f"Column not found: {plan.target_column}")
         return VisualizationConfig(
             plot_type="grouped_bar",
             column=plan.target_column,
@@ -976,23 +1743,100 @@ def select_visualization_config(plan: ControlledPlan, df: pd.DataFrame) -> Visua
             group_mode=plan.group_mode or "grouped",
         )
 
+    if plot_type in {"scatter", "line"}:
+        _require_columns(df, [plan.x_column, plan.y_column, plan.color_column])
+        return VisualizationConfig(
+            plot_type=plot_type,
+            column=plan.y_column,
+            x_column=plan.x_column,
+            y_column=plan.y_column,
+            color_column=plan.color_column,
+            top_n=plan.top_n,
+            sort_direction=plan.sort_direction,
+        )
+
+    if plot_type == "pairplot":
+        columns = tuple(plan.columns or ())
+        _require_columns(df, columns)
+        if len(columns) < 2:
+            raise ValueError("Pairplot requires at least two columns.")
+        return VisualizationConfig(plot_type="pairplot", column=columns[0], columns=columns[:5])
+
+    if plot_type == "heatmap":
+        columns = tuple(plan.columns or ())
+        if columns:
+            _require_columns(df, columns)
+            if len(columns) < 2:
+                raise ValueError("Correlation heatmap requires at least two columns.")
+            return VisualizationConfig(
+                plot_type="heatmap",
+                column=columns[0],
+                columns=columns[:8],
+                aggregation=plan.aggregation or "correlation",
+            )
+        aggregate_result_present = any(column in df.columns for column in ("stat_value", "stat_count"))
+        _require_columns(
+            df,
+            [
+                plan.x_column,
+                plan.y_column,
+                "" if aggregate_result_present else plan.value_column,
+            ],
+        )
+        return VisualizationConfig(
+            plot_type="heatmap",
+            column=plan.value_column or plan.x_column,
+            x_column=plan.x_column,
+            y_column=plan.y_column,
+            value_column=plan.value_column,
+            aggregation=plan.aggregation or "count",
+        )
+
+    if plot_type in {"grouped_bar", "stacked_bar"} and plan.group_column:
+        x_column = plan.x_column or plan.target_column
+        _require_columns(df, [x_column, plan.group_column, plan.value_column])
+        return VisualizationConfig(
+            plot_type=plot_type,
+            column=x_column,
+            group_column=plan.group_column,
+            x_column=x_column,
+            value_column=plan.value_column,
+            aggregation=plan.aggregation or "count",
+            top_n=plan.top_n,
+            sort_direction=plan.sort_direction,
+        )
+
+    if plan.target_column not in df.columns:
+        raise ValueError(f"Column not found: {plan.target_column}")
+
+    if plot_type in {"histogram", "boxplot", "violin", "bar"}:
+        return VisualizationConfig(
+            plot_type=plot_type,
+            column=plan.target_column,
+            top_n=plan.top_n,
+            sort_direction=plan.sort_direction,
+        )
+
     chart_type = choose_distribution_chart(df[plan.target_column])
     if chart_type == "hist":
-        plot_type = "histogram"
+        selected_plot_type = "histogram"
     elif chart_type == "boxplot":
-        plot_type = "boxplot"
+        selected_plot_type = "boxplot"
     elif chart_type == "bar":
-        plot_type = "bar"
+        selected_plot_type = "bar"
     else:
         raise ValueError(f"Unsupported plot type for column: {plan.target_column}")
-    return VisualizationConfig(plot_type=plot_type, column=plan.target_column)
+    return VisualizationConfig(plot_type=selected_plot_type, column=plan.target_column, top_n=plan.top_n)
 
 
 __all__ = [
     "ControlledPlan",
     "FilterCondition",
+    "LLMVisualizationPlan",
+    "SUPPORTED_PLOT_TYPES",
     "VisualizationConfig",
     "build_controlled_plan",
+    "build_llm_visualization_plan",
     "build_sql_from_plan",
     "controlled_plan_to_dict",
     "explain_controlled_plan_failure",

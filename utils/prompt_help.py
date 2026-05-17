@@ -49,7 +49,8 @@ AUTO_SQL_KEYWORDS = (
 )
 
 VIZ_KEYWORDS = (
-    "분포", "본포", "그려", "그래프", "시각화", "차트", "플롯", "plot", "chart", "graph", "추이", "상관관계"
+    "분포", "본포", "그려", "그래프", "시각화", "차트", "플롯", "plot", "chart", "graph",
+    "추이", "상관관계", "scatter", "산점도", "line", "heatmap", "히트맵", "pairplot", "막대", "상관",
 )
 
 COMMAND_EXAMPLE_LINES = [

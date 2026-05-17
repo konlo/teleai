@@ -477,9 +477,97 @@
 - **Artifact Update**: Updated `AGENTS.md` to reference the new chatbot project management skill together with `project_logger`.
 - **Outcome**: Future Telly chatbot work can use a dedicated skill for routing, parser-loop, UI validation, regression, and handoff workflows.
 
+### [2026-05-17 21:06:57] [Agent: Codex] User Request: test scenario 수행해줘
+- **Action** [Agent: Codex]: Started project-instructed test scenario execution by reading configured project-management skills and inspecting `test_scenario.py`.
+- **Action** [Agent: Codex]: Ran scenario listing and `--static-only`; static regression suite passed.
+- **Finding** [Agent: Codex]: Active registry batch failed when a second visual chat E2E scenario ran in the same process because `importlib.util.find_spec("dotenv")` was called after a shim module with `__spec__ = None` had already been installed.
+- **Artifact Update**: Updated `test_scenario.py` so visual chat E2E dependency shim detection treats modules already present in `sys.modules` as available before calling `find_spec()`.
+- **Action** [Agent: Codex]: Re-ran `py_compile`, all 12 active registry scenarios with report output, and `--static-only`.
+- **Outcome**: `test_scenario.py` syntax check passed; active registry scenarios passed 12/12 with report `/tmp/telly_scenario_report_20260517.json`; static regression suite passed.
+
+### [2026-05-17 21:09:44] [Agent: Codex] User Request: 수정 내용 add하고 commit 해줘
+- **Action** [Agent: Codex]: Preparing to stage and commit the verified `test_scenario.py` and `project_progress.md` changes.
+
+### [2026-05-17 21:11:27] [Agent: Codex] User Request: push해줘
+- **Action** [Agent: Codex]: Preparing to include this request log in the local commit and push branch `agentic_ai` to `origin/agentic_ai`.
+
 ### [2026-04-25 09:00:00] [Agent: Codex] User Request: Create AGENTS.md so this project can use `/Users/najongseong/git_repository/skills-registry/.../SKILL.md`
 - **Action** [Agent: Codex]: Located actual skill files under `/Users/najongseong/git_repository/skills-registry`.
 - **Action** [Agent: Codex]: Selected `/Users/najongseong/git_repository/skills-registry/project_management/project_logger/SKILL.md` because the current request followed the prior question about project logging skills.
 - **Artifact Update**: Created `AGENTS.md` with project-level instructions to use the `project_logger` skill.
 - **Artifact Update**: Initialized `project_progress.md` using the logger skill template.
 - **Outcome**: Future work in this project has explicit instructions to maintain a persistent progress log.
+
+### [2026-05-11 21:51:24] [Agent: Codex] User Request: Investigate why latitude X-axis and longitude Y-axis scatter request produced a longitude histogram
+- **Action** [Agent: Codex]: Started tracing controlled production planning and visualization config selection for explicit X/Y scatter prompts.
+- **Finding** [Agent: Codex]: Reproduced the prompt against the saved `workspace.default.stormtrooper` TableContext. The controlled planner creates `task=distribution`, `target_column=longitude`, `required_columns=[longitude]`, and visualization config `plot_type=histogram`.
+- **Finding** [Agent: Codex]: Root cause is structural: `ControlledPlan`/`VisualizationConfig` only model one target column plus optional grouping, with no `x_column`/`y_column` or `scatter` task. `_resolve_target_column()` chooses the column nearest the visual token, which picks `longitude`; `select_visualization_config()` then treats numeric longitude as a distribution and maps 48k rows to histogram.
+- **Outcome**: Cause identified. A fix should add explicit XY/scatter parsing, required columns for both axes, SQL selection of both columns, validation for both numeric axes, and a scatter renderer/regression test for the latitude/longitude prompt.
+
+### [2026-05-11 21:58:33] [Agent: Codex] User Request: Implement representative visualization support expansion plan
+- **Action** [Agent: Codex]: Started implementing LLM-first controlled visualization planning with deterministic validation/execution for representative chart types.
+- **Artifact Update**: Extended controlled visualization plan/config models with plot type, axis roles, multi-column roles, aggregation, top-N, confidence, and clarification fields.
+- **Artifact Update**: Added LLM-first visualization planner fallback support plus deterministic explicit handling for scatter, line, heatmap, pairplot, grouped/stacked bar, violin, histogram, boxplot, and bar.
+- **Artifact Update**: Expanded deterministic SQL/data readiness/rendering paths for raw XY charts, aggregation charts, correlation/pivot heatmaps, pairplots, and ambiguous-request clarification.
+- **Action** [Agent: Codex]: Added static regression coverage for the stormtrooper latitude/longitude scatter prompt and representative line/grouped/stacked/heatmap/pairplot/clarification scenarios.
+- **Action** [Agent: Codex]: Ran `PYTHONPYCACHEPREFIX=/tmp/teleai_pycache python3 -m py_compile utils/chatbot_plan.py utils/data_context.py utils/controlled_visualization.py utils/prompt_help.py core/chat_flow.py test_scenario.py`.
+- **Action** [Agent: Codex]: Ran `MPLBACKEND=Agg XDG_CACHE_HOME=/tmp/teleai_cache MPLCONFIGDIR=/tmp/teleai_mplconfig python3 -u test_scenario.py --static-only`.
+- **Outcome**: Representative controlled visualization expansion implemented; static regression suite passed with the new scatter and representative chart scenarios.
+
+### [2026-05-11 22:17:12] [Agent: Codex] User Request: Implement visualization self-eval test scenario for the new chart support
+- **Action** [Agent: Codex]: Started adding an offline CLI self-eval suite that exercises the chatbot controlled visualization path without live LLM or Databricks calls.
+- **Artifact Update**: Added `run_visualization_self_eval_tests()` to `test_scenario.py` with offline cases for scatter, line, correlation heatmap, pivot heatmap, pairplot, grouped bar, stacked bar, ambiguous clarification, histogram regression, and grouped distribution regression.
+- **Artifact Update**: Added `--visual-self-eval` CLI entrypoint and included the visualization self-eval suite in `--static-only`.
+- **Action** [Agent: Codex]: Ran `PYTHONPYCACHEPREFIX=/tmp/teleai_pycache python3 -m py_compile test_scenario.py`.
+- **Action** [Agent: Codex]: Ran `MPLBACKEND=Agg XDG_CACHE_HOME=/tmp/teleai_cache MPLCONFIGDIR=/tmp/teleai_mplconfig python3 -u test_scenario.py --visual-self-eval`.
+- **Action** [Agent: Codex]: Ran `MPLBACKEND=Agg XDG_CACHE_HOME=/tmp/teleai_cache MPLCONFIGDIR=/tmp/teleai_mplconfig python3 -u test_scenario.py --static-only`.
+- **Outcome**: Visualization self-eval passed 10/10 cases and the full static suite passed with self-eval included.
+
+### [2026-05-11 22:23:44] [Agent: Codex] User Request: Implement visualization chat E2E test with real local data loading
+- **Action** [Agent: Codex]: Started adding a CLI chat E2E test that calls `handle_user_query()` and loads real `stormtrooper.csv` data through a test SQL execution shim.
+- **Artifact Update**: Added `run_visualization_chat_e2e_tests()` and the `--visual-chat-e2e` CLI path in `test_scenario.py`.
+- **Artifact Update**: Added a test-only local CSV SQL execution shim that reads required columns from `/Users/najongseong/dataset/stormtrooper.csv`, updates `df_A_data`/`df_A_state`, records runtime trace events, and lets `handle_user_query()` attach the controlled matplotlib figure.
+- **Decision** [Agent: Codex]: Kept `--visual-chat-e2e` separate from `--static-only` because it depends on the local stormtrooper CSV path, while `--visual-self-eval` remains part of static regression.
+- **Action** [Agent: Codex]: Ran `PYTHONPYCACHEPREFIX=/tmp/teleai_pycache python3 -m py_compile test_scenario.py`.
+- **Action** [Agent: Codex]: Ran `MPLBACKEND=Agg XDG_CACHE_HOME=/tmp/teleai_cache MPLCONFIGDIR=/tmp/teleai_mplconfig python3 -u test_scenario.py --visual-chat-e2e`.
+- **Action** [Agent: Codex]: Ran `MPLBACKEND=Agg XDG_CACHE_HOME=/tmp/teleai_cache MPLCONFIGDIR=/tmp/teleai_mplconfig python3 -u test_scenario.py --visual-self-eval`.
+- **Action** [Agent: Codex]: Ran `MPLBACKEND=Agg XDG_CACHE_HOME=/tmp/teleai_cache MPLCONFIGDIR=/tmp/teleai_mplconfig python3 -u test_scenario.py --static-only`.
+- **Outcome**: Chat E2E passed with real CSV-backed scatter flow: deterministic SQL selected `latitude` and `longitude`, `df_A_data` loaded 50,000 rows, `df_A_state` captured both axis columns, the Controlled Executor message attached a matplotlib figure, and runtime trace contained the required controlled planning/reload/SQL/visualization/result events.
+
+### [2026-05-11 22:31:16] [Agent: Codex] User Request: Enable actual chatbot prompt testing for visualization E2E
+- **Action** [Agent: Codex]: Started extending the chat E2E CLI so a user-supplied prompt can be passed through the real `handle_user_query()` path instead of only the hardcoded scatter regression prompt.
+- **Artifact Update**: Added `--prompt`/`--chat-prompt` parsing for `--visual-chat-e2e`; default prompt keeps strict scatter regression checks, while custom prompts run a generic chatbot-turn success check and print generated SQL, df state, controlled summary, status, attached figures, and trace events.
+- **Action** [Agent: Codex]: Ran `PYTHONPYCACHEPREFIX=/tmp/teleai_pycache python3 -m py_compile test_scenario.py`.
+- **Action** [Agent: Codex]: Ran `MPLBACKEND=Agg XDG_CACHE_HOME=/tmp/teleai_cache MPLCONFIGDIR=/tmp/teleai_mplconfig python3 -u test_scenario.py --visual-chat-e2e`.
+- **Action** [Agent: Codex]: Ran `MPLBACKEND=Agg XDG_CACHE_HOME=/tmp/teleai_cache MPLCONFIGDIR=/tmp/teleai_mplconfig python3 -u test_scenario.py --visual-chat-e2e --prompt 'pressure_altitude 분포를 histogram으로 그려줘'`.
+- **Outcome**: Custom chatbot prompt testing works through the real `handle_user_query()` flow; the sample custom prompt loaded `pressure_altitude` from the local CSV, produced a histogram figure, and passed the E2E checks.
+
+### [2026-05-11 22:33:58] [Agent: Codex] User Request: Make visual chat E2E save actual plot images for manual inspection
+- **Action** [Agent: Codex]: Started adding PNG export for matplotlib payloads produced by `--visual-chat-e2e`, so users can inspect the real rendered chart instead of relying only on PASS/FAIL.
+- **Artifact Update**: Added PNG export for `--visual-chat-e2e` matplotlib figures, with default output under `/tmp/teleai_visual_chat_e2e` and optional `--figure-dir`/`--save-figures-dir` override.
+- **Action** [Agent: Codex]: Ran `PYTHONPYCACHEPREFIX=/tmp/teleai_pycache python3 -m py_compile test_scenario.py`.
+- **Action** [Agent: Codex]: Ran `MPLBACKEND=Agg XDG_CACHE_HOME=/tmp/teleai_cache MPLCONFIGDIR=/tmp/teleai_mplconfig python3 -u test_scenario.py --visual-chat-e2e --prompt 'latitude X축 longitude Y축 scatter plot를 그려줘'`.
+- **Outcome**: The scatter E2E now writes a real PNG image at `/tmp/teleai_visual_chat_e2e/latitude_X축_longitude_Y축_scatter_plot를_그려줘_1.png`; the file is a 989x590 PNG and the rendered scatter plot was visually inspected.
+
+### [2026-05-11 22:36:33] [Agent: Codex] User Request: Verify whether the generated chart matches the user's intended chart
+- **Action** [Agent: Codex]: Started adding explicit visual intent assertions and metadata export to the visualization chat E2E path, so tests can validate chart type and column roles in addition to saving the image.
+- **Artifact Update**: Added expectation flags for `--visual-chat-e2e`: `--expect-plot-type`, `--expect-x`, `--expect-y`, `--expect-column`, `--expect-group`, `--expect-value`, and `--expect-columns`.
+- **Artifact Update**: Added metadata JSON export beside saved plot PNGs, including prompt, generated SQL, dataframe shape/columns, controlled plan, visualization config, figure paths, and trace events.
+- **Action** [Agent: Codex]: Ran `PYTHONPYCACHEPREFIX=/tmp/teleai_pycache python3 -m py_compile test_scenario.py`.
+- **Action** [Agent: Codex]: Ran `MPLBACKEND=Agg XDG_CACHE_HOME=/tmp/teleai_cache MPLCONFIGDIR=/tmp/teleai_mplconfig python3 -u test_scenario.py --visual-chat-e2e --prompt 'latitude X축 longitude Y축 scatter plot를 그려줘' --expect-plot-type scatter --expect-x latitude --expect-y longitude`.
+- **Action** [Agent: Codex]: Ran a negative check with `--expect-plot-type histogram` and confirmed the command fails when the actual chart type does not match the expectation.
+- **Outcome**: Visual intent matching is now testable: the scatter prompt passes only when the controlled visualization config matches `plot_type=scatter`, `x_column=latitude`, and `y_column=longitude`, and the metadata file records the exact evidence for manual review.
+
+### [2026-05-11 22:40:26] [Agent: Codex] User Request: Implement numbered chatbot test scenario management system
+- **Action** [Agent: Codex]: Started implementing a numbered scenario registry, registry-driven CLI commands, standardized expectation checks, and JSON report output for sustained chatbot quality management.
+- **Artifact Update**: Added `test_scenarios/scenario_registry.json` with numbered route, plan, visual, chat E2E, context, trace, and disabled live/manual scenarios.
+- **Artifact Update**: Extended `test_scenario.py` with `--scenario-list`, `--scenario-run`, `--scenario-suite`, and `--scenario-report` support.
+- **Artifact Update**: Standardized registry result payloads with scenario id/title/suite/priority, expected values, actual config/SQL/data/trace/artifacts, checks, failures, and JSON report summary.
+- **Action** [Agent: Codex]: Ran `PYTHONPYCACHEPREFIX=/tmp/teleai_pycache python3 -m py_compile test_scenario.py`.
+- **Action** [Agent: Codex]: Ran `python3 -u test_scenario.py --scenario-list`.
+- **Action** [Agent: Codex]: Ran `MPLBACKEND=Agg XDG_CACHE_HOME=/tmp/teleai_cache MPLCONFIGDIR=/tmp/teleai_mplconfig python3 -u test_scenario.py --scenario-run CHAT-E2E-001 --scenario-report /tmp/telly_scenario_report.json`.
+- **Action** [Agent: Codex]: Ran `MPLBACKEND=Agg XDG_CACHE_HOME=/tmp/teleai_cache MPLCONFIGDIR=/tmp/teleai_mplconfig python3 -u test_scenario.py --scenario-suite visual --scenario-report /tmp/telly_visual_suite_report.json`.
+- **Action** [Agent: Codex]: Ran `python3 -u test_scenario.py --scenario-run ROUTE-001,CTX-001,TRACE-001 --scenario-report /tmp/telly_static_scenarios_report.json`.
+- **Action** [Agent: Codex]: Ran `python3 -u test_scenario.py --scenario-run PLAN-001`.
+- **Action** [Agent: Codex]: Ran `MPLBACKEND=Agg XDG_CACHE_HOME=/tmp/teleai_cache MPLCONFIGDIR=/tmp/teleai_mplconfig python3 -u test_scenario.py --static-only`.
+- **Outcome**: Numbered scenario management is implemented; listing works, single scenario execution works with report output, visual suite passed 7/7, route/context/trace scenarios passed 3/3, PLAN-001 passed, and the existing static suite still passes.

@@ -101,15 +101,36 @@ def coerce_dataframe_state(value: Any) -> Optional[DataFrameState]:
 
 def requirement_from_controlled_plan(plan: Any, *, min_rows: int = 1) -> DataRequirement:
     target_column = str(getattr(plan, "target_column", "") or "").strip()
+    x_column = str(getattr(plan, "x_column", "") or "").strip()
+    y_column = str(getattr(plan, "y_column", "") or "").strip()
+    group_column = str(getattr(plan, "group_column", "") or "").strip()
+    color_column = str(getattr(plan, "color_column", "") or "").strip()
+    value_column = str(getattr(plan, "value_column", "") or "").strip()
+    multi_columns = [
+        str(column).strip()
+        for column in (getattr(plan, "columns", ()) or ())
+        if str(column).strip()
+    ]
     filters = getattr(plan, "filters", {}) or {}
     filter_columns = [str(column).strip() for column in filters.keys()]
     condition_columns = [
         str(getattr(condition, "column", "") or "").strip()
         for condition in (getattr(plan, "filter_conditions", ()) or ())
     ]
-    group_column = str(getattr(plan, "group_column", "") or "").strip()
     return DataRequirement(
-        columns=normalize_columns([target_column, group_column, *filter_columns, *condition_columns]),
+        columns=normalize_columns(
+            [
+                target_column,
+                x_column,
+                y_column,
+                group_column,
+                color_column,
+                value_column,
+                *multi_columns,
+                *filter_columns,
+                *condition_columns,
+            ]
+        ),
         filters=filters,
         task=str(getattr(plan, "task", "") or ""),
         source_table=str(getattr(plan, "table", "") or ""),
