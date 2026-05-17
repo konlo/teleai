@@ -3790,12 +3790,17 @@ def _install_visual_chat_e2e_dependency_shims() -> None:
     """Install minimal UI/LangChain shims so the chat flow can be imported offline."""
     import importlib.util
 
-    if importlib.util.find_spec("dotenv") is None:
+    def _missing_module(module_name: str) -> bool:
+        if module_name in sys.modules:
+            return False
+        return importlib.util.find_spec(module_name) is None
+
+    if _missing_module("dotenv"):
         dotenv_module = types.ModuleType("dotenv")
         dotenv_module.load_dotenv = lambda *args, **kwargs: False
         sys.modules["dotenv"] = dotenv_module
 
-    if importlib.util.find_spec("streamlit") is None:
+    if _missing_module("streamlit"):
         streamlit_module = types.ModuleType("streamlit")
 
         class _SessionState(dict):
@@ -3855,7 +3860,7 @@ def _install_visual_chat_e2e_dependency_shims() -> None:
         streamlit_module.columns = _columns
         sys.modules["streamlit"] = streamlit_module
 
-    if importlib.util.find_spec("langchain") is None:
+    if _missing_module("langchain"):
         langchain_module = types.ModuleType("langchain")
         agents_module = types.ModuleType("langchain.agents")
         callbacks_module = types.ModuleType("langchain.callbacks")
@@ -3877,7 +3882,7 @@ def _install_visual_chat_e2e_dependency_shims() -> None:
         sys.modules["langchain.agents"] = agents_module
         sys.modules["langchain.callbacks"] = callbacks_module
 
-    if importlib.util.find_spec("langchain_core") is None:
+    if _missing_module("langchain_core"):
         core_module = types.ModuleType("langchain_core")
         callbacks_pkg = types.ModuleType("langchain_core.callbacks")
         callbacks_base_module = types.ModuleType("langchain_core.callbacks.base")
@@ -3917,7 +3922,7 @@ def _install_visual_chat_e2e_dependency_shims() -> None:
         sys.modules["langchain_core.runnables.history"] = runnables_history_module
         sys.modules["langchain_core.tools"] = tools_module
 
-    if importlib.util.find_spec("langchain_community") is None:
+    if _missing_module("langchain_community"):
         community_module = types.ModuleType("langchain_community")
         callbacks_pkg = types.ModuleType("langchain_community.callbacks")
         streamlit_callbacks_module = types.ModuleType("langchain_community.callbacks.streamlit")
