@@ -1,3 +1,12 @@
+# New installations open the persistent analysis agent directly.
+from importlib.metadata import version as _package_version
+if int(_package_version('langchain').split('.')[0]) >= 1:
+    from pathlib import Path as _Path
+    import runpy as _runpy
+    _runpy.run_path(str(_Path(__file__).resolve().parent/'ui/analysis_page.py'), run_name='__main__')
+    import streamlit as _st
+    _st.stop()
+
 import streamlit as st
 from ui.style import inject_base_styles
 

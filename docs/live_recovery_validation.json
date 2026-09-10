@@ -1,0 +1,77 @@
+{
+  "result": {
+    "status": "awaiting_approval",
+    "requests": [
+      {
+        "id": "b3070037-da09-434c-b9a2-a0a83bf7960a",
+        "source": "workspace.default.bank_loan",
+        "query": "SELECT `age`, COUNT(*) AS `__frequency` FROM `workspace`.`default`.`bank_loan` WHERE `age` IS NOT NULL GROUP BY `age`",
+        "reason": "age 히스토그램에 필요한 값별 빈도를 조회합니다. 원본 행 전체는 가져오지 않습니다.",
+        "connection": "validation",
+        "status": "proposed",
+        "result": null
+      }
+    ]
+  },
+  "elapsed_seconds": 19.45,
+  "database_calls": 0,
+  "events": [
+    {
+      "time": "2026-09-07T23:29:16.722097+00:00",
+      "event": "run_started",
+      "run_id": "f26e8eb2b81f40fdba67a4e7be6739a0",
+      "operation": "resume"
+    },
+    {
+      "time": "2026-09-07T23:29:16.726583+00:00",
+      "event": "run_completed",
+      "run_id": "f26e8eb2b81f40fdba67a4e7be6739a0",
+      "status": "answered",
+      "elapsed_seconds": 0.005
+    },
+    {
+      "time": "2026-09-07T23:29:16.726898+00:00",
+      "event": "run_started",
+      "run_id": "bf77f433df0c484785bd1f290d02a27d",
+      "operation": "submit"
+    },
+    {
+      "time": "2026-09-07T23:29:16.729544+00:00",
+      "event": "context_budget",
+      "run_id": "bf77f433df0c484785bd1f290d02a27d",
+      "characters": 2830,
+      "limit": 32000
+    },
+    {
+      "time": "2026-09-07T23:29:30.347916+00:00",
+      "event": "tool_started",
+      "run_id": "bf77f433df0c484785bd1f290d02a27d",
+      "tool": "prepare_histogram"
+    },
+    {
+      "time": "2026-09-07T23:29:30.396782+00:00",
+      "event": "tool_completed",
+      "run_id": "bf77f433df0c484785bd1f290d02a27d",
+      "tool": "prepare_histogram"
+    },
+    {
+      "time": "2026-09-07T23:29:30.398654+00:00",
+      "event": "context_budget",
+      "run_id": "bf77f433df0c484785bd1f290d02a27d",
+      "characters": 3344,
+      "limit": 32000
+    },
+    {
+      "time": "2026-09-07T23:29:36.169359+00:00",
+      "event": "recovery_transition",
+      "run_id": "bf77f433df0c484785bd1f290d02a27d",
+      "tool": "query_databricks"
+    },
+    {
+      "time": "2026-09-07T23:29:36.172434+00:00",
+      "event": "run_paused",
+      "run_id": "bf77f433df0c484785bd1f290d02a27d",
+      "reason": "approval"
+    }
+  ]
+}

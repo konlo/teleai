@@ -1,0 +1,48 @@
+{
+  "request": "age에 대한 histogram을 보여줘",
+  "original_error_id": "dd20c5a3dc1d",
+  "cause": "context_budget_exceeded",
+  "live_recheck_events": [
+    {
+      "time": "2026-09-07T13:32:00.816762+00:00",
+      "event": "run_started",
+      "run_id": "aa8f3e1e40c642d288ecf95750016620",
+      "operation": "resume"
+    },
+    {
+      "time": "2026-09-07T13:32:00.822260+00:00",
+      "event": "context_budget",
+      "run_id": "aa8f3e1e40c642d288ecf95750016620",
+      "characters": 19949,
+      "limit": 32000
+    },
+    {
+      "time": "2026-09-07T13:32:45.368765+00:00",
+      "event": "tool_started",
+      "run_id": "aa8f3e1e40c642d288ecf95750016620",
+      "tool": "recommend_chart_images"
+    },
+    {
+      "time": "2026-09-07T13:32:45.370058+00:00",
+      "event": "tool_rejected",
+      "run_id": "aa8f3e1e40c642d288ecf95750016620",
+      "tool": "recommend_chart_images",
+      "reason": "dataset_not_loaded"
+    },
+    {
+      "time": "2026-09-07T13:34:37.317412+00:00",
+      "event": "context_budget",
+      "run_id": "aa8f3e1e40c642d288ecf95750016620",
+      "characters": 6123,
+      "limit": 32000
+    },
+    {
+      "time": "2026-09-07T13:36:37.945636+00:00",
+      "event": "run_completed",
+      "run_id": "aa8f3e1e40c642d288ecf95750016620",
+      "elapsed_seconds": 277.124
+    }
+  ],
+  "verdict": "FAIL: context error fixed, but model did not request data and falsely claimed analysis; no histogram produced",
+  "followup_fix": "ToolOutcomeMiddleware blocks final success claims after failed tool. Contract tests passed; this additional guard has not been tested in another live model run."
+}

@@ -1,0 +1,179 @@
+{
+  "generated_at": "2026-09-06T04:02:51.048590+00:00",
+  "runtime": "current AnalysisSession",
+  "remote_database_executions": 0,
+  "checks": [
+    {
+      "name": "unapproved_zero_execution",
+      "status": "PASS",
+      "evidence": {
+        "executions": 0
+      }
+    },
+    {
+      "name": "duplicate_execution_blocked",
+      "status": "PASS",
+      "evidence": {
+        "executions": 1
+      }
+    },
+    {
+      "name": "rejected_zero_additional_execution",
+      "status": "PASS",
+      "evidence": {
+        "executions": 1
+      }
+    },
+    {
+      "name": "status_question_preserves_pending",
+      "status": "FAIL",
+      "evidence": {
+        "actual": "invalidated"
+      }
+    },
+    {
+      "name": "session_recreation_preserves_history",
+      "status": "FAIL",
+      "evidence": {
+        "before_messages": 2,
+        "after_messages": 0,
+        "scope": "새 세션 객체 복원 경로 검사; 실제 프로세스 강제종료 검증은 후속"
+      }
+    },
+    {
+      "name": "truncated_population_requires_proposal",
+      "status": "PASS",
+      "evidence": {
+        "decision": "query_source"
+      }
+    },
+    {
+      "name": "chart_artifacts_are_real_png",
+      "status": "PASS",
+      "evidence": {
+        "cards": 3
+      }
+    }
+  ],
+  "live_turns": [
+    {
+      "prompt": "보유 데이터에서 2026-08의 value 평균을 계산해줘.",
+      "expected": 40,
+      "actual": 40.0,
+      "status": "PASS",
+      "answer": {
+        "status": "answered",
+        "text": "2026년 8월의 `value` 평균은 **40.0**입니다.\n\n이 결과는 원본 데이터(`acceptance.synthetic_events`)를 기반으로 'period'가 '2026-08'인 데이터를 필터링하여 계산된 집계값입니다."
+      },
+      "observations": [
+        {
+          "status": "ready",
+          "dataset": {
+            "id": "d2edd2c0-131c-4461-8ab2-22851aff8335",
+            "source": "acceptance.synthetic_events",
+            "columns": [
+              "avg_value"
+            ],
+            "rows": 1,
+            "coverage": "complete",
+            "conditions": [],
+            "predicate_known": false,
+            "grain": "aggregate",
+            "aggregation": "SELECT AVG(value) AS avg_value FROM data WHERE period = '2026-08'",
+            "snapshot": "",
+            "query": "SELECT AVG(value) AS avg_value FROM data WHERE period = '2026-08'",
+            "parent_id": "9e590ad1-3cea-4437-bd2b-321b5de43e61"
+          },
+          "preview": [
+            {
+              "avg_value": 40.0
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "prompt": "그중 segment A만 계산해줘.",
+      "expected": 40,
+      "actual": 40.0,
+      "status": "PASS",
+      "answer": {
+        "status": "answered",
+        "text": "네, 알겠습니다.\n\n'period'가 '2026-08'이고 'segment'가 'A'인 경우의 `value` 평균은 **40.0**입니다.\n\n이 결과는 이전 계산(전체 segment)과 동일한 기간을 유지하면서 조건을 'segment = A'로 좁혀서 다시 계산된 집계값입니다."
+      },
+      "observations": [
+        {
+          "status": "ready",
+          "dataset": {
+            "id": "fff5e632-4fbc-4084-8fa5-36aeee7f64bb",
+            "source": "acceptance.synthetic_events",
+            "columns": [
+              "avg_value"
+            ],
+            "rows": 1,
+            "coverage": "complete",
+            "conditions": [],
+            "predicate_known": false,
+            "grain": "aggregate",
+            "aggregation": "SELECT AVG(value) AS avg_value FROM data WHERE period = '2026-08' AND segment = 'A'",
+            "snapshot": "",
+            "query": "SELECT AVG(value) AS avg_value FROM data WHERE period = '2026-08' AND segment = 'A'",
+            "parent_id": "9e590ad1-3cea-4437-bd2b-321b5de43e61"
+          },
+          "preview": [
+            {
+              "avg_value": 40.0
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "prompt": "평균 말고 중앙값으로 바꿔줘.",
+      "status": "FAIL",
+      "error_type": "TimeoutError"
+    },
+    {
+      "prompt": "같은 그룹의 이전 달 중앙값도 계산해줘.",
+      "expected": 4,
+      "actual": 4.0,
+      "status": "PASS",
+      "answer": {
+        "status": "answered",
+        "text": "네, 알겠습니다.\n\n'segment A' 그룹의 **이전 달(2026년 7월)** `value` 중앙값은 **4.0**입니다.\n\n요약하자면:\n*   **기간:** 2026-07 (이전 달)\n*   **조건:** segment = 'A'\n*   **지표:** 중앙값 (Median)"
+      },
+      "observations": [
+        {
+          "status": "ready",
+          "dataset": {
+            "id": "9d4c3422-71a2-459d-a102-40fa13d3ccb0",
+            "source": "acceptance.synthetic_events",
+            "columns": [
+              "median_value"
+            ],
+            "rows": 1,
+            "coverage": "complete",
+            "conditions": [],
+            "predicate_known": false,
+            "grain": "aggregate",
+            "aggregation": "SELECT MEDIAN(value) AS median_value FROM data WHERE period = '2026-07' AND segment = 'A'",
+            "snapshot": "",
+            "query": "SELECT MEDIAN(value) AS median_value FROM data WHERE period = '2026-07' AND segment = 'A'",
+            "parent_id": "9e590ad1-3cea-4437-bd2b-321b5de43e61"
+          },
+          "preview": [
+            {
+              "median_value": 4.0
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "limitations": [
+    "No live Databricks",
+    "No LangGraph runtime yet",
+    "Final answer semantic correctness requires review",
+    "No real process crash or browser journey in this harness"
+  ]
+}

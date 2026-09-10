@@ -1,0 +1,1613 @@
+[
+  {
+    "id": "TEST_001",
+    "category": "기초 데이터 탐색 및 요약 통계",
+    "difficulty": "Basic",
+    "question": "고객 데이터의 전체 행과 열 개수, 메모리 사용량을 확인해줘.",
+    "target_dfs": [
+      "df"
+    ],
+    "expected_output_type": "text",
+    "python_code": "# TEST_001: 행과 열 개수 및 메모리 사용량 확인\nprint(f\"Shape: {df.shape}\")\nmem_kb = df.memory_usage(deep=True).sum() / 1024\nprint(f\"Memory Usage: {mem_kb:.2f} KB\")\nprint(\"Data Types:\")\nprint(df.dtypes.value_counts())\n",
+    "execution_result": {
+      "status": "PASS",
+      "has_figure": false,
+      "stdout_preview": "Shape: (1000, 18)\nMemory Usage: 738.20 KB\nData Types:\nobject     11\nint64       5\nfloat64     2\nName: count, dtype: int64"
+    }
+  },
+  {
+    "id": "TEST_002",
+    "category": "기초 데이터 탐색 및 요약 통계",
+    "difficulty": "Basic",
+    "question": "각 컬럼별 결측치(Null) 개수와 전체 대비 결측 비율(%)을 내림차순으로 보여줘.",
+    "target_dfs": [
+      "df"
+    ],
+    "expected_output_type": "table",
+    "python_code": "# TEST_002: 결측치 현황 및 비율 산출\nnull_count = df.isnull().sum()\nnull_ratio = (null_count / len(df)) * 100\nnull_df = pd.DataFrame({\"null_count\": null_count, \"null_ratio_pct\": null_ratio.round(2)})\nresult = null_df[null_df[\"null_count\"] > 0].sort_values(by=\"null_count\", ascending=False)\nprint(\"Columns with missing values:\")\nprint(result)\n",
+    "execution_result": {
+      "status": "PASS",
+      "has_figure": false,
+      "stdout_preview": "Columns with missing values:\n                    null_count  null_ratio_pct\nsatisfaction_score          52             5.2"
+    }
+  },
+  {
+    "id": "TEST_003",
+    "category": "기초 데이터 탐색 및 요약 통계",
+    "difficulty": "Basic",
+    "question": "수치형 컬럼들에 대한 기술통계 요약표(평균, 표준편차, 사분위수 등)를 소수점 둘째 자리까지 생성해줘.",
+    "target_dfs": [
+      "df"
+    ],
+    "expected_output_type": "table",
+    "python_code": "# TEST_003: 수치형 컬럼 기술통계 요약\nnum_desc = df.describe().round(2)\nprint(\"Descriptive Statistics for Numeric Columns:\")\nprint(num_desc)\n",
+    "execution_result": {
+      "status": "PASS",
+      "has_figure": false,
+      "stdout_preview": "Descriptive Statistics for Numeric Columns:\n           age  credit_score  ...  campaign_contact_count  satisfaction_score\ncount  1000.00       1000.00  ...                 1000.00              948.00\nmean     47.25        680.51  ...                    3.46                3.37\nstd      16.29         74.12  ...                    1.53                1.12\nmin      19.00        392.00  ...                    1.00                1.00\n25%      34.00        632.00  ...                    2.00         "
+    }
+  },
+  {
+    "id": "TEST_004",
+    "category": "기초 데이터 탐색 및 요약 통계",
+    "difficulty": "Basic",
+    "question": "범주형 컬럼들의 고유값(Unique) 개수를 내림차순으로 확인해줘.",
+    "target_dfs": [
+      "df"
+    ],
+    "expected_output_type": "table",
+    "python_code": "# TEST_004: 범주형 컬럼 고유값 개수\ncat_cols = df.select_dtypes(include=['object']).columns\nunique_counts = df[cat_cols].nunique().sort_values(ascending=False)\nprint(\"Unique value counts in categorical columns:\")\nprint(unique_counts)\n",
+    "execution_result": {
+      "status": "PASS",
+      "has_figure": false,
+      "stdout_preview": "Unique value counts in categorical columns:\ncustomer_id         1000\nsignup_date          592\nlast_active_date     182\njob                   10\neducation              4\nservice_tier           4\nmarital                3\ndevice_type            3\ngender                 2\nhousing_loan           2\npersonal_loan          2\ndtype: int64"
+    }
+  },
+  {
+    "id": "TEST_005",
+    "category": "기초 데이터 탐색 및 요약 통계",
+    "difficulty": "Basic",
+    "question": "고객 연령(age)과 잔액(balance)의 최솟값, 최댓값, 중앙값(50%) 및 25%, 75% 분위수를 계산해줘.",
+    "target_dfs": [
+      "df"
+    ],
+    "expected_output_type": "table",
+    "python_code": "# TEST_005: 주요 분위수 산출\nquantiles = df[[\"age\", \"balance\"]].quantile([0.0, 0.25, 0.5, 0.75, 1.0])\nquantiles.index = [\"Min (0%)\", \"Q1 (25%)\", \"Median (50%)\", \"Q3 (75%)\", \"Max (100%)\"]\nprint(quantiles.round(2))\n",
+    "execution_result": {
+      "status": "PASS",
+      "has_figure": false,
+      "stdout_preview": "age   balance\nMin (0%)      19.00  -3177.75\nQ1 (25%)      34.00   1362.98\nMedian (50%)  47.00   3667.40\nQ3 (75%)      61.25   7098.03\nMax (100%)    75.00  64595.03"
+    }
+  },
+  {
+    "id": "TEST_006",
+    "category": "기초 데이터 탐색 및 요약 통계",
+    "difficulty": "Basic",
+    "question": "결측치가 존재하는 컬럼만 식별하고, 해당 컬럼의 유효값 평균과 결측 행 수를 출력해줘.",
+    "target_dfs": [
+      "df"
+    ],
+    "expected_output_type": "text",
+    "python_code": "# TEST_006: 결측치 존재 컬럼의 통계 확인\ncols_with_na = df.columns[df.isna().any()].tolist()\nfor col in cols_with_na:\n    n_na = df[col].isna().sum()\n    mean_valid = df[col].dropna().mean()\n    print(f\"컬럼 '{col}': 결측치 수 = {n_na}, 유효값 평균 = {mean_valid:.2f}\")\n",
+    "execution_result": {
+      "status": "PASS",
+      "has_figure": false,
+      "stdout_preview": "컬럼 'satisfaction_score': 결측치 수 = 52, 유효값 평균 = 3.37"
+    }
+  },
+  {
+    "id": "TEST_007",
+    "category": "기초 데이터 탐색 및 요약 통계",
+    "difficulty": "Basic",
+    "question": "전체 고객 중 이탈 고객(churn=1)과 유지 고객(churn=0)의 인원수와 백분율을 표로 요약해줘.",
+    "target_dfs": [
+      "df"
+    ],
+    "expected_output_type": "table",
+    "python_code": "# TEST_007: 이탈 고객 요약\nchurn_counts = df['churn'].value_counts()\nchurn_pct = (df['churn'].value_counts(normalize=True) * 100).round(2)\nsummary = pd.DataFrame({\"고객수\": churn_counts, \"비율(%)\": churn_pct})\nsummary.index = [\"유지 (0)\", \"이탈 (1)\"]\nprint(summary)\n",
+    "execution_result": {
+      "status": "PASS",
+      "has_figure": false,
+      "stdout_preview": "고객수  비율(%)\n유지 (0)  854   85.4\n이탈 (1)  146   14.6"
+    }
+  },
+  {
+    "id": "TEST_008",
+    "category": "기초 데이터 탐색 및 요약 통계",
+    "difficulty": "Basic",
+    "question": "서비스 등급(service_tier)별 고객 수와 전체 대비 비중(%)을 계산해줘.",
+    "target_dfs": [
+      "df"
+    ],
+    "expected_output_type": "table",
+    "python_code": "# TEST_008: 서비스 티어별 고객 비중\ntier_counts = df['service_tier'].value_counts()\ntier_pct = (df['service_tier'].value_counts(normalize=True) * 100).round(2)\ntier_summary = pd.DataFrame({\"고객수\": tier_counts, \"비율(%)\": tier_pct})\nprint(tier_summary)\n",
+    "execution_result": {
+      "status": "PASS",
+      "has_figure": false,
+      "stdout_preview": "고객수  비율(%)\nservice_tier            \nBronze        413   41.3\nSilver        361   36.1\nGold          158   15.8\nPlatinum       68    6.8"
+    }
+  },
+  {
+    "id": "TEST_009",
+    "category": "기초 데이터 탐색 및 요약 통계",
+    "difficulty": "Basic",
+    "question": "고객 연령(age)의 분포를 확인하기 위해 히스토그램과 KDE 곡선을 화면에 그려줘.",
+    "target_dfs": [
+      "df"
+    ],
+    "expected_output_type": "chart",
+    "python_code": "# TEST_009: 연령 분포 히스토그램 및 KDE\nimport matplotlib.pyplot as plt\nimport seaborn as sns\n\nplt.figure(figsize=(8, 4))\nsns.histplot(df['age'], kde=True, bins=25, color='steelblue')\nplt.title('고객 연령(Age) 분포')\nplt.xlabel('연령')\nplt.ylabel('인원수')\nplt.grid(True, linestyle='--', alpha=0.5)\nplt.tight_layout()\nplt.show()\n",
+    "execution_result": {
+      "status": "PASS",
+      "has_figure": true,
+      "stdout_preview": ""
+    }
+  },
+  {
+    "id": "TEST_010",
+    "category": "기초 데이터 탐색 및 요약 통계",
+    "difficulty": "Basic",
+    "question": "고객 계좌 잔액(balance)의 분포 형태와 이상치 유무를 확인하기 위해 박스플롯을 그려줘.",
+    "target_dfs": [
+      "df"
+    ],
+    "expected_output_type": "chart",
+    "python_code": "# TEST_010: 잔액 박스플롯 시각화\nimport matplotlib.pyplot as plt\nimport seaborn as sns\n\nplt.figure(figsize=(8, 3))\nsns.boxplot(x=df['balance'], color='lightseagreen')\nplt.title('고객 계좌 잔액(Balance) 박스플롯')\nplt.xlabel('잔액 ($)')\nplt.tight_layout()\nplt.show()\n",
+    "execution_result": {
+      "status": "PASS",
+      "has_figure": true,
+      "stdout_preview": ""
+    }
+  },
+  {
+    "id": "TEST_011",
+    "category": "조건부 필터링 및 서브셋 추출",
+    "difficulty": "Basic",
+    "question": "연령이 30세 이상 39세 이하인 30대 고객들의 인원수와 평균 잔액을 계산해줘.",
+    "target_dfs": [
+      "df"
+    ],
+    "expected_output_type": "text",
+    "python_code": "# TEST_011: 30대 고객 필터링 및 집계\nsub_30s = df[(df['age'] >= 30) & (df['age'] <= 39)]\nprint(f\"30대 고객 수: {len(sub_30s)}명\")\nprint(f\"30대 평균 잔액: {sub_30s['balance'].mean():.2f} 달러\")\n",
+    "execution_result": {
+      "status": "PASS",
+      "has_figure": false,
+      "stdout_preview": "30대 고객 수: 161명\n30대 평균 잔액: 5602.28 달러"
+    }
+  },
+  {
+    "id": "TEST_012",
+    "category": "조건부 필터링 및 서브셋 추출",
+    "difficulty": "Basic",
+    "question": "잔액(balance)이 0원 미만인 마이너스 통장 고객들의 인원수와 평균 연령, 주요 직업 상위 3개를 조회해줘.",
+    "target_dfs": [
+      "df"
+    ],
+    "expected_output_type": "text",
+    "python_code": "# TEST_012: 마이너스 잔액 고객 서브셋\nneg_balance = df[df['balance'] < 0]\nprint(f\"마이너스 잔액 고객 수: {len(neg_balance)}명\")\nprint(f\"평균 연령: {neg_balance['age'].mean():.1f}세\")\nprint(\"주요 직업 상위 3개:\")\nprint(neg_balance['job'].value_counts().head(3))\n",
+    "execution_result": {
+      "status": "PASS",
+      "has_figure": false,
+      "stdout_preview": "마이너스 잔액 고객 수: 126명\n평균 연령: 47.3세\n주요 직업 상위 3개:\njob\nblue-collar    26\nmanagement     25\nadmin.         19\nName: count, dtype: int64"
+    }
+  },
+  {
+    "id": "TEST_013",
+    "category": "조건부 필터링 및 서브셋 추출",
+    "difficulty": "Basic",
+    "question": "주택대출(housing_loan='yes')과 신용대출(personal_loan='yes')을 둘 다 보유한 다중 대출 고객들을 추출하고 전체 대비 비중을 구해줘.",
+    "target_dfs": [
+      "df"
+    ],
+    "expected_output_type": "text",
+    "python_code": "# TEST_013: 주택 및 신용대출 다중 보유자\nmulti_loan = df[(df['housing_loan'] == 'yes') & (df['personal_loan'] == 'yes')]\nratio = (len(multi_loan) / len(df)) * 100\nprint(f\"다중 대출 고객 수: {len(multi_loan)}명\")\nprint(f\"전체 고객 대비 비중: {ratio:.2f}%\")\n",
+    "execution_result": {
+      "status": "PASS",
+      "has_figure": false,
+      "stdout_preview": "다중 대출 고객 수: 74명\n전체 고객 대비 비중: 7.40%"
+    }
+  },
+  {
+    "id": "TEST_014",
+    "category": "조건부 필터링 및 서브셋 추출",
+    "difficulty": "Basic",
+    "question": "직업이 'management'이거나 'entrepreneur'인 고위 경영/사업가 고객 그룹의 평균 연소득을 계산해줘.",
+    "target_dfs": [
+      "df"
+    ],
+    "expected_output_type": "text",
+    "python_code": "# TEST_014: 경영/사업가 직군 고객 연소득\nmgmt_ent = df[df['job'].isin(['management', 'entrepreneur'])]\nprint(f\"해당 고객 수: {len(mgmt_ent)}명\")\nprint(f\"평균 연소득: {mgmt_ent['annual_income'].mean():.2f} 달러\")\n",
+    "execution_result": {
+      "status": "PASS",
+      "has_figure": false,
+      "stdout_preview": "해당 고객 수: 248명\n평균 연소득: 85101.10 달러"
+    }
+  },
+  {
+    "id": "TEST_015",
+    "category": "조건부 필터링 및 서브셋 추출",
+    "difficulty": "Intermediate",
+    "question": "신용점수(credit_score)가 750점 이상이고 연소득이 70,000 이상인 최우수 고객 서브셋을 필터링하고 인원수를 출력해줘.",
+    "target_dfs": [
+      "df"
+    ],
+    "expected_output_type": "text",
+    "python_code": "# TEST_015: 고신용/고소득 최우수 고객 필터링\nvip_filter = (df['credit_score'] >= 750) & (df['annual_income'] >= 70000)\nvip_df = df[vip_filter]\nprint(f\"조건 만족 고객 수: {len(vip_df)}명\")\nprint(f\"이들의 평균 잔액: {vip_df['balance'].mean():.2f} 달러\")\n",
+    "execution_result": {
+      "status": "PASS",
+      "has_figure": false,
+      "stdout_preview": "조건 만족 고객 수: 41명\n이들의 평균 잔액: 3803.26 달러"
+    }
+  },
+  {
+    "id": "TEST_016",
+    "category": "조건부 필터링 및 서브셋 추출",
+    "difficulty": "Basic",
+    "question": "접속 기기(device_type)가 'iOS' 또는 'Android'인 모바일 사용자 고객들만 필터링하여 총 몇 명인지 확인해줘.",
+    "target_dfs": [
+      "df"
+    ],
+    "expected_output_type": "text",
+    "python_code": "# TEST_016: 모바일 사용자 필터링\nmobile_users = df[df['device_type'].isin(['iOS', 'Android'])]\nprint(f\"모바일 사용자 수: {len(mobile_users)}명 (전체의 {len(mobile_users)/len(df)*100:.1f}%)\")\nprint(mobile_users['device_type'].value_counts())\n",
+    "execution_result": {
+      "status": "PASS",
+      "has_figure": false,
+      "stdout_preview": "모바일 사용자 수: 854명 (전체의 85.4%)\ndevice_type\nAndroid    436\niOS        418\nName: count, dtype: int64"
+    }
+  },
+  {
+    "id": "TEST_017",
+    "category": "조건부 필터링 및 서브셋 추출",
+    "difficulty": "Basic",
+    "question": "만족도 점수(satisfaction_score)가 입력되지 않은(결측치) 고객들의 평균 연소득과 평균 신용점수를 계산해줘.",
+    "target_dfs": [
+      "df"
+    ],
+    "expected_output_type": "text",
+    "python_code": "# TEST_017: 만족도 결측 고객 집계\nmissing_sat = df[df['satisfaction_score'].isna()]\nprint(f\"만족도 결측 고객 수: {len(missing_sat)}명\")\nprint(f\"평균 연소득: {missing_sat['annual_income'].mean():.2f} 달러\")\nprint(f\"평균 신용점수: {missing_sat['credit_score'].mean():.2f} 점\")\n",
+    "execution_result": {
+      "status": "PASS",
+      "has_figure": false,
+      "stdout_preview": "만족도 결측 고객 수: 52명\n평균 연소득: 51554.10 달러\n평균 신용점수: 679.38 점"
+    }
+  },
+  {
+    "id": "TEST_018",
+    "category": "조건부 필터링 및 서브셋 추출",
+    "difficulty": "Intermediate",
+    "question": "미혼('single')이면서 주택대출이 없는('no') 20대(20~29세) 고객 서브셋을 추출하고 인원수를 출력해줘.",
+    "target_dfs": [
+      "df"
+    ],
+    "expected_output_type": "text",
+    "python_code": "# TEST_018: 미혼 & 무대출 20대 고객\ncond = (df['marital'] == 'single') & (df['housing_loan'] == 'no') & (df['age'].between(20, 29))\nsubset = df[cond]\nprint(f\"미혼 & 주택대출 무 20대 고객 수: {len(subset)}명\")\nprint(f\"평균 잔액: {subset['balance'].mean():.2f} 달러\")\n",
+    "execution_result": {
+      "status": "PASS",
+      "has_figure": false,
+      "stdout_preview": "미혼 & 주택대출 무 20대 고객 수: 24명\n평균 잔액: 10392.70 달러"
+    }
+  },
+  {
+    "id": "TEST_019",
+    "category": "조건부 필터링 및 서브셋 추출",
+    "difficulty": "Intermediate",
+    "question": "잔액 기준 상위 5% 초과인 고액 자산가들의 기준 잔액(Cutoff)과 이들의 평균 연소득을 출력해줘.",
+    "target_dfs": [
+      "df"
+    ],
+    "expected_output_type": "text",
+    "python_code": "# TEST_019: 상위 5% 고액 자산가\ncutoff_95 = df['balance'].quantile(0.95)\ntop_5_pct = df[df['balance'] > cutoff_95]\nprint(f\"상위 5% 기준 잔액: {cutoff_95:.2f} 달러\")\nprint(f\"고액 자산가 인원수: {len(top_5_pct)}명\")\nprint(f\"고액 자산가 평균 연소득: {top_5_pct['annual_income'].mean():.2f} 달러\")\n",
+    "execution_result": {
+      "status": "PASS",
+      "has_figure": false,
+      "stdout_preview": "상위 5% 기준 잔액: 16768.65 달러\n고액 자산가 인원수: 50명\n고액 자산가 평균 연소득: 58745.56 달러"
+    }
+  },
+  {
+    "id": "TEST_020",
+    "category": "조건부 필터링 및 서브셋 추출",
+    "difficulty": "Intermediate",
+    "question": "40세 이상이면서 잔액이 10,000 달러 이상인 비이탈(churn=0) 고객들의 직업별 인원수 분포를 막대 차트로 시각화해줘.",
+    "target_dfs": [
+      "df"
+    ],
+    "expected_output_type": "chart",
+    "python_code": "# TEST_020: 특정 복합 조건 만족 고객의 직업별 막대 차트\nimport matplotlib.pyplot as plt\n\ncond = (df['age'] >= 40) & (df['balance'] >= 10000) & (df['churn'] == 0)\nsub = df[cond]\ncounts = sub['job'].value_counts()\n\nplt.figure(figsize=(9, 4))\ncounts.plot(kind='bar', color='coral')\nplt.title('40세 이상 & 잔액 $10,000 이상 비이탈 고객의 직업 분포')\nplt.xlabel('직업')\nplt.ylabel('고객 수')\nplt.xticks(rotation=45)\nplt.tight_layout()\nplt.show()\n",
+    "execution_result": {
+      "status": "PASS",
+      "has_figure": true,
+      "stdout_preview": ""
+    }
+  },
+  {
+    "id": "TEST_021",
+    "category": "그룹 집계 및 피벗 분석",
+    "difficulty": "Basic",
+    "question": "직업(job)별 고객 수와 평균 잔액을 계산하고, 평균 잔액이 높은 순으로 정렬해줘.",
+    "target_dfs": [
+      "df"
+    ],
+    "expected_output_type": "table",
+    "python_code": "# TEST_021: 직업별 고객수 및 평균 잔액 정렬\njob_agg = df.groupby('job').agg(고객수=('customer_id', 'count'), 평균잔액=('balance', 'mean'))\nresult = job_agg.sort_values(by='평균잔액', ascending=False).round(2)\nprint(result)\n",
+    "execution_result": {
+      "status": "PASS",
+      "has_figure": false,
+      "stdout_preview": "고객수     평균잔액\njob                        \nadmin.         133  6393.94\ntechnician     165  6246.28\nmanagement     215  5762.62\nservices        98  5703.36\nblue-collar    178  5631.82\nretired         65  5190.14\nself-employed   51  4990.65\nunemployed      30  4671.32\nentrepreneur    33  4278.29\nstudent         32  3905.14"
+    }
+  },
+  {
+    "id": "TEST_022",
+    "category": "그룹 집계 및 피벗 분석",
+    "difficulty": "Basic",
+    "question": "교육수준(education)별 연소득의 평균, 중앙값, 표준편차를 한 번에 다중 집계해줘.",
+    "target_dfs": [
+      "df"
+    ],
+    "expected_output_type": "table",
+    "python_code": "# TEST_022: 교육수준별 연소득 다중 집계\nedu_income = df.groupby('education')['annual_income'].agg(['mean', 'median', 'std']).round(2)\nprint(edu_income)\n",
+    "execution_result": {
+      "status": "PASS",
+      "has_figure": false,
+      "stdout_preview": "mean   median       std\neducation                             \nprimary    53625.89  49998.0  22699.52\nsecondary  53889.86  51525.0  22678.88\ntertiary   54194.15  50162.0  24041.25\nunknown    52184.33  55814.0  20102.83"
+    }
+  },
+  {
+    "id": "TEST_023",
+    "category": "그룹 집계 및 피벗 분석",
+    "difficulty": "Basic",
+    "question": "서비스 등급(service_tier)별로 고객 수, 평균 신용점수, 총 잔액 합계를 계산해줘.",
+    "target_dfs": [
+      "df"
+    ],
+    "expected_output_type": "table",
+    "python_code": "# TEST_023: 서비스 티어별 다중 집계\ntier_metrics = df.groupby('service_tier').agg(\n    고객수=('customer_id', 'count'),\n    평균신용점수=('credit_score', 'mean'),\n    총잔액합계=('balance', 'sum')\n).round(2)\nprint(tier_metrics)\n",
+    "execution_result": {
+      "status": "PASS",
+      "has_figure": false,
+      "stdout_preview": "고객수  평균신용점수       총잔액합계\nservice_tier                         \nBronze        413  689.80  2239318.00\nGold          158  677.66   814453.72\nPlatinum       68  665.04   338392.46\nSilver        361  674.05  2287390.21"
+    }
+  },
+  {
+    "id": "TEST_024",
+    "category": "그룹 집계 및 피벗 분석",
+    "difficulty": "Intermediate",
+    "question": "직업(job)과 결혼 상태(marital)에 따른 고객 수를 피벗 테이블(Pivot Table)로 집계해줘.",
+    "target_dfs": [
+      "df"
+    ],
+    "expected_output_type": "table",
+    "python_code": "# TEST_024: 직업 x 결혼상태 피벗 테이블\npivot_tbl = df.pivot_table(index='job', columns='marital', values='customer_id', aggfunc='count', fill_value=0)\nprint(pivot_tbl)\n",
+    "execution_result": {
+      "status": "PASS",
+      "has_figure": false,
+      "stdout_preview": "marital        divorced  married  single\njob                                     \nadmin.               14       79      40\nblue-collar          30       93      55\nentrepreneur          2       18      13\nmanagement           25      132      58\nretired               6       49      10\nself-employed         4       29      18\nservices              9       59      30\nstudent               3       18      11\ntechnician           16       99      50\nunemployed            3       15      12"
+    }
+  },
+  {
+    "id": "TEST_025",
+    "category": "그룹 집계 및 피벗 분석",
+    "difficulty": "Intermediate",
+    "question": "교육수준과 주택대출 보유 여부에 따른 평균 잔액 피벗 테이블을 생성하고, 행과 열의 전체 총계(margins=True)를 포함해줘.",
+    "target_dfs": [
+      "df"
+    ],
+    "expected_output_type": "table",
+    "python_code": "# TEST_025: 피벗 테이블 총계(margin) 산출\npivot_margin = df.pivot_table(index='education', columns='housing_loan', values='balance', aggfunc='mean', margins=True).round(2)\nprint(pivot_margin)\n",
+    "execution_result": {
+      "status": "PASS",
+      "has_figure": false,
+      "stdout_preview": "housing_loan       no       yes      All\neducation                               \nprimary       5814.25   4592.95  5180.56\nsecondary     6118.38   5936.44  6023.53\ntertiary      5944.80   4364.06  5110.27\nunknown       5127.17  10166.61  7705.49\nAll           5980.73   5404.87  5679.55"
+    }
+  },
+  {
+    "id": "TEST_026",
+    "category": "그룹 집계 및 피벗 분석",
+    "difficulty": "Intermediate",
+    "question": "서비스 등급(service_tier)별 이탈률(churn 평균)을 계산하고 막대 차트로 시각화해줘.",
+    "target_dfs": [
+      "df"
+    ],
+    "expected_output_type": "chart",
+    "python_code": "# TEST_026: 티어별 이탈률 막대 차트\nimport matplotlib.pyplot as plt\n\nchurn_by_tier = (df.groupby('service_tier')['churn'].mean() * 100).round(2)\nplt.figure(figsize=(7, 4))\nchurn_by_tier.plot(kind='bar', color='salmon')\nplt.title('서비스 티어별 고객 이탈률(%)')\nplt.xlabel('서비스 티어')\nplt.ylabel('이탈률 (%)')\nplt.xticks(rotation=0)\nplt.grid(axis='y', linestyle='--', alpha=0.6)\nplt.tight_layout()\nplt.show()\nprint(churn_by_tier)\n",
+    "execution_result": {
+      "status": "PASS",
+      "has_figure": true,
+      "stdout_preview": "service_tier\nBronze      13.32\nGold        18.99\nPlatinum    22.06\nSilver      12.74\nName: churn, dtype: float64"
+    }
+  },
+  {
+    "id": "TEST_027",
+    "category": "그룹 집계 및 피벗 분석",
+    "difficulty": "Intermediate",
+    "question": "직업군별로 잔액(balance)이 가장 높은 고객(Top 1)을 추출해줘.",
+    "target_dfs": [
+      "df"
+    ],
+    "expected_output_type": "table",
+    "python_code": "# TEST_027: 직업군별 최고 잔액 고객 추출\ntop1_per_job = df.sort_values('balance', ascending=False).groupby('job').head(1)[['job', 'customer_id', 'age', 'balance']]\nresult = top1_per_job.sort_values('balance', ascending=False).reset_index(drop=True)\nprint(result)\n",
+    "execution_result": {
+      "status": "PASS",
+      "has_figure": false,
+      "stdout_preview": "job customer_id  age   balance\n0       services    CUST0571   23  64595.03\n1     management    CUST0471   38  60130.79\n2     technician    CUST0969   68  56924.47\n3         admin.    CUST0767   24  53610.97\n4    blue-collar    CUST0857   51  52262.88\n5  self-employed    CUST0626   47  43486.63\n6        retired    CUST0850   55  39327.54\n7   entrepreneur    CUST0670   57  33528.48\n8     unemployed    CUST0890   39  25494.80\n9        student    CUST0851   59  11554.28"
+    }
+  },
+  {
+    "id": "TEST_028",
+    "category": "그룹 집계 및 피벗 분석",
+    "difficulty": "Intermediate",
+    "question": "연령대(20대 이하, 30대, 40대, 50대 이상) 구간을 만들고, 연령대별 평균 신용점수와 고객 수를 표로 요약해줘.",
+    "target_dfs": [
+      "df"
+    ],
+    "expected_output_type": "table",
+    "python_code": "# TEST_028: 연령대별 신용점수 및 고객수 요약\nbins = [0, 29, 39, 49, 120]\nlabels = ['20대 이하', '30대', '40대', '50대 이상']\nage_group = pd.cut(df['age'], bins=bins, labels=labels)\nage_summary = df.groupby(age_group).agg(고객수=('customer_id', 'count'), 평균신용점수=('credit_score', 'mean')).round(2)\nprint(age_summary)\n",
+    "execution_result": {
+      "status": "PASS",
+      "has_figure": false,
+      "stdout_preview": "고객수  평균신용점수\nage                \n20대 이하  183  678.65\n30대     161  672.08\n40대     187  679.42\n50대 이상  469  684.57"
+    }
+  },
+  {
+    "id": "TEST_029",
+    "category": "그룹 집계 및 피벗 분석",
+    "difficulty": "Intermediate",
+    "question": "결혼 상태(marital)별 주택대출(housing_loan) 보유 비율을 교차표(crosstab) 백분율로 산출해줘.",
+    "target_dfs": [
+      "df"
+    ],
+    "expected_output_type": "table",
+    "python_code": "# TEST_029: 교차표 정규화 백분율\nct = pd.crosstab(df['marital'], df['housing_loan'], normalize='index') * 100\nprint(\"결혼 상태별 주택대출 보유 비율 (%):\")\nprint(ct.round(2))\n",
+    "execution_result": {
+      "status": "PASS",
+      "has_figure": false,
+      "stdout_preview": "결혼 상태별 주택대출 보유 비율 (%):\nhousing_loan     no    yes\nmarital                   \ndivorced      44.64  55.36\nmarried       48.90  51.10\nsingle        46.46  53.54"
+    }
+  },
+  {
+    "id": "TEST_030",
+    "category": "그룹 집계 및 피벗 분석",
+    "difficulty": "Intermediate",
+    "question": "직업별 평균 연소득을 내림차순 정렬하여 수평 막대 그래프(Horizontal Bar Chart)로 그려줘.",
+    "target_dfs": [
+      "df"
+    ],
+    "expected_output_type": "chart",
+    "python_code": "# TEST_030: 직업별 평균 연소득 수평 막대 그래프\nimport matplotlib.pyplot as plt\n\njob_inc = df.groupby('job')['annual_income'].mean().sort_values(ascending=True)\nplt.figure(figsize=(8, 5))\njob_inc.plot(kind='barh', color='mediumpurple')\nplt.title('직업별 평균 연소득 (내림차순 정렬)')\nplt.xlabel('평균 연소득 ($)')\nplt.ylabel('직업')\nplt.grid(axis='x', linestyle='--', alpha=0.5)\nplt.tight_layout()\nplt.show()\n",
+    "execution_result": {
+      "status": "PASS",
+      "has_figure": true,
+      "stdout_preview": ""
+    }
+  },
+  {
+    "id": "TEST_031",
+    "category": "시계열 및 트렌드 분석",
+    "difficulty": "Basic",
+    "question": "고객 가입일(signup_date)을 기준으로 연도별 신규 가입자 수를 계산해줘.",
+    "target_dfs": [
+      "df"
+    ],
+    "expected_output_type": "table",
+    "python_code": "# TEST_031: 가입 연도별 신규 고객 수\nyears = pd.to_datetime(df['signup_date']).dt.year\nyearly_signups = years.value_counts().sort_index()\nprint(\"연도별 신규 가입 고객 수:\")\nprint(yearly_signups)\n",
+    "execution_result": {
+      "status": "PASS",
+      "has_figure": false,
+      "stdout_preview": "연도별 신규 가입 고객 수:\nsignup_date\n2022    419\n2023    379\n2024    202\nName: count, dtype: int64"
+    }
+  },
+  {
+    "id": "TEST_032",
+    "category": "시계열 및 트렌드 분석",
+    "difficulty": "Intermediate",
+    "question": "2023년 월별 신규 가입자 수 추이를 계산하고 꺾은선 그래프(Line Plot)로 시각화해줘.",
+    "target_dfs": [
+      "df"
+    ],
+    "expected_output_type": "chart",
+    "python_code": "# TEST_032: 2023년 월별 가입자 수 추이 꺾은선 그래프\nimport matplotlib.pyplot as plt\n\ndf_dates = pd.to_datetime(df['signup_date'])\ndf_2023 = df[df_dates.dt.year == 2023].copy()\ndf_2023['month'] = pd.to_datetime(df_2023['signup_date']).dt.month\nmonthly_signups = df_2023['month'].value_counts().sort_index()\n\nplt.figure(figsize=(8, 4))\nplt.plot(monthly_signups.index, monthly_signups.values, marker='o', color='teal', linewidth=2)\nplt.title('2023년 월별 신규 가입 고객 수 추이')\nplt.xlabel('월 (Month)')\nplt.ylabel('가입자 수')\nplt.xticks(range(1, 13))\nplt.grid(True, linestyle='--', alpha=0.6)\nplt.tight_layout()\nplt.show()\nprint(monthly_signups)\n",
+    "execution_result": {
+      "status": "PASS",
+      "has_figure": true,
+      "stdout_preview": "month\n1     33\n2     31\n3     34\n4     31\n5     27\n6     34\n7     29\n8     33\n9     28\n10    34\n11    36\n12    29\nName: count, dtype: int64"
+    }
+  },
+  {
+    "id": "TEST_033",
+    "category": "시계열 및 트렌드 분석",
+    "difficulty": "Intermediate",
+    "question": "거래 내역(df_tx)의 일별 총 거래금액을 집계하고, 7일 이동평균(Rolling Mean)을 계산해 상위 10일을 출력해줘.",
+    "target_dfs": [
+      "df_tx"
+    ],
+    "expected_output_type": "table",
+    "python_code": "# TEST_033: 일별 거래액 및 7일 이동평균\ndf_tx['date'] = pd.to_datetime(df_tx['tx_datetime']).dt.date\ndaily_sum = df_tx.groupby('date')['amount'].sum().reset_index()\ndaily_sum = daily_sum.sort_values('date')\ndaily_sum['rolling_7d_mean'] = daily_sum['amount'].rolling(window=7, min_periods=1).mean().round(2)\nprint(\"일별 거래액 및 7일 이동평균 (상위 10일):\")\nprint(daily_sum.head(10))\n",
+    "execution_result": {
+      "status": "PASS",
+      "has_figure": false,
+      "stdout_preview": "일별 거래액 및 7일 이동평균 (상위 10일):\n         date   amount  rolling_7d_mean\n0  2024-01-01  2857.42          2857.42\n1  2024-01-02  5102.30          3979.86\n2  2024-01-03  2202.82          3387.51\n3  2024-01-04  4165.48          3582.00\n4  2024-01-05  1749.55          3215.51\n5  2024-01-06  5062.63          3523.37\n6  2024-01-07  4053.29          3599.07\n7  2024-01-08  3425.26          3680.19\n8  2024-01-09  1076.56          3105.08\n9  2024-01-10  4558.11          3441.55"
+    }
+  },
+  {
+    "id": "TEST_034",
+    "category": "시계열 및 트렌드 분석",
+    "difficulty": "Basic",
+    "question": "거래 일시(tx_datetime)를 기준으로 요일(Day of Week)별 총 거래 건수와 거래 총액을 집계해줘.",
+    "target_dfs": [
+      "df_tx"
+    ],
+    "expected_output_type": "table",
+    "python_code": "# TEST_034: 요일별 거래 건수 및 거래액 집계\ntx_dt = pd.to_datetime(df_tx['tx_datetime'])\nday_names = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']\ndf_tx_copy = df_tx.copy()\ndf_tx_copy['day_of_week'] = tx_dt.dt.day_name()\ndow_agg = df_tx_copy.groupby('day_of_week').agg(거래건수=('tx_id', 'count'), 거래총액=('amount', 'sum')).reindex(day_names).round(2)\nprint(dow_agg)\n",
+    "execution_result": {
+      "status": "PASS",
+      "has_figure": false,
+      "stdout_preview": "거래건수       거래총액\nday_of_week                 \nMonday        716  195100.12\nTuesday       713  205065.56\nWednesday     671  184408.95\nThursday      743  185151.44\nFriday        733  191200.12\nSaturday      715  202017.27\nSunday        709  192278.88"
+    }
+  },
+  {
+    "id": "TEST_035",
+    "category": "시계열 및 트렌드 분석",
+    "difficulty": "Intermediate",
+    "question": "거래 발생 시간대(Hour of Day, 0시~23시)별 거래 건수를 집계하고 막대 차트로 시각화해줘.",
+    "target_dfs": [
+      "df_tx"
+    ],
+    "expected_output_type": "chart",
+    "python_code": "# TEST_035: 시간대별 거래 건수 막대 차트\nimport matplotlib.pyplot as plt\n\nhours = pd.to_datetime(df_tx['tx_datetime']).dt.hour\nhourly_counts = hours.value_counts().sort_index()\n\nplt.figure(figsize=(9, 4))\nhourly_counts.plot(kind='bar', color='dodgerblue')\nplt.title('시간대별 거래 발생 빈도 (0시~23시)')\nplt.xlabel('시간 (Hour)')\nplt.ylabel('거래 건수')\nplt.xticks(rotation=0)\nplt.grid(axis='y', linestyle='--', alpha=0.5)\nplt.tight_layout()\nplt.show()\n",
+    "execution_result": {
+      "status": "PASS",
+      "has_figure": true,
+      "stdout_preview": ""
+    }
+  },
+  {
+    "id": "TEST_036",
+    "category": "시계열 및 트렌드 분석",
+    "difficulty": "Advanced",
+    "question": "2024년 월별 총 거래금액의 전월 대비 증감율(MoM Growth Rate, %)을 계산해줘.",
+    "target_dfs": [
+      "df_tx"
+    ],
+    "expected_output_type": "table",
+    "python_code": "# TEST_036: 월별 거래액 및 MoM 증감율\ndf_tx_copy = df_tx.copy()\ndf_tx_copy['month'] = pd.to_datetime(df_tx_copy['tx_datetime']).dt.to_period('M')\nmonthly_tx = df_tx_copy.groupby('month')['amount'].sum().reset_index()\nmonthly_tx['MoM_Growth_pct'] = (monthly_tx['amount'].pct_change() * 100).round(2)\nprint(\"2024년 월별 거래액 및 전월 대비 증감율(MoM):\")\nprint(monthly_tx)\n",
+    "execution_result": {
+      "status": "PASS",
+      "has_figure": false,
+      "stdout_preview": "2024년 월별 거래액 및 전월 대비 증감율(MoM):\n      month     amount  MoM_Growth_pct\n0   2024-01  108563.30             NaN\n1   2024-02  101906.23           -6.13\n2   2024-03  104372.18            2.42\n3   2024-04  107217.15            2.73\n4   2024-05  124080.68           15.73\n5   2024-06   94724.32          -23.66\n6   2024-07  119869.77           26.55\n7   2024-08  118328.49           -1.29\n8   2024-09  117486.94           -0.71\n9   2024-10  126233.33            7.44\n10  2024-11   95869.83          -24.05\n1"
+    }
+  },
+  {
+    "id": "TEST_037",
+    "category": "시계열 및 트렌드 분석",
+    "difficulty": "Advanced",
+    "question": "거래 유형(tx_type)별 월별 총 거래금액 추이를 멀티 라인 그래프로 시각화해줘.",
+    "target_dfs": [
+      "df_tx"
+    ],
+    "expected_output_type": "chart",
+    "python_code": "# TEST_037: 거래 유형별 월별 금액 추이 멀티 라인\nimport matplotlib.pyplot as plt\n\ndf_tx_copy = df_tx.copy()\ndf_tx_copy['month'] = pd.to_datetime(df_tx_copy['tx_datetime']).dt.month\ntype_monthly = df_tx_copy.pivot_table(index='month', columns='tx_type', values='amount', aggfunc='sum')\n\nplt.figure(figsize=(9, 4.5))\nfor col in type_monthly.columns:\n    plt.plot(type_monthly.index, type_monthly[col], marker='o', label=col)\nplt.title('거래 유형(tx_type)별 월별 총 거래금액 추이')\nplt.xlabel('월 (Month)')\nplt.ylabel('총 거래금액 ($)')\nplt.xticks(range(1, 13))\nplt.legend()\nplt.grid(True, linestyle='--', alpha=0.5)\nplt.tight_layout()\nplt.show()\n",
+    "execution_result": {
+      "status": "PASS",
+      "has_figure": true,
+      "stdout_preview": ""
+    }
+  },
+  {
+    "id": "TEST_038",
+    "category": "시계열 및 트렌드 분석",
+    "difficulty": "Basic",
+    "question": "2024년 분기(Q1, Q2, Q3, Q4)별 총 거래금액과 총 발생 수수료(fee)를 집계해줘.",
+    "target_dfs": [
+      "df_tx"
+    ],
+    "expected_output_type": "table",
+    "python_code": "# TEST_038: 분기별 거래액 및 수수료 집계\nquarters = pd.to_datetime(df_tx['tx_datetime']).dt.to_period('Q')\nquarterly = df_tx.groupby(quarters).agg(총거래금액=('amount', 'sum'), 총수수료=('fee', 'sum')).round(2)\nprint(\"분기별 거래 및 수수료 실적:\")\nprint(quarterly)\n",
+    "execution_result": {
+      "status": "PASS",
+      "has_figure": false,
+      "stdout_preview": "분기별 거래 및 수수료 실적:\n                 총거래금액     총수수료\ntx_datetime                    \n2024Q1       314841.71  3331.53\n2024Q2       326022.15  3415.13\n2024Q3       355685.20  3720.49\n2024Q4       358673.28  3611.30"
+    }
+  },
+  {
+    "id": "TEST_039",
+    "category": "시계열 및 트렌드 분석",
+    "difficulty": "Advanced",
+    "question": "고객별 첫 거래일시와 마지막 거래일시를 계산하여 평균 활동 기간(일수)을 산출해줘.",
+    "target_dfs": [
+      "df_tx"
+    ],
+    "expected_output_type": "text",
+    "python_code": "# TEST_039: 고객별 거래 활동 기간 계산\ntx_dt = pd.to_datetime(df_tx['tx_datetime'])\ndf_tx_copy = df_tx.copy()\ndf_tx_copy['datetime'] = tx_dt\ncust_span = df_tx_copy.groupby('customer_id')['datetime'].agg(first_tx='min', last_tx='max')\ncust_span['active_days'] = (cust_span['last_tx'] - cust_span['first_tx']).dt.total_seconds() / 86400\navg_days = cust_span['active_days'].mean()\nprint(f\"거래 고객 수: {len(cust_span)}명\")\nprint(f\"고객별 평균 첫-마지막 거래 간격: {avg_days:.1f}일\")\nprint(f\"활동 기간 중앙값: {cust_span['active_days'].median():.1f}일\")\n",
+    "execution_result": {
+      "status": "PASS",
+      "has_figure": false,
+      "stdout_preview": "거래 고객 수: 947명\n고객별 평균 첫-마지막 거래 간격: 230.1일\n활동 기간 중앙값: 249.3일"
+    }
+  },
+  {
+    "id": "TEST_040",
+    "category": "시계열 및 트렌드 분석",
+    "difficulty": "Intermediate",
+    "question": "2024년 일별 거래금액의 누적합(Cumulative Sum)을 계산하고 누적 성장 곡선을 시각화해줘.",
+    "target_dfs": [
+      "df_tx"
+    ],
+    "expected_output_type": "chart",
+    "python_code": "# TEST_040: 거래금액 일별 누적 성장 곡선\nimport matplotlib.pyplot as plt\n\ndf_tx_copy = df_tx.copy()\ndf_tx_copy['date'] = pd.to_datetime(df_tx_copy['tx_datetime']).dt.date\ndaily_totals = df_tx_copy.groupby('date')['amount'].sum().sort_index()\ncumsum_totals = daily_totals.cumsum()\n\nplt.figure(figsize=(9, 4))\nplt.plot(cumsum_totals.index, cumsum_totals.values, color='indigo', linewidth=2)\nplt.title('2024년 일별 거래금액 누적 성장 곡선 (Cumulative Sum)')\nplt.xlabel('일자')\nplt.ylabel('누적 거래금액 ($)')\nplt.grid(True, linestyle='--', alpha=0.5)\nplt.tight_layout()\nplt.show()\nprint(f\"연간 총 누적 거래액: {cumsum_totals.iloc[-1]:,.2f} 달러\")\n",
+    "execution_result": {
+      "status": "PASS",
+      "has_figure": true,
+      "stdout_preview": "연간 총 누적 거래액: 1,355,222.34 달러"
+    }
+  },
+  {
+    "id": "TEST_041",
+    "category": "범주형 데이터 및 빈도 분석",
+    "difficulty": "Basic",
+    "question": "고객의 직업군별 빈도수와 전체 대비 백분율(%)을 계산한 도수분포표를 만들어줘.",
+    "target_dfs": [
+      "df"
+    ],
+    "expected_output_type": "table",
+    "python_code": "# TEST_041: 직업별 도수분포표\nfreq = df['job'].value_counts()\npct = (df['job'].value_counts(normalize=True) * 100).round(2)\nfreq_table = pd.DataFrame({'빈도수': freq, '백분율(%)': pct})\nprint(freq_table)\n",
+    "execution_result": {
+      "status": "PASS",
+      "has_figure": false,
+      "stdout_preview": "빈도수  백분율(%)\njob                       \nmanagement     215    21.5\nblue-collar    178    17.8\ntechnician     165    16.5\nadmin.         133    13.3\nservices        98     9.8\nretired         65     6.5\nself-employed   51     5.1\nentrepreneur    33     3.3\nstudent         32     3.2\nunemployed      30     3.0"
+    }
+  },
+  {
+    "id": "TEST_042",
+    "category": "범주형 데이터 및 빈도 분석",
+    "difficulty": "Intermediate",
+    "question": "거래 채널(channel)별 총 거래금액의 파레토 누적 비중(%)을 계산해줘.",
+    "target_dfs": [
+      "df_tx"
+    ],
+    "expected_output_type": "table",
+    "python_code": "# TEST_042: 채널별 거래액 파레토 누적 비중\nchannel_amt = df_tx.groupby('channel')['amount'].sum().sort_values(ascending=False).reset_index()\nchannel_amt['비중(%)'] = (channel_amt['amount'] / channel_amt['amount'].sum() * 100).round(2)\nchannel_amt['누적비중(%)'] = channel_amt['비중(%)'].cumsum().round(2)\nprint(\"거래 채널별 파레토 분석:\")\nprint(channel_amt)\n",
+    "execution_result": {
+      "status": "PASS",
+      "has_figure": false,
+      "stdout_preview": "거래 채널별 파레토 분석:\n          channel     amount  비중(%)  누적비중(%)\n0      Mobile App  742594.09  54.80    54.80\n1  Online Banking  331371.43  24.45    79.25\n2             ATM  201828.09  14.89    94.14\n3          Branch   79428.73   5.86   100.00"
+    }
+  },
+  {
+    "id": "TEST_043",
+    "category": "범주형 데이터 및 빈도 분석",
+    "difficulty": "Basic",
+    "question": "고객 연령을 20대 이하, 30대, 40대, 50대, 60대 이상으로 구간화(pd.cut)하여 각 연령대별 고객 수를 세어줘.",
+    "target_dfs": [
+      "df"
+    ],
+    "expected_output_type": "table",
+    "python_code": "# TEST_043: 연령대 구간화 빈도표\nbins = [0, 29, 39, 49, 59, 120]\nlabels = ['20대 이하', '30대', '40대', '50대', '60대 이상']\nage_cuts = pd.cut(df['age'], bins=bins, labels=labels)\nprint(age_cuts.value_counts().sort_index())\n",
+    "execution_result": {
+      "status": "PASS",
+      "has_figure": false,
+      "stdout_preview": "age\n20대 이하    183\n30대       161\n40대       187\n50대       197\n60대 이상    272\nName: count, dtype: int64"
+    }
+  },
+  {
+    "id": "TEST_044",
+    "category": "범주형 데이터 및 빈도 분석",
+    "difficulty": "Intermediate",
+    "question": "연소득(annual_income)을 4분위수 기준(pd.qcut, Q1~Q4)으로 4단계 등급을 부여하고 등급별 고객 수를 확인해줘.",
+    "target_dfs": [
+      "df"
+    ],
+    "expected_output_type": "table",
+    "python_code": "# TEST_044: 연소득 4분위 등급화\nincome_q = pd.qcut(df['annual_income'], q=4, labels=['Low', 'Medium', 'High', 'Very High'])\nq_counts = income_q.value_counts().sort_index()\nprint(\"연소득 분위 등급별 인원수:\")\nprint(q_counts)\n",
+    "execution_result": {
+      "status": "PASS",
+      "has_figure": false,
+      "stdout_preview": "연소득 분위 등급별 인원수:\nannual_income\nLow          250\nMedium       250\nHigh         250\nVery High    250\nName: count, dtype: int64"
+    }
+  },
+  {
+    "id": "TEST_045",
+    "category": "범주형 데이터 및 빈도 분석",
+    "difficulty": "Basic",
+    "question": "만족도 점수(1점~5점)의 응답 분포를 파이 차트(Pie Chart)로 시각화해줘.",
+    "target_dfs": [
+      "df"
+    ],
+    "expected_output_type": "chart",
+    "python_code": "# TEST_045: 만족도 파이 차트\nimport matplotlib.pyplot as plt\n\nsat_counts = df['satisfaction_score'].dropna().value_counts().sort_index()\nplt.figure(figsize=(6, 6))\nplt.pie(sat_counts, labels=[f'{int(k)}점' for k in sat_counts.index], autopct='%1.1f%%', startangle=140)\nplt.title('고객 만족도 점수(1~5점) 응답 비율')\nplt.tight_layout()\nplt.show()\nprint(sat_counts)\n",
+    "execution_result": {
+      "status": "PASS",
+      "has_figure": true,
+      "stdout_preview": "satisfaction_score\n1.0     62\n2.0    127\n3.0    323\n4.0    269\n5.0    167\nName: count, dtype: int64"
+    }
+  },
+  {
+    "id": "TEST_046",
+    "category": "범주형 데이터 및 빈도 분석",
+    "difficulty": "Intermediate",
+    "question": "고객의 접속 기기(device_type) 비율을 도넛 차트(Donut Chart) 형태로 시각화해줘.",
+    "target_dfs": [
+      "df"
+    ],
+    "expected_output_type": "chart",
+    "python_code": "# TEST_046: 기기 비율 도넛 차트\nimport matplotlib.pyplot as plt\n\ndevice_counts = df['device_type'].value_counts()\nplt.figure(figsize=(6, 6))\nplt.pie(device_counts, labels=device_counts.index, autopct='%1.1f%%', startangle=90, pctdistance=0.8)\ncenter_circle = plt.Circle((0,0), 0.60, fc='white')\nplt.gca().add_artist(center_circle)\nplt.title('접속 기기(Device Type) 비중 (도넛 차트)')\nplt.tight_layout()\nplt.show()\nprint(device_counts)\n",
+    "execution_result": {
+      "status": "PASS",
+      "has_figure": true,
+      "stdout_preview": "device_type\nAndroid    436\niOS        418\nWeb        146\nName: count, dtype: int64"
+    }
+  },
+  {
+    "id": "TEST_047",
+    "category": "범주형 데이터 및 빈도 분석",
+    "difficulty": "Basic",
+    "question": "교육수준(education)에서 'unknown' 값을 제외하거나 최빈값(mode)으로 대체했을 때의 최빈값을 확인해줘.",
+    "target_dfs": [
+      "df"
+    ],
+    "expected_output_type": "text",
+    "python_code": "# TEST_047: 결측 범주 제외 최빈값 도출\nvalid_edu = df[df['education'] != 'unknown']['education']\nmode_val = valid_edu.mode()[0]\nprint(f\"'unknown' 제외 최빈 교육수준: {mode_val}\")\nprint(\"유효 교육수준 빈도:\")\nprint(valid_edu.value_counts())\n",
+    "execution_result": {
+      "status": "PASS",
+      "has_figure": false,
+      "stdout_preview": "'unknown' 제외 최빈 교육수준: secondary\n유효 교육수준 빈도:\neducation\nsecondary    493\ntertiary     358\nprimary      106\nName: count, dtype: int64"
+    }
+  },
+  {
+    "id": "TEST_048",
+    "category": "범주형 데이터 및 빈도 분석",
+    "difficulty": "Basic",
+    "question": "직업군 중 전체 비중이 5% 미만인 소수 직업군을 식별해줘.",
+    "target_dfs": [
+      "df"
+    ],
+    "expected_output_type": "table",
+    "python_code": "# TEST_048: 소수 범주(5% 미만) 식별\njob_ratios = (df['job'].value_counts(normalize=True) * 100).round(2)\nminority_jobs = job_ratios[job_ratios < 5.0]\nprint(\"5% 미만 소수 직업군 목록 및 비율(%):\")\nprint(minority_jobs)\n",
+    "execution_result": {
+      "status": "PASS",
+      "has_figure": false,
+      "stdout_preview": "5% 미만 소수 직업군 목록 및 비율(%):\njob\nentrepreneur    3.3\nstudent         3.2\nunemployed      3.0\nName: proportion, dtype: float64"
+    }
+  },
+  {
+    "id": "TEST_049",
+    "category": "범주형 데이터 및 빈도 분석",
+    "difficulty": "Basic",
+    "question": "거래 유형(tx_type)별 실패/거절(is_declined=1) 건수와 거절율(%)을 계산해줘.",
+    "target_dfs": [
+      "df_tx"
+    ],
+    "expected_output_type": "table",
+    "python_code": "# TEST_049: 거래 유형별 거절율 산출\ntx_declined = df_tx.groupby('tx_type').agg(\n    총거래건수=('tx_id', 'count'),\n    거절건수=('is_declined', 'sum'),\n    거절율_pct=('is_declined', lambda x: round(x.mean() * 100, 2))\n)\nprint(tx_declined)\n",
+    "execution_result": {
+      "status": "PASS",
+      "has_figure": false,
+      "stdout_preview": "총거래건수  거절건수  거절율_pct\ntx_type                         \nDeposit       565    15     2.65\nPayment      2004    62     3.09\nTransfer     1414    43     3.04\nWithdrawal   1017    31     3.05"
+    }
+  },
+  {
+    "id": "TEST_050",
+    "category": "범주형 데이터 및 빈도 분석",
+    "difficulty": "Intermediate",
+    "question": "서비스 티어(service_tier)와 접속 기기(device_type) 간의 빈도 교차표를 히트맵(Heatmap)으로 시각화해줘.",
+    "target_dfs": [
+      "df"
+    ],
+    "expected_output_type": "chart",
+    "python_code": "# TEST_050: 티어 x 기기 히트맵\nimport matplotlib.pyplot as plt\nimport seaborn as sns\n\nct = pd.crosstab(df['service_tier'], df['device_type'])\nplt.figure(figsize=(7, 4))\nsns.heatmap(ct, annot=True, fmt='d', cmap='YlGnBu')\nplt.title('서비스 티어 x 접속 기기 교차 빈도 히트맵')\nplt.xlabel('접속 기기')\nplt.ylabel('서비스 티어')\nplt.tight_layout()\nplt.show()\nprint(ct)\n",
+    "execution_result": {
+      "status": "PASS",
+      "has_figure": true,
+      "stdout_preview": "device_type   Android  Web  iOS\nservice_tier                   \nBronze            182   60  171\nGold               65   24   69\nPlatinum           26   12   30\nSilver            163   50  148"
+    }
+  },
+  {
+    "id": "TEST_051",
+    "category": "상관관계 및 변수 간 연관성 분석",
+    "difficulty": "Basic",
+    "question": "주요 수치형 변수(age, annual_income, balance, credit_score, campaign_contact_count) 간의 피어슨 상관계수 행렬을 계산해줘.",
+    "target_dfs": [
+      "df"
+    ],
+    "expected_output_type": "table",
+    "python_code": "# TEST_051: 수치형 변수 피어슨 상관계수 행렬\ncols = ['age', 'annual_income', 'balance', 'credit_score', 'campaign_contact_count']\ncorr_matrix = df[cols].corr().round(3)\nprint(\"피어슨 상관계수 행렬:\")\nprint(corr_matrix)\n",
+    "execution_result": {
+      "status": "PASS",
+      "has_figure": false,
+      "stdout_preview": "피어슨 상관계수 행렬:\n                          age  ...  campaign_contact_count\nage                     1.000  ...                  -0.009\nannual_income          -0.005  ...                  -0.009\nbalance                -0.068  ...                  -0.004\ncredit_score            0.045  ...                   0.005\ncampaign_contact_count -0.009  ...                   1.000\n\n[5 rows x 5 columns]"
+    }
+  },
+  {
+    "id": "TEST_052",
+    "category": "상관관계 및 변수 간 연관성 분석",
+    "difficulty": "Intermediate",
+    "question": "수치형 변수들 간의 상관계수 행렬을 히트맵(Heatmap)으로 시각화하고 상관계수 값을 표기해줘.",
+    "target_dfs": [
+      "df"
+    ],
+    "expected_output_type": "chart",
+    "python_code": "# TEST_052: 상관계수 히트맵\nimport matplotlib.pyplot as plt\nimport seaborn as sns\n\ncols = ['age', 'annual_income', 'balance', 'credit_score', 'campaign_contact_count']\ncorr = df[cols].corr()\nplt.figure(figsize=(7, 5))\nsns.heatmap(corr, annot=True, cmap='coolwarm', vmin=-1, vmax=1, fmt='.2f', linewidths=0.5)\nplt.title('수치형 변수 간 상관계수 히트맵')\nplt.tight_layout()\nplt.show()\n",
+    "execution_result": {
+      "status": "PASS",
+      "has_figure": true,
+      "stdout_preview": ""
+    }
+  },
+  {
+    "id": "TEST_053",
+    "category": "상관관계 및 변수 간 연관성 분석",
+    "difficulty": "Basic",
+    "question": "연소득(annual_income)과 잔액(balance) 간의 스피어만 순위상관계수를 계산해줘.",
+    "target_dfs": [
+      "df"
+    ],
+    "expected_output_type": "text",
+    "python_code": "# TEST_053: 소득-잔액 스피어만 순위상관계수\nspearman_corr = df['annual_income'].corr(df['balance'], method='spearman')\npearson_corr = df['annual_income'].corr(df['balance'], method='pearson')\nprint(f\"스피어만 순위상관계수: {spearman_corr:.4f}\")\nprint(f\"피어슨 선형상관계수: {pearson_corr:.4f}\")\n",
+    "execution_result": {
+      "status": "PASS",
+      "has_figure": false,
+      "stdout_preview": "스피어만 순위상관계수: 0.0196\n피어슨 선형상관계수: 0.0565"
+    }
+  },
+  {
+    "id": "TEST_054",
+    "category": "상관관계 및 변수 간 연관성 분석",
+    "difficulty": "Basic",
+    "question": "신용점수(credit_score)와 고객 이탈(churn) 간의 상관계수를 계산해줘.",
+    "target_dfs": [
+      "df"
+    ],
+    "expected_output_type": "text",
+    "python_code": "# TEST_054: 신용점수와 이탈 여부 간 상관성\ncorr_val = df['credit_score'].corr(df['churn'])\nprint(f\"신용점수와 이탈(churn) 간 상관계수: {corr_val:.4f}\")\nprint(f\"이탈 여부별 평균 신용점수:\")\nprint(df.groupby('churn')['credit_score'].mean().round(2))\n",
+    "execution_result": {
+      "status": "PASS",
+      "has_figure": false,
+      "stdout_preview": "신용점수와 이탈(churn) 간 상관계수: -0.0825\n이탈 여부별 평균 신용점수:\nchurn\n0    683.04\n1    665.73\nName: credit_score, dtype: float64"
+    }
+  },
+  {
+    "id": "TEST_055",
+    "category": "상관관계 및 변수 간 연관성 분석",
+    "difficulty": "Intermediate",
+    "question": "연소득과 잔액의 관계를 보여주는 산점도(Scatter Plot)를 그리고 회귀 추세선을 추가해줘.",
+    "target_dfs": [
+      "df"
+    ],
+    "expected_output_type": "chart",
+    "python_code": "# TEST_055: 연소득 vs 잔액 산점도 및 추세선\nimport matplotlib.pyplot as plt\nimport seaborn as sns\n\nplt.figure(figsize=(8, 5))\nsns.regplot(data=df, x='annual_income', y='balance', scatter_kws={'alpha':0.3, 'color':'blue'}, line_kws={'color':'red'})\nplt.title('연소득 vs 계좌 잔액 관계 (산점도 및 회귀선)')\nplt.xlabel('연소득 ($)')\nplt.ylabel('잔액 ($)')\nplt.grid(True, linestyle='--', alpha=0.5)\nplt.tight_layout()\nplt.show()\n",
+    "execution_result": {
+      "status": "PASS",
+      "has_figure": true,
+      "stdout_preview": ""
+    }
+  },
+  {
+    "id": "TEST_056",
+    "category": "상관관계 및 변수 간 연관성 분석",
+    "difficulty": "Intermediate",
+    "question": "신용점수와 연소득의 산점도를 이탈 여부(churn)에 따라 색상(hue)을 다르게 하여 시각화해줘.",
+    "target_dfs": [
+      "df"
+    ],
+    "expected_output_type": "chart",
+    "python_code": "# TEST_056: 신용점수 vs 연소득 (이탈 여부 구분 산점도)\nimport matplotlib.pyplot as plt\nimport seaborn as sns\n\nplt.figure(figsize=(8, 5))\nsns.scatterplot(data=df, x='credit_score', y='annual_income', hue='churn', alpha=0.6, palette=['gray', 'red'])\nplt.title('신용점수 vs 연소득 (이탈여부별)')\nplt.xlabel('신용점수')\nplt.ylabel('연소득 ($)')\nplt.legend(title='이탈(Churn)')\nplt.tight_layout()\nplt.show()\n",
+    "execution_result": {
+      "status": "PASS",
+      "has_figure": true,
+      "stdout_preview": ""
+    }
+  },
+  {
+    "id": "TEST_057",
+    "category": "상관관계 및 변수 간 연관성 분석",
+    "difficulty": "Basic",
+    "question": "고객 연령(age)과 캠페인 접촉 횟수(campaign_contact_count) 간의 공분산(Covariance)을 구해줘.",
+    "target_dfs": [
+      "df"
+    ],
+    "expected_output_type": "text",
+    "python_code": "# TEST_057: 연령-캠페인 접촉 횟수 공분산\ncov_val = df['age'].cov(df['campaign_contact_count'])\nprint(f\"연령과 캠페인 접촉 횟수 간 공분산: {cov_val:.4f}\")\n",
+    "execution_result": {
+      "status": "PASS",
+      "has_figure": false,
+      "stdout_preview": "연령과 캠페인 접촉 횟수 간 공분산: -0.2356"
+    }
+  },
+  {
+    "id": "TEST_058",
+    "category": "상관관계 및 변수 간 연관성 분석",
+    "difficulty": "Intermediate",
+    "question": "잔액(balance)과 가장 상관관계가 높은(양 또는 음) 상위 3개 수치형 변수를 순서대로 출력해줘.",
+    "target_dfs": [
+      "df"
+    ],
+    "expected_output_type": "table",
+    "python_code": "# TEST_058: 잔액과의 상관계수 상위 변수\nnum_df = df.select_dtypes(include=['number'])\ncorrs_with_balance = num_df.corr()['balance'].drop('balance')\ntop3_corr = corrs_with_balance.abs().sort_values(ascending=False).head(3)\nresult = pd.DataFrame({'변수': top3_corr.index, '절대값_상관계수': top3_corr.values.round(4), '실제_상관계수': corrs_with_balance[top3_corr.index].values.round(4)})\nprint(result)\n",
+    "execution_result": {
+      "status": "PASS",
+      "has_figure": false,
+      "stdout_preview": "변수  절대값_상관계수  실제_상관계수\n0   credit_score    0.0834  -0.0834\n1            age    0.0684  -0.0684\n2  annual_income    0.0565   0.0565"
+    }
+  },
+  {
+    "id": "TEST_059",
+    "category": "상관관계 및 변수 간 연관성 분석",
+    "difficulty": "Intermediate",
+    "question": "서비스 티어(service_tier)별로 연소득과 잔액 간의 상관계수가 어떻게 다른지 그룹별로 비교해줘.",
+    "target_dfs": [
+      "df"
+    ],
+    "expected_output_type": "table",
+    "python_code": "# TEST_059: 티어별 소득-잔액 상관계수\ntier_corr = df.groupby('service_tier').apply(lambda g: g['annual_income'].corr(g['balance'])).round(4)\nprint(\"서비스 티어별 소득-잔액 상관계수:\")\nprint(tier_corr)\n",
+    "execution_result": {
+      "status": "PASS",
+      "has_figure": false,
+      "stdout_preview": "서비스 티어별 소득-잔액 상관계수:\nservice_tier\nBronze      0.0646\nGold       -0.0047\nPlatinum   -0.0345\nSilver      0.0781\ndtype: float64"
+    }
+  },
+  {
+    "id": "TEST_060",
+    "category": "상관관계 및 변수 간 연관성 분석",
+    "difficulty": "Intermediate",
+    "question": "주택대출 보유 여부(housing_loan)에 따라 신용점수와 잔액의 분포를 1행 2열 서브플롯 산점도로 비교해줘.",
+    "target_dfs": [
+      "df"
+    ],
+    "expected_output_type": "chart",
+    "python_code": "# TEST_060: 주택대출 여부별 서브플롯 산점도\nimport matplotlib.pyplot as plt\n\nfig, axes = plt.subplots(1, 2, figsize=(10, 4), sharey=True)\nfor ax, hl, color in zip(axes, ['yes', 'no'], ['purple', 'teal']):\n    sub = df[df['housing_loan'] == hl]\n    ax.scatter(sub['credit_score'], sub['balance'], alpha=0.4, color=color)\n    ax.set_title(f'주택대출: {hl} (n={len(sub)})')\n    ax.set_xlabel('신용점수')\n    ax.grid(True, linestyle='--', alpha=0.5)\naxes[0].set_ylabel('잔액 ($)')\nplt.suptitle('주택대출 보유 여부별 신용점수 vs 잔액 비교')\nplt.tight_layout()\nplt.show()\n",
+    "execution_result": {
+      "status": "PASS",
+      "has_figure": true,
+      "stdout_preview": ""
+    }
+  },
+  {
+    "id": "TEST_061",
+    "category": "이상치 탐지 및 분포 통계",
+    "difficulty": "Basic",
+    "question": "잔액(balance)과 연소득(annual_income) 컬럼의 왜도(Skewness)와 첨도(Kurtosis)를 계산해줘.",
+    "target_dfs": [
+      "df"
+    ],
+    "expected_output_type": "table",
+    "python_code": "# TEST_061: 왜도 및 첨도 통계량 계산\nskewness = df[['balance', 'annual_income']].skew().round(3)\nkurtosis = df[['balance', 'annual_income']].kurt().round(3)\nshape_stats = pd.DataFrame({'왜도(Skewness)': skewness, '첨도(Kurtosis)': kurtosis})\nprint(\"분포 비대칭성 및 꼬리 두께 통계:\")\nprint(shape_stats)\n",
+    "execution_result": {
+      "status": "PASS",
+      "has_figure": false,
+      "stdout_preview": "분포 비대칭성 및 꼬리 두께 통계:\n               왜도(Skewness)  첨도(Kurtosis)\nbalance               3.672        17.109\nannual_income         0.367        -0.506"
+    }
+  },
+  {
+    "id": "TEST_062",
+    "category": "이상치 탐지 및 분포 통계",
+    "difficulty": "Intermediate",
+    "question": "IQR 방식을 사용하여 잔액(balance) 컬럼의 Q1, Q3, IQR, 상한선(Upper Fence)을 구하고 상한선을 넘는 이상치 개수를 출력해줘.",
+    "target_dfs": [
+      "df"
+    ],
+    "expected_output_type": "text",
+    "python_code": "# TEST_062: IQR 기반 잔액 이상치 탐지\nq1 = df['balance'].quantile(0.25)\nq3 = df['balance'].quantile(0.75)\niqr = q3 - q1\nupper_fence = q3 + 1.5 * iqr\nlower_fence = q1 - 1.5 * iqr\noutliers = df[(df['balance'] > upper_fence) | (df['balance'] < lower_fence)]\nprint(f\"Q1: {q1:.2f}, Q3: {q3:.2f}, IQR: {iqr:.2f}\")\nprint(f\"상한선(Upper Fence): {upper_fence:.2f}, 하한선(Lower Fence): {lower_fence:.2f}\")\nprint(f\"이상치(Outlier) 고객 수: {len(outliers)}명 (상한 초과: {(df['balance'] > upper_fence).sum()}명)\")\n",
+    "execution_result": {
+      "status": "PASS",
+      "has_figure": false,
+      "stdout_preview": "Q1: 1362.98, Q3: 7098.03, IQR: 5735.05\n상한선(Upper Fence): 15700.60, 하한선(Lower Fence): -7239.59\n이상치(Outlier) 고객 수: 59명 (상한 초과: 59명)"
+    }
+  },
+  {
+    "id": "TEST_063",
+    "category": "이상치 탐지 및 분포 통계",
+    "difficulty": "Intermediate",
+    "question": "IQR 기준 잔액 상위 이상치 고객들의 평균 연소득과 주요 직업 상위 3개를 조회해줘.",
+    "target_dfs": [
+      "df"
+    ],
+    "expected_output_type": "text",
+    "python_code": "# TEST_063: 잔액 이상치 고객 프로필 분석\nq1 = df['balance'].quantile(0.25)\nq3 = df['balance'].quantile(0.75)\niqr = q3 - q1\nupper_fence = q3 + 1.5 * iqr\noutliers = df[df['balance'] > upper_fence]\nprint(f\"이상치 고객 수: {len(outliers)}명\")\nprint(f\"평균 연소득: {outliers['annual_income'].mean():.2f} 달러\")\nprint(\"주요 직업 TOP 3:\")\nprint(outliers['job'].value_counts().head(3))\n",
+    "execution_result": {
+      "status": "PASS",
+      "has_figure": false,
+      "stdout_preview": "이상치 고객 수: 59명\n평균 연소득: 58059.07 달러\n주요 직업 TOP 3:\njob\nmanagement    12\ntechnician    11\nadmin.        11\nName: count, dtype: int64"
+    }
+  },
+  {
+    "id": "TEST_064",
+    "category": "이상치 탐지 및 분포 통계",
+    "difficulty": "Intermediate",
+    "question": "Z-Score 절대값이 3을 초과하는 연소득(annual_income) 극단값 고객들을 찾고 인원수를 출력해줘.",
+    "target_dfs": [
+      "df"
+    ],
+    "expected_output_type": "text",
+    "python_code": "# TEST_064: Z-Score 기준 극단값 탐지\nmean_inc = df['annual_income'].mean()\nstd_inc = df['annual_income'].std()\nz_scores = (df['annual_income'] - mean_inc) / std_inc\noutliers_z = df[z_scores.abs() > 3]\nprint(f\"연소득 평균: {mean_inc:.2f}, 표준편차: {std_inc:.2f}\")\nprint(f\"|Z| > 3 극단치 고객 수: {len(outliers_z)}명\")\nif len(outliers_z) > 0:\n    print(outliers_z[['customer_id', 'job', 'annual_income']])\n",
+    "execution_result": {
+      "status": "PASS",
+      "has_figure": false,
+      "stdout_preview": "연소득 평균: 53897.47, 표준편차: 23046.99\n|Z| > 3 극단치 고객 수: 1명\n    customer_id         job  annual_income\n102    CUST0103  management         123917"
+    }
+  },
+  {
+    "id": "TEST_065",
+    "category": "이상치 탐지 및 분포 통계",
+    "difficulty": "Intermediate",
+    "question": "거래 내역(df_tx)의 거래금액(amount)에서 IQR 기준 상위 이상치 거래 건수와 최고 거래금액을 확인해줘.",
+    "target_dfs": [
+      "df_tx"
+    ],
+    "expected_output_type": "text",
+    "python_code": "# TEST_065: 거래금액 IQR 이상치 건수\nq1 = df_tx['amount'].quantile(0.25)\nq3 = df_tx['amount'].quantile(0.75)\niqr = q3 - q1\nupper_bound = q3 + 1.5 * iqr\nhigh_tx = df_tx[df_tx['amount'] > upper_bound]\nprint(f\"금액 IQR 상한선: {upper_bound:.2f} 달러\")\nprint(f\"고액 이상치 거래 건수: {len(high_tx)}건 (전체의 {len(high_tx)/len(df_tx)*100:.2f}%)\")\nprint(f\"최고 거래 금액: {df_tx['amount'].max():.2f} 달러\")\n",
+    "execution_result": {
+      "status": "PASS",
+      "has_figure": false,
+      "stdout_preview": "금액 IQR 상한선: 621.88 달러\n고액 이상치 거래 건수: 520건 (전체의 10.40%)\n최고 거래 금액: 3823.41 달러"
+    }
+  },
+  {
+    "id": "TEST_066",
+    "category": "이상치 탐지 및 분포 통계",
+    "difficulty": "Intermediate",
+    "question": "직업(job)별 잔액(balance) 분포의 이상치를 한눈에 비교할 수 있는 박스플롯(Boxplot)을 그려줘.",
+    "target_dfs": [
+      "df"
+    ],
+    "expected_output_type": "chart",
+    "python_code": "# TEST_066: 직업별 잔액 분포 박스플롯\nimport matplotlib.pyplot as plt\nimport seaborn as sns\n\nplt.figure(figsize=(10, 5))\nsns.boxplot(data=df, x='job', y='balance', palette='Set3')\nplt.title('직업별 고객 계좌 잔액 분포 및 이상치')\nplt.xlabel('직업')\nplt.ylabel('잔액 ($)')\nplt.xticks(rotation=45)\nplt.tight_layout()\nplt.show()\n",
+    "execution_result": {
+      "status": "PASS",
+      "has_figure": true,
+      "stdout_preview": ""
+    }
+  },
+  {
+    "id": "TEST_067",
+    "category": "이상치 탐지 및 분포 통계",
+    "difficulty": "Intermediate",
+    "question": "잔액(balance) 컬럼에 대해 상위 1% 값으로 상한을 대체하는 윈저라이징(Capping)을 적용하기 전과 후의 최댓값 및 평균을 비교해줘.",
+    "target_dfs": [
+      "df"
+    ],
+    "expected_output_type": "table",
+    "python_code": "# TEST_067: 잔액 윈저라이징 상한 캡핑\ncap_val = df['balance'].quantile(0.99)\ncapped_bal = df['balance'].clip(upper=cap_val)\ncomp = pd.DataFrame({\n    '구분': ['적용 전 (Original)', '적용 후 (Capped 99%)'],\n    '최댓값': [df['balance'].max(), capped_bal.max()],\n    '평균값': [round(df['balance'].mean(), 2), round(capped_bal.mean(), 2)],\n    '표준편차': [round(df['balance'].std(), 2), round(capped_bal.std(), 2)]\n})\nprint(comp)\n",
+    "execution_result": {
+      "status": "PASS",
+      "has_figure": false,
+      "stdout_preview": "구분        최댓값      평균값     표준편차\n0    적용 전 (Original)  64595.030  5679.55  8257.80\n1  적용 후 (Capped 99%)  48235.625  5606.78  7827.21"
+    }
+  },
+  {
+    "id": "TEST_068",
+    "category": "이상치 탐지 및 분포 통계",
+    "difficulty": "Intermediate",
+    "question": "거래금액(amount)의 원본 분포와 로그 변환(np.log1p) 후의 왜도를 비교하고 변환 후 히스토그램을 그려줘.",
+    "target_dfs": [
+      "df_tx"
+    ],
+    "expected_output_type": "chart",
+    "python_code": "# TEST_068: 로그 변환 전후 왜도 및 히스토그램\nimport numpy as np\nimport matplotlib.pyplot as plt\nimport seaborn as sns\n\nlog_amount = np.log1p(df_tx['amount'])\nprint(f\"변환 전 왜도: {df_tx['amount'].skew():.3f}\")\nprint(f\"로그 변환(log1p) 후 왜도: {log_amount.skew():.3f}\")\n\nplt.figure(figsize=(8, 4))\nsns.histplot(log_amount, kde=True, bins=30, color='darkcyan')\nplt.title('거래금액 로그 변환(log1p) 후 분포 (왜도 개선)')\nplt.xlabel('log1p(Amount)')\nplt.ylabel('빈도')\nplt.tight_layout()\nplt.show()\n",
+    "execution_result": {
+      "status": "PASS",
+      "has_figure": true,
+      "stdout_preview": "변환 전 왜도: 3.308\n로그 변환(log1p) 후 왜도: 0.349"
+    }
+  },
+  {
+    "id": "TEST_069",
+    "category": "이상치 탐지 및 분포 통계",
+    "difficulty": "Basic",
+    "question": "고객 연령(age) 데이터에 정상 범위(18세~100세)를 벗어난 비정상 데이터가 존재하는지 무결성을 검증해줘.",
+    "target_dfs": [
+      "df"
+    ],
+    "expected_output_type": "text",
+    "python_code": "# TEST_069: 연령 데이터 무결성 검증\ninvalid_age = df[(df['age'] < 18) | (df['age'] > 100)]\nprint(f\"최소 연령: {df['age'].min()}세, 최대 연령: {df['age'].max()}세\")\nif len(invalid_age) == 0:\n    print(\"검증 결과: 모든 연령 데이터가 정상 범위(18세~100세) 내에 있습니다 (무결성 통과).\")\nelse:\n    print(f\"경고: 비정상 연령 데이터 {len(invalid_age)}건 발견!\")\n",
+    "execution_result": {
+      "status": "PASS",
+      "has_figure": false,
+      "stdout_preview": "최소 연령: 19세, 최대 연령: 75세\n검증 결과: 모든 연령 데이터가 정상 범위(18세~100세) 내에 있습니다 (무결성 통과)."
+    }
+  },
+  {
+    "id": "TEST_070",
+    "category": "이상치 탐지 및 분포 통계",
+    "difficulty": "Basic",
+    "question": "신용점수(credit_score)의 분포를 정규분포 적합선(KDE)과 함께 히스토그램으로 시각화해줘.",
+    "target_dfs": [
+      "df"
+    ],
+    "expected_output_type": "chart",
+    "python_code": "# TEST_070: 신용점수 정규분포 적합 시각화\nimport matplotlib.pyplot as plt\nimport seaborn as sns\n\nplt.figure(figsize=(8, 4))\nsns.histplot(df['credit_score'], kde=True, bins=25, color='forestgreen')\nplt.title('고객 신용점수(Credit Score) 분포')\nplt.xlabel('신용점수')\nplt.ylabel('고객 수')\nplt.axvline(df['credit_score'].mean(), color='red', linestyle='--', label=f\"평균: {df['credit_score'].mean():.1f}\")\nplt.legend()\nplt.tight_layout()\nplt.show()\n",
+    "execution_result": {
+      "status": "PASS",
+      "has_figure": true,
+      "stdout_preview": ""
+    }
+  },
+  {
+    "id": "TEST_071",
+    "category": "비즈니스 KPI 및 세그먼트 분석",
+    "difficulty": "Intermediate",
+    "question": "전체 평균 잔액 대비 각 직업군의 잔액 비율 지수(Index = 직업평균/전체평균 * 100)를 산출해줘.",
+    "target_dfs": [
+      "df"
+    ],
+    "expected_output_type": "table",
+    "python_code": "# TEST_071: 직업군별 잔액 지수(Index) 산출\ntotal_mean = df['balance'].mean()\njob_mean = df.groupby('job')['balance'].mean()\nbalance_idx = ((job_mean / total_mean) * 100).round(1)\nidx_df = pd.DataFrame({'평균잔액': job_mean.round(2), '잔액지수(Index)': balance_idx}).sort_values('잔액지수(Index)', ascending=False)\nprint(f\"전체 평균 잔액: {total_mean:.2f} 달러\")\nprint(idx_df)\n",
+    "execution_result": {
+      "status": "PASS",
+      "has_figure": false,
+      "stdout_preview": "전체 평균 잔액: 5679.55 달러\n                  평균잔액  잔액지수(Index)\njob                                \nadmin.         6393.94        112.6\ntechnician     6246.28        110.0\nmanagement     5762.62        101.5\nservices       5703.36        100.4\nblue-collar    5631.82         99.2\nretired        5190.14         91.4\nself-employed  4990.65         87.9\nunemployed     4671.32         82.2\nentrepreneur   4278.29         75.3\nstudent        3905.14         68.8"
+    }
+  },
+  {
+    "id": "TEST_072",
+    "category": "비즈니스 KPI 및 세그먼트 분석",
+    "difficulty": "Basic",
+    "question": "전체 고객의 이탈율(Churn Rate, %)과 성별(gender)별 이탈율을 비교해줘.",
+    "target_dfs": [
+      "df"
+    ],
+    "expected_output_type": "table",
+    "python_code": "# TEST_072: 전체 및 성별 이탈율 산출\noverall_churn = df['churn'].mean() * 100\ngender_churn = (df.groupby('gender')['churn'].mean() * 100).round(2)\nprint(f\"전체 고객 이탈율: {overall_churn:.2f}%\")\nprint(\"성별 이탈율:\")\nprint(gender_churn)\n",
+    "execution_result": {
+      "status": "PASS",
+      "has_figure": false,
+      "stdout_preview": "전체 고객 이탈율: 14.60%\n성별 이탈율:\ngender\nFemale    14.68\nMale      14.52\nName: churn, dtype: float64"
+    }
+  },
+  {
+    "id": "TEST_073",
+    "category": "비즈니스 KPI 및 세그먼트 분석",
+    "difficulty": "Intermediate",
+    "question": "고객별 총 거래 건수, 총 거래 금액, 1회당 평균 거래금액(AOV)을 계산하고 상위 5명을 출력해줘.",
+    "target_dfs": [
+      "df_tx"
+    ],
+    "expected_output_type": "table",
+    "python_code": "# TEST_073: 고객별 거래 빈도 및 객단가(AOV)\ncust_tx = df_tx.groupby('customer_id').agg(\n    거래건수=('tx_id', 'count'),\n    총거래액=('amount', 'sum'),\n    평균거래액_AOV=('amount', 'mean')\n).round(2)\ntop5 = cust_tx.sort_values('총거래액', ascending=False).head(5)\nprint(\"총 거래금액 상위 5명 고객 지표:\")\nprint(top5)\n",
+    "execution_result": {
+      "status": "PASS",
+      "has_figure": false,
+      "stdout_preview": "총 거래금액 상위 5명 고객 지표:\n             거래건수     총거래액  평균거래액_AOV\ncustomer_id                          \nCUST0038       16  6722.33     420.15\nCUST0654       11  6659.72     605.43\nCUST0125        7  6339.04     905.58\nCUST0595        9  6291.86     699.10\nCUST0211        7  5403.61     771.94"
+    }
+  },
+  {
+    "id": "TEST_074",
+    "category": "비즈니스 KPI 및 세그먼트 분석",
+    "difficulty": "Advanced",
+    "question": "거래 내역을 바탕으로 고객별 최근 거래일 경과일수(Recency), 거래 빈도(Frequency), 총 거래금액(Monetary) RFM 기초 테이블을 생성해줘.",
+    "target_dfs": [
+      "df_tx"
+    ],
+    "expected_output_type": "table",
+    "python_code": "# TEST_074: RFM 기초 지표 생성\ndf_tx_copy = df_tx.copy()\ndf_tx_copy['date'] = pd.to_datetime(df_tx_copy['tx_datetime'])\nsnapshot_date = df_tx_copy['date'].max() + pd.Timedelta(days=1)\nrfm = df_tx_copy.groupby('customer_id').agg(\n    Recency=('date', lambda d: (snapshot_date - d.max()).days),\n    Frequency=('tx_id', 'count'),\n    Monetary=('amount', 'sum')\n).round(2)\nprint(\"RFM 기초 지표 요약 (상위 5건):\")\nprint(rfm.head(5))\n",
+    "execution_result": {
+      "status": "PASS",
+      "has_figure": false,
+      "stdout_preview": "RFM 기초 지표 요약 (상위 5건):\n             Recency  Frequency  Monetary\ncustomer_id                              \nCUST0001         214          1    387.59\nCUST0002         318          2    212.30\nCUST0003         123          4    647.81\nCUST0004          21          5    656.25\nCUST0005          43          7    984.94"
+    }
+  },
+  {
+    "id": "TEST_075",
+    "category": "비즈니스 KPI 및 세그먼트 분석",
+    "difficulty": "Advanced",
+    "question": "RFM 지표를 바탕으로 상위 20%를 'VIP', 하위 20%를 'At-Risk', 나머지를 'Standard'로 세그먼트 분류하고 세그먼트별 고객 수를 집계해줘.",
+    "target_dfs": [
+      "df_tx"
+    ],
+    "expected_output_type": "table",
+    "python_code": "# TEST_075: RFM 세그먼트 분류\ndf_tx_copy = df_tx.copy()\ndf_tx_copy['date'] = pd.to_datetime(df_tx_copy['tx_datetime'])\nsnapshot = df_tx_copy['date'].max() + pd.Timedelta(days=1)\nrfm = df_tx_copy.groupby('customer_id').agg(\n    Recency=('date', lambda d: (snapshot - d.max()).days),\n    Frequency=('tx_id', 'count'),\n    Monetary=('amount', 'sum')\n)\nm_p80 = rfm['Monetary'].quantile(0.80)\nm_p20 = rfm['Monetary'].quantile(0.20)\ndef classify_rfm(row):\n    if row['Monetary'] >= m_p80:\n        return 'VIP'\n    elif row['Monetary'] <= m_p20:\n        return 'At-Risk'\n    else:\n        return 'Standard'\nrfm['Segment'] = rfm.apply(classify_rfm, axis=1)\nseg_counts = rfm['Segment'].value_counts()\nprint(\"RFM 세그먼트별 고객 분포:\")\nprint(seg_counts)\n",
+    "execution_result": {
+      "status": "PASS",
+      "has_figure": false,
+      "stdout_preview": "RFM 세그먼트별 고객 분포:\nSegment\nStandard    567\nAt-Risk     190\nVIP         190\nName: count, dtype: int64"
+    }
+  },
+  {
+    "id": "TEST_076",
+    "category": "비즈니스 KPI 및 세그먼트 분석",
+    "difficulty": "Intermediate",
+    "question": "서비스 티어(service_tier)별 고객 1인당 평균 거래 기여액(ARPU)을 계산해줘.",
+    "target_dfs": [
+      "df",
+      "df_tx"
+    ],
+    "expected_output_type": "table",
+    "python_code": "# TEST_076: 서비스 티어별 ARPU 산출\nmerged = df.merge(df_tx.groupby('customer_id')['amount'].sum().reset_index(), on='customer_id', how='left')\nmerged['amount'] = merged['amount'].fillna(0)\narpu_df = merged.groupby('service_tier').agg(\n    총고객수=('customer_id', 'count'),\n    총매출액=('amount', 'sum'),\n    ARPU=('amount', 'mean')\n).round(2)\nprint(\"서비스 티어별 ARPU (1인당 평균 거래액):\")\nprint(arpu_df.sort_values('ARPU', ascending=False))\n",
+    "execution_result": {
+      "status": "PASS",
+      "has_figure": false,
+      "stdout_preview": "서비스 티어별 ARPU (1인당 평균 거래액):\n              총고객수       총매출액     ARPU\nservice_tier                          \nPlatinum        68   97418.00  1432.62\nGold           158  225730.71  1428.68\nSilver         361  495417.59  1372.35\nBronze         413  536656.04  1299.41"
+    }
+  },
+  {
+    "id": "TEST_077",
+    "category": "비즈니스 KPI 및 세그먼트 분석",
+    "difficulty": "Intermediate",
+    "question": "캠페인 접촉 횟수(1~2회, 3~4회, 5회 이상) 구간별 고객 이탈율을 계산해줘.",
+    "target_dfs": [
+      "df"
+    ],
+    "expected_output_type": "table",
+    "python_code": "# TEST_077: 캠페인 접촉 횟수별 이탈율 분석\nbins = [0, 2, 4, 100]\nlabels = ['1~2회 (낮음)', '3~4회 (중간)', '5회 이상 (높음)']\ndf_copy = df.copy()\ndf_copy['contact_grp'] = pd.cut(df_copy['campaign_contact_count'], bins=bins, labels=labels)\nchurn_by_contact = df_copy.groupby('contact_grp').agg(\n    고객수=('customer_id', 'count'),\n    이탈율_pct=('churn', lambda x: round(x.mean() * 100, 2))\n)\nprint(churn_by_contact)\n",
+    "execution_result": {
+      "status": "PASS",
+      "has_figure": false,
+      "stdout_preview": "고객수  이탈율_pct\ncontact_grp              \n1~2회 (낮음)    282    16.67\n3~4회 (중간)    483    13.46\n5회 이상 (높음)   235    14.47"
+    }
+  },
+  {
+    "id": "TEST_078",
+    "category": "비즈니스 KPI 및 세그먼트 분석",
+    "difficulty": "Intermediate",
+    "question": "신용점수가 580점 미만이고 잔액이 마이너스(< 0)인 고위험(High-Risk) 고객의 수와 전체 대비 비율을 산출해줘.",
+    "target_dfs": [
+      "df"
+    ],
+    "expected_output_type": "text",
+    "python_code": "# TEST_078: 고위험 고객군 식별\nhigh_risk = df[(df['credit_score'] < 580) & (df['balance'] < 0)]\npct = (len(high_risk) / len(df)) * 100\nprint(f\"고위험(신용<580 & 잔액<0) 고객 수: {len(high_risk)}명\")\nprint(f\"전체 대비 비율: {pct:.2f}%\")\n",
+    "execution_result": {
+      "status": "PASS",
+      "has_figure": false,
+      "stdout_preview": "고위험(신용<580 & 잔액<0) 고객 수: 9명\n전체 대비 비율: 0.90%"
+    }
+  },
+  {
+    "id": "TEST_079",
+    "category": "비즈니스 KPI 및 세그먼트 분석",
+    "difficulty": "Intermediate",
+    "question": "고객들의 가입일(signup_date)부터 마지막 활동일(last_active_date)까지의 서비스 이용 기간(일수) 평균과 중앙값을 계산해줘.",
+    "target_dfs": [
+      "df"
+    ],
+    "expected_output_type": "text",
+    "python_code": "# TEST_079: 고객 서비스 이용 기간 통계\nsignup = pd.to_datetime(df['signup_date'])\nlast_act = pd.to_datetime(df['last_active_date'])\ntenure_days = (last_act - signup).dt.days\nprint(f\"평균 서비스 이용 일수: {tenure_days.mean():.1f}일\")\nprint(f\"이용 일수 중앙값: {tenure_days.median():.1f}일\")\nprint(f\"최소: {tenure_days.min()}일, 최대: {tenure_days.max()}일\")\n",
+    "execution_result": {
+      "status": "PASS",
+      "has_figure": false,
+      "stdout_preview": "평균 서비스 이용 일수: 552.3일\n이용 일수 중앙값: 567.5일\n최소: 29일, 최대: 1069일"
+    }
+  },
+  {
+    "id": "TEST_080",
+    "category": "비즈니스 KPI 및 세그먼트 분석",
+    "difficulty": "Advanced",
+    "question": "서비스 티어별 평균 거래금액과 평균 잔액을 나란히 비교하는 그룹 막대 차트(Grouped Bar Chart)를 시각화해줘.",
+    "target_dfs": [
+      "df",
+      "df_tx"
+    ],
+    "expected_output_type": "chart",
+    "python_code": "# TEST_080: 서비스 티어별 거래액 및 잔액 그룹 막대 차트\nimport matplotlib.pyplot as plt\n\ncust_spend = df_tx.groupby('customer_id')['amount'].sum().reset_index(name='total_tx')\nm = df.merge(cust_spend, on='customer_id', how='left')\nm['total_tx'] = m['total_tx'].fillna(0)\ntier_comp = m.groupby('service_tier')[['balance', 'total_tx']].mean().round(2)\n\ntier_comp.plot(kind='bar', figsize=(8, 4.5), color=['royalblue', 'orange'])\nplt.title('서비스 티어별 평균 계좌 잔액 vs 평균 총 거래액 비교')\nplt.xlabel('서비스 티어')\nplt.ylabel('금액 ($)')\nplt.xticks(rotation=0)\nplt.legend(['평균 잔액', '평균 총거래액'])\nplt.grid(axis='y', linestyle='--', alpha=0.5)\nplt.tight_layout()\nplt.show()\nprint(tier_comp)\n",
+    "execution_result": {
+      "status": "PASS",
+      "has_figure": true,
+      "stdout_preview": "balance  total_tx\nservice_tier                   \nBronze        5422.08   1299.41\nGold          5154.77   1428.68\nPlatinum      4976.36   1432.62\nSilver        6336.26   1372.35"
+    }
+  },
+  {
+    "id": "TEST_081",
+    "category": "다중 테이블 병합 및 정합성 비교",
+    "difficulty": "Basic",
+    "question": "고객 테이블(df)과 거래 테이블(df_tx)을 customer_id로 내부 조인(Inner Join)했을 때의 총 행 개수와 결합된 컬럼 수를 확인해줘.",
+    "target_dfs": [
+      "df",
+      "df_tx"
+    ],
+    "expected_output_type": "text",
+    "python_code": "# TEST_081: 고객-거래 테이블 내부 조인(Inner Join)\ninner_df = df.merge(df_tx, on='customer_id', how='inner')\nprint(f\"조인 결과 행 개수: {inner_df.shape[0]:,}행\")\nprint(f\"조인 결과 컬럼 수: {inner_df.shape[1]}개\")\nprint(f\"결합된 컬럼 목록: {list(inner_df.columns)}\")\n",
+    "execution_result": {
+      "status": "PASS",
+      "has_figure": false,
+      "stdout_preview": "조인 결과 행 개수: 5,000행\n조인 결과 컬럼 수: 25개\n결합된 컬럼 목록: ['customer_id', 'age', 'gender', 'job', 'marital', 'education', 'credit_score', 'annual_income', 'balance', 'housing_loan', 'personal_loan', 'signup_date', 'last_active_date', 'device_type', 'service_tier', 'churn', 'campaign_contact_count', 'satisfaction_score', 'tx_id', 'tx_datetime', 'tx_type', 'amount', 'channel', 'is_declined', 'fee']"
+    }
+  },
+  {
+    "id": "TEST_082",
+    "category": "다중 테이블 병합 및 정합성 비교",
+    "difficulty": "Intermediate",
+    "question": "고객 테이블 기준으로 좌측 조인(Left Join)하여 거래 내역이 단 한 건도 없는 고객(Anti-Join)의 수와 명단을 조회해줘.",
+    "target_dfs": [
+      "df",
+      "df_tx"
+    ],
+    "expected_output_type": "table",
+    "python_code": "# TEST_082: 거래 내역 없는 고객 안티 조인(Anti-Join)\nleft_df = df.merge(df_tx, on='customer_id', how='left')\nno_tx_cust = left_df[left_df['tx_id'].isna()]\nprint(f\"거래 내역이 없는 고객 수: {len(no_tx_cust)}명\")\nprint(no_tx_cust[['customer_id', 'age', 'job', 'service_tier', 'balance']].head(10))\n",
+    "execution_result": {
+      "status": "PASS",
+      "has_figure": false,
+      "stdout_preview": "거래 내역이 없는 고객 수: 53명\n     customer_id  age         job service_tier   balance\n2105    CUST0405   67    services       Silver   1842.90\n3763    CUST0709   23      admin.     Platinum   -443.09\n3832    CUST0725   32  management     Platinum  10933.68\n5003    CUST0951   48  technician       Bronze   6600.39\n5004    CUST0952   48  management       Bronze   3114.07\n5005    CUST0953   75    services       Silver  -1544.41\n5006    CUST0954   35     retired       Bronze   4121.25\n5007    CUST0955   66   "
+    }
+  },
+  {
+    "id": "TEST_083",
+    "category": "다중 테이블 병합 및 정합성 비교",
+    "difficulty": "Intermediate",
+    "question": "고객 정보와 거래 내역을 조인하여 직업(job)별 총 거래금액과 총 거래건수를 집계하고 거래금액 순으로 정렬해줘.",
+    "target_dfs": [
+      "df",
+      "df_tx"
+    ],
+    "expected_output_type": "table",
+    "python_code": "# TEST_083: 직업별 거래금액 및 거래건수 조인 집계\nmerged = df.merge(df_tx, on='customer_id', how='inner')\njob_tx = merged.groupby('job').agg(총거래액=('amount', 'sum'), 거래건수=('tx_id', 'count')).sort_values('총거래액', ascending=False)\nprint(job_tx.round(2))\n",
+    "execution_result": {
+      "status": "PASS",
+      "has_figure": false,
+      "stdout_preview": "총거래액  거래건수\njob                           \nmanagement     289574.39  1069\nblue-collar    245267.02   890\ntechnician     209235.55   811\nadmin.         186986.81   657\nservices       149033.93   505\nretired         77849.85   305\nself-employed   71865.00   260\nentrepreneur    49306.30   187\nstudent         38211.40   159\nunemployed      37892.09   157"
+    }
+  },
+  {
+    "id": "TEST_084",
+    "category": "다중 테이블 병합 및 정합성 비교",
+    "difficulty": "Intermediate",
+    "question": "거래 내역이 있는 고객과 없는 고객의 평균 연령 및 평균 신용점수를 비교해줘.",
+    "target_dfs": [
+      "df",
+      "df_tx"
+    ],
+    "expected_output_type": "table",
+    "python_code": "# TEST_084: 거래 유무에 따른 고객 특성 비교\ntx_cust_set = set(df_tx['customer_id'].unique())\ndf_copy = df.copy()\ndf_copy['has_transaction'] = df_copy['customer_id'].apply(lambda cid: '거래 있음' if cid in tx_cust_set else '거래 없음')\ncomp = df_copy.groupby('has_transaction').agg(고객수=('customer_id', 'count'), 평균연령=('age', 'mean'), 평균신용점수=('credit_score', 'mean'), 평균잔액=('balance', 'mean')).round(2)\nprint(comp)\n",
+    "execution_result": {
+      "status": "PASS",
+      "has_figure": false,
+      "stdout_preview": "고객수   평균연령  평균신용점수     평균잔액\nhas_transaction                             \n거래 없음             53  46.87  680.94  6216.74\n거래 있음            947  47.27  680.49  5649.49"
+    }
+  },
+  {
+    "id": "TEST_085",
+    "category": "다중 테이블 병합 및 정합성 비교",
+    "difficulty": "Advanced",
+    "question": "각 고객이 가장 많이 이용한 주 사용 거래 채널(Primary Channel)을 구하여 고객 테이블에 병합해줘.",
+    "target_dfs": [
+      "df",
+      "df_tx"
+    ],
+    "expected_output_type": "table",
+    "python_code": "# TEST_085: 주 이용 거래 채널 도출 및 병합\ncust_channel = df_tx.groupby(['customer_id', 'channel']).size().reset_index(name='count')\nprimary_channel = cust_channel.sort_values(['customer_id', 'count'], ascending=[True, False]).drop_duplicates(subset=['customer_id'])\nmerged_df = df.merge(primary_channel[['customer_id', 'channel']], on='customer_id', how='left')\nmerged_df['channel'] = merged_df['channel'].fillna('No Transactions')\nprint(\"주 이용 채널 분포:\")\nprint(merged_df['channel'].value_counts())\nprint(merged_df[['customer_id', 'job', 'channel']].head(5))\n",
+    "execution_result": {
+      "status": "PASS",
+      "has_figure": false,
+      "stdout_preview": "주 이용 채널 분포:\nchannel\nMobile App         681\nATM                123\nOnline Banking     120\nNo Transactions     53\nBranch              23\nName: count, dtype: int64\n  customer_id          job     channel\n0    CUST0001       admin.  Mobile App\n1    CUST0002  blue-collar         ATM\n2    CUST0003      student  Mobile App\n3    CUST0004   management  Mobile App\n4    CUST0005     services  Mobile App"
+    }
+  },
+  {
+    "id": "TEST_086",
+    "category": "다중 테이블 병합 및 정합성 비교",
+    "difficulty": "Intermediate",
+    "question": "2024년 하반기(7월~12월) 동안 단일 거래금액이 3,000 이상인 고액 거래를 발생시킨 고객들의 ID와 직업을 중복 없이 추출해줘.",
+    "target_dfs": [
+      "df",
+      "df_tx"
+    ],
+    "expected_output_type": "table",
+    "python_code": "# TEST_086: 하반기 고액 거래 발생 고객 추출\ndf_tx_copy = df_tx.copy()\ndf_tx_copy['month'] = pd.to_datetime(df_tx_copy['tx_datetime']).dt.month\nhigh_tx = df_tx_copy[(df_tx_copy['month'] >= 7) & (df_tx_copy['amount'] >= 3000)]\nhigh_tx_cust = high_tx[['customer_id', 'amount', 'tx_datetime']].merge(df[['customer_id', 'job', 'annual_income']], on='customer_id')\nunique_cust = high_tx_cust.drop_duplicates(subset=['customer_id'])\nprint(f\"하반기 $3,000 이상 고액 거래 고객 수: {len(unique_cust)}명\")\nprint(unique_cust[['customer_id', 'job', 'annual_income']].head(10))\n",
+    "execution_result": {
+      "status": "PASS",
+      "has_figure": false,
+      "stdout_preview": "하반기 $3,000 이상 고액 거래 고객 수: 2명\n  customer_id          job  annual_income\n0    CUST0499   management         103705\n1    CUST0211  blue-collar          33958"
+    }
+  },
+  {
+    "id": "TEST_087",
+    "category": "다중 테이블 병합 및 정합성 비교",
+    "difficulty": "Basic",
+    "question": "고객 테이블의 customer_id 고유값 개수와 거래 테이블의 customer_id 고유값 개수 간 차이를 정합성 검증으로 확인해줘.",
+    "target_dfs": [
+      "df",
+      "df_tx"
+    ],
+    "expected_output_type": "text",
+    "python_code": "# TEST_087: 두 테이블 간 고객 ID 정합성 비교\ncust_set = set(df['customer_id'].unique())\ntx_cust_set = set(df_tx['customer_id'].unique())\ndiff_in_cust_only = cust_set - tx_cust_set\ndiff_in_tx_only = tx_cust_set - cust_set\nprint(f\"고객 테이블 고유 ID 수: {len(cust_set)}\")\nprint(f\"거래 테이블 고유 ID 수: {len(tx_cust_set)}\")\nprint(f\"거래 없는 고객 수: {len(diff_in_cust_only)}\")\nprint(f\"고객 테이블에 없는 유령 거래 ID 수 (외래키 무결성 위반): {len(diff_in_tx_only)}\")\n",
+    "execution_result": {
+      "status": "PASS",
+      "has_figure": false,
+      "stdout_preview": "고객 테이블 고유 ID 수: 1000\n거래 테이블 고유 ID 수: 947\n거래 없는 고객 수: 53\n고객 테이블에 없는 유령 거래 ID 수 (외래키 무결성 위반): 0"
+    }
+  },
+  {
+    "id": "TEST_088",
+    "category": "다중 테이블 병합 및 정합성 비교",
+    "difficulty": "Intermediate",
+    "question": "거래 테이블에서 동일한 고객이 동일한 날짜에 발생시킨 거래 건수가 5건 이상인 다빈도 거래 일자를 탐지해줘.",
+    "target_dfs": [
+      "df_tx"
+    ],
+    "expected_output_type": "table",
+    "python_code": "# TEST_088: 동일 일자 다빈도 거래 고객 탐지\ndf_tx_copy = df_tx.copy()\ndf_tx_copy['date'] = pd.to_datetime(df_tx_copy['tx_datetime']).dt.date\nfrequent_tx = df_tx_copy.groupby(['customer_id', 'date']).size().reset_index(name='tx_count')\nheavy_days = frequent_tx[frequent_tx['tx_count'] >= 5].sort_values('tx_count', ascending=False)\nprint(f\"동일 일자 5건 이상 거래 발생 건수: {len(heavy_days)}건\")\nif len(heavy_days) > 0:\n    print(heavy_days.head(5))\n",
+    "execution_result": {
+      "status": "PASS",
+      "has_figure": false,
+      "stdout_preview": "동일 일자 5건 이상 거래 발생 건수: 0건"
+    }
+  },
+  {
+    "id": "TEST_089",
+    "category": "다중 테이블 병합 및 정합성 비교",
+    "difficulty": "Intermediate",
+    "question": "서비스 티어(service_tier)별 총 거래금액을 조인 집계하여 수평 막대 차트로 시각화해줘.",
+    "target_dfs": [
+      "df",
+      "df_tx"
+    ],
+    "expected_output_type": "chart",
+    "python_code": "# TEST_089: 티어별 거래 총액 수평 막대 그래프\nimport matplotlib.pyplot as plt\n\nm = df.merge(df_tx, on='customer_id', how='inner')\ntier_tx = m.groupby('service_tier')['amount'].sum().sort_values(ascending=True)\n\nplt.figure(figsize=(8, 4))\ntier_tx.plot(kind='barh', color='darkorange')\nplt.title('서비스 티어별 누적 총 거래금액')\nplt.xlabel('총 거래금액 ($)')\nplt.ylabel('서비스 티어')\nplt.grid(axis='x', linestyle='--', alpha=0.5)\nplt.tight_layout()\nplt.show()\nprint(tier_tx)\n",
+    "execution_result": {
+      "status": "PASS",
+      "has_figure": true,
+      "stdout_preview": "service_tier\nPlatinum     97418.00\nGold        225730.71\nSilver      495417.59\nBronze      536656.04\nName: amount, dtype: float64"
+    }
+  },
+  {
+    "id": "TEST_090",
+    "category": "다중 테이블 병합 및 정합성 비교",
+    "difficulty": "Intermediate",
+    "question": "이탈 고객(churn=1)과 유지 고객(churn=0)의 1인당 평균 총 거래금액을 조인 집계하여 비교해줘.",
+    "target_dfs": [
+      "df",
+      "df_tx"
+    ],
+    "expected_output_type": "table",
+    "python_code": "# TEST_090: 이탈 여부별 1인당 총 거래금액 비교\ncust_amt = df_tx.groupby('customer_id')['amount'].sum().reset_index()\nm = df.merge(cust_amt, on='customer_id', how='left')\nm['amount'] = m['amount'].fillna(0)\nchurn_tx_comp = m.groupby('churn').agg(고객수=('customer_id', 'count'), 평균총거래액=('amount', 'mean'), 중앙값총거래액=('amount', 'median')).round(2)\nchurn_tx_comp.index = ['유지 고객 (0)', '이탈 고객 (1)']\nprint(churn_tx_comp)\n",
+    "execution_result": {
+      "status": "PASS",
+      "has_figure": false,
+      "stdout_preview": "고객수   평균총거래액  중앙값총거래액\n유지 고객 (0)  854  1314.40  1046.16\n이탈 고객 (1)  146  1594.02  1336.40"
+    }
+  },
+  {
+    "id": "TEST_091",
+    "category": "고급 화면 시각화 및 방어적 처리",
+    "difficulty": "Basic",
+    "question": "[집계 데이터 시각화 규칙] 직업별 평균 잔액 집계표를 히스토그램이 아닌 막대 차트(Bar Chart)로 올바르게 시각화해줘.",
+    "target_dfs": [
+      "df"
+    ],
+    "expected_output_type": "chart",
+    "python_code": "# TEST_091: 집계 데이터에 대한 막대 차트 시각화 규칙 준수\nimport matplotlib.pyplot as plt\n\n# 사전 집계 데이터 생성\njob_avg_bal = df.groupby('job')['balance'].mean().sort_values(ascending=False)\n\n# 집계 데이터는 관측치 분포(raw)가 아니므로 히스토그램이 아닌 막대 차트 사용\nplt.figure(figsize=(9, 4.5))\njob_avg_bal.plot(kind='bar', color='royalblue')\nplt.title('직업별 평균 잔액 (집계 데이터 막대 차트)')\nplt.xlabel('직업')\nplt.ylabel('평균 잔액 ($)')\nplt.xticks(rotation=45)\nplt.grid(axis='y', linestyle='--', alpha=0.5)\nplt.tight_layout()\nplt.show()\nprint(job_avg_bal.round(2))\n",
+    "execution_result": {
+      "status": "PASS",
+      "has_figure": true,
+      "stdout_preview": "job\nadmin.           6393.94\ntechnician       6246.28\nmanagement       5762.62\nservices         5703.36\nblue-collar      5631.82\nretired          5190.14\nself-employed    4990.65\nunemployed       4671.32\nentrepreneur     4278.29\nstudent          3905.14\nName: balance, dtype: float64"
+    }
+  },
+  {
+    "id": "TEST_092",
+    "category": "고급 화면 시각화 및 방어적 처리",
+    "difficulty": "Advanced",
+    "question": "[다중 서브플롯] 2x2 서브플롯 그리드를 생성하여 연령 분포, 잔액 분포, 신용점수 분포, 서비스 티어 빈도를 한 화면에 시각화해줘.",
+    "target_dfs": [
+      "df"
+    ],
+    "expected_output_type": "chart",
+    "python_code": "# TEST_092: 2x2 서브플롯 대시보드 시각화\nimport matplotlib.pyplot as plt\nimport seaborn as sns\n\nfig, axes = plt.subplots(2, 2, figsize=(11, 8))\n\n# 1. 연령 분포\nsns.histplot(df['age'], kde=True, ax=axes[0, 0], color='skyblue')\naxes[0, 0].set_title('1. 연령 분포')\n\n# 2. 잔액 분포 (박스플롯)\nsns.boxplot(x=df['balance'], ax=axes[0, 1], color='lightgreen')\naxes[0, 1].set_title('2. 잔액 박스플롯')\n\n# 3. 신용점수 분포\nsns.histplot(df['credit_score'], kde=True, ax=axes[1, 0], color='salmon')\naxes[1, 0].set_title('3. 신용점수 분포')\n\n# 4. 서비스 티어 빈도 막대그래프\ndf['service_tier'].value_counts().plot(kind='bar', ax=axes[1, 1], color='gold')\naxes[1, 1].set_title('4. 서비스 티어 고객 수')\naxes[1, 1].tick_params(axis='x', rotation=0)\n\nplt.suptitle('고객 데이터 4대 핵심 변수 종합 시각화 대시보드', fontsize=14)\nplt.tight_layout()\nplt.show()\n",
+    "execution_result": {
+      "status": "PASS",
+      "has_figure": true,
+      "stdout_preview": ""
+    }
+  },
+  {
+    "id": "TEST_093",
+    "category": "고급 화면 시각화 및 방어적 처리",
+    "difficulty": "Advanced",
+    "question": "[이중 축 시각화] 월별 거래 총액(막대)과 거래 건수(꺾은선)를 이중 축(Dual Y-axis)으로 결합하여 시각화해줘.",
+    "target_dfs": [
+      "df_tx"
+    ],
+    "expected_output_type": "chart",
+    "python_code": "# TEST_093: 월별 거래총액(막대) & 거래건수(선) 이중 축 시각화\nimport matplotlib.pyplot as plt\n\ndf_tx_copy = df_tx.copy()\ndf_tx_copy['month'] = pd.to_datetime(df_tx_copy['tx_datetime']).dt.month\nmonthly_stats = df_tx_copy.groupby('month').agg(총금액=('amount', 'sum'), 건수=('tx_id', 'count'))\n\nfig, ax1 = plt.subplots(figsize=(9, 4.5))\nax2 = ax1.twinx()\n\nax1.bar(monthly_stats.index, monthly_stats['총금액'], color='lightsteelblue', alpha=0.7, label='총 거래금액 ($)')\nax2.plot(monthly_stats.index, monthly_stats['건수'], color='crimson', marker='o', linewidth=2, label='거래 건수')\n\nax1.set_xlabel('월 (Month)')\nax1.set_ylabel('총 거래금액 ($)', color='navy')\nax2.set_ylabel('거래 건수', color='crimson')\nax1.set_xticks(range(1, 13))\nplt.title('2024년 월별 거래총액 및 거래건수 이중 축 추이')\nplt.tight_layout()\nplt.show()\nprint(monthly_stats)\n",
+    "execution_result": {
+      "status": "PASS",
+      "has_figure": true,
+      "stdout_preview": "총금액   건수\nmonth                \n1      108563.30  406\n2      101906.23  388\n3      104372.18  415\n4      107217.15  420\n5      124080.68  424\n6       94724.32  395\n7      119869.77  421\n8      118328.49  440\n9      117486.94  416\n10     126233.33  461\n11      95869.83  362\n12     136570.12  452"
+    }
+  },
+  {
+    "id": "TEST_094",
+    "category": "고급 화면 시각화 및 방어적 처리",
+    "difficulty": "Intermediate",
+    "question": "[방어적 필터링] 연령이 100세 이상인 고객 필터링 시 결과가 빈 데이터프레임(Empty)인 경우 예외 없이 안전하게 안내 메시지를 출력해줘.",
+    "target_dfs": [
+      "df"
+    ],
+    "expected_output_type": "text",
+    "python_code": "# TEST_094: 빈 데이터프레임 방어적 처리\nempty_sub = df[df['age'] >= 100]\nif empty_sub.empty:\n    print(\"안내: 조건(연령 100세 이상)을 만족하는 데이터가 존재하지 않습니다. (Empty DataFrame 감지)\")\nelse:\n    print(f\"조회된 고객 수: {len(empty_sub)}명\")\n",
+    "execution_result": {
+      "status": "PASS",
+      "has_figure": false,
+      "stdout_preview": "안내: 조건(연령 100세 이상)을 만족하는 데이터가 존재하지 않습니다. (Empty DataFrame 감지)"
+    }
+  },
+  {
+    "id": "TEST_095",
+    "category": "고급 화면 시각화 및 방어적 처리",
+    "difficulty": "Intermediate",
+    "question": "[방어적 결측치 처리] 100% 결측치로만 구성된 가상 컬럼을 추가한 뒤 평균을 계산할 때 오류 없이 안전하게 처리하는 코드를 작성해줘.",
+    "target_dfs": [
+      "df"
+    ],
+    "expected_output_type": "text",
+    "python_code": "# TEST_095: 완전 결측 컬럼 안전 연산 방어\ndf_test = df.copy()\ndf_test['all_null_col'] = float('nan')\n\nval_mean = df_test['all_null_col'].mean()\nif pd.isna(val_mean):\n    print(\"안내: 'all_null_col' 컬럼의 모든 값이 결측치(NaN)이므로 평균값이 산출되지 않습니다. 기본값 0.0으로 대체합니다.\")\n    val_mean = 0.0\nprint(f\"최종 안전 처리된 평균값: {val_mean}\")\n",
+    "execution_result": {
+      "status": "PASS",
+      "has_figure": false,
+      "stdout_preview": "안내: 'all_null_col' 컬럼의 모든 값이 결측치(NaN)이므로 평균값이 산출되지 않습니다. 기본값 0.0으로 대체합니다.\n최종 안전 처리된 평균값: 0.0"
+    }
+  },
+  {
+    "id": "TEST_096",
+    "category": "고급 화면 시각화 및 방어적 처리",
+    "difficulty": "Intermediate",
+    "question": "[방어적 컬럼 참조] 존재하지 않는 컬럼 'non_existent_col'을 참조하려 할 때 KeyError를 방지하고 사용 가능한 컬럼 목록을 안내해줘.",
+    "target_dfs": [
+      "df"
+    ],
+    "expected_output_type": "text",
+    "python_code": "# TEST_096: 미존재 컬럼 KeyError 방어 로직\ntarget_col = 'non_existent_col'\nif target_col in df.columns:\n    print(df[target_col].head())\nelse:\n    print(f\"경고: 요청하신 컬럼 '{target_col}'은 데이터셋에 존재하지 않습니다.\")\n    print(f\"사용 가능한 유사 수치형 컬럼 목록: {list(df.select_dtypes(include=['number']).columns[:5])}\")\n",
+    "execution_result": {
+      "status": "PASS",
+      "has_figure": false,
+      "stdout_preview": "경고: 요청하신 컬럼 'non_existent_col'은 데이터셋에 존재하지 않습니다.\n사용 가능한 유사 수치형 컬럼 목록: ['age', 'credit_score', 'annual_income', 'balance', 'churn']"
+    }
+  },
+  {
+    "id": "TEST_097",
+    "category": "고급 화면 시각화 및 방어적 처리",
+    "difficulty": "Intermediate",
+    "question": "[0으로 나누기 방어] 건수가 0인 집계 그룹의 비율 계산 시 ZeroDivisionError를 방지하는 안전한 비율 계산 코드를 작성해줘.",
+    "target_dfs": [
+      "df"
+    ],
+    "expected_output_type": "text",
+    "python_code": "# TEST_097: ZeroDivision 방어적 비율 계산\ntotal_count = len(df[df['age'] > 120])  # 0 rows\ntarget_count = len(df[(df['age'] > 120) & (df['churn'] == 1)])\n\n# 0으로 나누기 방어 로직\nratio_pct = (target_count / total_count * 100) if total_count > 0 else 0.0\nprint(f\"분모 건수: {total_count}, 분자 건수: {target_count}\")\nprint(f\"안전하게 계산된 비율: {ratio_pct:.2f}% (ZeroDivisionError 방어 성공)\")\n",
+    "execution_result": {
+      "status": "PASS",
+      "has_figure": false,
+      "stdout_preview": "분모 건수: 0, 분자 건수: 0\n안전하게 계산된 비율: 0.00% (ZeroDivisionError 방어 성공)"
+    }
+  },
+  {
+    "id": "TEST_098",
+    "category": "고급 화면 시각화 및 방어적 처리",
+    "difficulty": "Intermediate",
+    "question": "[시계열 순서 보장] 임의로 날짜 순서가 섞인 월별 데이터에 대해 시각화 전 반드시 날짜순 오름차순 정렬을 수행하여 꺾은선 꼬임을 방지해줘.",
+    "target_dfs": [
+      "df_tx"
+    ],
+    "expected_output_type": "chart",
+    "python_code": "# TEST_098: 시계열 시각화 전 오름차순 정렬 보장\nimport matplotlib.pyplot as plt\n\ndf_tx_copy = df_tx.copy()\ndf_tx_copy['month'] = pd.to_datetime(df_tx_copy['tx_datetime']).dt.month\nmonthly_sum = df_tx_copy.groupby('month')['amount'].sum()\n\n# 의도적으로 인덱스를 무작위 셔플링\nshuffled_data = monthly_sum.sample(frac=1.0, random_state=123)\n\n# 꺾은선 그래프 꼬임 방지를 위한 엄격한 오름차순 정렬\nsorted_data = shuffled_data.sort_index(ascending=True)\n\nplt.figure(figsize=(8, 4))\nplt.plot(sorted_data.index, sorted_data.values, marker='s', color='darkviolet', linewidth=2)\nplt.title('월별 거래금액 추이 (정렬 보장으로 꺾은선 꼬임 방지)')\nplt.xlabel('월 (Month)')\nplt.ylabel('총 거래금액 ($)')\nplt.xticks(range(1, 13))\nplt.grid(True, linestyle='--', alpha=0.5)\nplt.tight_layout()\nplt.show()\nprint(\"정렬된 월별 순서:\", list(sorted_data.index))\n",
+    "execution_result": {
+      "status": "PASS",
+      "has_figure": true,
+      "stdout_preview": "정렬된 월별 순서: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]"
+    }
+  },
+  {
+    "id": "TEST_099",
+    "category": "고급 화면 시각화 및 방어적 처리",
+    "difficulty": "Basic",
+    "question": "[시각화 품질 및 레이아웃] 그래프 생성 시 제목, 축 라벨, 그리드를 지정하고 tight_layout()을 적용하여 텍스트 겹침을 방지해줘.",
+    "target_dfs": [
+      "df"
+    ],
+    "expected_output_type": "chart",
+    "python_code": "# TEST_099: 시각화 레이아웃 품질 및 가이드라인 준수\nimport matplotlib.pyplot as plt\n\nplt.figure(figsize=(8, 4))\nplt.hist(df['credit_score'], bins=20, color='teal', edgecolor='black', alpha=0.7)\nplt.title('신용점수(Credit Score) 분포 - 표준 레이아웃 적용')\nplt.xlabel('신용점수 (점)')\nplt.ylabel('고객 인원수 (명)')\nplt.grid(True, linestyle=':', alpha=0.6)\nplt.tight_layout()\nplt.show()\nprint(f\"신용점수 평균: {df['credit_score'].mean():.1f}, 중앙값: {df['credit_score'].median():.1f}\")\n",
+    "execution_result": {
+      "status": "PASS",
+      "has_figure": true,
+      "stdout_preview": "신용점수 평균: 680.5, 중앙값: 683.0"
+    }
+  },
+  {
+    "id": "TEST_100",
+    "category": "고급 화면 시각화 및 방어적 처리",
+    "difficulty": "Advanced",
+    "question": "[종합 대시보드 화면 표출] 총 고객수, 평균 잔액, 평균 신용점수, 전체 이탈율의 4대 핵심 지표 요약표와 잔액 분포 박스플롯을 한 번에 화면에 생성해줘.",
+    "target_dfs": [
+      "df"
+    ],
+    "expected_output_type": "combined",
+    "python_code": "# TEST_100: 4대 핵심 KPI 요약표 및 분포 차트 종합 생성\nimport matplotlib.pyplot as plt\nimport seaborn as sns\n\n# 1. 4대 KPI 요약 데이터프레임\nkpi_df = pd.DataFrame({\n    '지표명': ['총 고객 수', '평균 계좌 잔액', '평균 신용점수', '고객 이탈율'],\n    '지표값': [\n        f\"{len(df):,}명\",\n        f\"${df['balance'].mean():,.2f}\",\n        f\"{df['credit_score'].mean():.1f}점\",\n        f\"{df['churn'].mean()*100:.2f}%\"\n    ]\n})\nprint(\"=== 4대 핵심 비즈니스 KPI 요약 ===\")\nprint(kpi_df.to_string(index=False))\n\n# 2. 종합 분포 시각화\nplt.figure(figsize=(9, 3.5))\nsns.boxplot(x=df['balance'], color='mediumslateblue')\nplt.title('고객 계좌 잔액 분포 (종합 대시보드)')\nplt.xlabel('잔액 ($)')\nplt.tight_layout()\nplt.show()\n",
+    "execution_result": {
+      "status": "PASS",
+      "has_figure": true,
+      "stdout_preview": "=== 4대 핵심 비즈니스 KPI 요약 ===\n     지표명       지표값\n  총 고객 수    1,000명\n평균 계좌 잔액 $5,679.55\n 평균 신용점수    680.5점\n  고객 이탈율    14.60%"
+    }
+  }
+]

@@ -1,0 +1,62 @@
+{
+  "source": "acceptance.synthetic_events",
+  "rows": [
+    {
+      "period": "2026-08",
+      "segment": "A",
+      "value": 10
+    },
+    {
+      "period": "2026-08",
+      "segment": "A",
+      "value": 20
+    },
+    {
+      "period": "2026-08",
+      "segment": "A",
+      "value": 90
+    },
+    {
+      "period": "2026-08",
+      "segment": "B",
+      "value": 40
+    },
+    {
+      "period": "2026-07",
+      "segment": "A",
+      "value": 2
+    },
+    {
+      "period": "2026-07",
+      "segment": "A",
+      "value": 4
+    },
+    {
+      "period": "2026-07",
+      "segment": "A",
+      "value": 18
+    }
+  ],
+  "turns": [
+    {
+      "prompt": "보유 데이터에서 2026-08의 value 평균을 계산해줘.",
+      "expected": 40,
+      "sql": "SELECT AVG(value) FROM data WHERE period = '2026-08'"
+    },
+    {
+      "prompt": "그중 segment A만 계산해줘.",
+      "expected": 40,
+      "sql": "SELECT AVG(value) FROM data WHERE period = '2026-08' AND segment = 'A'"
+    },
+    {
+      "prompt": "평균 말고 중앙값으로 바꿔줘.",
+      "expected": 20,
+      "sql": "SELECT MEDIAN(value) FROM data WHERE period = '2026-08' AND segment = 'A'"
+    },
+    {
+      "prompt": "같은 그룹의 이전 달 중앙값도 계산해줘.",
+      "expected": 4,
+      "sql": "SELECT MEDIAN(value) FROM data WHERE period = '2026-07' AND segment = 'A'"
+    }
+  ]
+}
