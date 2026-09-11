@@ -1,0 +1,35 @@
+{
+  "provider": "ChatOllama",
+  "model": "gemma4:e4b",
+  "database_calls": 0,
+  "status": "PASS",
+  "observations": [
+    {
+      "status": "ready",
+      "dataset": {
+        "id": "11ffb142-d105-4659-8add-17e982e5afce",
+        "source": "acceptance.synthetic_events",
+        "columns": [
+          "avg(\"value\")"
+        ],
+        "rows": 1,
+        "coverage": "complete",
+        "conditions": [],
+        "predicate_known": false,
+        "grain": "aggregate",
+        "aggregation": "SELECT AVG(value) FROM data WHERE period = '2026-08'",
+        "snapshot": "",
+        "query": "SELECT AVG(value) FROM data WHERE period = '2026-08'",
+        "parent_id": "7eff3f5e-df26-47fc-86ba-ac47b069caa9"
+      },
+      "preview": [
+        {
+          "avg(\"value\")": 40.0
+        }
+      ]
+    }
+  ],
+  "answer": "2026년 8월의 'value' 평균은 **40.0**입니다.",
+  "tool_messages": 1,
+  "elapsed_seconds": 38.67
+}

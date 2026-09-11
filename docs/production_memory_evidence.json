@@ -1,0 +1,39 @@
+{
+  "status": "PASS",
+  "model": "gemma4:e4b",
+  "result": {
+    "status": "answered",
+    "text": "요청하신 조건(기간: 2026-08, 세그먼트: A)을 기준으로 'value' 지표의 중앙값(Median)을 계산했습니다.\n\n**결과:**\n*   **지표:** value 중앙값 (Median)\n*   **계산 값:** 20.0\n\n이 결과는 `d8ce36f3-7deb-4c8d-b376-e49976a5dfc6` 데이터셋을 기반으로, 기간이 '2026-08'이고 세그먼트가 'A'인 모든 데이터를 대상으로 계산된 중앙값입니다.",
+    "elapsed_seconds": 217.177
+  },
+  "observations": [
+    {
+      "status": "ready",
+      "dataset": {
+        "id": "b748eb6e-ecaa-44d7-ad7b-10ff541f13d8",
+        "source": "acceptance.synthetic_events",
+        "columns": [
+          "median(\"value\")"
+        ],
+        "rows": 1,
+        "coverage": "complete",
+        "conditions": [],
+        "predicate_known": false,
+        "grain": "aggregate",
+        "aggregation": "SELECT MEDIAN(value) FROM data WHERE period = '2026-08' AND segment = 'A'",
+        "snapshot": "",
+        "query": "SELECT MEDIAN(value) FROM data WHERE period = '2026-08' AND segment = 'A'",
+        "parent_id": "d8ce36f3-7deb-4c8d-b376-e49976a5dfc6"
+      },
+      "preview": [
+        {
+          "median(\"value\")": 20.0
+        }
+      ]
+    }
+  ],
+  "summarized": true,
+  "visible_messages": 26,
+  "model_messages": 4,
+  "database_calls": 0
+}

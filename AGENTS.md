@@ -22,3 +22,7 @@ When working in this repository, read and follow those skills before performing 
 - Prompt templates are in `core/prompt.py`.
 - Regression scenarios are tracked in `test_scenario.py`.
 - Historical bug notes are in `WORK_HISTORY.md`; ongoing request/action logs should go in `project_progress.md`.
+
+## Agent Quality and Release Criteria
+
+Before agent implementation, testing, or release work, read and apply [the development and release criteria](docs/agent_release_criteria.md). Validate user journeys and recoverable failures, not only isolated happy-path tests. Report actual evidence and remaining release blockers; do not equate test counts with release readiness.

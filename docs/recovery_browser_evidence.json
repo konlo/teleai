@@ -1,0 +1,52 @@
+{
+  "conversation": "c1022998-2a9c-43f6-ac8a-6a903f5e21b7",
+  "request": "age에 대한 histogram을 보여줘",
+  "ui": "approval card with exact age frequency SELECT and approve/cancel buttons",
+  "database_calls": 0,
+  "events": [
+    {
+      "time": "2026-09-07T23:31:48.228050+00:00",
+      "event": "run_started",
+      "run_id": "60513ae6af784c19b69388458160e074",
+      "operation": "submit"
+    },
+    {
+      "time": "2026-09-07T23:31:48.235316+00:00",
+      "event": "context_budget",
+      "run_id": "60513ae6af784c19b69388458160e074",
+      "characters": 6857,
+      "limit": 32000
+    },
+    {
+      "time": "2026-09-07T23:32:12.396759+00:00",
+      "event": "tool_started",
+      "run_id": "60513ae6af784c19b69388458160e074",
+      "tool": "prepare_histogram"
+    },
+    {
+      "time": "2026-09-07T23:32:12.406397+00:00",
+      "event": "tool_completed",
+      "run_id": "60513ae6af784c19b69388458160e074",
+      "tool": "prepare_histogram"
+    },
+    {
+      "time": "2026-09-07T23:32:12.410854+00:00",
+      "event": "context_budget",
+      "run_id": "60513ae6af784c19b69388458160e074",
+      "characters": 7371,
+      "limit": 32000
+    },
+    {
+      "time": "2026-09-07T23:32:27.286467+00:00",
+      "event": "recovery_transition",
+      "run_id": "60513ae6af784c19b69388458160e074",
+      "tool": "query_databricks"
+    },
+    {
+      "time": "2026-09-07T23:32:27.290780+00:00",
+      "event": "run_paused",
+      "run_id": "60513ae6af784c19b69388458160e074",
+      "reason": "approval"
+    }
+  ]
+}
