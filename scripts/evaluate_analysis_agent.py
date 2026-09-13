@@ -1,0 +1,585 @@
+"""Evaluate the production graph using original test_set questions and independent oracles.
+
+No Databricks executor is connected or approved. Fixtures are preloaded in a fresh
+temporary scope per question. This measures local analysis, not live DB access,
+browser rendering, conversation continuity, or final-prose factual consistency.
+Only --live-local-model makes model calls; --list/--all without it reports coverage.
+"""
+from __future__ import annotations
+
+import argparse
+from collections import Counter
+from contextlib import ExitStack, redirect_stdout
+from dataclasses import asdict
+from datetime import datetime, timezone
+from hashlib import sha256
+from importlib import import_module
+from io import StringIO
+import json
+import os
+from pathlib import Path
+import sys
+import tempfile
+import time
+from urllib.parse import urlparse
+from unittest.mock import patch
+
+ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT))
+os.environ.setdefault("MPLBACKEND", "Agg")
+
+import numpy as np
+import pandas as pd
+import matplotlib
+matplotlib.use("Agg")
+import matplotlib.pyplot as plt
+from matplotlib.axes import Axes
+from matplotlib.figure import Figure
+
+GRADING_PATH = ROOT / "tests/fixtures/analysis_agent_grading.json"
+
+
+def load_specs():
+    """Import definitions only; importing the old runner would execute fixture setup."""
+    return [spec for level in (1, 2) for part in range(1, 5)
+            for spec in getattr(import_module(f"test_set.level{level}.definitions_part{part}"),
+                                f"get_level{level}_part{part}")()]
+
+
+def load_grading():
+    return json.loads(GRADING_PATH.read_text())["cases"]
+
+
+def load_frames():
+    return {name: pd.read_csv(ROOT / "test_set/data" / f"{name}.csv")
+            for name in ("bank_loan", "titanic")}
+
+
+def fixture_reference_context(table, frame, context_dir=None):
+    """Describe actual fixture types and bounded category values, without answers.
+
+    Optional external aliases are table-wide fixture context. Never inject a
+    question's synonym_mapping: doing so would leak that question's reference.
+    """
+    context_dir = Path(context_dir) if context_dir else ROOT / "test_set/data_context"
+    aliases = {}
+    alias_source = None
+    context_path = context_dir / (table + ".json")
+    if context_path.exists():
+        external = json.loads(context_path.read_text())
+        if external.get("table") != table:
+            raise ValueError("External fixture context belongs to another table")
+        aliases = {column["name"]: column.get("aliases", []) for column in external.get("columns", [])}
+        alias_source = external.get("source")
+    columns = []
+    for name, dtype in frame.dtypes.items():
+        series = frame[name]
+        distinct = int(series.nunique(dropna=True))
+        top_values = []
+        if distinct <= 10:
+            for value, count in series.dropna().value_counts().head(10).items():
+                value = value.item() if isinstance(value, np.generic) else value
+                top_values.append({"value": value, "count": int(count)})
+        columns.append({"name": name, "dtype": str(dtype), "distinct_count": distinct,
+                        "null_count": int(series.isna().sum()), "top_values": top_values,
+                        "aliases": [value for value in aliases.get(name, []) if isinstance(value, str)][:20]})
+    return {"table": table, "training_status": "fixture_profile", "columns": columns,
+            "alias_source": alias_source,
+            "source": "local test_set fixture; not a live Databricks table"}
+
+
+def _distribution(values, weights=None):
+    values = np.asarray(values, dtype=float)
+    if values.ndim != 1 or not np.isfinite(values).all():
+        raise ValueError("Only finite one-dimensional histogram inputs are graded")
+    weights = np.ones(len(values)) if weights is None else np.asarray(weights, dtype=float)
+    if weights.shape != values.shape or not np.isfinite(weights).all() or (weights < 0).any():
+        raise ValueError("Invalid histogram weights")
+    grouped = pd.DataFrame({"value": values, "weight": weights}).groupby("value")["weight"].sum()
+    return grouped[grouped != 0]
+
+
+class HistogramCapture:
+    """Observe real Matplotlib input and bind it to the bytes actually persisted.
+
+    This changes no plotting arguments. Keep evaluations sequential because the
+    Matplotlib method instrumentation is process-global. Unsupported plots remain
+    ungraded rather than passing by virtue of an image being present.
+    """
+    def __init__(self):
+        self.histograms = []
+        self.saved = {}
+
+    def __enter__(self):
+        self.stack = ExitStack()
+        original_hist, original_save = Axes.hist, Figure.savefig
+
+        def observed_hist(axis, x, *args, **kwargs):
+            result = original_hist(axis, x, *args, **kwargs)
+            try:
+                self.histograms.append({"figure": id(axis.figure),
+                    "distribution": _distribution(x, kwargs.get("weights")),
+                    "bins": len(result[1]) - 1,
+                    "rendered_total": float(np.asarray(result[0]).sum())})
+            except (TypeError, ValueError):
+                pass  # An unsupported plot is never accepted by the grader.
+            return result
+
+        def observed_save(figure, destination, *args, **kwargs):
+            result = original_save(figure, destination, *args, **kwargs)
+            if hasattr(destination, "getvalue"):
+                content = destination.getvalue()
+                if isinstance(content, bytes) and content.startswith(b"\x89PNG\r\n\x1a\n"):
+                    self.saved[sha256(content).hexdigest()] = id(figure)
+            return result
+
+        self.stack.enter_context(patch.object(Axes, "hist", observed_hist))
+        self.stack.enter_context(patch.object(Figure, "savefig", observed_save))
+        return self
+
+    def __exit__(self, *args):
+        return self.stack.__exit__(*args)
+
+
+def reference_oracle(spec, grading, frames):
+    """Run trusted, checked-in reference code, never model-authored code.
+
+    stdout is discarded and is never parsed for a guessed answer. Selectors name
+    existing variables explicitly. Missing/changed contracts fail closed.
+    """
+    namespace = {"pd": pd, "np": np, "plt": plt, "matplotlib": matplotlib,
+                 "df_bank": frames["bank_loan"].copy(),
+                 "df_titanic": frames["titanic"].copy()}
+    try:
+        plt.close("all")
+        with HistogramCapture() as capture, redirect_stdout(StringIO()):
+            exec(compile(spec["python_code"], f"reference:{spec['id']}", "exec"), namespace)
+        if grading["kind"] == "histogram":
+            if len(capture.histograms) != 1:
+                raise ValueError("Reference must produce exactly one supported histogram")
+            return capture.histograms[0]
+        value = namespace[grading["variable"]]
+        if grading["kind"] == "scalar":
+            reduction = grading.get("reduction")
+            if reduction == "rows":
+                value = len(value)
+            elif reduction == "column_mean_percent":
+                value = value[grading["column"]].mean() * 100
+            elif reduction is not None:
+                raise ValueError("Unsupported scalar reduction")
+            if not np.isscalar(value) or not np.isfinite(float(value)):
+                raise ValueError("Reference scalar is not finite")
+            return float(value)
+        if grading["kind"] == "category_counts":
+            return _category_counts(value)
+        raise ValueError("Unsupported grading kind")
+    finally:
+        plt.close("all")
+
+
+def _category_counts(frame):
+    if not isinstance(frame, pd.DataFrame) or frame.shape[1] != 2:
+        raise ValueError("Expected a two-column category/count result")
+    numeric = [c for c in frame.columns if pd.api.types.is_numeric_dtype(frame[c])]
+    if len(numeric) != 1:
+        raise ValueError("Expected one count and one category column")
+    category = next(c for c in frame.columns if c != numeric[0])
+    if frame[category].isna().any() or frame[category].duplicated().any():
+        raise ValueError("Category keys must be unique and non-null")
+    return frame.set_index(category)[numeric[0]].sort_index().astype(float)
+
+
+def _same_series(left, right):
+    return (left.index.equals(right.index) and
+            bool(np.allclose(left.to_numpy(), right.to_numpy(), rtol=1e-8, atol=1e-8)))
+
+
+def _fixture_descendant(runtime, dataset_id, fixture_id):
+    visited = set()
+    while dataset_id and dataset_id not in visited:
+        if dataset_id == fixture_id:
+            return True
+        visited.add(dataset_id)
+        info = runtime.datasets.metadata.get(dataset_id)
+        if info is None:
+            return False
+        dataset_id = info.parent_id
+    return False
+
+
+def _computed_projection(query):
+    """A table mention in WHERE cannot turn a literal projection into evidence."""
+    from sqlglot import exp
+    from core.analysis_sql import validate_query
+    try:
+        tree = validate_query(query, dialect="duckdb")
+    except (TypeError, ValueError):
+        return False
+    has_data = any(table.name == "data" for table in tree.find_all(exp.Table))
+    return bool(tree.expressions) and all(
+        expression.find(exp.Column) is not None or expression.find(exp.AggFunc) is not None
+        or (has_data and isinstance(expression, exp.Star)) for expression in tree.expressions)
+
+
+def _replay_calculation(runtime, dataset_id, fixture_id, fixture_frame, seen=None):
+    """Reexecute recorded local lineage only, with no model or remote executor."""
+    from core.analysis_sql import local_query, validate_query
+    from utils.analysis_provenance import query_conditions
+    from utils.analysis_datasets import filter_frame
+    if dataset_id == fixture_id:
+        return fixture_frame.copy()
+    seen = set() if seen is None else seen
+    if dataset_id in seen:
+        raise ValueError("Cyclic calculation lineage")
+    seen.add(dataset_id)
+    info = runtime.datasets.metadata[dataset_id]
+    if not info.parent_id:
+        raise ValueError("Calculation has no fixture ancestor")
+    parent = _replay_calculation(runtime, info.parent_id, fixture_id, fixture_frame, seen)
+    parent_info = runtime.datasets.metadata[info.parent_id]
+    if info.query:
+        # Explicit requested_conditions are applied before SQL by the tool. The
+        # saved metadata also includes SQL WHERE conditions; exclude those here
+        # because the unchanged query applies them itself during replay.
+        sql_conditions = query_conditions(validate_query(info.query, dialect="duckdb")) or ()
+        residual = tuple(condition for condition in info.conditions
+                         if condition not in parent_info.conditions and condition not in sql_conditions)
+        if residual:
+            parent = filter_frame(parent, residual)
+        result, truncated, _ = local_query(parent, info.query)
+        if truncated:
+            raise ValueError("Counterfactual calculation was truncated")
+        return result
+    residual = tuple(condition for condition in info.conditions if condition not in parent_info.conditions)
+    if not residual:
+        raise ValueError("Derived calculation has no replayable transformation")
+    return filter_frame(parent, residual)
+
+
+def verify_counterfactuals(runtime, dataset_id, fixture_id, spec, grading, frames):
+    """A guessed answer cannot pass just because the fixture happens to match.
+
+    Replay the actual query/derivation chain against two deterministic alternative
+    fixtures and independently rerun the unchanged reference code on each. These
+    are grader probes, never extra agent executions or production data mutations.
+    """
+    target = spec["target_table"]
+    shifted = frames[target].copy()
+    for column in shifted.select_dtypes(include=["number"]).columns:
+        shifted[column] = shifted[column] * 1.1 + 7
+    variations = (shifted, frames[target].iloc[::2].copy())
+    for index, variant in enumerate(variations, 1):
+        oracle = reference_oracle(spec, grading, {**frames, target: variant})
+        actual = _replay_calculation(runtime, dataset_id, fixture_id, variant)
+        if grading["kind"] == "scalar":
+            column = grading.get("result_column")
+            ok = (len(actual) == 1 and
+                  (column in actual.columns if column else actual.shape[1] == 1) and
+                  np.isclose(float(actual.iloc[0][column] if column else actual.iloc[0, 0]),
+                             oracle, rtol=1e-8, atol=1e-8))
+        else:
+            ok = _same_series(_category_counts(actual), oracle)
+        if not ok:
+            return False, index
+    return True, len(variations)
+
+
+def grade_evidence(runtime, outcome, spec, grading, oracle, fixture_id, capture):
+    from langchain_core.messages import ToolMessage
+    state = runtime.inspect()
+    if outcome.get("status") not in {"answered", "complete"} or state["state"] != "idle":
+        return "NOT_COMPLETE", "Agent stopped or awaits approval; no implicit approval", {}
+    if state["recovery"].get("status") not in {None, "complete"}:
+        return "NOT_COMPLETE", "Recovery has not established completion", {}
+    if grading["kind"] == "histogram":
+        matches = []
+        for chart_id in state["chart_ids"]:
+            card = runtime.artifacts[chart_id]
+            info = runtime.datasets.metadata[card.dataset_id]
+            if (card.kind != "histogram" or tuple(card.columns) != (grading["column"],)
+                    or info.source != spec["target_table"] or info.coverage != "complete"
+                    or not _fixture_descendant(runtime, card.dataset_id, fixture_id)):
+                continue
+            digest = sha256(card.image).hexdigest()
+            figure_id = capture.saved.get(digest)
+            for observed in capture.histograms:
+                if (observed["figure"] == figure_id and
+                        _same_series(observed["distribution"], oracle["distribution"]) and
+                        np.isclose(observed["rendered_total"], oracle["distribution"].sum())):
+                    matches.append({"chart_id": chart_id, "png_sha256": digest,
+                                    "observations": float(observed["distribution"].sum()),
+                                    "actual_bins": observed["bins"], "reference_bins": oracle["bins"]})
+        return ("PASS", "Real PNG and plotted weighted distribution match the reference", {"charts": matches}) if matches else (
+            "FAIL", "Missing histogram PNG or plotted data differs from reference", {})
+    candidates = []
+    for message in runtime.events():
+        if isinstance(message, ToolMessage) and message.name == "local_analysis_sql":
+            try:
+                observation = json.loads(message.content)
+                if observation.get("status") == "ready":
+                    candidates.append(observation["dataset"]["id"])
+            except (ValueError, TypeError, KeyError):
+                pass
+    if not candidates:
+        return "FAIL", "No structured calculation result; assistant prose is not evidence", {}
+    # Grade the last calculation, not a correct intermediate followed by a wrong answer.
+    dataset_id = candidates[-1]
+    info = runtime.datasets.metadata[dataset_id]
+    if (info.source != spec["target_table"] or info.coverage != "complete" or
+            not _fixture_descendant(runtime, dataset_id, fixture_id)):
+        return "FAIL", "Calculation lacks complete fixture provenance", {}
+    if not _computed_projection(info.query):
+        return "FAIL", "Literal projection is not evidence of data calculation", {}
+    frame = runtime.datasets.frames[dataset_id]
+    try:
+        if grading["kind"] == "scalar":
+            column = grading.get("result_column")
+            if len(frame) != 1 or (column not in frame.columns if column else frame.shape[1] != 1):
+                raise ValueError("Expected exactly one scalar cell")
+            actual = float(frame.iloc[0][column] if column else frame.iloc[0, 0])
+            ok = bool(np.isclose(actual, oracle, rtol=1e-8, atol=1e-8))
+            details = {"expected": oracle, "actual": actual, "result_dataset_id": dataset_id}
+        else:
+            actual = _category_counts(frame)
+            ok = _same_series(actual, oracle)
+            details = {"expected": oracle.to_dict(), "actual": actual.to_dict(), "result_dataset_id": dataset_id}
+    except (TypeError, ValueError):
+        return "FAIL", "Calculation shape/type does not match reference contract", {}
+    return ("PASS" if ok else "FAIL", "Compared final structured calculation with independent reference", details)
+
+
+def preserve_runtime_metadata(runtime, spec, artifact_dir=None):
+    """Retain diagnostics after temporary SQLite/Parquet storage is removed.
+
+    Deliberately omit transcript/message content, model reasoning, preview rows,
+    and failed tool bodies. Field allowlisting also protects future diagnostics
+    additions from automatically becoming evaluation report content.
+    """
+    for handler in runtime.diagnostics.logger.handlers:
+        handler.flush()
+    fields = {"time", "event", "run_id", "error_id", "stage", "error_type", "http_status",
+              "frames", "tool", "status", "elapsed_seconds", "span_id", "characters", "limit",
+              "attempts", "operation", "missing_chart"}
+    diagnostics = []
+    for line in runtime.diagnostics.path.read_text().splitlines():
+        try:
+            event = json.loads(line)
+            diagnostics.append({key: value for key, value in event.items() if key in fields})
+        except (ValueError, TypeError, AttributeError):
+            diagnostics.append({"event": "unreadable_diagnostic_record"})
+    state = runtime.inspect()
+    charts = []
+    for chart_id in state["chart_ids"]:
+        card = runtime.artifacts[chart_id]
+        digest = sha256(card.image).hexdigest()
+        chart = {"id": card.id, "dataset_id": card.dataset_id, "kind": card.kind,
+                 "columns": list(card.columns), "png_sha256": digest,
+                 "png_valid": card.image.startswith(b"\x89PNG\r\n\x1a\n")}
+        if artifact_dir and chart["png_valid"]:
+            destination = Path(artifact_dir) / f"{spec['id']}-{digest[:12]}.png"
+            destination.parent.mkdir(parents=True, exist_ok=True)
+            destination.write_bytes(card.image)
+            chart["path"] = str(destination.resolve())
+        charts.append(chart)
+    metadata = {"case_id": spec["id"], "run_id": runtime.diagnostics.run_id,
+                "state": state["state"], "message_count": state["message_count"],
+                "pending_requests": len(state["requests"]),
+                "recovery_status": state["recovery"].get("status"),
+                "recovery_attempts": state["recovery"].get("attempts"),
+                "reference_context": runtime.context.reference_context,
+                "datasets": [asdict(info) for info in runtime.datasets.metadata.values()],
+                "charts": charts, "diagnostics": diagnostics}
+    if artifact_dir:
+        run_suffix = (runtime.diagnostics.run_id or "before-submit")[:12]
+        destination = Path(artifact_dir) / f"{spec['id']}-{run_suffix}-metadata.json"
+        destination.parent.mkdir(parents=True, exist_ok=True)
+        destination.write_text(json.dumps(metadata, ensure_ascii=False, indent=2, default=str) + "\n")
+        metadata["path"] = str(destination.resolve())
+    return metadata
+
+
+def evaluate_case(spec, grading, model, *, frames=None, artifact_dir=None):
+    from core.analysis_agent.runtime import GraphAnalysisRuntime
+    from langchain_core.messages import AIMessage, ToolMessage
+    base = {"id": spec["id"], "prompt": spec["prompt"], "target_table": spec["target_table"],
+            "reference_sha256": sha256(spec["python_code"].encode()).hexdigest()}
+    if grading is None:
+        return {**base, "status": "UNGRADED", "reason": "No explicit machine-comparable oracle; no model call"}
+    frames = frames if frames is not None else load_frames()
+    try:
+        oracle = reference_oracle(spec, grading, frames)
+    except Exception as exc:
+        return {**base, "status": "UNGRADED", "reason": "Reference oracle unavailable",
+                "error_type": type(exc).__name__}
+    remote_attempts = []
+    def forbidden_factory(_datasets):
+        def forbidden(envelope):
+            remote_attempts.append(envelope["query"])
+            raise AssertionError("Databricks execution is forbidden in fixture evaluation")
+        return forbidden
+    started = time.monotonic()
+    with tempfile.TemporaryDirectory(prefix="telly-agent-eval-") as temporary:
+        runtime = GraphAnalysisRuntime(temporary, "evaluation", spec["id"], model,
+            connection_identity="fixture-only:no-databricks", remote_factory=forbidden_factory)
+        record = {**base, "status": "FAIL", "reason": "Evaluation interrupted before completion"}
+        try:
+            frame = frames[spec["target_table"]]
+            payload = frame.to_csv(index=False).encode()
+            info = runtime.datasets.register(frame.copy(), source=spec["target_table"],
+                coverage="complete", predicate_known=True, snapshot="fixture:" + sha256(payload).hexdigest())
+            runtime.context.reference_context[:] = [fixture_reference_context(spec["target_table"], frame)]
+            # Tests can bind deterministic calls after the actual fixture ID exists.
+            if hasattr(model, "evaluation_dataset_id"):
+                model.evaluation_dataset_id = info.id
+            with HistogramCapture() as capture:
+                outcome = runtime.submit(spec["prompt"])
+            status, reason, evidence = grade_evidence(runtime, outcome, spec, grading, oracle, info.id, capture)
+            if status == "PASS" and grading["kind"] != "histogram":
+                try:
+                    verified, probes = verify_counterfactuals(runtime, evidence["result_dataset_id"],
+                        info.id, spec, grading, frames)
+                    evidence["counterfactual_probes"] = probes
+                    if not verified:
+                        status, reason = "FAIL", "Calculation fails independent counterfactual fixture checks"
+                except (KeyError, TypeError, ValueError):
+                    status, reason = "FAIL", "Calculation lineage cannot be independently replayed"
+            events = runtime.events()
+            calls = [call for message in events if isinstance(message, AIMessage) for call in message.tool_calls]
+            observations = []
+            for message in events:
+                if isinstance(message, ToolMessage):
+                    try:
+                        value = json.loads(message.content)
+                        observations.append({"tool": message.name, "status": value.get("status"),
+                                             "error_code": value.get("error_code")})
+                    except (ValueError, TypeError, AttributeError):
+                        observations.append({"tool": message.name, "status": "unstructured"})
+            if remote_attempts:
+                status, reason = "FAIL", "Unexpected forbidden executor invocation"
+            if artifact_dir and evidence.get("charts"):
+                artifact_dir = Path(artifact_dir)
+                artifact_dir.mkdir(parents=True, exist_ok=True)
+                for chart in evidence["charts"]:
+                    destination = artifact_dir / f"{spec['id']}-{chart['png_sha256'][:12]}.png"
+                    destination.write_bytes(runtime.artifacts[chart["chart_id"]].image)
+                    chart["path"] = str(destination.resolve())
+            record = {**base, "status": status, "reason": reason, "evidence": evidence,
+                    "agent_status": outcome.get("status"), "runtime_state": runtime.inspect()["state"],
+                    "elapsed_seconds": round(time.monotonic() - started, 3),
+                    "tools": dict(Counter(call["name"] for call in calls)),
+                    "tool_calls": [{"id": call["id"], "tool": call["name"], "arguments": call["args"]}
+                                   for call in calls],
+                    "queries": [{"tool": call["name"], "query": call["args"].get("query")}
+                                for call in calls if call["name"] in {"local_analysis_sql", "query_databricks"}],
+                    "observations": observations, "remote_executions": 0,
+                    "forbidden_executor_invocations": len(remote_attempts),
+                    "error_type": outcome.get("error_type"), "error_id": outcome.get("error_id")}
+        except Exception as exc:
+            record = {**base, "status": "FAIL", "reason": "Evaluation exception",
+                      "error_type": type(exc).__name__,
+                      "elapsed_seconds": round(time.monotonic() - started, 3),
+                      "remote_executions": 0, "forbidden_executor_invocations": len(remote_attempts)}
+        finally:
+            try:
+                record["runtime_metadata"] = preserve_runtime_metadata(runtime, spec, artifact_dir)
+            except Exception as exc:
+                record.update(status="FAIL", reason="Runtime evidence could not be preserved",
+                              metadata_error_type=type(exc).__name__)
+            finally:
+                runtime.close()
+                for handler in list(runtime.diagnostics.logger.handlers):
+                    runtime.diagnostics.logger.removeHandler(handler)
+                    handler.close()
+        return record
+
+
+def build_report(results, specs, grading, mode, model_name=None):
+    statuses = Counter(result["status"] for result in results)
+    durations = [result["elapsed_seconds"] for result in results if "elapsed_seconds" in result]
+    return {"generated_at": datetime.now(timezone.utc).isoformat(), "mode": mode,
+            "runtime": "core.analysis_agent.runtime.GraphAnalysisRuntime", "model": model_name,
+            "data_scope": "preloaded complete local test_set fixtures in temporary per-case scope",
+            "coverage": {"total_reference_cases": len(specs), "supported_oracles": len(grading),
+                         "selected": len(results), "statuses": dict(statuses),
+                         "all_selected_passed": bool(results) and all(result["status"] == "PASS" for result in results),
+                         "ungraded_is_never_pass": True},
+            "latency_seconds": {"total": round(sum(durations), 3),
+                                "max": max(durations, default=None)},
+            "remote_executions": sum(result.get("remote_executions", 0) for result in results),
+            "results": results,
+            "limitations": ["Not a Databricks or browser end-to-end test",
+                            "Single-turn questions; follow-up journeys require separate evaluation",
+                            "Final prose is not graded; PASS establishes tool-result/artifact accuracy only",
+                            "Unsupported reference cases stay UNGRADED and are excluded from success claims",
+                            "Scripted-model tests validate the harness, not natural-language model quality"]}
+
+
+def evaluation_exit_status(results):
+    if any(result["status"] in {"FAIL", "NOT_COMPLETE"} for result in results):
+        return 1
+    if not results or any(result["status"] != "PASS" for result in results):
+        return 2  # A partially graded suite is not a successful full-suite gate.
+    return 0
+
+
+def main(argv=None):
+    parser = argparse.ArgumentParser(description=__doc__)
+    choice = parser.add_mutually_exclusive_group()
+    choice.add_argument("--id", action="append", help="Reference ID; may be repeated")
+    choice.add_argument("--all", action="store_true", help="Include all references; unsupported cases remain UNGRADED")
+    parser.add_argument("--list", action="store_true", help="List support status without model calls")
+    parser.add_argument("--live-local-model", action="store_true", help="Run actual configured localhost ChatOllama")
+    parser.add_argument("--output", type=Path, default=ROOT / "docs/actual_agent_evaluation.json")
+    args = parser.parse_args(argv)
+    specs, grading = load_specs(), load_grading()
+    selected = specs if args.all or args.list else [spec for spec in specs if spec["id"] in (args.id or grading)]
+    unknown = set(args.id or ()) - {spec["id"] for spec in specs}
+    if unknown:
+        parser.error("Unknown IDs: " + ", ".join(sorted(unknown)))
+    if args.list:
+        for spec in selected:
+            print(f"{spec['id']}\t{grading.get(spec['id'], {}).get('kind', 'UNGRADED')}\t{spec['prompt']}")
+        return 0
+    if not args.live_local_model:
+        results = [{"id": spec["id"], "status": "NOT_RUN" if spec["id"] in grading else "UNGRADED"}
+                   for spec in selected]
+        report = build_report(results, specs, grading, "coverage-only")
+    else:
+        from dotenv import load_dotenv
+        from langchain_ollama import ChatOllama
+        load_dotenv(ROOT / ".env")
+        endpoint = os.getenv("OLLAMA_BASE_URL", "http://localhost:11434")
+        if urlparse(endpoint).hostname not in {"localhost", "127.0.0.1", "::1"}:
+            parser.error("Live fixture evaluation permits only a localhost Ollama endpoint")
+        # Fixture data and model reasoning must not be shipped to a tracing backend.
+        os.environ["LANGSMITH_TRACING"] = "false"
+        os.environ["LANGCHAIN_TRACING_V2"] = "false"
+        model_name = os.getenv("OLLAMA_MODEL", "gemma4:e4b")
+        model = ChatOllama(model=model_name, base_url=endpoint, reasoning=True,
+            temperature=0, num_ctx=16384, num_predict=4096, client_kwargs={"timeout": 60})
+        results, frames = [], load_frames()
+        for spec in selected:
+            try:
+                result = evaluate_case(spec, grading.get(spec["id"]), model, frames=frames,
+                                       artifact_dir=args.output.parent / "actual_agent_eval_artifacts")
+            except Exception as exc:
+                result = {"id": spec["id"], "status": "FAIL", "reason": "Evaluation exception",
+                          "error_type": type(exc).__name__}
+            results.append(result)
+            print(json.dumps({k: result[k] for k in ("id", "status", "elapsed_seconds") if k in result}), flush=True)
+            # Keep partial failures visible if a later model request is interrupted.
+            args.output.parent.mkdir(parents=True, exist_ok=True)
+            args.output.write_text(json.dumps(build_report(results, specs, grading, "live-local-model", model_name),
+                                             ensure_ascii=False, indent=2) + "\n")
+        report = build_report(results, specs, grading, "live-local-model", model_name)
+    args.output.parent.mkdir(parents=True, exist_ok=True)
+    args.output.write_text(json.dumps(report, ensure_ascii=False, indent=2) + "\n")
+    print(json.dumps(report["coverage"], ensure_ascii=False))
+    print(f"Report: {args.output}")
+    if not args.live_local_model:
+        return 0
+    return evaluation_exit_status(results)
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

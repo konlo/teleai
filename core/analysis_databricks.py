@@ -1,11 +1,12 @@
 """Approved-only remote execution for the new analysis runtime."""
 from dataclasses import asdict
+from datetime import datetime, timezone
 
 import pandas as pd
 from sqlglot import exp
 
 from core.analysis_sql import validate_query
-from utils.analysis_provenance import raw_conditions
+from utils.analysis_provenance import raw_conditions, query_coverage, table_identity
 
 
 def execute_approved(request, config, datasets, *, max_rows=100_000, connect=None):
@@ -24,12 +25,12 @@ def execute_approved(request, config, datasets, *, max_rows=100_000, connect=Non
     truncated = len(rows) > max_rows
     frame = pd.DataFrame.from_records(rows[:max_rows], columns=columns)
     aggregated = bool(tree.args.get("group") or tree.find(exp.AggFunc))
-    source_tables = sorted({t.sql(dialect="databricks") for t in tree.find_all(exp.Table)})
+    source_tables = sorted({table_identity(t) for t in tree.find_all(exp.Table)})
     conditions = raw_conditions(tree)
-    has_limit = any(node.args.get("limit") is not None for node in tree.walk())
     info = datasets.register(frame, source=" | ".join(source_tables) or request.source,
-        query=request.query, coverage="truncated" if truncated else "unknown" if has_limit else "complete",
+        query=request.query, coverage=query_coverage(tree, truncated=truncated),
         predicate_known=conditions is not None, conditions=conditions or (), grain="aggregate" if aggregated else "raw",
-        aggregation=tree.sql() if aggregated else "")
+        aggregation=tree.sql() if aggregated else "",
+        snapshot=datetime.now(timezone.utc).isoformat())
     return {"status": "ready", "dataset": asdict(info),
             "preview": frame.head(10).to_dict(orient="records")}

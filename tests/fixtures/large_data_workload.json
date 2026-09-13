@@ -1,0 +1,11 @@
+{
+  "source": "validation.synthetic_records",
+  "rows": 750000,
+  "columns": {
+    "record_id": {"kind": "sequence"},
+    "measurement": {"kind": "numeric_cycle", "modulus": 1000, "divisor": 10},
+    "batch": {"kind": "numeric_cycle", "modulus": 31, "divisor": 1},
+    "segment": {"kind": "category", "values": ["group_a", "group_b", "group_c", "group_d"]},
+    "region": {"kind": "category", "values": ["region_01", "region_02", "region_03"]}
+  }
+}

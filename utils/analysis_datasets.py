@@ -118,11 +118,23 @@ def assess_reuse(info: DatasetInfo, need: AnalysisNeed) -> ReuseDecision:
     return ReuseDecision("reuse", "현재 결과를 그대로 사용할 수 있습니다.")
 
 
+class InvalidConditionValue(ValueError):
+    """A type mismatch must not silently become a zero-row population."""
+    def __init__(self, column, dtype, examples):
+        super().__init__('Filter literal type is incompatible with observed column type')
+        self.column, self.dtype, self.examples = column, str(dtype), examples
+
+
 def filter_frame(frame: pd.DataFrame, conditions: tuple[Condition, ...]) -> pd.DataFrame:
     mask = pd.Series(True, index=frame.index)
     for condition in conditions:
         series = frame[condition.column]
         value = condition.value
+        observed = series.head(256).dropna().tolist()
+        requested = list(value) if condition.op == 'in' else [value]
+        if observed and all(isinstance(item, str) for item in observed) and any(not isinstance(item, str) for item in requested):
+            examples = list(dict.fromkeys(item for item in observed if len(item) <= 128))[:10]
+            raise InvalidConditionValue(condition.column, series.dtype, examples)
         ops = {"eq": series.eq, "ne": series.ne, "gt": series.gt,
                "ge": series.ge, "lt": series.lt, "le": series.le,
                "in": series.isin}

@@ -1,0 +1,60 @@
+{
+  "created_at": "2026-09-13T21:23:36.501630+00:00",
+  "observed_retained_traffic": {
+    "count": 23,
+    "p50_seconds": 40.983,
+    "p95_seconds": 215.301,
+    "max_seconds": 277.124,
+    "percentile_method": "nearest-rank",
+    "status_counts": {
+      "answered": 14,
+      "exhausted": 3,
+      "blocked": 4,
+      "None": 2
+    },
+    "scope": "all retained v1 run_completed events, including pre-fix failures",
+    "current_code_only": false,
+    "rss_instrumented_turns": 1,
+    "instrumented_current_code": {
+      "count": 1,
+      "p50_seconds": 0.114,
+      "p95_seconds": 0.114,
+      "max_seconds": 0.114,
+      "percentile_method": "nearest-rank",
+      "max_process_peak_rss_bytes": 259063808,
+      "max_frame_cache_bytes": 6421172
+    }
+  },
+  "current_local_dataframe_benchmark": {
+    "count": 30,
+    "p50_seconds": 0.069083,
+    "p95_seconds": 0.120717,
+    "max_seconds": 0.165009,
+    "percentile_method": "nearest-rank",
+    "iterations": 30,
+    "source": "workspace.default.bank_loan",
+    "rows": 10000,
+    "columns": 18,
+    "prompt": "현재 로딩된 10,000행 표본의 age 히스토그램을 보여줘",
+    "model_calls": 0,
+    "remote_calls": 0,
+    "actual_png_each_run": true,
+    "process_peak_rss_bytes": 322338816,
+    "scope": "cold temporary conversations using a copy of the persisted 10,000-row DataFrame"
+  },
+  "live_server_memory_snapshot": {
+    "pid": 18855,
+    "rss_bytes": 261619712,
+    "measurement": "single ps RSS snapshot after the verified live journey"
+  },
+  "safety": {
+    "databricks_calls": 0,
+    "model_calls": 0,
+    "source_asset_mutated": false
+  },
+  "interpretation_limits": [
+    "Retained traffic includes failures from older code and is a historical baseline, not a current-version SLO claim.",
+    "The controlled benchmark covers the deterministic current-DataFrame histogram path only.",
+    "The server RSS value is one snapshot; instrumented live-turn counts remain too small for a product-wide RSS percentile."
+  ]
+}

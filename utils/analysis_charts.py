@@ -123,19 +123,40 @@ def recommend_charts(store: DatasetStore, dataset_id: str,
         if len(values) >= 5:
             fig = Figure(figsize=(6, 3.5))
             ax = fig.subplots()
-            ax.boxplot(values, vert=False)
+            ax.boxplot(values, orientation='horizontal')
             ax.set(xlabel=column)
             save(fig, "boxplot", [column], f"{column} 중앙값과 퍼짐",
                  "중앙값과 사분위 범위를 표시합니다. 바깥 점이 반드시 오류인 것은 아닙니다.")
     return previews
 
 
-def histogram_from_counts(store, dataset_id, value_column, weight_column):
-    """Render complete value-frequency results without expanding source rows."""
-    import numpy as np
+def validate_frequency_dataset(store, dataset_id, value_column, weight_column):
+    """Validate executed COUNT lineage before trusting a column as frequency."""
+    import sqlglot
+    from utils.analysis_provenance import count_frequency_columns
     info = store.metadata[dataset_id]
     if info.coverage != 'complete':
         raise ValueError('전체 빈도 결과가 필요합니다. 잘린 결과로 전체 분포를 그릴 수 없습니다.')
+    try:
+        tree = sqlglot.parse_one(info.query, read='duckdb' if info.parent_id else 'databricks')
+    except (sqlglot.errors.ParseError, TypeError):
+        tree = None
+    if (info.grain != 'aggregate' or not info.aggregation or tree is None
+            or count_frequency_columns(tree) != (value_column, weight_column)):
+        raise ValueError('값별 COUNT(*) 집계의 실행 출처가 필요합니다. 임의의 수치 컬럼을 빈도로 사용할 수 없습니다.')
+    if info.parent_id:
+        parent = store.metadata.get(info.parent_id)
+        if (parent is None or parent.grain != 'raw' or parent.aggregation
+                or not parent.predicate_known or parent.coverage != 'complete'
+                or parent.source != info.source):
+            raise ValueError('완전한 원본 행에서 계산한 빈도만 사용할 수 있습니다.')
+    return info
+
+
+def histogram_from_counts(store, dataset_id, value_column, weight_column):
+    """Render complete value-frequency results without expanding source rows."""
+    import numpy as np
+    info = validate_frequency_dataset(store, dataset_id, value_column, weight_column)
     frame = store.frames[dataset_id]
     if value_column == weight_column or not {value_column, weight_column}.issubset(frame.columns):
         raise ValueError('값과 빈도 컬럼을 확인해주세요.')
@@ -143,6 +164,8 @@ def histogram_from_counts(store, dataset_id, value_column, weight_column):
     counts = pd.to_numeric(frame[weight_column], errors='raise')
     if not len(values) or not np.isfinite(values).all() or not np.isfinite(counts).all():
         raise ValueError('유효한 수치와 빈도가 필요합니다.')
+    if not values.is_unique:
+        raise ValueError('값별 빈도에는 같은 값이 중복될 수 없습니다.')
     if (counts < 0).any() or (counts % 1 != 0).any() or counts.sum() <= 0:
         raise ValueError('빈도는 0 이상의 정수이며 총합은 양수여야 합니다.')
     fig = Figure(figsize=(6, 3.5)); ax = fig.subplots()

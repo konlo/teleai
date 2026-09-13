@@ -1,0 +1,481 @@
+{
+  "generated_at": "2026-09-12T14:18:24.344152+00:00",
+  "mode": "live-local-model",
+  "runtime": "core.analysis_agent.runtime.GraphAnalysisRuntime",
+  "model": "gemma4:e4b",
+  "data_scope": "preloaded complete local test_set fixtures in temporary per-case scope",
+  "coverage": {
+    "total_reference_cases": 200,
+    "supported_oracles": 11,
+    "selected": 11,
+    "statuses": {
+      "PASS": 7,
+      "FAIL": 1,
+      "NOT_COMPLETE": 3
+    },
+    "ungraded_is_never_pass": true
+  },
+  "latency_seconds": {
+    "total": 806.693,
+    "max": 193.597
+  },
+  "remote_executions": 0,
+  "results": [
+    {
+      "id": "L1_016",
+      "prompt": "고객들의 평균 '예금 잔고'가 얼마인지 알려줘.",
+      "target_table": "bank_loan",
+      "reference_sha256": "88673f5db621595408278d2e61a9f845696a01ba68d3946ffe7bddd91ab8da06",
+      "status": "PASS",
+      "reason": "Compared final structured calculation with independent reference",
+      "evidence": {
+        "expected": 2760.0675,
+        "actual": 2760.0675
+      },
+      "agent_status": "answered",
+      "runtime_state": "idle",
+      "elapsed_seconds": 34.995,
+      "tools": {
+        "local_analysis_sql": 1
+      },
+      "queries": [
+        {
+          "tool": "local_analysis_sql",
+          "query": "SELECT AVG(balance)"
+        }
+      ],
+      "observations": [
+        {
+          "tool": "local_analysis_sql",
+          "status": "ready",
+          "error_code": null
+        }
+      ],
+      "remote_executions": 0,
+      "forbidden_executor_invocations": 0,
+      "error_type": null,
+      "error_id": null
+    },
+    {
+      "id": "L1_019",
+      "prompt": "고객 중 '신용 대출'을 받은 사람의 인원수를 확인해줘.",
+      "target_table": "bank_loan",
+      "reference_sha256": "a616af5b15b57517720684b45ba7b04e0a103a60561a8f10b2dd43d39300f065",
+      "status": "FAIL",
+      "reason": "Compared final structured calculation with independent reference",
+      "evidence": {
+        "expected": 348.0,
+        "actual": 0.0
+      },
+      "agent_status": "answered",
+      "runtime_state": "idle",
+      "elapsed_seconds": 65.765,
+      "tools": {
+        "inspect_table_context": 1,
+        "local_analysis_sql": 1
+      },
+      "queries": [
+        {
+          "tool": "local_analysis_sql",
+          "query": "SELECT COUNT(id)"
+        }
+      ],
+      "observations": [
+        {
+          "tool": "inspect_table_context",
+          "status": "ready",
+          "error_code": null
+        },
+        {
+          "tool": "local_analysis_sql",
+          "status": "ready",
+          "error_code": null
+        }
+      ],
+      "remote_executions": 0,
+      "forbidden_executor_invocations": 0,
+      "error_type": null,
+      "error_id": null
+    },
+    {
+      "id": "L1_020",
+      "prompt": "마케팅 전화 '상담 시간'의 평균 초(sec)를 계산해줘.",
+      "target_table": "bank_loan",
+      "reference_sha256": "6f349829b0463ae4ec3bc957ceed4bab167818de254430a44fdc474e93357911",
+      "status": "PASS",
+      "reason": "Compared final structured calculation with independent reference",
+      "evidence": {
+        "expected": 261.825,
+        "actual": 261.825
+      },
+      "agent_status": "answered",
+      "runtime_state": "idle",
+      "elapsed_seconds": 26.666,
+      "tools": {
+        "local_analysis_sql": 1
+      },
+      "queries": [
+        {
+          "tool": "local_analysis_sql",
+          "query": "SELECT AVG(duration) AS average_duration"
+        }
+      ],
+      "observations": [
+        {
+          "tool": "local_analysis_sql",
+          "status": "ready",
+          "error_code": null
+        }
+      ],
+      "remote_executions": 0,
+      "forbidden_executor_invocations": 0,
+      "error_type": null,
+      "error_id": null
+    },
+    {
+      "id": "L1_021",
+      "prompt": "고객들의 '혼인 상태' 종류별로 몇 명씩 있는지 세어줘.",
+      "target_table": "bank_loan",
+      "reference_sha256": "b091d9391a3b0c0f14834e7e6c76c9a780cf0587424c38ca16fb8c489fd1ed2c",
+      "status": "PASS",
+      "reason": "Compared final structured calculation with independent reference",
+      "evidence": {
+        "expected": {
+          "divorced": 246.0,
+          "married": 1207.0,
+          "single": 547.0
+        },
+        "actual": {
+          "divorced": 246.0,
+          "married": 1207.0,
+          "single": 547.0
+        }
+      },
+      "agent_status": "answered",
+      "runtime_state": "idle",
+      "elapsed_seconds": 27.991,
+      "tools": {
+        "inspect_table_context": 1,
+        "local_analysis_sql": 1
+      },
+      "queries": [
+        {
+          "tool": "local_analysis_sql",
+          "query": "SELECT marital, COUNT(*) AS count FROM data GROUP BY marital"
+        }
+      ],
+      "observations": [
+        {
+          "tool": "inspect_table_context",
+          "status": "ready",
+          "error_code": null
+        },
+        {
+          "tool": "local_analysis_sql",
+          "status": "ready",
+          "error_code": null
+        }
+      ],
+      "remote_executions": 0,
+      "forbidden_executor_invocations": 0,
+      "error_type": null,
+      "error_id": null
+    },
+    {
+      "id": "L1_027",
+      "prompt": "고객들 중 신용불량으로 '파산/연체 이력'이 있는 사람이 몇 명이야?",
+      "target_table": "bank_loan",
+      "reference_sha256": "1173d8269f705d08bb811527a095319f6f6c4cfec911dd18a82bed20d7aac18d",
+      "status": "NOT_COMPLETE",
+      "reason": "Agent stopped or awaits approval; no implicit approval",
+      "evidence": {},
+      "agent_status": "exhausted",
+      "runtime_state": "idle",
+      "elapsed_seconds": 193.597,
+      "tools": {
+        "inspect_table_context": 1,
+        "local_analysis_sql": 1
+      },
+      "queries": [
+        {
+          "tool": "local_analysis_sql",
+          "query": "COUNT(id)"
+        }
+      ],
+      "observations": [
+        {
+          "tool": "inspect_table_context",
+          "status": "ready",
+          "error_code": null
+        },
+        {
+          "tool": "local_analysis_sql",
+          "status": "error",
+          "error_code": "invalid_tool_input"
+        }
+      ],
+      "remote_executions": 0,
+      "forbidden_executor_invocations": 0,
+      "error_type": null,
+      "error_id": null
+    },
+    {
+      "id": "L1_028",
+      "prompt": "이번 마케팅 행사에서 고객들에게 전화를 건 '통화 횟수'의 평균을 구해줘.",
+      "target_table": "bank_loan",
+      "reference_sha256": "60c3229c729fc8b4d1e96db2d41c8a3444599b90c19f494d30ee705033e4ceb5",
+      "status": "NOT_COMPLETE",
+      "reason": "Agent stopped or awaits approval; no implicit approval",
+      "evidence": {},
+      "agent_status": "exhausted",
+      "runtime_state": "idle",
+      "elapsed_seconds": 99.893,
+      "tools": {
+        "inspect_table_context": 1,
+        "local_analysis_sql": 2
+      },
+      "queries": [
+        {
+          "tool": "local_analysis_sql",
+          "query": "AVG(campaign)"
+        },
+        {
+          "tool": "local_analysis_sql",
+          "query": "AVG(campaign)"
+        }
+      ],
+      "observations": [
+        {
+          "tool": "inspect_table_context",
+          "status": "ready",
+          "error_code": null
+        },
+        {
+          "tool": "local_analysis_sql",
+          "status": "error",
+          "error_code": "invalid_tool_input"
+        },
+        {
+          "tool": "local_analysis_sql",
+          "status": "error",
+          "error_code": "invalid_tool_input"
+        }
+      ],
+      "remote_executions": 0,
+      "forbidden_executor_invocations": 0,
+      "error_type": null,
+      "error_id": null
+    },
+    {
+      "id": "L1_029",
+      "prompt": "고객들의 주요 '접속 통신 수단' 종류별 빈도를 보여줘.",
+      "target_table": "bank_loan",
+      "reference_sha256": "e8df0da57b804d298237f8c55766195a1d719b9814739303ec54012e4333f055",
+      "status": "PASS",
+      "reason": "Compared final structured calculation with independent reference",
+      "evidence": {
+        "expected": {
+          "cellular": 1232.0,
+          "telephone": 132.0,
+          "unknown": 636.0
+        },
+        "actual": {
+          "cellular": 1232.0,
+          "telephone": 132.0,
+          "unknown": 636.0
+        }
+      },
+      "agent_status": "answered",
+      "runtime_state": "idle",
+      "elapsed_seconds": 82.468,
+      "tools": {
+        "local_analysis_sql": 1
+      },
+      "queries": [
+        {
+          "tool": "local_analysis_sql",
+          "query": "SELECT contact, COUNT(*) AS frequency FROM data GROUP BY contact"
+        }
+      ],
+      "observations": [
+        {
+          "tool": "local_analysis_sql",
+          "status": "ready",
+          "error_code": null
+        }
+      ],
+      "remote_executions": 0,
+      "forbidden_executor_invocations": 0,
+      "error_type": null,
+      "error_id": null
+    },
+    {
+      "id": "L1_030",
+      "prompt": "이전 마케팅에서 '성공' 판정을 받은 사람이 몇 명인지 알려줘.",
+      "target_table": "bank_loan",
+      "reference_sha256": "867808a6bfdacd7e8dbb43a3e510efaaea1a874e8d1eb75a6f42303e063f3a4d",
+      "status": "NOT_COMPLETE",
+      "reason": "Agent stopped or awaits approval; no implicit approval",
+      "evidence": {},
+      "agent_status": "exhausted",
+      "runtime_state": "idle",
+      "elapsed_seconds": 147.802,
+      "tools": {
+        "inspect_table_context": 1,
+        "use_dataset": 1,
+        "local_analysis_sql": 1
+      },
+      "queries": [
+        {
+          "tool": "local_analysis_sql",
+          "query": "SELECT COUNT(id) FROM data"
+        }
+      ],
+      "observations": [
+        {
+          "tool": "inspect_table_context",
+          "status": "ready",
+          "error_code": null
+        },
+        {
+          "tool": "use_dataset",
+          "status": "ready",
+          "error_code": null
+        },
+        {
+          "tool": "local_analysis_sql",
+          "status": "ready",
+          "error_code": null
+        }
+      ],
+      "remote_executions": 0,
+      "forbidden_executor_invocations": 0,
+      "error_type": null,
+      "error_id": null
+    },
+    {
+      "id": "L1_033",
+      "prompt": "직업(job)이 'technician'인 고객들의 주택 대출(housing) 보유 현황을 세어줘.",
+      "target_table": "bank_loan",
+      "reference_sha256": "af423d33eccb9322e89e017a67b55e482450323b8d614d17babda824b3c20292",
+      "status": "PASS",
+      "reason": "Compared final structured calculation with independent reference",
+      "evidence": {
+        "expected": {
+          "no": 127.0,
+          "yes": 198.0
+        },
+        "actual": {
+          "no": 127.0,
+          "yes": 198.0
+        }
+      },
+      "agent_status": "answered",
+      "runtime_state": "idle",
+      "elapsed_seconds": 72.69,
+      "tools": {
+        "local_analysis_sql": 1
+      },
+      "queries": [
+        {
+          "tool": "local_analysis_sql",
+          "query": "SELECT housing, COUNT(*) AS count FROM data GROUP BY housing"
+        }
+      ],
+      "observations": [
+        {
+          "tool": "local_analysis_sql",
+          "status": "ready",
+          "error_code": null
+        }
+      ],
+      "remote_executions": 0,
+      "forbidden_executor_invocations": 0,
+      "error_type": null,
+      "error_id": null
+    },
+    {
+      "id": "L1_076",
+      "prompt": "고객들의 연령(age) 분포를 확인하기 위해 히스토그램을 그려줘.",
+      "target_table": "bank_loan",
+      "reference_sha256": "2276edd3d1b98c6a7ddce3b4c76534bb7aae2371ca1e025dea2fd7a4475db6e0",
+      "status": "PASS",
+      "reason": "Real PNG and plotted weighted distribution match the reference",
+      "evidence": {
+        "charts": [
+          {
+            "chart_id": "9e41eeb3-7f1d-4486-9997-8c96b7b8dfd5",
+            "png_sha256": "6366b9b835d7d069a515c511021f4252eee2110f1dc8ecf39be2a858a838862b",
+            "observations": 2000.0,
+            "actual_bins": 8,
+            "reference_bins": 20,
+            "path": "/Users/najongseong/git_repository/teleai/docs/actual_agent_eval_artifacts/L1_076-6366b9b835d7.png"
+          }
+        ]
+      },
+      "agent_status": "answered",
+      "runtime_state": "idle",
+      "elapsed_seconds": 27.029,
+      "tools": {
+        "prepare_histogram": 1
+      },
+      "queries": [],
+      "observations": [
+        {
+          "tool": "prepare_histogram",
+          "status": "ready",
+          "error_code": null
+        }
+      ],
+      "remote_executions": 0,
+      "forbidden_executor_invocations": 0,
+      "error_type": null,
+      "error_id": null
+    },
+    {
+      "id": "L1_083",
+      "prompt": "통화 상담 시간(duration)의 분포를 히스토그램으로 시각화해줘.",
+      "target_table": "bank_loan",
+      "reference_sha256": "355ae23cd6e60d38d437db1330ca97b1431ab68b6f6a0a8d5c0371c06d9ce0d7",
+      "status": "PASS",
+      "reason": "Real PNG and plotted weighted distribution match the reference",
+      "evidence": {
+        "charts": [
+          {
+            "chart_id": "e4e2dbeb-f3d5-4fa7-bce9-4a1c949d934d",
+            "png_sha256": "30072dbebe3bac1c7b2bf8f6bf0cf9467befefeeecbb1de47c1f8e06a761d8ca",
+            "observations": 2000.0,
+            "actual_bins": 26,
+            "reference_bins": 25,
+            "path": "/Users/najongseong/git_repository/teleai/docs/actual_agent_eval_artifacts/L1_083-30072dbebe3b.png"
+          }
+        ]
+      },
+      "agent_status": "answered",
+      "runtime_state": "idle",
+      "elapsed_seconds": 27.797,
+      "tools": {
+        "prepare_histogram": 1
+      },
+      "queries": [],
+      "observations": [
+        {
+          "tool": "prepare_histogram",
+          "status": "ready",
+          "error_code": null
+        }
+      ],
+      "remote_executions": 0,
+      "forbidden_executor_invocations": 0,
+      "error_type": null,
+      "error_id": null
+    }
+  ],
+  "limitations": [
+    "Not a Databricks or browser end-to-end test",
+    "Single-turn questions; follow-up journeys require separate evaluation",
+    "Final prose is not graded; PASS establishes tool-result/artifact accuracy only",
+    "Unsupported reference cases stay UNGRADED and are excluded from success claims",
+    "Scripted-model tests validate the harness, not natural-language model quality"
+  ]
+}

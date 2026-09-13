@@ -6,7 +6,7 @@ from langchain_core.messages import AIMessage, ToolMessage
 from langchain_core.outputs import ChatResult, ChatGeneration
 from migration.test_persistent_runtime import QuietModel
 from core.analysis_agent.runtime import GraphAnalysisRuntime
-from core.analysis_agent.diagnostics import Diagnostics
+from core.analysis_agent.diagnostics import Diagnostics, process_peak_rss_bytes
 
 
 class RecoveryModel(QuietModel):
@@ -32,7 +32,13 @@ class DiagnosticsTests(unittest.TestCase):
             records=[json.loads(line) for line in runtime.diagnostics.path.read_text().splitlines()]
             self.assertTrue(any(r['event']=='tool_rejected' for r in records))
             self.assertTrue(any(r.get('tool')=='inspect_table_context' for r in records))
-            self.assertEqual(records[-1]['event'],'run_completed')
+            self.assertTrue(any(r['event']=='run_completed' for r in records))
+            completed=next(r for r in reversed(records) if r['event']=='run_completed')
+            self.assertGreater(completed['process_peak_rss_bytes'],0)
+            self.assertGreaterEqual(completed['frame_cache_bytes'],0)
+            slo=next(r for r in reversed(records) if r['event']=='turn_slo')
+            self.assertEqual(slo['status'],'ok')
+            self.assertGreater(slo['limit'],0)
             runtime.close()
 
     def test_error_has_location_and_id_but_no_exception_payload(self):
@@ -46,6 +52,9 @@ class DiagnosticsTests(unittest.TestCase):
             self.assertEqual(record['error_id'],error_id)
             self.assertEqual(record['error_type'],'ValueError')
             self.assertTrue(record['frames'])
+
+    def test_peak_rss_is_reported_without_optional_dependencies(self):
+        self.assertGreater(process_peak_rss_bytes(),0)
 
 
 class ContextBudgetTests(unittest.TestCase):
