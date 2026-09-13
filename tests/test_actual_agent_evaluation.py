@@ -101,7 +101,7 @@ class ActualAgentEvaluationTests(unittest.TestCase):
         self.assertEqual(result["evidence"]["counterfactual_probes"], 2)
 
     def test_every_declared_reference_oracle_is_executable_without_a_model(self):
-        self.assertEqual(len(self.grading), 34)
+        self.assertEqual(len(self.grading), 35)
         self.assertTrue(set(self.grading).issubset(self.specs))
         for case, grading in self.grading.items():
             with self.subTest(case=case):
@@ -200,21 +200,31 @@ class ActualAgentEvaluationTests(unittest.TestCase):
         self.assertEqual(result["evidence"]["charts"][0]["observations"], len(self.frames["bank_loan"]))
         self.assertEqual(len(result["evidence"]["charts"][0]["png_sha256"]), 64)
 
+    def test_titanic_histogram_grades_non_null_age_distribution(self):
+        result = self.evaluate("L1_093", EvaluationModel(calls=[{"name": "recommend_chart_images", "args": {
+            "dataset_id": "$fixture", "columns": ["Age"]}}]))
+        self.assertEqual(result["status"], "PASS", result)
+        self.assertEqual(result["evidence"]["charts"][0]["observations"],
+                         int(self.frames["titanic"]["Age"].notna().sum()))
+
     def test_no_chart_cannot_pass(self):
-        result = self.evaluate("L1_076", EvaluationModel(answer="히스토그램을 완성했습니다."))
+        with patch("core.analysis_agent.recovery.RecoveryMiddleware._next_local", return_value=None):
+            result = self.evaluate("L1_076", EvaluationModel(answer="히스토그램을 완성했습니다."))
         self.assertIn(result["status"], {"FAIL", "NOT_COMPLETE"}, result)
 
     def test_wrong_column_chart_cannot_pass(self):
-        result = self.evaluate("L1_076", EvaluationModel(calls=[{"name": "recommend_chart_images", "args": {
-            "dataset_id": "$fixture", "columns": ["duration"]}}]))
+        with patch("core.analysis_agent.recovery.RecoveryMiddleware._next_local", return_value=None):
+            result = self.evaluate("L1_076", EvaluationModel(calls=[{"name": "recommend_chart_images", "args": {
+                "dataset_id": "$fixture", "columns": ["duration"]}}]))
         self.assertIn(result["status"], {"FAIL", "NOT_COMPLETE"}, result)
 
     def test_failed_chart_png_and_metadata_survive_temporary_runtime_cleanup(self):
         with tempfile.TemporaryDirectory() as artifacts:
-            result = evaluate_case(self.specs["L1_076"], self.grading["L1_076"],
-                EvaluationModel(calls=[{"name": "recommend_chart_images", "args": {
-                    "dataset_id": "$fixture", "columns": ["duration"]}}]),
-                frames=self.frames, artifact_dir=artifacts)
+            with patch("core.analysis_agent.recovery.RecoveryMiddleware._next_local", return_value=None):
+                result = evaluate_case(self.specs["L1_076"], self.grading["L1_076"],
+                    EvaluationModel(calls=[{"name": "recommend_chart_images", "args": {
+                        "dataset_id": "$fixture", "columns": ["duration"]}}]),
+                    frames=self.frames, artifact_dir=artifacts)
             self.assertNotEqual(result["status"], "PASS", result)
             metadata = result["runtime_metadata"]
             self.assertTrue(Path(metadata["path"]).exists())

@@ -3,14 +3,14 @@
 ## Current Status
 - **Last Updated**: 2026-09-14
 - **Status**: In Progress — 실제 승인·적재·로컬 재사용까지 검증한 제한 출시 후보
-- **Summary**: 실제 Databricks 승인 후 10,000행·18열을 1회 조회해 저장했고, 현재 표본의 age histogram을 추가 원격 조회 없이 표시했다. 전체 회귀 181/181 PASS다. 실제 10,000행 histogram 30회는 p50 0.069초·p95 0.121초였고 실제 agent 독립 채점은 34/200이다.
-- **Next Session Focus**: 모델 질문·동시 부하의 p50/p95·RSS와 남은 166문항 oracle.
+- **Summary**: 실제 Databricks 승인 후 10,000행·18열을 1회 조회해 저장했고, 현재 표본의 age histogram을 추가 원격 조회 없이 표시했다. 전체 회귀 183/183 PASS다. 실제 10,000행 histogram 30회는 p50 0.069초·p95 0.121초였고 실제 agent 독립 채점은 35/200이다.
+- **Next Session Focus**: 모델 질문·동시 부하의 p50/p95·RSS와 남은 165문항 oracle.
 
 ## Next Action Items
 - [x] 제품 승인 카드에서 사용자가 승인한 실제 Databricks 조회 → 저장 → 분석 → 후속 질문을 검증했다.
-- [ ] 남은 166문항의 독립 oracle과 고급 분석 도구 범위를 우선순위별로 확대한다.
+- [ ] 남은 165문항의 독립 oracle과 고급 분석 도구 범위를 우선순위별로 확대한다.
 - [ ] 현재 DataFrame 경로의 p50/p95·RSS 계측은 완료했다. 모델 질문·동시 부하 표본과 배포 RSS 경보 기준을 확정한다.
-- [x] 현재 변경을 `agentic-analysis-rc-2026-09-14` release candidate로 고정한다.
+- [x] 현재 변경을 `agentic-analysis-rc2-2026-09-14` release candidate로 고정한다.
 
 ---
 ## [2026-09-13 22:23:00 KST] [Agent: Codex] User Request: 운영 agent의 특정 테이블 의존 제거 및 변경 가능한 테이블·스키마 고려
@@ -97,14 +97,14 @@
 ## Current Status
 - **Last Updated**: 2026-09-14
 - **Status**: Limited-scope Release Candidate Validation
-- **Summary**: 실제 승인형 Databricks 조회와 현재 표본 재사용을 완료했다. 실제 10,000행 histogram 30회는 p50 0.069초·p95 0.121초였고 최신 화면 turn은 0.114초·peak RSS 약 247 MiB였다. 전체 회귀 181/181 PASS. 실제 agent 독립 채점은 34/200이므로 전체 기능 출시는 NO-GO다.
-- **Next Session Focus**: 모델 질문·동시 부하 관측 → 남은 166문항 oracle 확대. Canonical list: docs/agent_remaining_tasks_2026-09-13.md.
+- **Summary**: 실제 승인형 Databricks 조회와 현재 표본 재사용을 완료했다. 실제 10,000행 histogram 30회는 p50 0.069초·p95 0.121초였고 최신 화면 turn은 0.114초·peak RSS 약 247 MiB였다. 전체 회귀 183/183 PASS. 실제 agent 독립 채점은 35/200이므로 전체 기능 출시는 NO-GO다.
+- **Next Session Focus**: 모델 질문·동시 부하 관측 → 남은 165문항 oracle 확대. Canonical list: docs/agent_remaining_tasks_2026-09-13.md.
 
 ## Next Action Items (Pending tasks for the next session)
 - [x] R01: Connect grounded request scope to calculation/chart/recovery and reject wrong or unresolved scope.
 - [x] R02: Repair and re-evaluate the supported actual-model Level 1/2 cases.
 - [x] R03: Complete final-browser verification on the restarted server; cached histogram is visibly restored with no remote query.
-- [x] R04: Restart the server with the 181/181-tested code and verify the visible app.
+- [x] R04: Restart the server with the 183/183-tested code and verify the visible app.
 - [ ] R05: Define the product response-time SLO; deterministic core paths are measured.
 - [x] R06: Validate 750,000-row storage, cache eviction, restart/crash recovery and retained PNG.
 - [ ] R07: Expand independent actual-agent grading beyond 24/200 supported cases.
@@ -931,10 +931,10 @@ Task definitions and acceptance conditions: docs/agent_remaining_tasks_2026-09-1
 - **Action** [Agent: Codex]: 남은 R05/R07/R08/R09를 재점검하고, 제품 내 재조회 승인 계약을 유지하면서 독립 실행 가능한 운영 한도·평가 확대·출시 고정 작업을 진행한다.
 - **Finding** [Agent: Codex]: 확대 평가 첫 실행에서 전체 행 수의 불필요한 원격 제안, 백분율 단위 누락, OR→AND 축소, 월 IN 조건 누락을 재현했다. OR 복구의 첫 구현에서는 DuckDB에 Databricks backtick을 사용해 ParseError와 188.786초 SLO 위반도 확인했다.
 - **Implementation**: table-neutral RuntimePolicy, 원격 100,000행·256열·512MiB DataFrame·64MiB cache·대화별 2GiB 한도, 30일 읽기 전용 정리 후보 보고, 모델 60초와 turn 180초 진단을 적용했다. 요청 scope에 전체 행, IN, 공통 조건+한 개 OR 그룹, 0–100 백분율 검증과 DuckDB quoting을 추가했다.
-- **Validation**: 신규 실제 agent 10/10 PASS(최대 0.237초, 원격 0회), 누적 독립 oracle 34/200. 전체 회귀 migration 103 + tests 75 = 178/178 PASS, compileall·diff PASS. 저장소 7 scopes/8,996,064 bytes, 만료 후보 0, quota 초과 0, 삭제 0.
+- **Validation**: 신규 실제 agent 10/10 PASS(최대 0.237초, 원격 0회), 누적 독립 oracle 35/200. 전체 회귀 migration 103 + tests 75 = 178/178 PASS, compileall·diff PASS. 저장소 7 scopes/8,996,064 bytes, 만료 후보 0, quota 초과 0, 삭제 0.
 - **Artifacts**: `docs/actual_agent_evaluation_expanded_10_final_2026-09-13.json`, `docs/operational_policy_2026-09-13.md`, `docs/operational_storage_report_2026-09-13.json`.
-- **Remaining**: 실제 제품 승인형 Databricks 전체 여정, 166문항, 고급 조인·가설검정·복합 차트, 실제 트래픽 p95/RSS, 고정 release revision.
-- **UI Verification** [Agent: Codex]: 최신 서버에서 `현재 지원 범위와 운영 한도`를 펼쳐 100,000행·256열·2GiB·30일 후보 표시를 확인했다. 별도 진행 화면에 34/200과 178/178 근거가 노출됨을 확인했다.
+- **Remaining**: 실제 제품 승인형 Databricks 전체 여정, 165문항, 고급 조인·가설검정·복합 차트, 실제 트래픽 p95/RSS, 고정 release revision.
+- **UI Verification** [Agent: Codex]: 최신 서버에서 `현재 지원 범위와 운영 한도`를 펼쳐 100,000행·256열·2GiB·30일 후보 표시를 확인했다. 별도 진행 화면에 35/200과 178/178 근거가 노출됨을 확인했다.
 - **Approval Gate Prepared** [Agent: Codex]: 신규 대화 `612c8013-36e5-4be5-ac25-3f5092ebba75`에 `SELECT * FROM workspace.default.bank_loan LIMIT 10000` 승인 카드를 생성했다. `불러오고 계속`은 클릭하지 않아 승인 전 원격 실행 0회 계약을 유지했다.
 - **Approval Log Validation** [Agent: Codex]: 해당 대화 runtime 로그는 `run_started` 후 `run_paused(reason=approval)` 2건만 존재하고 Databricks/SQL 실행 이벤트는 0건이다. 진행 상태 JSON 파싱과 `git diff --check`도 통과했다.
 
@@ -948,7 +948,7 @@ Task definitions and acceptance conditions: docs/agent_remaining_tasks_2026-09-1
 - **Live validation** [Agent: Codex]: 같은 표본 요청이 최신 화면에서 0.215초, 모델 호출 0회, 추가 원격 조회 0회로 완료됐고 `age 분포` 이미지와 `보유 10,000행 중 10,000행 기준 · unknown` 범위가 표시됐다.
 - **Regression** [Agent: Codex]: migration 105 + tests 75 = 180/180 PASS, compileall, 진행 JSON 파싱, `git diff --check` PASS.
 - **Artifacts**: `docs/databricks_approval_journey_2026-09-14.md`, `docs/release_acceptance_2026-09-13.md`, `docs/chatbot_agentic_evaluation_2026-09-13.md`, 화면 진행판.
-- **Remaining release gates**: 실제 트래픽 p50/p95와 process RSS 보정, 남은 166문항의 독립 oracle, 조인·가설 검정·고급 차트, 고정 release revision.
+- **Remaining release gates**: 실제 트래픽 p50/p95와 process RSS 보정, 남은 165문항의 독립 oracle, 조인·가설 검정·고급 차트, 고정 release revision.
 
 ## [2026-09-14 06:19:32 +0900] [Agent: Codex] User Request: 남은 출시 작업 계속 진행
 - **Action**: 실제 응답 시간 p50/p95와 process RSS 측정을 재현 가능한 방식으로 수행하고, 운영 기준·출시 판정·진행 화면에 근거를 반영한다.

@@ -14,9 +14,9 @@
 
 ## 검증 증거
 
-- 실제 production graph + 로컬 모델 + 독립 oracle: 누적 34/34 PASS. 이번 확대 10문항도 10/10 PASS.
+- 실제 production graph + 로컬 모델 + 독립 oracle: 누적 35/35 PASS. 이번 확대 10문항도 10/10 PASS.
 - agentic 실패 복구 시나리오: 16/16 PASS.
-- 전체 회귀: migration 106 + tests 75 = 181 PASS. compileall과 `git diff --check` PASS.
+- 전체 회귀: migration 107 + tests 76 = 183 PASS. compileall과 `git diff --check` PASS.
 - 기존 대화 56개 메시지 복제: 기존 histogram PNG 재사용, 원격 조회 0회.
 - 최신 서버 실제 브라우저: 같은 `age` histogram 요청을 기존 PNG로 0.292초에 표시. 모델 호출 0회, 원격 조회 0회, 활성 승인 카드 0개.
 - 실제 승인형 Databricks 여정: 승인 전 실행 0회, 승인 후 `workspace.default.bank_loan` 10,000행·18열을 1회 조회해 저장했다. 이어서 현재 10,000행 표본의 `age` histogram을 0.215초, 모델 호출 0회, 추가 원격 조회 0회로 생성해 화면에 표시했다.
@@ -32,9 +32,9 @@
 
 ## 전체 기능 출시 차단 항목
 
-- 실제 agent 독립 채점은 34/200문항이다. 나머지 166문항과 조인·가설 검정·고급 시각화는 미검증이다.
+- 실제 agent 독립 채점은 35/200문항이다. 나머지 165문항과 조인·가설 검정·고급 시각화는 미검증이다.
 - 결정적 로컬 경로의 p95와 RSS 계측은 완료했다. 모델 질문·동시 부하의 최신 운영 표본과 배포 용량에 맞춘 process RSS 경보 기준이 남았다.
-- 제한 출시 후보는 `agentic-analysis-rc-2026-09-14` tag로 고정한다. 원격 push와 배포는 별도 작업이다.
+- 제한 출시 후보는 `agentic-analysis-rc2-2026-09-14` tag로 고정한다. 원격 push와 배포는 별도 작업이다.
 
 ## 실행과 롤백
 

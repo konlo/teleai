@@ -445,16 +445,19 @@ class RecoveryMiddleware(AgentMiddleware):
                 return {'name': 'render_histogram', 'args': arguments}
         scope = current.get('scope', {})
         if (self.context and current.get('chart') and current.get('kind') == 'histogram'
-                and current.get('current_result_only') and not current.get('plan')
+                and not current.get('fresh_source_required') and not current.get('plan')
                 and not current.get('artifact_ids') and not self._has_scope(current)
                 and len(current.get('required_columns', [])) == 1):
             column=current['required_columns'][0]
             candidates=[info for info in self.context.datasets.metadata.values()
                 if info.grain == 'raw' and column in info.columns
-                and self._source_matches(info,current)]
+                and self._source_matches(info,current)
+                and (current.get('current_result_only')
+                    or (info.coverage == 'complete' and info.predicate_known
+                        and self._fresh_for_request(info,current)))]
             if len(candidates) == 1:
                 arguments={'source':candidates[0].source,'column':column,
-                    'where_sql':'','current_result_only':True}
+                    'where_sql':'','current_result_only':bool(current.get('current_result_only'))}
                 if not any(c.get('name') == 'prepare_histogram' and c.get('args') == arguments
                            for c in calls.values()):
                     return {'name':'prepare_histogram','args':arguments}

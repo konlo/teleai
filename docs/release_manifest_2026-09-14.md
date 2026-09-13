@@ -1,6 +1,6 @@
 # TeleAI agentic analysis release candidate — 2026-09-14
 
-고정 참조: Git tag `agentic-analysis-rc-2026-09-14`.
+최신 고정 참조: Git tag `agentic-analysis-rc2-2026-09-14`. 이전 기준선은 `agentic-analysis-rc-2026-09-14`로 보존한다.
 
 ## 포함 범위
 
@@ -15,9 +15,9 @@
 
 ## 고정 검증
 
-- migration: 106/106 PASS
-- tests: 75/75 PASS
-- 전체: 181/181 PASS
+- migration: 107/107 PASS
+- tests: 76/76 PASS
+- 전체: 183/183 PASS
 - compileall PASS
 - `git diff --check` PASS
 - 변경 후보 250개 파일의 토큰·비밀키 패턴 검사: 0건

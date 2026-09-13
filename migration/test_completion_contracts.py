@@ -94,7 +94,7 @@ class CompletionTests(unittest.TestCase):
             self.assertEqual(model.position, 10)
             r.close()
 
-    def test_complete_cached_plan_ends_without_another_model_or_remote_call(self):
+    def test_complete_cached_plan_ends_without_model_or_remote_call(self):
         with tempfile.TemporaryDirectory() as root:
             calls = []
             model = PlanOnlyModel()
@@ -104,7 +104,7 @@ class CompletionTests(unittest.TestCase):
             r.datasets.register(pd.DataFrame(FIXTURE['rows']), source=legacy_source, coverage='complete', predicate_known=True)
             result = r.submit(f'{COLUMN} histogram')
             self.assertEqual(result['status'], 'answered', result)
-            self.assertEqual(r.inspect()['recovery']['model_calls'], 1)
+            self.assertEqual(r.inspect()['recovery']['model_calls'], 0)
             self.assertEqual(calls, [])
             self.assertEqual(r.inspect()['requests'], [])
             self.assertTrue(r.inspect()['recovery']['artifact_ids'])

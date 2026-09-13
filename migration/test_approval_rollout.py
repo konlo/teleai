@@ -157,6 +157,21 @@ class GraphApprovalTests(unittest.TestCase):
             self.assertEqual(r.inspect()['requests'],[])
             r.close()
 
+    def test_complete_local_histogram_bypasses_model_and_remote(self):
+        with tempfile.TemporaryDirectory() as root:
+            r=GraphAnalysisRuntime(root,'owner','complete-chart',NoUnexpectedModelCall())
+            r.datasets.register(pd.DataFrame([{'age':20},{'age':30},{'age':30}]),
+                source='catalog.schema.events',coverage='complete',predicate_known=True)
+
+            result=r.submit('catalog.schema.events의 age histogram을 보여줘')
+
+            self.assertEqual(result['status'],'answered',result)
+            state=r.inspect()['recovery']
+            self.assertEqual(state['model_calls'],0)
+            self.assertTrue(state['artifact_ids'])
+            self.assertEqual(r.inspect()['requests'],[])
+            r.close()
+
     def test_explicit_chat_approval_and_rejection(self):
         for text,count in [('승인해줘',1),('취소해줘',0)]:
             with tempfile.TemporaryDirectory() as root:
