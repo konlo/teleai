@@ -143,26 +143,35 @@
 ## Current Status
 - **Last Updated**: 2026-09-14
 - **Status**: Limited-scope Release Candidate Validation
-- **Summary**: 실제 승인형 Databricks 조회와 현재 표본 재사용을 완료했다. 실제 10,000행 histogram 30회는 p50 0.069초·p95 0.121초였고 최신 화면 turn은 0.114초·peak RSS 약 247 MiB였다. 전체 회귀 183/183 PASS. 실제 agent 독립 채점은 35/200이므로 전체 기능 출시는 NO-GO다.
-- **Next Session Focus**: 모델 질문·동시 부하 관측 → 남은 165문항 oracle 확대. Canonical list: docs/agent_remaining_tasks_2026-09-13.md.
+- **Summary**: 승인형 Databricks 적재와 현재 표본 재사용을 검증했고, 실제 화면의 상관분석을 0.224초·모델/원격 0회로 완료했다. 전체 회귀 187/187, 참고 코드 200/200, agentic recovery 17/17 PASS다. draft PR #68의 최신 원격 CI도 성공했다. 실제 agent 독립 채점은 35/200이므로 전체 기능 출시는 NO-GO다.
+- **Next Session Focus**: PR 리뷰·병합과 배포 대상 확정 → 배포 smoke/rollback → 남은 165문항 oracle 확대. Canonical list: docs/agent_remaining_tasks_2026-09-13.md.
 
 ## Next Action Items (Pending tasks for the next session)
 - [x] R01: Connect grounded request scope to calculation/chart/recovery and reject wrong or unresolved scope.
 - [x] R02: Repair and re-evaluate the supported actual-model Level 1/2 cases.
 - [x] R03: Complete final-browser verification on the restarted server; cached histogram is visibly restored with no remote query.
-- [x] R04: Restart the server with the 183/183-tested code and verify the visible app.
-- [ ] R05: Define the product response-time SLO; deterministic core paths are measured.
+- [x] R04: Restart the server with the 187/187-tested code and verify the visible app.
+- [ ] R05: Calibrate deployment load and RSS alerts; local sequential/concurrent and model paths are measured.
 - [x] R06: Validate 750,000-row storage, cache eviction, restart/crash recovery and retained PNG.
-- [ ] R07: Expand independent actual-agent grading beyond 24/200 supported cases.
+- [ ] R07: Expand independent actual-agent grading beyond 35/200 supported cases.
 - [ ] R08: Implement and verify the declared advanced analysis and chart-editing scope.
 - [x] R09: Approved live Databricks load/reuse validated and release candidate tag fixed.
 - [x] R10: Remove production dependencies on fixed table/schema facts and validate schema drift and freshness behavior.
+- [ ] R11: Review draft PR #68, merge, choose the deployment target, and verify smoke/rollback there.
+- [ ] R12: Refresh four stale production TableContext schemas only through per-query user approval.
+- [x] R13: Repair the Level 2 reference environment and replace Level 3 placeholders with 17 production contracts.
 
 Task definitions and acceptance conditions: docs/agent_remaining_tasks_2026-09-13.md. Prior completed work remains recorded in the dated entries above.
 
 ---
 
 ## Daily Wrap-ups
+
+### 2026-09-14 Daily Summary
+- **Work completed**: Validated an approved 10,000-row Databricks load, local histogram reuse, and loaded-sample Pearson correlation in the actual UI. Added table-neutral local correlation recovery, deployment policy timing, concurrent/model performance reports, TableContext readiness reporting, pinned SciPy compatibility, and 17 real Level 3 production recovery contracts in place of random placeholders.
+- **Evidence**: Migration 111/111, tests 76/76, reference code 200/200, agentic recovery 17/17, and combined runner 217/217 PASS. The visible `age`–`balance` result was `0.05918371025192562` in 0.224 seconds with zero model and remote calls. RC3 was pushed, draft PR #68 is mergeable/clean, and its latest GitHub release gate succeeded.
+- **Remaining**: Human review and merge, deployment target and secret/rollback design, four approval-gated TableContext refreshes, deployment load/RSS calibration, and 165 independent-oracle cases.
+- **Reports**: `docs/release_manifest_2026-09-14.md`, `docs/chatbot_agentic_evaluation_2026-09-13.md`, `docs/runtime_performance_2026-09-14.md`, `docs/table_context_operations_2026-09-14.md`.
 
 ### 2026-09-13 Daily Summary
 - **Work completed**: Integrated grounded request scope into production recovery, blocked mismatched local/remote/chart execution, added deterministic count and ratio paths, repaired multiple cached-candidate selection, expanded actual-agent grading, and added a reproducible agentic recovery runner.
