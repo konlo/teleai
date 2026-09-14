@@ -33,6 +33,6 @@
 
 보유 데이터 재사용, 메타데이터, 검증된 기본 집계·필터·차트를 포함한 제한 범위의 release candidate다. 200문항 전체와 조인·가설 검정·고급 복합 차트의 일반 출시는 승인하지 않는다.
 
-RC3 tag와 branch를 원격 `origin`에 push한 뒤 이 manifest를 고정한다. PR, 병합, 배포와 배포 환경 smoke test는 별도 게이트다.
+RC3 tag와 branch는 원격 `origin`에 push했다. PR, 병합, 배포와 배포 환경 smoke test는 별도 게이트다.
 
 상세 근거: [출시 수용 기록](release_acceptance_2026-09-13.md), [Databricks 승인 여정](databricks_approval_journey_2026-09-14.md), [성능·메모리 측정](runtime_performance_2026-09-14.md).

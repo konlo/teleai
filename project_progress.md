@@ -10,12 +10,17 @@
 - [x] 제품 승인 카드에서 사용자가 승인한 실제 Databricks 조회 → 저장 → 분석 → 후속 질문을 검증했다.
 - [ ] 남은 165문항의 독립 oracle과 고급 분석 도구 범위를 우선순위별로 확대한다.
 - [ ] 로컬 단일·동시 및 모델 상관계수 표본은 완료했다. 다른 모델 질문·배포 환경 부하와 RSS 경보 기준을 확정한다.
-- [ ] 현재 변경을 `agentic-analysis-rc3-2026-09-14` release candidate로 커밋·push한다.
+- [x] 현재 변경을 `agentic-analysis-rc3-2026-09-14` release candidate로 커밋·push했다.
 - [ ] 원격 push된 RC3를 리뷰·병합·배포하고 배포 환경 smoke test와 rollback을 확인한다.
 - [ ] bank_loan·titanic alias와 변경 절차는 준비했다. 네 테이블의 stale schema/profile은 각각 승인형 조회로 갱신한다.
 - [x] Level 2 참고 환경 11건을 해결하고 Level 3 placeholder를 production agentic recovery 계약 17개로 교체했다.
 
 ---
+## [2026-09-14 21:58:00 KST] [Agent: Codex] RC3 publication
+- **Commit**: `62d25c0797e0a2067377ab3ab56d31f8b51cc0ee`에 local recovery, Level 3 계약, 성능·TableContext 보고서를 고정했다.
+- **Push verification**: 원격 branch와 `agentic-analysis-rc3-2026-09-14` tag가 모두 위 commit을 가리키는 것을 fetch 후 확인했다.
+- **Remaining release gate**: PR 리뷰·병합, 실제 배포 대상 확인, 배포 환경 smoke test와 rollback 검증은 아직 수행하지 않았다.
+
 ## [2026-09-14 21:54:00 KST] [Agent: Codex] Remaining work execution
 - **UI finding and fix**: `현재 보유한 bank_loan 데이터` 표현을 현재 결과 범위로 인식하지 못했고, 승인 적재 표본이 `coverage=unknown`·`predicate_known=false`라 결정적 상관분석 후보에서 제외됐다. 현재 결과가 명시된 무필터 두 수치 컬럼 요청에서는 보유 프레임 자체를 모집단으로 사용하도록 수정했다.
 - **UI evidence**: 실제 대화에서 `age`–`balance` 피어슨 상관계수 `0.05918371025192562`를 0.224초에 표시했다. 모델 호출 0회, 로컬 도구 1회, 원격 조회 0회다.
