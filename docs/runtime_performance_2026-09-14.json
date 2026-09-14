@@ -1,5 +1,5 @@
 {
-  "created_at": "2026-09-13T21:23:36.501630+00:00",
+  "created_at": "2026-09-14T03:46:47.710725+00:00",
   "observed_retained_traffic": {
     "count": 23,
     "p50_seconds": 40.983,
@@ -27,9 +27,9 @@
   },
   "current_local_dataframe_benchmark": {
     "count": 30,
-    "p50_seconds": 0.069083,
-    "p95_seconds": 0.120717,
-    "max_seconds": 0.165009,
+    "p50_seconds": 0.074062,
+    "p95_seconds": 0.145623,
+    "max_seconds": 0.184698,
     "percentile_method": "nearest-rank",
     "iterations": 30,
     "source": "workspace.default.bank_loan",
@@ -39,12 +39,43 @@
     "model_calls": 0,
     "remote_calls": 0,
     "actual_png_each_run": true,
-    "process_peak_rss_bytes": 322338816,
+    "process_peak_rss_bytes": 296861696,
     "scope": "cold temporary conversations using a copy of the persisted 10,000-row DataFrame"
   },
+  "current_concurrent_local_benchmark": {
+    "count": 20,
+    "p50_seconds": 0.462837,
+    "p95_seconds": 0.561764,
+    "max_seconds": 0.572161,
+    "percentile_method": "nearest-rank",
+    "requests": 20,
+    "workers": 4,
+    "successes": 20,
+    "failures": 0,
+    "wall_seconds": 2.913627,
+    "throughput_requests_per_second": 6.864,
+    "errors": [],
+    "model_calls": 0,
+    "remote_calls": 0,
+    "process_peak_rss_bytes": 367771648,
+    "scope": "parallel cold conversations using independent copies of the persisted local DataFrame"
+  },
+  "current_local_correlation_benchmark": {
+    "count": 30,
+    "p50_seconds": 0.037012,
+    "p95_seconds": 0.045609,
+    "max_seconds": 0.061003,
+    "percentile_method": "nearest-rank",
+    "iterations": 30,
+    "prompt": "현재 보유한 bank_loan 데이터에서 age와 balance의 피어슨 상관계수를 계산해줘.",
+    "expected": 0.059183710251925696,
+    "model_calls": 0,
+    "remote_calls": 0,
+    "scope": "cold temporary conversations using the persisted local DataFrame and a pandas oracle"
+  },
   "live_server_memory_snapshot": {
-    "pid": 18855,
-    "rss_bytes": 261619712,
+    "pid": 20268,
+    "rss_bytes": 41025536,
     "measurement": "single ps RSS snapshot after the verified live journey"
   },
   "safety": {
@@ -55,6 +86,7 @@
   "interpretation_limits": [
     "Retained traffic includes failures from older code and is a historical baseline, not a current-version SLO claim.",
     "The controlled benchmark covers the deterministic current-DataFrame histogram path only.",
+    "The concurrent benchmark uses isolated conversations in one process; it is not a distributed deployment load test.",
     "The server RSS value is one snapshot; instrumented live-turn counts remain too small for a product-wide RSS percentile."
   ]
 }

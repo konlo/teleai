@@ -1,7 +1,7 @@
-"""run_test_set.py — CLI Test Runner for the 200-question benchmark suite.
+"""CLI runner for 200 reference cases and production agentic contracts.
 
 Usage examples:
-  # Run all 200 tests
+  # Run all reference and agentic tests
   python test_set/run_test_set.py --all
 
   # Run only Level 1 tests
@@ -10,9 +10,13 @@ Usage examples:
   # Run only Level 2 tests
   python test_set/run_test_set.py --level 2
 
+  # Run production agentic recovery contracts
+  python test_set/run_test_set.py --level 3
+
   # Run a specific test by ID
   python test_set/run_test_set.py --id L1_042
   python test_set/run_test_set.py --id L2_077
+  python test_set/run_test_set.py --id A3_017
 
   # Filter by type: schema | synonym | table | chart
   python test_set/run_test_set.py --level 1 --type chart
@@ -49,10 +53,12 @@ import numpy as np
 # ── Paths & data loading ──────────────────────────────────────────────────────
 TEST_SET_DIR = Path(__file__).parent
 DATA_DIR     = TEST_SET_DIR / "data"
+ROOT_DIR     = TEST_SET_DIR.parent
 
 df_bank    = pd.read_csv(DATA_DIR / "bank_loan.csv")
 df_titanic = pd.read_csv(DATA_DIR / "titanic.csv")
 
+sys.path.insert(0, str(ROOT_DIR))
 sys.path.insert(0, str(TEST_SET_DIR))
 
 from level1.definitions_part1 import get_level1_part1
@@ -69,11 +75,23 @@ LEVEL1_SPECS = (get_level1_part1() + get_level1_part2() +
                 get_level1_part3() + get_level1_part4())
 LEVEL2_SPECS = (get_level2_part1() + get_level2_part2() +
                 get_level2_part3() + get_level2_part4())
-ALL_SPECS    = LEVEL1_SPECS + LEVEL2_SPECS
+LEVEL3_SPECS = get_level3_part5()
+ALL_SPECS    = LEVEL1_SPECS + LEVEL2_SPECS + LEVEL3_SPECS
 
 # ── Helpers ───────────────────────────────────────────────────────────────────
 
 def run_spec(spec: dict) -> dict:
+    if spec.get("test"):
+        from scripts.evaluate_agentic_recovery import run_case
+        record = run_case(spec["id"], spec["prompt"], spec["test"])
+        return {
+            **spec,
+            "status": record["status"],
+            "stdout": "",
+            "has_figure": False,
+            "error": record.get("diagnostic"),
+            "elapsed_seconds": record["elapsed_seconds"],
+        }
     code = spec.get("python_code", "")
     captured = io.StringIO()
     old_stdout = sys.stdout
@@ -127,11 +145,13 @@ def show_spec(spec: dict):
     print(f"  Category : {spec['category']}")
     print(f"  Type     : {spec['type']}")
     print(f"  Difficulty: {spec.get('difficulty', 'N/A')}")
-    print(f"  Table    : {spec['target_table']}")
+    print(f"  Table    : {spec.get('target_table') or 'table-neutral'}")
     print(f"  Synonym  : {spec.get('synonym_mapping')}")
     print(f"\n  Prompt:\n    {spec['prompt']}")
-    print(f"\n  Python Code:\n{'─'*60}")
-    for line in spec["python_code"].split("\n"):
+    label = "Production unittest" if spec.get("test") else "Python Code"
+    content = spec.get("test") or spec.get("python_code", "")
+    print(f"\n  {label}:\n{'─'*60}")
+    for line in content.split("\n"):
         print(f"  {line}")
     print(f"{'─'*60}")
 
@@ -157,13 +177,13 @@ def print_summary(results: list, level_name: str = ""):
 
 def main():
     parser = argparse.ArgumentParser(
-        description="Telly Chatbot Benchmark Test Runner (200 Q&A test set)",
+        description="Telly reference benchmark and agentic contract runner",
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog=__doc__,
     )
     group = parser.add_mutually_exclusive_group()
-    group.add_argument("--all",   action="store_true", help="Run all 200 tests")
-    group.add_argument("--level", type=int, choices=[1, 2], help="Run Level 1 or Level 2 only")
+    group.add_argument("--all",   action="store_true", help="Run all reference and agentic tests")
+    group.add_argument("--level", type=int, choices=[1, 2, 3], help="Run Level 1, 2, or 3 only")
     group.add_argument("--id",    type=str, help="Run a single test by ID (e.g. L1_042)")
     group.add_argument("--show",  type=str, help="Show prompt+code for an ID without running")
 
@@ -182,7 +202,8 @@ def main():
 
     # ── --show mode ───────────────────────────────────────────────────────────
     if args.show:
-        matches = [s for s in ALL_SPECS if s["id"].upper() == args.show.upper()]
+        requested = args.show.upper().replace("L3_", "A3_", 1)
+        matches = [s for s in ALL_SPECS if s["id"].upper() == requested]
         if not matches:
             print(f"ID '{args.show}' not found. Use --list to see all IDs.")
             sys.exit(1)
@@ -191,7 +212,8 @@ def main():
 
     # ── Select specs ──────────────────────────────────────────────────────────
     if args.id:
-        specs = [s for s in ALL_SPECS if s["id"].upper() == args.id.upper()]
+        requested = args.id.upper().replace("L3_", "A3_", 1)
+        specs = [s for s in ALL_SPECS if s["id"].upper() == requested]
         if not specs:
             print(f"ID '{args.id}' not found. Use --list to see all IDs.")
             sys.exit(1)
@@ -202,6 +224,9 @@ def main():
     elif args.level == 2:
         specs = LEVEL2_SPECS
         level_name = "Level 2"
+    elif args.level == 3:
+        specs = LEVEL3_SPECS
+        level_name = "Level 3 agentic contracts"
     elif args.all:
         specs = ALL_SPECS
         level_name = "All"

@@ -56,6 +56,8 @@ CASES = [
      "migration.test_recovery_journey.PlannedJourneyTests.test_controller_connects_plan_approval_and_render_despite_model_stopping"),
     ("A3_016", "cached chart remains displayable without duplicate UI keys",
      "migration.test_cached_chart_ui.CachedChartUITests.test_repeated_prepared_chart_displays_without_duplicate_widget_keys"),
+    ("A3_017", "an explicitly selected loaded sample supports local correlation without a model",
+     "migration.test_completion_contracts.CompletionTests.test_current_sample_pearson_correlation_reuses_loaded_dataframe"),
 ]
 
 

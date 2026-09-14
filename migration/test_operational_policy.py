@@ -9,6 +9,8 @@ import pandas as pd
 from core.analysis_agent.assets import AssetDB, PersistentDatasets
 from core.analysis_agent.policy import RuntimePolicy
 from core.analysis_agent.storage_policy import storage_report
+from core.analysis_agent.runtime import GraphAnalysisRuntime
+from migration.test_persistent_runtime import QuietModel
 
 
 class OperationalPolicyTests(unittest.TestCase):
@@ -45,6 +47,13 @@ class OperationalPolicyTests(unittest.TestCase):
             self.assertEqual(db.get('first','chart')[1],b'png')
             self.assertNotIn('too-large',db.metadata('chart'))
             db.close()
+
+    def test_runtime_uses_deployment_turn_budget_between_model_calls(self):
+        with tempfile.TemporaryDirectory() as root:
+            policy = RuntimePolicy(turn_slo_seconds=17.5)
+            runtime = GraphAnalysisRuntime(root, 'owner', 'budget-policy', QuietModel(), policy=policy)
+            self.assertEqual(runtime.recovery.max_model_seconds, 17.5)
+            runtime.close()
 
     def test_retention_report_is_read_only_and_marks_old_scope(self):
         import os,time

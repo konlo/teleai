@@ -12,12 +12,12 @@
 |---|---:|---:|---|
 | Level 1 참고 코드 | 체크인된 `python_code` 100개 | 100/100 PASS, figure 25개 | 정답 코드와 fixture의 실행 가능성. chatbot 평가는 아님 |
 | Level 1 실제 agent | production graph + 실제 로컬 모델 + 독립 oracle | 누적 29/29 PASS | 이번 확대 8문항 8/8 PASS |
-| Level 2 참고 코드 | 체크인된 `python_code` 100개 | 89/100 PASS, figure 32개 | 10개는 SciPy 미설치, 1개는 제거된 `np.trapz` 사용. chatbot 실패가 아님 |
+| Level 2 참고 코드 | 체크인된 `python_code` 100개 | 100/100 PASS, figure 33개 | SciPy 1.16.3 고정과 `np.trapezoid` 호환 수정. chatbot 평가는 아님 |
 | Level 2 실제 agent | production graph + 실제 로컬 모델 + 독립 oracle | 누적 6/6 PASS | 이번 확대 OR/IN 문항 2/2 PASS |
-| Level 3 agentic 복구 | production graph에 실패를 주입한 시나리오 | 16/16 PASS | 잘못된 SQL/범위/도구, 승인 거절, 재시작, 중복 실행, bounded stop 검증 |
-| 전체 회귀 | `migration` + `tests` | 183/183 PASS | 107 + 76, compileall과 `git diff --check`도 PASS |
+| Level 3 agentic 복구 | production graph에 실패를 주입한 시나리오 | 17/17 PASS | 잘못된 SQL/범위/도구, 승인 거절, 재시작, 중복 실행, 현재 표본 로컬 계산, bounded stop 검증 |
+| 전체 회귀 | `migration` + `tests` | 187/187 PASS | 111 + 76, compileall과 `git diff --check`도 PASS |
 
-원본 증거는 [기존 Level 1 결과](actual_agent_evaluation_20_latest_2026-09-13.json), [기존 Level 2 결과](actual_agent_evaluation_level2_4_repaired_2026-09-13.json), [신규 10문항 결과](actual_agent_evaluation_expanded_10_final_2026-09-13.json), [Level 3 복구 결과](agentic_recovery_evaluation_2026-09-13.json), [운영 저장소 보고](operational_storage_report_2026-09-13.json)에 보존했다.
+원본 증거는 [기존 Level 1 결과](actual_agent_evaluation_20_latest_2026-09-13.json), [기존 Level 2 결과](actual_agent_evaluation_level2_4_repaired_2026-09-13.json), [신규 10문항 결과](actual_agent_evaluation_expanded_10_final_2026-09-13.json), [최신 Level 3 복구 결과](agentic_recovery_evaluation.json), [운영 저장소 보고](operational_storage_report_2026-09-13.json)에 보존했다.
 
 ## 이번 평가에서 발견하고 수정한 결함
 
@@ -30,6 +30,8 @@
 `L1_093` 타이타닉 `Age` histogram의 첫 실제 모델 평가는 정확한 PNG를 만들었지만 63.680초 중 모델 도구 선택에 63.264초를 썼다. 이미 완전한 로컬 데이터, 출처, 단일 수치 컬럼, histogram 의도가 확정된 경우를 결정적 로컬 전이로 옮겼다. 수정 후 같은 독립 oracle은 0.238초에 PASS했고 모델·원격 호출은 0회였다. 실제 agent 독립 채점은 35/200으로 늘었다.
 
 신규 대화에서 `SELECT * FROM workspace.default.bank_loan LIMIT 10000` 승인 카드를 실제로 승인했다. 승인 전 Databricks 실행은 0회였고 승인 후 정확히 1회 조회해 10,000행·18열을 영속 저장했다. 이어서 `현재 로딩된 10,000행 표본의 age 히스토그램을 보여줘`를 실행하자 저장된 DataFrame만 사용해 0.215초에 실제 PNG를 표시했으며 모델 호출과 추가 원격 조회는 모두 0회였다. 이 여정에서 발견한 controller load 오분류와 숫자가 포함된 표본 표현 누락을 회귀 테스트로 고정했다. 상세 증거는 [Databricks 승인 여정](databricks_approval_journey_2026-09-14.md)에 보존했다.
+
+같은 실제 대화에서 `현재 보유한 bank_loan 데이터에서 age와 balance의 피어슨 상관계수를 계산해줘`를 실행했다. 처음에는 `현재 보유한 <table> 데이터` 표현과 `coverage=unknown`, `predicate_known=false` 표본을 현재 결과로 인식하지 못해 느린 모델 경로로 진입했다. 현재 결과 명시를 원문에서 확정하고, 그 프레임 자체를 모집단으로 삼는 무필터 수치 상관분석만 로컬 `CORR`로 허용했다. 최종 화면은 `0.05918371025192562`를 0.224초에 표시했고 모델·원격 호출은 모두 0회였다.
 
 추가 독립 평가 10문항의 첫 실행은 6 PASS, 2 FAIL, 2 NOT_COMPLETE였다. 완전한 로컬 DataFrame을 두고 전체 행 수를 원격 조회하려 한 문제, 백분율의 0–1/0–100 단위 문제, OR을 AND로 축소한 문제, 명시된 월 목록을 누락한 문제를 발견했다. 요청 scope에 전체 행, IN, 공통 조건과 한 개 OR 그룹, 백분율 단위를 보존하고 DuckDB 식별자 quoting을 분리했다. 수정 후 같은 10문항은 10/10 PASS, 최대 0.237초, 원격 실행 0회였다.
 
@@ -47,15 +49,14 @@
 
 `test_set/run_test_set.py`는 질문을 chatbot에 보내지 않고 각 문항의 정답 `python_code`를 `exec`한다. 이 실행의 PASS를 agent 이해도나 복구 성능으로 합산하면 안 된다.
 
-`test_set/level3/definitions_part5.py`도 정식 Level 3 agent 평가가 아니다. runner는 이 파일을 import하지만 `ALL_SPECS`에 포함하지 않는다. 구체 문항은 5개뿐이고 6–15번이 없으며, 16–100번은 `Executed L3_xxx`만 출력하는 placeholder다. 이번 16개 복구 평가는 이 공백을 production graph의 실제 제어 계약으로 먼저 보완한 것이다.
+`test_set/level3/definitions_part5.py`에 있던 무작위 placeholder는 제거했다. 이제 이 파일은 production `GraphAnalysisRuntime`에 고장을 주입하는 `A3_001`~`A3_017` 계약만 등록하며, `run_test_set.py --level 3`과 `--all`이 실제 unittest를 실행한다. Level 1·2 참조 코드 PASS와 Level 3 제어 계약 PASS는 지표를 분리해 표시한다.
 
 ## 남은 출시 위험
 
 - 전체 200문항 중 165문항은 실제 agent 독립 채점이 없다. 조인, 가설 검정, 고급 그룹 분석, 복합 시각화를 지원한다고 선언할 수 없다.
-- Level 2 참고 환경은 SciPy 의존성과 NumPy API 호환성 때문에 11개가 실행되지 않는다.
 - 평가용 테이블 동의어는 `test_set`의 외부 TableContext에만 있다. 운영 agent는 오래된 alias를 실행 근거로 사용하지 않으며, 새 업무 용어 해석 품질은 최신 외부 TableContext의 품질에 좌우된다.
-- 초기 운영 한도(원격 100,000행, 256열, DataFrame 512 MiB, cache 64 MiB, 대화별 2 GiB, 정리 후보 30일)와 model 60초/turn 180초 기준을 적용했다. 실제 10,000행 복제본의 결정적 histogram 30회는 p50 0.069초·p95 0.121초였고 최신 화면 turn의 peak RSS는 약 247 MiB였다. 모델 질문·동시 부하의 최신 표본과 배포 용량별 RSS 경보 기준은 남았다.
-- 제한 출시 후보는 `agentic-analysis-rc2-2026-09-14` tag로 고정한다. 원격 push와 배포는 별도 작업이다.
+- 초기 운영 한도(원격 100,000행, 256열, DataFrame 512 MiB, cache 64 MiB, 대화별 2 GiB, 정리 후보 30일)를 적용했다. 60초 model timeout은 streaming 전체 deadline이 아니라 읽기 비활성 기준이며, 180초는 turn SLO와 모델 호출 사이 누적 예산이다. 실제 모델 상관계수는 5/5 정확·p95 80.704초였고 결정적 로컬 전이 후 30/30·p95 0.046초가 됐다. 동시 로컬 histogram 20/20·p95 0.562초도 확인했다. 다른 모델 질문·배포 부하와 용량별 RSS 경보 기준은 남았다.
+- 제한 출시 후보는 `agentic-analysis-rc3-2026-09-14` tag로 고정한다. 배포는 별도 작업이다.
 
 ## 다음 출시 게이트
 

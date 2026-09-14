@@ -10,6 +10,7 @@ from langchain_core.messages import AIMessage, HumanMessage, ToolMessage
 from langchain_core.outputs import ChatResult, ChatGeneration
 from core.analysis_agent.runtime import GraphAnalysisRuntime
 from core.analysis_agent.recovery import RecoveryMiddleware
+from core.analysis_runtime_tools import build_analysis_tools
 from migration.test_persistent_runtime import QuietModel
 from migration.test_recovery_journey import PlanOnlyModel, SOURCE, COLUMN, FIXTURE
 
@@ -489,6 +490,97 @@ class CompletionTests(unittest.TestCase):
             self.assertEqual(int(result['count'].iloc[0]), 2)
             self.assertAlmostEqual(float(result['percent'].iloc[0]), 50.0)
             self.assertEqual(model.position, 0)
+            r.close()
+
+    def test_grounded_pearson_correlation_uses_local_dataframe_without_model(self):
+        frame = pd.DataFrame({'metric_a':[1.0, 2.0, 4.0, 8.0],
+                              'metric_b':[2.0, 3.0, 7.0, 9.0]})
+        source = 'fixture.dynamic_metrics'
+        reference = [{'table':source, 'columns':[
+            {'name':'metric_a', 'dtype':'float64', 'aliases':['첫 번째 지표']},
+            {'name':'metric_b', 'dtype':'float64', 'aliases':['두 번째 지표']}]}]
+        with tempfile.TemporaryDirectory() as root:
+            model = ScriptModel()
+            r = GraphAnalysisRuntime(root, 'owner', 'correlation-fallback', model)
+            r.context.reference_context = reference
+            r.datasets.register(frame, source=source, coverage='complete', predicate_known=True)
+
+            outcome = r.submit('metric_a와 metric_b의 피어슨 상관계수를 계산해줘')
+
+            state = r.inspect()['recovery']
+            self.assertEqual(outcome['status'], 'answered', outcome)
+            self.assertEqual(model.position, 0)
+            result = float(r.datasets.frames[state['evidence_ids'][0]].iloc[0, 0])
+            self.assertAlmostEqual(result, frame['metric_a'].corr(frame['metric_b']))
+            self.assertIn('피어슨 상관계수', outcome['text'])
+            r.close()
+
+    def test_current_sample_pearson_correlation_reuses_loaded_dataframe(self):
+        frame = pd.DataFrame({'metric_a':[1.0, 2.0, 4.0, 8.0],
+                              'metric_b':[2.0, 3.0, 7.0, 9.0]})
+        source = 'fixture.dynamic_metrics'
+        reference = [{'table':source, 'columns':[
+            {'name':'metric_a', 'dtype':'float64'},
+            {'name':'metric_b', 'dtype':'float64'}]}]
+        with tempfile.TemporaryDirectory() as root:
+            model = ScriptModel()
+            r = GraphAnalysisRuntime(root, 'owner', 'current-correlation-fallback', model)
+            r.context.reference_context = reference
+            r.datasets.register(frame, source=source, coverage='sampled', predicate_known=False)
+
+            outcome = r.submit(
+                '현재 보유한 dynamic_metrics 데이터에서 metric_a와 metric_b의 '
+                '피어슨 상관계수를 계산해줘')
+
+            state = r.inspect()['recovery']
+            self.assertEqual(outcome['status'], 'answered', outcome)
+            self.assertEqual(model.position, 0)
+            result = float(r.datasets.frames[state['evidence_ids'][0]].iloc[0, 0])
+            self.assertAlmostEqual(result, frame['metric_a'].corr(frame['metric_b']))
+            self.assertTrue(state['current_result_only'])
+            self.assertIn('피어슨 상관계수', outcome['text'])
+            r.close()
+
+    def test_paused_checkpoint_reclassifies_current_sample_and_adopts_local_evidence(self):
+        frame = pd.DataFrame({'metric_a':[1.0, 2.0, 4.0, 8.0],
+                              'metric_b':[2.0, 3.0, 7.0, 9.0]})
+        source = 'fixture.dynamic_metrics'
+        with tempfile.TemporaryDirectory() as root:
+            r = GraphAnalysisRuntime(root, 'owner', 'checkpoint-correlation', ScriptModel())
+            info = r.datasets.register(
+                frame, source=source, coverage='sampled', predicate_known=False)
+            definition = next(tool for tool in build_analysis_tools(r.context)
+                              if tool.name == 'local_analysis_sql')
+            query = 'SELECT CORR(metric_a, metric_b) AS correlation FROM data'
+            observation = definition.run(
+                dataset_id=info.id, query=query, current_result_only=True)
+            call_id = str(uuid4())
+            human = HumanMessage(
+                content='현재 보유한 dynamic_metrics 데이터에서 metric_a와 metric_b의 '
+                        '피어슨 상관계수를 계산해줘',
+                id='saved-request')
+            arguments = {'dataset_id':info.id, 'query':query, 'current_result_only':True}
+            messages = [human,
+                AIMessage(content='', tool_calls=[{
+                    'name':'local_analysis_sql', 'args':arguments,
+                    'id':call_id, 'type':'tool_call'}]),
+                ToolMessage(content=json.dumps(observation), tool_call_id=call_id,
+                            name='local_analysis_sql')]
+            saved = {
+                'request_id':human.id, 'calculation':True, 'operations':['CORR'],
+                'current_result_only':False, 'fresh_source_required':False,
+                'required_columns':['metric_a','metric_b'], 'required_sources':[source],
+                'scope':{'conditions':[], 'any_conditions':[], 'measure_conditions':[],
+                         'ratio':None, 'unresolved':[], 'columns':['metric_a','metric_b']},
+                'processed':[call_id], 'sent_calls':[call_id], 'evidence_ids':[],
+                'artifact_ids':[], 'failed':{}, 'failed_signatures':{},
+                'attempts':0, 'model_calls':1, 'model_seconds':1.0,
+            }
+
+            recovered, _ = r.recovery._state({'messages':messages, 'recovery':saved})
+
+            self.assertTrue(recovered['current_result_only'])
+            self.assertEqual(recovered['evidence_ids'], [observation['dataset']['id']])
             r.close()
 
 

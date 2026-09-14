@@ -657,10 +657,10 @@
     "prompt": "정기예금 가입자(y='yes')와 미가입자(y='no') 간의 계좌 잔액(balance) 차이에 대해 독립표본 t-검정(Two-Sample t-test)을 수행하고 p-value를 확인해줘.",
     "target_table": "bank_loan",
     "expected_output_type": "text",
-    "status": "FAIL",
-    "stdout": "",
+    "status": "PASS",
+    "stdout": "가입자 평균 잔액: $2,355.22, 미가입자: $2,823.25\nt-통계량: -0.7217, p-value: 4.7096e-01\n결론: 통계적 유의미성 없음\n",
     "has_figure": false,
-    "error": "ModuleNotFoundError: No module named 'scipy'\nTraceback (most recent call last):\n  File \"/Users/najongseong/git_repository/teleai/test_set/build_and_run_all.py\", line 96, in run_spec\n    exec(code, exec_globals)\n  File \"<string>\", line 2, in <module>\nModuleNotFoundError: No module named 'scipy'\n"
+    "error": null
   },
   {
     "id": "L2_052",
@@ -670,10 +670,10 @@
     "prompt": "정기예금 가입자(y='yes')와 미가입자(y='no') 간의 통화 상담 시간(duration) 차이에 대해 독립표본 t-검정을 수행해줘.",
     "target_table": "bank_loan",
     "expected_output_type": "text",
-    "status": "FAIL",
-    "stdout": "",
+    "status": "PASS",
+    "stdout": "가입자 평균 상담시간: 445.7초, 미가입자: 233.1초\nt-통계량: 9.3770, p-value: 1.7199e-18\n",
     "has_figure": false,
-    "error": "ModuleNotFoundError: No module named 'scipy'\nTraceback (most recent call last):\n  File \"/Users/najongseong/git_repository/teleai/test_set/build_and_run_all.py\", line 96, in run_spec\n    exec(code, exec_globals)\n  File \"<string>\", line 2, in <module>\nModuleNotFoundError: No module named 'scipy'\n"
+    "error": null
   },
   {
     "id": "L2_053",
@@ -683,10 +683,10 @@
     "prompt": "주택 대출(housing) 여부와 정기예금 가입(y) 간의 독립성 검정을 위해 카이제곱 검정(Chi-Square Test)을 수행해줘.",
     "target_table": "bank_loan",
     "expected_output_type": "text",
-    "status": "FAIL",
-    "stdout": "",
+    "status": "PASS",
+    "stdout": "교차표 (Contingency Table):\ny         no  yes\nhousing          \nno       810  135\nyes      920  135\n카이제곱 통계량: 0.8238, 자유도: 1, p-value: 3.6406e-01\n결론: 독립적임\n",
     "has_figure": false,
-    "error": "ModuleNotFoundError: No module named 'scipy'\nTraceback (most recent call last):\n  File \"/Users/najongseong/git_repository/teleai/test_set/build_and_run_all.py\", line 96, in run_spec\n    exec(code, exec_globals)\n  File \"<string>\", line 2, in <module>\nModuleNotFoundError: No module named 'scipy'\n"
+    "error": null
   },
   {
     "id": "L2_054",
@@ -696,10 +696,10 @@
     "prompt": "타이타닉 승객 등급(Pclass)과 생존 여부(Survived) 간의 카이제곱 독립성 검정을 수행해줘.",
     "target_table": "titanic",
     "expected_output_type": "text",
-    "status": "FAIL",
-    "stdout": "",
+    "status": "PASS",
+    "stdout": "등급 x 생존 교차표:\nSurvived    0    1\nPclass            \n1          84  139\n2         109   69\n3         371  119\n카이제곱 통계량: 95.8984, p-value: 1.4994e-21\n",
     "has_figure": false,
-    "error": "ModuleNotFoundError: No module named 'scipy'\nTraceback (most recent call last):\n  File \"/Users/najongseong/git_repository/teleai/test_set/build_and_run_all.py\", line 96, in run_spec\n    exec(code, exec_globals)\n  File \"<string>\", line 2, in <module>\nModuleNotFoundError: No module named 'scipy'\n"
+    "error": null
   },
   {
     "id": "L2_055",
@@ -709,10 +709,10 @@
     "prompt": "교육 수준(education) 그룹 간 고객 잔액(balance)의 차이가 유의미한지 일원분산분석(One-way ANOVA)을 수행해줘.",
     "target_table": "bank_loan",
     "expected_output_type": "text",
-    "status": "FAIL",
-    "stdout": "",
+    "status": "PASS",
+    "stdout": "F-통계량: 1.3859, p-value: 2.4527e-01\n결론: 차이 유의미하지 않음\n",
     "has_figure": false,
-    "error": "ModuleNotFoundError: No module named 'scipy'\nTraceback (most recent call last):\n  File \"/Users/najongseong/git_repository/teleai/test_set/build_and_run_all.py\", line 96, in run_spec\n    exec(code, exec_globals)\n  File \"<string>\", line 2, in <module>\nModuleNotFoundError: No module named 'scipy'\n"
+    "error": null
   },
   {
     "id": "L2_056",
@@ -722,10 +722,10 @@
     "prompt": "혼인 상태(marital) 그룹 간 고객 연령(age)의 차이에 대해 일원분산분석(One-way ANOVA)을 수행해줘.",
     "target_table": "bank_loan",
     "expected_output_type": "text",
-    "status": "FAIL",
-    "stdout": "",
+    "status": "PASS",
+    "stdout": "혼인상태 그룹별 평균 연령:\nmarital\ndivorced    41.1\nmarried     41.0\nsingle      41.2\nName: age, dtype: float64\nANOVA F-통계량: 0.1122, p-value: 8.9388e-01\n",
     "has_figure": false,
-    "error": "ModuleNotFoundError: No module named 'scipy'\nTraceback (most recent call last):\n  File \"/Users/najongseong/git_repository/teleai/test_set/build_and_run_all.py\", line 96, in run_spec\n    exec(code, exec_globals)\n  File \"<string>\", line 2, in <module>\nModuleNotFoundError: No module named 'scipy'\n"
+    "error": null
   },
   {
     "id": "L2_057",
@@ -735,10 +735,10 @@
     "prompt": "잔액(balance) 데이터의 비정규성을 감안하여, 가입 여부(y)별 잔액 차이에 대해 비모수 검정인 맨-휘트니 U 검정(Mann-Whitney U Test)을 수행해줘.",
     "target_table": "bank_loan",
     "expected_output_type": "text",
-    "status": "FAIL",
-    "stdout": "",
+    "status": "PASS",
+    "stdout": "Mann-Whitney U 통계량: 222,025.5, p-value: 1.9163e-01\n",
     "has_figure": false,
-    "error": "ModuleNotFoundError: No module named 'scipy'\nTraceback (most recent call last):\n  File \"/Users/najongseong/git_repository/teleai/test_set/build_and_run_all.py\", line 96, in run_spec\n    exec(code, exec_globals)\n  File \"<string>\", line 2, in <module>\nModuleNotFoundError: No module named 'scipy'\n"
+    "error": null
   },
   {
     "id": "L2_058",
@@ -748,10 +748,10 @@
     "prompt": "타이타닉 생존자(1)와 사망자(0) 간의 지불 요금(Fare) 차이에 대해 독립표본 t-검정을 수행해줘.",
     "target_table": "titanic",
     "expected_output_type": "text",
-    "status": "FAIL",
-    "stdout": "",
+    "status": "PASS",
+    "stdout": "생존자 평균 요금: $49.65, 사망자 평균 요금: $24.65\nt-통계량: 7.2718, p-value: 1.6188e-12\n",
     "has_figure": false,
-    "error": "ModuleNotFoundError: No module named 'scipy'\nTraceback (most recent call last):\n  File \"/Users/najongseong/git_repository/teleai/test_set/build_and_run_all.py\", line 96, in run_spec\n    exec(code, exec_globals)\n  File \"<string>\", line 2, in <module>\nModuleNotFoundError: No module named 'scipy'\n"
+    "error": null
   },
   {
     "id": "L2_059",
@@ -761,10 +761,10 @@
     "prompt": "전체 고객 잔액(balance)의 모평균에 대한 95% 신뢰구간(Confidence Interval)을 계산해줘.",
     "target_table": "bank_loan",
     "expected_output_type": "text",
-    "status": "FAIL",
-    "stdout": "",
+    "status": "PASS",
+    "stdout": "표본 평균 잔액: $2,760.07\n모평균 95% 신뢰구간: [$2,311.18, $3,208.95]\n",
     "has_figure": false,
-    "error": "ModuleNotFoundError: No module named 'scipy'\nTraceback (most recent call last):\n  File \"/Users/najongseong/git_repository/teleai/test_set/build_and_run_all.py\", line 96, in run_spec\n    exec(code, exec_globals)\n  File \"<string>\", line 2, in <module>\nModuleNotFoundError: No module named 'scipy'\n"
+    "error": null
   },
   {
     "id": "L2_060",
@@ -774,10 +774,10 @@
     "prompt": "신용불량(default) 여부와 개인 대출(loan) 보유 여부 간의 카이제곱 검정을 수행해줘.",
     "target_table": "bank_loan",
     "expected_output_type": "text",
-    "status": "FAIL",
-    "stdout": "",
+    "status": "PASS",
+    "stdout": "신용불량 x 개인대출 교차표:\nloan       no  yes\ndefault           \nno       1626  344\nyes        26    4\n카이제곱 통계량: 0.1221, p-value: 7.2681e-01\n",
     "has_figure": false,
-    "error": "ModuleNotFoundError: No module named 'scipy'\nTraceback (most recent call last):\n  File \"/Users/najongseong/git_repository/teleai/test_set/build_and_run_all.py\", line 96, in run_spec\n    exec(code, exec_globals)\n  File \"<string>\", line 2, in <module>\nModuleNotFoundError: No module named 'scipy'\n"
+    "error": null
   },
   {
     "id": "L2_061",

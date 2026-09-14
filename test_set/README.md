@@ -1,8 +1,8 @@
 # Telly Chatbot Benchmark Test Suite
 
-데이터 분석 AI 챗봇 **Telly**를 평가하기 위한 **200개 질문과 참조 Python 코드 세트**입니다.
+데이터 분석 AI 챗봇 **Telly**를 평가하기 위한 **200개 질문·참조 Python 코드**와 **17개 production agentic recovery 계약**입니다.
 
-> `run_test_set.py`와 기존 `execution_report.md`의 PASS는 준비된 참조 Python 코드가 예외 없이 실행되었다는 뜻입니다. 실제 에이전트에 질문을 입력하거나 정답·차트 정확도를 비교하지 않으므로 에이전트 성공률 또는 출시 증거로 사용할 수 없습니다.
+> Level 1·2와 `execution_report.md`의 PASS는 준비된 참조 Python 코드가 예외 없이 실행되었다는 뜻입니다. 실제 에이전트 성공률이 아닙니다. Level 3는 production `GraphAnalysisRuntime`의 고장 주입·복구 계약이며 자연어 이해 정확도는 별도 실제 에이전트 평가로 확인합니다.
 
 ## 실제 에이전트 평가
 
@@ -36,6 +36,7 @@
 | **데이터셋** | `bank_loan` (2,000행 × 18컬럼), `titanic` (891행 × 12컬럼) |
 | **정답 형식** | Python 코드 + 실행 결과 (stdout / 차트 생성 여부) |
 | **참조 코드 실행 기록** | 200/200 예외 없음 (차트 생성: Level 1 25개, Level 2 33개). 에이전트 평가 아님. |
+| **Agentic 계약 실행 기록** | 17/17 (`A3_001` ~ `A3_017`). 복구·승인·저장·UI 경계의 결정적 고장 주입 테스트. |
 
 ---
 
@@ -59,12 +60,14 @@ test_set/
 │   ├── definitions_part2.py    # L1_026 ~ L1_050: 동의어 심화 + 단순 필터/집계
 │   ├── definitions_part3.py    # L1_051 ~ L1_075: 그룹 통계 + 피벗 테이블
 │   └── definitions_part4.py    # L1_076 ~ L1_100: 단일 시각화 차트
-└── level2/
+├── level2/
     ├── __init__.py
     ├── definitions_part1.py    # L2_001 ~ L2_025: 다중 조건 필터 + 복합 피벗
     ├── definitions_part2.py    # L2_026 ~ L2_050: 이상치 감지 + 고급 집계
     ├── definitions_part3.py    # L2_051 ~ L2_075: 통계 가설 검정 + 이중축 시각화
-    └── definitions_part4.py    # L2_076 ~ L2_100: 2x2 대시보드 + 방어적 예외 처리
+│   └── definitions_part4.py    # L2_076 ~ L2_100: 2x2 대시보드 + 방어적 예외 처리
+└── level3/
+    └── definitions_part5.py    # A3_001 ~ A3_017: production agentic recovery 계약 레지스트리
 ```
 
 ---
@@ -190,7 +193,7 @@ source .venv/bin/activate   # 또는: .venv/bin/python 직접 사용
 ### CLI 러너 활용
 
 ```bash
-# 전체 200개 실행 (요약만)
+# 참조 200개와 agentic 계약 17개 모두 실행 (요약만)
 .venv/bin/python test_set/run_test_set.py --all --quiet
 
 # Level 1만 실행
@@ -199,9 +202,13 @@ source .venv/bin/activate   # 또는: .venv/bin/python 직접 사용
 # Level 2만 실행
 .venv/bin/python test_set/run_test_set.py --level 2
 
+# Level 3 production agentic recovery 계약만 실행
+.venv/bin/python test_set/run_test_set.py --level 3
+
 # 특정 ID 실행 (상세 출력)
 .venv/bin/python test_set/run_test_set.py --id L1_042
 .venv/bin/python test_set/run_test_set.py --id L2_077
+.venv/bin/python test_set/run_test_set.py --id A3_017
 
 # 특정 ID의 질문 + 코드 조회 (실행 안 함)
 .venv/bin/python test_set/run_test_set.py --show L2_082

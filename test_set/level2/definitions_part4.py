@@ -374,7 +374,7 @@ cum_wealth = np.cumsum(pos_balances) / np.sum(pos_balances)
 cum_pop = np.arange(1, n + 1) / n
 
 # 지니계수 계산 (사다리꼴 공식)
-gini = 1 - 2 * np.trapz(cum_wealth, cum_pop)
+gini = 1 - 2 * np.trapezoid(cum_wealth, cum_pop)
 
 plt.figure(figsize=(7, 6))
 plt.plot(cum_pop, cum_wealth, label=f'잔액 로렌츠 곡선 (Gini={gini:.3f})', color='darkorange', lw=2)

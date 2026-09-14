@@ -44,8 +44,6 @@ from level2.definitions_part2 import get_level2_part2
 from level2.definitions_part3 import get_level2_part3
 from level2.definitions_part4 import get_level2_part4
 
-from level3.definitions_part5 import get_level3_part5
-
 level1_specs = (
     get_level1_part1() +
     get_level1_part2() +
@@ -60,11 +58,8 @@ level2_specs = (
     get_level2_part4()
 )
 
-level3_specs = get_level3_part5()
-
 print(f"\nLevel 1 specs loaded: {len(level1_specs)}")
 print(f"Level 2 specs loaded: {len(level2_specs)}")
-print(f"\nLevel 3 specs loaded: {len(level3_specs)}")
 
 # ── Execution helper ──────────────────────────────────────────────────────────
 def run_spec(spec: dict, df_bank: pd.DataFrame, df_titanic: pd.DataFrame) -> dict:

@@ -69,7 +69,8 @@ class GraphAnalysisRuntime:
                 raise ValueError('context_budget_exceeded')
             return rendered
         registered=local_tools(self.context, self.diagnostics)
-        recovery=RecoveryMiddleware(self.artifacts,self.diagnostics,context=self.context,transcript=self.transcript)
+        recovery=RecoveryMiddleware(self.artifacts,self.diagnostics,context=self.context,
+            transcript=self.transcript,max_model_seconds=self.policy.turn_slo_seconds)
         self.recovery=recovery
         middleware=[QueuedRequestMiddleware(),RecoveryPlanningMiddleware(recovery),CompactDiscoveryMiddleware(),
                     memory_middleware(model,summary_trigger_tokens,summary_keep_messages,diagnostics=self.diagnostics),

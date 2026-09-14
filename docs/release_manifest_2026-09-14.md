@@ -1,6 +1,6 @@
 # TeleAI agentic analysis release candidate — 2026-09-14
 
-최신 고정 참조: Git tag `agentic-analysis-rc2-2026-09-14`. 이전 기준선은 `agentic-analysis-rc-2026-09-14`로 보존한다.
+최신 고정 참조: Git tag `agentic-analysis-rc3-2026-09-14`. 이전 기준선과 RC2는 보존한다.
 
 ## 포함 범위
 
@@ -15,20 +15,24 @@
 
 ## 고정 검증
 
-- migration: 107/107 PASS
+- migration: 111/111 PASS
 - tests: 76/76 PASS
-- 전체: 183/183 PASS
+- 전체: 187/187 PASS
 - compileall PASS
 - `git diff --check` PASS
-- 변경 후보 250개 파일의 토큰·비밀키 패턴 검사: 0건
+- 변경 후보 32개 파일의 토큰·비밀키 패턴 검사: 0건
 - 실제 Databricks: 승인 전 0회, 승인 후 1회, 10,000행·18열 저장
 - 실제 화면: 현재 표본 histogram 0.114초, 모델 0회, 원격 0회, PNG 표시
-- 실제 10,000행 복제본 30회: p50 0.069초, p95 0.121초, 최대 0.165초
+- 실제 10,000행 복제본 30회: p50 0.074초, p95 0.146초, 최대 0.185초
+- 동시 로컬 histogram 20회·4 workers: 20/20 PASS, p95 0.562초, 6.864 req/s
+- 피어슨 상관계수: 실제 모델 5/5 PASS·p95 80.704초, 결정적 로컬 전이 후 30/30 PASS·p95 0.046초
+- 실제 화면 현재 표본 상관계수: 0.05918371025192562, 0.224초, 모델 0회, 원격 0회
+- Level 3 production agentic recovery 계약: 17/17 PASS, placeholder 85개 제거
 
 ## 출시 판정
 
 보유 데이터 재사용, 메타데이터, 검증된 기본 집계·필터·차트를 포함한 제한 범위의 release candidate다. 200문항 전체와 조인·가설 검정·고급 복합 차트의 일반 출시는 승인하지 않는다.
 
-고정 tag는 로컬 release 후보 식별자다. 원격 push와 배포는 이 기록에 포함하지 않는다.
+RC3 tag와 branch를 원격 `origin`에 push한 뒤 이 manifest를 고정한다. PR, 병합, 배포와 배포 환경 smoke test는 별도 게이트다.
 
 상세 근거: [출시 수용 기록](release_acceptance_2026-09-13.md), [Databricks 승인 여정](databricks_approval_journey_2026-09-14.md), [성능·메모리 측정](runtime_performance_2026-09-14.md).

@@ -46,6 +46,9 @@ class RecoveryMiddleware(AgentMiddleware):
             human = latest_user_request(self.transcript.messages())
         current = deepcopy(state.get('recovery') or {})
         request_kind = human.additional_kwargs.get('request_kind') if human else None
+        text = str(human.content) if human else ''
+        current_loaded_reference = bool(human and re.search(
+            r'(?:현재|지금|이|그)\s*(?:로딩된|보유한|저장된)\b|현재\s*결과|보유\s*데이터', text))
         # Controller-authored table previews are data-loading requests.  They
         # are not analysis prompts even when their explanatory copy contains
         # words such as "통계".  Keep a narrow legacy match so approvals that
@@ -57,9 +60,6 @@ class RecoveryMiddleware(AgentMiddleware):
         data_load = request_kind == 'remote_load' or legacy_load
         if human and current.get('request_id') != human.id:
             previous = current
-            text = str(human.content)
-            current_loaded_reference = bool(re.search(
-                r'(?:현재|지금|이|그)\s*(?:로딩된|보유한|저장된)\s*(?:결과|데이터|자료)|현재\s*결과|보유\s*데이터', text))
             fresh_source_required = bool(re.search(
                 r'최신|새로\s*(?:갱신|업데이트|변경)된|현재\s*(?:원본|테이블|DB|데이터베이스)|'
                 r'지금\s*(?:원본|테이블|DB|데이터베이스)|오늘\s*기준|방금\s*갱신', text, re.I)) and not current_loaded_reference
@@ -91,6 +91,8 @@ class RecoveryMiddleware(AgentMiddleware):
                     (r'개수|몇\s*(?:명|개|건)|\bcount\b', 'COUNT'),
                     (r'최솟값|최소값|\bmin\b', 'MIN'), (r'최댓값|최대값|\bmax\b', 'MAX')]:
                 if re.search(pattern, objective_text, re.I): operations.append(operation)
+            if re.search(r'상관(?:계수|관계)?|피어슨|\b(?:correlation|pearson)\b', objective_text, re.I):
+                operations.append('CORR')
             if re.search(r'비율|성공률|생존율|전환율|[가-힣A-Za-z]+[율률]|\b(?:ratio|rate|percentage|percent)\b',
                          objective_text, re.I): operations.append('RATIO')
             if count_request and 'COUNT' not in operations: operations.append('COUNT')
@@ -107,7 +109,7 @@ class RecoveryMiddleware(AgentMiddleware):
                 expected_load_query=human.additional_kwargs.get('query','') if data_load else '',
                 whole_row_count=bool(re.search(
                     r'전체\s*(?:행|레코드|데이터)(?:의)?\s*(?:수|개수)|총\s*(?:데이터\s*)?(?:행|레코드)\s*(?:수|개수)', text)),
-                current_result_only=bool(re.search(
+                current_result_only=bool(current_loaded_reference or re.search(
                     r'(?:현재|보유|지금|이|그)\s*(?:로딩된\s*)?(?:[\d,]+\s*행\s*)?(?:결과|표본|샘플|데이터)|'
                     r'표본|샘플|일부\s*데이터', text)),
                 fresh_source_required=fresh_source_required,
@@ -139,6 +141,15 @@ class RecoveryMiddleware(AgentMiddleware):
                 if not current['required_columns']: current['required_columns'] = previous.get('required_columns', [])
                 if not current['required_sources']: current['required_sources'] = previous.get('required_sources', [])
                 if current['chart'] and not kind: current['kind'] = previous.get('kind')
+        upgraded_current_result = bool(human and current.get('request_id') == human.id
+            and current_loaded_reference and not current.get('current_result_only'))
+        if upgraded_current_result:
+            # Classification rules can improve while a checkpoint is paused.
+            # Reconcile the saved request from its original user text so a
+            # restart can adopt already-persisted local evidence without a new
+            # model or remote query.
+            current['current_result_only'] = True
+            current['fresh_source_required'] = False
         elif data_load and not current.get('data_load'):
             # Upgrade an in-flight legacy checkpoint.  Its successful tool
             # observation may already be marked processed, so the loop below
@@ -166,12 +177,6 @@ class RecoveryMiddleware(AgentMiddleware):
                 continue
             call = calls.get(message.tool_call_id, {})
             name, arguments = message.name or call.get('name'), call.get('args', {})
-            reconsider_load = bool(current.get('data_load') and not current.get('load_evidence_id')
-                and name == 'query_databricks')
-            if message.tool_call_id in current['processed'] and not reconsider_load:
-                continue
-            if message.tool_call_id not in current['processed']:
-                current['processed'].append(message.tool_call_id)
             try:
                 observation = json.loads(message.content)
             except (ValueError, TypeError):
@@ -179,6 +184,14 @@ class RecoveryMiddleware(AgentMiddleware):
                 if name == 'query_databricks' and 'rejected' in str(message.content).lower():
                     current['remote_rejected'] = True
             if not isinstance(observation, dict): continue
+            reconsider_load = bool(current.get('data_load') and not current.get('load_evidence_id')
+                and name == 'query_databricks')
+            reconsider_calculation = bool(upgraded_current_result and not current.get('evidence_ids')
+                and name == 'local_analysis_sql' and observation.get('status') == 'ready')
+            if message.tool_call_id in current['processed'] and not reconsider_load and not reconsider_calculation:
+                continue
+            if message.tool_call_id not in current['processed']:
+                current['processed'].append(message.tool_call_id)
             failed = observation.get('status') in {'error', 'needs_data', 'needs_context', 'needs_refresh', 'unavailable', 'no_valid_chart'}
             if failed:
                 current['failed'][name or message.tool_call_id] = observation
@@ -393,7 +406,7 @@ class RecoveryMiddleware(AgentMiddleware):
                 parts.append('적용 조건: '+rendered)
             # Never publish unchecked numbers from the model as computed results.
             if frame.shape == (1, 1):
-                labels = {'AVG':'평균', 'MEDIAN':'중앙값', 'SUM':'합계', 'COUNT':'건수', 'MIN':'최솟값', 'MAX':'최댓값',
+                labels = {'AVG':'평균', 'MEDIAN':'중앙값', 'SUM':'합계', 'COUNT':'건수', 'MIN':'최솟값', 'MAX':'최댓값', 'CORR':'피어슨 상관계수',
                           'RATIO':'비율(%)'}
                 operations = current.get('operations', [])
                 label = labels.get(operations[0], frame.columns[0]) if len(operations) == 1 else frame.columns[0]
@@ -544,6 +557,35 @@ class RecoveryMiddleware(AgentMiddleware):
                     if not any(c.get('name') == 'local_analysis_sql' and c.get('args') == arguments
                                for c in calls.values()):
                         return {'name':'local_analysis_sql', 'args':arguments}
+        if (self.context and current.get('calculation')
+                and current.get('operations') == ['CORR'] and not self._has_scope(current)
+                and not current.get('evidence_ids')):
+            columns = current.get('required_columns', [])
+            if len(columns) != 2:
+                return None
+            candidates = [info for info in self.context.datasets.metadata.values()
+                if info.grain == 'raw' and (current.get('current_result_only') or info.predicate_known)
+                and set(columns).issubset(info.columns) and self._source_matches(info, current)
+                and (current.get('current_result_only')
+                    or (info.coverage == 'complete' and self._fresh_for_request(info, current)))]
+            numeric_candidates = []
+            from pandas.api.types import is_numeric_dtype
+            for info in candidates:
+                try:
+                    frame = self.context.datasets.frames[info.id]
+                    if all(is_numeric_dtype(frame[column]) for column in columns):
+                        numeric_candidates.append(info)
+                except (KeyError, OSError, ValueError, TypeError):
+                    continue
+            if len(numeric_candidates) == 1:
+                quoted = ['"' + column.replace('"', '""') + '"' for column in columns]
+                arguments = {'dataset_id':numeric_candidates[0].id,
+                    'query':f'SELECT CORR({quoted[0]}, {quoted[1]}) AS correlation FROM data'}
+                if current.get('current_result_only'):
+                    arguments['current_result_only'] = True
+                if not any(c.get('name') == 'local_analysis_sql' and c.get('args') == arguments
+                           for c in calls.values()):
+                    return {'name':'local_analysis_sql', 'args':arguments}
         return None
 
     @staticmethod

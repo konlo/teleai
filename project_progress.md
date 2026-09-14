@@ -3,16 +3,42 @@
 ## Current Status
 - **Last Updated**: 2026-09-14
 - **Status**: In Progress — 실제 승인·적재·로컬 재사용까지 검증한 제한 출시 후보
-- **Summary**: 실제 Databricks 승인 후 10,000행·18열을 1회 조회해 저장했고, 현재 표본의 age histogram을 추가 원격 조회 없이 표시했다. 전체 회귀 183/183 PASS다. 실제 10,000행 histogram 30회는 p50 0.069초·p95 0.121초였고 실제 agent 독립 채점은 35/200이다.
-- **Next Session Focus**: 모델 질문·동시 부하의 p50/p95·RSS와 남은 165문항 oracle.
+- **Summary**: 전체 회귀 187/187, 참고 코드 200/200, production agentic recovery 17/17 PASS다. 실제 화면의 현재 표본 상관분석은 0.224초·모델 0회·원격 0회였다. 실제 agent 독립 채점은 35/200이다.
+- **Next Session Focus**: 제한 출시 PR·배포 검증, 다른 모델 질문·배포 부하, 남은 165문항 oracle, 운영 TableContext 승인형 갱신.
 
 ## Next Action Items
 - [x] 제품 승인 카드에서 사용자가 승인한 실제 Databricks 조회 → 저장 → 분석 → 후속 질문을 검증했다.
 - [ ] 남은 165문항의 독립 oracle과 고급 분석 도구 범위를 우선순위별로 확대한다.
-- [ ] 현재 DataFrame 경로의 p50/p95·RSS 계측은 완료했다. 모델 질문·동시 부하 표본과 배포 RSS 경보 기준을 확정한다.
-- [x] 현재 변경을 `agentic-analysis-rc2-2026-09-14` release candidate로 고정한다.
+- [ ] 로컬 단일·동시 및 모델 상관계수 표본은 완료했다. 다른 모델 질문·배포 환경 부하와 RSS 경보 기준을 확정한다.
+- [ ] 현재 변경을 `agentic-analysis-rc3-2026-09-14` release candidate로 커밋·push한다.
+- [ ] 원격 push된 RC3를 리뷰·병합·배포하고 배포 환경 smoke test와 rollback을 확인한다.
+- [ ] bank_loan·titanic alias와 변경 절차는 준비했다. 네 테이블의 stale schema/profile은 각각 승인형 조회로 갱신한다.
+- [x] Level 2 참고 환경 11건을 해결하고 Level 3 placeholder를 production agentic recovery 계약 17개로 교체했다.
 
 ---
+## [2026-09-14 21:54:00 KST] [Agent: Codex] Remaining work execution
+- **UI finding and fix**: `현재 보유한 bank_loan 데이터` 표현을 현재 결과 범위로 인식하지 못했고, 승인 적재 표본이 `coverage=unknown`·`predicate_known=false`라 결정적 상관분석 후보에서 제외됐다. 현재 결과가 명시된 무필터 두 수치 컬럼 요청에서는 보유 프레임 자체를 모집단으로 사용하도록 수정했다.
+- **UI evidence**: 실제 대화에서 `age`–`balance` 피어슨 상관계수 `0.05918371025192562`를 0.224초에 표시했다. 모델 호출 0회, 로컬 도구 1회, 원격 조회 0회다.
+- **Level 3**: 무작위 placeholder를 제거하고 production `GraphAnalysisRuntime` fault-injection 계약 `A3_001`~`A3_017`을 `run_test_set.py --level 3` 및 `--all`에 연결했다. Level 3 17/17, 참조+agentic 전체 runner 217/217 PASS.
+- **Validation**: migration 111 + tests 76 = 187/187 PASS, compileall·`git diff --check` PASS. 진행 화면 `127.0.0.1:8767`에 최신 근거를 반영했다.
+
+## [2026-09-14 21:36:25 KST] [Agent: Codex] User Request: 작업 진행해줘
+- **Action** [Agent: Codex]: 진행 중인 R05·R08·R12·R13 작업을 계속한다. 상관계수 결정적 로컬 전이와 runtime 모델 예산 연결을 회귀 검증하고, 성능·운영 문서와 진행 화면을 실제 결과로 갱신한다.
+- **Implementation**: 두 수치 컬럼의 피어슨 상관계수를 complete raw DataFrame에서 DuckDB `CORR`로 계산하는 table-neutral 전이를 추가했다. 배포별 turn budget을 runtime recovery 누적 모델 예산에 연결했다.
+- **Measurement**: 실제 로컬 모델 상관계수 5/5 정확, p50 77.451초·p95 80.704초. `num_predict=1024` 비교 1회도 75.023초였다. 로컬 전이 후 30/30 정확, p50 0.037초·p95 0.046초·모델/원격 0회. 동시 histogram 4 workers·20/20, p95 0.562초, 6.864 req/s.
+- **TableContext**: bank_loan 18/18·titanic 12/12 컬럼의 외부 한국어 alias를 준비했다. 저장된 네 context는 모두 stale이므로 각각 승인형 `LIMIT 0` schema 조회가 필요하며 이번 작업에서는 원격 조회 0회다.
+- **Evaluation Environment**: SciPy 1.16.3을 고정하고 제거된 `np.trapz`를 `np.trapezoid`로 교체했다. Level 1·2 참고 코드 200/200 PASS. 참고 코드 결과는 실제 agent 35/200과 분리한다.
+- **Validation**: migration 109 + tests 76 = 185/185 PASS, compileall·`git diff --check` PASS.
+
+## [2026-09-14 12:29:06 KST] [Agent: Codex] User Request: 나머지 작업 진행해줘
+- **Action** [Agent: Codex]: 남은 출시 작업을 의존 순서대로 진행한다. RC2 문서 동기화 후 모델 경로·동시 부하 계측, 평가 환경 정비, 운영 TableContext 준비를 먼저 수행한다.
+- **Safety Contract**: 기존 대화·DataFrame·승인 ledger를 보존한다. 새 Databricks 조회는 사용자 승인 없이 실행하지 않는다. 실제 배포는 대상과 rollback 절차를 확인한 뒤 최종 단계로 남긴다.
+
+## [2026-09-14 12:27:28 KST] [Agent: Codex] User Request: 남아 있는 작업 리스트 보여줘
+- **Action** [Agent: Codex]: 최신 release acceptance, agent 독립 평가, 성능 측정, 원격 push 상태를 대조해 남은 작업을 출시 우선순위로 재정리했다.
+- **Artifact Update**: `docs/agent_remaining_tasks_2026-09-13.md`와 Current Status의 Next Action Items를 최신 RC2 push 이후 상태로 갱신했다.
+- **Outcome**: 원격 RC branch/tag는 존재하지만 PR은 아직 없음을 확인했다. 제한 출시 승격, 배포 환경 검증, 모델·동시 부하 관측, 운영 TableContext 준비, 165문항 독립 평가, 고급 분석 및 평가 환경 정비를 미완료 항목으로 확정했다.
+
 ## [2026-09-13 22:23:00 KST] [Agent: Codex] User Request: 운영 agent의 특정 테이블 의존 제거 및 변경 가능한 테이블·스키마 고려
 - **Action**: production 경로의 테이블명·컬럼·값 하드코딩과 정적 TableContext 의존을 전수 점검하고, 실행 시점의 동적 메타데이터와 보유 DataFrame 스키마를 기준으로 요청 해석·범위 검증·복구가 동작하도록 수정 및 회귀 검증 예정.
 - **Decision**: `test_set`의 테이블별 fixture와 oracle은 평가에만 사용한다. 운영 로직은 특정 테이블의 이름·스키마·대표값을 정답으로 내장하지 않는다.
@@ -960,3 +986,5 @@ Task definitions and acceptance conditions: docs/agent_remaining_tasks_2026-09-1
 - **Artifacts**: `docs/runtime_performance_2026-09-14.md`, `docs/runtime_performance_2026-09-14.json`, 운영 정책·출시 판정·진행판 갱신.
 - **Release candidate**: `codex/agentic-analysis-rc-2026-09-14` 브랜치와 `agentic-analysis-rc-2026-09-14` tag로 검토 가능한 revision을 고정한다. 원격 push·배포는 수행하지 않는다.
 - **Remaining**: 현재 코드의 모델 질문·동시 부하 표본 수집, 배포 인스턴스별 RSS 경보 기준, 166개 독립 oracle.
+
+- 2026-09-14T21:41:50+09:00 사용자 요청: 남아 있는 작업 계속 진행. 실제 UI 상관분석 검증, Level 3 평가 정비, 전체 회귀 및 릴리스 산출물 갱신을 진행한다. 기본 python 명령이 없어 프로젝트 venv Python으로 기록했다.
