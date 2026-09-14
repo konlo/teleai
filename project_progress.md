@@ -11,11 +11,16 @@
 - [ ] 남은 165문항의 독립 oracle과 고급 분석 도구 범위를 우선순위별로 확대한다.
 - [ ] 로컬 단일·동시 및 모델 상관계수 표본은 완료했다. 다른 모델 질문·배포 환경 부하와 RSS 경보 기준을 확정한다.
 - [x] 현재 변경을 `agentic-analysis-rc3-2026-09-14` release candidate로 커밋·push했다.
-- [ ] 원격 push된 RC3를 리뷰·병합·배포하고 배포 환경 smoke test와 rollback을 확인한다.
+- [ ] draft PR #68의 코드 리뷰 후 병합·배포하고 배포 환경 smoke test와 rollback을 확인한다.
 - [ ] bank_loan·titanic alias와 변경 절차는 준비했다. 네 테이블의 stale schema/profile은 각각 승인형 조회로 갱신한다.
 - [x] Level 2 참고 환경 11건을 해결하고 Level 3 placeholder를 production agentic recovery 계약 17개로 교체했다.
 
 ---
+## [2026-09-14 22:00:00 KST] [Agent: Codex] Draft PR creation
+- **PR**: `https://github.com/konlo/teleai/pull/68`을 main 대상 draft로 생성했다. head는 `codex/agentic-analysis-rc-2026-09-14`, 상태는 open/draft다.
+- **Review scope**: 187/187 회귀, 17/17 agentic 계약, 35/200 실제 agent 독립 채점, 현재 표본 상관분석 0.224초·모델/원격 0회와 남은 165문항·고급 기능·배포 부하 제한을 PR 본문에 함께 기록했다.
+- **Remaining**: draft 해제, 리뷰·병합과 실제 배포는 수행하지 않았다.
+
 ## [2026-09-14 21:58:00 KST] [Agent: Codex] RC3 publication
 - **Commit**: `62d25c0797e0a2067377ab3ab56d31f8b51cc0ee`에 local recovery, Level 3 계약, 성능·TableContext 보고서를 고정했다.
 - **Push verification**: 원격 branch와 `agentic-analysis-rc3-2026-09-14` tag가 모두 위 commit을 가리키는 것을 fetch 후 확인했다.
