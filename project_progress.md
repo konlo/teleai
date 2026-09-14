@@ -16,6 +16,11 @@
 - [x] Level 2 참고 환경 11건을 해결하고 Level 3 placeholder를 production agentic recovery 계약 17개로 교체했다.
 
 ---
+## [2026-09-14 22:03:00 KST] [Agent: Codex] CI release gate
+- **Finding**: draft PR #68은 mergeable/clean이지만 commit status와 check run이 모두 0건이라 자동 회귀 차단 장치가 없었다. 저장소에도 기존 배포 workflow·Dockerfile·hosting manifest가 없었다.
+- **Implementation**: `.github/workflows/agent-release-gate.yml`을 추가했다. Python 3.11 pinned agent 환경에서 migration·application tests, Level 3 agentic 계약, 전체 217 runner, compileall을 실행하며 Databricks 자격증명과 실제 모델을 사용하지 않는다.
+- **Validation**: YAML 구조와 8개 step을 로컬에서 파싱했다. 원격 CI 실행 결과는 push 후 확인한다.
+
 ## [2026-09-14 22:00:00 KST] [Agent: Codex] Draft PR creation
 - **PR**: `https://github.com/konlo/teleai/pull/68`을 main 대상 draft로 생성했다. head는 `codex/agentic-analysis-rc-2026-09-14`, 상태는 open/draft다.
 - **Review scope**: 187/187 회귀, 17/17 agentic 계약, 35/200 실제 agent 독립 채점, 현재 표본 상관분석 0.224초·모델/원격 0회와 남은 165문항·고급 기능·배포 부하 제한을 PR 본문에 함께 기록했다.

@@ -35,4 +35,6 @@
 
 RC3 tag와 branch는 원격 `origin`에 push했고 draft PR #68을 열었다. 리뷰·병합, 배포와 배포 환경 smoke test는 별도 게이트다.
 
+PR에는 비밀키나 Databricks 연결 없이 pinned 환경에서 migration·tests·Level 3·전체 참조 runner·compileall을 실행하는 `.github/workflows/agent-release-gate.yml`을 추가했다. 이 workflow의 원격 실행이 통과해야 draft 해제를 검토한다.
+
 상세 근거: [출시 수용 기록](release_acceptance_2026-09-13.md), [Databricks 승인 여정](databricks_approval_journey_2026-09-14.md), [성능·메모리 측정](runtime_performance_2026-09-14.md).
