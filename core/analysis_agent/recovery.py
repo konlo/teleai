@@ -452,6 +452,34 @@ class RecoveryMiddleware(AgentMiddleware):
         return {'recovery': current, 'messages': [message]}
 
     def _next_local(self, current, calls):
+        if (self.context and current.get('metadata_kind') == 'columns'
+                and not current.get('metadata_evidence')):
+            # A column-list request has one safe local action when its source is
+            # unambiguous. The inspection tool applies freshness/schema-drift
+            # policy and can return needs_refresh; it never queries Databricks.
+            known = []
+            for item in self.context.reference_context:
+                source = item.get('table', '')
+                if source and source not in known:
+                    known.append(source)
+            for info in self.context.datasets.metadata.values():
+                if info.source and info.source not in known:
+                    known.append(info.source)
+            requested = current.get('required_sources', [])
+            if requested:
+                wanted = {self._source_key(source) for source in requested}
+                candidates = [source for source in known if self._source_key(source) in wanted]
+            else:
+                candidates = known
+            if len(candidates) == 1:
+                arguments = {'table': candidates[0]}
+                from core.analysis_catalog import resolve_table_context
+                inspection = resolve_table_context(
+                    self.context.reference_context, self.context.datasets, candidates[0])
+                if (inspection.get('status') == 'ready'
+                        and not any(c.get('name') == 'inspect_table_context' and c.get('args') == arguments
+                                    for c in calls.values())):
+                    return {'name':'inspect_table_context', 'args':arguments}
         if current.get('plan') and current.get('loaded_dataset') and not current['artifact_ids']:
             arguments = {'dataset_id': current['loaded_dataset'], 'value_column': current['plan']['value_column'],
                          'weight_column': current['plan']['weight_column']}

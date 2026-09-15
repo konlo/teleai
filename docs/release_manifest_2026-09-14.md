@@ -1,6 +1,6 @@
 # TeleAI agentic analysis release candidate — 2026-09-14
 
-최신 고정 참조: Git tag `agentic-analysis-rc4-2026-09-15`, commit `cd40480`. 이전 기준선과 RC2·RC3는 보존한다. GitHub Actions run `34976936942`, job `104406936863`가 같은 commit에서 성공한 뒤 RC4 tag를 고정했다.
+최신 고정 참조는 RC4 `cd40480`이다. 컬럼 metadata 복구를 포함한 `agentic-analysis-rc5-2026-09-15` 후보는 원격 release gate 성공 후 같은 commit에 고정한다. 이전 기준선과 RC2·RC3·RC4는 보존한다.
 
 ## 포함 범위
 
@@ -16,8 +16,8 @@
 ## 고정 검증
 
 - migration: 118/118 PASS
-- tests: 77/77 PASS
-- 전체: 195/195 PASS
+- tests: 78/78 PASS
+- 전체: 196/196 PASS
 - compileall PASS
 - `git diff --check` PASS
 - 변경 후보 32개 파일의 토큰·비밀키 패턴 검사: 0건
@@ -29,7 +29,8 @@
 - 실제 화면 현재 표본 상관계수: 0.05918371025192562, 0.224초, 모델 0회, 원격 0회
 - Level 3 production agentic recovery 계약: 17/17 PASS, placeholder 85개 제거
 - 배포 preflight: 단위 계약 6/6 PASS, 현재 local-desktop READY, multi-user 차단
-- 실제 agent 독립 oracle: 36/200 PASS. `L1_017` 복합 AVG·MAX는 0.673초, 모델·원격 0회
+- 실제 agent 독립 oracle: 37/200 PASS. `L1_001` metadata는 0.161초, 모델·원격 0회
+- 실제 화면 보유 스키마: 전체 18개 컬럼, 0.160초, 모델 0회, 로컬 도구 1회, 추가 조회 0회
 - 실제 화면 보유 10,000행 복합 AVG·MAX: 평균 40.931, 최대 86, 0.177초, 모델 0회, 로컬 도구 1회, 추가 조회 0회
 
 ## 출시 판정

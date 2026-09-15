@@ -241,6 +241,7 @@ class CompletionTests(unittest.TestCase):
             self.assertIn(f'{len(columns)}개', result['text'])
             self.assertNotIn('999', result['text'])
             self.assertFalse(r.datasets.metadata)
+            self.assertEqual(model.position, 0, 'unambiguous metadata inspection must not require the model')
             r.close()
 
     def test_value_counts_and_missing_values_cannot_complete_from_schema(self):

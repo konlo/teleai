@@ -3,12 +3,12 @@
 ## Current Status
 - **Last Updated**: 2026-09-15
 - **Status**: In Progress — 배포 preflight까지 검증한 1인용 제한 출시 후보
-- **Summary**: 전체 회귀 195/195, 참고 코드 200/200, production agentic recovery 17/17 PASS다. 복합 집계 수정 commit `cd40480`의 원격 CI가 성공했고 `agentic-analysis-rc4-2026-09-15` tag를 같은 commit에 고정했다. secret-safe 배포 preflight는 로컬 설정을 READY로 판정하고 지원하지 않는 다중 사용자 배포를 차단한다. 실제 agent 독립 채점은 36/200이다.
-- **Next Session Focus**: 배포 대상·접근 범위 확정, PR 리뷰·병합과 실제 환경 smoke/rollback, 남은 164문항 oracle, 운영 TableContext 승인형 갱신.
+- **Summary**: 전체 회귀 196/196, 참고 코드 200/200, production agentic recovery 17/17 PASS다. RC4는 원격에 보존했고, 컬럼 목록 결정적 복구를 포함한 RC5 후보를 검증 중이다. secret-safe 배포 preflight는 로컬 설정을 READY로 판정하고 지원하지 않는 다중 사용자 배포를 차단한다. 실제 agent 독립 채점은 37/200이다.
+- **Next Session Focus**: 배포 대상·접근 범위 확정, PR 리뷰·병합과 실제 환경 smoke/rollback, 남은 163문항 oracle, 운영 TableContext 승인형 갱신.
 
 ## Next Action Items
 - [x] 제품 승인 카드에서 사용자가 승인한 실제 Databricks 조회 → 저장 → 분석 → 후속 질문을 검증했다.
-- [ ] 남은 164문항의 독립 oracle과 고급 분석 도구 범위를 우선순위별로 확대한다.
+- [ ] 남은 163문항의 독립 oracle과 고급 분석 도구 범위를 우선순위별로 확대한다.
 - [ ] 로컬 단일·동시 및 모델 상관계수 표본은 완료했다. 다른 모델 질문·배포 환경 부하와 RSS 경보 기준을 확정한다.
 - [x] 현재 변경을 `agentic-analysis-rc4-2026-09-15` release candidate로 커밋·push하고 원격 release gate 성공 후 tag로 고정했다.
 - [ ] draft PR #68의 코드 리뷰 후 병합·배포하고 배포 환경 smoke test와 rollback을 확인한다. 배포 계약과 자동 preflight는 준비했다.
@@ -16,6 +16,14 @@
 - [x] Level 2 참고 환경 11건을 해결하고 Level 3 placeholder를 production agentic recovery 계약 17개로 교체했다.
 
 ---
+## [2026-09-15 22:56:00 KST] [Agent: Codex] User Request: 수행해줘
+- **Request**: 남은 작업을 계속 수행한다.
+- **Action**: Databricks 승인이나 배포 대상 결정이 필요하지 않은 실제 agent 독립 채점 확대를 먼저 진행한다. 첫 대상은 과거 사용자 실패와 직접 연결된 `L1_001` 전체 컬럼 목록·개수 요청이며, 특정 테이블명 없이 현재 TableContext를 검사하는 결정적 복구와 독립 metadata oracle을 구현·검증한다.
+- **Safety**: 기존 보유 DataFrame과 로컬 fixture만 사용한다. 원격 executor를 연결하지 않으며 Databricks 조회를 실행하지 않는다.
+- **Implementation**: 확정된 source의 `ready` TableContext만 모델 없이 검사한다. stale/needs_refresh는 기존 `inspect → 사용자 승인 요청` loop를 유지해 자동 조회하지 않는다. 평가 harness는 assistant 문장이 아니라 `inspect_table_context`의 실제 컬럼 배열과 개수를 reference code의 `cols`와 비교한다.
+- **Validation**: 독립 production graph `L1_001`은 18개 컬럼을 0.161초에 PASS했고 모델·원격 0회였다. 재시작한 실제 화면도 승인 후 로딩된 스키마 기준 18개 컬럼을 0.160초에 표시했으며 tool 1회·모델 0회·추가 조회 0회였다. stale 승인 여정을 포함한 전체 회귀 196/196, Level 3 17/17, 전체 runner 217/217, compileall·diff PASS다.
+- **Artifacts**: `docs/actual_agent_evaluation_L1_001_2026-09-15.json`과 allowlist runtime metadata.
+
 ## [2026-09-15 22:47:00 KST] [Agent: Codex] User Request: 남은일 계속해줘
 - **Action**: `L1_017` 복합 평균·최대 결함을 수정하고 독립 `scalar_set` oracle, 변형 fixture 재실행, table-neutral 회귀 계약을 추가했다. 최신 서버를 재시작하고 실제 보유 10,000행 화면까지 검증했다.
 - **Validation**: 로컬 195/195, Level 3 17/17, 전체 runner 217/217, compileall·diff PASS. 실제 화면은 평균 `40.931`, 최대 `86`을 0.177초에 표시했고 모델·원격 조회는 0회였다.
@@ -163,17 +171,17 @@
 ## Current Status
 - **Last Updated**: 2026-09-15
 - **Status**: Limited-scope Release Candidate Validation
-- **Summary**: 승인형 Databricks 적재와 현재 표본 재사용을 검증했고, 실제 화면의 상관분석을 0.224초·모델/원격 0회로 완료했다. 전체 회귀 195/195, 참고 코드 200/200, agentic recovery 17/17 PASS다. draft PR #68의 최신 원격 CI도 성공했고 배포 preflight가 다중 사용자 오배포를 차단한다. 실제 agent 독립 채점은 36/200이므로 전체 기능 출시는 NO-GO다.
-- **Next Session Focus**: 배포 대상·접근 범위 확정 → PR 리뷰·병합 → 실제 환경 smoke/rollback → 남은 164문항 oracle 확대. Canonical list: docs/agent_remaining_tasks_2026-09-13.md.
+- **Summary**: 승인형 Databricks 적재와 현재 표본 재사용을 검증했고, 실제 화면의 컬럼 목록과 기본 분석을 모델·추가 조회 없이 완료했다. 전체 회귀 196/196, 참고 코드 200/200, agentic recovery 17/17 PASS다. draft PR #68의 최신 원격 CI도 성공했고 배포 preflight가 다중 사용자 오배포를 차단한다. 실제 agent 독립 채점은 37/200이므로 전체 기능 출시는 NO-GO다.
+- **Next Session Focus**: 배포 대상·접근 범위 확정 → PR 리뷰·병합 → 실제 환경 smoke/rollback → 남은 163문항 oracle 확대. Canonical list: docs/agent_remaining_tasks_2026-09-13.md.
 
 ## Next Action Items (Pending tasks for the next session)
 - [x] R01: Connect grounded request scope to calculation/chart/recovery and reject wrong or unresolved scope.
 - [x] R02: Repair and re-evaluate the supported actual-model Level 1/2 cases.
 - [x] R03: Complete final-browser verification on the restarted server; cached histogram is visibly restored with no remote query.
-- [x] R04: Restart the server with the 195/195-tested code and verify the visible app.
+- [x] R04: Restart the server with the 196/196-tested code and verify the visible app.
 - [ ] R05: Calibrate deployment load and RSS alerts; local sequential/concurrent and model paths are measured.
 - [x] R06: Validate 750,000-row storage, cache eviction, restart/crash recovery and retained PNG.
-- [ ] R07: Expand independent actual-agent grading beyond 36/200 supported cases.
+- [ ] R07: Expand independent actual-agent grading beyond 37/200 supported cases.
 - [ ] R08: Implement and verify the declared advanced analysis and chart-editing scope.
 - [x] R09: Approved live Databricks load/reuse validated and release candidate tag fixed.
 - [x] R10: Remove production dependencies on fixed table/schema facts and validate schema drift and freshness behavior.

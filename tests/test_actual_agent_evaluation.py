@@ -101,7 +101,7 @@ class ActualAgentEvaluationTests(unittest.TestCase):
         self.assertEqual(result["evidence"]["counterfactual_probes"], 2)
 
     def test_every_declared_reference_oracle_is_executable_without_a_model(self):
-        self.assertEqual(len(self.grading), 36)
+        self.assertEqual(len(self.grading), 37)
         self.assertTrue(set(self.grading).issubset(self.specs))
         for case, grading in self.grading.items():
             with self.subTest(case=case):
@@ -113,6 +113,16 @@ class ActualAgentEvaluationTests(unittest.TestCase):
         high_fare=self.frames["titanic"][self.frames["titanic"]["Fare"]>=100]
         self.assertAlmostEqual(reference_oracle(self.specs["L1_045"], self.grading["L1_045"], self.frames),
                                float(high_fare["Survived"].mean()*100))
+
+    def test_metadata_columns_use_structured_inspection_without_model_or_remote(self):
+        model = EvaluationModel()
+        result = self.evaluate("L1_001", model)
+        self.assertEqual(result["status"], "PASS", result)
+        self.assertEqual(result["tools"], {"inspect_table_context": 1})
+        self.assertEqual(result["evidence"]["metadata"]["columns"], list(self.frames["bank_loan"].columns))
+        self.assertEqual(result["evidence"]["metadata"]["column_count"], len(self.frames["bank_loan"].columns))
+        self.assertEqual(result["runtime_metadata"]["recovery_model_calls"], 0)
+        self.assertEqual(result["remote_executions"], 0)
 
     def test_multi_scalar_contract_checks_every_requested_statistic(self):
         expected = reference_oracle(self.specs["L1_017"], self.grading["L1_017"], self.frames)

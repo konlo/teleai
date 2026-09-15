@@ -158,6 +158,11 @@ def reference_oracle(spec, grading, frames):
             if len(capture.histograms) != 1:
                 raise ValueError("Reference must produce exactly one supported histogram")
             return capture.histograms[0]
+        if grading["kind"] == "metadata_columns":
+            columns = namespace[grading["variable"]]
+            if not isinstance(columns, list) or not columns or not all(isinstance(value, str) for value in columns):
+                raise ValueError("Reference metadata columns must be a non-empty string list")
+            return columns
         if grading["kind"] == "scalar":
             value = namespace[grading["variable"]]
             reduction = grading.get("reduction")
@@ -306,6 +311,24 @@ def grade_evidence(runtime, outcome, spec, grading, oracle, fixture_id, capture)
         return "NOT_COMPLETE", "Agent stopped or awaits approval; no implicit approval", {}
     if state["recovery"].get("status") not in {None, "complete"}:
         return "NOT_COMPLETE", "Recovery has not established completion", {}
+    if grading["kind"] == "metadata_columns":
+        matches = []
+        for message in runtime.events():
+            if not isinstance(message, ToolMessage) or message.name != "inspect_table_context":
+                continue
+            try:
+                observation = json.loads(message.content)
+                context = observation["table_context"]
+                columns = [column["name"] for column in context["columns"]]
+                same_table = str(context["table"]).casefold().split(".")[-1] == spec["target_table"].casefold()
+                if observation.get("status") == "ready" and same_table and columns == oracle:
+                    matches.append({"table": context["table"], "columns": columns,
+                                    "column_count": len(columns), "authority": observation.get("authority")})
+            except (KeyError, TypeError, ValueError):
+                continue
+        return ("PASS", "Inspected table context columns and count match the reference",
+                {"metadata": matches[-1]}) if matches else (
+                "FAIL", "Missing fresh table-context evidence or columns differ from reference", {})
     if grading["kind"] == "histogram":
         matches = []
         for chart_id in state["chart_ids"]:
@@ -457,7 +480,7 @@ def evaluate_case(spec, grading, model, *, frames=None, artifact_dir=None):
             with HistogramCapture() as capture:
                 outcome = runtime.submit(spec["prompt"])
             status, reason, evidence = grade_evidence(runtime, outcome, spec, grading, oracle, info.id, capture)
-            if status == "PASS" and grading["kind"] != "histogram":
+            if status == "PASS" and grading["kind"] in {"scalar", "scalar_set", "category_counts"}:
                 try:
                     verified, probes = verify_counterfactuals(runtime, evidence["result_dataset_id"],
                         info.id, spec, grading, frames)
