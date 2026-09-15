@@ -35,7 +35,7 @@
 
 - 실제 agent 독립 채점은 37/200문항이다. 나머지 163문항과 조인·가설 검정·고급 시각화는 미검증이다.
 - 결정적 로컬 및 단일 프로세스 동시 경로를 계측했다. 실제 모델 상관계수는 5/5 정확했지만 p95 80.704초였고, 로컬 전이 후 p95 0.046초가 됐다. 다른 모델 질문·배포 환경 동시 부하와 process RSS 경보 기준은 남았다.
-- RC4는 원격 tag로 보존했다. 컬럼 metadata 복구를 포함한 RC5 후보는 원격 release gate 성공 후 같은 commit에 고정한다. PR 리뷰·병합, 배포와 배포 환경 smoke test는 남았다.
+- 컬럼 metadata 복구를 포함한 commit `a16d15e`의 원격 release gate가 성공했고 `agentic-analysis-rc5-2026-09-15` tag를 같은 코드 commit에 고정했다. PR 리뷰·병합, 배포와 배포 환경 smoke test는 남았다.
 
 ## 실행과 롤백
 

@@ -3,7 +3,7 @@
 ## Current Status
 - **Last Updated**: 2026-09-15
 - **Status**: In Progress — 배포 preflight까지 검증한 1인용 제한 출시 후보
-- **Summary**: 전체 회귀 196/196, 참고 코드 200/200, production agentic recovery 17/17 PASS다. RC4는 원격에 보존했고, 컬럼 목록 결정적 복구를 포함한 RC5 후보를 검증 중이다. secret-safe 배포 preflight는 로컬 설정을 READY로 판정하고 지원하지 않는 다중 사용자 배포를 차단한다. 실제 agent 독립 채점은 37/200이다.
+- **Summary**: 전체 회귀 196/196, 참고 코드 200/200, production agentic recovery 17/17 PASS다. 컬럼 목록 결정적 복구를 포함한 commit `a16d15e`의 원격 gate가 성공했고 `agentic-analysis-rc5-2026-09-15` tag를 고정했다. secret-safe 배포 preflight는 로컬 설정을 READY로 판정하고 지원하지 않는 다중 사용자 배포를 차단한다. 실제 agent 독립 채점은 37/200이다.
 - **Next Session Focus**: 배포 대상·접근 범위 확정, PR 리뷰·병합과 실제 환경 smoke/rollback, 남은 163문항 oracle, 운영 TableContext 승인형 갱신.
 
 ## Next Action Items
@@ -11,6 +11,7 @@
 - [ ] 남은 163문항의 독립 oracle과 고급 분석 도구 범위를 우선순위별로 확대한다.
 - [ ] 로컬 단일·동시 및 모델 상관계수 표본은 완료했다. 다른 모델 질문·배포 환경 부하와 RSS 경보 기준을 확정한다.
 - [x] 현재 변경을 `agentic-analysis-rc4-2026-09-15` release candidate로 커밋·push하고 원격 release gate 성공 후 tag로 고정했다.
+- [x] 컬럼 metadata 복구를 `agentic-analysis-rc5-2026-09-15`로 고정했다. GitHub Actions run `34978831986`이 성공했다.
 - [ ] draft PR #68의 코드 리뷰 후 병합·배포하고 배포 환경 smoke test와 rollback을 확인한다. 배포 계약과 자동 preflight는 준비했다.
 - [ ] bank_loan·titanic alias와 변경 절차는 준비했다. 네 테이블의 stale schema/profile은 각각 승인형 조회로 갱신한다.
 - [x] Level 2 참고 환경 11건을 해결하고 Level 3 placeholder를 production agentic recovery 계약 17개로 교체했다.
@@ -23,6 +24,7 @@
 - **Implementation**: 확정된 source의 `ready` TableContext만 모델 없이 검사한다. stale/needs_refresh는 기존 `inspect → 사용자 승인 요청` loop를 유지해 자동 조회하지 않는다. 평가 harness는 assistant 문장이 아니라 `inspect_table_context`의 실제 컬럼 배열과 개수를 reference code의 `cols`와 비교한다.
 - **Validation**: 독립 production graph `L1_001`은 18개 컬럼을 0.161초에 PASS했고 모델·원격 0회였다. 재시작한 실제 화면도 승인 후 로딩된 스키마 기준 18개 컬럼을 0.160초에 표시했으며 tool 1회·모델 0회·추가 조회 0회였다. stale 승인 여정을 포함한 전체 회귀 196/196, Level 3 17/17, 전체 runner 217/217, compileall·diff PASS다.
 - **Artifacts**: `docs/actual_agent_evaluation_L1_001_2026-09-15.json`과 allowlist runtime metadata.
+- **Remote**: commit `a16d15e`를 push했고 GitHub Actions run `34978831986`, job `104413484292`가 1분 7초에 성공했다. annotated tag `agentic-analysis-rc5-2026-09-15`를 같은 코드 commit에 push했다.
 
 ## [2026-09-15 22:47:00 KST] [Agent: Codex] User Request: 남은일 계속해줘
 - **Action**: `L1_017` 복합 평균·최대 결함을 수정하고 독립 `scalar_set` oracle, 변형 fixture 재실행, table-neutral 회귀 계약을 추가했다. 최신 서버를 재시작하고 실제 보유 10,000행 화면까지 검증했다.
