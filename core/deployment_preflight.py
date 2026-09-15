@@ -7,6 +7,7 @@ from typing import Mapping
 from urllib.parse import urlparse
 
 from core.analysis_agent.policy import RuntimePolicy
+from core.runtime_capacity import CapacityPolicy
 
 
 @dataclass(frozen=True)
@@ -185,6 +186,25 @@ def evaluate_deployment(
     else:
         checks.append(
             PreflightCheck("runtime_policy", "pass", "테이블 중립 운영 한도가 유효합니다.")
+        )
+
+    try:
+        capacity = CapacityPolicy.from_mapping(env)
+    except (TypeError, ValueError):
+        checks.append(
+            PreflightCheck(
+                "runtime_capacity_policy",
+                "fail",
+                "용량 기준은 양수이고 RSS 경고 < 위험 < 메모리 한도 순서여야 합니다.",
+            )
+        )
+    else:
+        checks.append(
+            PreflightCheck(
+                "runtime_capacity_policy",
+                "pass",
+                "단일 프로세스 메모리와 결정적 분석 p95 용량 기준이 유효합니다.",
+            )
         )
 
     if profile == "local-desktop":

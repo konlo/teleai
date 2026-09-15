@@ -15,9 +15,9 @@
 
 ## 고정 검증
 
-- migration: 118/118 PASS
+- migration: 125/125 PASS
 - tests: 78/78 PASS
-- 전체: 196/196 PASS
+- 전체: 203/203 PASS
 - compileall PASS
 - `git diff --check` PASS
 - 변경 후보 32개 파일의 토큰·비밀키 패턴 검사: 0건
@@ -29,6 +29,7 @@
 - 실제 화면 현재 표본 상관계수: 0.05918371025192562, 0.224초, 모델 0회, 원격 0회
 - Level 3 production agentic recovery 계약: 17/17 PASS, placeholder 85개 제거
 - 배포 preflight: 단위 계약 6/6 PASS, 현재 local-desktop READY, multi-user 차단
+- 로컬 용량 gate: 단일 p95 0.162초, 4 worker·20/20 동시 p95 0.549초, peak RSS 약 361 MiB, READY
 - 실제 agent 독립 oracle: 37/200 PASS. `L1_001` metadata는 0.161초, 모델·원격 0회
 - 실제 화면 보유 스키마: 전체 18개 컬럼, 0.160초, 모델 0회, 로컬 도구 1회, 추가 조회 0회
 - 실제 화면 보유 10,000행 복합 AVG·MAX: 평균 40.931, 최대 86, 0.177초, 모델 0회, 로컬 도구 1회, 추가 조회 0회

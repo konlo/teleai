@@ -15,7 +15,7 @@
 | Level 2 참고 코드 | 체크인된 `python_code` 100개 | 100/100 PASS, figure 33개 | SciPy 1.16.3 고정과 `np.trapezoid` 호환 수정. chatbot 평가는 아님 |
 | Level 2 실제 agent | production graph + 실제 로컬 모델 + 독립 oracle | 누적 6/6 PASS | 이번 확대 OR/IN 문항 2/2 PASS |
 | Level 3 agentic 복구 | production graph에 실패를 주입한 시나리오 | 17/17 PASS | 잘못된 SQL/범위/도구, 승인 거절, 재시작, 중복 실행, 현재 표본 로컬 계산, bounded stop 검증 |
-| 전체 회귀 | `migration` + `tests` | 196/196 PASS | metadata 계약 반영 기준 118 + 78, compileall과 `git diff --check`도 PASS |
+| 전체 회귀 | `migration` + `tests` | 203/203 PASS | metadata·용량 계약 반영 기준 125 + 78, compileall과 `git diff --check`도 PASS |
 
 원본 증거는 [기존 Level 1 결과](actual_agent_evaluation_20_latest_2026-09-13.json), [기존 Level 2 결과](actual_agent_evaluation_level2_4_repaired_2026-09-13.json), [신규 10문항 결과](actual_agent_evaluation_expanded_10_final_2026-09-13.json), [최신 Level 3 복구 결과](agentic_recovery_evaluation.json), [운영 저장소 보고](operational_storage_report_2026-09-13.json)에 보존했다.
 
@@ -59,7 +59,7 @@
 
 - 전체 200문항 중 163문항은 실제 agent 독립 채점이 없다. 조인, 가설 검정, 고급 그룹 분석, 복합 시각화를 지원한다고 선언할 수 없다.
 - 평가용 테이블 동의어는 `test_set`의 외부 TableContext에만 있다. 운영 agent는 오래된 alias를 실행 근거로 사용하지 않으며, 새 업무 용어 해석 품질은 최신 외부 TableContext의 품질에 좌우된다.
-- 초기 운영 한도(원격 100,000행, 256열, DataFrame 512 MiB, cache 64 MiB, 대화별 2 GiB, 정리 후보 30일)를 적용했다. 60초 model timeout은 streaming 전체 deadline이 아니라 읽기 비활성 기준이며, 180초는 turn SLO와 모델 호출 사이 누적 예산이다. 실제 모델 상관계수는 5/5 정확·p95 80.704초였고 결정적 로컬 전이 후 30/30·p95 0.046초가 됐다. 동시 로컬 histogram 20/20·p95 0.562초도 확인했다. 다른 모델 질문·배포 부하와 용량별 RSS 경보 기준은 남았다.
+- 초기 운영 한도(원격 100,000행, 256열, DataFrame 512 MiB, cache 64 MiB, 대화별 2 GiB, 정리 후보 30일)를 적용했다. 60초 model timeout은 streaming 전체 deadline이 아니라 읽기 비활성 기준이며, 180초는 turn SLO와 모델 호출 사이 누적 예산이다. 실제 모델 상관계수는 5/5 정확·p95 80.704초였고 결정적 로컬 전이 후 30/30·p95 0.046초가 됐다. 최신 단일 p95 0.162초, 동시 4 worker·20/20 p95 0.549초, peak RSS 약 361 MiB는 초기 1 GiB/768 MiB 경고/896 MiB 위험 용량 gate를 통과했다. 다른 모델 질문과 실제 배포·Ollama 동시 부하는 남았다.
 - RC3는 원격에 보존돼 있다. 복합 집계 수정과 배포 preflight를 포함한 commit `cd40480`은 원격 release gate 성공 후 `agentic-analysis-rc4-2026-09-15` tag로 고정했다. 배포는 별도 작업이다.
 
 ## 다음 출시 게이트
