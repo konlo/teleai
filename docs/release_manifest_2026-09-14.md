@@ -28,6 +28,7 @@
 - 피어슨 상관계수: 실제 모델 5/5 PASS·p95 80.704초, 결정적 로컬 전이 후 30/30 PASS·p95 0.046초
 - 실제 화면 현재 표본 상관계수: 0.05918371025192562, 0.224초, 모델 0회, 원격 0회
 - Level 3 production agentic recovery 계약: 17/17 PASS, placeholder 85개 제거
+- 배포 preflight: 단위 계약 6/6 PASS, 현재 local-desktop READY, multi-user 차단
 
 ## 출시 판정
 
@@ -36,5 +37,7 @@
 RC3 tag와 branch는 원격 `origin`에 push했고 draft PR #68을 열었다. 리뷰·병합, 배포와 배포 환경 smoke test는 별도 게이트다.
 
 PR에는 비밀키나 Databricks 연결 없이 pinned 환경에서 migration·tests·Level 3·전체 참조 runner·compileall을 실행하는 `.github/workflows/agent-release-gate.yml`을 추가했다. 첫 원격 실행 `34846840045`는 모든 step이 성공했다.
+
+`scripts/deployment_preflight.py`는 네트워크나 SQL을 실행하지 않고 Ollama·Databricks 설정, 코드와 분리된 영속 저장소, 운영 한도와 사용자 범위를 검사한다. 현재 revision은 `local-owner`를 사용하므로 로컬 또는 접근제어된 1인용 배포만 허용하며 multi-user profile은 실패한다. 실제 플랫폼과 사용자 범위를 정한 뒤 [제한 배포 계약](deployment_contract_2026-09-15.md)의 smoke/rollback을 실행해야 한다.
 
 상세 근거: [출시 수용 기록](release_acceptance_2026-09-13.md), [Databricks 승인 여정](databricks_approval_journey_2026-09-14.md), [성능·메모리 측정](runtime_performance_2026-09-14.md).

@@ -1,21 +1,28 @@
 # Project Progress Log
 
 ## Current Status
-- **Last Updated**: 2026-09-14
-- **Status**: In Progress — 실제 승인·적재·로컬 재사용까지 검증한 제한 출시 후보
-- **Summary**: 전체 회귀 187/187, 참고 코드 200/200, production agentic recovery 17/17 PASS다. 실제 화면의 현재 표본 상관분석은 0.224초·모델 0회·원격 0회였다. 실제 agent 독립 채점은 35/200이다.
-- **Next Session Focus**: 제한 출시 PR·배포 검증, 다른 모델 질문·배포 부하, 남은 165문항 oracle, 운영 TableContext 승인형 갱신.
+- **Last Updated**: 2026-09-15
+- **Status**: In Progress — 배포 preflight까지 검증한 1인용 제한 출시 후보
+- **Summary**: 전체 회귀 193/193, 참고 코드 200/200, production agentic recovery 17/17 PASS다. PR #68의 최신 원격 CI가 성공했으며, secret-safe 배포 preflight가 로컬 설정을 READY로 판정하고 지원하지 않는 다중 사용자 배포를 차단한다. 실제 agent 독립 채점은 35/200이다.
+- **Next Session Focus**: 배포 대상·접근 범위 확정, PR 리뷰·병합과 실제 환경 smoke/rollback, 남은 165문항 oracle, 운영 TableContext 승인형 갱신.
 
 ## Next Action Items
 - [x] 제품 승인 카드에서 사용자가 승인한 실제 Databricks 조회 → 저장 → 분석 → 후속 질문을 검증했다.
 - [ ] 남은 165문항의 독립 oracle과 고급 분석 도구 범위를 우선순위별로 확대한다.
 - [ ] 로컬 단일·동시 및 모델 상관계수 표본은 완료했다. 다른 모델 질문·배포 환경 부하와 RSS 경보 기준을 확정한다.
 - [x] 현재 변경을 `agentic-analysis-rc3-2026-09-14` release candidate로 커밋·push했다.
-- [ ] draft PR #68의 코드 리뷰 후 병합·배포하고 배포 환경 smoke test와 rollback을 확인한다.
+- [ ] draft PR #68의 코드 리뷰 후 병합·배포하고 배포 환경 smoke test와 rollback을 확인한다. 배포 계약과 자동 preflight는 준비했다.
 - [ ] bank_loan·titanic alias와 변경 절차는 준비했다. 네 테이블의 stale schema/profile은 각각 승인형 조회로 갱신한다.
 - [x] Level 2 참고 환경 11건을 해결하고 Level 3 placeholder를 production agentic recovery 계약 17개로 교체했다.
 
 ---
+## [2026-09-15 20:55:00 KST] [Agent: Codex] Deployment preflight and scope gate
+- **Remote status**: PR #68의 최신 HEAD `d8c6071`에 대한 GitHub Actions job `103987130195`가 모든 단계에서 성공했다.
+- **Finding**: 현재 Streamlit 앱은 loopback과 `local-owner`에 고정되어 있어 로컬 또는 외부 접근제어가 적용된 1인용 배포만 안전하다. 사용자별 owner binding이 없는 다중 사용자 배포는 자산·대화 격리를 보장하지 못한다.
+- **Implementation**: 비밀값을 출력하거나 네트워크·SQL을 실행하지 않고 Ollama, Databricks 변수, 영속 저장소, 운영 한도, 사용자 범위를 검사하는 `scripts/deployment_preflight.py`를 추가했다. `.env.example`과 배포·smoke·rollback 계약도 추가했다.
+- **Validation**: preflight 단위 테스트 6/6, migration 117/117, tests 76/76, 합계 193/193 PASS. Level 3 17/17과 전체 runner 217/217 PASS, compileall·diff 검사도 통과했다. 현재 로컬 profile은 READY이며 영속 경로 미지정 경고가 있고, multi-user profile은 의도대로 실패한다.
+- **Remaining**: 실제 플랫폼, 사용자 범위, secret manager, 영속 볼륨, Ollama 배치가 정해져야 배포 manifest와 실제 환경 smoke test를 확정할 수 있다. TableContext 갱신은 각 SQL의 화면 승인 전 실행하지 않는다.
+
 ## [2026-09-14 22:06:00 KST] [Agent: Codex] Remote CI result
 - **GitHub Actions**: PR #68의 `deterministic-validation` job `103984748852`가 success로 완료됐다.
 - **Remote evidence**: pinned 환경 설치, migration, application tests, agentic recovery, 전체 217 runner, compileall의 모든 step이 성공했다.
@@ -141,10 +148,10 @@
 - **Diagnosis correction**: 체크포인트에 도구 호출 인자는 보존됨. 실제 결함은 summarization HumanMessage를 사용자 요청으로 오인하여 필수 컬럼과 재시도 예산을 재설정하는 것. 이전 인자 유실 가설은 기각.
 
 ## Current Status
-- **Last Updated**: 2026-09-14
+- **Last Updated**: 2026-09-15
 - **Status**: Limited-scope Release Candidate Validation
-- **Summary**: 승인형 Databricks 적재와 현재 표본 재사용을 검증했고, 실제 화면의 상관분석을 0.224초·모델/원격 0회로 완료했다. 전체 회귀 187/187, 참고 코드 200/200, agentic recovery 17/17 PASS다. draft PR #68의 최신 원격 CI도 성공했다. 실제 agent 독립 채점은 35/200이므로 전체 기능 출시는 NO-GO다.
-- **Next Session Focus**: PR 리뷰·병합과 배포 대상 확정 → 배포 smoke/rollback → 남은 165문항 oracle 확대. Canonical list: docs/agent_remaining_tasks_2026-09-13.md.
+- **Summary**: 승인형 Databricks 적재와 현재 표본 재사용을 검증했고, 실제 화면의 상관분석을 0.224초·모델/원격 0회로 완료했다. 전체 회귀 193/193, 참고 코드 200/200, agentic recovery 17/17 PASS다. draft PR #68의 최신 원격 CI도 성공했고 배포 preflight가 다중 사용자 오배포를 차단한다. 실제 agent 독립 채점은 35/200이므로 전체 기능 출시는 NO-GO다.
+- **Next Session Focus**: 배포 대상·접근 범위 확정 → PR 리뷰·병합 → 실제 환경 smoke/rollback → 남은 165문항 oracle 확대. Canonical list: docs/agent_remaining_tasks_2026-09-13.md.
 
 ## Next Action Items (Pending tasks for the next session)
 - [x] R01: Connect grounded request scope to calculation/chart/recovery and reject wrong or unresolved scope.
@@ -157,7 +164,7 @@
 - [ ] R08: Implement and verify the declared advanced analysis and chart-editing scope.
 - [x] R09: Approved live Databricks load/reuse validated and release candidate tag fixed.
 - [x] R10: Remove production dependencies on fixed table/schema facts and validate schema drift and freshness behavior.
-- [ ] R11: Review draft PR #68, merge, choose the deployment target, and verify smoke/rollback there.
+- [ ] R11: Deployment contract and preflight are ready; review draft PR #68, merge, choose the target, and verify smoke/rollback there.
 - [ ] R12: Refresh four stale production TableContext schemas only through per-query user approval.
 - [x] R13: Repair the Level 2 reference environment and replace Level 3 placeholders with 17 production contracts.
 
@@ -1017,3 +1024,5 @@ Task definitions and acceptance conditions: docs/agent_remaining_tasks_2026-09-1
 - **Remaining**: 현재 코드의 모델 질문·동시 부하 표본 수집, 배포 인스턴스별 RSS 경보 기준, 166개 독립 oracle.
 
 - 2026-09-14T21:41:50+09:00 사용자 요청: 남아 있는 작업 계속 진행. 실제 UI 상관분석 검증, Level 3 평가 정비, 전체 회귀 및 릴리스 산출물 갱신을 진행한다. 기본 python 명령이 없어 프로젝트 venv Python으로 기록했다.
+
+- 2026-09-15T20:47:45+09:00 사용자 요청: 남은 작업 계속 진행. 최신 PR CI 확인, 배포 진입점 준비, 잔여 release gate를 진행한다.
