@@ -20,6 +20,7 @@
 - **Action**: `L1_017` 복합 평균·최대 결함을 수정하고 독립 `scalar_set` oracle, 변형 fixture 재실행, table-neutral 회귀 계약을 추가했다. 최신 서버를 재시작하고 실제 보유 10,000행 화면까지 검증했다.
 - **Validation**: 로컬 195/195, Level 3 17/17, 전체 runner 217/217, compileall·diff PASS. 실제 화면은 평균 `40.931`, 최대 `86`을 0.177초에 표시했고 모델·원격 조회는 0회였다.
 - **Remote**: commit `cd40480`을 push했고 GitHub Actions run `34976936942`, job `104406936863`가 1분 16초에 성공했다. annotated tag `agentic-analysis-rc4-2026-09-15`를 같은 commit에 push했다.
+- **CI maintenance**: 성공한 run의 Node.js 20 deprecation annotation을 확인했다. 공식 action의 Node.js 24 기반 현재 major인 `actions/checkout@v7`, `actions/setup-python@v7`으로 workflow를 갱신하고 원격 gate에서 재검증한다.
 - **Remaining**: PR #68 사람 리뷰·병합, 실제 배포 대상과 접근 범위 확정, 배포 환경 smoke/rollback, 164개 독립 oracle, 네 stale TableContext의 개별 승인형 갱신, 배포 부하·RSS 경보 기준이 남는다.
 
 ## [2026-09-15 21:42:00 KST] [Agent: Codex] Multi-aggregate recovery and oracle expansion
