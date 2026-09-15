@@ -89,7 +89,8 @@ class RecoveryMiddleware(AgentMiddleware):
             for pattern, operation in [(r'평균|\b(?:mean|average|avg)\b', 'AVG'),
                     (r'합계|총합|\bsum\b', 'SUM'), (r'중앙값|\bmedian\b', 'MEDIAN'),
                     (r'개수|몇\s*(?:명|개|건)|\bcount\b', 'COUNT'),
-                    (r'최솟값|최소값|\bmin\b', 'MIN'), (r'최댓값|최대값|\bmax\b', 'MAX')]:
+                    (r'최솟값|최소값|최저령|\bmin\b', 'MIN'),
+                    (r'최댓값|최대값|최고령|\bmax\b', 'MAX')]:
                 if re.search(pattern, objective_text, re.I): operations.append(operation)
             if re.search(r'상관(?:계수|관계)?|피어슨|\b(?:correlation|pearson)\b', objective_text, re.I):
                 operations.append('CORR')
@@ -581,6 +582,44 @@ class RecoveryMiddleware(AgentMiddleware):
                 quoted = ['"' + column.replace('"', '""') + '"' for column in columns]
                 arguments = {'dataset_id':numeric_candidates[0].id,
                     'query':f'SELECT CORR({quoted[0]}, {quoted[1]}) AS correlation FROM data'}
+                if current.get('current_result_only'):
+                    arguments['current_result_only'] = True
+                if not any(c.get('name') == 'local_analysis_sql' and c.get('args') == arguments
+                           for c in calls.values()):
+                    return {'name':'local_analysis_sql', 'args':arguments}
+        aggregate_operations = current.get('operations', [])
+        supported_aggregates = {'AVG', 'MEDIAN', 'SUM', 'MIN', 'MAX'}
+        if (self.context and current.get('calculation') and len(aggregate_operations) > 1
+                and set(aggregate_operations).issubset(supported_aggregates)
+                and not self._has_scope(current) and not current.get('evidence_ids')):
+            # Multiple descriptive aggregates over one numeric column have a
+            # single deterministic local plan. This prevents a slow model turn
+            # from dropping one requested statistic (for example average age
+            # plus oldest age) when the complete frame is already available.
+            columns = current.get('required_columns') or scope.get('columns', [])
+            if len(columns) != 1:
+                return None
+            candidates = [info for info in self.context.datasets.metadata.values()
+                if info.grain == 'raw' and (current.get('current_result_only') or info.predicate_known)
+                and columns[0] in info.columns and self._source_matches(info, current)
+                and (current.get('current_result_only')
+                    or (info.coverage == 'complete' and self._fresh_for_request(info, current)))]
+            from pandas.api.types import is_numeric_dtype
+            numeric_candidates = []
+            for info in candidates:
+                try:
+                    if is_numeric_dtype(self.context.datasets.frames[info.id][columns[0]]):
+                        numeric_candidates.append(info)
+                except (KeyError, OSError, ValueError, TypeError):
+                    continue
+            if len(numeric_candidates) == 1:
+                quoted = '"' + columns[0].replace('"', '""') + '"'
+                aliases = {'AVG':'average', 'MEDIAN':'median', 'SUM':'sum',
+                           'MIN':'minimum', 'MAX':'maximum'}
+                projections = [f'{operation}({quoted}) AS {aliases[operation]}'
+                               for operation in aggregate_operations]
+                arguments = {'dataset_id':numeric_candidates[0].id,
+                    'query':'SELECT ' + ', '.join(projections) + ' FROM data'}
                 if current.get('current_result_only'):
                     arguments['current_result_only'] = True
                 if not any(c.get('name') == 'local_analysis_sql' and c.get('args') == arguments

@@ -101,7 +101,7 @@ class ActualAgentEvaluationTests(unittest.TestCase):
         self.assertEqual(result["evidence"]["counterfactual_probes"], 2)
 
     def test_every_declared_reference_oracle_is_executable_without_a_model(self):
-        self.assertEqual(len(self.grading), 35)
+        self.assertEqual(len(self.grading), 36)
         self.assertTrue(set(self.grading).issubset(self.specs))
         for case, grading in self.grading.items():
             with self.subTest(case=case):
@@ -113,6 +113,19 @@ class ActualAgentEvaluationTests(unittest.TestCase):
         high_fare=self.frames["titanic"][self.frames["titanic"]["Fare"]>=100]
         self.assertAlmostEqual(reference_oracle(self.specs["L1_045"], self.grading["L1_045"], self.frames),
                                float(high_fare["Survived"].mean()*100))
+
+    def test_multi_scalar_contract_checks_every_requested_statistic(self):
+        expected = reference_oracle(self.specs["L1_017"], self.grading["L1_017"], self.frames)
+        self.assertEqual(set(expected), {"average", "maximum"})
+        correct = self.evaluate("L1_017", EvaluationModel(calls=[{"name": "local_analysis_sql", "args": {
+            "dataset_id": "$fixture",
+            "query": "SELECT AVG(age) AS average, MAX(age) AS maximum FROM data"}}]))
+        self.assertEqual(correct["status"], "PASS", correct)
+        with patch("core.analysis_agent.recovery.RecoveryMiddleware._next_local", return_value=None):
+            wrong = self.evaluate("L1_017", EvaluationModel(calls=[{"name": "local_analysis_sql", "args": {
+                "dataset_id": "$fixture",
+                "query": "SELECT AVG(age) AS average, MIN(age) AS maximum FROM data"}}]))
+        self.assertIn(wrong["status"], {"FAIL", "NOT_COMPLETE"}, wrong)
 
     def test_reduction_oracle_accepts_recovery_only_with_real_calculation_lineage(self):
         result=self.evaluate("L1_032",EvaluationModel(calls=[{"name":"local_analysis_sql","args":{

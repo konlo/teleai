@@ -158,8 +158,8 @@ def reference_oracle(spec, grading, frames):
             if len(capture.histograms) != 1:
                 raise ValueError("Reference must produce exactly one supported histogram")
             return capture.histograms[0]
-        value = namespace[grading["variable"]]
         if grading["kind"] == "scalar":
+            value = namespace[grading["variable"]]
             reduction = grading.get("reduction")
             if reduction == "rows":
                 value = len(value)
@@ -170,8 +170,18 @@ def reference_oracle(spec, grading, frames):
             if not np.isscalar(value) or not np.isfinite(float(value)):
                 raise ValueError("Reference scalar is not finite")
             return float(value)
+        if grading["kind"] == "scalar_set":
+            values = {}
+            for result_column, variable in grading["variables"].items():
+                value = namespace[variable]
+                if not np.isscalar(value) or not np.isfinite(float(value)):
+                    raise ValueError("Reference scalar set contains a non-finite value")
+                values[result_column] = float(value)
+            if len(values) < 2:
+                raise ValueError("Scalar set must verify at least two requested values")
+            return values
         if grading["kind"] == "category_counts":
-            return _category_counts(value)
+            return _category_counts(namespace[grading["variable"]])
         raise ValueError("Unsupported grading kind")
     finally:
         plt.close("all")
@@ -277,6 +287,11 @@ def verify_counterfactuals(runtime, dataset_id, fixture_id, spec, grading, frame
                   (column in actual.columns if column else actual.shape[1] == 1) and
                   np.isclose(float(actual.iloc[0][column] if column else actual.iloc[0, 0]),
                              oracle, rtol=1e-8, atol=1e-8))
+        elif grading["kind"] == "scalar_set":
+            ok = (len(actual) == 1 and set(actual.columns) == set(oracle)
+                  and all(np.isclose(float(actual.iloc[0][column]), value,
+                                    rtol=1e-8, atol=1e-8)
+                          for column, value in oracle.items()))
         else:
             ok = _same_series(_category_counts(actual), oracle)
         if not ok:
@@ -339,6 +354,13 @@ def grade_evidence(runtime, outcome, spec, grading, oracle, fixture_id, capture)
             actual = float(frame.iloc[0][column] if column else frame.iloc[0, 0])
             ok = bool(np.isclose(actual, oracle, rtol=1e-8, atol=1e-8))
             details = {"expected": oracle, "actual": actual, "result_dataset_id": dataset_id}
+        elif grading["kind"] == "scalar_set":
+            if len(frame) != 1 or set(frame.columns) != set(oracle):
+                raise ValueError("Expected one row with the declared scalar columns")
+            actual = {column: float(frame.iloc[0][column]) for column in oracle}
+            ok = all(np.isclose(actual[column], value, rtol=1e-8, atol=1e-8)
+                     for column, value in oracle.items())
+            details = {"expected": oracle, "actual": actual, "result_dataset_id": dataset_id}
         else:
             actual = _category_counts(frame)
             ok = _same_series(actual, oracle)
@@ -386,6 +408,7 @@ def preserve_runtime_metadata(runtime, spec, artifact_dir=None):
                 "pending_requests": len(state["requests"]),
                 "recovery_status": state["recovery"].get("status"),
                 "recovery_attempts": state["recovery"].get("attempts"),
+                "recovery_model_calls": state["recovery"].get("model_calls"),
                 "reference_context": runtime.context.reference_context,
                 "datasets": [asdict(info) for info in runtime.datasets.metadata.values()],
                 "charts": charts, "diagnostics": diagnostics}
