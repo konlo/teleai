@@ -36,7 +36,7 @@
 
 - 실제 agent 독립 채점은 37/200문항이다. 나머지 163문항과 조인·가설 검정·고급 시각화는 미검증이다.
 - 결정적 로컬 및 단일 프로세스 동시 경로에 자동 용량 gate를 적용했다. 실제 모델 상관계수는 5/5 정확했지만 p95 80.704초였고, 로컬 전이 후 p95 0.046초가 됐다. 다른 모델 질문과 실제 배포 환경·Ollama 동시 부하는 남았다.
-- 컬럼 metadata 복구를 포함한 commit `a16d15e`의 원격 release gate가 성공했고 `agentic-analysis-rc5-2026-09-15` tag를 같은 코드 commit에 고정했다. PR 리뷰·병합, 배포와 배포 환경 smoke test는 남았다.
+- 용량 gate를 포함한 commit `6defd2a`의 원격 release gate가 성공했고 `agentic-analysis-rc6-2026-09-16` tag를 같은 코드 commit에 고정했다. PR 리뷰·병합, 배포와 배포 환경 smoke test는 남았다.
 
 ## 실행과 롤백
 

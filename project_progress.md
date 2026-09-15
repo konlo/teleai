@@ -3,7 +3,7 @@
 ## Current Status
 - **Last Updated**: 2026-09-16
 - **Status**: In Progress — 배포 preflight까지 검증한 1인용 제한 출시 후보
-- **Summary**: 전체 회귀 203/203, 참고 코드 200/200, production agentic recovery 17/17 PASS다. 컬럼 목록 결정적 복구를 포함한 RC5는 원격에 고정했다. 초기 단일 프로세스 용량 gate는 단일 p95 0.162초, 4 worker·20/20 p95 0.549초, peak RSS 약 361 MiB로 READY이며 지원하지 않는 다중 사용자 배포는 계속 차단한다. 실제 agent 독립 채점은 37/200이다.
+- **Summary**: 전체 회귀 203/203, 참고 코드 200/200, production agentic recovery 17/17 PASS다. 초기 단일 프로세스 용량 gate를 포함한 commit `6defd2a`의 원격 gate가 성공했고 `agentic-analysis-rc6-2026-09-16` tag로 고정했다. 단일 p95 0.162초, 4 worker·20/20 p95 0.549초, peak RSS 약 361 MiB로 READY이며 지원하지 않는 다중 사용자 배포는 계속 차단한다. 실제 agent 독립 채점은 37/200이다.
 - **Next Session Focus**: 배포 대상·접근 범위 확정, 실제 호스트 용량 gate·smoke/rollback, PR 리뷰·병합, 남은 163문항 oracle, 운영 TableContext 승인형 갱신.
 
 ## Next Action Items
@@ -12,6 +12,7 @@
 - [ ] 로컬 단일·동시 용량 gate와 RSS 기준은 완료했다. 실제 배포 호스트와 Ollama 동시 추론으로 기준을 보정한다.
 - [x] 현재 변경을 `agentic-analysis-rc4-2026-09-15` release candidate로 커밋·push하고 원격 release gate 성공 후 tag로 고정했다.
 - [x] 컬럼 metadata 복구를 `agentic-analysis-rc5-2026-09-15`로 고정했다. GitHub Actions run `34978831986`이 성공했다.
+- [x] 단일 프로세스 용량 gate를 `agentic-analysis-rc6-2026-09-16`로 고정했다. GitHub Actions run `35029959063`이 성공했다.
 - [ ] draft PR #68의 코드 리뷰 후 병합·배포하고 배포 환경 smoke test와 rollback을 확인한다. 배포 계약과 자동 preflight는 준비했다.
 - [ ] bank_loan·titanic alias와 변경 절차는 준비했다. 네 테이블의 stale schema/profile은 각각 승인형 조회로 갱신한다.
 - [x] Level 2 참고 환경 11건을 해결하고 Level 3 placeholder를 production agentic recovery 계약 17개로 교체했다.
@@ -25,6 +26,7 @@
 - **Measurement**: 저장된 10,000행으로 단일 30회 p95 0.162초, 동시 4 worker·20/20 p95 0.549초, peak RSS 378,601,472 bytes를 측정해 READY 판정을 받았다. 모델·Databricks 호출은 0회였다.
 - **Validation**: 신규 용량·preflight 계약 13/13, migration 125/125, tests 78/78, 합계 203/203, Level 3 17/17, 전체 runner 217/217, compileall·diff PASS다. 성능 보고서에 모델·Databricks 호출이나 원본 변경이 포함되면 용량 gate가 실패하는 계약도 포함한다.
 - **Artifacts**: `docs/runtime_performance_2026-09-16.json`, `docs/runtime_capacity_2026-09-16.json`, `docs/runtime_capacity_2026-09-16.md`.
+- **Remote**: commit `6defd2a`를 push했고 GitHub Actions run `35029959063`, job `104585889158`이 1분 10초에 성공했다. annotated tag `agentic-analysis-rc6-2026-09-16`을 같은 코드 commit에 push했다.
 
 ## [2026-09-15 22:56:00 KST] [Agent: Codex] User Request: 수행해줘
 - **Request**: 남은 작업을 계속 수행한다.
