@@ -3,19 +3,25 @@
 ## Current Status
 - **Last Updated**: 2026-09-15
 - **Status**: In Progress — 배포 preflight까지 검증한 1인용 제한 출시 후보
-- **Summary**: 전체 회귀 195/195, 참고 코드 200/200, production agentic recovery 17/17 PASS다. PR #68의 최신 원격 CI가 성공했으며, secret-safe 배포 preflight가 로컬 설정을 READY로 판정하고 지원하지 않는 다중 사용자 배포를 차단한다. 실제 agent 독립 채점은 36/200이다.
+- **Summary**: 전체 회귀 195/195, 참고 코드 200/200, production agentic recovery 17/17 PASS다. 복합 집계 수정 commit `cd40480`의 원격 CI가 성공했고 `agentic-analysis-rc4-2026-09-15` tag를 같은 commit에 고정했다. secret-safe 배포 preflight는 로컬 설정을 READY로 판정하고 지원하지 않는 다중 사용자 배포를 차단한다. 실제 agent 독립 채점은 36/200이다.
 - **Next Session Focus**: 배포 대상·접근 범위 확정, PR 리뷰·병합과 실제 환경 smoke/rollback, 남은 164문항 oracle, 운영 TableContext 승인형 갱신.
 
 ## Next Action Items
 - [x] 제품 승인 카드에서 사용자가 승인한 실제 Databricks 조회 → 저장 → 분석 → 후속 질문을 검증했다.
 - [ ] 남은 164문항의 독립 oracle과 고급 분석 도구 범위를 우선순위별로 확대한다.
 - [ ] 로컬 단일·동시 및 모델 상관계수 표본은 완료했다. 다른 모델 질문·배포 환경 부하와 RSS 경보 기준을 확정한다.
-- [ ] 현재 변경을 `agentic-analysis-rc4-2026-09-15` release candidate로 커밋·push하고 원격 release gate 성공 후 tag로 고정한다.
+- [x] 현재 변경을 `agentic-analysis-rc4-2026-09-15` release candidate로 커밋·push하고 원격 release gate 성공 후 tag로 고정했다.
 - [ ] draft PR #68의 코드 리뷰 후 병합·배포하고 배포 환경 smoke test와 rollback을 확인한다. 배포 계약과 자동 preflight는 준비했다.
 - [ ] bank_loan·titanic alias와 변경 절차는 준비했다. 네 테이블의 stale schema/profile은 각각 승인형 조회로 갱신한다.
 - [x] Level 2 참고 환경 11건을 해결하고 Level 3 placeholder를 production agentic recovery 계약 17개로 교체했다.
 
 ---
+## [2026-09-15 22:47:00 KST] [Agent: Codex] User Request: 남은일 계속해줘
+- **Action**: `L1_017` 복합 평균·최대 결함을 수정하고 독립 `scalar_set` oracle, 변형 fixture 재실행, table-neutral 회귀 계약을 추가했다. 최신 서버를 재시작하고 실제 보유 10,000행 화면까지 검증했다.
+- **Validation**: 로컬 195/195, Level 3 17/17, 전체 runner 217/217, compileall·diff PASS. 실제 화면은 평균 `40.931`, 최대 `86`을 0.177초에 표시했고 모델·원격 조회는 0회였다.
+- **Remote**: commit `cd40480`을 push했고 GitHub Actions run `34976936942`, job `104406936863`가 1분 16초에 성공했다. annotated tag `agentic-analysis-rc4-2026-09-15`를 같은 commit에 push했다.
+- **Remaining**: PR #68 사람 리뷰·병합, 실제 배포 대상과 접근 범위 확정, 배포 환경 smoke/rollback, 164개 독립 oracle, 네 stale TableContext의 개별 승인형 갱신, 배포 부하·RSS 경보 기준이 남는다.
+
 ## [2026-09-15 21:42:00 KST] [Agent: Codex] Multi-aggregate recovery and oracle expansion
 - **Failure evidence**: `L1_017` “평균 나이와 최고령 나이” 실제 첫 실행은 `최고령`을 MAX 의무로 인식하지 못해 operations가 AVG 하나만 남았고, 계산 증거 없이 model time budget으로 종료됐다.
 - **Implementation**: `최고령`·`최저령`을 MAX·MIN으로 grounding하고 한 수치 컬럼의 AVG·MEDIAN·SUM·MIN·MAX 복합 요청을 단일 table-neutral DuckDB query로 실행하는 결정적 로컬 전이를 추가했다. 독립 평가 harness에는 한 행의 여러 scalar를 모두 검사하고 변형 fixture 두 개에서 계보를 재실행하는 `scalar_set` 계약을 추가했다.

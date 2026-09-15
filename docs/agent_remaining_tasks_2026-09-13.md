@@ -12,9 +12,9 @@
 | R06 | P1 | 대용량 DataFrame·캐시·저장소 | 검증 완료 | 750,000행 복구와 함께 100k행·256열·512MiB·대화별 2GiB 한도, 30일 정리 후보 보고 적용. 자동 삭제 없음 |
 | R07 | P2 | 실제 agent 독립 채점 확대 | 진행 중 | 누적 36/200문항 지원. 복합 평균·최대 집계 `L1_017`은 0.673초·모델/원격 0회 PASS. 나머지 164문항은 PASS로 계산하지 않음 |
 | R08 | P2 | 고급 분석·차트·스킬 범위 | 진행 중 | 전체 행·IN·공통조건+OR·백분율·두 수치 컬럼 피어슨 상관계수 로컬 복구 검증. 조인·가설 검정·고급 차트는 미검증 |
-| R09 | P1 | 운영 승인 여정과 출시 판정 | 완료 | 실제 승인·1회 조회·10,000행 저장·로컬 차트·현재 표본 상관분석 재사용 완료. RC3 tag 보존, 최신 RC4는 원격 release gate 성공 후 고정 |
+| R09 | P1 | 운영 승인 여정과 출시 판정 | 완료 | 실제 승인·1회 조회·10,000행 저장·로컬 분석 재사용 완료. RC3 보존, 원격 gate 성공한 `cd40480`에 RC4 tag 고정·push |
 | R10 | P0 | 특정 테이블·스키마 의존 제거 | 완료 | production 테이블 하드코딩 제거, stale schema 차단, 동적 loader, schema fingerprint, 최신 원본 캐시 우회와 승인 대기 검증 |
-| R11 | P0 | 제한 출시 후보 승격 | 진행 중 | RC3 branch/tag, draft PR #68, GitHub release gate 성공. secret-safe preflight와 1인용 배포·smoke·rollback 계약 준비. 대상 확정, 코드 리뷰/병합과 실제 환경 검증 남음 |
+| R11 | P0 | 제한 출시 후보 승격 | 진행 중 | RC4 tag, draft PR #68, GitHub run 34976936942 성공. secret-safe preflight와 1인용 배포·smoke·rollback 계약 준비. 대상 확정, 코드 리뷰/병합과 실제 환경 검증 남음 |
 | R12 | P1 | 운영 TableContext 준비 | 부분 완료 | bank_loan 18/18·titanic 12/12 alias 준비. 네 테이블 모두 stale여서 각각 승인형 schema refresh 필요 |
 | R13 | P1 | 평가 환경 정비 | 완료 | SciPy/NumPy 호환 수정 후 Level 1·2 참고 코드 200/200 PASS. 임의 placeholder를 제거하고 production agentic recovery 계약 17/17 PASS를 `--level 3`에 연결 |
 

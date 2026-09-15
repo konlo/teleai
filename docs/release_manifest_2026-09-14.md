@@ -1,6 +1,6 @@
 # TeleAI agentic analysis release candidate — 2026-09-14
 
-최신 고정 참조 후보: Git tag `agentic-analysis-rc4-2026-09-15`. 이전 기준선과 RC2·RC3는 보존한다. RC4 tag는 현재 변경의 원격 release gate 성공 후 같은 commit에 고정한다.
+최신 고정 참조: Git tag `agentic-analysis-rc4-2026-09-15`, commit `cd40480`. 이전 기준선과 RC2·RC3는 보존한다. GitHub Actions run `34976936942`, job `104406936863`가 같은 commit에서 성공한 뒤 RC4 tag를 고정했다.
 
 ## 포함 범위
 
@@ -36,7 +36,7 @@
 
 보유 데이터 재사용, 메타데이터, 검증된 기본 집계·필터·차트를 포함한 제한 범위의 release candidate다. 200문항 전체와 조인·가설 검정·고급 복합 차트의 일반 출시는 승인하지 않는다.
 
-RC3 tag와 branch는 원격 `origin`에 push했고 draft PR #68을 열었다. RC4는 복합 집계 수정과 배포 preflight까지 포함한다. 리뷰·병합, 배포와 배포 환경 smoke test는 별도 게이트다.
+RC3 tag는 원격에 보존돼 있고 draft PR #68은 RC4 변경을 포함한다. RC4는 복합 집계 수정과 배포 preflight까지 포함한다. 리뷰·병합, 배포와 배포 환경 smoke test는 별도 게이트다.
 
 PR에는 비밀키나 Databricks 연결 없이 pinned 환경에서 migration·tests·Level 3·전체 참조 runner·compileall을 실행하는 `.github/workflows/agent-release-gate.yml`을 추가했다. 첫 원격 실행 `34846840045`는 모든 step이 성공했다.
 
