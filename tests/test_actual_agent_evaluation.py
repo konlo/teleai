@@ -101,7 +101,7 @@ class ActualAgentEvaluationTests(unittest.TestCase):
         self.assertEqual(result["evidence"]["counterfactual_probes"], 2)
 
     def test_every_declared_reference_oracle_is_executable_without_a_model(self):
-        self.assertEqual(len(self.grading), 37)
+        self.assertEqual(len(self.grading), 41)
         self.assertTrue(set(self.grading).issubset(self.specs))
         for case, grading in self.grading.items():
             with self.subTest(case=case):
@@ -123,6 +123,27 @@ class ActualAgentEvaluationTests(unittest.TestCase):
         self.assertEqual(result["evidence"]["metadata"]["column_count"], len(self.frames["bank_loan"].columns))
         self.assertEqual(result["runtime_metadata"]["recovery_model_calls"], 0)
         self.assertEqual(result["remote_executions"], 0)
+
+    def test_metadata_dtypes_and_type_subsets_use_structured_inspection(self):
+        expected = {
+            "L1_002": list(self.frames["bank_loan"].columns),
+            "L1_003": self.frames["bank_loan"].select_dtypes(include=["number"]).columns.tolist(),
+            "L1_004": self.frames["bank_loan"].select_dtypes(include=["object"]).columns.tolist(),
+            "L1_007": list(self.frames["titanic"].columns),
+        }
+        for case, columns in expected.items():
+            with self.subTest(case=case):
+                model = EvaluationModel()
+                result = self.evaluate(case, model)
+                self.assertEqual(result["status"], "PASS", result)
+                self.assertEqual(result["tools"], {"inspect_table_context": 1})
+                evidence = result["evidence"]["metadata"]
+                if case in {"L1_003", "L1_004"}:
+                    self.assertEqual(evidence["selected_columns"], columns)
+                else:
+                    self.assertEqual([item["name"] for item in evidence["schema"]], columns)
+                self.assertEqual(result["runtime_metadata"]["recovery_model_calls"], 0)
+                self.assertEqual(result["remote_executions"], 0)
 
     def test_multi_scalar_contract_checks_every_requested_statistic(self):
         expected = reference_oracle(self.specs["L1_017"], self.grading["L1_017"], self.frames)

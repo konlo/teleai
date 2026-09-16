@@ -163,6 +163,17 @@ def reference_oracle(spec, grading, frames):
             if not isinstance(columns, list) or not columns or not all(isinstance(value, str) for value in columns):
                 raise ValueError("Reference metadata columns must be a non-empty string list")
             return columns
+        if grading["kind"] == "metadata_dtypes":
+            frame = namespace[grading["variable"]]
+            if not isinstance(frame, pd.DataFrame) or frame.shape[1] != 2 or frame.empty:
+                raise ValueError("Reference dtype metadata must be a non-empty two-column frame")
+            return [{"name": str(row.iloc[0]), "dtype": str(row.iloc[1])}
+                    for _, row in frame.iterrows()]
+        if grading["kind"] == "metadata_column_subset":
+            columns = namespace[grading["variable"]]
+            if not isinstance(columns, list) or not all(isinstance(value, str) for value in columns):
+                raise ValueError("Reference metadata subset must be a string list")
+            return columns
         if grading["kind"] == "scalar":
             value = namespace[grading["variable"]]
             reduction = grading.get("reduction")
@@ -207,6 +218,22 @@ def _category_counts(frame):
 def _same_series(left, right):
     return (left.index.equals(right.index) and
             bool(np.allclose(left.to_numpy(), right.to_numpy(), rtol=1e-8, atol=1e-8)))
+
+
+def _fixture_dtype_family(value):
+    """Independent pandas-based interpretation of fixture dtype strings."""
+    try:
+        dtype = pd.api.types.pandas_dtype(str(value))
+    except (TypeError, ValueError):
+        return "other"
+    if pd.api.types.is_bool_dtype(dtype):
+        return "categorical"
+    if pd.api.types.is_numeric_dtype(dtype):
+        return "numeric"
+    if (pd.api.types.is_object_dtype(dtype) or pd.api.types.is_string_dtype(dtype)
+            or isinstance(dtype, pd.CategoricalDtype)):
+        return "categorical"
+    return "other"
 
 
 def _fixture_descendant(runtime, dataset_id, fixture_id):
@@ -311,7 +338,7 @@ def grade_evidence(runtime, outcome, spec, grading, oracle, fixture_id, capture)
         return "NOT_COMPLETE", "Agent stopped or awaits approval; no implicit approval", {}
     if state["recovery"].get("status") not in {None, "complete"}:
         return "NOT_COMPLETE", "Recovery has not established completion", {}
-    if grading["kind"] == "metadata_columns":
+    if grading["kind"] in {"metadata_columns", "metadata_dtypes", "metadata_column_subset"}:
         matches = []
         for message in runtime.events():
             if not isinstance(message, ToolMessage) or message.name != "inspect_table_context":
@@ -319,16 +346,31 @@ def grade_evidence(runtime, outcome, spec, grading, oracle, fixture_id, capture)
             try:
                 observation = json.loads(message.content)
                 context = observation["table_context"]
-                columns = [column["name"] for column in context["columns"]]
+                schema = [{"name": column["name"], "dtype": str(column.get("dtype") or "")}
+                          for column in context["columns"]]
+                columns = [column["name"] for column in schema]
                 same_table = str(context["table"]).casefold().split(".")[-1] == spec["target_table"].casefold()
-                if observation.get("status") == "ready" and same_table and columns == oracle:
+                if observation.get("status") != "ready" or not same_table:
+                    continue
+                if grading["kind"] == "metadata_columns":
+                    actual, matches_oracle = columns, columns == oracle
+                elif grading["kind"] == "metadata_dtypes":
+                    actual, matches_oracle = schema, schema == oracle
+                else:
+                    family = grading["family"]
+                    actual = [column["name"] for column in schema
+                              if _fixture_dtype_family(column["dtype"]) == family]
+                    matches_oracle = actual == oracle
+                if matches_oracle:
                     matches.append({"table": context["table"], "columns": columns,
-                                    "column_count": len(columns), "authority": observation.get("authority")})
+                                    "column_count": len(columns), "schema": schema,
+                                    "selected_columns": actual,
+                                    "authority": observation.get("authority")})
             except (KeyError, TypeError, ValueError):
                 continue
-        return ("PASS", "Inspected table context columns and count match the reference",
+        return ("PASS", "Inspected table context metadata matches the reference",
                 {"metadata": matches[-1]}) if matches else (
-                "FAIL", "Missing fresh table-context evidence or columns differ from reference", {})
+                "FAIL", "Missing fresh table-context evidence or schema metadata differs from reference", {})
     if grading["kind"] == "histogram":
         matches = []
         for chart_id in state["chart_ids"]:

@@ -244,6 +244,37 @@ class CompletionTests(unittest.TestCase):
             self.assertEqual(model.position, 0, 'unambiguous metadata inspection must not require the model')
             r.close()
 
+    def test_schema_dtype_and_type_subsets_are_table_neutral_and_model_free(self):
+        with tempfile.TemporaryDirectory() as root:
+            frame = pd.DataFrame({
+                'metric_alpha': [1, 2],
+                'metric_beta': [1.5, 2.5],
+                'label_gamma': ['x', 'y'],
+                'flag_delta': [True, False],
+            })
+            model = ScriptModel()
+            r = GraphAnalysisRuntime(root, 'owner', 'schema-types', model)
+            r.context.reference_context = [{'table': SOURCE, 'columns': [
+                {'name': name, 'dtype': str(dtype)} for name, dtype in frame.dtypes.items()
+            ]}]
+            cases = [
+                (f'{SOURCE} 테이블의 각 컬럼별 데이터 타입(dtype)을 표로 보여줘',
+                 ['metric_alpha: int64', 'metric_beta: float64', 'label_gamma: object', 'flag_delta: bool']),
+                (f'{SOURCE} 테이블에서 수치형(numeric) 컬럼 목록을 보여줘',
+                 ['metric_alpha', 'metric_beta']),
+                (f'{SOURCE} 테이블에서 문자열/범주형(categorical) 컬럼 목록을 보여줘',
+                 ['label_gamma', 'flag_delta']),
+            ]
+            for prompt, expected in cases:
+                result = r.submit(prompt)
+                self.assertEqual(result['status'], 'answered', result)
+                for value in expected:
+                    self.assertIn(value, result['text'])
+                self.assertEqual(r.inspect()['recovery']['model_calls'], 0)
+            self.assertEqual(model.position, 0)
+            self.assertFalse(r.datasets.metadata)
+            r.close()
+
     def test_value_counts_and_missing_values_cannot_complete_from_schema(self):
         category = next(k for k, v in FIXTURE['rows'][0].items() if isinstance(v, str))
         for prompt in (f'{category} 컬럼의 고유값 개수를 알려줘', '각 컬럼의 결측값 개수를 알려줘'):

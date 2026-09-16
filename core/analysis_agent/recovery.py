@@ -14,6 +14,18 @@ from core.analysis_agent.memory import latest_user_request
 from core.analysis_agent.intent_scope import resolve_request_scope, scope_matches, measure_scope_matches
 
 
+def _dtype_family(value):
+    """Classify common pandas/SQL dtype labels without table-specific facts."""
+    dtype = str(value or '').strip().casefold()
+    if re.search(r'(?:^|\W)(?:bool|boolean)(?:\W|$)', dtype):
+        return 'categorical'
+    if re.search(r'(?:int|float|double|decimal|numeric|number|real|long|short|byte)', dtype):
+        return 'numeric'
+    if re.search(r'(?:object|string|category|categorical|varchar|char|text|enum)', dtype):
+        return 'categorical'
+    return 'other'
+
+
 class RecoveryState(AgentState):
     recovery: NotRequired[dict]
 
@@ -98,8 +110,18 @@ class RecoveryMiddleware(AgentMiddleware):
                          objective_text, re.I): operations.append('RATIO')
             if count_request and 'COUNT' not in operations: operations.append('COUNT')
             metadata_kind = None
-            if (not chart and set(operations) <= {'COUNT'} and
-                    re.search(r'컬럼|필드|\bcolumns?\b|\bfields?\b', text, re.I) and
+            column_words = bool(re.search(r'컬럼|필드|\bcolumns?\b|\bfields?\b', text, re.I))
+            if (not chart and not operations and column_words and
+                    re.search(r'데이터\s*타입|자료형|\bdtypes?\b|\bdata\s*types?\b', text, re.I)):
+                metadata_kind, calculation = 'dtypes', False
+            elif (not chart and not operations and column_words and
+                    re.search(r'수치형|숫자형|\bnumeric\b', text, re.I)):
+                metadata_kind, calculation = 'numeric_columns', False
+            elif (not chart and not operations and column_words and
+                    re.search(r'문자열|범주형|카테고리형|\bcategorical\b|\bstring\b', text, re.I)):
+                metadata_kind, calculation = 'categorical_columns', False
+            elif (not chart and set(operations) <= {'COUNT'} and
+                    column_words and
                     not re.search(r'고유|결측|중복|누락|빈도|\bnull\b|\bdistinct\b|\bmissing\b|\bunique\b', text, re.I) and
                     re.search(r'목록|개수|구조|이름|어떤|몇|전체|\blist\b|\bschema\b', text, re.I)):
                 metadata_kind, calculation, operations = 'columns', False, []
@@ -168,12 +190,16 @@ class RecoveryMiddleware(AgentMiddleware):
                 ('evidence_ids', []), ('artifact_ids', []), ('failed', {}), ('attempts', 0),
                 ('model_calls', 0), ('model_seconds', 0.0), ('columns', [])]:
             current.setdefault(key, default)
-        calls = {c['id']: c for m in messages if isinstance(m, AIMessage) for c in m.tool_calls}
         start = next((i for i, m in enumerate(messages) if human and m.id == human.id), 0)
+        # Tool-call de-duplication is request scoped.  Reusing the same safe
+        # inspection in a later user turn must not be blocked by an identical
+        # call that completed an earlier turn in the conversation.
+        request_messages = messages[start:]
+        calls = {c['id']: c for m in request_messages if isinstance(m, AIMessage) for c in m.tool_calls}
         if human and human.additional_kwargs.get('selected_card') in self.artifacts:
             card = self.artifacts[human.additional_kwargs['selected_card']]
             if self._valid_card(card, current, card.dataset_id): current['artifact_ids'] = [card.id]
-        for message in messages[start:]:
+        for message in request_messages:
             if not isinstance(message, ToolMessage):
                 continue
             call = calls.get(message.tool_call_id, {})
@@ -203,14 +229,25 @@ class RecoveryMiddleware(AgentMiddleware):
                 if name == 'inspect_table_context' and not current.get('chart') and not current.get('calculation'):
                     current['failed'].pop('inspect_dataset', None)
                     context = observation.get('table_context', {})
-                    if current.get('metadata_kind') == 'columns' and isinstance(context.get('columns'), list):
+                    if current.get('metadata_kind') in {'columns', 'dtypes', 'numeric_columns', 'categorical_columns'} and isinstance(context.get('columns'), list):
                         expected = current.get('required_sources', [])
                         if not expected or self._source_key(context.get('table','')) in {self._source_key(s) for s in expected}:
-                            current['metadata_evidence'] = {'table':context.get('table'),
-                                'columns':[c['name'] for c in context['columns'] if c.get('name')],
-                                'authority':observation.get('authority'),
-                                'scope':observation.get('scope'),
-                                'schema_changed':observation.get('schema_changed', False)}
+                            schema = [{'name':c.get('name'), 'dtype':str(c.get('dtype') or '')}
+                                      for c in context['columns'] if c.get('name')]
+                            kind = current.get('metadata_kind')
+                            # Exhaustive type/subset answers require a dtype for
+                            # every column; an incomplete snapshot is not proof.
+                            if kind == 'columns' or (schema and all(c['dtype'] for c in schema)):
+                                selected = ([c['name'] for c in schema if _dtype_family(c['dtype']) == 'numeric']
+                                            if kind == 'numeric_columns' else
+                                            [c['name'] for c in schema if _dtype_family(c['dtype']) == 'categorical']
+                                            if kind == 'categorical_columns' else [])
+                                current['metadata_evidence'] = {'table':context.get('table'),
+                                    'kind':kind, 'columns':[c['name'] for c in schema],
+                                    'schema':schema, 'selected_columns':selected,
+                                    'authority':observation.get('authority'),
+                                    'scope':observation.get('scope'),
+                                    'schema_changed':observation.get('schema_changed', False)}
             if name == 'prepare_histogram' and observation.get('histogram_plan'):
                 plan = observation['histogram_plan']
                 if not self._scope_valid(plan.get('query', ''), current, plan.get('value_column')):
@@ -387,8 +424,18 @@ class RecoveryMiddleware(AgentMiddleware):
             origin = ('승인 후 로딩된 실제 결과' if metadata.get('authority') == 'approved_select_star_result'
                       else '확인된 스키마 스냅샷')
             changed = ' 이전 스냅샷과 컬럼 구성이 달라 새 스키마를 사용했습니다.' if metadata.get('schema_changed') else ''
-            parts.append(f"{origin} 기준으로 {metadata['table']}에는 컬럼이 {len(metadata['columns'])}개 있습니다.{changed}\n"
-                         + ', '.join(metadata['columns']))
+            kind = metadata.get('kind', 'columns')
+            if kind == 'dtypes':
+                parts.append(f"{origin} 기준으로 {metadata['table']}의 컬럼별 데이터 타입입니다.{changed}\n"
+                             + '\n'.join(f"{column['name']}: {column['dtype']}" for column in metadata['schema']))
+            elif kind in {'numeric_columns', 'categorical_columns'}:
+                label = '수치형' if kind == 'numeric_columns' else '문자열/범주형'
+                selected = metadata.get('selected_columns', [])
+                parts.append(f"{origin} 기준으로 {metadata['table']}의 {label} 컬럼은 {len(selected)}개입니다.{changed}\n"
+                             + (', '.join(selected) if selected else '해당 컬럼이 없습니다.'))
+            else:
+                parts.append(f"{origin} 기준으로 {metadata['table']}에는 컬럼이 {len(metadata['columns'])}개 있습니다.{changed}\n"
+                             + ', '.join(metadata['columns']))
         for card_id in current.get('artifact_ids', []):
             card = self.artifacts[card_id]
             parts.append(f'{card.title} 이미지를 생성했습니다.\n분석 범위: {card.scope}')
@@ -452,9 +499,9 @@ class RecoveryMiddleware(AgentMiddleware):
         return {'recovery': current, 'messages': [message]}
 
     def _next_local(self, current, calls):
-        if (self.context and current.get('metadata_kind') == 'columns'
+        if (self.context and current.get('metadata_kind') in {'columns', 'dtypes', 'numeric_columns', 'categorical_columns'}
                 and not current.get('metadata_evidence')):
-            # A column-list request has one safe local action when its source is
+            # A schema request has one safe local action when its source is
             # unambiguous. The inspection tool applies freshness/schema-drift
             # policy and can return needs_refresh; it never queries Databricks.
             known = []

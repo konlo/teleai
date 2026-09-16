@@ -18,6 +18,15 @@
 - [x] Level 2 참고 환경 11건을 해결하고 Level 3 placeholder를 production agentic recovery 계약 17개로 교체했다.
 
 ---
+## [2026-09-16 21:16:44 KST] [Agent: Codex] User Request: 계속 진행 해줘
+- **Request**: 남은 작업을 계속 수행한다.
+- **Action**: 사용자 결정이나 원격 조회 승인이 필요하지 않은 R07 실제 agent 독립 채점 확대를 진행한다. 미채점 metadata 문항 중 현재 TableContext 구조로 답할 수 있는 항목을 선별하고, assistant 문장이 아닌 구조화된 도구 증거로 채점한다.
+- **Safety**: 로컬 test_set fixture와 임시 runtime만 사용한다. Databricks executor를 연결하거나 원격 SQL을 실행하지 않는다.
+- **Finding**: 같은 대화의 이전 요청에서 사용한 `inspect_table_context` 호출이 새 요청의 동일 검사를 막아, 첫 metadata 답변 뒤 수치형·범주형 후속 질문이 복구 한도를 소진하는 요청 간 상태 오염을 재현했다.
+- **Implementation**: 도구 호출 중복 검사를 현재 사용자 요청 범위로 제한했다. `ready` TableContext의 전체 dtype, 수치형 컬럼, 문자열·범주형 컬럼을 모델 없이 검사하는 table-neutral 경로와 구조화된 독립 oracle을 추가했다. dtype이 하나라도 없으면 완전한 스키마 답변으로 채택하지 않으며, stale context는 기존 승인형 갱신 경로를 유지한다.
+- **Validation**: production graph `L1_002`, `L1_003`, `L1_004`, `L1_007` 4/4 PASS, 모델 0회, 원격 실행 0회다. 실제 agent 독립 채점은 41/200으로 확대됐다. migration 126/126, tests 79/79, 전체 runner 217/217, compileall과 `git diff --check`도 PASS다.
+- **Artifacts**: `docs/actual_agent_evaluation_metadata_4_2026-09-16.json`과 네 개의 구조화된 metadata evidence 파일.
+
 ## [2026-09-16 06:26:07 KST] [Agent: Codex] User Request: 남아 있는 일 정리흐고 진행해줘
 - **Request**: 남은 작업을 다시 정리하고 가능한 작업을 계속 수행한다.
 - **Plan**: 실제 배포 대상 결정과 Databricks schema refresh처럼 사용자 결정·승인이 필요한 항목은 실행하지 않는다. 승인 없이 진행 가능한 P1 운영 안정성 작업부터 수행해 배포 부하·RSS 경보 기준을 코드와 회귀 계약으로 고정하고, 이후 실제 agent 독립 채점을 확대한다.
