@@ -1,6 +1,6 @@
 # TeleAI agentic analysis release candidate — 2026-09-14
 
-최신 고정 참조는 tag `agentic-analysis-rc6-2026-09-16`, commit `6defd2a`다. GitHub Actions run `35029959063`, job `104585889158`이 성공한 뒤 같은 코드 commit에 고정했다. 이전 기준선과 RC2·RC3·RC4·RC5는 보존한다.
+최신 고정 참조는 tag `agentic-analysis-rc7-2026-09-16`, commit `e31150f`다. GitHub Actions run `35095497759`, job `104791699160`이 성공한 뒤 같은 코드 commit에 고정했다. 이전 기준선과 RC2·RC3·RC4·RC5·RC6는 보존한다.
 
 ## 포함 범위
 
@@ -15,9 +15,9 @@
 
 ## 고정 검증
 
-- migration: 125/125 PASS
-- tests: 78/78 PASS
-- 전체: 203/203 PASS
+- migration: 126/126 PASS
+- tests: 79/79 PASS
+- 전체: 205/205 PASS
 - compileall PASS
 - `git diff --check` PASS
 - 변경 후보 32개 파일의 토큰·비밀키 패턴 검사: 0건
@@ -30,7 +30,7 @@
 - Level 3 production agentic recovery 계약: 17/17 PASS, placeholder 85개 제거
 - 배포 preflight: 단위 계약 6/6 PASS, 현재 local-desktop READY, multi-user 차단
 - 로컬 용량 gate: 단일 p95 0.162초, 4 worker·20/20 동시 p95 0.549초, peak RSS 약 361 MiB, READY
-- 실제 agent 독립 oracle: 37/200 PASS. `L1_001` metadata는 0.161초, 모델·원격 0회
+- 실제 agent 독립 oracle: 41/200 PASS. 신규 `L1_002`·`L1_003`·`L1_004`·`L1_007` schema metadata 4/4도 모델·원격 0회
 - 실제 화면 보유 스키마: 전체 18개 컬럼, 0.160초, 모델 0회, 로컬 도구 1회, 추가 조회 0회
 - 실제 화면 보유 10,000행 복합 AVG·MAX: 평균 40.931, 최대 86, 0.177초, 모델 0회, 로컬 도구 1회, 추가 조회 0회
 
@@ -38,7 +38,7 @@
 
 보유 데이터 재사용, 메타데이터, 검증된 기본 집계·필터·차트를 포함한 제한 범위의 release candidate다. 200문항 전체와 조인·가설 검정·고급 복합 차트의 일반 출시는 승인하지 않는다.
 
-RC3·RC4·RC5 tag는 원격에 보존돼 있고 draft PR #68은 RC6 변경을 포함한다. RC6는 복합 집계, 배포 preflight, 컬럼 metadata 복구와 용량 gate를 포함한다. 리뷰·병합, 배포와 배포 환경 smoke test는 별도 게이트다.
+RC3·RC4·RC5·RC6 tag는 원격에 보존돼 있고 draft PR #68은 RC7 변경을 포함한다. RC7은 복합 집계, 배포 preflight, 용량 gate, schema metadata 복구와 요청 간 도구 호출 격리를 포함한다. 리뷰·병합, 배포와 배포 환경 smoke test는 별도 게이트다.
 
 PR에는 비밀키나 Databricks 연결 없이 pinned 환경에서 migration·tests·Level 3·전체 참조 runner·compileall을 실행하는 `.github/workflows/agent-release-gate.yml`을 추가했다. 첫 원격 실행 `34846840045`는 모든 step이 성공했다.
 

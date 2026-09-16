@@ -14,9 +14,9 @@
 
 ## 검증 증거
 
-- 실제 production graph + 로컬 모델 + 독립 oracle: 누적 37/37 PASS. 컬럼 metadata와 복합 집계까지 구조화된 증거로 채점했다.
+- 실제 production graph + 로컬 모델 + 독립 oracle: 누적 41/41 PASS. 컬럼 metadata와 복합 집계까지 구조화된 증거로 채점했다.
 - agentic 실패 복구 시나리오: 17/17 PASS. 임의 placeholder는 실행 경로에서 제거했다.
-- 전체 회귀: migration 125 + tests 78 = 203 PASS. compileall과 `git diff --check` PASS.
+- 전체 회귀: migration 126 + tests 79 = 205 PASS. compileall과 `git diff --check` PASS.
 - 기존 대화 56개 메시지 복제: 기존 histogram PNG 재사용, 원격 조회 0회.
 - 최신 서버 실제 브라우저: 같은 `age` histogram 요청을 기존 PNG로 0.292초에 표시. 모델 호출 0회, 원격 조회 0회, 활성 승인 카드 0개.
 - 실제 승인형 Databricks 여정: 승인 전 실행 0회, 승인 후 `workspace.default.bank_loan` 10,000행·18열을 1회 조회해 저장했다. 이어서 현재 10,000행 표본의 `age` histogram을 0.215초, 모델 호출 0회, 추가 원격 조회 0회로 생성해 화면에 표시했다.
@@ -34,9 +34,9 @@
 
 ## 전체 기능 출시 차단 항목
 
-- 실제 agent 독립 채점은 37/200문항이다. 나머지 163문항과 조인·가설 검정·고급 시각화는 미검증이다.
+- 실제 agent 독립 채점은 41/200문항이다. 나머지 159문항과 조인·가설 검정·고급 시각화는 미검증이다.
 - 결정적 로컬 및 단일 프로세스 동시 경로에 자동 용량 gate를 적용했다. 실제 모델 상관계수는 5/5 정확했지만 p95 80.704초였고, 로컬 전이 후 p95 0.046초가 됐다. 다른 모델 질문과 실제 배포 환경·Ollama 동시 부하는 남았다.
-- 용량 gate를 포함한 commit `6defd2a`의 원격 release gate가 성공했고 `agentic-analysis-rc6-2026-09-16` tag를 같은 코드 commit에 고정했다. PR 리뷰·병합, 배포와 배포 환경 smoke test는 남았다.
+- schema metadata 확대를 포함한 commit `e31150f`의 원격 release gate가 성공했고 `agentic-analysis-rc7-2026-09-16` tag를 같은 코드 commit에 고정했다. PR 리뷰·병합, 배포와 배포 환경 smoke test는 남았다.
 
 ## 실행과 롤백
 

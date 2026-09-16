@@ -3,16 +3,17 @@
 ## Current Status
 - **Last Updated**: 2026-09-16
 - **Status**: In Progress — 배포 preflight까지 검증한 1인용 제한 출시 후보
-- **Summary**: 전체 회귀 203/203, 참고 코드 200/200, production agentic recovery 17/17 PASS다. 초기 단일 프로세스 용량 gate를 포함한 commit `6defd2a`의 원격 gate가 성공했고 `agentic-analysis-rc6-2026-09-16` tag로 고정했다. 단일 p95 0.162초, 4 worker·20/20 p95 0.549초, peak RSS 약 361 MiB로 READY이며 지원하지 않는 다중 사용자 배포는 계속 차단한다. 실제 agent 독립 채점은 37/200이다.
-- **Next Session Focus**: 배포 대상·접근 범위 확정, 실제 호스트 용량 gate·smoke/rollback, PR 리뷰·병합, 남은 163문항 oracle, 운영 TableContext 승인형 갱신.
+- **Summary**: 전체 회귀 205/205, 참고 코드 200/200, production agentic recovery 17/17 PASS다. schema metadata 확대를 포함한 commit `e31150f`의 원격 gate가 성공했고 `agentic-analysis-rc7-2026-09-16` tag로 고정했다. 단일 p95 0.162초, 4 worker·20/20 p95 0.549초, peak RSS 약 361 MiB로 READY이며 지원하지 않는 다중 사용자 배포는 계속 차단한다. 실제 agent 독립 채점은 41/200이다.
+- **Next Session Focus**: 배포 대상·접근 범위 확정, 실제 호스트 용량 gate·smoke/rollback, PR 리뷰·병합, 남은 159문항 oracle, 운영 TableContext 승인형 갱신.
 
 ## Next Action Items
 - [x] 제품 승인 카드에서 사용자가 승인한 실제 Databricks 조회 → 저장 → 분석 → 후속 질문을 검증했다.
-- [ ] 남은 163문항의 독립 oracle과 고급 분석 도구 범위를 우선순위별로 확대한다.
+- [ ] 남은 159문항의 독립 oracle과 고급 분석 도구 범위를 우선순위별로 확대한다.
 - [ ] 로컬 단일·동시 용량 gate와 RSS 기준은 완료했다. 실제 배포 호스트와 Ollama 동시 추론으로 기준을 보정한다.
 - [x] 현재 변경을 `agentic-analysis-rc4-2026-09-15` release candidate로 커밋·push하고 원격 release gate 성공 후 tag로 고정했다.
 - [x] 컬럼 metadata 복구를 `agentic-analysis-rc5-2026-09-15`로 고정했다. GitHub Actions run `34978831986`이 성공했다.
 - [x] 단일 프로세스 용량 gate를 `agentic-analysis-rc6-2026-09-16`로 고정했다. GitHub Actions run `35029959063`이 성공했다.
+- [x] schema metadata 확대와 요청 간 도구 호출 격리를 `agentic-analysis-rc7-2026-09-16`로 고정했다. GitHub Actions run `35095497759`가 성공했다.
 - [ ] draft PR #68의 코드 리뷰 후 병합·배포하고 배포 환경 smoke test와 rollback을 확인한다. 배포 계약과 자동 preflight는 준비했다.
 - [ ] bank_loan·titanic alias와 변경 절차는 준비했다. 네 테이블의 stale schema/profile은 각각 승인형 조회로 갱신한다.
 - [x] Level 2 참고 환경 11건을 해결하고 Level 3 placeholder를 production agentic recovery 계약 17개로 교체했다.
@@ -26,6 +27,7 @@
 - **Implementation**: 도구 호출 중복 검사를 현재 사용자 요청 범위로 제한했다. `ready` TableContext의 전체 dtype, 수치형 컬럼, 문자열·범주형 컬럼을 모델 없이 검사하는 table-neutral 경로와 구조화된 독립 oracle을 추가했다. dtype이 하나라도 없으면 완전한 스키마 답변으로 채택하지 않으며, stale context는 기존 승인형 갱신 경로를 유지한다.
 - **Validation**: production graph `L1_002`, `L1_003`, `L1_004`, `L1_007` 4/4 PASS, 모델 0회, 원격 실행 0회다. 실제 agent 독립 채점은 41/200으로 확대됐다. migration 126/126, tests 79/79, 전체 runner 217/217, compileall과 `git diff --check`도 PASS다.
 - **Artifacts**: `docs/actual_agent_evaluation_metadata_4_2026-09-16.json`과 네 개의 구조화된 metadata evidence 파일.
+- **Remote**: code commit `e31150f`를 push했고 GitHub Actions run `35095497759`, job `104791699160`이 1분 13초에 성공했다. annotated tag `agentic-analysis-rc7-2026-09-16`을 같은 코드 commit에 push했다.
 
 ## [2026-09-16 06:26:07 KST] [Agent: Codex] User Request: 남아 있는 일 정리흐고 진행해줘
 - **Request**: 남은 작업을 다시 정리하고 가능한 작업을 계속 수행한다.
@@ -193,17 +195,17 @@
 ## Current Status
 - **Last Updated**: 2026-09-16
 - **Status**: Limited-scope Release Candidate Validation
-- **Summary**: 승인형 Databricks 적재와 현재 표본 재사용을 검증했고, 실제 화면의 컬럼 목록과 기본 분석을 모델·추가 조회 없이 완료했다. 전체 회귀 203/203, 참고 코드 200/200, agentic recovery 17/17 PASS다. 초기 단일 프로세스 용량 gate도 READY이고 배포 preflight는 다중 사용자 오배포를 차단한다. 실제 agent 독립 채점은 37/200이므로 전체 기능 출시는 NO-GO다.
-- **Next Session Focus**: 배포 대상·접근 범위 확정 → 실제 호스트 용량 gate → PR 리뷰·병합 → 실제 환경 smoke/rollback → 남은 163문항 oracle 확대. Canonical list: docs/agent_remaining_tasks_2026-09-13.md.
+- **Summary**: 승인형 Databricks 적재와 현재 표본 재사용을 검증했고, 실제 화면의 컬럼 목록과 기본 분석을 모델·추가 조회 없이 완료했다. 전체 회귀 205/205, 참고 코드 200/200, agentic recovery 17/17 PASS다. 초기 단일 프로세스 용량 gate도 READY이고 배포 preflight는 다중 사용자 오배포를 차단한다. 실제 agent 독립 채점은 41/200이므로 전체 기능 출시는 NO-GO다.
+- **Next Session Focus**: 배포 대상·접근 범위 확정 → 실제 호스트 용량 gate → PR 리뷰·병합 → 실제 환경 smoke/rollback → 남은 159문항 oracle 확대. Canonical list: docs/agent_remaining_tasks_2026-09-13.md.
 
 ## Next Action Items (Pending tasks for the next session)
 - [x] R01: Connect grounded request scope to calculation/chart/recovery and reject wrong or unresolved scope.
 - [x] R02: Repair and re-evaluate the supported actual-model Level 1/2 cases.
 - [x] R03: Complete final-browser verification on the restarted server; cached histogram is visibly restored with no remote query.
-- [x] R04: Restart the server with the 203/203-tested code and verify the visible app.
+- [x] R04: Restart the server with the 205/205-tested code and verify the visible app.
 - [ ] R05: Local p95/RSS capacity gate is READY; recalibrate it on the selected deployment host and measure concurrent Ollama inference.
 - [x] R06: Validate 750,000-row storage, cache eviction, restart/crash recovery and retained PNG.
-- [ ] R07: Expand independent actual-agent grading beyond 37/200 supported cases.
+- [ ] R07: Expand independent actual-agent grading beyond 41/200 supported cases.
 - [ ] R08: Implement and verify the declared advanced analysis and chart-editing scope.
 - [x] R09: Approved live Databricks load/reuse validated and release candidate tag fixed.
 - [x] R10: Remove production dependencies on fixed table/schema facts and validate schema drift and freshness behavior.
@@ -218,10 +220,10 @@ Task definitions and acceptance conditions: docs/agent_remaining_tasks_2026-09-1
 ## Daily Wrap-ups
 
 ### 2026-09-16 Daily Summary
-- **Work completed**: Added an environment-configurable single-process capacity policy, benchmark acceptance checker, preflight threshold validation, regression contracts, and deployment documentation. Re-ran the stored 10,000-row local workload without model or Databricks calls.
-- **Evidence**: Single-run p95 0.162 seconds; 4 workers and 20/20 concurrent requests p95 0.549 seconds; peak RSS 378,601,472 bytes. The 1 GiB memory, 768 MiB warning, 896 MiB critical gate is READY. Migration 125/125, tests 78/78, combined 203/203, Level 3 17/17, and full runner 217/217 PASS.
-- **Remaining**: Select the deployment target and access scope, rerun the gate on that host, measure concurrent Ollama inference, review and merge PR #68, refresh four stale TableContexts only with per-query approval, and expand 163 ungraded actual-agent cases.
-- **Reports**: `docs/runtime_capacity_2026-09-16.md`, `docs/runtime_capacity_2026-09-16.json`, `docs/runtime_performance_2026-09-16.json`.
+- **Work completed**: Added an environment-configurable single-process capacity policy and deployment gate. Expanded table-neutral schema inspection for dtype, numeric and categorical columns, fixed request-to-request tool-call state isolation, and added four independent structured metadata oracles without model or Databricks calls.
+- **Evidence**: Single-run p95 0.162 seconds; 4 workers and 20/20 concurrent requests p95 0.549 seconds; peak RSS 378,601,472 bytes. The 1 GiB memory, 768 MiB warning, 896 MiB critical gate is READY. Migration 126/126, tests 79/79, combined 205/205, Level 3 17/17, and full runner 217/217 PASS. Actual-agent independent grading is 41/200; GitHub Actions run 35095497759 passed and RC7 points to code commit e31150f.
+- **Remaining**: Select the deployment target and access scope, rerun the gate on that host, measure concurrent Ollama inference, review and merge PR #68, refresh four stale TableContexts only with per-query approval, and expand 159 ungraded actual-agent cases.
+- **Reports**: `docs/runtime_capacity_2026-09-16.md`, `docs/runtime_capacity_2026-09-16.json`, `docs/runtime_performance_2026-09-16.json`, `docs/actual_agent_evaluation_metadata_4_2026-09-16.json`.
 
 ### 2026-09-14 Daily Summary
 - **Work completed**: Validated an approved 10,000-row Databricks load, local histogram reuse, and loaded-sample Pearson correlation in the actual UI. Added table-neutral local correlation recovery, deployment policy timing, concurrent/model performance reports, TableContext readiness reporting, pinned SciPy compatibility, and 17 real Level 3 production recovery contracts in place of random placeholders.
