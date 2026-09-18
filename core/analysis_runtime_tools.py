@@ -4,12 +4,18 @@ from sqlglot import exp, parse
 from sqlglot.errors import SqlglotError
 from core.analysis_catalog import compact_catalog, resolve_table_context
 
-from core.analysis_tool_contract import AnalysisToolContext, ToolDefinition
+from core.analysis_tool_contract import (
+    AnalysisToolContext,
+    COMMON_TOOL_RESULT_SCHEMA,
+    ToolDefinition,
+    normalize_tool_result,
+)
 from utils.analysis_datasets import AnalysisNeed, Condition, DatasetStore, assess_reuse, filter_frame
 from utils.analysis_skill_registry import AnalysisSkillRegistry
 from utils.analysis_charts import recommend_charts, histogram_from_counts, validate_frequency_dataset
 from utils.analysis_provenance import raw_conditions, query_conditions, query_coverage, single_table, table_identity
 from core.analysis_sql import local_query, validate_query
+from utils.analysis_profile import profile_dataset as build_dataset_profile
 
 
 def build_analysis_tools(context: AnalysisToolContext) -> list[ToolDefinition]:
@@ -29,6 +35,68 @@ def build_analysis_tools(context: AnalysisToolContext) -> list[ToolDefinition]:
         frame = datasets.frames[dataset_id]
         return {"dataset": asdict(info), "dtypes": frame.dtypes.astype(str).to_dict(),
                 "preview": frame.head(5).to_dict(orient="records")}
+
+    def profile_dataset(dataset_id, columns=None, offset=0, limit=50):
+        return build_dataset_profile(datasets, dataset_id, columns, offset, limit)
+
+    def plan_source_discovery(catalog="", schema="", pattern="", limit=100):
+        known_catalogs = {}
+        for item in context.reference_context:
+            parts = [part.strip().strip('`') for part in str(item.get('table', '')).split('.')]
+            if len(parts) == 3 and parts[0]:
+                known_catalogs.setdefault(parts[0].casefold(), parts[0])
+        for info in datasets.metadata.values():
+            parts = [part.strip().strip('`') for part in str(info.source).split('.')]
+            if len(parts) == 3 and parts[0]:
+                known_catalogs.setdefault(parts[0].casefold(), parts[0])
+        requested = catalog.strip().strip('`')
+        if requested:
+            resolved = known_catalogs.get(requested.casefold())
+            if resolved is None:
+                return {
+                    'status': 'needs_context',
+                    'message': '현재 분석 문맥에서 확인된 catalog가 아닙니다. 임의 catalog를 조회하지 않습니다.',
+                    'known_catalogs': sorted(known_catalogs.values()),
+                }
+        elif len(known_catalogs) == 1:
+            resolved = next(iter(known_catalogs.values()))
+        else:
+            return {
+                'status': 'needs_context',
+                'message': '조회할 catalog를 하나로 특정해야 합니다.',
+                'known_catalogs': sorted(known_catalogs.values()),
+            }
+        try:
+            bounded_limit = int(limit)
+        except (TypeError, ValueError):
+            raise ValueError('limit은 정수여야 합니다.')
+        if not 1 <= bounded_limit <= 200:
+            raise ValueError('limit은 1~200이어야 합니다.')
+        quoted_catalog = '`' + resolved.replace('`', '``') + '`'
+        query = (
+            'SELECT table_catalog, table_schema, table_name, table_type '
+            f'FROM {quoted_catalog}.information_schema.tables'
+        )
+        predicates = []
+        if schema.strip():
+            predicates.append("table_schema = '" + schema.strip().replace("'", "''") + "'")
+        if pattern.strip():
+            predicates.append("instr(lower(table_name), lower('" + pattern.strip().replace("'", "''") + "')) > 0")
+        if predicates:
+            query += ' WHERE ' + ' AND '.join(predicates)
+        query += f' ORDER BY table_catalog, table_schema, table_name LIMIT {bounded_limit}'
+        validate_query(query)
+        source = f'{resolved}.information_schema.tables'
+        return {
+            'status': 'planned',
+            'discovery_plan': {
+                'source': source,
+                'query': query,
+                'reason': '사용 가능한 테이블 목록을 information_schema에서 조회합니다.',
+            },
+            'scope': f'{resolved} catalog의 테이블 메타데이터를 최대 {bounded_limit}건 조회하는 계획입니다. 아직 실행되지 않았습니다.',
+            'user_action': '이 계획을 query_databricks로 전달하면 사용자 승인 후에만 실행됩니다.',
+        }
 
     def use_dataset(dataset_id, columns, conditions=None, current_result_only=False):
         info = datasets.metadata[dataset_id]
@@ -256,8 +324,11 @@ def build_analysis_tools(context: AnalysisToolContext) -> list[ToolDefinition]:
         return {'status':'ready', 'cards':[card_entry(card)], 'reused':True}
 
     def tool(name, description, properties, required, run):
+        def normalized(*args, **kwargs):
+            return normalize_tool_result(run(*args, **kwargs))
         return ToolDefinition(name, description, {"type": "object", "properties": properties,
-            "required": required, "additionalProperties": False}, run)
+            "required": required, "additionalProperties": False}, normalized,
+            COMMON_TOOL_RESULT_SCHEMA)
 
     string = {"type": "string"}
     return [
@@ -267,6 +338,16 @@ def build_analysis_tools(context: AnalysisToolContext) -> list[ToolDefinition]:
              {"table": string}, ["table"], inspect_table_context),
         tool("inspect_dataset", "로딩된 datasets의 id만 사용하세요. 테이블명은 허용되지 않습니다. 결과 ID의 출처, 컬럼, 관측 단위와 최대 5개 미리보기 행을 확인합니다.",
              {"dataset_id": string}, ["dataset_id"], inspect_dataset),
+        tool("profile_dataset", "로딩된 dataset의 행·컬럼 수, 결측치, 고유값 수, 수치 요약과 제한된 범주 빈도를 구조화해 계산합니다. 원격 조회가 없고 원시 행을 반환하지 않습니다. coverage와 grain을 함께 해석하세요.",
+             {"dataset_id": string,
+              "columns": {"type": "array", "items": string},
+              "offset": {"type": "integer", "minimum": 0},
+              "limit": {"type": "integer", "minimum": 1, "maximum": 64}},
+             ["dataset_id"], profile_dataset),
+        tool("plan_source_discovery", "현재 문맥에서 확인된 Databricks catalog의 테이블 목록을 찾는 읽기 전용 information_schema SQL을 만듭니다. 실행하지 않으며, 반환된 discovery_plan을 query_databricks로 전달할 때 다시 사용자 승인을 받아야 합니다.",
+             {"catalog": string, "schema": string, "pattern": string,
+              "limit": {"type": "integer", "minimum": 1, "maximum": 200}},
+             [], plan_source_discovery),
         tool("use_dataset", "원본 범위에 대한 raw 데이터 충분성을 검사하고 가능하면 로컬 필터링합니다. conditions는 AND입니다. OR를 AND로 바꾸지 마세요. current_result_only는 사용자가 현재 결과 자체만 분석할 때 사용합니다.",
              {"dataset_id": string, "columns": {"type": "array", "items": string},
               "conditions": {"type": "array", "items": {"type": "object",

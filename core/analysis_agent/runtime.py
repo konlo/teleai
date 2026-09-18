@@ -17,7 +17,7 @@ from core.analysis_agent.memory import Transcript, memory_middleware, CompactDis
 from langchain_core.messages import HumanMessage, AIMessage, SystemMessage, ToolMessage
 from langgraph.checkpoint.sqlite import SqliteSaver
 from core.analysis_instructions import ANALYSIS_INSTRUCTIONS
-from core.analysis_tool_contract import AnalysisToolContext
+from core.analysis_tool_contract import AnalysisToolContext, normalize_tool_result
 from core.analysis_runtime_tools import build_analysis_tools
 from core.analysis_agent.assets import AssetDB, PersistentDatasets, PersistentCharts
 from core.analysis_agent.tools import local_tools
@@ -82,12 +82,16 @@ class GraphAnalysisRuntime:
                 """추가 원격 데이터 조회. 정확한 SQL을 제시하고 매번 사용자 승인 후 실행합니다."""
                 envelope=self.ledger.envelope(source,query,reason,self.connection_identity)
                 try:
-                    return self.ledger.execute(runtime.tool_call_id,envelope,self.remote_execute)
+                    return normalize_tool_result(
+                        self.ledger.execute(runtime.tool_call_id,envelope,self.remote_execute))
                 except Exception as exc:
                     self.diagnostics.failure(exc, stage='query_databricks')
-                    return {'status':'unavailable','error_type':type(exc).__name__,
+                    return normalize_tool_result({'status':'unavailable','error_type':type(exc).__name__,
                             'http_status':getattr(exc,'http_status',None),
-                            'message':('Databricks 접근이 거부되었습니다(403). 연결 권한과 설정을 확인해주세요. 조회는 제출되지 않았습니다.' if getattr(exc,'http_status',None)==403 else '조회가 완료되지 않았습니다. 임의로 재시도하거나 수치를 추정하지 마세요. 실행 기록과 연결 상태를 확인하고, 새 조회는 새 승인을 받아야 합니다.')}
+                            'error_code':'databricks_forbidden' if getattr(exc,'http_status',None)==403 else 'databricks_unavailable',
+                            'retryable':False,
+                            'user_action':'Databricks 연결 권한과 설정을 확인해주세요.',
+                            'message':('Databricks 접근이 거부되었습니다(403). 연결 권한과 설정을 확인해주세요. 조회는 제출되지 않았습니다.' if getattr(exc,'http_status',None)==403 else '조회가 완료되지 않았습니다. 임의로 재시도하거나 수치를 추정하지 마세요. 실행 기록과 연결 상태를 확인하고, 새 조회는 새 승인을 받아야 합니다.')})
             registered.append(query_databricks)
             middleware.append(HumanInTheLoopMiddleware(interrupt_on={
                 'query_databricks':{'allowed_decisions':['approve','reject']}}))

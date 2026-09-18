@@ -174,6 +174,17 @@ def reference_oracle(spec, grading, frames):
             if not isinstance(columns, list) or not all(isinstance(value, str) for value in columns):
                 raise ValueError("Reference metadata subset must be a string list")
             return columns
+        if grading["kind"] in {"null_counts", "distinct_counts"}:
+            value = namespace[grading["variable"]]
+            if isinstance(value, pd.Series):
+                result = {str(key): int(count) for key, count in value.items()}
+            elif isinstance(value, pd.DataFrame) and value.shape[1] == 2:
+                result = {str(row.iloc[0]): int(row.iloc[1]) for _, row in value.iterrows()}
+            else:
+                raise ValueError("Reference profile counts must be a Series or two-column frame")
+            if grading.get("positive_only"):
+                result = {key: count for key, count in result.items() if count > 0}
+            return result
         if grading["kind"] == "scalar":
             value = namespace[grading["variable"]]
             reduction = grading.get("reduction")
@@ -371,6 +382,35 @@ def grade_evidence(runtime, outcome, spec, grading, oracle, fixture_id, capture)
         return ("PASS", "Inspected table context metadata matches the reference",
                 {"metadata": matches[-1]}) if matches else (
                 "FAIL", "Missing fresh table-context evidence or schema metadata differs from reference", {})
+    if grading["kind"] in {"null_counts", "distinct_counts"}:
+        matches = []
+        field = "null_count" if grading["kind"] == "null_counts" else "distinct_count"
+        for message in runtime.events():
+            if not isinstance(message, ToolMessage) or message.name != "profile_dataset":
+                continue
+            try:
+                observation = json.loads(message.content)
+                dataset_id = observation["dataset_id"]
+                info = runtime.datasets.metadata[dataset_id]
+                profile_columns = observation["profile"]["columns"]
+                actual = {str(column["name"]): int(column[field]) for column in profile_columns}
+                if grading.get("positive_only"):
+                    actual = {key: count for key, count in actual.items() if count > 0}
+                same_source = info.source == spec["target_table"]
+                complete = info.coverage == "complete" and info.predicate_known
+                descendant = _fixture_descendant(runtime, dataset_id, fixture_id)
+                expected_keys = set(oracle)
+                selected = {key: actual[key] for key in expected_keys if key in actual}
+                exact_columns = not grading.get("exact_columns") or set(actual) == expected_keys
+                if (observation.get("status") == "ready" and same_source and complete and descendant
+                        and selected == oracle and exact_columns):
+                    matches.append({"dataset_id": dataset_id, "counts": selected,
+                                    "scope": observation.get("scope")})
+            except (KeyError, TypeError, ValueError):
+                continue
+        return ("PASS", "Structured dataset profile matches the independent reference",
+                {"profile": matches[-1]}) if matches else (
+                "FAIL", "Missing complete profile evidence or profile counts differ from reference", {})
     if grading["kind"] == "histogram":
         matches = []
         for chart_id in state["chart_ids"]:

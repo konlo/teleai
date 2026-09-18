@@ -78,7 +78,14 @@ class RecoveryMiddleware(AgentMiddleware):
             objective_text = re.sub(r'(?:평균|중앙값|합계|최소값|최대값)\s*(?:말고|대신|아닌|아니라)', '', text)
             kind = 'histogram' if re.search(r'히스토그램|\bhistogram', text, re.I) else None
             chart = bool(kind or re.search(r'차트|시각화|그래프|\bchart|\bplot', text, re.I))
-            count_request = not chart and bool(re.search(
+            profile_kind = None
+            if not chart and re.search(r'결측|누락|\b(?:null|missing|nan)\b', text, re.I):
+                profile_kind = 'missing'
+            elif not chart and re.search(r'고유값|유니크|\b(?:distinct|unique)\b', text, re.I):
+                profile_kind = 'distinct'
+            elif not chart and re.search(r'기초\s*통계|요약\s*통계|데이터\s*프로파일|\b(?:describe|profile)\b', text, re.I):
+                profile_kind = 'summary'
+            count_request = not chart and not profile_kind and bool(re.search(
                 r'건수|인원\s*수|명수|빈도|결측|고유값|(?:사람|고객|신청자|가입자|사용자|행)[\'\"]*(?:들)?(?:의)?\s*수',
                 text))
             calculation = bool(re.search(
@@ -109,6 +116,8 @@ class RecoveryMiddleware(AgentMiddleware):
             if re.search(r'비율|성공률|생존율|전환율|[가-힣A-Za-z]+[율률]|\b(?:ratio|rate|percentage|percent)\b',
                          objective_text, re.I): operations.append('RATIO')
             if count_request and 'COUNT' not in operations: operations.append('COUNT')
+            if profile_kind:
+                calculation, operations = False, []
             metadata_kind = None
             column_words = bool(re.search(r'컬럼|필드|\bcolumns?\b|\bfields?\b', text, re.I))
             if (not chart and not operations and column_words and
@@ -127,6 +136,7 @@ class RecoveryMiddleware(AgentMiddleware):
                 metadata_kind, calculation, operations = 'columns', False, []
             current = dict(request_id=human.id, attempts=0, chart=chart, kind=kind,
                 calculation=calculation, operations=operations, metadata_kind=metadata_kind,
+                profile_kind=profile_kind,
                 data_load=data_load,
                 expected_load_source=human.additional_kwargs.get('source','') if data_load else '',
                 expected_load_query=human.additional_kwargs.get('query','') if data_load else '',
@@ -146,7 +156,7 @@ class RecoveryMiddleware(AgentMiddleware):
                 # The exact source and query are already bound to the approval
                 # envelope.  Natural-language scope extraction from the reason
                 # text would invent an analysis obligation.
-                current.update(chart=False,kind=None,calculation=False,operations=[],metadata_kind=None,
+                current.update(chart=False,kind=None,calculation=False,operations=[],metadata_kind=None,profile_kind=None,
                     whole_row_count=False,current_result_only=False,fresh_source_required=False,
                     required_columns=[])
                 current['scope']={'conditions':[],'any_conditions':[],
@@ -178,7 +188,7 @@ class RecoveryMiddleware(AgentMiddleware):
             # observation may already be marked processed, so the loop below
             # is also allowed to reconsider that single observation.
             current.update(data_load=True,chart=False,kind=None,calculation=False,
-                operations=[],metadata_kind=None,whole_row_count=False,
+                operations=[],metadata_kind=None,profile_kind=None,whole_row_count=False,
                 current_result_only=False,fresh_source_required=False)
             current['scope']={'conditions':[],'any_conditions':[],
                 'measure_conditions':[],'ratio':None,'unresolved':[],'columns':[]}
@@ -276,6 +286,18 @@ class RecoveryMiddleware(AgentMiddleware):
                     current['failed'].pop(name,None)
                     self.diagnostics.emit('data_load_evidence',request_id=current.get('request_id'),
                         dataset_id=dataset_id,source=info.source,rows=info.rows,columns=len(info.columns))
+            if name == 'profile_dataset' and observation.get('status') == 'ready':
+                dataset_id = arguments.get('dataset_id') or observation.get('dataset_id')
+                info = self.context.datasets.metadata.get(dataset_id) if self.context and dataset_id else None
+                profiled = {column.get('name') for column in observation.get('profile', {}).get('columns', [])}
+                if (info is not None and self._source_matches(info, current)
+                        and self._fresh_for_request(info, current)
+                        and set(current.get('required_columns', [])).issubset(profiled)
+                        and (current.get('current_result_only')
+                             or (info.coverage == 'complete' and info.predicate_known))
+                        and self._scope_valid(info, current)):
+                    current['profile_evidence'] = observation
+                    current['failed'].pop(name, None)
             if name in {'local_analysis_sql', 'query_databricks'} and observation.get('status') == 'ready':
                 dataset_id = observation.get('dataset', {}).get('id')
                 if self._valid_calculation(dataset_id, arguments, current):
@@ -407,6 +429,7 @@ class RecoveryMiddleware(AgentMiddleware):
     def _complete(self, current):
         if current.get('data_load'): return bool(current.get('load_evidence_id'))
         if current.get('metadata_kind') and not current.get('metadata_evidence'): return False
+        if current.get('profile_kind') and not current.get('profile_evidence'): return False
         if current.get('chart') and not current['artifact_ids']: return False
         if current.get('calculation') and not current['evidence_ids']: return False
         if current.get('chart') or current.get('calculation'): return True
@@ -436,6 +459,34 @@ class RecoveryMiddleware(AgentMiddleware):
             else:
                 parts.append(f"{origin} 기준으로 {metadata['table']}에는 컬럼이 {len(metadata['columns'])}개 있습니다.{changed}\n"
                              + ', '.join(metadata['columns']))
+        if current.get('profile_evidence'):
+            evidence = current['profile_evidence']
+            profile = evidence['profile']
+            kind = current.get('profile_kind')
+            columns = profile.get('columns', [])
+            parts.append(f"보유 데이터 프로파일 결과입니다. 출처: {profile.get('source')}\n분석 범위: {evidence.get('scope')}")
+            if kind == 'missing':
+                parts.append('\n'.join(
+                    f"{column['name']}: 결측 {column['null_count']:,}건 ({column['null_ratio_pct']}%)"
+                    for column in columns))
+            elif kind == 'distinct':
+                parts.append('\n'.join(
+                    f"{column['name']}: 고유값 {column['distinct_count']:,}개"
+                    for column in columns))
+            else:
+                lines = [f"행 {profile.get('rows', 0):,}개, 컬럼 {profile.get('column_count', 0):,}개"]
+                for column in columns:
+                    summary = column.get('numeric_summary')
+                    if summary:
+                        lines.append(
+                            f"{column['name']}: 평균 {summary['mean']}, 중앙값 {summary['median']}, "
+                            f"최솟값 {summary['min']}, 최댓값 {summary['max']}, 결측 {column['null_count']:,}건")
+                    else:
+                        lines.append(
+                            f"{column['name']}: 고유값 {column['distinct_count']:,}개, 결측 {column['null_count']:,}건")
+                parts.append('\n'.join(lines))
+            if profile.get('column_page', {}).get('has_more'):
+                parts.append('컬럼이 많아 이번 응답에는 일부 컬럼만 포함했습니다.')
         for card_id in current.get('artifact_ids', []):
             card = self.artifacts[card_id]
             parts.append(f'{card.title} 이미지를 생성했습니다.\n분석 범위: {card.scope}')
@@ -499,6 +550,29 @@ class RecoveryMiddleware(AgentMiddleware):
         return {'recovery': current, 'messages': [message]}
 
     def _next_local(self, current, calls):
+        if (self.context and current.get('profile_kind') and not current.get('profile_evidence')
+                and not self._has_scope(current)):
+            required = set(current.get('required_columns', []))
+            candidates = [info for info in self.context.datasets.metadata.values()
+                if info.grain == 'raw' and required.issubset(info.columns)
+                and self._source_matches(info, current)
+                and self._fresh_for_request(info, current)
+                and (current.get('current_result_only')
+                    or (info.coverage == 'complete' and info.predicate_known))]
+            if len(candidates) == 1:
+                arguments = {'dataset_id': candidates[0].id}
+                if required:
+                    arguments['columns'] = sorted(required)
+                elif current.get('profile_kind') == 'distinct':
+                    frame = self.context.datasets.frames[candidates[0].id]
+                    categorical = [str(column) for column in frame.columns
+                                   if _dtype_family(frame[column].dtype) == 'categorical']
+                    if not categorical:
+                        return None
+                    arguments['columns'] = categorical
+                if not any(c.get('name') == 'profile_dataset' and c.get('args') == arguments
+                           for c in calls.values()):
+                    return {'name':'profile_dataset', 'args':arguments}
         if (self.context and current.get('metadata_kind') in {'columns', 'dtypes', 'numeric_columns', 'categorical_columns'}
                 and not current.get('metadata_evidence')):
             # A schema request has one safe local action when its source is
@@ -766,7 +840,7 @@ class RecoveryMiddleware(AgentMiddleware):
 
     def before_step(self, state):
         current, calls = self._state(state)
-        if (current.get('data_load') or current.get('plan') or current.get('chart') or current.get('calculation') or current.get('metadata_kind')) and self._complete(current):
+        if (current.get('data_load') or current.get('plan') or current.get('chart') or current.get('calculation') or current.get('metadata_kind') or current.get('profile_kind')) and self._complete(current):
             return {**self._finish(current), 'jump_to': 'end'}
         reason = self._limit_reason(current)
         if reason: return {**self._finish(current, reason=reason), 'jump_to': 'end'}
@@ -900,7 +974,7 @@ class RecoveryMiddleware(AgentMiddleware):
             missing_chart=bool(current.get('chart') and not current['artifact_ids']),
             missing_calculation=bool(current.get('calculation') and not current['evidence_ids']))
         instruction = ('이전 응답은 완료 증거가 없어 채택되지 않았습니다. 원래 사용자 요청을 계속 수행하세요. '
-            '수치/통계는 local_analysis_sql의 실제 계산 결과가 필요합니다. 테이블 설명이나 미리보기는 계산 증거가 아닙니다. '
+            '수치/통계는 local_analysis_sql의 실제 계산 결과가 필요하고 결측·고유값·기초 통계는 profile_dataset의 구조화 결과가 필요합니다. 테이블 설명이나 미리보기는 계산 증거가 아닙니다. '
             '요청한 출처, 컬럼, 집계와 필터를 유지하세요. 히스토그램은 prepare_histogram(source, column, where_sql)을 사용하세요. '
             '이 도구는 먼저 재사용 가능한 보유 데이터를 찾고, 부족한 경우에만 승인형 로딩과 렌더링 계획을 만듭니다. '
             'query_databricks 호출이 승인 카드를 생성하며 실제 조회는 사용자 승인을 기다립니다. '

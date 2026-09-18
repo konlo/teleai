@@ -62,6 +62,14 @@ class ActualAgentEvaluationTests(unittest.TestCase):
         self.assertEqual(result["tools"]["local_analysis_sql"], 1)
         self.assertEqual(result["remote_executions"], 0)
 
+    def test_profile_cases_use_structured_local_evidence(self):
+        for case in ("L1_006", "L1_008", "L1_009"):
+            with self.subTest(case=case):
+                result = self.evaluate(case, EvaluationModel())
+                self.assertEqual(result["status"], "PASS", result)
+                self.assertEqual(result["tools"]["profile_dataset"], 1)
+                self.assertEqual(result["remote_executions"], 0)
+
     def test_wrong_scalar_tool_result_fails_even_with_correct_sounding_prose(self):
         result = self.evaluate("L1_016", EvaluationModel(calls=[{"name": "local_analysis_sql", "args": {
             "dataset_id": "$fixture", "query": "SELECT AVG(balance) + 999 AS average FROM data"}}],
@@ -101,7 +109,7 @@ class ActualAgentEvaluationTests(unittest.TestCase):
         self.assertEqual(result["evidence"]["counterfactual_probes"], 2)
 
     def test_every_declared_reference_oracle_is_executable_without_a_model(self):
-        self.assertEqual(len(self.grading), 41)
+        self.assertEqual(len(self.grading), 44)
         self.assertTrue(set(self.grading).issubset(self.specs))
         for case, grading in self.grading.items():
             with self.subTest(case=case):
