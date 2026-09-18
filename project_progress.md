@@ -31,6 +31,7 @@
 - **Validation**: tool contract 8/8, application 88/88, migration 126/126, Level 3 17/17, 전체 참고 runner 217/217, compileall과 `git diff --check` PASS. source discovery production graph는 정확한 승인 카드에서 멈췄고 remote executor 호출은 0회였다.
 - **Artifacts**: `docs/agent_tool_contract_matrix_2026-09-18.md`, `docs/actual_agent_evaluation_profile_3_2026-09-18.json`, `utils/analysis_profile.py`, `tests/test_analysis_tool_contracts.py`를 추가하고 tool audit와 남은 작업 목록을 갱신했다.
 - **Outcome**: R14 P0 완료. P1의 `render_chart_spec`, multi-dataset join, 구조화 통계 검정과 실제 배포 gate는 남아 있다. Databricks 원격 조회는 실행하지 않았다.
+- **Remote**: commit `f2db3b2`를 원격 PR #68 브랜치에 push했다. GitHub Actions run `35351780939`, job `105621396740`이 pinned 환경에서 migration, application, Level 3, 전체 runner, compile 검사를 모두 통과해 1분 17초에 성공했다.
 
 ## [2026-09-16 21:32:03 KST] [Agent: Codex] User Request: agent tool 관점의 부족한 기능 진단
 - **Request**: 현재 data 분석 agent들이 사용하는 tool 구성을 점검하고 부족한 도구, 중복되거나 계약이 약한 도구, 추가로 필요한 도구가 있는지 먼저 진단한다.
@@ -244,7 +245,7 @@ Task definitions and acceptance conditions: docs/agent_remaining_tasks_2026-09-1
 
 ### 2026-09-18 Daily Summary
 - **Work completed**: Added a common structured result contract to every active analysis tool, implemented bounded dataset profiling and approval-safe Databricks source discovery planning, connected missing/distinct/summary intents to deterministic recovery, and added direct `show_chart` success/error coverage.
-- **Evidence**: `L1_006`, `L1_008`, and `L1_009` production graph evaluations passed with zero model and remote calls. Source discovery paused at the exact HITL approval card with zero remote executions. Application 88/88, migration 126/126, Level 3 17/17, full reference runner 217/217, compileall, and diff checks passed. Independent grading coverage is 44/200.
+- **Evidence**: `L1_006`, `L1_008`, and `L1_009` production graph evaluations passed with zero model and remote calls. Source discovery paused at the exact HITL approval card with zero remote executions. Application 88/88, migration 126/126, Level 3 17/17, full reference runner 217/217, compileall, and diff checks passed. GitHub Actions run 35351780939 also passed in 1m17s. Independent grading coverage is 44/200.
 - **Remaining**: Build a bounded chart specification tool, multi-dataset join with lineage/cardinality checks, and structured statistical tests; expand 156 independent oracles; review/merge/deploy PR #68 and run the selected-host capacity and smoke/rollback gates.
 - **Reports**: `docs/agent_tool_audit_2026-09-16.md`, `docs/agent_tool_contract_matrix_2026-09-18.md`, `docs/actual_agent_evaluation_profile_3_2026-09-18.json`.
 
