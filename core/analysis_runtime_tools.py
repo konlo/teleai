@@ -12,7 +12,12 @@ from core.analysis_tool_contract import (
 )
 from utils.analysis_datasets import AnalysisNeed, Condition, DatasetStore, assess_reuse, filter_frame
 from utils.analysis_skill_registry import AnalysisSkillRegistry
-from utils.analysis_charts import recommend_charts, histogram_from_counts, validate_frequency_dataset
+from utils.analysis_charts import (
+    histogram_from_counts,
+    recommend_charts,
+    render_chart_spec as build_chart_from_spec,
+    validate_frequency_dataset,
+)
 from utils.analysis_provenance import raw_conditions, query_conditions, query_coverage, single_table, table_identity
 from core.analysis_sql import local_query, validate_query
 from utils.analysis_profile import profile_dataset as build_dataset_profile
@@ -196,6 +201,17 @@ def build_analysis_tools(context: AnalysisToolContext) -> list[ToolDefinition]:
              "reason": c.reason, "kind": c.kind, "columns": c.columns, "scope": c.scope}
             for c in previews]}
 
+    def render_chart_spec(dataset_id, kind, x, y="", category="", aggregation="none",
+                          sort="none", top_n=50, bins=20, title="", x_label="",
+                          y_label="", orientation="vertical"):
+        card, summary, spec = build_chart_from_spec(
+            datasets, dataset_id, kind=kind, x=x, y=y, category=category,
+            aggregation=aggregation, sort=sort, top_n=top_n, bins=bins,
+            title=title, x_label=x_label, y_label=y_label, orientation=orientation)
+        context.artifacts[card.id] = card
+        return {"status": "ready", "cards": [card_entry(card)],
+                "chart_spec": spec, "render_summary": summary}
+
     def card_entry(card):
         return {'id':card.id,'dataset_id':card.dataset_id,'title':card.title,
                 'reason':card.reason,'kind':card.kind,'columns':card.columns,'scope':card.scope}
@@ -359,6 +375,19 @@ def build_analysis_tools(context: AnalysisToolContext) -> list[ToolDefinition]:
         tool("recommend_chart_images", "현재 데이터의 통계로 실제 이미지 후보를 만듭니다. 원격 조회 없음. 반환된 카드 ID의 이미지는 UI가 표시합니다.",
              {"dataset_id": string, "columns": {"type": "array", "items": string}},
              ["dataset_id"], chart_options),
+        tool("render_chart_spec", "사용자가 지정한 차트 종류와 축·집계·정렬·상위 N개·bin·제목·축 라벨을 제한된 schema로 실제 PNG에 렌더링합니다. 임의 코드나 파일·URL은 받지 않습니다. 로딩된 dataset 범위를 넓히지 않으며 반환 scope와 sample 여부를 설명하세요.",
+             {"dataset_id": string,
+              "kind": {"type":"string","enum":["histogram","bar","line","scatter","boxplot"]},
+              "x": string, "y": string, "category": string,
+              "aggregation": {"type":"string","enum":["none","count","sum","mean","median","min","max"]},
+              "sort": {"type":"string","enum":["none","ascending","descending"]},
+              "top_n": {"type":"integer","minimum":1,"maximum":50},
+              "bins": {"type":"integer","minimum":2,"maximum":100},
+              "title": {"type":"string","maxLength":120},
+              "x_label": {"type":"string","maxLength":120},
+              "y_label": {"type":"string","maxLength":120},
+              "orientation": {"type":"string","enum":["vertical","horizontal"]}},
+             ["dataset_id","kind","x"], render_chart_spec),
         tool("prepare_histogram", "보유한 완전한 빈도·원본 데이터와 이미지를 먼저 재사용하여 히스토그램을 만듭니다. 데이터가 부족할 때만 승인형 조회 계획을 반환합니다. source는 정확한 테이블명, column은 수치 컬럼, where_sql은 유지해야 할 사용자 필터 SQL(없으면 빈 문자열)입니다. 사용자가 최신/현재 원본을 명시하면 fresh_source_required=true로 지정해 캐시를 재사용하지 않습니다. 직접 원격 조회하지 않습니다.",
              {"source":string,"column":string,"where_sql":string,
               "fresh_source_required":{"type":"boolean"}},["source","column"],prepare_histogram),

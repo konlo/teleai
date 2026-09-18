@@ -31,6 +31,7 @@
 | `recommend_chart_images` | 완료 | 완료 | 원격 실행 없음 | 완료 | 완료 | 실제 PNG 저장 |
 | `prepare_histogram` | 완료 | 완료 | 데이터 부족 시 계획만 반환 | 완료 | 완료 | 완전한 raw/frequency/PNG 재사용 |
 | `render_histogram` | 완료 | 완료 | 원격 실행 없음 | 완료 | 완료 | 빈도 lineage 검증 |
+| `render_chart_spec` | 완료 | 완료 | 원격 실행 없음 | 완료 | 완료 | 5개 kind와 제한된 축·집계·정렬·표시 수·라벨, 실제 PNG와 입력 digest |
 | `show_chart` | 완료 | 완료 | 원격 실행 없음 | 완료 | 완료 | 실제 PNG 재표시·missing ID 오류 직접 검증 |
 | `local_analysis_sql` | 완료 | 완료 | 원격 실행 없음 | 완료 | 완료 | 단일 `data`와 CTE, 외부 접근 차단 |
 | `query_databricks` | 완료 | 완료 | 정확한 fingerprint별 HITL, 불명 제출 자동 재실행 금지 | 완료 | 완료 | 원격 연결이 있을 때만 등록 |
@@ -43,13 +44,13 @@
 - source discovery는 현재 문맥에 확인된 catalog만 사용한다. catalog가 없거나 둘 이상인데 지정되지 않으면 `needs_context`이며 SQL을 만들거나 실행하지 않는다.
 - source discovery graph 테스트는 `information_schema.tables` SELECT를 만든 뒤 정확한 승인 카드에서 멈추며 remote executor 호출이 0회임을 확인한다.
 - 결측치와 범주형 고유값 문항 `L1_006`, `L1_008`, `L1_009`는 production graph와 독립 reference oracle로 3/3 PASS했다. 모델 호출과 원격 실행은 모두 0회다.
-- application tests 88/88, migration tests 126/126, Level 3 17/17, 전체 참고 runner 217/217, compileall과 `git diff --check`가 통과했다.
+- `render_chart_spec`은 임의 Python·파일·URL 없이 histogram/bar/line/scatter/boxplot을 실제 PNG로 만든다. `L1_077`, `L1_078`, `L1_086`의 데이터 digest·표시 범위·lineage가 독립 oracle과 일치했고 모델·원격 호출은 0회였다. 재시작 후 PNG 복구와 한국어 글꼴 선택도 검증했다.
+- application tests 95/95, migration tests 126/126, Level 3 17/17, 전체 참고 runner 217/217, compileall과 `git diff --check`가 통과했다.
 
 ## 남은 tool 공백
 
-P0의 공통 계약, dataset profile, 승인형 source discovery는 구현됐다. 범용 분석 범위를 넓히려면 다음을 별도 release candidate로 구현해야 한다.
+P0의 공통 계약, dataset profile, 승인형 source discovery와 P1의 제한된 chart spec은 구현됐다. 범용 분석 범위를 넓히려면 다음을 별도 release candidate로 구현해야 한다.
 
-1. 제한된 `render_chart_spec`: 명시적 차트 종류, 축, 집계, 정렬, top-N, bins, 제목과 라벨 수정.
-2. lineage와 many-to-many 폭증 검사가 있는 다중 dataset join.
-3. 표본 수, 결측 처리, 가정, 효과크기와 신뢰구간을 반환하는 구조화 통계 검정.
-4. source discovery의 승인 완료·거절·재시작 전용 사용자 여정 확대. 현재 공통 `query_databricks` 계약은 검증됐지만 discovery 결과 전용 승인 후 실행 테스트는 실제 원격 없이 추가할 수 있다.
+1. lineage와 many-to-many 폭증 검사가 있는 다중 dataset join.
+2. 표본 수, 결측 처리, 가정, 효과크기와 신뢰구간을 반환하는 구조화 통계 검정.
+3. source discovery의 승인 완료·거절·재시작 전용 사용자 여정 확대. 현재 공통 `query_databricks` 계약은 검증됐지만 discovery 결과 전용 승인 후 실행 테스트는 실제 원격 없이 추가할 수 있다.

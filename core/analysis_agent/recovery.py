@@ -76,8 +76,16 @@ class RecoveryMiddleware(AgentMiddleware):
                 r'최신|새로\s*(?:갱신|업데이트|변경)된|현재\s*(?:원본|테이블|DB|데이터베이스)|'
                 r'지금\s*(?:원본|테이블|DB|데이터베이스)|오늘\s*기준|방금\s*갱신', text, re.I)) and not current_loaded_reference
             objective_text = re.sub(r'(?:평균|중앙값|합계|최소값|최대값)\s*(?:말고|대신|아닌|아니라)', '', text)
-            kind = 'histogram' if re.search(r'히스토그램|\bhistogram', text, re.I) else None
+            if re.search(r'히스토그램|\bhistogram', text, re.I): kind = 'histogram'
+            elif re.search(r'산점도|산포도|\bscatter(?:\s*plot)?\b', text, re.I): kind = 'scatter'
+            elif re.search(r'박스\s*플롯|상자\s*수염|상자\s*그림|\bbox\s*plot\b|\bboxplot\b', text, re.I): kind = 'boxplot'
+            elif re.search(r'막대|바\s*차트|\bbar(?:\s*chart)?\b', text, re.I): kind = 'bar'
+            elif re.search(r'선\s*(?:그래프|차트)|꺾은선|\bline(?:\s*chart)?\b', text, re.I): kind = 'line'
+            else: kind = None
             chart = bool(kind or re.search(r'차트|시각화|그래프|\bchart|\bplot', text, re.I))
+            chart_spec_requested = bool(chart and (
+                kind in {'bar', 'line', 'scatter', 'boxplot'} or
+                re.search(r'제목|축\s*라벨|정렬|상위\s*\d+|top\s*\d+|\bbins?\b|\d+\s*(?:개\s*)?구간|가로|세로', text, re.I)))
             profile_kind = None
             if not chart and re.search(r'결측|누락|\b(?:null|missing|nan)\b', text, re.I):
                 profile_kind = 'missing'
@@ -104,6 +112,8 @@ class RecoveryMiddleware(AgentMiddleware):
                     sources.add(info.source)
             def mentioned(name):
                 return bool(name and re.search(r'(?<![A-Za-z0-9_])' + re.escape(name) + r'(?![A-Za-z0-9_])', text))
+            mentioned_columns = [name for name in names if mentioned(name)]
+            mentioned_columns.sort(key=lambda name: (text.find(name) if text.find(name) >= 0 else len(text), name))
             operations = []
             for pattern, operation in [(r'평균|\b(?:mean|average|avg)\b', 'AVG'),
                     (r'합계|총합|\bsum\b', 'SUM'), (r'중앙값|\bmedian\b', 'MEDIAN'),
@@ -136,7 +146,7 @@ class RecoveryMiddleware(AgentMiddleware):
                 metadata_kind, calculation, operations = 'columns', False, []
             current = dict(request_id=human.id, attempts=0, chart=chart, kind=kind,
                 calculation=calculation, operations=operations, metadata_kind=metadata_kind,
-                profile_kind=profile_kind,
+                profile_kind=profile_kind, chart_spec_requested=chart_spec_requested,
                 data_load=data_load,
                 expected_load_source=human.additional_kwargs.get('source','') if data_load else '',
                 expected_load_query=human.additional_kwargs.get('query','') if data_load else '',
@@ -147,7 +157,7 @@ class RecoveryMiddleware(AgentMiddleware):
                     r'표본|샘플|일부\s*데이터', text)),
                 fresh_source_required=fresh_source_required,
                 request_started_at=time.time(),
-                required_columns=sorted(name for name in names if mentioned(name)),
+                required_columns=mentioned_columns,
                 required_sources=sorted(s for s in sources if mentioned(s) or mentioned(s.split('.')[-1])),
                 columns=[], failed={}, status='working')
             current['previous_scope'] = previous.get('scope', {})
@@ -157,7 +167,7 @@ class RecoveryMiddleware(AgentMiddleware):
                 # envelope.  Natural-language scope extraction from the reason
                 # text would invent an analysis obligation.
                 current.update(chart=False,kind=None,calculation=False,operations=[],metadata_kind=None,profile_kind=None,
-                    whole_row_count=False,current_result_only=False,fresh_source_required=False,
+                    chart_spec_requested=False,whole_row_count=False,current_result_only=False,fresh_source_required=False,
                     required_columns=[])
                 current['scope']={'conditions':[],'any_conditions':[],
                     'measure_conditions':[],'ratio':None,'unresolved':[],'columns':[]}
@@ -174,6 +184,8 @@ class RecoveryMiddleware(AgentMiddleware):
                 if not current['required_columns']: current['required_columns'] = previous.get('required_columns', [])
                 if not current['required_sources']: current['required_sources'] = previous.get('required_sources', [])
                 if current['chart'] and not kind: current['kind'] = previous.get('kind')
+                if current['chart'] and re.search(r'제목|축|라벨|정렬|상위|top|bin|구간|가로|세로|바꿔|수정', text, re.I):
+                    current['chart_spec_requested'] = True
         upgraded_current_result = bool(human and current.get('request_id') == human.id
             and current_loaded_reference and not current.get('current_result_only'))
         if upgraded_current_result:
@@ -188,7 +200,7 @@ class RecoveryMiddleware(AgentMiddleware):
             # observation may already be marked processed, so the loop below
             # is also allowed to reconsider that single observation.
             current.update(data_load=True,chart=False,kind=None,calculation=False,
-                operations=[],metadata_kind=None,profile_kind=None,whole_row_count=False,
+                operations=[],metadata_kind=None,profile_kind=None,chart_spec_requested=False,whole_row_count=False,
                 current_result_only=False,fresh_source_required=False)
             current['scope']={'conditions':[],'any_conditions':[],
                 'measure_conditions':[],'ratio':None,'unresolved':[],'columns':[]}
@@ -302,7 +314,7 @@ class RecoveryMiddleware(AgentMiddleware):
                 dataset_id = observation.get('dataset', {}).get('id')
                 if self._valid_calculation(dataset_id, arguments, current):
                     current['evidence_ids'].append(dataset_id)
-            if name in {'recommend_chart_images', 'render_histogram', 'prepare_histogram', 'show_chart'} and observation.get('cards'):
+            if name in {'recommend_chart_images', 'render_chart_spec', 'render_histogram', 'prepare_histogram', 'show_chart'} and observation.get('cards'):
                 current['chart'] = True
                 dataset_id = arguments.get('dataset_id') or observation.get('loaded_dataset')
                 valid = []
@@ -313,7 +325,7 @@ class RecoveryMiddleware(AgentMiddleware):
                     if self._valid_card(card, current, candidate_dataset): valid.append(card.id)
                 if valid:
                     current['artifact_ids'] = valid
-                    for tool in ('recommend_chart_images', 'render_histogram', 'prepare_histogram', 'show_chart'):
+                    for tool in ('recommend_chart_images', 'render_chart_spec', 'render_histogram', 'prepare_histogram', 'show_chart'):
                         current['failed'].pop(tool, None)
         return current, calls
 
@@ -606,9 +618,41 @@ class RecoveryMiddleware(AgentMiddleware):
                          'weight_column': current['plan']['weight_column']}
             if not any(c.get('name') == 'render_histogram' and c.get('args') == arguments for c in calls.values()):
                 return {'name': 'render_histogram', 'args': arguments}
+        if (self.context and current.get('chart') and current.get('kind') in {'bar', 'line', 'scatter', 'boxplot'}
+                and not current.get('fresh_source_required') and not current.get('artifact_ids')
+                and not self._has_scope(current)):
+            columns = current.get('required_columns', [])
+            candidates = [info for info in self.context.datasets.metadata.values()
+                if info.grain == 'raw' and set(columns).issubset(info.columns)
+                and self._source_matches(info, current)
+                and (current.get('current_result_only')
+                    or (info.coverage == 'complete' and info.predicate_known
+                        and self._fresh_for_request(info, current)))]
+            if len(candidates) == 1:
+                frame = self.context.datasets.frames[candidates[0].id]
+                from pandas.api.types import is_datetime64_any_dtype, is_numeric_dtype
+                arguments = None
+                if current['kind'] == 'boxplot' and len(columns) == 1 and is_numeric_dtype(frame[columns[0]]):
+                    arguments = {'dataset_id':candidates[0].id,'kind':'boxplot','x':columns[0]}
+                elif current['kind'] == 'scatter' and len(columns) == 2 and all(
+                        is_numeric_dtype(frame[column]) for column in columns):
+                    arguments = {'dataset_id':candidates[0].id,'kind':'scatter','x':columns[0],'y':columns[1]}
+                elif current['kind'] == 'bar' and len(columns) == 1 and 1 <= frame[columns[0]].nunique() <= 50:
+                    arguments = {'dataset_id':candidates[0].id,'kind':'bar','x':columns[0],
+                                 'aggregation':'count','sort':'descending','top_n':50}
+                elif current['kind'] == 'line' and len(columns) == 2:
+                    time_columns = [column for column in columns if is_datetime64_any_dtype(frame[column])]
+                    numeric_columns = [column for column in columns if is_numeric_dtype(frame[column])]
+                    if len(time_columns) == 1 and len(numeric_columns) == 1 and frame[time_columns[0]].is_unique:
+                        arguments = {'dataset_id':candidates[0].id,'kind':'line',
+                                     'x':time_columns[0],'y':numeric_columns[0],'sort':'ascending'}
+                if arguments and not any(c.get('name') == 'render_chart_spec' and c.get('args') == arguments
+                                         for c in calls.values()):
+                    return {'name':'render_chart_spec','args':arguments}
         scope = current.get('scope', {})
         if (self.context and current.get('chart') and current.get('kind') == 'histogram'
-                and not current.get('fresh_source_required') and not current.get('plan')
+                and not current.get('fresh_source_required') and not current.get('chart_spec_requested')
+                and not current.get('plan')
                 and not current.get('artifact_ids') and not self._has_scope(current)
                 and len(current.get('required_columns', [])) == 1):
             column=current['required_columns'][0]
@@ -804,7 +848,8 @@ class RecoveryMiddleware(AgentMiddleware):
         the repeated request visibly contains the image while avoiding a model
         call and any remote query.
         """
-        if (current.get('fresh_source_required') or not current.get('chart') or not current.get('kind')
+        if (current.get('fresh_source_required') or current.get('chart_spec_requested')
+                or not current.get('chart') or not current.get('kind')
                 or current.get('artifact_ids')):
             return None
         valid = []
@@ -900,10 +945,12 @@ class RecoveryMiddleware(AgentMiddleware):
             except (KeyError, OSError, ValueError, TypeError):
                 return True
             return self._valid_card(card, current, card.dataset_id)
-        if call.get('name') in {'recommend_chart_images', 'render_histogram'} and self.context:
+        if call.get('name') in {'recommend_chart_images', 'render_chart_spec', 'render_histogram'} and self.context:
             info = self.context.datasets.metadata.get(arguments.get('dataset_id'))
             if info is None: return True  # The tool adapter reports unknown IDs.
-            return self._scope_valid(info, current, arguments.get('value_column'))
+            column = arguments.get('value_column') or (
+                arguments.get('x') if arguments.get('kind') == 'histogram' else None)
+            return self._scope_valid(info, current, column)
         if call.get('name') != 'query_databricks': return True
         if current.get('current_result_only'):
             return False
@@ -942,7 +989,7 @@ class RecoveryMiddleware(AgentMiddleware):
         started = current.pop('model_started_at', None)
         if started: current['model_seconds'] += max(0, time.time() - started)
         for call in last.tool_calls:
-            if call['name'] in {'recommend_chart_images', 'render_histogram', 'show_chart'}: current['chart'] = True
+            if call['name'] in {'recommend_chart_images', 'render_chart_spec', 'render_histogram', 'show_chart'}: current['chart'] = True
         remote_block = current.get('remote_rejected') or any(o.get('status') == 'unavailable' for o in current['failed'].values())
         if self._complete(current) and (current.get('plan') or not last.tool_calls):
             return self._finish(current, last)
@@ -975,7 +1022,7 @@ class RecoveryMiddleware(AgentMiddleware):
             missing_calculation=bool(current.get('calculation') and not current['evidence_ids']))
         instruction = ('이전 응답은 완료 증거가 없어 채택되지 않았습니다. 원래 사용자 요청을 계속 수행하세요. '
             '수치/통계는 local_analysis_sql의 실제 계산 결과가 필요하고 결측·고유값·기초 통계는 profile_dataset의 구조화 결과가 필요합니다. 테이블 설명이나 미리보기는 계산 증거가 아닙니다. '
-            '요청한 출처, 컬럼, 집계와 필터를 유지하세요. 히스토그램은 prepare_histogram(source, column, where_sql)을 사용하세요. '
+            '요청한 출처, 컬럼, 집계와 필터를 유지하세요. 지정 차트와 수정은 render_chart_spec을 사용하고, 원격 데이터가 필요한 히스토그램은 prepare_histogram(source, column, where_sql)을 사용하세요. '
             '이 도구는 먼저 재사용 가능한 보유 데이터를 찾고, 부족한 경우에만 승인형 로딩과 렌더링 계획을 만듭니다. '
             'query_databricks 호출이 승인 카드를 생성하며 실제 조회는 사용자 승인을 기다립니다. '
             '동일한 실패 호출을 반복하거나 증거 없이 완료했다고 말하지 마세요.')

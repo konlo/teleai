@@ -99,6 +99,12 @@ def _distribution(values, weights=None):
     return grouped[grouped != 0]
 
 
+def _frame_digest(frame):
+    encoded_columns = json.dumps(list(frame.columns), ensure_ascii=False).encode()
+    hashed = pd.util.hash_pandas_object(frame.reset_index(drop=True), index=False).values.tobytes()
+    return sha256(encoded_columns + hashed).hexdigest()
+
+
 class HistogramCapture:
     """Observe real Matplotlib input and bind it to the bytes actually persisted.
 
@@ -108,11 +114,14 @@ class HistogramCapture:
     """
     def __init__(self):
         self.histograms = []
+        self.scatters = []
+        self.boxplots = []
         self.saved = {}
 
     def __enter__(self):
         self.stack = ExitStack()
-        original_hist, original_save = Axes.hist, Figure.savefig
+        original_hist, original_scatter = Axes.hist, Axes.scatter
+        original_boxplot, original_save = Axes.boxplot, Figure.savefig
 
         def observed_hist(axis, x, *args, **kwargs):
             result = original_hist(axis, x, *args, **kwargs)
@@ -125,6 +134,26 @@ class HistogramCapture:
                 pass  # An unsupported plot is never accepted by the grader.
             return result
 
+        def observed_scatter(axis, x, y, *args, **kwargs):
+            result = original_scatter(axis, x, y, *args, **kwargs)
+            try:
+                left, right = np.asarray(x), np.asarray(y)
+                if left.ndim == right.ndim == 1 and len(left) == len(right):
+                    self.scatters.append({"figure": id(axis.figure), "x": left, "y": right})
+            except (TypeError, ValueError):
+                pass
+            return result
+
+        def observed_boxplot(axis, x, *args, **kwargs):
+            result = original_boxplot(axis, x, *args, **kwargs)
+            try:
+                values = np.asarray(x)
+                if values.ndim == 1:
+                    self.boxplots.append({"figure": id(axis.figure), "values": values})
+            except (TypeError, ValueError):
+                pass
+            return result
+
         def observed_save(figure, destination, *args, **kwargs):
             result = original_save(figure, destination, *args, **kwargs)
             if hasattr(destination, "getvalue"):
@@ -134,6 +163,8 @@ class HistogramCapture:
             return result
 
         self.stack.enter_context(patch.object(Axes, "hist", observed_hist))
+        self.stack.enter_context(patch.object(Axes, "scatter", observed_scatter))
+        self.stack.enter_context(patch.object(Axes, "boxplot", observed_boxplot))
         self.stack.enter_context(patch.object(Figure, "savefig", observed_save))
         return self
 
@@ -158,6 +189,22 @@ def reference_oracle(spec, grading, frames):
             if len(capture.histograms) != 1:
                 raise ValueError("Reference must produce exactly one supported histogram")
             return capture.histograms[0]
+        if grading["kind"] == "chart_scatter":
+            if len(capture.scatters) != 1:
+                raise ValueError("Reference must produce exactly one scatter plot")
+            observed = capture.scatters[0]
+            plotted = pd.DataFrame({grading["x"]: observed["x"], grading["y"]: observed["y"]})
+            return {"data_sha256": _frame_digest(plotted), "rows": len(plotted)}
+        if grading["kind"] == "chart_boxplot":
+            if len(capture.boxplots) != 1:
+                raise ValueError("Reference must produce exactly one boxplot")
+            plotted = pd.DataFrame({grading["column"]: capture.boxplots[0]["values"]})
+            return {"data_sha256": _frame_digest(plotted), "rows": len(plotted)}
+        if grading["kind"] == "chart_bar_counts":
+            value = namespace[grading["variable"]]
+            if not isinstance(value, pd.Series) or value.empty:
+                raise ValueError("Reference bar counts must be a non-empty Series")
+            return {str(key): float(count) for key, count in value.items()}
         if grading["kind"] == "metadata_columns":
             columns = namespace[grading["variable"]]
             if not isinstance(columns, list) or not columns or not all(isinstance(value, str) for value in columns):
@@ -411,6 +458,47 @@ def grade_evidence(runtime, outcome, spec, grading, oracle, fixture_id, capture)
         return ("PASS", "Structured dataset profile matches the independent reference",
                 {"profile": matches[-1]}) if matches else (
                 "FAIL", "Missing complete profile evidence or profile counts differ from reference", {})
+    if grading["kind"] in {"chart_scatter", "chart_boxplot", "chart_bar_counts"}:
+        matches = []
+        expected_kind = {"chart_scatter":"scatter", "chart_boxplot":"boxplot",
+                         "chart_bar_counts":"bar"}[grading["kind"]]
+        for message in runtime.events():
+            if not isinstance(message, ToolMessage) or message.name != "render_chart_spec":
+                continue
+            try:
+                observation = json.loads(message.content)
+                entry = observation["cards"][0]
+                card = runtime.artifacts[entry["id"]]
+                info = runtime.datasets.metadata[card.dataset_id]
+                summary = observation["render_summary"]
+                spec_result = observation["chart_spec"]
+                digest = sha256(card.image).hexdigest()
+                grounded = (observation.get("status") == "ready" and card.kind == expected_kind
+                            and spec_result.get("kind") == expected_kind
+                            and info.source == spec["target_table"] and info.coverage == "complete"
+                            and _fixture_descendant(runtime, card.dataset_id, fixture_id)
+                            and card.image.startswith(b"\x89PNG\r\n\x1a\n")
+                            and digest in capture.saved)
+                if grading["kind"] == "chart_bar_counts":
+                    actual = {str(point["x"]): float(point["value"])
+                              for point in summary.get("points", [])}
+                    correct = (actual == oracle and spec_result.get("aggregation") == "count"
+                               and spec_result.get("x") == grading["column"])
+                else:
+                    expected_columns = ([grading["column"]] if grading["kind"] == "chart_boxplot"
+                                        else [grading["x"], grading["y"]])
+                    correct = (list(card.columns) == expected_columns
+                               and summary.get("data_sha256") == oracle["data_sha256"]
+                               and summary.get("rendered_rows") == oracle["rows"])
+                if grounded and correct:
+                    matches.append({"chart_id":card.id,"png_sha256":digest,
+                                    "kind":card.kind,"columns":list(card.columns),
+                                    "data_sha256":summary.get("data_sha256")})
+            except (KeyError, TypeError, ValueError):
+                continue
+        return ("PASS", "Real PNG and declarative chart data match the independent reference",
+                {"charts": matches}) if matches else (
+                "FAIL", "Missing grounded chart PNG or rendered data differs from reference", {})
     if grading["kind"] == "histogram":
         matches = []
         for chart_id in state["chart_ids"]:
