@@ -1,0 +1,99 @@
+{
+  "created_at": "2026-09-13T02:40:33.651092+00:00",
+  "platform": "macOS-15.5-arm64-arm-64bit",
+  "python": "3.11.13",
+  "fixture": "tests/fixtures/large_data_workload.json",
+  "fixture_sha256": "7bbe21a4c98f03c0e0ec98e58d74127a43ab1fbbda929cd8812653e4edd7c34d",
+  "rows": 750000,
+  "cache_budget_bytes": 67108864,
+  "remote_calls": 0,
+  "model_calls": 0,
+  "measurement": "Fresh subprocess ru_maxrss includes interpreter, imports, serialization, retained cache, and caller copies. It is not a hard RSS limit or allocation delta.",
+  "scope": "Synthetic five-column data; 750000 default rows matches an observed row count only. It does not reproduce operational width, dtype, distribution or total data size.",
+  "limitations": [
+    "No retention/TTL or disk quota policy is implemented.",
+    "Cache budget bounds retained DataFrame deep size, not process RSS.",
+    "SIGKILL tests process interruption, not power loss, disk-full, filesystem corruption or concurrent writes.",
+    "No product memory or latency SLO has been supplied; no general capacity pass is asserted."
+  ],
+  "stages": {
+    "register": {
+      "dataset_id": "d9e5216f-ceb5-4fab-8bd3-d0a2baebc022",
+      "rows": 750000,
+      "frame_bytes_deep": 115500132,
+      "fingerprint": "e2b07516a60fde41e437cdbeebad163e8f44cd51c516c8ccad172614a7cb8a54",
+      "columns": [
+        "record_id",
+        "measurement",
+        "batch",
+        "segment",
+        "region"
+      ],
+      "elapsed_seconds": 0.244,
+      "peak_rss_bytes": 332496896,
+      "import_peak_rss_bytes": 126304256,
+      "database_bytes": 6750208
+    },
+    "read": {
+      "fingerprint_matches": true,
+      "mutation_isolated": true,
+      "rows": 750000,
+      "cache_bytes": 0,
+      "cached_ids": [],
+      "uncached_when_over_budget": true,
+      "elapsed_seconds": 0.2559,
+      "peak_rss_bytes": 351174656,
+      "import_peak_rss_bytes": 125681664,
+      "database_bytes": 6750208
+    },
+    "lru": {
+      "admitted_first": true,
+      "admitted_second": true,
+      "evicted_first": true,
+      "reload_matches": true,
+      "hit_mutation_isolated": true,
+      "cache_within_budget": true,
+      "cache_bytes": 1620000,
+      "budget_bytes": 1620000,
+      "elapsed_seconds": 0.0453,
+      "peak_rss_bytes": 148865024,
+      "import_peak_rss_bytes": 126926848,
+      "database_bytes": 7004160
+    },
+    "chart": {
+      "chart_id": "05c87c59-f4fd-40fe-a2d6-cb740b485fbe",
+      "png_sha256": "ae2764401c5ab5c37deaaaa1e332decbce09415bc7ed951926f333a82ec25497",
+      "dataset_payload_reads_for_chart_insert": 0,
+      "elapsed_seconds": 0.0163,
+      "peak_rss_bytes": 130285568,
+      "import_peak_rss_bytes": 127025152,
+      "database_bytes": 7012352
+    },
+    "reopen": {
+      "rows": 750000,
+      "fingerprint_matches": true,
+      "png_matches": true,
+      "owner_isolated": true,
+      "integrity_check": "ok",
+      "elapsed_seconds": 0.1649,
+      "peak_rss_bytes": 323043328,
+      "import_peak_rss_bytes": 126730240,
+      "database_bytes": 7012352
+    },
+    "interrupt": {
+      "killed_before_commit": true,
+      "insert_reached": true
+    },
+    "recover": {
+      "uncommitted_asset_absent": true,
+      "original_matches": true,
+      "original_chart_present": true,
+      "integrity_check": "ok",
+      "elapsed_seconds": 0.1663,
+      "peak_rss_bytes": 310607872,
+      "import_peak_rss_bytes": 125878272,
+      "database_bytes": 7012352
+    }
+  },
+  "contract_checks_passed": true
+}

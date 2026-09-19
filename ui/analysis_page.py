@@ -15,6 +15,7 @@ from langchain_ollama import ChatOllama
 from langchain_core.messages import HumanMessage, AIMessage, ToolMessage
 from core.analysis_agent.runtime import GraphAnalysisRuntime
 from core.analysis_agent.databricks import ConnectionConfig, make_executor
+from core.analysis_agent.policy import RuntimePolicy
 
 load_dotenv(ROOT/'.env')
 st.set_page_config(page_title='Telly · 분석',page_icon='📊',layout='wide')
@@ -37,27 +38,22 @@ st.query_params['conversation']=cid
 if st.session_state.get('v1_runtime_id')!=cid:
     previous=st.session_state.pop('v1_runtime',None)
     if previous:previous.close()
+    policy=RuntimePolicy.from_env()
     model=ChatOllama(model=os.getenv('OLLAMA_MODEL','gemma4:e4b'),
         base_url=os.getenv('OLLAMA_BASE_URL','http://localhost:11434'),reasoning=True,
-        temperature=0,num_ctx=16384,num_predict=4096,client_kwargs={'timeout':60})
+        temperature=0,num_ctx=16384,num_predict=4096,
+        client_kwargs={'timeout':policy.model_timeout_seconds})
     config=ConnectionConfig.from_env()
+    from core.analysis_catalog import load_saved_reference_context
+    context_loader=lambda:load_saved_reference_context(ROOT/'.telly_table_context')
     runtime=GraphAnalysisRuntime(root,owner,cid,model,
-        connection_identity=config.identity(),remote_factory=lambda d:make_executor(config,d))
-    from utils.table_context import load_saved_table_context
-    for path in sorted((ROOT/'.telly_table_context/contexts').glob('*.json')):
-        try:
-            raw=json.loads(path.read_text())
-            saved=load_saved_table_context(raw['table_fqn'])
-            if saved:
-                runtime.context.reference_context.append({'table':saved.table_fqn,
-                    'training_status':saved.training_status,
-                    'columns':[{'name':c.name,'dtype':c.dtype,'aliases':c.aliases,
-                                'top_values':c.top_values[:10]} for c in saved.columns]})
-        except (OSError,ValueError,KeyError):
-            continue
+        connection_identity=config.identity(),
+        remote_factory=lambda d:make_executor(config,d,max_rows=policy.max_remote_rows),
+        reference_context_loader=context_loader,policy=policy)
     st.session_state.v1_runtime=runtime
     st.session_state.v1_runtime_id=cid
 runtime=st.session_state.v1_runtime
+BUSY_NOTICE='현재 분석이 이미 실행 중입니다. 완료될 때까지 잠시 기다려주세요.'
 
 
 def action(fn):
@@ -69,8 +65,11 @@ def action(fn):
             progress.update(label='확인이 필요합니다.' if state=='error' else '처리했습니다.',state=state)
         st.session_state.v1_notice=result.get('text','') if isinstance(result,dict) and result.get('status') not in {'answered','needs_data','blocked','exhausted'} else ''
     except Exception as exc:
-        error_id=runtime.diagnostics.failure(exc, stage='ui_action')
-        st.session_state.v1_notice=f'오류 ID: {error_id}. '+'작업을 완료하지 못했습니다. 기존 결과와 승인 상태를 확인해주세요. ('+type(exc).__name__+')'
+        if isinstance(exc,RuntimeError) and str(exc)=='현재 대화가 실행 중입니다.':
+            st.session_state.v1_notice=BUSY_NOTICE
+        else:
+            error_id=runtime.diagnostics.failure(exc, stage='ui_action')
+            st.session_state.v1_notice=f'오류 ID: {error_id}. '+'작업을 완료하지 못했습니다. 기존 결과와 승인 상태를 확인해주세요. ('+type(exc).__name__+')'
     finally:
         runtime.on_progress=None
 
@@ -104,6 +103,11 @@ with st.sidebar:
     with st.expander('분석 스킬'):
         from utils.analysis_skill_registry import AnalysisSkillRegistry
         for item in AnalysisSkillRegistry().list():st.write(item['name']+' — '+item['description'])
+    with st.expander('현재 지원 범위와 운영 한도'):
+        policy=runtime.inspect()['operational_policy']
+        st.write('지원: 보유 데이터 재사용, 기본 집계, 명시적 필터, histogram/bar/line/scatter/단일 수치 boxplot')
+        st.write('검증 중: 조인, 가설 검정, 고급 복합 시각화')
+        st.caption(f"원격 결과 최대 {policy['max_remote_rows']:,}행 · 최대 {policy['max_dataset_columns']:,}열 · 대화별 저장공간 {policy['scope_disk_quota_bytes'] / 1024**3:.1f} GiB · 정리 후보 기준 {policy['retention_days']}일")
 
 for message in runtime.events():
     if isinstance(message,(HumanMessage,AIMessage)) and message.content:
@@ -112,7 +116,7 @@ for message in runtime.events():
             content=message.content
             if isinstance(content,str) and content.startswith('선택한 차트:'):content=content.split(', dataset_id=')[0]
             st.markdown(display_analysis_text(content,runtime.datasets.metadata))
-    if isinstance(message,ToolMessage) and message.name in {'recommend_chart_images','render_histogram'}:
+    if isinstance(message,ToolMessage) and message.name in {'recommend_chart_images','render_histogram','prepare_histogram','show_chart'}:
         data=json.loads(message.content)
         cards=[runtime.artifacts[c['id']] for c in data.get('cards',[]) if c['id'] in runtime.artifacts]
         if cards:
@@ -122,7 +126,7 @@ for message in runtime.events():
                     with column:
                         st.image(card.image,caption=card.title)
                         st.caption(card.reason+' · '+card.scope)
-                        if st.button('이 차트 선택',key=card.id):
+                        if st.button('이 차트 선택',key=f'chart-{message.id}-{card.id}'):
                             action(lambda:runtime.select_chart(card.id))
                             st.session_state.v1_selected=card.id;st.rerun()
 selected=None
@@ -134,6 +138,10 @@ if selected in runtime.artifacts:
     card=runtime.artifacts[selected];st.subheader(card.title);st.image(card.image);st.caption(card.scope)
 
 state=runtime.inspect()
+if state['state']=='idle' and st.session_state.get('v1_notice')==BUSY_NOTICE:
+    # A concurrent duplicate submission can finish before this page reruns.
+    # Do not leave an obsolete "already running" notice after completion.
+    st.session_state.pop('v1_notice',None)
 if state.get('recovery',{}).get('status')=='blocked':
     from core.analysis_agent.failure_messages import remote_failure_message
     failures=list(state['recovery'].get('failed',{}).values())

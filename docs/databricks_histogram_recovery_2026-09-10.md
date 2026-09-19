@@ -14,10 +14,12 @@
 - 실제 요청이 모델 컨텍스트에서 압축된 경우 영속 transcript에서 복원한다. 기존 잘못된 요약 request_id도 실제 요청 ID로 복구한다.
 - 컬럼의 대소문자를 보존하여 다른 테이블의 같은 철자 컬럼을 중복 요구하지 않는다.
 - 요약을 거쳐도 동일 요청의 복구 횟수를 유지한다.
+- 모델의 동적 프롬프트에도 현재 사용자 요청 원문을 전달하여 요약 속 과거 제안을 현재 요청으로 오인하지 않도록 한다.
+- 취소된 원격 도구 결과에 데이터 로딩 완료 문구를 표시하던 진행 안내를 수정한다.
 
 ## 검증
 
-- migration.test_recovery_journey, migration.test_v1_contracts, migration.test_persistent_runtime: 15개 통과.
+- migration.test_recovery_journey, migration.test_v1_contracts, migration.test_persistent_runtime: 원문 프롬프트 복원 검사를 포함해 16개 통과.
 - 요약 후 정상 차트 인정 및 반복 요약 시 복구 예산 유지 회귀 포함.
 - 실제 대화 체크포인트를 읽어 수정된 판정기에 전달했을 때 저장된 PNG를 인정하고 complete 반환. 이 검사는 그래프를 변경하지 않았다.
 - 실제 브라우저 재개 결과는 project_progress.md의 후속 기록 참조.

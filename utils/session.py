@@ -160,7 +160,7 @@ def ensure_session_state() -> None:
         ("df_A_data", None),
         ("df_A_state", None),
         ("df_A_name", "No Data"),
-        ("csv_path", os.path.join(DEFAULT_DATA_DIR, "stormtrooper.csv")),
+        ("csv_path", ""),
         ("df_B_data", None),
         ("df_B_state", None),
         ("df_B_name", "No Data"),

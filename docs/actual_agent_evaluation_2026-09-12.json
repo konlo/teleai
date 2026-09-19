@@ -1,0 +1,103 @@
+{
+  "generated_at": "2026-09-12T03:08:50.134612+00:00",
+  "mode": "live-local-model",
+  "runtime": "core.analysis_agent.runtime.GraphAnalysisRuntime",
+  "model": "gemma4:e4b",
+  "data_scope": "preloaded complete local test_set fixtures in temporary per-case scope",
+  "coverage": {
+    "total_reference_cases": 200,
+    "supported_oracles": 11,
+    "selected": 2,
+    "statuses": {
+      "PASS": 2
+    },
+    "ungraded_is_never_pass": true
+  },
+  "latency_seconds": {
+    "total": 48.083,
+    "max": 28.183
+  },
+  "remote_executions": 0,
+  "results": [
+    {
+      "id": "L1_016",
+      "prompt": "고객들의 평균 '예금 잔고'가 얼마인지 알려줘.",
+      "target_table": "bank_loan",
+      "reference_sha256": "88673f5db621595408278d2e61a9f845696a01ba68d3946ffe7bddd91ab8da06",
+      "status": "PASS",
+      "reason": "Compared final structured calculation with independent reference",
+      "evidence": {
+        "expected": 2760.0675,
+        "actual": 2760.0675
+      },
+      "agent_status": "answered",
+      "runtime_state": "idle",
+      "elapsed_seconds": 28.183,
+      "tools": {
+        "local_analysis_sql": 1
+      },
+      "queries": [
+        {
+          "tool": "local_analysis_sql",
+          "query": "SELECT AVG(balance) FROM data"
+        }
+      ],
+      "observations": [
+        {
+          "tool": "local_analysis_sql",
+          "status": "ready",
+          "error_code": null
+        }
+      ],
+      "remote_executions": 0,
+      "forbidden_executor_invocations": 0,
+      "error_type": null,
+      "error_id": null
+    },
+    {
+      "id": "L1_076",
+      "prompt": "고객들의 연령(age) 분포를 확인하기 위해 히스토그램을 그려줘.",
+      "target_table": "bank_loan",
+      "reference_sha256": "2276edd3d1b98c6a7ddce3b4c76534bb7aae2371ca1e025dea2fd7a4475db6e0",
+      "status": "PASS",
+      "reason": "Real PNG and plotted weighted distribution match the reference",
+      "evidence": {
+        "charts": [
+          {
+            "chart_id": "d4a00387-220d-4f1e-a438-5f45533e3a8f",
+            "png_sha256": "6366b9b835d7d069a515c511021f4252eee2110f1dc8ecf39be2a858a838862b",
+            "observations": 2000.0,
+            "actual_bins": 8,
+            "reference_bins": 20,
+            "path": "/Users/najongseong/git_repository/teleai/docs/actual_agent_eval_artifacts/L1_076-6366b9b835d7.png"
+          }
+        ]
+      },
+      "agent_status": "answered",
+      "runtime_state": "idle",
+      "elapsed_seconds": 19.9,
+      "tools": {
+        "prepare_histogram": 1
+      },
+      "queries": [],
+      "observations": [
+        {
+          "tool": "prepare_histogram",
+          "status": "ready",
+          "error_code": null
+        }
+      ],
+      "remote_executions": 0,
+      "forbidden_executor_invocations": 0,
+      "error_type": null,
+      "error_id": null
+    }
+  ],
+  "limitations": [
+    "Not a Databricks or browser end-to-end test",
+    "Single-turn questions; follow-up journeys require separate evaluation",
+    "Final prose is not graded; PASS establishes tool-result/artifact accuracy only",
+    "Unsupported reference cases stay UNGRADED and are excluded from success claims",
+    "Scripted-model tests validate the harness, not natural-language model quality"
+  ]
+}

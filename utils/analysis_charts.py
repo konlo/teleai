@@ -2,12 +2,19 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from functools import lru_cache
+from hashlib import sha256
 from io import BytesIO
+import json
+from pathlib import Path
 from uuid import uuid4
 
 import pandas as pd
+from matplotlib import font_manager
+from matplotlib.ft2font import FT2Font
 from matplotlib.figure import Figure
 from matplotlib.backends.backend_agg import FigureCanvasAgg
+from matplotlib.text import Text
 
 from utils.analysis_datasets import DatasetStore
 
@@ -22,6 +29,37 @@ class ChartPreview:
     columns: tuple[str, ...]
     scope: str
     image: bytes
+
+
+@lru_cache(maxsize=1)
+def _unicode_font():
+    """Return an installed font that contains Hangul, without global rc changes."""
+    preferred = [
+        "/System/Library/Fonts/AppleSDGothicNeo.ttc",
+        "/System/Library/Fonts/Supplemental/AppleGothic.ttf",
+        "/usr/share/fonts/opentype/noto/NotoSansCJK-Regular.ttc",
+        "/usr/share/fonts/opentype/noto/NotoSansCJKkr-Regular.otf",
+        "/usr/share/fonts/truetype/nanum/NanumGothic.ttf",
+        "C:/Windows/Fonts/malgun.ttf",
+    ]
+    candidates = [path for path in preferred if Path(path).is_file()]
+    candidates.extend(path for path in font_manager.findSystemFonts()
+                      if path not in candidates)
+    for path in candidates:
+        try:
+            if ord("한") in FT2Font(path).get_charmap():
+                return font_manager.FontProperties(fname=path)
+        except (OSError, RuntimeError, ValueError):
+            continue
+    return None
+
+
+def _apply_unicode_font(fig: Figure):
+    """Apply a Hangul-capable font to chart text when the host provides one."""
+    font = _unicode_font()
+    if font is not None:
+        for item in fig.findobj(match=Text):
+            item.set_fontproperties(font)
 
 
 def recommend_charts(store: DatasetStore, dataset_id: str,
@@ -55,6 +93,7 @@ def recommend_charts(store: DatasetStore, dataset_id: str,
     def save(fig, kind, cols, title, reason, extra_scope=""):
         buffer = BytesIO()
         FigureCanvasAgg(fig)
+        _apply_unicode_font(fig)
         fig.tight_layout()
         fig.savefig(buffer, format="png", dpi=110)
         previews.append(ChartPreview(str(uuid4()), dataset_id, title, reason, kind,
@@ -123,19 +162,40 @@ def recommend_charts(store: DatasetStore, dataset_id: str,
         if len(values) >= 5:
             fig = Figure(figsize=(6, 3.5))
             ax = fig.subplots()
-            ax.boxplot(values, vert=False)
+            ax.boxplot(values, orientation='horizontal')
             ax.set(xlabel=column)
             save(fig, "boxplot", [column], f"{column} 중앙값과 퍼짐",
                  "중앙값과 사분위 범위를 표시합니다. 바깥 점이 반드시 오류인 것은 아닙니다.")
     return previews
 
 
-def histogram_from_counts(store, dataset_id, value_column, weight_column):
-    """Render complete value-frequency results without expanding source rows."""
-    import numpy as np
+def validate_frequency_dataset(store, dataset_id, value_column, weight_column):
+    """Validate executed COUNT lineage before trusting a column as frequency."""
+    import sqlglot
+    from utils.analysis_provenance import count_frequency_columns
     info = store.metadata[dataset_id]
     if info.coverage != 'complete':
         raise ValueError('전체 빈도 결과가 필요합니다. 잘린 결과로 전체 분포를 그릴 수 없습니다.')
+    try:
+        tree = sqlglot.parse_one(info.query, read='duckdb' if info.parent_id else 'databricks')
+    except (sqlglot.errors.ParseError, TypeError):
+        tree = None
+    if (info.grain != 'aggregate' or not info.aggregation or tree is None
+            or count_frequency_columns(tree) != (value_column, weight_column)):
+        raise ValueError('값별 COUNT(*) 집계의 실행 출처가 필요합니다. 임의의 수치 컬럼을 빈도로 사용할 수 없습니다.')
+    if info.parent_id:
+        parent = store.metadata.get(info.parent_id)
+        if (parent is None or parent.grain != 'raw' or parent.aggregation
+                or not parent.predicate_known or parent.coverage != 'complete'
+                or parent.source != info.source):
+            raise ValueError('완전한 원본 행에서 계산한 빈도만 사용할 수 있습니다.')
+    return info
+
+
+def histogram_from_counts(store, dataset_id, value_column, weight_column):
+    """Render complete value-frequency results without expanding source rows."""
+    import numpy as np
+    info = validate_frequency_dataset(store, dataset_id, value_column, weight_column)
     frame = store.frames[dataset_id]
     if value_column == weight_column or not {value_column, weight_column}.issubset(frame.columns):
         raise ValueError('값과 빈도 컬럼을 확인해주세요.')
@@ -143,13 +203,222 @@ def histogram_from_counts(store, dataset_id, value_column, weight_column):
     counts = pd.to_numeric(frame[weight_column], errors='raise')
     if not len(values) or not np.isfinite(values).all() or not np.isfinite(counts).all():
         raise ValueError('유효한 수치와 빈도가 필요합니다.')
+    if not values.is_unique:
+        raise ValueError('값별 빈도에는 같은 값이 중복될 수 없습니다.')
     if (counts < 0).any() or (counts % 1 != 0).any() or counts.sum() <= 0:
         raise ValueError('빈도는 0 이상의 정수이며 총합은 양수여야 합니다.')
     fig = Figure(figsize=(6, 3.5)); ax = fig.subplots()
     ax.hist(values, weights=counts, bins=min(60, max(8, int(len(values)**0.5))),
             color='#3278b9', edgecolor='white')
     ax.set(xlabel=value_column, ylabel='Count')
-    buffer = BytesIO(); FigureCanvasAgg(fig); fig.tight_layout(); fig.savefig(buffer,format='png',dpi=110)
+    buffer = BytesIO(); FigureCanvasAgg(fig); _apply_unicode_font(fig); fig.tight_layout(); fig.savefig(buffer,format='png',dpi=110)
     return ChartPreview(str(uuid4()),dataset_id,f'{value_column} 분포',
         '값별 빈도를 가중치로 사용했습니다. 원본 행을 펼치거나 표본을 만들지 않았습니다.',
         'histogram',(value_column,),f'빈도 합계 {int(counts.sum()):,} · complete · {info.query}',buffer.getvalue())
+
+
+def render_chart_spec(store: DatasetStore, dataset_id: str, *, kind: str, x: str,
+                      y: str = "", category: str = "", aggregation: str = "none",
+                      sort: str = "none", top_n: int = 50, bins: int = 20,
+                      title: str = "", x_label: str = "", y_label: str = "",
+                      orientation: str = "vertical"):
+    """Render one bounded, declarative chart from a loaded dataset.
+
+    No expression strings, Python code, file paths, URLs, or arbitrary style
+    dictionaries are accepted. The returned digest binds the chart to the exact
+    values handed to Matplotlib without returning those values to the model.
+    """
+    kinds = {"histogram", "bar", "line", "scatter", "boxplot"}
+    aggregations = {"none", "count", "sum", "mean", "median", "min", "max"}
+    if kind not in kinds or aggregation not in aggregations:
+        raise ValueError("지원하는 차트 종류와 집계 방식을 사용해주세요.")
+    if sort not in {"none", "ascending", "descending"}:
+        raise ValueError("sort는 none, ascending, descending 중 하나여야 합니다.")
+    if orientation not in {"vertical", "horizontal"}:
+        raise ValueError("orientation은 vertical 또는 horizontal이어야 합니다.")
+    if not 1 <= int(top_n) <= 50 or not 2 <= int(bins) <= 100:
+        raise ValueError("top_n은 1~50, bins는 2~100이어야 합니다.")
+    labels = {"title": title, "x_label": x_label, "y_label": y_label}
+    if any(not isinstance(value, str) or len(value) > 120 for value in labels.values()):
+        raise ValueError("차트 제목과 축 라벨은 120자 이하 문자열이어야 합니다.")
+    info = store.metadata[dataset_id]
+    source = store.frames[dataset_id]
+    requested = [column for column in (x, y, category) if column]
+    if not x or len(requested) != len(set(requested)) or any(column not in source.columns for column in requested):
+        raise ValueError("차트 축은 로딩된 dataset의 중복 없는 실제 컬럼이어야 합니다.")
+    if source.empty:
+        raise ValueError("빈 데이터로 차트를 만들 수 없습니다.")
+    if aggregation != "none" and (info.grain != "raw" or info.aggregation):
+        raise ValueError("이미 집계된 결과를 다시 집계하지 않습니다.")
+    if kind != "bar" and orientation != "vertical":
+        raise ValueError("orientation은 막대 차트에서만 사용할 수 있습니다.")
+    if kind != "scatter" and category:
+        raise ValueError("category는 산점도 범주 구분에만 사용할 수 있습니다.")
+
+    def numeric(series, name):
+        if not pd.api.types.is_numeric_dtype(series) or pd.api.types.is_bool_dtype(series):
+            raise ValueError(f"{name} 컬럼은 수치형이어야 합니다.")
+        return pd.to_numeric(series, errors="coerce").replace(
+            [float("inf"), -float("inf")], float("nan"))
+
+    def digest(frame):
+        encoded_columns = json.dumps(list(frame.columns), ensure_ascii=False).encode()
+        hashed = pd.util.hash_pandas_object(frame, index=False).values.tobytes()
+        return sha256(encoded_columns + hashed).hexdigest()
+
+    fig = Figure(figsize=(6, 3.5))
+    ax = fig.subplots()
+    plotted = None
+    effective_aggregation = aggregation
+    reason = ""
+    default_title = ""
+    sampled = False
+
+    if kind == "histogram":
+        if y or category or aggregation != "none":
+            raise ValueError("히스토그램은 수치 x와 bins만 사용합니다.")
+        values = numeric(source[x], x).dropna()
+        if len(values) < 2:
+            raise ValueError("히스토그램에는 유효한 수치가 2개 이상 필요합니다.")
+        plotted = values.to_frame(name=x)
+        ax.hist(values, bins=int(bins), color="#3278b9", edgecolor="white")
+        ax.set(xlabel=x_label or x, ylabel=y_label or "Count")
+        default_title = f"{x} 분포"
+        reason = f"유효값 {len(values):,}개를 {int(bins)}개 bin으로 표시했습니다."
+    elif kind == "scatter":
+        if not y or aggregation != "none":
+            raise ValueError("산점도는 수치 x와 y를 집계 없이 사용합니다.")
+        frame = pd.DataFrame({x: numeric(source[x], x), y: numeric(source[y], y)})
+        if category:
+            frame[category] = source[category]
+        frame = frame.dropna()
+        if len(frame) < 3:
+            raise ValueError("산점도에는 완전한 좌표가 3개 이상 필요합니다.")
+        if category:
+            groups = list(frame[category].astype(str).unique())
+            if len(groups) > 20:
+                raise ValueError("산점도 category는 고유값이 20개 이하여야 합니다.")
+        sampled = len(frame) > 5_000
+        plotted = frame.sample(n=5_000, random_state=42) if sampled else frame
+        if category:
+            for value, group in plotted.groupby(category, sort=False, observed=True):
+                ax.scatter(group[x], group[y], s=10, alpha=0.4, label=str(value))
+            ax.legend(fontsize=8)
+        else:
+            ax.scatter(plotted[x], plotted[y], s=10, alpha=0.4, color="#7450aa")
+        ax.set(xlabel=x_label or x, ylabel=y_label or y)
+        default_title = f"{x}와 {y}의 관계"
+        reason = f"완전한 좌표 {len(frame):,}개 중 {len(plotted):,}개를 표시했습니다. 상관만으로 인과를 판단할 수 없습니다."
+    elif kind == "boxplot":
+        if y or category or aggregation != "none":
+            raise ValueError("박스플롯은 수치 x 하나를 집계 없이 사용합니다.")
+        values = numeric(source[x], x).dropna()
+        if len(values) < 5:
+            raise ValueError("박스플롯에는 유효한 수치가 5개 이상 필요합니다.")
+        plotted = values.to_frame(name=x)
+        ax.boxplot(values, orientation="horizontal")
+        ax.set(xlabel=x_label or x, ylabel=y_label)
+        default_title = f"{x} 중앙값과 퍼짐"
+        reason = "중앙값과 사분위 범위를 표시합니다. 바깥 점이 반드시 오류인 것은 아닙니다."
+    elif kind == "bar":
+        if category:
+            raise ValueError("막대 차트의 범주는 x로 지정하세요.")
+        if not y:
+            if aggregation not in {"none", "count"}:
+                raise ValueError("y가 없는 막대 차트는 count 집계만 지원합니다.")
+            effective_aggregation = "count"
+            counts = source[x].dropna().value_counts(sort=False)
+            plotted = counts.rename("value").rename_axis(x).reset_index()
+            value_label = "Count"
+        else:
+            values = numeric(source[y], y)
+            frame = pd.DataFrame({x: source[x], y: values}).dropna()
+            if aggregation == "count":
+                raise ValueError("count 막대 차트에는 y를 지정하지 마세요.")
+            if aggregation == "none":
+                if frame[x].duplicated().any():
+                    raise ValueError("집계 없는 막대 차트의 x는 고유해야 합니다.")
+                plotted = frame.rename(columns={y: "value"})
+            else:
+                plotted = (frame.groupby(x, sort=False, observed=True)[y]
+                           .agg(aggregation).rename("value").reset_index())
+            value_label = y if aggregation == "none" else f"{aggregation}({y})"
+        if plotted.empty:
+            raise ValueError("막대 차트에 표시할 값이 없습니다.")
+        if len(plotted) > int(top_n):
+            plotted = plotted.nlargest(int(top_n), "value")
+            truncated = True
+        else:
+            truncated = False
+        if sort != "none":
+            plotted = plotted.sort_values("value", ascending=sort == "ascending")
+        if orientation == "horizontal":
+            ax.barh(plotted[x].astype(str), plotted["value"], color="#369a86")
+            ax.set(xlabel=y_label or value_label, ylabel=x_label or x)
+        else:
+            ax.bar(plotted[x].astype(str), plotted["value"], color="#369a86")
+            ax.set(xlabel=x_label or x, ylabel=y_label or value_label)
+            ax.tick_params(axis="x", rotation=30)
+        default_title = f"{x}별 {value_label}"
+        reason = f"{effective_aggregation} 집계의 {len(plotted):,}개 범주를 표시했습니다."
+        if truncated:
+            reason += f" 값 기준 상위 {int(top_n)}개만 포함합니다."
+    else:  # line
+        if not y:
+            raise ValueError("선 차트에는 y가 필요합니다.")
+        frame = pd.DataFrame({x: source[x], y: numeric(source[y], y)}).dropna()
+        if aggregation == "count":
+            raise ValueError("선 차트의 count 집계에는 별도 y가 필요하지 않으므로 지원하지 않습니다.")
+        if aggregation == "none":
+            if frame[x].duplicated().any():
+                raise ValueError("집계 없는 선 차트의 x는 고유해야 합니다.")
+            plotted = frame.rename(columns={y: "value"})
+        else:
+            plotted = (frame.groupby(x, sort=False, observed=True)[y]
+                       .agg(aggregation).rename("value").reset_index())
+        if len(plotted) < 2 or len(plotted) > 5_000:
+            raise ValueError("선 차트는 2~5,000개의 점이 필요합니다. 더 큰 데이터는 먼저 집계하세요.")
+        if sort != "none":
+            plotted = plotted.sort_values(x, ascending=sort == "ascending")
+        ax.plot(plotted[x], plotted["value"], color="#3278b9")
+        ax.set(xlabel=x_label or x, ylabel=y_label or (y if aggregation == "none" else f"{aggregation}({y})"))
+        if pd.api.types.is_datetime64_any_dtype(plotted[x]):
+            fig.autofmt_xdate()
+        default_title = f"{x}에 따른 {y}"
+        reason = f"{effective_aggregation} 기준 {len(plotted):,}개 점을 연결했습니다."
+
+    final_title = title or default_title
+    ax.set_title(final_title)
+    buffer = BytesIO()
+    FigureCanvasAgg(fig)
+    _apply_unicode_font(fig)
+    fig.tight_layout()
+    fig.savefig(buffer, format="png", dpi=110)
+    columns = tuple(dict.fromkeys(requested))
+    scope = (f"보유 {len(source):,}행 기준 · {info.coverage} · {info.grain} · "
+             f"표시 데이터 {len(plotted):,}개 · 집계 {effective_aggregation}")
+    card = ChartPreview(str(uuid4()), dataset_id, final_title, reason, kind, columns, scope, buffer.getvalue())
+    summary = {
+        "source_rows": len(source),
+        "rendered_rows": len(plotted),
+        "data_sha256": digest(plotted.reset_index(drop=True)),
+        "sampled": sampled,
+        "aggregation": effective_aggregation,
+    }
+    if kind == "bar":
+        def json_scalar(value):
+            if hasattr(value, "item"):
+                value = value.item()
+            if isinstance(value, pd.Timestamp):
+                return value.isoformat()
+            return value if value is None or isinstance(value, (str, int, float, bool)) else str(value)
+        summary["points"] = [
+            {"x": json_scalar(row[x]), "value": json_scalar(row["value"])}
+            for _, row in plotted.iterrows()
+        ]
+    spec = {"kind": kind, "x": x, "y": y, "category": category,
+            "aggregation": effective_aggregation, "sort": sort,
+            "top_n": int(top_n), "bins": int(bins), "title": final_title,
+            "x_label": ax.get_xlabel(), "y_label": ax.get_ylabel(),
+            "orientation": orientation}
+    return card, summary, spec

@@ -26,6 +26,14 @@ python3 scripts/run_telly.py
 
 현재 실행기는 localhost 전용입니다. 기존 `.venv`와 구형 화면은 호환성을 위해 보존했으며 기존 세션을 자동 이전하지 않습니다. 구형 의존성은 `legacy-app-requirements.txt`에 있습니다.
 
+배포 전에는 다음의 읽기 전용 검사를 실행합니다. 환경 변수 값과 토큰은 출력하지 않으며 Databricks SQL도 실행하지 않습니다.
+
+```sh
+.telly_runtime/v1-venv/bin/python scripts/deployment_preflight.py --profile local-desktop
+```
+
+현재 revision은 로컬 또는 외부 접근제어가 적용된 1인용 배포만 지원합니다. 배포 범위, 영속 저장소, smoke test와 rollback 조건은 [제한 배포 계약](docs/deployment_contract_2026-09-15.md)에 정리되어 있습니다. 필요한 환경 변수 이름은 `.env.example`을 참고하세요.
+
 ## 구현과 검증
 
 주요 구현: `core/analysis_agent/`, 화면: `ui/analysis_page.py`.

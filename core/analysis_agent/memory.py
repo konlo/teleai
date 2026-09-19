@@ -1,6 +1,7 @@
 """Compact model context while preserving the full user-visible transcript."""
 import json
-from langchain.agents.middleware import SummarizationMiddleware, AgentMiddleware
+from typing import NotRequired
+from langchain.agents.middleware import SummarizationMiddleware, AgentMiddleware, AgentState
 from langchain_core.messages import ToolMessage
 from core.analysis_catalog import compact_catalog
 from langchain_core.messages import messages_from_dict, message_to_dict
@@ -26,11 +27,62 @@ def latest_user_request(messages):
                  and m.content not in ('추가 데이터 조회를 승인했습니다.', '추가 데이터 조회를 취소했습니다.')), None)
 
 
-def memory_middleware(model,trigger_tokens=6000,keep_messages=8):
-    return SummarizationMiddleware(model,trigger=('tokens',trigger_tokens),
+class QueuedRequestState(AgentState):
+    queued_user_request: NotRequired[dict | None]
+
+
+class QueuedRequestMiddleware(AgentMiddleware):
+    """Start a replacement turn only after HITL closes the previous tool calls.
+
+    The queue lives in the checkpoint so an interruption between rejection and
+    the next model invocation cannot lose the new user request.
+    """
+    state_schema = QueuedRequestState
+
+    def before_model(self, state, runtime):
+        from langchain_core.messages import HumanMessage
+        queued = state.get('queued_user_request')
+        if not queued:
+            return None
+        return {'messages': [HumanMessage(**queued)], 'queued_user_request': None}
+
+
+class ObservedSummarizationMiddleware(SummarizationMiddleware):
+    def __init__(self, *args, diagnostics=None, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.diagnostics = diagnostics
+
+    def before_model(self, state, runtime):
+        if self.diagnostics is None:
+            return super().before_model(state, runtime)
+        with self.diagnostics.span('summarization', message_count=len(state['messages'])) as details:
+            result = super().before_model(state, runtime)
+            details['summarized'] = bool(result)
+            return result
+
+
+class ModelTimingMiddleware(AgentMiddleware):
+    def __init__(self, diagnostics):
+        self.diagnostics = diagnostics
+
+    def wrap_model_call(self, request, handler):
+        with self.diagnostics.span('model_call', message_count=len(request.messages)) as details:
+            response = handler(request)
+            details['tool_call_count'] = sum(len(getattr(m, 'tool_calls', [])) for m in response.result)
+            return response
+
+
+def memory_middleware(model,trigger_tokens=6000,keep_messages=8,diagnostics=None):
+    # Summarization copies established facts; it does not plan or execute tools.
+    # Keep reasoning on for the analysis model while avoiding a second reasoning
+    # pass on the full history. The original transcript remains persisted.
+    from langchain_ollama import ChatOllama
+    is_ollama_model = isinstance(ChatOllama, type) and isinstance(model, ChatOllama)
+    summary_model = model.model_copy(update={'reasoning':False}) if is_ollama_model else model
+    return ObservedSummarizationMiddleware(summary_model,trigger=('tokens',trigger_tokens),
         keep=('messages',keep_messages),
         token_counter=lambda messages:count_tokens_approximately(messages,chars_per_token=2),
-        summary_prompt=SUMMARY_PROMPT,trim_tokens_to_summarize=None)
+        summary_prompt=SUMMARY_PROMPT,trim_tokens_to_summarize=None,diagnostics=diagnostics)
 
 
 class Transcript:

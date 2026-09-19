@@ -5,7 +5,20 @@ from logging.handlers import RotatingFileHandler
 from datetime import datetime, timezone
 from pathlib import Path
 import traceback
+import time
+from contextlib import contextmanager
 from uuid import uuid4
+
+
+def process_peak_rss_bytes():
+    """Return the process high-water RSS using only the standard library."""
+    try:
+        import resource
+        measured = resource.getrusage(resource.RUSAGE_SELF).ru_maxrss
+        # macOS reports bytes; Linux and other common Unix builds report KiB.
+        return int(measured if __import__('sys').platform == 'darwin' else measured * 1024)
+    except (ImportError, OSError, ValueError):
+        return None
 
 
 class Diagnostics:
@@ -32,3 +45,21 @@ class Diagnostics:
         self.emit('error', run_id=run_id or self.run_id, error_id=error_id, stage=stage,
                   error_type=type(exc).__name__, http_status=getattr(exc,'http_status',None), frames=frames)
         return error_id
+
+    @contextmanager
+    def span(self, phase, **fields):
+        """Measure a phase using metadata only; never serialize model inputs."""
+        span_id = uuid4().hex[:12]
+        started = time.monotonic()
+        self.emit(phase + '_started', span_id=span_id, **fields)
+        details = {}
+        try:
+            yield details
+        except Exception as exc:
+            self.emit(phase + '_finished', span_id=span_id, status='error',
+                      error_type=type(exc).__name__,
+                      elapsed_seconds=round(time.monotonic()-started, 3), **fields)
+            raise
+        else:
+            self.emit(phase + '_finished', span_id=span_id, status='ok',
+                      elapsed_seconds=round(time.monotonic()-started, 3), **fields, **details)

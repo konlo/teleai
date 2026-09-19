@@ -1,0 +1,352 @@
+{
+  "case_id": "L1_039",
+  "run_id": "c9691d7532ec484381a52b7774685eb4",
+  "state": "idle",
+  "message_count": 4,
+  "pending_requests": 0,
+  "recovery_status": "complete",
+  "recovery_attempts": 0,
+  "reference_context": [
+    {
+      "table": "titanic",
+      "training_status": "fixture_profile",
+      "columns": [
+        {
+          "name": "PassengerId",
+          "dtype": "int64",
+          "distinct_count": 891,
+          "null_count": 0,
+          "top_values": [],
+          "aliases": [
+            "승객 번호"
+          ]
+        },
+        {
+          "name": "Survived",
+          "dtype": "int64",
+          "distinct_count": 2,
+          "null_count": 0,
+          "top_values": [
+            {
+              "value": 0,
+              "count": 564
+            },
+            {
+              "value": 1,
+              "count": 327
+            }
+          ],
+          "aliases": [
+            "생존율",
+            "생존 여부"
+          ]
+        },
+        {
+          "name": "Pclass",
+          "dtype": "int64",
+          "distinct_count": 3,
+          "null_count": 0,
+          "top_values": [
+            {
+              "value": 3,
+              "count": 490
+            },
+            {
+              "value": 1,
+              "count": 223
+            },
+            {
+              "value": 2,
+              "count": 178
+            }
+          ],
+          "aliases": [
+            "등급",
+            "좌석 등급",
+            "객실 등급"
+          ]
+        },
+        {
+          "name": "Name",
+          "dtype": "object",
+          "distinct_count": 891,
+          "null_count": 0,
+          "top_values": [],
+          "aliases": [
+            "이름"
+          ]
+        },
+        {
+          "name": "Sex",
+          "dtype": "object",
+          "distinct_count": 2,
+          "null_count": 0,
+          "top_values": [
+            {
+              "value": "male",
+              "count": 583
+            },
+            {
+              "value": "female",
+              "count": 308
+            }
+          ],
+          "aliases": [
+            "성별",
+            "남성",
+            "여성"
+          ]
+        },
+        {
+          "name": "Age",
+          "dtype": "float64",
+          "distinct_count": 382,
+          "null_count": 193,
+          "top_values": [],
+          "aliases": [
+            "나이",
+            "연령"
+          ]
+        },
+        {
+          "name": "SibSp",
+          "dtype": "int64",
+          "distinct_count": 7,
+          "null_count": 0,
+          "top_values": [
+            {
+              "value": 0,
+              "count": 621
+            },
+            {
+              "value": 1,
+              "count": 185
+            },
+            {
+              "value": 2,
+              "count": 48
+            },
+            {
+              "value": 4,
+              "count": 16
+            },
+            {
+              "value": 3,
+              "count": 14
+            },
+            {
+              "value": 8,
+              "count": 5
+            },
+            {
+              "value": 5,
+              "count": 2
+            }
+          ],
+          "aliases": [
+            "형제자매",
+            "배우자"
+          ]
+        },
+        {
+          "name": "Parch",
+          "dtype": "int64",
+          "distinct_count": 7,
+          "null_count": 0,
+          "top_values": [
+            {
+              "value": 0,
+              "count": 652
+            },
+            {
+              "value": 1,
+              "count": 119
+            },
+            {
+              "value": 2,
+              "count": 103
+            },
+            {
+              "value": 4,
+              "count": 6
+            },
+            {
+              "value": 3,
+              "count": 5
+            },
+            {
+              "value": 5,
+              "count": 5
+            },
+            {
+              "value": 6,
+              "count": 1
+            }
+          ],
+          "aliases": [
+            "부모",
+            "자녀"
+          ]
+        },
+        {
+          "name": "Ticket",
+          "dtype": "object",
+          "distinct_count": 891,
+          "null_count": 0,
+          "top_values": [],
+          "aliases": [
+            "티켓"
+          ]
+        },
+        {
+          "name": "Fare",
+          "dtype": "float64",
+          "distinct_count": 798,
+          "null_count": 0,
+          "top_values": [],
+          "aliases": [
+            "요금",
+            "운임",
+            "승선료"
+          ]
+        },
+        {
+          "name": "Cabin",
+          "dtype": "object",
+          "distinct_count": 50,
+          "null_count": 672,
+          "top_values": [],
+          "aliases": [
+            "객실 번호",
+            "객실"
+          ]
+        },
+        {
+          "name": "Embarked",
+          "dtype": "object",
+          "distinct_count": 3,
+          "null_count": 12,
+          "top_values": [
+            {
+              "value": "S",
+              "count": 639
+            },
+            {
+              "value": "C",
+              "count": 181
+            },
+            {
+              "value": "Q",
+              "count": 59
+            }
+          ],
+          "aliases": [
+            "승선 항구",
+            "출발지"
+          ]
+        }
+      ],
+      "alias_source": "test_set/README.md > 데이터 스키마 > workspace.default.titanic; complete table-level aliases, not question-specific synonym_mapping",
+      "source": "local test_set fixture; not a live Databricks table"
+    }
+  ],
+  "datasets": [
+    {
+      "id": "3b3f083f-9696-4905-a7a2-c1d89004de72",
+      "source": "titanic",
+      "columns": [
+        "PassengerId",
+        "Survived",
+        "Pclass",
+        "Name",
+        "Sex",
+        "Age",
+        "SibSp",
+        "Parch",
+        "Ticket",
+        "Fare",
+        "Cabin",
+        "Embarked"
+      ],
+      "rows": 891,
+      "coverage": "complete",
+      "conditions": [],
+      "predicate_known": true,
+      "grain": "raw",
+      "aggregation": "",
+      "snapshot": "fixture:261728c6b4aefb97391c652943bd7af2acea038e39d35f98779a975f900e0688",
+      "query": "",
+      "parent_id": ""
+    },
+    {
+      "id": "957ceaa4-6124-44b4-882b-ffa4f0e30bf1",
+      "source": "titanic",
+      "columns": [
+        "percent"
+      ],
+      "rows": 1,
+      "coverage": "complete",
+      "conditions": [
+        {
+          "column": "Sex",
+          "op": "eq",
+          "value": "male"
+        }
+      ],
+      "predicate_known": false,
+      "grain": "aggregate",
+      "aggregation": "SELECT 100.0 * AVG(\"Survived\") AS percent FROM data",
+      "snapshot": "fixture:261728c6b4aefb97391c652943bd7af2acea038e39d35f98779a975f900e0688",
+      "query": "SELECT 100.0 * AVG(\"Survived\") AS percent FROM data",
+      "parent_id": "3b3f083f-9696-4905-a7a2-c1d89004de72"
+    }
+  ],
+  "charts": [],
+  "diagnostics": [
+    {
+      "time": "2026-09-13T03:25:44.066660+00:00",
+      "event": "run_started",
+      "run_id": "c9691d7532ec484381a52b7774685eb4",
+      "operation": "submit"
+    },
+    {
+      "time": "2026-09-13T03:25:44.141162+00:00",
+      "event": "recovery_transition",
+      "run_id": "c9691d7532ec484381a52b7774685eb4",
+      "tool": "local_analysis_sql"
+    },
+    {
+      "time": "2026-09-13T03:25:44.142649+00:00",
+      "event": "tool_started",
+      "run_id": "c9691d7532ec484381a52b7774685eb4",
+      "tool": "local_analysis_sql"
+    },
+    {
+      "time": "2026-09-13T03:25:44.185117+00:00",
+      "event": "tool_completed",
+      "run_id": "c9691d7532ec484381a52b7774685eb4",
+      "tool": "local_analysis_sql",
+      "status": "ready",
+      "elapsed_seconds": 0.042
+    },
+    {
+      "time": "2026-09-13T03:25:44.187088+00:00",
+      "event": "calculation_evidence",
+      "run_id": "c9691d7532ec484381a52b7774685eb4"
+    },
+    {
+      "time": "2026-09-13T03:25:44.188737+00:00",
+      "event": "completion_checked",
+      "run_id": "c9691d7532ec484381a52b7774685eb4",
+      "status": "complete",
+      "attempts": 0
+    },
+    {
+      "time": "2026-09-13T03:25:44.190324+00:00",
+      "event": "run_completed",
+      "run_id": "c9691d7532ec484381a52b7774685eb4",
+      "status": "answered",
+      "elapsed_seconds": 0.124
+    }
+  ]
+}

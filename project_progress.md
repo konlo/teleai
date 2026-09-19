@@ -1,26 +1,332 @@
 # Project Progress Log
 
+## Current Status
+- **Last Updated**: 2026-09-19
+- **Status**: In Progress — 배포 preflight까지 검증한 1인용 제한 출시 후보
+- **Summary**: 공통 tool 결과 계약, bounded profile·chart·multi-dataset join·구조화 통계 검정과 승인형 source discovery를 production graph에 연결했다. application 115/115, migration 126/126, Level 3 17/17, 전체 참고 runner 217/217 PASS다. 실제 agent 독립 채점은 57/200이며 통계 10문항과 join 별도 benchmark가 값 단위로 PASS했다. 원격 실행은 0회다.
+- **Next Session Focus**: 배포 대상·실제 호스트 gate·smoke/rollback → 남은 143문항 oracle와 이상치·시계열·다중 패널 범위.
+
+## Next Action Items
+- [x] 제품 승인 카드에서 사용자가 승인한 실제 Databricks 조회 → 저장 → 분석 → 후속 질문을 검증했다.
+- [ ] 남은 143문항의 독립 oracle과 고급 분석 도구 범위를 우선순위별로 확대한다.
+- [ ] 로컬 단일·동시 용량 gate와 RSS 기준은 완료했다. 실제 배포 호스트와 Ollama 동시 추론으로 기준을 보정한다.
+- [x] 현재 변경을 `agentic-analysis-rc4-2026-09-15` release candidate로 커밋·push하고 원격 release gate 성공 후 tag로 고정했다.
+- [x] 컬럼 metadata 복구를 `agentic-analysis-rc5-2026-09-15`로 고정했다. GitHub Actions run `34978831986`이 성공했다.
+- [x] 단일 프로세스 용량 gate를 `agentic-analysis-rc6-2026-09-16`로 고정했다. GitHub Actions run `35029959063`이 성공했다.
+- [x] schema metadata 확대와 요청 간 도구 호출 격리를 `agentic-analysis-rc7-2026-09-16`로 고정했다. GitHub Actions run `35095497759`가 성공했다.
+- [ ] draft PR #68의 코드 리뷰 후 병합·배포하고 배포 환경 smoke test와 rollback을 확인한다. 배포 계약과 자동 preflight는 준비했다.
+- [ ] bank_loan·titanic alias와 변경 절차는 준비했다. 네 테이블의 stale schema/profile은 각각 승인형 조회로 갱신한다.
+- [x] Level 2 참고 환경 11건을 해결하고 Level 3 placeholder를 production agentic recovery 계약 17개로 교체했다.
+- [x] 활성 tool의 공통 출력 schema와 contract matrix를 만들고 `profile_dataset`·승인형 source discovery를 추가했다.
+- [x] 제한된 `render_chart_spec`으로 histogram/bar/line/scatter/boxplot의 실제 PNG·lineage·재시작 복구를 검증했다.
+- [x] bounded `join_datasets`로 cardinality·NULL·출력 규모·양쪽 parent lineage와 후속 집계·재시작을 검증했다.
+- [x] `statistical_test`로 독립·대응 t, 카이제곱, 일원 ANOVA, Mann–Whitney, 평균 CI의 구조화 근거와 fail-closed 계약을 검증했다.
+
+---
+
+## [2026-09-19 13:54:48 KST] [Agent: Codex] User Request: 남아 있는 일 계속 진행
+- **Request**: 남은 통계 검정 도구·agent recovery·독립 평가 작업을 이어서 완료한다.
+- **Finding**: 기존 Level 2 원문의 `독립표본`을 일반 `표본` 키워드가 현재 로딩 결과 한정 요청으로 잘못 분류했다. `y='yes'`·`y='no'`를 모집단 필터로 처리해 전체 두 그룹 비교를 실행하지 못하는 범위 판정 결함도 확인했다.
+- **Action**: 통계 문맥의 `독립표본`·`대응표본`·`표본 평균`을 현재 결과 지시어와 분리하고, 비교 그룹 명시가 실제 그룹 전체와 같은 경우만 raw dataset 전체 검정으로 인정하는 전용 범위 계약을 추가한다. Level 2 통계 10문항을 원문 그대로 독립 oracle로 평가한다.
+- **Safety**: 로컬 fixture와 보유 raw DataFrame만 사용하며 Databricks 원격 조회는 실행하지 않는다.
+- **Implementation**: `statistical_test` tool과 recovery 완료 계약을 추가했다. `독립표본`·`대응표본`·`표본 평균`을 현재 결과 지시어와 분리했고, 메타데이터 alias의 한국어 역할명을 table-neutral하게 grounding했다. 짧은 alias `일`이 `일원분산분석`에 오탐되는 문제를 차단했다.
+- **Evaluation**: 변경하지 않은 `L2_051`–`L2_060` 원문 10개가 독립 SciPy reference 통계량·p-value·자유도·평균 CI와 일치했다. 각 여정은 production graph의 `statistical_test` 1회로 완료됐고 모델·Databricks 호출은 0회였다. 독립 채점 범위는 57/200으로 늘었다.
+- **Validation**: application 115/115, migration 126/126, Level 3 17/17, 전체 참고 runner 217/217 PASS. 재시작 후 구조화 통계 근거 복원도 확인했다. `docs/actual_agent_evaluation_statistics_2026-09-19.json`에 10/10 결과와 단일 Welch 벤치마크를 보존했다.
+- **Outcome**: R14 핵심 tool 보강을 완료했다. 남은 기능 범위는 이상치·시계열·다중 패널과 143개 미채점 의도이며, 출시 gate는 PR 리뷰·병합·배포 호스트 smoke/rollback이 남아 있다.
+- **Remote**: code·evaluation commit `069b450`을 PR #68 브랜치에 push했다. GitHub Actions run `35423920799`, job `105846462073`이 migration, application, Level 3, 전체 runner와 compile 검사를 1분 18초에 모두 통과했다.
+
+## [2026-09-19 13:44:13 KST] [Agent: Codex] Continuation: 구조화 통계 검정
+- **Request Context**: 사용자가 요청한 남은 작업 계속 수행 범위에서 bounded multi-dataset join 완료 후 다음 우선순위인 구조화 통계 검정을 진행한다.
+- **Action**: 테이블별 지식이나 임의 Python 없이 보유 raw dataset에 대해 독립표본·대응표본 t 검정, 카이제곱 독립성 검정, 일원분산분석과 필요한 비모수/신뢰구간 경로를 구조화 tool 결과로 구현한다.
+- **Acceptance**: 표본 수·결측 제외·가정 진단·통계량·자유도·p-value·효과크기·적용 가능한 신뢰구간과 실제 분석 범위를 반환하고, 데이터 부족·과도한 범주 수·잘못된 dtype은 계산 전 차단한다. 실제 fixture 독립 oracle, production graph 완료 증거, 후속 회귀와 원격 실행 0회를 확인한다.
+
+## [2026-09-19 13:25:30 KST] [Agent: Codex] User Request: 남아 있는일 계속 해줘
+- **Request**: 진행 중인 multi-dataset join 구현과 남은 검증을 계속한다.
+- **Action**: 첫 focused graph test에서 두 source를 명시한 join을 기존 single-source ambiguity로 잘못 차단한 것을 수정했다. join 전용 source 해석, cardinality·NULL·출력 한도·lineage·재시작 계약을 마무리하고 전체 회귀와 독립 증거를 생성한다.
+- **Safety**: 로컬 fixture만 사용하며 Databricks 원격 실행은 0회로 유지한다. many-to-many와 운영 한도 초과 join은 실행 전 차단한다.
+- **Implementation**: `join_datasets`에 inner/left/right/full outer와 복합 key 1~4개를 제한적으로 추가했다. key dtype 계열·NULL·cardinality·예상 출력 행 수와 증가율을 실행 전에 계산하고, many-to-many 및 운영 한도 초과는 새 dataset 생성 전에 거절한다. 같은 이름의 key는 외부 조인에서도 보존하며 충돌 컬럼은 `_left`·`_right`로 명시한다.
+- **Agentic Recovery**: 두 source·join 방식·공통 key가 명확하면 모델 없이 로컬 join을 실행한다. 두 부모의 `parent_ids`를 영속화하고 재시작 뒤에도 복원하며, join 결과를 `current_result_only`로 후속 집계할 때 실제 lineage와 요청 컬럼을 검증한다.
+- **Evaluation**: 고객 1,000행과 거래 5,000행 fixture를 `customer_id`로 one-to-many inner join해 5,000행을 만들었고 독립 pandas merge와 값·digest가 일치했다. 모델 호출 0회, 원격 실행 0회다. 이 별도 join benchmark는 기존 47/200 점수에 포함하지 않았다.
+- **Validation**: join 계약 10/10, application 105/105, migration 126/126, Level 3 17/17, 전체 참고 runner 217/217, compileall과 `git diff --check` PASS.
+- **Artifacts**: `utils/analysis_join.py`, `tests/test_analysis_join.py`, `scripts/evaluate_analysis_join.py`, `docs/actual_agent_evaluation_join_2026-09-19.json`; tool audit·contract matrix·남은 작업 목록 갱신.
+- **Outcome**: R14의 multi-dataset join 완료. 다음 구현 대상은 표본 수·결측 처리·가정·효과크기·신뢰구간을 구조화하는 statistical test다.
+- **Remote**: code/evidence commit `48db371`을 PR #68 브랜치에 push했다. GitHub Actions run `35421857876`, job `105840912996`이 migration, application, Level 3, 전체 runner와 compile 검사를 모두 통과해 1분 7초에 성공했다.
+
+## [2026-09-18 23:44:18 KST] [Agent: Codex] User Request: 진행해줘
+- **Request**: bounded chart spec 완료 후 다음 우선순위 작업을 계속 수행한다.
+- **Action**: P1의 multi-dataset join을 현재 `DatasetStore`·공통 tool 결과·복구 계약에 맞춰 구현한다. join key dtype, 양쪽 key 중복도, null, cardinality, 예상·실제 행 증가를 검사하고 안전한 결과만 새 lineage dataset으로 등록한다.
+- **Safety**: 보유 로컬 DataFrame과 fixture만 사용한다. Databricks 원격 조회는 실행하지 않으며, many-to-many 폭증이나 불명확한 범위는 자동 실행하지 않는다.
+
+## [2026-09-18 22:47:14 KST] [Agent: Codex] User Request: 다음 작업 진행해줘
+- **Request**: R14 P0 완료 후 다음 우선순위 작업을 계속 수행한다.
+- **Action**: P1 첫 단계인 bounded `render_chart_spec`을 구현해 명시적 차트 생성·수정 요청을 실제 PNG 근거로 완료하고 contract·recovery·독립 평가를 추가한다.
+- **Safety**: 보유 로컬 DataFrame과 임시 runtime만 사용한다. Databricks 원격 조회는 실행하지 않으며, 데이터가 부족하면 기존 승인 gate를 유지한다.
+- **Implementation**: histogram/bar/line/scatter/boxplot과 축·집계·정렬·top-N·bins·제목·라벨을 enum/상한 기반 schema로 제한했다. 임의 Python·파일·URL·style dictionary는 받지 않는다. 실제 로딩 컬럼과 grain을 확인하고 PNG, 표시 데이터 digest, source/render 행 수, 표본 여부를 하나의 evidence로 보존한다.
+- **Agentic Recovery**: 명시적 차트 종류와 차트 수정 의도를 분류하고 호환되는 보유 raw dataset이 하나면 모델 없이 실행한다. 데이터가 부족하거나 범위가 모호하면 기존 승인·재계획 loop를 유지한다. 데이터 로드 요청으로 전환할 때 이전 차트 사양 상태를 초기화한다.
+- **Rendering**: host에 설치된 Hangul 지원 글꼴을 figure 단위로 선택해 한국어 제목·축·범주가 깨지지 않게 했다. 운영 전역 Matplotlib 설정은 변경하지 않는다.
+- **Evaluation**: `L1_077` boxplot, `L1_078` 범주별 count bar, `L1_086` scatter가 production graph에서 3/3 PASS했다. 실제 PNG 저장, 정확한 데이터 digest·표시 범위·lineage를 독립 oracle로 검사했으며 모델·원격 호출은 0회다. 지원 범위는 47/200이고 153문항은 미채점이다.
+- **Validation**: application 95/95, migration 126/126, Level 3 17/17, 전체 참고 runner 217/217 PASS. 실제 세 PNG를 확인했고 한국어 title 렌더링을 확인했다.
+- **Artifacts**: `docs/actual_agent_evaluation_chart_spec_3_2026-09-18.json`, 세 PNG와 runtime metadata, `tests/test_analysis_chart_spec.py`; tool audit·contract matrix·남은 작업 목록을 갱신했다.
+- **Outcome**: R14의 제한된 chart spec 완료. 다음 구현 대상은 lineage/cardinality 검사가 있는 multi-dataset join이다. Databricks 원격 조회는 실행하지 않았다.
+- **Remote**: code/evidence commit `46ea204`를 PR #68 브랜치에 push했고 GitHub Actions run `35354064650`, job `105628950685`가 migration, application, Level 3, 전체 runner, compile 검사를 모두 통과해 2분 39초에 성공했다.
+
+## [2026-09-18 22:23:58 KST] [Agent: Codex] User Request: 계속 진행해줘
+- **Request**: 직전 tool 관점 진단에서 정한 남은 작업을 계속 수행한다.
+- **Action**: R14 P0 순서인 공통 tool 결과 계약과 contract matrix를 먼저 구현하고, `profile_dataset`과 승인형 source discovery를 production graph에 연결해 회귀·독립 평가로 검증한다.
+- **Safety**: 로컬 fixture와 임시 runtime만 사용하며 Databricks 원격 조회는 실행하지 않는다. source discovery의 실제 원격 실행은 기존 query별 사용자 승인 gate를 그대로 사용한다.
+- **Implementation**: `ToolDefinition`에 공통 output schema와 허용 status를 추가하고 모든 registry/adapter 결과를 `status`, `evidence_ids`, `error_code`, `retryable`, `user_action`, `scope`로 정규화했다. `profile_dataset`은 결측·고유값·수치 요약·quantile·제한된 top values를 raw 행 없이 반환하며 최대 64개 컬럼으로 제한한다. `plan_source_discovery`는 확인된 catalog의 `information_schema.tables` SELECT만 만들고 직접 실행하지 않는다.
+- **Agentic Recovery**: 결측·고유값·기초 통계 의도를 별도로 분류한다. 조건을 만족하는 로딩 dataset이 하나면 모델 없이 `profile_dataset`을 호출하고 구조화 evidence가 있을 때만 완료한다. 범주형 고유값 요청은 실제 dtype으로 범주형 컬럼만 선택한다.
+- **Evaluation**: `L1_006`, `L1_008`, `L1_009` 독립 oracle을 추가해 3/3 PASS, 모델 0회, 원격 실행 0회다. 지원 범위는 44/200으로 확대됐으며 나머지 156문항은 미채점으로 유지한다.
+- **Validation**: tool contract 8/8, application 88/88, migration 126/126, Level 3 17/17, 전체 참고 runner 217/217, compileall과 `git diff --check` PASS. source discovery production graph는 정확한 승인 카드에서 멈췄고 remote executor 호출은 0회였다.
+- **Artifacts**: `docs/agent_tool_contract_matrix_2026-09-18.md`, `docs/actual_agent_evaluation_profile_3_2026-09-18.json`, `utils/analysis_profile.py`, `tests/test_analysis_tool_contracts.py`를 추가하고 tool audit와 남은 작업 목록을 갱신했다.
+- **Outcome**: R14 P0 완료. P1의 `render_chart_spec`, multi-dataset join, 구조화 통계 검정과 실제 배포 gate는 남아 있다. Databricks 원격 조회는 실행하지 않았다.
+- **Remote**: commit `f2db3b2`를 원격 PR #68 브랜치에 push했다. GitHub Actions run `35351780939`, job `105621396740`이 pinned 환경에서 migration, application, Level 3, 전체 runner, compile 검사를 모두 통과해 1분 17초에 성공했다.
+
+## [2026-09-16 21:32:03 KST] [Agent: Codex] User Request: agent tool 관점의 부족한 기능 진단
+- **Request**: 현재 data 분석 agent들이 사용하는 tool 구성을 점검하고 부족한 도구, 중복되거나 계약이 약한 도구, 추가로 필요한 도구가 있는지 먼저 진단한다.
+- **Action**: production tool registry, agent loop 연결, 승인·재사용·시각화·진단 계약과 실제 독립 평가 범위를 코드와 테스트 기준으로 대조한다. 이번 단계는 진단이며 Databricks 원격 조회나 제품 데이터 변경을 실행하지 않는다.
+- **Finding**: production에는 중앙 registry의 로컬 tool 10개와 선택적 승인형 Databricks tool 1개가 활성화된다. 제한 범위의 재사용·기본 계산·기본 PNG에는 적합하지만 공통 output schema, 데이터 profile, source discovery, 지정 차트·수정, multi-dataset join, 통계 검정 tool이 부족하다. legacy tool 약 27개는 v1에 연결되지 않으며 현재 계약으로 선별 재구현해야 한다.
+- **Evidence**: 미채점 159문항은 table 92, chart 55, schema 12이며 그룹 집계 25, 피벗 15, 전환율·이중축 15, 고급 시각화 15, 이상치 14, 통계 검정 10문항이다. tool명 직접 테스트 기준으로 `show_chart` 직접 계약은 0개, `use_dataset`·`read_analysis_skill`은 각각 한 파일에 집중돼 있다.
+- **Decision**: tool 개수를 무작정 늘리지 않는다. P0은 공통 `ToolResult`, `profile_dataset`, 승인형 source discovery다. P1은 하나의 bounded `render_chart_spec`, 다중 dataset join, 구조화된 statistical test다. 무제한 Python REPL과 legacy 문자열 결과는 production에 재도입하지 않는다.
+- **Artifact Update**: `docs/agent_tool_audit_2026-09-16.md`를 만들고 남은 작업 R14와 실행 순서를 갱신했다.
+- **Outcome**: 현재 tool 구조는 제한 출시 범위에는 적합하지만 범용 분석 agent 기준으로는 보강이 필요하다는 판정을 기록했다. 원격 조회와 제품 데이터 변경은 실행하지 않았다.
+
+## [2026-09-16 21:16:44 KST] [Agent: Codex] User Request: 계속 진행 해줘
+- **Request**: 남은 작업을 계속 수행한다.
+- **Action**: 사용자 결정이나 원격 조회 승인이 필요하지 않은 R07 실제 agent 독립 채점 확대를 진행한다. 미채점 metadata 문항 중 현재 TableContext 구조로 답할 수 있는 항목을 선별하고, assistant 문장이 아닌 구조화된 도구 증거로 채점한다.
+- **Safety**: 로컬 test_set fixture와 임시 runtime만 사용한다. Databricks executor를 연결하거나 원격 SQL을 실행하지 않는다.
+- **Finding**: 같은 대화의 이전 요청에서 사용한 `inspect_table_context` 호출이 새 요청의 동일 검사를 막아, 첫 metadata 답변 뒤 수치형·범주형 후속 질문이 복구 한도를 소진하는 요청 간 상태 오염을 재현했다.
+- **Implementation**: 도구 호출 중복 검사를 현재 사용자 요청 범위로 제한했다. `ready` TableContext의 전체 dtype, 수치형 컬럼, 문자열·범주형 컬럼을 모델 없이 검사하는 table-neutral 경로와 구조화된 독립 oracle을 추가했다. dtype이 하나라도 없으면 완전한 스키마 답변으로 채택하지 않으며, stale context는 기존 승인형 갱신 경로를 유지한다.
+- **Validation**: production graph `L1_002`, `L1_003`, `L1_004`, `L1_007` 4/4 PASS, 모델 0회, 원격 실행 0회다. 실제 agent 독립 채점은 41/200으로 확대됐다. migration 126/126, tests 79/79, 전체 runner 217/217, compileall과 `git diff --check`도 PASS다.
+- **Artifacts**: `docs/actual_agent_evaluation_metadata_4_2026-09-16.json`과 네 개의 구조화된 metadata evidence 파일.
+- **Remote**: code commit `e31150f`를 push했고 GitHub Actions run `35095497759`, job `104791699160`이 1분 13초에 성공했다. annotated tag `agentic-analysis-rc7-2026-09-16`을 같은 코드 commit에 push했다.
+
+## [2026-09-16 06:26:07 KST] [Agent: Codex] User Request: 남아 있는 일 정리흐고 진행해줘
+- **Request**: 남은 작업을 다시 정리하고 가능한 작업을 계속 수행한다.
+- **Plan**: 실제 배포 대상 결정과 Databricks schema refresh처럼 사용자 결정·승인이 필요한 항목은 실행하지 않는다. 승인 없이 진행 가능한 P1 운영 안정성 작업부터 수행해 배포 부하·RSS 경보 기준을 코드와 회귀 계약으로 고정하고, 이후 실제 agent 독립 채점을 확대한다.
+- **Safety**: 보유 로컬 fixture와 격리된 임시 runtime만 사용한다. 원격 Databricks 조회, PR 병합, 실제 배포는 실행하지 않는다.
+- **Implementation**: table-neutral `CapacityPolicy`와 판정기를 추가했다. 최소 20건·4 worker, 결정적 로컬 p95 1초, 1 GiB 메모리 한도, 768 MiB 경고, 896 MiB 위험 기준을 환경 변수로 조정할 수 있다. deployment preflight는 기준의 양수 여부와 순서를 검사하고, `check_runtime_capacity.py`는 실제 성능 보고서의 성공률·p95·peak RSS를 release gate로 판정한다.
+- **Measurement**: 저장된 10,000행으로 단일 30회 p95 0.162초, 동시 4 worker·20/20 p95 0.549초, peak RSS 378,601,472 bytes를 측정해 READY 판정을 받았다. 모델·Databricks 호출은 0회였다.
+- **Validation**: 신규 용량·preflight 계약 13/13, migration 125/125, tests 78/78, 합계 203/203, Level 3 17/17, 전체 runner 217/217, compileall·diff PASS다. 성능 보고서에 모델·Databricks 호출이나 원본 변경이 포함되면 용량 gate가 실패하는 계약도 포함한다.
+- **Artifacts**: `docs/runtime_performance_2026-09-16.json`, `docs/runtime_capacity_2026-09-16.json`, `docs/runtime_capacity_2026-09-16.md`.
+- **Remote**: commit `6defd2a`를 push했고 GitHub Actions run `35029959063`, job `104585889158`이 1분 10초에 성공했다. annotated tag `agentic-analysis-rc6-2026-09-16`을 같은 코드 commit에 push했다.
+
+## [2026-09-15 22:56:00 KST] [Agent: Codex] User Request: 수행해줘
+- **Request**: 남은 작업을 계속 수행한다.
+- **Action**: Databricks 승인이나 배포 대상 결정이 필요하지 않은 실제 agent 독립 채점 확대를 먼저 진행한다. 첫 대상은 과거 사용자 실패와 직접 연결된 `L1_001` 전체 컬럼 목록·개수 요청이며, 특정 테이블명 없이 현재 TableContext를 검사하는 결정적 복구와 독립 metadata oracle을 구현·검증한다.
+- **Safety**: 기존 보유 DataFrame과 로컬 fixture만 사용한다. 원격 executor를 연결하지 않으며 Databricks 조회를 실행하지 않는다.
+- **Implementation**: 확정된 source의 `ready` TableContext만 모델 없이 검사한다. stale/needs_refresh는 기존 `inspect → 사용자 승인 요청` loop를 유지해 자동 조회하지 않는다. 평가 harness는 assistant 문장이 아니라 `inspect_table_context`의 실제 컬럼 배열과 개수를 reference code의 `cols`와 비교한다.
+- **Validation**: 독립 production graph `L1_001`은 18개 컬럼을 0.161초에 PASS했고 모델·원격 0회였다. 재시작한 실제 화면도 승인 후 로딩된 스키마 기준 18개 컬럼을 0.160초에 표시했으며 tool 1회·모델 0회·추가 조회 0회였다. stale 승인 여정을 포함한 전체 회귀 196/196, Level 3 17/17, 전체 runner 217/217, compileall·diff PASS다.
+- **Artifacts**: `docs/actual_agent_evaluation_L1_001_2026-09-15.json`과 allowlist runtime metadata.
+- **Remote**: commit `a16d15e`를 push했고 GitHub Actions run `34978831986`, job `104413484292`가 1분 7초에 성공했다. annotated tag `agentic-analysis-rc5-2026-09-15`를 같은 코드 commit에 push했다.
+
+## [2026-09-15 22:47:00 KST] [Agent: Codex] User Request: 남은일 계속해줘
+- **Action**: `L1_017` 복합 평균·최대 결함을 수정하고 독립 `scalar_set` oracle, 변형 fixture 재실행, table-neutral 회귀 계약을 추가했다. 최신 서버를 재시작하고 실제 보유 10,000행 화면까지 검증했다.
+- **Validation**: 로컬 195/195, Level 3 17/17, 전체 runner 217/217, compileall·diff PASS. 실제 화면은 평균 `40.931`, 최대 `86`을 0.177초에 표시했고 모델·원격 조회는 0회였다.
+- **Remote**: commit `cd40480`을 push했고 GitHub Actions run `34976936942`, job `104406936863`가 1분 16초에 성공했다. annotated tag `agentic-analysis-rc4-2026-09-15`를 같은 commit에 push했다.
+- **CI maintenance**: 성공한 run의 Node.js 20 deprecation annotation을 확인했다. 공식 action의 Node.js 24 기반 현재 major인 `actions/checkout@v7`, `actions/setup-python@v7`으로 workflow를 갱신하고 원격 gate에서 재검증한다.
+- **Remaining**: PR #68 사람 리뷰·병합, 실제 배포 대상과 접근 범위 확정, 배포 환경 smoke/rollback, 164개 독립 oracle, 네 stale TableContext의 개별 승인형 갱신, 배포 부하·RSS 경보 기준이 남는다.
+
+## [2026-09-15 21:42:00 KST] [Agent: Codex] Multi-aggregate recovery and oracle expansion
+- **Failure evidence**: `L1_017` “평균 나이와 최고령 나이” 실제 첫 실행은 `최고령`을 MAX 의무로 인식하지 못해 operations가 AVG 하나만 남았고, 계산 증거 없이 model time budget으로 종료됐다.
+- **Implementation**: `최고령`·`최저령`을 MAX·MIN으로 grounding하고 한 수치 컬럼의 AVG·MEDIAN·SUM·MIN·MAX 복합 요청을 단일 table-neutral DuckDB query로 실행하는 결정적 로컬 전이를 추가했다. 독립 평가 harness에는 한 행의 여러 scalar를 모두 검사하고 변형 fixture 두 개에서 계보를 재실행하는 `scalar_set` 계약을 추가했다.
+- **Validation**: 실제 production graph `L1_017`은 평균 `41.064`, 최대 `83`을 0.673초에 PASS했다. local_analysis_sql 1회, 모델 0회, 원격 0회이며 counterfactual 2/2가 통과했다. 재시작한 실제 화면에서도 저장된 10,000행으로 평균 `40.931`, 최대 `86`을 0.177초에 표시했고 모델 0회·로컬 도구 1회·추가 조회 0회였다. 전체 회귀는 migration 118/118, tests 77/77, 합계 195/195 PASS다. 실제 agent 독립 채점은 36/200으로 늘었고 164문항은 계속 미채점으로 남긴다.
+- **Artifacts**: `docs/actual_agent_evaluation_L1_017_2026-09-15.json`과 허용목록 기반 runtime metadata.
+
+## [2026-09-15 20:55:00 KST] [Agent: Codex] Deployment preflight and scope gate
+- **Remote status**: PR #68의 최신 HEAD `d8c6071`에 대한 GitHub Actions job `103987130195`가 모든 단계에서 성공했다.
+- **Finding**: 현재 Streamlit 앱은 loopback과 `local-owner`에 고정되어 있어 로컬 또는 외부 접근제어가 적용된 1인용 배포만 안전하다. 사용자별 owner binding이 없는 다중 사용자 배포는 자산·대화 격리를 보장하지 못한다.
+- **Implementation**: 비밀값을 출력하거나 네트워크·SQL을 실행하지 않고 Ollama, Databricks 변수, 영속 저장소, 운영 한도, 사용자 범위를 검사하는 `scripts/deployment_preflight.py`를 추가했다. `.env.example`과 배포·smoke·rollback 계약도 추가했다.
+- **Validation**: preflight 단위 테스트 6/6, migration 117/117, tests 76/76, 합계 193/193 PASS. Level 3 17/17과 전체 runner 217/217 PASS, compileall·diff 검사도 통과했다. 현재 로컬 profile은 READY이며 영속 경로 미지정 경고가 있고, multi-user profile은 의도대로 실패한다.
+- **Remaining**: 실제 플랫폼, 사용자 범위, secret manager, 영속 볼륨, Ollama 배치가 정해져야 배포 manifest와 실제 환경 smoke test를 확정할 수 있다. TableContext 갱신은 각 SQL의 화면 승인 전 실행하지 않는다.
+
+## [2026-09-14 22:06:00 KST] [Agent: Codex] Remote CI result
+- **GitHub Actions**: PR #68의 `deterministic-validation` job `103984748852`가 success로 완료됐다.
+- **Remote evidence**: pinned 환경 설치, migration, application tests, agentic recovery, 전체 217 runner, compileall의 모든 step이 성공했다.
+- **Remaining**: 문서 상태 기록 commit의 최종 check, 사람 코드 리뷰·draft 해제·병합과 배포 smoke/rollback이 남았다.
+
+## [2026-09-14 22:03:00 KST] [Agent: Codex] CI release gate
+- **Finding**: draft PR #68은 mergeable/clean이지만 commit status와 check run이 모두 0건이라 자동 회귀 차단 장치가 없었다. 저장소에도 기존 배포 workflow·Dockerfile·hosting manifest가 없었다.
+- **Implementation**: `.github/workflows/agent-release-gate.yml`을 추가했다. Python 3.11 pinned agent 환경에서 migration·application tests, Level 3 agentic 계약, 전체 217 runner, compileall을 실행하며 Databricks 자격증명과 실제 모델을 사용하지 않는다.
+- **Validation**: YAML 구조와 8개 step을 로컬에서 파싱했다. 원격 CI 실행 결과는 push 후 확인한다.
+
+## [2026-09-14 22:00:00 KST] [Agent: Codex] Draft PR creation
+- **PR**: `https://github.com/konlo/teleai/pull/68`을 main 대상 draft로 생성했다. head는 `codex/agentic-analysis-rc-2026-09-14`, 상태는 open/draft다.
+- **Review scope**: 187/187 회귀, 17/17 agentic 계약, 35/200 실제 agent 독립 채점, 현재 표본 상관분석 0.224초·모델/원격 0회와 남은 165문항·고급 기능·배포 부하 제한을 PR 본문에 함께 기록했다.
+- **Remaining**: draft 해제, 리뷰·병합과 실제 배포는 수행하지 않았다.
+
+## [2026-09-14 21:58:00 KST] [Agent: Codex] RC3 publication
+- **Commit**: `62d25c0797e0a2067377ab3ab56d31f8b51cc0ee`에 local recovery, Level 3 계약, 성능·TableContext 보고서를 고정했다.
+- **Push verification**: 원격 branch와 `agentic-analysis-rc3-2026-09-14` tag가 모두 위 commit을 가리키는 것을 fetch 후 확인했다.
+- **Remaining release gate**: PR 리뷰·병합, 실제 배포 대상 확인, 배포 환경 smoke test와 rollback 검증은 아직 수행하지 않았다.
+
+## [2026-09-14 21:54:00 KST] [Agent: Codex] Remaining work execution
+- **UI finding and fix**: `현재 보유한 bank_loan 데이터` 표현을 현재 결과 범위로 인식하지 못했고, 승인 적재 표본이 `coverage=unknown`·`predicate_known=false`라 결정적 상관분석 후보에서 제외됐다. 현재 결과가 명시된 무필터 두 수치 컬럼 요청에서는 보유 프레임 자체를 모집단으로 사용하도록 수정했다.
+- **UI evidence**: 실제 대화에서 `age`–`balance` 피어슨 상관계수 `0.05918371025192562`를 0.224초에 표시했다. 모델 호출 0회, 로컬 도구 1회, 원격 조회 0회다.
+- **Level 3**: 무작위 placeholder를 제거하고 production `GraphAnalysisRuntime` fault-injection 계약 `A3_001`~`A3_017`을 `run_test_set.py --level 3` 및 `--all`에 연결했다. Level 3 17/17, 참조+agentic 전체 runner 217/217 PASS.
+- **Validation**: migration 111 + tests 76 = 187/187 PASS, compileall·`git diff --check` PASS. 진행 화면 `127.0.0.1:8767`에 최신 근거를 반영했다.
+
+## [2026-09-14 21:36:25 KST] [Agent: Codex] User Request: 작업 진행해줘
+- **Action** [Agent: Codex]: 진행 중인 R05·R08·R12·R13 작업을 계속한다. 상관계수 결정적 로컬 전이와 runtime 모델 예산 연결을 회귀 검증하고, 성능·운영 문서와 진행 화면을 실제 결과로 갱신한다.
+- **Implementation**: 두 수치 컬럼의 피어슨 상관계수를 complete raw DataFrame에서 DuckDB `CORR`로 계산하는 table-neutral 전이를 추가했다. 배포별 turn budget을 runtime recovery 누적 모델 예산에 연결했다.
+- **Measurement**: 실제 로컬 모델 상관계수 5/5 정확, p50 77.451초·p95 80.704초. `num_predict=1024` 비교 1회도 75.023초였다. 로컬 전이 후 30/30 정확, p50 0.037초·p95 0.046초·모델/원격 0회. 동시 histogram 4 workers·20/20, p95 0.562초, 6.864 req/s.
+- **TableContext**: bank_loan 18/18·titanic 12/12 컬럼의 외부 한국어 alias를 준비했다. 저장된 네 context는 모두 stale이므로 각각 승인형 `LIMIT 0` schema 조회가 필요하며 이번 작업에서는 원격 조회 0회다.
+- **Evaluation Environment**: SciPy 1.16.3을 고정하고 제거된 `np.trapz`를 `np.trapezoid`로 교체했다. Level 1·2 참고 코드 200/200 PASS. 참고 코드 결과는 실제 agent 35/200과 분리한다.
+- **Validation**: migration 109 + tests 76 = 185/185 PASS, compileall·`git diff --check` PASS.
+
+## [2026-09-14 12:29:06 KST] [Agent: Codex] User Request: 나머지 작업 진행해줘
+- **Action** [Agent: Codex]: 남은 출시 작업을 의존 순서대로 진행한다. RC2 문서 동기화 후 모델 경로·동시 부하 계측, 평가 환경 정비, 운영 TableContext 준비를 먼저 수행한다.
+- **Safety Contract**: 기존 대화·DataFrame·승인 ledger를 보존한다. 새 Databricks 조회는 사용자 승인 없이 실행하지 않는다. 실제 배포는 대상과 rollback 절차를 확인한 뒤 최종 단계로 남긴다.
+
+## [2026-09-14 12:27:28 KST] [Agent: Codex] User Request: 남아 있는 작업 리스트 보여줘
+- **Action** [Agent: Codex]: 최신 release acceptance, agent 독립 평가, 성능 측정, 원격 push 상태를 대조해 남은 작업을 출시 우선순위로 재정리했다.
+- **Artifact Update**: `docs/agent_remaining_tasks_2026-09-13.md`와 Current Status의 Next Action Items를 최신 RC2 push 이후 상태로 갱신했다.
+- **Outcome**: 원격 RC branch/tag는 존재하지만 PR은 아직 없음을 확인했다. 제한 출시 승격, 배포 환경 검증, 모델·동시 부하 관측, 운영 TableContext 준비, 165문항 독립 평가, 고급 분석 및 평가 환경 정비를 미완료 항목으로 확정했다.
+
+## [2026-09-13 22:23:00 KST] [Agent: Codex] User Request: 운영 agent의 특정 테이블 의존 제거 및 변경 가능한 테이블·스키마 고려
+- **Action**: production 경로의 테이블명·컬럼·값 하드코딩과 정적 TableContext 의존을 전수 점검하고, 실행 시점의 동적 메타데이터와 보유 DataFrame 스키마를 기준으로 요청 해석·범위 검증·복구가 동작하도록 수정 및 회귀 검증 예정.
+- **Decision**: `test_set`의 테이블별 fixture와 oracle은 평가에만 사용한다. 운영 로직은 특정 테이블의 이름·스키마·대표값을 정답으로 내장하지 않는다.
+- **Finding**: production 경로에 `bank_loan` 컬럼 규칙은 없었지만, 2026-04에 생성한 TableContext 네 개를 freshness 확인 없이 현재 스키마처럼 사용했고 실행 중인 runtime은 컨텍스트 파일 변경을 다시 읽지 않았다. legacy 기본 CSV 경로에도 특정 파일명이 있었다.
+- **Fix**: TableContext에 observed_at·freshness·schema fingerprint를 계산하고 기본 24시간 이후 stale 처리. stale 컬럼·alias·대표값은 로딩 결과에서 같은 컬럼이 확인된 경우만 grounding에 사용. 승인된 `SELECT *` 결과의 실제 컬럼·dtype을 우선하며 짧은 테이블명 충돌은 전체 이름을 요구. runtime은 매 요청·inspect에서 외부 컨텍스트를 다시 읽는다. 최신 원본 요청은 기존 DataFrame·차트 대신 승인형 새 조회를 계획한다. legacy 기본 파일명도 제거.
+- **Validation**: 임의의 `catalog_dynamic.schema_dynamic.rotating_table`과 변경 컬럼으로 stale 차단, 추가·삭제·dtype 변경, 짧은 이름 충돌, runtime hot reload, 승인 카드와 원격 실행 0회, 최신 원본 캐시 우회를 검증. migration 98 + tests 73 = 전체 171 PASS, compileall·diff PASS.
+- **Artifact**: `docs/dynamic_table_contract_2026-09-13.md`, `docs/dynamic_table_validation_2026-09-13.json`, `migration/test_dynamic_table_context.py`.
+
+
+## [2026-09-13 22:14:52 KST] [Agent: Codex] User Request: 평가·수정 마무리 계속 진행
+- **Action**: 최신 서버의 실제 기존 대화에서 동일한 `age` histogram 결과와 승인 상태를 다시 확인하고, 회귀 결과와 출시 판정 문서를 동기화.
+- **Outcome**: 기존 750,000건 범위의 PNG를 `show_chart`로 재사용해 0.292초에 완료. 모델 호출 0회, 원격 조회 0회, 활성 승인 카드 0개. 브라우저에 이미지와 집계 범위가 표시됨. 전체 회귀 162/162, compileall·diff 검사 PASS.
+- **Decision**: 보유 데이터 재사용·기본 집계·검증된 기본 차트는 제한 출시 후보. 전체 Level 1·2 기능은 실제 agent 독립 채점 24/200이므로 NO-GO를 유지.
+- **Artifacts**: `docs/chatbot_agentic_evaluation_2026-09-13.md`, `docs/release_acceptance_2026-09-13.md`, `docs/agent_remaining_tasks_2026-09-13.md`, 화면 진행판.
+
+## [2026-09-13 17:02:22 KST] [Agent: Codex] User Request: Level 1·2·3 기준으로 문제를 스스로 해결하는 agentic chatbot 평가 계속
+- **Action**: `test_set/run_test_set.py`가 실제 chatbot이 아니라 참조 Python을 실행하는지 구분하고, Level 1·2 실제 사용자 질문 평가와 Level 3 복구·재계획·조건 보존·안전 중단 평가를 별도 증거로 구성.
+- **Decision**: 단순 참조 코드 PASS를 chatbot PASS로 계산하지 않음. 실제 production graph, 구조화된 도구 결과, 독립 oracle, counterfactual, 실제 PNG 및 실패 주입 복구 증거만 agent 평가로 인정.
+- **Diagnosis and fix**: L2_005는 모델이 다섯 조건으로 정확한 7행 필터 결과를 만든 뒤 원본/필터 캐시 후보 중 하나를 고르지 못해 두 번째 모델 호출이 130.689초와 185.520초에 미완료. 요청 scope와 정확히 일치하는 필터 결과 우선 선택 및 따옴표가 있는 “사람들의 수” COUNT 인식을 추가.
+- **Outcome**: 수정 후 L2_005 실제 runtime 0.197초 PASS, Level 2 선택 4문항 묶음 4/4 PASS(총 0.367초, 최대 0.194초). Level 1 지원 20/20, agentic 복구 16/16, 전체 회귀 162/162, compileall·diff 검사 PASS. 원격 실행 0회.
+- **Artifacts**: `docs/chatbot_agentic_evaluation_2026-09-13.md`, `docs/actual_agent_evaluation_level2_4_repaired_2026-09-13.json`, `docs/agentic_recovery_evaluation_2026-09-13.json`, `docs/reference_code_smoke_2026-09-13.json`.
+
+## [2026-09-13 11:38:58 KST] [Agent: Codex] User Request: 나머지 작업 진행
+- **Action**: 화면 진행판을 유지하며 R01 조건 범위 검증, R03 기존 대화 재현, R05 지연 계측, R06 대용량 저장 검증과 최종 회귀·서버 반영을 계속 진행.
+- **Decision**: 기존 사용자 데이터와 승인 원장을 보존하고 원격 Databricks 조회는 실행하지 않음. 로컬 fixture와 읽기 전용 복제본 결과만 완료 근거로 사용.
+
+## [2026-09-13 06:45:37 KST] [Agent: Codex] User Request: 남은 작업 진행하고 현재 진행하는 작업을 화면에 꼭 보여줘
+- **Action**: 프로젝트 관리/기록 스킬과 출시 기준 적용. R01 요청 범위 검증을 먼저 연결하고, 검증 및 대용량 점검을 병행하며 화면 진행판을 갱신.
+- **Decision**: 기존 대화와 Databricks 데이터를 보존하며 테스트는 로컬 fixture/읽기 전용 복제본에서 수행. 신규 원격 조회는 승인 없이 실행하지 않음.
+
+
+## [2026-09-13 06:37:55 KST] [Agent: Codex] User Request: 남아 있는 작업 리스트 작성
+- **Action**: 현재 코드 연결 여부, 최신 실제 모델 11문항 결과, 기존 요청 이력 검증 여부와 서버 상태를 확인하여 남은 작업을 우선순위와 완료 조건으로 정리.
+- **Findings**: 최신 초기 확대 평가는 7 PASS / 1 FAIL / 3 NOT_COMPLETE. 조건 검증 모듈은 작성됐으나 Recovery에 아직 연결되지 않음. 이후 보정 코드의 실제 모델 재검증과 전체 이력 재현 결과는 없음.
+- **Artifact Update**: docs/agent_remaining_tasks_2026-09-13.md 생성. 기존 전환 작업표에 최신 목록 연결, Current Status 및 Next Action Items 갱신.
+- **Outcome**: 남은 작업 9개와 선행 관계를 정리. 과거 계약 테스트 104개 통과를 최신 전체 코드 검증 또는 출시 완료로 해석하지 않음.
+
+## [2026-09-12 23:04:56 KST] [Agent: Codex] User Request: 남은 검증 및 개선 계속 진행
+- **Action**: 기존 프로젝트 관리/기록 스킬과 출시 기준을 적용. 채점 지원 11문항 실제 모델 평가, 사용자 기존 대화 이력 복제 재현, 독립 완료/범위 계약 리뷰를 병행. 새 Databricks 실행은 승인 없이 하지 않음.
+- **Plan**: 발견된 실패는 초기 증거를 남기고 원인을 수정한 뒤 관련 회귀 및 실패 케이스 재검증. 기존 200문항 참조 코드는 유지.
+
+## [2026-09-12 12:15 KST] [Agent: Codex] User Request: 수정 작업 계속 진행
+- **Action**: 승인 대기 중 새 목표 전환, 계산·차트 완료 근거, 데이터 범위/빈도 검증, 캐시 PNG 재사용과 실제 UI 표시를 통합. 실제 모델 실패에서 FROM 누락 및 requested_conditions 완료 검사 누락을 추가 수정.
+- **Validation in progress**: 실제 모델 평균·histogram 2개 PASS, 초기 실패 증거 별도 보존. 기존 실제 데이터의 로컬 집계/PNG 재사용 PASS, 원격 실행 0회. 후속 대화 재검증 및 최종 서버 확인 진행 중.
+- **Artifacts**: docs/agentic_analysis_fixes_2026-09-12.md, scripts/evaluate_analysis_agent.py, scripts/check_cached_histogram.py 및 회귀 테스트.
+- **Final Validation (12:20 KST)**: migration 51 + tests 53 = 104 tests PASS; git diff --check PASS. 실제 모델 단일 질문 2개 및 재시작 포함 후속 대화 4개 PASS. 기존 실제 750,000건 COUNT/PNG 복제본은 31.922초·모델 1회·원격 0회로 원래 PNG 재사용 PASS.
+- **Runtime**: 8502에 구버전(Python 3.9)과 v1 서버 동시 실행을 확인하여 고정 v1 loopback 서버 하나로 정리. 기존 사용자 대화/2개 집계/차트 화면 복원 확인. 원본 대화·승인 원장/데이터를 테스트용으로 변경하지 않음.
+- **Outcome**: 이번 핵심 수정과 명시된 회귀 검증 완료. 200문항 중 채점 지원 11개이며 전체 자연어·대규모 부하·모든 차트 편집·새 운영 DB 조회를 검증한 것은 아님. 전체 출시 준비 완료로 판단하지 않음.
+
+## [2026-09-12] [Agent: Codex] User Request: agentic 분석 진단에서 발견한 결함 수정
+- **Action**: 완료 증거/유한 복구, 데이터 범위·빈도·재사용 계약, 승인 대기 중 목표 변경, 실제 agent 평가를 분리하여 구현. 기존 영속 자산과 승인 원장은 보존. 관련 회귀 및 실제 로컬 모델 여정으로 검증 예정.
+
+## [2026-09-12 06:57:39] [Agent: Codex] User Request: agentic 데이터 분석 AI 구조 진단 계속
+- **Outcome**: 실제 create_agent/LangGraph loop·영속 자산·승인 ledger·스킬은 구현됨. 분석 완료 증거, 모집단/빈도 계약, 파생 결과 재사용, 승인 대기 중 목표 변경, 평가 경로에 미해결 결함 확인.
+- **Validation**: 무계산 숫자 답변 complete 및 빈 chart benchmark PASS 직접 재현. 독립 데이터 계약 점검에서 TABLESAMPLE/OFFSET 범위 오판, 임의 정수 weight 허용, local SQL 범위 검사 누락/lineage 손실을 모의 DB·합성 데이터로 재현. 일반 자연어 성공률 검증과 구분함.
+- **Artifact Update**: docs/agentic_analysis_audit_2026-09-12.md에 8개 발견, 파일 위치, 실험 증거, 개선 순서, 검증 한계 저장. 이번 진단은 production 코드 변경 및 신규 원격 조회 없음.
+
+## [2026-09-11 23:15:00] User Request: test_set 벤치마크 구축 완료 (Level 1 + Level 2, 200개 전체)
+
+- **Action**: `test_set/level2/definitions_part4.py` (L2_076 ~ L2_100) 생성, `build_and_run_all.py`, `run_test_set.py`, `README.md` 작성 완료.
+- **Result**: 200/200 PASS ✅ (Level 1: 100, Level 2: 100, 실패 0건)
+  - Level 1 chart 생성: 25개 / Level 2 chart 생성: 33개
+- **Artifacts Created**:
+  - `test_set/level2/definitions_part4.py` — L2_076~L2_090 (2x2 대시보드, 고급 시각화), L2_091~L2_100 (방어적 예외 처리)
+  - `test_set/build_and_run_all.py` — 200개 전체 실행 및 JSON 벤치마크 저장
+  - `test_set/run_test_set.py` — CLI 러너 (`--level`, `--id`, `--type`, `--show`, `--list` 등)
+  - `test_set/benchmark_level1.json`, `test_set/benchmark_level2.json`
+  - `test_set/execution_report.md`
+  - `test_set/README.md` — 스키마, 동의어 딕셔너리, CLI 사용법, 평가 루브릭 포함
+- **Coverage**: schema, synonym, table, chart 4개 유형, bank_loan + titanic 양 테이블, 한국어 동의어 매핑 포함
+
+## [2026-09-11 23:14:50] [Agent: Codex] User Request: 현재 구현이 데이터를 잘 분석하는 agentic AI인지 진단
+- **Action**: 구현 수정 대신 현재 활성 진입점, agent loop, 상태/복구, 데이터 출처/승인 계약, 평가 방식과 실시간 실행 증거를 점검. 독립적인 코드 진단을 병렬 수행.
+
+## [2026-09-11 23:09:31] [Agent: Codex] User Request: 분석 복구 검증 계속
+- **Action**: 이전 실행은 추가 조회 승인 대기로 종료됨을 확인. 최신 원문 요청 복원 코드를 적용하고 기존 집계/차트 재사용 경로 검증 예정. 추가 원격 조회는 실행하지 않음.
+
 ## [2026-09-10 22:24:25] [Agent: Codex] User Request: 중단된 Databricks/히스토그램 검증 계속
 - **Confirmed**: 새 SQL 토큰으로 인증과 테이블 목록 조회 성공. 승인된 빈도 조회 78행, 빈도 합계 750,000 및 PNG 저장 확인.
 - **Diagnosis correction**: 체크포인트에 도구 호출 인자는 보존됨. 실제 결함은 summarization HumanMessage를 사용자 요청으로 오인하여 필수 컬럼과 재시도 예산을 재설정하는 것. 이전 인자 유실 가설은 기각.
 
 ## Current Status
-- **Last Updated**: 2026-09-08
-- **Status**: In Progress
-- **Summary**: Persistent LangChain analysis agent promoted to production modules and the default v1 app. Reload HITL, asset reuse, skills, image recommendations and transcript-preserving summarization implemented. 32 legacy and 18 new contracts pass; actual local model four-turn and summary checks pass.
-- **Next Session Focus**: Resolve Databricks OpenSession HTTP 403 for real-data validation; improve measured local-model latency and assess peak execution memory.
+- **Last Updated**: 2026-09-19
+- **Status**: Limited-scope Release Candidate Validation
+- **Summary**: R14의 공통 tool 결과 계약, dataset profile, 승인형 source discovery, 제한된 chart spec, bounded multi-dataset join과 구조화 statistical test를 완료했다. 전체 회귀 application 115 + migration 126 = 241/241, 참고 코드 217/217, agentic recovery 17/17 PASS다. 실제 agent 독립 채점은 57/200이므로 전체 기능 출시는 계속 NO-GO다.
+- **Next Session Focus**: 배포 대상·실제 호스트 검증 → 남은 143문항 oracle와 이상치·시계열·다중 패널 범위. Canonical list: docs/agent_remaining_tasks_2026-09-13.md.
 
 ## Next Action Items (Pending tasks for the next session)
-- [x] Implement checkpointed chart completion/recovery and validate missing data → approval → histogram with synthetic executor.
-- [ ] Validate approved real Databricks histogram and extend completion contracts beyond the supported chart scope.
-- [ ] Verify Databricks connection configuration/token/warehouse access after OpenSession HTTP 403, then validate actual data analysis.
-- [ ] Measure and improve real-model latency; current fixture turns take 49–163 seconds and forced summary evaluation 217 seconds.
-- [ ] Validate large-data peak memory, asset retention/GC and crash replay of local derived results.
-- [ ] Keep legacy compatibility until remaining acceptance checks pass; do not copy old approval rights into the new runtime.
+- [x] R01: Connect grounded request scope to calculation/chart/recovery and reject wrong or unresolved scope.
+- [x] R02: Repair and re-evaluate the supported actual-model Level 1/2 cases.
+- [x] R03: Complete final-browser verification on the restarted server; cached histogram is visibly restored with no remote query.
+- [x] R04: Restart the server with the 205/205-tested code and verify the visible app.
+- [ ] R05: Local p95/RSS capacity gate is READY; recalibrate it on the selected deployment host and measure concurrent Ollama inference.
+- [x] R06: Validate 750,000-row storage, cache eviction, restart/crash recovery and retained PNG.
+- [ ] R07: Expand independent actual-agent grading beyond 57/200 supported cases.
+- [ ] R08: Bounded join, chart specification, and structured statistical tests are complete; implement later outlier, time-series, and multi-panel scope as prioritized.
+- [x] R09: Approved live Databricks load/reuse validated and release candidate tag fixed.
+- [x] R10: Remove production dependencies on fixed table/schema facts and validate schema drift and freshness behavior.
+- [ ] R11: Deployment contract and preflight are ready; review draft PR #68, merge, choose the target, and verify smoke/rollback there.
+- [ ] R12: Refresh four stale production TableContext schemas only through per-query user approval.
+- [x] R13: Repair the Level 2 reference environment and replace Level 3 placeholders with 17 production contracts.
+- [x] R14 P0/P1 core: Standardize tool outputs, add dataset profiling and approval-gated source discovery, and implement bounded chart specification, multi-dataset join, and structured statistical tests.
+
+Task definitions and acceptance conditions: docs/agent_remaining_tasks_2026-09-13.md. Prior completed work remains recorded in the dated entries above.
 
 ---
 
 ## Daily Wrap-ups
+
+### 2026-09-19 Daily Summary
+- **Work completed**: Added bounded multi-dataset joins and a structured statistical tool to the production graph. Statistical coverage includes Welch independent t, paired t, chi-square, one-way ANOVA, Mann–Whitney, and mean confidence intervals with sample/missingness, assumptions, effect sizes, applicable confidence intervals, deterministic recovery, and strict raw-grain validation.
+- **Evidence**: The join benchmark exactly matched an independent pandas oracle. Unchanged `L2_051`–`L2_060` prompts passed checked-in independent SciPy references 10/10 with one structured tool call per case and zero model or remote calls. Structured evidence survived runtime restart. Application 115/115, migration 126/126, Level 3 17/17, and full runner 217/217 passed. Independent grading coverage is 57/200.
+- **Remaining**: Expand 143 independent oracles and prioritize outlier, time-series, and multi-panel scope; review/merge/deploy PR #68 and run the selected-host capacity and smoke/rollback gates. Four stale production TableContexts still require separate user-approved refreshes.
+- **Reports**: `docs/actual_agent_evaluation_join_2026-09-19.json`, `docs/actual_agent_evaluation_statistics_2026-09-19.json`, `docs/agent_tool_contract_matrix_2026-09-18.md`, `docs/agent_tool_audit_2026-09-16.md`.
+
+### 2026-09-18 Daily Summary
+- **Work completed**: Added a common structured result contract to every active analysis tool, implemented bounded dataset profiling and approval-safe Databricks source discovery planning, then added bounded histogram/bar/line/scatter/boxplot execution with deterministic local recovery, actual PNG artifacts, data digests, restart restoration, and Hangul-capable font selection.
+- **Evidence**: Profile cases `L1_006`, `L1_008`, `L1_009` and explicit chart cases `L1_077`, `L1_078`, `L1_086` passed production graph evaluation with zero model and remote calls. Source discovery paused at the exact HITL approval card. Application 95/95, migration 126/126, Level 3 17/17, full reference runner 217/217 passed. Independent grading coverage is 47/200.
+- **Remaining**: Build multi-dataset join with lineage/cardinality checks and structured statistical tests; expand 153 independent oracles; review/merge/deploy PR #68 and run the selected-host capacity and smoke/rollback gates.
+- **Reports**: `docs/agent_tool_audit_2026-09-16.md`, `docs/agent_tool_contract_matrix_2026-09-18.md`, `docs/actual_agent_evaluation_profile_3_2026-09-18.json`, `docs/actual_agent_evaluation_chart_spec_3_2026-09-18.json`.
+
+### 2026-09-16 Daily Summary
+- **Work completed**: Added an environment-configurable single-process capacity policy and deployment gate. Expanded table-neutral schema inspection for dtype, numeric and categorical columns, fixed request-to-request tool-call state isolation, and added four independent structured metadata oracles without model or Databricks calls.
+- **Evidence**: Single-run p95 0.162 seconds; 4 workers and 20/20 concurrent requests p95 0.549 seconds; peak RSS 378,601,472 bytes. The 1 GiB memory, 768 MiB warning, 896 MiB critical gate is READY. Migration 126/126, tests 79/79, combined 205/205, Level 3 17/17, and full runner 217/217 PASS. Actual-agent independent grading is 41/200; GitHub Actions run 35095497759 passed and RC7 points to code commit e31150f.
+- **Remaining**: Select the deployment target and access scope, rerun the gate on that host, measure concurrent Ollama inference, review and merge PR #68, refresh four stale TableContexts only with per-query approval, and expand 159 ungraded actual-agent cases.
+- **Reports**: `docs/runtime_capacity_2026-09-16.md`, `docs/runtime_capacity_2026-09-16.json`, `docs/runtime_performance_2026-09-16.json`, `docs/actual_agent_evaluation_metadata_4_2026-09-16.json`.
+
+### 2026-09-14 Daily Summary
+- **Work completed**: Validated an approved 10,000-row Databricks load, local histogram reuse, and loaded-sample Pearson correlation in the actual UI. Added table-neutral local correlation recovery, deployment policy timing, concurrent/model performance reports, TableContext readiness reporting, pinned SciPy compatibility, and 17 real Level 3 production recovery contracts in place of random placeholders.
+- **Evidence**: Migration 111/111, tests 76/76, reference code 200/200, agentic recovery 17/17, and combined runner 217/217 PASS. The visible `age`–`balance` result was `0.05918371025192562` in 0.224 seconds with zero model and remote calls. RC3 was pushed, draft PR #68 is mergeable/clean, and its latest GitHub release gate succeeded.
+- **Remaining**: Human review and merge, deployment target and secret/rollback design, four approval-gated TableContext refreshes, deployment load/RSS calibration, and 165 independent-oracle cases.
+- **Reports**: `docs/release_manifest_2026-09-14.md`, `docs/chatbot_agentic_evaluation_2026-09-13.md`, `docs/runtime_performance_2026-09-14.md`, `docs/table_context_operations_2026-09-14.md`.
+
+### 2026-09-13 Daily Summary
+- **Work completed**: Integrated grounded request scope into production recovery, blocked mismatched local/remote/chart execution, added deterministic count and ratio paths, repaired multiple cached-candidate selection, expanded actual-agent grading, and added a reproducible agentic recovery runner.
+- **Evidence**: Level 1 actual agent 20/20, Level 2 actual agent 4/4, recovery 16/16, combined regression 171/171, compileall and diff PASS. Dynamic table tests cover stale schemas, column and dtype changes, short-name collisions, hot reload, approval gating, and latest-source cache bypass. The restarted browser reused and displayed the 750,000-count histogram in 0.292 seconds with zero model and remote calls. Reference Python smoke was L1 100/100 and L2 89/100, explicitly excluded from agent scores.
+- **Remaining**: Approved live Databricks reload journey, operating SLO/resource limits, fixed release revision, and 176 ungraded Level 1/2 cases.
+- **Reports**: `docs/chatbot_agentic_evaluation_2026-09-13.md`, `docs/release_acceptance_2026-09-13.md`.
+
+### 2026-09-12 Daily Summary
+- **Work completed**: Audited and repaired completion evidence, scope/frequency lineage, cached histogram/PNG reuse, pending approval goal replacement, SQL error recovery, execution budgets and actual-agent evaluation. Fixed cached image UI display and duplicate keys; consolidated the running app into the pinned v1 server.
+- **Evidence**: 104 automated tests; actual model numeric/chart 2 cases and follow-up 4 turns passed; actual stored 750,000-row population represented by 78 frequency rows reused its PNG without any new Databricks query. Initial live failures retained and followed by targeted fixes.
+- **Remaining**: Full natural-language/SQL meaning verification, 200-question model coverage, complex chart editing, large-data memory/retention and operational release acceptance.
+- **Report**: docs/agentic_analysis_fixes_2026-09-12.md.
 
 ### 2026-09-08 Daily Summary
 - **Key Accomplishments**: Diagnosed missing goal completion and replanning controls; reproduced limitations of final-answer guard offline and documented migration requirements.
@@ -802,3 +1108,57 @@
 - **Action**: 로그인된 workspace의 warehouse 연결정보를 앱 설정과 비교. 비밀값 출력 없이 진단.
 - **Findings**: 브라우저의 Serverless Starter Warehouse 호스트와 HTTP path는 로컬 `.env`와 정확히 일치하고, 현재 계정은 Owner이며 warehouse 사용 권한도 있음. 반면 Databricks 토큰 설정에는 `No tokens exist`로 표시되지만 로컬 앱에는 기존 토큰이 설정되어 있어, 폐기되었거나 다른 workspace용인 토큰이 OpenSession HTTP 403의 직접 원인으로 판단됨.
 - **Prepared Action**: `telly-local-analysis` 이름, 14일 만료, SQL API 범위만 가진 새 토큰 생성 화면을 준비함. 보안 자격 증명 생성 직전 단계에서 사용자 확인 대기.
+
+## [2026-09-10 22:52:00] [Agent: Antigravity] User Request: 저장된 실제 데이터(bank_loan, titanic 등) 기반 챗봇 검증용 Level 1(단순 100개) 및 Level 2(복합 100개) 프롬프트·정답 파이썬 코드·시각화 검증 테스트 세트 구축
+- **Action**: 프로젝트 내 `.telly_table_context` 및 `test_scenario.py`를 분석하여 실제 지원 데이터셋(`workspace.default.bank_loan`, `workspace.default.titanic` 등)을 식별하고, 이 스키마에 완전히 부합하는 실제 사용자 질의 형태의 Level 1(100개) 및 Level 2(100개) 정답지 및 자동 검증 환경 구축 계획 수립.
+- **Planned Artifact Update**: implementation_plan.md에 데이터셋 명세 및 200개 문항 구성/실행 계획 작성.
+
+## [2026-09-10 22:54:13] [Agent: Antigravity] User Request: 챗봇 검증 세트에 시각화, 텍스트 답변, 테이블 스키마 질문, 유사어(동의어) 기반 컬럼 탐색 요구사항 반영
+- **Action**: 200개 문항 구성에 4대 핵심 축 반영 계획 수립:
+  1) 화면 시각화(차트 생성) 질문
+  2) 텍스트/표 수치 요약 답변 질문
+  3) 테이블 스키마 및 메타데이터 탐색 질문 (컬럼 타입, 구조, 결측치 등)
+  4) 유사어/동의어 기반 컬럼 탐색 및 분석 질문 (예: 잔고/예금액->balance, 집 대출->housing, 나이->age 등)
+- **Planned Artifact Update**: implementation_plan.md를 업데이트하여 4대 유형 배분 및 검증 계획 반영.
+
+## [2026-09-10 22:55:00] [Agent: Antigravity] User Request: 기존 코드 보존 및 독립된 test_set 폴더 내 데이터셋과 Level 1/2 테스트 세트 구축
+- **Action**: 기존 프로젝트 코드는 일체 수정하지 않고, 전용 독립 폴더 `test_set/`을 생성하여 실제 스키마 기반 데이터셋(`test_set/data/bank_loan.csv`, `titanic.csv`)과 Level 1(100개) 및 Level 2(100개) 총 200문항, 정답 Python 코드, 실행 결과 및 CLI 러너 구축 시작.
+- **Planned Artifact Update**: test_set/ 패키지 전수 생성 및 walkthrough.md 작성.
+
+## [2026-09-13 22:35:42] [Agent: Codex] User Request: 남아 있는 일들 진행해줘
+- **Action** [Agent: Codex]: 남은 R05/R07/R08/R09를 재점검하고, 제품 내 재조회 승인 계약을 유지하면서 독립 실행 가능한 운영 한도·평가 확대·출시 고정 작업을 진행한다.
+- **Finding** [Agent: Codex]: 확대 평가 첫 실행에서 전체 행 수의 불필요한 원격 제안, 백분율 단위 누락, OR→AND 축소, 월 IN 조건 누락을 재현했다. OR 복구의 첫 구현에서는 DuckDB에 Databricks backtick을 사용해 ParseError와 188.786초 SLO 위반도 확인했다.
+- **Implementation**: table-neutral RuntimePolicy, 원격 100,000행·256열·512MiB DataFrame·64MiB cache·대화별 2GiB 한도, 30일 읽기 전용 정리 후보 보고, 모델 60초와 turn 180초 진단을 적용했다. 요청 scope에 전체 행, IN, 공통 조건+한 개 OR 그룹, 0–100 백분율 검증과 DuckDB quoting을 추가했다.
+- **Validation**: 신규 실제 agent 10/10 PASS(최대 0.237초, 원격 0회), 누적 독립 oracle 35/200. 전체 회귀 migration 103 + tests 75 = 178/178 PASS, compileall·diff PASS. 저장소 7 scopes/8,996,064 bytes, 만료 후보 0, quota 초과 0, 삭제 0.
+- **Artifacts**: `docs/actual_agent_evaluation_expanded_10_final_2026-09-13.json`, `docs/operational_policy_2026-09-13.md`, `docs/operational_storage_report_2026-09-13.json`.
+- **Remaining**: 실제 제품 승인형 Databricks 전체 여정, 165문항, 고급 조인·가설검정·복합 차트, 실제 트래픽 p95/RSS, 고정 release revision.
+- **UI Verification** [Agent: Codex]: 최신 서버에서 `현재 지원 범위와 운영 한도`를 펼쳐 100,000행·256열·2GiB·30일 후보 표시를 확인했다. 별도 진행 화면에 35/200과 178/178 근거가 노출됨을 확인했다.
+- **Approval Gate Prepared** [Agent: Codex]: 신규 대화 `612c8013-36e5-4be5-ac25-3f5092ebba75`에 `SELECT * FROM workspace.default.bank_loan LIMIT 10000` 승인 카드를 생성했다. `불러오고 계속`은 클릭하지 않아 승인 전 원격 실행 0회 계약을 유지했다.
+- **Approval Log Validation** [Agent: Codex]: 해당 대화 runtime 로그는 `run_started` 후 `run_paused(reason=approval)` 2건만 존재하고 Databricks/SQL 실행 이벤트는 0건이다. 진행 상태 JSON 파싱과 `git diff --check`도 통과했다.
+
+## [2026-09-13 23:28:57 +0900] [Agent: Codex] User Request: Databricks 승인 여정 계속 진행
+- **Action**: 직전 화면에 준비된 workspace.default.bank_loan 10,000행 preview 조회 승인을 사용자 후속 요청으로 확인하고, 실제 조회·저장·후속 분석·진단 로그를 검증한다.
+- **Safety Contract**: 승인된 SQL 1회만 실행한다. 실패 시 자동 재조회하지 않고 기존 결과를 보존하며 원인과 단계를 기록한다.
+
+- **Approved execution** [Agent: Codex]: 준비된 `SELECT * FROM workspace.default.bank_loan LIMIT 10000`을 승인 후 정확히 1회 실행했다. dataset `99899a9f-699f-49fd-8c47-4806a4da7596`에 10,000행·18열을 저장했으며 승인 전 실행은 0회였다.
+- **Defect and fix** [Agent: Codex]: controller가 만든 적재 설명의 `통계`를 계산 요청으로 오인해 성공 적재 뒤에도 모델을 세 번 호출하고 미완료 처리하던 문제를 수정했다. `request_kind=remote_load`와 적재 증거 완료 계약을 추가하고, 기존 실패 checkpoint도 원격 재실행 없이 로컬 상태로 복구하게 했다.
+- **Defect and fix** [Agent: Codex]: `현재 로딩된 10,000행 표본`에서 숫자가 끼어 현재 결과 한정 의도를 놓쳐 새 Databricks 집계를 제안하던 문제를 수정했다. 잘못 생성된 승인 두 건은 거절했고 실행하지 않았다. 현재 결과 한정 histogram은 저장된 raw DataFrame에서 결정적으로 PNG를 만든다.
+- **Live validation** [Agent: Codex]: 같은 표본 요청이 최신 화면에서 0.215초, 모델 호출 0회, 추가 원격 조회 0회로 완료됐고 `age 분포` 이미지와 `보유 10,000행 중 10,000행 기준 · unknown` 범위가 표시됐다.
+- **Regression** [Agent: Codex]: migration 105 + tests 75 = 180/180 PASS, compileall, 진행 JSON 파싱, `git diff --check` PASS.
+- **Artifacts**: `docs/databricks_approval_journey_2026-09-14.md`, `docs/release_acceptance_2026-09-13.md`, `docs/chatbot_agentic_evaluation_2026-09-13.md`, 화면 진행판.
+- **Remaining release gates**: 실제 트래픽 p50/p95와 process RSS 보정, 남은 165문항의 독립 oracle, 조인·가설 검정·고급 차트, 고정 release revision.
+
+## [2026-09-14 06:19:32 +0900] [Agent: Codex] User Request: 남은 출시 작업 계속 진행
+- **Action**: 실제 응답 시간 p50/p95와 process RSS 측정을 재현 가능한 방식으로 수행하고, 운영 기준·출시 판정·진행 화면에 근거를 반영한다.
+- **Safety Contract**: 성능 측정은 저장된 로컬 DataFrame과 읽기 전용 상태를 사용한다. 새 Databricks 조회는 별도 승인 없이 실행하지 않는다.
+- **Implementation**: 모든 최신 `run_started`/`run_completed`에 process peak RSS를, 완료·오류 이벤트에 DataFrame cache 바이트를 기록한다. 읽기 전용 실제 asset으로 반복 측정하는 `scripts/report_runtime_performance.py`를 추가했다.
+- **Measurement**: 과거 결함 실행을 포함한 보존 로그 23 turns는 p50 40.983초·p95 215.301초였다. 현재 코드에서 실제 `bank_loan` 10,000행·18열 복제본의 새 대화 30회는 p50 0.069초·p95 0.121초·최대 0.165초, 모델·원격 호출 0회, PNG 30/30 생성이었다.
+- **Live validation**: 최신 서버 실제 화면 turn은 0.114초였고 process peak RSS 259,063,808 bytes, frame cache 6,421,172 bytes가 로그에 남았다. 같은 이미지와 범위가 화면에 표시됐다.
+- **Regression**: migration 106 + tests 75 = 181/181 PASS, compileall·`git diff --check` PASS. 제품 코드의 Matplotlib `vert` deprecation도 제거했다.
+- **Artifacts**: `docs/runtime_performance_2026-09-14.md`, `docs/runtime_performance_2026-09-14.json`, 운영 정책·출시 판정·진행판 갱신.
+- **Release candidate**: `codex/agentic-analysis-rc-2026-09-14` 브랜치와 `agentic-analysis-rc-2026-09-14` tag로 검토 가능한 revision을 고정한다. 원격 push·배포는 수행하지 않는다.
+- **Remaining**: 현재 코드의 모델 질문·동시 부하 표본 수집, 배포 인스턴스별 RSS 경보 기준, 166개 독립 oracle.
+
+- 2026-09-14T21:41:50+09:00 사용자 요청: 남아 있는 작업 계속 진행. 실제 UI 상관분석 검증, Level 3 평가 정비, 전체 회귀 및 릴리스 산출물 갱신을 진행한다. 기본 python 명령이 없어 프로젝트 venv Python으로 기록했다.
+
+- 2026-09-15T20:47:45+09:00 사용자 요청: 남은 작업 계속 진행. 최신 PR CI 확인, 배포 진입점 준비, 잔여 release gate를 진행한다.
