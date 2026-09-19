@@ -92,6 +92,20 @@ class RecoveryMiddleware(AgentMiddleware):
             elif re.search(r'완전\s*외부|전체\s*외부|\b(?:full|outer)\s*(?:outer\s*)?join\b', text, re.I): join_how = 'outer'
             elif re.search(r'내부|\binner\s*join\b', text, re.I): join_how = 'inner'
             else: join_how = None
+            if re.search(r'맨[\s-]*휘트니|mann[\s-]*whitney', text, re.I):
+                statistical_kind = 'mann_whitney'
+            elif re.search(r'카이\s*제곱|chi[\s-]*square', text, re.I):
+                statistical_kind = 'chi_square'
+            elif re.search(r'일원\s*분산|one[\s-]*way\s*anova|\banova\b', text, re.I):
+                statistical_kind = 'one_way_anova'
+            elif re.search(r'대응\s*(?:표본\s*)?t[\s-]*검정|paired\s*t[\s-]*test', text, re.I):
+                statistical_kind = 'paired_t'
+            elif re.search(r'독립\s*(?:표본\s*)?t[\s-]*검정|two[\s-]*sample\s*t[\s-]*test|independent\s*t[\s-]*test', text, re.I):
+                statistical_kind = 'independent_t'
+            elif re.search(r'(?:모평균|평균).{0,12}(?:신뢰\s*구간|confidence\s*interval)', text, re.I):
+                statistical_kind = 'mean_ci'
+            else:
+                statistical_kind = None
             profile_kind = None
             if not chart and re.search(r'결측|누락|\b(?:null|missing|nan)\b', text, re.I):
                 profile_kind = 'missing'
@@ -107,18 +121,43 @@ class RecoveryMiddleware(AgentMiddleware):
                 r'[가-힣A-Za-z]+[율률]|\b(?:mean|average|avg|count|sum|median|std|correlation|ratio|rate|percentage|percent)\b', text, re.I)) or count_request
             if re.search(r'(?:이란|개념|정의|뜻).*(?:설명|알려)|(?:이란|란)\s*(?:무엇|뭐)', text):
                 calculation = False
-            names, sources = set(), set()
+            names, sources, column_aliases = set(), set(), {}
             if self.context:
                 from core.analysis_catalog import grounded_reference_columns
                 for table in self.context.reference_context:
                     sources.add(table.get('table', ''))
-                    names.update(c['name'] for c in grounded_reference_columns(table, self.context.datasets) if c.get('name'))
+                    for column in grounded_reference_columns(table, self.context.datasets):
+                        name = column.get('name')
+                        if not name:
+                            continue
+                        names.add(name)
+                        column_aliases.setdefault(name, set()).update(
+                            alias for alias in column.get('aliases', []) if isinstance(alias, str))
                 for info in self.context.datasets.metadata.values():
                     names.update(info.columns)
                     sources.add(info.source)
             def mentioned(name):
                 return bool(name and re.search(r'(?<![A-Za-z0-9_])' + re.escape(name) + r'(?![A-Za-z0-9_])', text))
-            mentioned_columns = [name for name in names if mentioned(name)]
+            def mentioned_alias(alias):
+                if not alias:
+                    return False
+                return bool(re.search(
+                    r'(?<![A-Za-z0-9_가-힣])' + re.escape(alias)
+                    + r'(?=(?:은|는|이|가|을|를|의|과|와|별|간|에서|으로|에|도)?(?:[^가-힣]|$))', text))
+            def mentioned_column(name):
+                if mentioned(name) or any(mentioned_alias(alias) for alias in column_aliases.get(name, ())):
+                    return True
+                # A metadata alias such as "생존 여부" also grounds the
+                # ordinary role noun "생존자". Keep this suffix rule tied to
+                # TableContext metadata rather than any table-specific name.
+                for alias in column_aliases.get(name, ()):
+                    stem = re.sub(r'\s*(?:여부|유무|상태|율)$', '', alias).strip()
+                    if len(stem) >= 2 and re.search(
+                            r'(?<![A-Za-z0-9_])' + re.escape(stem)
+                            + r'(?:자|여부|유무|상태|율)(?![A-Za-z0-9_])', text):
+                        return True
+                return False
+            mentioned_columns = [name for name in names if mentioned_column(name)]
             mentioned_columns.sort(key=lambda name: (text.find(name) if text.find(name) >= 0 else len(text), name))
             operations = []
             for pattern, operation in [(r'평균|\b(?:mean|average|avg)\b', 'AVG'),
@@ -139,6 +178,8 @@ class RecoveryMiddleware(AgentMiddleware):
                 calculation, operations = False, []
             if profile_kind:
                 calculation, operations = False, []
+            if statistical_kind:
+                calculation, operations = False, []
             metadata_kind = None
             column_words = bool(re.search(r'컬럼|필드|\bcolumns?\b|\bfields?\b', text, re.I))
             if (not chart and not join_requested and not operations and column_words and
@@ -157,6 +198,7 @@ class RecoveryMiddleware(AgentMiddleware):
                 metadata_kind, calculation, operations = 'columns', False, []
             current = dict(request_id=human.id, attempts=0, chart=chart, kind=kind,
                 join=join_requested, join_how=join_how,
+                statistical_kind=statistical_kind,
                 calculation=calculation, operations=operations, metadata_kind=metadata_kind,
                 profile_kind=profile_kind, chart_spec_requested=chart_spec_requested,
                 data_load=data_load,
@@ -166,7 +208,7 @@ class RecoveryMiddleware(AgentMiddleware):
                     r'전체\s*(?:행|레코드|데이터)(?:의)?\s*(?:수|개수)|총\s*(?:데이터\s*)?(?:행|레코드)\s*(?:수|개수)', text)),
                 current_result_only=bool(current_loaded_reference or re.search(
                     r'(?:현재|보유|지금|이|그)\s*(?:로딩된\s*)?(?:[\d,]+\s*행\s*)?(?:결과|표본|샘플|데이터)|'
-                    r'표본|샘플|일부\s*데이터', text)),
+                    r'(?<!독립)(?<!대응)표본(?!\s*(?:평균|분산|크기|수))|샘플|일부\s*데이터', text)),
                 fresh_source_required=fresh_source_required,
                 request_started_at=time.time(),
                 required_columns=mentioned_columns,
@@ -188,7 +230,7 @@ class RecoveryMiddleware(AgentMiddleware):
                 # The exact source and query are already bound to the approval
                 # envelope.  Natural-language scope extraction from the reason
                 # text would invent an analysis obligation.
-                current.update(chart=False,kind=None,join=False,join_how=None,
+                current.update(chart=False,kind=None,join=False,join_how=None,statistical_kind=None,
                     calculation=False,operations=[],metadata_kind=None,profile_kind=None,
                     chart_spec_requested=False,whole_row_count=False,current_result_only=False,fresh_source_required=False,
                     required_columns=[])
@@ -222,7 +264,7 @@ class RecoveryMiddleware(AgentMiddleware):
             # Upgrade an in-flight legacy checkpoint.  Its successful tool
             # observation may already be marked processed, so the loop below
             # is also allowed to reconsider that single observation.
-            current.update(data_load=True,chart=False,kind=None,join=False,join_how=None,calculation=False,
+            current.update(data_load=True,chart=False,kind=None,join=False,join_how=None,statistical_kind=None,calculation=False,
                 operations=[],metadata_kind=None,profile_kind=None,chart_spec_requested=False,whole_row_count=False,
                 current_result_only=False,fresh_source_required=False)
             current['scope']={'conditions':[],'any_conditions':[],
@@ -349,6 +391,21 @@ class RecoveryMiddleware(AgentMiddleware):
                         'scope': observation.get('scope'),
                     }
                     current['failed'].pop(name, None)
+            if name == 'statistical_test' and observation.get('status') == 'ready':
+                dataset_id = arguments.get('dataset_id') or observation.get('dataset_id')
+                info = self.context.datasets.metadata.get(dataset_id) if self.context and dataset_id else None
+                result = observation.get('test_result', {})
+                if (info is not None
+                        and dataset_id == observation.get('dataset_id')
+                        and result.get('kind') == arguments.get('test') == current.get('statistical_kind')
+                        and set(current.get('required_columns', [])).issubset(result.get('columns', []))
+                        and self._source_matches(info, current)
+                        and self._fresh_for_request(info, current)
+                        and (current.get('current_result_only')
+                             or (info.coverage == 'complete' and info.predicate_known))
+                        and self._statistical_scope_valid(info, arguments, current)):
+                    current['statistical_evidence'] = observation
+                    current['failed'].pop(name, None)
             if name in {'local_analysis_sql', 'query_databricks'} and observation.get('status') == 'ready':
                 dataset_id = observation.get('dataset', {}).get('id')
                 if self._valid_calculation(dataset_id, arguments, current):
@@ -406,10 +463,49 @@ class RecoveryMiddleware(AgentMiddleware):
     def _scope_valid(self, executed, current, histogram_column=None):
         if not self._has_scope(current): return True
         if scope_matches(executed, current['scope'], histogram_column=histogram_column): return True
+        self._record_scope_error(current)
+        return False
+
+    def _record_scope_error(self, current):
         current['scope_error'] = 'request_scope_unresolved' if current['scope'].get('unresolved') else 'request_scope_mismatch'
         self.diagnostics.emit('request_scope_rejected', request_id=current.get('request_id'),
             reason=current['scope_error'], columns=sorted({c['column'] for c in current['scope'].get('conditions', [])}),
             unresolved=current['scope'].get('unresolved', []))
+
+    def _statistical_scope_valid(self, info, arguments, current):
+        """Allow an explicit list of all compared groups without filtering rows.
+
+        In ``y='yes'`` versus ``y='no'``, the literals label the populations
+        being compared. They do not narrow a complete raw dataset. The
+        exception stays fail-closed: exactly one IN condition on the declared
+        group column must equal every observed non-null level.
+        """
+        if not self._has_scope(current):
+            return True
+        scope = current.get('scope', {})
+        valid = False
+        if (not scope.get('unresolved') and not scope.get('any_conditions')
+                and not scope.get('measure_conditions') and not scope.get('ratio')
+                and arguments.get('test') in {'independent_t', 'mann_whitney'}):
+            conditions = scope.get('conditions', [])
+            group_column = arguments.get('group_column')
+            if (len(conditions) == 1 and conditions[0].get('column') == group_column
+                    and conditions[0].get('op') == 'in' and self.context is not None
+                    and info.id in self.context.datasets.frames and group_column in info.columns):
+                def canonical(value):
+                    if hasattr(value, 'item'):
+                        try:
+                            value = value.item()
+                        except (TypeError, ValueError):
+                            pass
+                    return json.dumps(value, ensure_ascii=False, sort_keys=True, default=str)
+                requested = {canonical(value) for value in conditions[0].get('value', [])}
+                observed = {canonical(value) for value in
+                            self.context.datasets.frames[info.id][group_column].dropna().unique().tolist()}
+                valid = bool(requested) and requested == observed
+        if valid:
+            return True
+        self._record_scope_error(current)
         return False
 
     @staticmethod
@@ -520,6 +616,7 @@ class RecoveryMiddleware(AgentMiddleware):
     def _complete(self, current):
         if current.get('data_load'): return bool(current.get('load_evidence_id'))
         if current.get('join') and not current.get('join_evidence'): return False
+        if current.get('statistical_kind') and not current.get('statistical_evidence'): return False
         if current.get('metadata_kind') and not current.get('metadata_evidence'): return False
         if current.get('profile_kind') and not current.get('profile_evidence'): return False
         if current.get('chart') and not current['artifact_ids']: return False
@@ -590,6 +687,39 @@ class RecoveryMiddleware(AgentMiddleware):
                 f"NULL key 왼쪽 {summary['left_null_key_rows']:,}행, 오른쪽 {summary['right_null_key_rows']:,}행.\n"
                 f"분석 범위: {evidence.get('scope')}"
             )
+        if current.get('statistical_evidence'):
+            evidence = current['statistical_evidence']
+            result = evidence['test_result']
+            sample = result['sample']
+            line = (
+                f"{result['method']} 결과입니다. 사용 {sample['complete_rows']:,}행, "
+                f"결측 제외 {sample['dropped_rows']:,}행."
+            )
+            if result.get('statistic') is not None:
+                line += f"\n통계량: {result['statistic']}; 자유도: {result.get('degrees_of_freedom')}; p-value: {result.get('p_value')}."
+                line += (f" alpha={result['alpha']} 기준으로 귀무가설을 기각합니다."
+                         if result.get('significant') else
+                         f" alpha={result['alpha']} 기준으로 귀무가설을 기각할 근거가 부족합니다.")
+            if result.get('estimate'):
+                line += f"\n추정값({result['estimate']['name']}): {result['estimate']['value']}."
+            if result.get('effect_size'):
+                effect = result['effect_size']
+                line += f"\n효과크기({effect['name']}): {effect.get('value')}."
+            if result.get('confidence_intervals'):
+                intervals = result['confidence_intervals']
+                first = intervals[0]
+                line += (f"\n{first.get('level', 1-result['alpha']):.1%} 신뢰구간"
+                         f"({first['parameter']}): [{first['lower']}, {first['upper']}].")
+                if len(intervals) > 1:
+                    line += f" 추가 신뢰구간 {len(intervals)-1}개는 구조화 결과에 보존했습니다."
+            if result.get('warnings'):
+                line += "\n주의: " + " ".join(result['warnings'])
+            if result.get('kind') == 'paired_t':
+                line += "\n행 단위 쌍이 동일 관측 단위인지 데이터만으로 검증할 수 없습니다."
+            else:
+                line += "\n관측치 독립성은 데이터만으로 검증할 수 없습니다."
+            line += f"\n분석 범위: {evidence.get('scope')}"
+            parts.append(line)
         for card_id in current.get('artifact_ids', []):
             card = self.artifacts[card_id]
             parts.append(f'{card.title} 이미지를 생성했습니다.\n분석 범위: {card.scope}')
@@ -653,6 +783,53 @@ class RecoveryMiddleware(AgentMiddleware):
         return {'recovery': current, 'messages': [message]}
 
     def _next_local(self, current, calls):
+        if (self.context and current.get('statistical_kind')
+                and not current.get('statistical_evidence')):
+            required = list(current.get('required_columns', []))
+            candidates = [info for info in self.context.datasets.metadata.values()
+                if info.grain == 'raw' and not info.aggregation
+                and set(required).issubset(info.columns)
+                and self._source_matches(info, current)
+                and self._fresh_for_request(info, current)
+                and (current.get('current_result_only')
+                    or (info.coverage == 'complete' and info.predicate_known))]
+            if len(candidates) == 1 and required:
+                info = candidates[0]
+                frame = self.context.datasets.frames[info.id]
+                numeric = [column for column in required
+                           if _dtype_family(frame[column].dtype) == 'numeric']
+                low_cardinality = [column for column in required
+                                   if frame[column].nunique(dropna=True) <= 20]
+                kind = current['statistical_kind']
+                arguments = None
+                if kind == 'mean_ci' and len(required) == 1 and len(numeric) == 1:
+                    arguments = {'dataset_id':info.id, 'test':kind, 'value_column':numeric[0]}
+                elif kind == 'paired_t' and len(required) == 2 and len(numeric) == 2:
+                    arguments = {'dataset_id':info.id, 'test':kind,
+                                 'value_column':required[0], 'paired_column':required[1]}
+                elif kind == 'chi_square' and len(required) == 2 and len(low_cardinality) == 2:
+                    arguments = {'dataset_id':info.id, 'test':kind,
+                                 'value_column':required[0], 'group_column':required[1]}
+                elif kind in {'independent_t', 'one_way_anova', 'mann_whitney'} and len(required) == 2:
+                    if len(numeric) == 1:
+                        value_candidates = numeric
+                        group_candidates = [column for column in required
+                                            if column != numeric[0] and column in low_cardinality]
+                    elif len(numeric) == 2:
+                        cardinality = {column: frame[column].nunique(dropna=True) for column in numeric}
+                        ordered = sorted(numeric, key=lambda column: cardinality[column])
+                        group_candidates = [ordered[0]] if cardinality[ordered[0]] <= 20 and \
+                            cardinality[ordered[0]] < cardinality[ordered[1]] else []
+                        value_candidates = [ordered[1]] if group_candidates else []
+                    else:
+                        value_candidates, group_candidates = [], []
+                    if len(value_candidates) == 1 and len(group_candidates) == 1:
+                        arguments = {'dataset_id':info.id, 'test':kind,
+                                     'value_column':value_candidates[0], 'group_column':group_candidates[0]}
+                if (arguments and self._statistical_scope_valid(info, arguments, current)
+                        and not any(c.get('name') == 'statistical_test' and c.get('args') == arguments
+                                    for c in calls.values())):
+                    return {'name':'statistical_test', 'args':arguments}
         if (self.context and current.get('join') and current.get('join_how')
                 and not current.get('join_evidence') and not self._has_scope(current)):
             candidates = [info for info in self.context.datasets.metadata.values()
@@ -1009,7 +1186,7 @@ class RecoveryMiddleware(AgentMiddleware):
 
     def before_step(self, state):
         current, calls = self._state(state)
-        if (current.get('data_load') or current.get('plan') or current.get('join') or current.get('chart') or current.get('calculation') or current.get('metadata_kind') or current.get('profile_kind')) and self._complete(current):
+        if (current.get('data_load') or current.get('plan') or current.get('join') or current.get('statistical_kind') or current.get('chart') or current.get('calculation') or current.get('metadata_kind') or current.get('profile_kind')) and self._complete(current):
             return {**self._finish(current), 'jump_to': 'end'}
         reason = self._limit_reason(current)
         if reason: return {**self._finish(current, reason=reason), 'jump_to': 'end'}
@@ -1075,6 +1252,9 @@ class RecoveryMiddleware(AgentMiddleware):
             column = arguments.get('value_column') or (
                 arguments.get('x') if arguments.get('kind') == 'histogram' else None)
             return self._scope_valid(info, current, column)
+        if call.get('name') == 'statistical_test' and self.context:
+            info = self.context.datasets.metadata.get(arguments.get('dataset_id'))
+            return True if info is None else self._statistical_scope_valid(info, arguments, current)
         if call.get('name') == 'join_datasets' and self.context:
             if current.get('scope', {}).get('any_conditions'):
                 return False
@@ -1132,6 +1312,7 @@ class RecoveryMiddleware(AgentMiddleware):
         for call in last.tool_calls:
             if call['name'] in {'recommend_chart_images', 'render_chart_spec', 'render_histogram', 'show_chart'}: current['chart'] = True
             if call['name'] == 'join_datasets': current['join'] = True
+            if call['name'] == 'statistical_test': current['statistical_kind'] = call.get('args', {}).get('test')
         remote_block = current.get('remote_rejected') or any(o.get('status') == 'unavailable' for o in current['failed'].values())
         if self._complete(current) and (current.get('plan') or not last.tool_calls):
             return self._finish(current, last)
@@ -1162,10 +1343,12 @@ class RecoveryMiddleware(AgentMiddleware):
         self.diagnostics.emit('recovery_replan', request_id=current.get('request_id'), attempts=current['attempts'],
             missing_chart=bool(current.get('chart') and not current['artifact_ids']),
             missing_calculation=bool(current.get('calculation') and not current['evidence_ids']),
-            missing_join=bool(current.get('join') and not current.get('join_evidence')))
+            missing_join=bool(current.get('join') and not current.get('join_evidence')),
+            missing_statistical_test=bool(current.get('statistical_kind') and not current.get('statistical_evidence')))
         instruction = ('이전 응답은 완료 증거가 없어 채택되지 않았습니다. 원래 사용자 요청을 계속 수행하세요. '
             '수치/통계는 local_analysis_sql의 실제 계산 결과가 필요하고 결측·고유값·기초 통계는 profile_dataset의 구조화 결과가 필요합니다. 테이블 설명이나 미리보기는 계산 증거가 아닙니다. '
             '두 로딩 dataset의 결합은 join_datasets로 cardinality와 lineage를 확인해야 합니다. many-to-many 차단을 우회하지 말고 먼저 한쪽 grain을 명확히 하세요. '
+            '가설 검정과 평균 신뢰구간은 statistical_test의 구조화 결과가 완료 증거입니다. 표본 수·결측·가정·효과크기·신뢰구간을 확인하세요. '
             '요청한 출처, 컬럼, 집계와 필터를 유지하세요. 지정 차트와 수정은 render_chart_spec을 사용하고, 원격 데이터가 필요한 히스토그램은 prepare_histogram(source, column, where_sql)을 사용하세요. '
             '이 도구는 먼저 재사용 가능한 보유 데이터를 찾고, 부족한 경우에만 승인형 로딩과 렌더링 계획을 만듭니다. '
             'query_databricks 호출이 승인 카드를 생성하며 실제 조회는 사용자 승인을 기다립니다. '

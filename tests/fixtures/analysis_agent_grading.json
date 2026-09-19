@@ -48,6 +48,16 @@
     "L2_012": {"kind": "scalar", "variable": "h_rate", "unit": "percent"},
     "L2_017": {"kind": "scalar", "variable": "spring_rate", "unit": "percent"},
     "L2_020": {"kind": "scalar", "variable": "succ"},
-    "L2_046": {"kind": "scalar", "variable": "rate", "unit": "percent", "result_column": "percent"}
+    "L2_046": {"kind": "scalar", "variable": "rate", "unit": "percent", "result_column": "percent"},
+    "L2_051": {"kind": "statistical", "test": "independent_t", "columns": ["balance", "y"], "statistic_variable": "t_stat", "p_value_variable": "p_val"},
+    "L2_052": {"kind": "statistical", "test": "independent_t", "columns": ["duration", "y"], "statistic_variable": "t_stat", "p_value_variable": "p_val"},
+    "L2_053": {"kind": "statistical", "test": "chi_square", "columns": ["housing", "y"], "statistic_variable": "chi2", "p_value_variable": "p_val", "df_variable": "dof"},
+    "L2_054": {"kind": "statistical", "test": "chi_square", "columns": ["Pclass", "Survived"], "statistic_variable": "chi2", "p_value_variable": "p_val", "df_variable": "dof"},
+    "L2_055": {"kind": "statistical", "test": "one_way_anova", "columns": ["balance", "education"], "statistic_variable": "f_stat", "p_value_variable": "p_val"},
+    "L2_056": {"kind": "statistical", "test": "one_way_anova", "columns": ["age", "marital"], "statistic_variable": "f_stat", "p_value_variable": "p_val"},
+    "L2_057": {"kind": "statistical", "test": "mann_whitney", "columns": ["balance", "y"], "statistic_variable": "u_stat", "p_value_variable": "p_val"},
+    "L2_058": {"kind": "statistical", "test": "independent_t", "columns": ["Fare", "Survived"], "statistic_variable": "t_stat", "p_value_variable": "p_val"},
+    "L2_059": {"kind": "statistical_mean_ci", "test": "mean_ci", "columns": ["balance"], "estimate_variable": "mean_b", "ci_variable": "ci"},
+    "L2_060": {"kind": "statistical", "test": "chi_square", "columns": ["default", "loan"], "statistic_variable": "chi2", "p_value_variable": "p_val", "df_variable": "dof"}
   }
 }

@@ -3,12 +3,12 @@
 ## Current Status
 - **Last Updated**: 2026-09-19
 - **Status**: In Progress — 배포 preflight까지 검증한 1인용 제한 출시 후보
-- **Summary**: 공통 tool 결과 계약, bounded profile·chart·multi-dataset join과 승인형 source discovery를 production graph에 연결했다. application 105/105, migration 126/126, Level 3 17/17, 전체 참고 runner 217/217 PASS다. 실제 agent 독립 채점은 47/200이며 join 별도 benchmark도 값 단위로 PASS했다. 원격 실행은 0회다.
-- **Next Session Focus**: 구조화 통계 검정 → 배포 대상·실제 호스트 gate·smoke/rollback → 남은 153문항 oracle.
+- **Summary**: 공통 tool 결과 계약, bounded profile·chart·multi-dataset join·구조화 통계 검정과 승인형 source discovery를 production graph에 연결했다. application 115/115, migration 126/126, Level 3 17/17, 전체 참고 runner 217/217 PASS다. 실제 agent 독립 채점은 57/200이며 통계 10문항과 join 별도 benchmark가 값 단위로 PASS했다. 원격 실행은 0회다.
+- **Next Session Focus**: 배포 대상·실제 호스트 gate·smoke/rollback → 남은 143문항 oracle와 이상치·시계열·다중 패널 범위.
 
 ## Next Action Items
 - [x] 제품 승인 카드에서 사용자가 승인한 실제 Databricks 조회 → 저장 → 분석 → 후속 질문을 검증했다.
-- [ ] 남은 153문항의 독립 oracle과 고급 분석 도구 범위를 우선순위별로 확대한다.
+- [ ] 남은 143문항의 독립 oracle과 고급 분석 도구 범위를 우선순위별로 확대한다.
 - [ ] 로컬 단일·동시 용량 gate와 RSS 기준은 완료했다. 실제 배포 호스트와 Ollama 동시 추론으로 기준을 보정한다.
 - [x] 현재 변경을 `agentic-analysis-rc4-2026-09-15` release candidate로 커밋·push하고 원격 release gate 성공 후 tag로 고정했다.
 - [x] 컬럼 metadata 복구를 `agentic-analysis-rc5-2026-09-15`로 고정했다. GitHub Actions run `34978831986`이 성공했다.
@@ -20,8 +20,24 @@
 - [x] 활성 tool의 공통 출력 schema와 contract matrix를 만들고 `profile_dataset`·승인형 source discovery를 추가했다.
 - [x] 제한된 `render_chart_spec`으로 histogram/bar/line/scatter/boxplot의 실제 PNG·lineage·재시작 복구를 검증했다.
 - [x] bounded `join_datasets`로 cardinality·NULL·출력 규모·양쪽 parent lineage와 후속 집계·재시작을 검증했다.
+- [x] `statistical_test`로 독립·대응 t, 카이제곱, 일원 ANOVA, Mann–Whitney, 평균 CI의 구조화 근거와 fail-closed 계약을 검증했다.
 
 ---
+
+## [2026-09-19 13:54:48 KST] [Agent: Codex] User Request: 남아 있는 일 계속 진행
+- **Request**: 남은 통계 검정 도구·agent recovery·독립 평가 작업을 이어서 완료한다.
+- **Finding**: 기존 Level 2 원문의 `독립표본`을 일반 `표본` 키워드가 현재 로딩 결과 한정 요청으로 잘못 분류했다. `y='yes'`·`y='no'`를 모집단 필터로 처리해 전체 두 그룹 비교를 실행하지 못하는 범위 판정 결함도 확인했다.
+- **Action**: 통계 문맥의 `독립표본`·`대응표본`·`표본 평균`을 현재 결과 지시어와 분리하고, 비교 그룹 명시가 실제 그룹 전체와 같은 경우만 raw dataset 전체 검정으로 인정하는 전용 범위 계약을 추가한다. Level 2 통계 10문항을 원문 그대로 독립 oracle로 평가한다.
+- **Safety**: 로컬 fixture와 보유 raw DataFrame만 사용하며 Databricks 원격 조회는 실행하지 않는다.
+- **Implementation**: `statistical_test` tool과 recovery 완료 계약을 추가했다. `독립표본`·`대응표본`·`표본 평균`을 현재 결과 지시어와 분리했고, 메타데이터 alias의 한국어 역할명을 table-neutral하게 grounding했다. 짧은 alias `일`이 `일원분산분석`에 오탐되는 문제를 차단했다.
+- **Evaluation**: 변경하지 않은 `L2_051`–`L2_060` 원문 10개가 독립 SciPy reference 통계량·p-value·자유도·평균 CI와 일치했다. 각 여정은 production graph의 `statistical_test` 1회로 완료됐고 모델·Databricks 호출은 0회였다. 독립 채점 범위는 57/200으로 늘었다.
+- **Validation**: application 115/115, migration 126/126, Level 3 17/17, 전체 참고 runner 217/217 PASS. 재시작 후 구조화 통계 근거 복원도 확인했다. `docs/actual_agent_evaluation_statistics_2026-09-19.json`에 10/10 결과와 단일 Welch 벤치마크를 보존했다.
+- **Outcome**: R14 핵심 tool 보강을 완료했다. 남은 기능 범위는 이상치·시계열·다중 패널과 143개 미채점 의도이며, 출시 gate는 PR 리뷰·병합·배포 호스트 smoke/rollback이 남아 있다.
+
+## [2026-09-19 13:44:13 KST] [Agent: Codex] Continuation: 구조화 통계 검정
+- **Request Context**: 사용자가 요청한 남은 작업 계속 수행 범위에서 bounded multi-dataset join 완료 후 다음 우선순위인 구조화 통계 검정을 진행한다.
+- **Action**: 테이블별 지식이나 임의 Python 없이 보유 raw dataset에 대해 독립표본·대응표본 t 검정, 카이제곱 독립성 검정, 일원분산분석과 필요한 비모수/신뢰구간 경로를 구조화 tool 결과로 구현한다.
+- **Acceptance**: 표본 수·결측 제외·가정 진단·통계량·자유도·p-value·효과크기·적용 가능한 신뢰구간과 실제 분석 범위를 반환하고, 데이터 부족·과도한 범주 수·잘못된 dtype은 계산 전 차단한다. 실제 fixture 독립 oracle, production graph 완료 증거, 후속 회귀와 원격 실행 0회를 확인한다.
 
 ## [2026-09-19 13:25:30 KST] [Agent: Codex] User Request: 남아 있는일 계속 해줘
 - **Request**: 진행 중인 multi-dataset join 구현과 남은 검증을 계속한다.
@@ -250,8 +266,8 @@
 ## Current Status
 - **Last Updated**: 2026-09-19
 - **Status**: Limited-scope Release Candidate Validation
-- **Summary**: R14의 공통 tool 결과 계약, dataset profile, 승인형 source discovery, 제한된 chart spec과 bounded multi-dataset join을 완료했다. 전체 회귀 application 105 + migration 126 = 231/231, 참고 코드 217/217, agentic recovery 17/17 PASS다. 실제 agent 독립 채점은 47/200이므로 전체 기능 출시는 계속 NO-GO다.
-- **Next Session Focus**: 구조화 통계 검정 → 배포 대상·실제 호스트 검증 → 남은 153문항 oracle 확대. Canonical list: docs/agent_remaining_tasks_2026-09-13.md.
+- **Summary**: R14의 공통 tool 결과 계약, dataset profile, 승인형 source discovery, 제한된 chart spec, bounded multi-dataset join과 구조화 statistical test를 완료했다. 전체 회귀 application 115 + migration 126 = 241/241, 참고 코드 217/217, agentic recovery 17/17 PASS다. 실제 agent 독립 채점은 57/200이므로 전체 기능 출시는 계속 NO-GO다.
+- **Next Session Focus**: 배포 대상·실제 호스트 검증 → 남은 143문항 oracle와 이상치·시계열·다중 패널 범위. Canonical list: docs/agent_remaining_tasks_2026-09-13.md.
 
 ## Next Action Items (Pending tasks for the next session)
 - [x] R01: Connect grounded request scope to calculation/chart/recovery and reject wrong or unresolved scope.
@@ -260,14 +276,14 @@
 - [x] R04: Restart the server with the 205/205-tested code and verify the visible app.
 - [ ] R05: Local p95/RSS capacity gate is READY; recalibrate it on the selected deployment host and measure concurrent Ollama inference.
 - [x] R06: Validate 750,000-row storage, cache eviction, restart/crash recovery and retained PNG.
-- [ ] R07: Expand independent actual-agent grading beyond 47/200 supported cases.
-- [ ] R08: Bounded multi-dataset join and chart specification are complete; implement structured statistical tests and later multi-panel charts.
+- [ ] R07: Expand independent actual-agent grading beyond 57/200 supported cases.
+- [ ] R08: Bounded join, chart specification, and structured statistical tests are complete; implement later outlier, time-series, and multi-panel scope as prioritized.
 - [x] R09: Approved live Databricks load/reuse validated and release candidate tag fixed.
 - [x] R10: Remove production dependencies on fixed table/schema facts and validate schema drift and freshness behavior.
 - [ ] R11: Deployment contract and preflight are ready; review draft PR #68, merge, choose the target, and verify smoke/rollback there.
 - [ ] R12: Refresh four stale production TableContext schemas only through per-query user approval.
 - [x] R13: Repair the Level 2 reference environment and replace Level 3 placeholders with 17 production contracts.
-- [x] R14 P0/chart/join: Standardize tool outputs, add dataset profiling and approval-gated source discovery, and implement bounded chart specification and multi-dataset join. Statistical testing remains separate work.
+- [x] R14 P0/P1 core: Standardize tool outputs, add dataset profiling and approval-gated source discovery, and implement bounded chart specification, multi-dataset join, and structured statistical tests.
 
 Task definitions and acceptance conditions: docs/agent_remaining_tasks_2026-09-13.md. Prior completed work remains recorded in the dated entries above.
 
@@ -276,10 +292,10 @@ Task definitions and acceptance conditions: docs/agent_remaining_tasks_2026-09-1
 ## Daily Wrap-ups
 
 ### 2026-09-19 Daily Summary
-- **Work completed**: Added bounded multi-dataset joins to the production graph with explicit join type/key selection, dtype and SQL NULL checks, exact cardinality and output-size preflight, two-parent lineage persistence, deterministic recovery, and grounded follow-up aggregation.
-- **Evidence**: A 1,000-row customer fixture joined to 5,000 transactions produced 5,000 rows matching an independent pandas oracle and SHA-256 digest with zero model or remote calls. Ten focused contracts include many-to-many rejection, explicit aggregate remediation, output limits, incompatible keys, right-only outer-join keys, restart restoration, and join-result aggregation. Application 105/105, migration 126/126, Level 3 17/17, full runner 217/217, compileall and diff checks passed.
-- **Remaining**: Implement structured statistical tests; expand 153 independent oracles; review/merge/deploy PR #68 and run the selected-host capacity and smoke/rollback gates. Four stale production TableContexts still require separate user-approved refreshes.
-- **Reports**: `docs/actual_agent_evaluation_join_2026-09-19.json`, `docs/agent_tool_contract_matrix_2026-09-18.md`, `docs/agent_tool_audit_2026-09-16.md`.
+- **Work completed**: Added bounded multi-dataset joins and a structured statistical tool to the production graph. Statistical coverage includes Welch independent t, paired t, chi-square, one-way ANOVA, Mann–Whitney, and mean confidence intervals with sample/missingness, assumptions, effect sizes, applicable confidence intervals, deterministic recovery, and strict raw-grain validation.
+- **Evidence**: The join benchmark exactly matched an independent pandas oracle. Unchanged `L2_051`–`L2_060` prompts passed checked-in independent SciPy references 10/10 with one structured tool call per case and zero model or remote calls. Structured evidence survived runtime restart. Application 115/115, migration 126/126, Level 3 17/17, and full runner 217/217 passed. Independent grading coverage is 57/200.
+- **Remaining**: Expand 143 independent oracles and prioritize outlier, time-series, and multi-panel scope; review/merge/deploy PR #68 and run the selected-host capacity and smoke/rollback gates. Four stale production TableContexts still require separate user-approved refreshes.
+- **Reports**: `docs/actual_agent_evaluation_join_2026-09-19.json`, `docs/actual_agent_evaluation_statistics_2026-09-19.json`, `docs/agent_tool_contract_matrix_2026-09-18.md`, `docs/agent_tool_audit_2026-09-16.md`.
 
 ### 2026-09-18 Daily Summary
 - **Work completed**: Added a common structured result contract to every active analysis tool, implemented bounded dataset profiling and approval-safe Databricks source discovery planning, then added bounded histogram/bar/line/scatter/boxplot execution with deterministic local recovery, actual PNG artifacts, data digests, restart restoration, and Hangul-capable font selection.

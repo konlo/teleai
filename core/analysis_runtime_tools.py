@@ -22,6 +22,7 @@ from utils.analysis_provenance import raw_conditions, query_conditions, query_co
 from core.analysis_sql import local_query, validate_query
 from utils.analysis_profile import profile_dataset as build_dataset_profile
 from utils.analysis_join import join_datasets as build_joined_dataset
+from utils.analysis_statistics import statistical_test as run_statistical_test
 
 
 def build_analysis_tools(context: AnalysisToolContext) -> list[ToolDefinition]:
@@ -125,6 +126,18 @@ def build_analysis_tools(context: AnalysisToolContext) -> list[ToolDefinition]:
             how=how,
             max_rows=context.max_join_rows,
             max_expansion_ratio=context.max_join_expansion_ratio,
+        )
+
+    def statistical_test(dataset_id, test, value_column, group_column="",
+                         paired_column="", alpha=0.05):
+        return run_statistical_test(
+            datasets,
+            dataset_id,
+            test=test,
+            value_column=value_column,
+            group_column=group_column,
+            paired_column=paired_column,
+            alpha=alpha,
         )
 
     def propose_query(source, query, reason):
@@ -383,12 +396,20 @@ def build_analysis_tools(context: AnalysisToolContext) -> list[ToolDefinition]:
                   "properties": {"column": string, "op": {"type": "string", "enum": ["eq", "ne", "gt", "ge", "lt", "le", "in"]},
                                  "value": {}}, "required": ["column", "op", "value"], "additionalProperties": False}},
               "current_result_only": {"type": "boolean"}}, ["dataset_id", "columns"], use_dataset),
-        tool("join_datasets", "로딩된 두 raw dataset을 1~4개 key로 조인합니다. 실행 전에 key 자료형, NULL, 중복도, cardinality, 예상 행 수와 확장률을 검사합니다. many-to-many 또는 운영 한도 초과는 실행하지 않으며, 성공 결과는 두 부모 dataset ID와 snapshot lineage를 보존합니다. 조인 후 계산에는 반환된 dataset_id와 current_result_only=true를 사용하세요.",
+        tool("join_datasets", "로딩된 두 raw 또는 명시적 aggregate dataset을 1~4개 key로 조인합니다. 실행 전에 key 자료형, NULL, 중복도, cardinality, 예상 행 수와 확장률을 검사합니다. many-to-many 또는 운영 한도 초과는 실행하지 않으며, 성공 결과는 두 부모 dataset ID와 snapshot lineage를 보존합니다. 조인 후 계산에는 반환된 dataset_id와 current_result_only=true를 사용하세요.",
              {"left_dataset_id": string, "right_dataset_id": string,
               "left_on": {"type":"array","items":string,"minItems":1,"maxItems":4,"uniqueItems":True},
               "right_on": {"type":"array","items":string,"minItems":1,"maxItems":4,"uniqueItems":True},
               "how": {"type":"string","enum":["inner","left","right","outer"]}},
              ["left_dataset_id","right_dataset_id","left_on","right_on","how"], join_datasets),
+        tool("statistical_test", "로딩된 raw dataset에서 선언된 통계 검정을 실행하고 표본 수, 결측 제외, 가정 진단, 통계량, 자유도, p-value, 효과크기와 적용 가능한 신뢰구간을 구조화해 반환합니다. independent_t, paired_t, chi_square, one_way_anova, mann_whitney, mean_ci만 지원하며 임의 Python은 실행하지 않습니다.",
+             {"dataset_id": string,
+              "test": {"type":"string","enum":["independent_t","paired_t","chi_square","one_way_anova","mann_whitney","mean_ci"]},
+              "value_column": string,
+              "group_column": string,
+              "paired_column": string,
+              "alpha": {"type":"number","minimum":0.001,"maximum":0.2}},
+             ["dataset_id","test","value_column"], statistical_test),
         tool("propose_databricks_query", "Databricks 조회를 사용자에게 제안합니다. 이 도구는 실행하지 않습니다. 정확한 SQL과 이유를 표시하고 승인 대기합니다.",
              {"source": string, "query": string, "reason": string}, ["source", "query", "reason"], propose_query),
         tool("recommend_chart_images", "현재 데이터의 통계로 실제 이미지 후보를 만듭니다. 원격 조회 없음. 반환된 카드 ID의 이미지는 UI가 표시합니다.",

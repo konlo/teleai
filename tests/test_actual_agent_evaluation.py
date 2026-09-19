@@ -119,11 +119,26 @@ class ActualAgentEvaluationTests(unittest.TestCase):
         self.assertEqual(result["evidence"]["counterfactual_probes"], 2)
 
     def test_every_declared_reference_oracle_is_executable_without_a_model(self):
-        self.assertEqual(len(self.grading), 47)
+        self.assertEqual(len(self.grading), 57)
         self.assertTrue(set(self.grading).issubset(self.specs))
         for case, grading in self.grading.items():
             with self.subTest(case=case):
                 reference_oracle(self.specs[case], grading, self.frames)
+
+    def test_statistical_cases_use_structured_evidence_and_match_reference(self):
+        for case in (f"L2_{number:03d}" for number in range(51, 61)):
+            with self.subTest(case=case):
+                result = self.evaluate(case, EvaluationModel())
+                self.assertEqual(result["status"], "PASS", result)
+                self.assertEqual(result["tools"], {"statistical_test": 1})
+                self.assertEqual(result["runtime_metadata"]["recovery_model_calls"], 0)
+                self.assertEqual(result["remote_executions"], 0)
+
+    def test_statistical_prose_without_tool_evidence_never_passes(self):
+        with patch("core.analysis_agent.recovery.RecoveryMiddleware._next_local", return_value=None):
+            result = self.evaluate(
+                "L2_051", EvaluationModel(answer="t-test와 p-value 계산을 완료했습니다."))
+        self.assertIn(result["status"], {"FAIL", "NOT_COMPLETE"}, result)
 
     def test_scalar_reductions_are_computed_from_reference_objects(self):
         self.assertEqual(reference_oracle(self.specs["L1_005"], self.grading["L1_005"], self.frames),

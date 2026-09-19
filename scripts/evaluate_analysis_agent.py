@@ -254,6 +254,29 @@ def reference_oracle(spec, grading, frames):
             if len(values) < 2:
                 raise ValueError("Scalar set must verify at least two requested values")
             return values
+        if grading["kind"] == "statistical":
+            statistic = namespace[grading["statistic_variable"]]
+            p_value = namespace[grading["p_value_variable"]]
+            if not np.isscalar(statistic) or not np.isscalar(p_value):
+                raise ValueError("Reference statistic and p-value must be scalar")
+            result = {"statistic": float(statistic), "p_value": float(p_value)}
+            if not all(np.isfinite(value) for value in result.values()):
+                raise ValueError("Reference statistical result is not finite")
+            if grading.get("df_variable"):
+                df = namespace[grading["df_variable"]]
+                if not np.isscalar(df) or not np.isfinite(float(df)):
+                    raise ValueError("Reference degrees of freedom is not finite")
+                result["degrees_of_freedom"] = float(df)
+            return result
+        if grading["kind"] == "statistical_mean_ci":
+            estimate = namespace[grading["estimate_variable"]]
+            interval = namespace[grading["ci_variable"]]
+            if not np.isscalar(estimate) or len(interval) != 2:
+                raise ValueError("Reference mean confidence interval has an invalid shape")
+            result = {"estimate": float(estimate), "lower": float(interval[0]), "upper": float(interval[1])}
+            if not all(np.isfinite(value) for value in result.values()):
+                raise ValueError("Reference mean confidence interval is not finite")
+            return result
         if grading["kind"] == "category_counts":
             return _category_counts(namespace[grading["variable"]])
         raise ValueError("Unsupported grading kind")
@@ -522,6 +545,95 @@ def grade_evidence(runtime, outcome, spec, grading, oracle, fixture_id, capture)
                                     "actual_bins": observed["bins"], "reference_bins": oracle["bins"]})
         return ("PASS", "Real PNG and plotted weighted distribution match the reference", {"charts": matches}) if matches else (
             "FAIL", "Missing histogram PNG or plotted data differs from reference", {})
+    if grading["kind"] in {"statistical", "statistical_mean_ci"}:
+        observations = []
+        for message in runtime.events():
+            if not isinstance(message, ToolMessage) or message.name != "statistical_test":
+                continue
+            try:
+                observation = json.loads(message.content)
+                if observation.get("status") == "ready":
+                    observations.append(observation)
+            except (ValueError, TypeError, AttributeError):
+                continue
+        if not observations:
+            return "FAIL", "No structured statistical-test result; assistant prose is not evidence", {}
+        observation = observations[-1]
+        try:
+            dataset_id = observation["dataset_id"]
+            result = observation["test_result"]
+            info = runtime.datasets.metadata[dataset_id]
+            sample = result["sample"]
+            grounded = (
+                info.source == spec["target_table"]
+                and info.coverage == "complete"
+                and info.predicate_known
+                and info.grain == "raw"
+                and _fixture_descendant(runtime, dataset_id, fixture_id)
+                and result.get("kind") == grading["test"]
+                and set(result.get("columns", [])) == set(grading["columns"])
+                and sample.get("input_rows") == info.rows
+                and sample.get("complete_rows", 0) >= 2
+                and sample.get("complete_rows", 0) + sample.get("dropped_rows", -1) == info.rows
+                and isinstance(result.get("assumptions"), dict)
+                and bool(result.get("assumptions"))
+                and isinstance(result.get("confidence_intervals"), list)
+                and isinstance(result.get("warnings"), list)
+            )
+            if grading["kind"] == "statistical":
+                statistic = float(result["statistic"])
+                expected_statistic = float(oracle["statistic"])
+                if grading["test"] == "independent_t":
+                    statistic_matches = bool(np.isclose(
+                        abs(statistic), abs(expected_statistic), rtol=1e-10, atol=1e-12))
+                elif grading["test"] == "mann_whitney":
+                    groups = result.get("groups", [])
+                    total_pairs = int(groups[0]["n"]) * int(groups[1]["n"])
+                    statistic_matches = bool(
+                        np.isclose(statistic, expected_statistic, rtol=1e-10, atol=1e-12)
+                        or np.isclose(total_pairs - statistic, expected_statistic, rtol=1e-10, atol=1e-12))
+                else:
+                    statistic_matches = bool(np.isclose(
+                        statistic, expected_statistic, rtol=1e-10, atol=1e-12))
+                p_value_matches = bool(np.isclose(
+                    float(result["p_value"]), float(oracle["p_value"]), rtol=1e-10, atol=1e-12))
+                df_matches = True
+                if "degrees_of_freedom" in oracle:
+                    df_matches = bool(np.isclose(
+                        float(result["degrees_of_freedom"]), oracle["degrees_of_freedom"],
+                        rtol=1e-10, atol=1e-12))
+                correct = (statistic_matches and p_value_matches and df_matches
+                           and isinstance(result.get("effect_size"), dict))
+                details = {"expected": oracle,
+                           "actual": {"statistic": statistic, "p_value": float(result["p_value"]),
+                                      "degrees_of_freedom": result.get("degrees_of_freedom")},
+                           "sample": sample, "effect_size": result.get("effect_size"),
+                           "confidence_intervals": result.get("confidence_intervals"),
+                           "dataset_id": dataset_id}
+            else:
+                interval = result["confidence_intervals"]
+                correct = (
+                    result.get("statistic") is None
+                    and result.get("p_value") is None
+                    and result.get("effect_size") is None
+                    and len(interval) == 1
+                    and np.isclose(float(result["estimate"]["value"]), oracle["estimate"],
+                                   rtol=1e-10, atol=1e-12)
+                    and np.isclose(float(interval[0]["lower"]), oracle["lower"],
+                                   rtol=1e-10, atol=1e-12)
+                    and np.isclose(float(interval[0]["upper"]), oracle["upper"],
+                                   rtol=1e-10, atol=1e-12)
+                )
+                details = {"expected": oracle,
+                           "actual": {"estimate": result["estimate"]["value"],
+                                      "lower": interval[0]["lower"], "upper": interval[0]["upper"]},
+                           "sample": sample, "confidence_intervals": interval,
+                           "dataset_id": dataset_id}
+        except (KeyError, TypeError, ValueError, IndexError):
+            return "FAIL", "Statistical result shape or type does not match the grading contract", {}
+        return (("PASS", "Structured statistical evidence matches the independent reference", details)
+                if grounded and correct else
+                ("FAIL", "Statistical evidence lacks complete provenance or differs from the reference", details))
     candidates = []
     for message in runtime.events():
         if isinstance(message, ToolMessage) and message.name == "local_analysis_sql":
