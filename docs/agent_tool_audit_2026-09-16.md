@@ -4,16 +4,15 @@
 
 현재 production `GraphAnalysisRuntime`의 tool 구조는 **승인형 데이터 로딩, 보유 DataFrame 재사용, 기본 SQL 계산, 기본 차트 생성과 복구**에는 적합하다. 중앙 registry와 실행 wrapper, 승인 ledger, lineage 검사, 영속 artifact가 연결돼 있어 단순 tool 모음은 아니다.
 
-2026-09-18에 P0 공백인 공통 결과 계약, 데이터셋 프로파일, 승인형 source discovery와 P1 첫 항목인 제한된 차트 사양 실행을 구현했다. 범용 데이터 분석 agent를 출시하기 전에 남은 핵심 공백은 다음 두 가지다.
+2026-09-19까지 P0 공백인 공통 결과 계약, 데이터셋 프로파일, 승인형 source discovery와 P1의 제한된 차트 사양·다중 dataset join을 구현했다. 범용 데이터 분석 agent를 출시하기 전에 남은 핵심 tool 공백은 다음 한 가지다.
 
-1. 여러 데이터셋의 join과 cardinality 검사가 없다.
-2. 통계 검정을 구조화된 근거로 수행하는 tool이 없다.
+1. 통계 검정을 구조화된 근거로 수행하는 tool이 없다.
 
 따라서 현재 상태는 **제한 범위에는 적합 / 범용 분석 agent에는 tool 보강 필요**다.
 
 ## 실제 활성 tool 구성
 
-2026-09-18 차트 보강 후 `build_analysis_tools()`는 14개 정의를 만든다. production agent에는 `propose_databricks_query`를 제외한 로컬 tool 13개가 등록되고, 원격 연결이 있을 때 승인 middleware가 적용된 `query_databricks` 1개가 추가된다.
+2026-09-19 join 보강 후 `build_analysis_tools()`는 15개 정의를 만든다. production agent에는 `propose_databricks_query`를 제외한 로컬 tool 14개가 등록되고, 원격 연결이 있을 때 승인 middleware가 적용된 `query_databricks` 1개가 추가된다.
 
 | 영역 | 활성 tool | 현재 역할 | 진단 |
 |---|---|---|---|
@@ -22,6 +21,7 @@
 | metadata | `inspect_table_context`, `inspect_dataset`, `profile_dataset` | 저장 schema, 로딩 결과, 결측·고유값·요약 통계 확인 | stale 차단, 실제 schema 우선, bounded profile과 고카디널리티 값 생략을 적용한다. |
 | reuse | `use_dataset` | 조건을 좁혀 로컬 재사용 | lineage 검사가 보수적이다. OR와 다중 dataset은 지원하지 않는다. |
 | calculation | `local_analysis_sql` | 한 DataFrame을 DuckDB `data`로 계산 | 외부 접근 차단, 15초 중단, 20,000행 결과 제한이 있다. 한 dataset만 바인딩한다. |
+| join | `join_datasets` | 보유 raw dataset 두 개를 명시적 key와 방식으로 결합 | dtype·NULL·cardinality·예상 행 수·증가율을 실행 전에 검사하고 두 부모 lineage를 보존한다. many-to-many는 실행하지 않는다. |
 | visualization | `recommend_chart_images`, `prepare_histogram`, `render_histogram`, `render_chart_spec`, `show_chart` | 실제 PNG 추천·생성·재표시 | histogram/bar/line/scatter/boxplot의 축·집계·정렬·top-N·bins·제목·라벨을 제한된 schema로 실행한다. 임의 코드·파일·URL·style dictionary는 받지 않는다. |
 | remote | `query_databricks` | 정확한 SELECT를 승인 후 1회 실행 | fingerprint·연결 identity·제출 불명 상태 차단이 강하다. 테이블 탐색용 전용 계획 tool은 없다. |
 
@@ -64,10 +64,10 @@
    - histogram/bar/line/scatter/boxplot부터 지원하고 실제 PNG·dataset lineage·표본 범위를 반환한다.
    - 기존 추천 tool은 유지하되 사용자가 지정한 차트나 수정 요청은 이 tool로 처리한다.
 
-5. **`join_datasets` 또는 `local_analysis_sql_multi`**
+5. **`join_datasets` — 구현 완료**
    - 여러 dataset ID를 명시적 alias에 바인딩하고 join key, cardinality, 예상 행 증가를 사전 검사한다.
    - source/snapshot/coverage를 결과 lineage에 보존하고 many-to-many 폭증 한도를 둔다.
-   - 현재 `local_analysis_sql`은 `data` 하나만 허용한다.
+   - inner/left/right/full outer, 복합 key 1~4개, NULL SQL 의미, 같은 이름 key와 충돌 컬럼 suffix를 검증한다. 결과는 `parent_ids` 두 개로 영속화되고 후속 로컬 집계에 사용할 수 있다.
 
 6. **`statistical_test`**
    - t-test, paired t-test, chi-square, ANOVA를 명시적 enum으로 제한한다.
@@ -113,6 +113,6 @@
 2. `profile_dataset`과 승인형 source discovery를 추가한다.
 3. 실제 agent 독립 oracle 중 schema/결측/고유값/기본 그룹 집계를 우선 확대한다.
 4. 제한된 `render_chart_spec`과 지정 차트·수정·재시작 검증을 완료한다.
-5. multi-dataset join과 statistical test를 각각 별도 release candidate로 구현한다.
+5. multi-dataset join은 완료했다. 다음 release candidate에서 statistical test를 구현한다.
 
 이 순서라면 tool 수를 통제하면서도 자주 실패하는 사용자 의도를 결정적이고 검증 가능한 실행으로 옮길 수 있다.

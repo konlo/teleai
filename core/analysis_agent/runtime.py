@@ -49,7 +49,9 @@ class GraphAnalysisRuntime:
         # middleware, so this is only a final safety ceiling, not the work budget.
         self.config={'configurable':{'thread_id':'conversation'},'recursion_limit':256}
         def blocked(**kwargs):raise PermissionError('실 DB 실행은 아직 연결되지 않았습니다.')
-        self.context=AnalysisToolContext(self.datasets,self.artifacts,[],blocked)
+        self.context=AnalysisToolContext(self.datasets,self.artifacts,[],blocked,
+            max_join_rows=self.policy.max_join_rows,
+            max_join_expansion_ratio=self.policy.max_join_expansion_ratio)
         self._refresh_reference_context()
         catalog=next(t.run for t in build_analysis_tools(self.context) if t.name=='list_analysis_context')
         @dynamic_prompt

@@ -100,6 +100,7 @@ class PersistentDatasets(DatasetStore):
         for key,value in self.db.metadata('dataset').items():
             value['columns']=tuple(value['columns'])
             value['conditions']=tuple(Condition(**c) for c in value['conditions'])
+            value['parent_ids']=tuple(value.get('parent_ids', ()))
             result[key]=DatasetInfo(**value)
         return result
 

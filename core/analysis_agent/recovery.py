@@ -86,6 +86,12 @@ class RecoveryMiddleware(AgentMiddleware):
             chart_spec_requested = bool(chart and (
                 kind in {'bar', 'line', 'scatter', 'boxplot'} or
                 re.search(r'제목|축\s*라벨|정렬|상위\s*\d+|top\s*\d+|\bbins?\b|\d+\s*(?:개\s*)?구간|가로|세로', text, re.I)))
+            join_requested = bool(re.search(r'조인|병합|데이터\s*결합|\bjoin\b|\bmerge\b', text, re.I))
+            if re.search(r'좌측|왼쪽|\bleft\s*(?:outer\s*)?join\b', text, re.I): join_how = 'left'
+            elif re.search(r'우측|오른쪽|\bright\s*(?:outer\s*)?join\b', text, re.I): join_how = 'right'
+            elif re.search(r'완전\s*외부|전체\s*외부|\b(?:full|outer)\s*(?:outer\s*)?join\b', text, re.I): join_how = 'outer'
+            elif re.search(r'내부|\binner\s*join\b', text, re.I): join_how = 'inner'
+            else: join_how = None
             profile_kind = None
             if not chart and re.search(r'결측|누락|\b(?:null|missing|nan)\b', text, re.I):
                 profile_kind = 'missing'
@@ -126,25 +132,31 @@ class RecoveryMiddleware(AgentMiddleware):
             if re.search(r'비율|성공률|생존율|전환율|[가-힣A-Za-z]+[율률]|\b(?:ratio|rate|percentage|percent)\b',
                          objective_text, re.I): operations.append('RATIO')
             if count_request and 'COUNT' not in operations: operations.append('COUNT')
+            if (join_requested and set(operations) <= {'COUNT'} and
+                    re.search(r'조인\s*결과.*(?:행|열|컬럼)|(?:행|열|컬럼).*개수|결합된\s*컬럼', text, re.I)):
+                # join_datasets returns these structural counts as grounded
+                # evidence; a second SQL COUNT would add no information.
+                calculation, operations = False, []
             if profile_kind:
                 calculation, operations = False, []
             metadata_kind = None
             column_words = bool(re.search(r'컬럼|필드|\bcolumns?\b|\bfields?\b', text, re.I))
-            if (not chart and not operations and column_words and
+            if (not chart and not join_requested and not operations and column_words and
                     re.search(r'데이터\s*타입|자료형|\bdtypes?\b|\bdata\s*types?\b', text, re.I)):
                 metadata_kind, calculation = 'dtypes', False
-            elif (not chart and not operations and column_words and
+            elif (not chart and not join_requested and not operations and column_words and
                     re.search(r'수치형|숫자형|\bnumeric\b', text, re.I)):
                 metadata_kind, calculation = 'numeric_columns', False
-            elif (not chart and not operations and column_words and
+            elif (not chart and not join_requested and not operations and column_words and
                     re.search(r'문자열|범주형|카테고리형|\bcategorical\b|\bstring\b', text, re.I)):
                 metadata_kind, calculation = 'categorical_columns', False
-            elif (not chart and set(operations) <= {'COUNT'} and
+            elif (not chart and not join_requested and set(operations) <= {'COUNT'} and
                     column_words and
                     not re.search(r'고유|결측|중복|누락|빈도|\bnull\b|\bdistinct\b|\bmissing\b|\bunique\b', text, re.I) and
                     re.search(r'목록|개수|구조|이름|어떤|몇|전체|\blist\b|\bschema\b', text, re.I)):
                 metadata_kind, calculation, operations = 'columns', False, []
             current = dict(request_id=human.id, attempts=0, chart=chart, kind=kind,
+                join=join_requested, join_how=join_how,
                 calculation=calculation, operations=operations, metadata_kind=metadata_kind,
                 profile_kind=profile_kind, chart_spec_requested=chart_spec_requested,
                 data_load=data_load,
@@ -158,15 +170,26 @@ class RecoveryMiddleware(AgentMiddleware):
                 fresh_source_required=fresh_source_required,
                 request_started_at=time.time(),
                 required_columns=mentioned_columns,
-                required_sources=sorted(s for s in sources if mentioned(s) or mentioned(s.split('.')[-1])),
+                required_sources=sorted(
+                    (s for s in sources if mentioned(s) or mentioned(s.split('.')[-1])),
+                    key=lambda source: min(
+                        (position for position in (text.find(source), text.find(source.split('.')[-1])) if position >= 0),
+                        default=len(text))),
                 columns=[], failed={}, status='working')
             current['previous_scope'] = previous.get('scope', {})
             current['scope'] = resolve_request_scope(text, self.context, current['previous_scope'])
+            if join_requested and len(current['required_sources']) == 2:
+                # Two explicitly named sources are expected for a join and do
+                # not represent the single-source ambiguity used by scalar and
+                # chart requests.
+                current['scope']['unresolved'] = [item for item in current['scope'].get('unresolved', [])
+                                                  if item != 'ambiguous_source']
             if data_load:
                 # The exact source and query are already bound to the approval
                 # envelope.  Natural-language scope extraction from the reason
                 # text would invent an analysis obligation.
-                current.update(chart=False,kind=None,calculation=False,operations=[],metadata_kind=None,profile_kind=None,
+                current.update(chart=False,kind=None,join=False,join_how=None,
+                    calculation=False,operations=[],metadata_kind=None,profile_kind=None,
                     chart_spec_requested=False,whole_row_count=False,current_result_only=False,fresh_source_required=False,
                     required_columns=[])
                 current['scope']={'conditions':[],'any_conditions':[],
@@ -199,7 +222,7 @@ class RecoveryMiddleware(AgentMiddleware):
             # Upgrade an in-flight legacy checkpoint.  Its successful tool
             # observation may already be marked processed, so the loop below
             # is also allowed to reconsider that single observation.
-            current.update(data_load=True,chart=False,kind=None,calculation=False,
+            current.update(data_load=True,chart=False,kind=None,join=False,join_how=None,calculation=False,
                 operations=[],metadata_kind=None,profile_kind=None,chart_spec_requested=False,whole_row_count=False,
                 current_result_only=False,fresh_source_required=False)
             current['scope']={'conditions':[],'any_conditions':[],
@@ -241,7 +264,7 @@ class RecoveryMiddleware(AgentMiddleware):
                 continue
             if message.tool_call_id not in current['processed']:
                 current['processed'].append(message.tool_call_id)
-            failed = observation.get('status') in {'error', 'needs_data', 'needs_context', 'needs_refresh', 'unavailable', 'no_valid_chart'}
+            failed = observation.get('status') in {'error', 'rejected', 'needs_data', 'needs_context', 'needs_refresh', 'unavailable', 'no_valid_chart'}
             if failed:
                 current['failed'][name or message.tool_call_id] = observation
                 signature = self._signature(call or {'name': name, 'args': {}})
@@ -310,6 +333,22 @@ class RecoveryMiddleware(AgentMiddleware):
                         and self._scope_valid(info, current)):
                     current['profile_evidence'] = observation
                     current['failed'].pop(name, None)
+            if name == 'join_datasets' and observation.get('status') == 'ready':
+                dataset_id = observation.get('dataset', {}).get('id')
+                info = self.context.datasets.metadata.get(dataset_id) if self.context and dataset_id else None
+                parent_ids = tuple(getattr(info, 'parent_ids', ())) if info is not None else ()
+                expected_parents = (arguments.get('left_dataset_id'), arguments.get('right_dataset_id'))
+                summary = observation.get('join_summary', {})
+                if (info is not None and parent_ids == expected_parents
+                        and info.rows == summary.get('actual_rows') == summary.get('expected_rows')
+                        and set(current.get('required_columns', [])).issubset(info.columns)):
+                    current['join_evidence'] = {
+                        'dataset_id': dataset_id,
+                        'parent_ids': list(parent_ids),
+                        'summary': summary,
+                        'scope': observation.get('scope'),
+                    }
+                    current['failed'].pop(name, None)
             if name in {'local_analysis_sql', 'query_databricks'} and observation.get('status') == 'ready':
                 dataset_id = observation.get('dataset', {}).get('id')
                 if self._valid_calculation(dataset_id, arguments, current):
@@ -335,7 +374,29 @@ class RecoveryMiddleware(AgentMiddleware):
 
     def _source_matches(self, info, current):
         expected = current.get('required_sources') or []
-        return not expected or self._source_key(info.source) in {self._source_key(s) for s in expected}
+        if not expected:
+            return True
+        expected_keys = {self._source_key(source) for source in expected}
+        actual_keys = {self._source_key(info.source)}
+        if self.context and (getattr(info, 'parent_ids', ()) or info.parent_id):
+            pending = list(info.parent_ids) if getattr(info, 'parent_ids', ()) else [info.parent_id]
+            visited = set()
+            actual_keys = set()
+            while pending:
+                dataset_id = pending.pop()
+                if dataset_id in visited:
+                    continue
+                visited.add(dataset_id)
+                parent = self.context.datasets.metadata.get(dataset_id)
+                if parent is None:
+                    continue
+                if getattr(parent, 'parent_ids', ()):
+                    pending.extend(parent.parent_ids)
+                elif parent.parent_id:
+                    pending.append(parent.parent_id)
+                else:
+                    actual_keys.add(self._source_key(parent.source))
+        return expected_keys.issubset(actual_keys)
 
     @staticmethod
     def _has_scope(current):
@@ -415,7 +476,10 @@ class RecoveryMiddleware(AgentMiddleware):
         if not self._fresh_for_request(info, current): return False
         if not self._scope_valid(info, current): return False
         if not measure_scope_matches(info.query, current.get('scope', {})): return False
-        if arguments.get('current_result_only') and not current.get('current_result_only'): return False
+        if arguments.get('current_result_only') and not current.get('current_result_only'):
+            joined = current.get('join_evidence', {}).get('dataset_id')
+            if arguments.get('dataset_id') != joined:
+                return False
         if info.coverage != 'complete' and not current.get('current_result_only'): return False
         if not info.query: return False
         try:
@@ -430,7 +494,22 @@ class RecoveryMiddleware(AgentMiddleware):
                     and ratio.get('aggregation') != 'mean_zero_one'): return False
             columns = {c.name for c in tree.find_all(exp.Column)}
             condition_columns = {condition.column for condition in info.conditions}
-            if not set(current.get('required_columns', [])).issubset(columns | set(info.columns) | condition_columns): return False
+            lineage_columns = set(info.columns)
+            if self.context:
+                pending = list(getattr(info, 'parent_ids', ()) or (() if not info.parent_id else (info.parent_id,)))
+                visited = set()
+                while pending:
+                    parent_id = pending.pop()
+                    if parent_id in visited:
+                        continue
+                    visited.add(parent_id)
+                    parent = self.context.datasets.metadata.get(parent_id)
+                    if parent is None:
+                        continue
+                    lineage_columns.update(parent.columns)
+                    pending.extend(getattr(parent, 'parent_ids', ()) or
+                                   (() if not parent.parent_id else (parent.parent_id,)))
+            if not set(current.get('required_columns', [])).issubset(columns | lineage_columns | condition_columns): return False
             if current.get('calculation') and not operations and not tree.find(exp.Div): return False
         except (ValueError, TypeError):
             return False
@@ -440,6 +519,7 @@ class RecoveryMiddleware(AgentMiddleware):
 
     def _complete(self, current):
         if current.get('data_load'): return bool(current.get('load_evidence_id'))
+        if current.get('join') and not current.get('join_evidence'): return False
         if current.get('metadata_kind') and not current.get('metadata_evidence'): return False
         if current.get('profile_kind') and not current.get('profile_evidence'): return False
         if current.get('chart') and not current['artifact_ids']: return False
@@ -499,6 +579,17 @@ class RecoveryMiddleware(AgentMiddleware):
                 parts.append('\n'.join(lines))
             if profile.get('column_page', {}).get('has_more'):
                 parts.append('컬럼이 많아 이번 응답에는 일부 컬럼만 포함했습니다.')
+        if current.get('join_evidence') and self.context:
+            evidence = current['join_evidence']
+            summary = evidence['summary']
+            info = self.context.datasets.metadata[evidence['dataset_id']]
+            parts.append(
+                f"보유 dataset 두 개를 {summary['how']} join해 {info.rows:,}행, {len(info.columns):,}열의 결과를 저장했습니다.\n"
+                f"cardinality: {summary['relationship']}; key 일치 {summary['matched_distinct_keys']:,}개; "
+                f"미일치 왼쪽 {summary['unmatched_left_rows']:,}행, 오른쪽 {summary['unmatched_right_rows']:,}행; "
+                f"NULL key 왼쪽 {summary['left_null_key_rows']:,}행, 오른쪽 {summary['right_null_key_rows']:,}행.\n"
+                f"분석 범위: {evidence.get('scope')}"
+            )
         for card_id in current.get('artifact_ids', []):
             card = self.artifacts[card_id]
             parts.append(f'{card.title} 이미지를 생성했습니다.\n분석 범위: {card.scope}')
@@ -562,6 +653,39 @@ class RecoveryMiddleware(AgentMiddleware):
         return {'recovery': current, 'messages': [message]}
 
     def _next_local(self, current, calls):
+        if (self.context and current.get('join') and current.get('join_how')
+                and not current.get('join_evidence') and not self._has_scope(current)):
+            candidates = [info for info in self.context.datasets.metadata.values()
+                if info.grain == 'raw' and not info.aggregation
+                and not getattr(info, 'parent_ids', ())
+                and (current.get('current_result_only')
+                    or (info.coverage == 'complete' and info.predicate_known
+                        and self._fresh_for_request(info, current)))]
+            requested_sources = current.get('required_sources', [])
+            if requested_sources:
+                ordered = []
+                for source in requested_sources:
+                    matches = [info for info in candidates
+                               if self._source_key(info.source) == self._source_key(source)]
+                    if len(matches) != 1:
+                        ordered = []
+                        break
+                    ordered.append(matches[0])
+                candidates = ordered
+            if len(candidates) == 2 and candidates[0].id != candidates[1].id:
+                shared = [column for column in current.get('required_columns', [])
+                          if column in candidates[0].columns and column in candidates[1].columns]
+                if 1 <= len(shared) <= 4:
+                    arguments = {
+                        'left_dataset_id': candidates[0].id,
+                        'right_dataset_id': candidates[1].id,
+                        'left_on': shared,
+                        'right_on': shared,
+                        'how': current['join_how'],
+                    }
+                    if not any(c.get('name') == 'join_datasets' and c.get('args') == arguments
+                               for c in calls.values()):
+                        return {'name':'join_datasets', 'args':arguments}
         if (self.context and current.get('profile_kind') and not current.get('profile_evidence')
                 and not self._has_scope(current)):
             required = set(current.get('required_columns', []))
@@ -885,7 +1009,7 @@ class RecoveryMiddleware(AgentMiddleware):
 
     def before_step(self, state):
         current, calls = self._state(state)
-        if (current.get('data_load') or current.get('plan') or current.get('chart') or current.get('calculation') or current.get('metadata_kind') or current.get('profile_kind')) and self._complete(current):
+        if (current.get('data_load') or current.get('plan') or current.get('join') or current.get('chart') or current.get('calculation') or current.get('metadata_kind') or current.get('profile_kind')) and self._complete(current):
             return {**self._finish(current), 'jump_to': 'end'}
         reason = self._limit_reason(current)
         if reason: return {**self._finish(current, reason=reason), 'jump_to': 'end'}
@@ -951,6 +1075,19 @@ class RecoveryMiddleware(AgentMiddleware):
             column = arguments.get('value_column') or (
                 arguments.get('x') if arguments.get('kind') == 'histogram' else None)
             return self._scope_valid(info, current, column)
+        if call.get('name') == 'join_datasets' and self.context:
+            if current.get('scope', {}).get('any_conditions'):
+                return False
+            parents = [self.context.datasets.metadata.get(arguments.get(key))
+                       for key in ('left_dataset_id', 'right_dataset_id')]
+            if any(parent is None for parent in parents):
+                return True
+            for condition in current.get('scope', {}).get('conditions', []):
+                matches = [parent for parent in parents if condition['column'] in parent.columns]
+                if len(matches) != 1 or not scope_matches(matches[0], {
+                        'conditions':[condition], 'any_conditions':[], 'unresolved':[], 'columns':[condition['column']]}):
+                    return False
+            return True
         if call.get('name') != 'query_databricks': return True
         if current.get('current_result_only'):
             return False
@@ -966,10 +1103,14 @@ class RecoveryMiddleware(AgentMiddleware):
         return (self._scope_valid(query, current, column)
                 and measure_scope_matches(query, current.get('scope', {})))
 
-    @staticmethod
-    def _fresh_for_request(info, current):
+    def _fresh_for_request(self, info, current):
         if not current.get('fresh_source_required'):
             return True
+        if self.context and (getattr(info, 'parent_ids', ()) or info.parent_id):
+            parent_ids = info.parent_ids if getattr(info, 'parent_ids', ()) else (info.parent_id,)
+            parents = [self.context.datasets.metadata.get(dataset_id) for dataset_id in parent_ids]
+            return bool(parents) and all(parent is not None and self._fresh_for_request(parent, current)
+                                         for parent in parents)
         if not info.snapshot:
             return False
         from datetime import datetime
@@ -990,6 +1131,7 @@ class RecoveryMiddleware(AgentMiddleware):
         if started: current['model_seconds'] += max(0, time.time() - started)
         for call in last.tool_calls:
             if call['name'] in {'recommend_chart_images', 'render_chart_spec', 'render_histogram', 'show_chart'}: current['chart'] = True
+            if call['name'] == 'join_datasets': current['join'] = True
         remote_block = current.get('remote_rejected') or any(o.get('status') == 'unavailable' for o in current['failed'].values())
         if self._complete(current) and (current.get('plan') or not last.tool_calls):
             return self._finish(current, last)
@@ -1019,9 +1161,11 @@ class RecoveryMiddleware(AgentMiddleware):
         current['attempts'] += 1
         self.diagnostics.emit('recovery_replan', request_id=current.get('request_id'), attempts=current['attempts'],
             missing_chart=bool(current.get('chart') and not current['artifact_ids']),
-            missing_calculation=bool(current.get('calculation') and not current['evidence_ids']))
+            missing_calculation=bool(current.get('calculation') and not current['evidence_ids']),
+            missing_join=bool(current.get('join') and not current.get('join_evidence')))
         instruction = ('이전 응답은 완료 증거가 없어 채택되지 않았습니다. 원래 사용자 요청을 계속 수행하세요. '
             '수치/통계는 local_analysis_sql의 실제 계산 결과가 필요하고 결측·고유값·기초 통계는 profile_dataset의 구조화 결과가 필요합니다. 테이블 설명이나 미리보기는 계산 증거가 아닙니다. '
+            '두 로딩 dataset의 결합은 join_datasets로 cardinality와 lineage를 확인해야 합니다. many-to-many 차단을 우회하지 말고 먼저 한쪽 grain을 명확히 하세요. '
             '요청한 출처, 컬럼, 집계와 필터를 유지하세요. 지정 차트와 수정은 render_chart_spec을 사용하고, 원격 데이터가 필요한 히스토그램은 prepare_histogram(source, column, where_sql)을 사용하세요. '
             '이 도구는 먼저 재사용 가능한 보유 데이터를 찾고, 부족한 경우에만 승인형 로딩과 렌더링 계획을 만듭니다. '
             'query_databricks 호출이 승인 카드를 생성하며 실제 조회는 사용자 승인을 기다립니다. '

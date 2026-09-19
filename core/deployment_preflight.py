@@ -168,6 +168,9 @@ def evaluate_deployment(
             "max_remote_rows": int(env.get("TELLY_MAX_REMOTE_ROWS", RuntimePolicy.max_remote_rows)),
             "max_dataset_columns": int(env.get("TELLY_MAX_DATASET_COLUMNS", RuntimePolicy.max_dataset_columns)),
             "max_dataset_bytes": int(env.get("TELLY_MAX_DATASET_BYTES", RuntimePolicy.max_dataset_bytes)),
+            "max_join_rows": int(env.get("TELLY_MAX_JOIN_ROWS", RuntimePolicy.max_join_rows)),
+            "max_join_expansion_ratio": float(env.get(
+                "TELLY_MAX_JOIN_EXPANSION_RATIO", RuntimePolicy.max_join_expansion_ratio)),
             "frame_cache_bytes": int(env.get("TELLY_FRAME_CACHE_BYTES", RuntimePolicy.frame_cache_bytes)),
             "scope_disk_quota_bytes": int(env.get("TELLY_SCOPE_DISK_QUOTA_BYTES", RuntimePolicy.scope_disk_quota_bytes)),
             "retention_days": int(env.get("TELLY_RETENTION_DAYS", RuntimePolicy.retention_days)),

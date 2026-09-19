@@ -72,6 +72,7 @@ class DatasetInfo:
     snapshot: str = ""
     query: str = ""
     parent_id: str = ""
+    parent_ids: tuple[str, ...] = ()
 
 
 @dataclass(frozen=True)

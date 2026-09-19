@@ -295,15 +295,18 @@ def _fixture_dtype_family(value):
 
 
 def _fixture_descendant(runtime, dataset_id, fixture_id):
-    visited = set()
-    while dataset_id and dataset_id not in visited:
-        if dataset_id == fixture_id:
+    visited, pending = set(), [dataset_id]
+    while pending:
+        current = pending.pop()
+        if current == fixture_id:
             return True
-        visited.add(dataset_id)
-        info = runtime.datasets.metadata.get(dataset_id)
+        if not current or current in visited:
+            continue
+        visited.add(current)
+        info = runtime.datasets.metadata.get(current)
         if info is None:
-            return False
-        dataset_id = info.parent_id
+            continue
+        pending.extend(getattr(info, "parent_ids", ()) or (() if not info.parent_id else (info.parent_id,)))
     return False
 
 

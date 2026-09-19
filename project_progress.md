@@ -1,10 +1,10 @@
 # Project Progress Log
 
 ## Current Status
-- **Last Updated**: 2026-09-18
+- **Last Updated**: 2026-09-19
 - **Status**: In Progress — 배포 preflight까지 검증한 1인용 제한 출시 후보
-- **Summary**: 공통 tool 결과 계약, bounded `profile_dataset`, 승인형 source discovery와 제한된 `render_chart_spec`을 production graph에 연결했다. application 95/95, migration 126/126, Level 3 17/17, 전체 참고 runner 217/217 PASS다. 실제 PNG·데이터 digest 기반 차트 oracle 3개를 추가해 실제 agent 채점은 47/200이며 원격 실행은 0회다.
-- **Next Session Focus**: multi-dataset join → 구조화 통계 검정 → 배포 대상·실제 호스트 gate·smoke/rollback → 남은 153문항 oracle.
+- **Summary**: 공통 tool 결과 계약, bounded profile·chart·multi-dataset join과 승인형 source discovery를 production graph에 연결했다. application 105/105, migration 126/126, Level 3 17/17, 전체 참고 runner 217/217 PASS다. 실제 agent 독립 채점은 47/200이며 join 별도 benchmark도 값 단위로 PASS했다. 원격 실행은 0회다.
+- **Next Session Focus**: 구조화 통계 검정 → 배포 대상·실제 호스트 gate·smoke/rollback → 남은 153문항 oracle.
 
 ## Next Action Items
 - [x] 제품 승인 카드에서 사용자가 승인한 실제 Databricks 조회 → 저장 → 분석 → 후속 질문을 검증했다.
@@ -19,8 +19,25 @@
 - [x] Level 2 참고 환경 11건을 해결하고 Level 3 placeholder를 production agentic recovery 계약 17개로 교체했다.
 - [x] 활성 tool의 공통 출력 schema와 contract matrix를 만들고 `profile_dataset`·승인형 source discovery를 추가했다.
 - [x] 제한된 `render_chart_spec`으로 histogram/bar/line/scatter/boxplot의 실제 PNG·lineage·재시작 복구를 검증했다.
+- [x] bounded `join_datasets`로 cardinality·NULL·출력 규모·양쪽 parent lineage와 후속 집계·재시작을 검증했다.
 
 ---
+
+## [2026-09-19 13:25:30 KST] [Agent: Codex] User Request: 남아 있는일 계속 해줘
+- **Request**: 진행 중인 multi-dataset join 구현과 남은 검증을 계속한다.
+- **Action**: 첫 focused graph test에서 두 source를 명시한 join을 기존 single-source ambiguity로 잘못 차단한 것을 수정했다. join 전용 source 해석, cardinality·NULL·출력 한도·lineage·재시작 계약을 마무리하고 전체 회귀와 독립 증거를 생성한다.
+- **Safety**: 로컬 fixture만 사용하며 Databricks 원격 실행은 0회로 유지한다. many-to-many와 운영 한도 초과 join은 실행 전 차단한다.
+- **Implementation**: `join_datasets`에 inner/left/right/full outer와 복합 key 1~4개를 제한적으로 추가했다. key dtype 계열·NULL·cardinality·예상 출력 행 수와 증가율을 실행 전에 계산하고, many-to-many 및 운영 한도 초과는 새 dataset 생성 전에 거절한다. 같은 이름의 key는 외부 조인에서도 보존하며 충돌 컬럼은 `_left`·`_right`로 명시한다.
+- **Agentic Recovery**: 두 source·join 방식·공통 key가 명확하면 모델 없이 로컬 join을 실행한다. 두 부모의 `parent_ids`를 영속화하고 재시작 뒤에도 복원하며, join 결과를 `current_result_only`로 후속 집계할 때 실제 lineage와 요청 컬럼을 검증한다.
+- **Evaluation**: 고객 1,000행과 거래 5,000행 fixture를 `customer_id`로 one-to-many inner join해 5,000행을 만들었고 독립 pandas merge와 값·digest가 일치했다. 모델 호출 0회, 원격 실행 0회다. 이 별도 join benchmark는 기존 47/200 점수에 포함하지 않았다.
+- **Validation**: join 계약 10/10, application 105/105, migration 126/126, Level 3 17/17, 전체 참고 runner 217/217, compileall과 `git diff --check` PASS.
+- **Artifacts**: `utils/analysis_join.py`, `tests/test_analysis_join.py`, `scripts/evaluate_analysis_join.py`, `docs/actual_agent_evaluation_join_2026-09-19.json`; tool audit·contract matrix·남은 작업 목록 갱신.
+- **Outcome**: R14의 multi-dataset join 완료. 다음 구현 대상은 표본 수·결측 처리·가정·효과크기·신뢰구간을 구조화하는 statistical test다.
+
+## [2026-09-18 23:44:18 KST] [Agent: Codex] User Request: 진행해줘
+- **Request**: bounded chart spec 완료 후 다음 우선순위 작업을 계속 수행한다.
+- **Action**: P1의 multi-dataset join을 현재 `DatasetStore`·공통 tool 결과·복구 계약에 맞춰 구현한다. join key dtype, 양쪽 key 중복도, null, cardinality, 예상·실제 행 증가를 검사하고 안전한 결과만 새 lineage dataset으로 등록한다.
+- **Safety**: 보유 로컬 DataFrame과 fixture만 사용한다. Databricks 원격 조회는 실행하지 않으며, many-to-many 폭증이나 불명확한 범위는 자동 실행하지 않는다.
 
 ## [2026-09-18 22:47:14 KST] [Agent: Codex] User Request: 다음 작업 진행해줘
 - **Request**: R14 P0 완료 후 다음 우선순위 작업을 계속 수행한다.
@@ -230,10 +247,10 @@
 - **Diagnosis correction**: 체크포인트에 도구 호출 인자는 보존됨. 실제 결함은 summarization HumanMessage를 사용자 요청으로 오인하여 필수 컬럼과 재시도 예산을 재설정하는 것. 이전 인자 유실 가설은 기각.
 
 ## Current Status
-- **Last Updated**: 2026-09-18
+- **Last Updated**: 2026-09-19
 - **Status**: Limited-scope Release Candidate Validation
-- **Summary**: R14의 공통 tool 결과 계약, dataset profile, 승인형 source discovery와 제한된 chart spec을 완료했다. 전체 회귀 application 95 + migration 126 = 221/221, 참고 코드 217/217, agentic recovery 17/17 PASS다. 실제 agent 독립 채점은 47/200이므로 전체 기능 출시는 계속 NO-GO다.
-- **Next Session Focus**: multi-dataset join → 구조화 통계 검정 → 배포 대상·실제 호스트 검증 → 남은 153문항 oracle 확대. Canonical list: docs/agent_remaining_tasks_2026-09-13.md.
+- **Summary**: R14의 공통 tool 결과 계약, dataset profile, 승인형 source discovery, 제한된 chart spec과 bounded multi-dataset join을 완료했다. 전체 회귀 application 105 + migration 126 = 231/231, 참고 코드 217/217, agentic recovery 17/17 PASS다. 실제 agent 독립 채점은 47/200이므로 전체 기능 출시는 계속 NO-GO다.
+- **Next Session Focus**: 구조화 통계 검정 → 배포 대상·실제 호스트 검증 → 남은 153문항 oracle 확대. Canonical list: docs/agent_remaining_tasks_2026-09-13.md.
 
 ## Next Action Items (Pending tasks for the next session)
 - [x] R01: Connect grounded request scope to calculation/chart/recovery and reject wrong or unresolved scope.
@@ -243,19 +260,25 @@
 - [ ] R05: Local p95/RSS capacity gate is READY; recalibrate it on the selected deployment host and measure concurrent Ollama inference.
 - [x] R06: Validate 750,000-row storage, cache eviction, restart/crash recovery and retained PNG.
 - [ ] R07: Expand independent actual-agent grading beyond 47/200 supported cases.
-- [ ] R08: Implement multi-dataset join and structured statistical tests; bounded chart specification is complete.
+- [ ] R08: Bounded multi-dataset join and chart specification are complete; implement structured statistical tests and later multi-panel charts.
 - [x] R09: Approved live Databricks load/reuse validated and release candidate tag fixed.
 - [x] R10: Remove production dependencies on fixed table/schema facts and validate schema drift and freshness behavior.
 - [ ] R11: Deployment contract and preflight are ready; review draft PR #68, merge, choose the target, and verify smoke/rollback there.
 - [ ] R12: Refresh four stale production TableContext schemas only through per-query user approval.
 - [x] R13: Repair the Level 2 reference environment and replace Level 3 placeholders with 17 production contracts.
-- [x] R14 P0/chart: Standardize tool outputs, add dataset profiling and approval-gated source discovery, and implement bounded chart specification. Join/statistical tools remain separate work.
+- [x] R14 P0/chart/join: Standardize tool outputs, add dataset profiling and approval-gated source discovery, and implement bounded chart specification and multi-dataset join. Statistical testing remains separate work.
 
 Task definitions and acceptance conditions: docs/agent_remaining_tasks_2026-09-13.md. Prior completed work remains recorded in the dated entries above.
 
 ---
 
 ## Daily Wrap-ups
+
+### 2026-09-19 Daily Summary
+- **Work completed**: Added bounded multi-dataset joins to the production graph with explicit join type/key selection, dtype and SQL NULL checks, exact cardinality and output-size preflight, two-parent lineage persistence, deterministic recovery, and grounded follow-up aggregation.
+- **Evidence**: A 1,000-row customer fixture joined to 5,000 transactions produced 5,000 rows matching an independent pandas oracle and SHA-256 digest with zero model or remote calls. Ten focused contracts include many-to-many rejection, explicit aggregate remediation, output limits, incompatible keys, right-only outer-join keys, restart restoration, and join-result aggregation. Application 105/105, migration 126/126, Level 3 17/17, full runner 217/217, compileall and diff checks passed.
+- **Remaining**: Implement structured statistical tests; expand 153 independent oracles; review/merge/deploy PR #68 and run the selected-host capacity and smoke/rollback gates. Four stale production TableContexts still require separate user-approved refreshes.
+- **Reports**: `docs/actual_agent_evaluation_join_2026-09-19.json`, `docs/agent_tool_contract_matrix_2026-09-18.md`, `docs/agent_tool_audit_2026-09-16.md`.
 
 ### 2026-09-18 Daily Summary
 - **Work completed**: Added a common structured result contract to every active analysis tool, implemented bounded dataset profiling and approval-safe Databricks source discovery planning, then added bounded histogram/bar/line/scatter/boxplot execution with deterministic local recovery, actual PNG artifacts, data digests, restart restoration, and Hangul-capable font selection.

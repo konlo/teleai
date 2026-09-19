@@ -13,11 +13,16 @@ def local_tools(context, diagnostics=None):
         def execute(**arguments):
             started = time.monotonic()
             if diagnostics: diagnostics.emit('tool_started', tool=definition.name)
+            dataset_ids = {key: arguments.get(key) for key in (
+                'dataset_id', 'left_dataset_id', 'right_dataset_id') if arguments.get(key) is not None}
+            missing_ids = {key: value for key, value in dataset_ids.items()
+                           if value not in context.datasets.metadata}
             dataset_id = arguments.get('dataset_id')
-            if dataset_id is not None and dataset_id not in context.datasets.metadata:
+            if missing_ids:
                 if diagnostics: diagnostics.emit('tool_rejected', tool=definition.name, reason='dataset_not_loaded')
                 return normalize_tool_result({'status': 'error', 'error_code': 'dataset_not_loaded',
                         'retryable': False,
+                        'missing_dataset_arguments': sorted(missing_ids),
                         'message': '이 ID의 로딩된 결과가 없습니다. 테이블명과 dataset ID는 다릅니다. 테이블 컬럼/설명은 inspect_table_context로 확인하세요. 실제 행이 필요하면 승인형 조회를 제안하세요.'}
                 )
             try:

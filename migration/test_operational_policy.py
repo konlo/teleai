@@ -17,10 +17,14 @@ class OperationalPolicyTests(unittest.TestCase):
     def test_environment_policy_is_table_neutral_and_validated(self):
         with patch.dict('os.environ', {'TELLY_MAX_REMOTE_ROWS':'321',
                                        'TELLY_MAX_DATASET_COLUMNS':'7',
+                                       'TELLY_MAX_JOIN_ROWS':'654',
+                                       'TELLY_MAX_JOIN_EXPANSION_RATIO':'3.5',
                                        'TELLY_RETENTION_DAYS':'5'}):
             policy=RuntimePolicy.from_env()
         self.assertEqual(policy.max_remote_rows,321)
         self.assertEqual(policy.max_dataset_columns,7)
+        self.assertEqual(policy.max_join_rows,654)
+        self.assertEqual(policy.max_join_expansion_ratio,3.5)
         self.assertEqual(policy.retention_days,5)
         self.assertNotIn('table', json.dumps(policy.public()).lower())
         with patch.dict('os.environ', {'TELLY_MAX_REMOTE_ROWS':'0'}):

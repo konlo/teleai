@@ -88,6 +88,14 @@ class DeploymentPreflightTests(unittest.TestCase):
         failed = {c.name for c in report.checks if c.status == "fail"}
         self.assertEqual(failed, {"persistent_storage", "runtime_policy"})
 
+        with tempfile.TemporaryDirectory() as storage:
+            env = valid_environment(storage)
+            env["TELLY_MAX_JOIN_EXPANSION_RATIO"] = "0"
+            report = evaluate_deployment(
+                env, profile="local-desktop", project_root=Path("/workspace/teleai")
+            )
+        self.assertIn("runtime_policy", {c.name for c in report.checks if c.status == "fail"})
+
     def test_invalid_capacity_threshold_order_fails(self):
         with tempfile.TemporaryDirectory() as storage:
             env = valid_environment(storage)
