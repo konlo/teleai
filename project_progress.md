@@ -3,12 +3,12 @@
 ## Current Status
 - **Last Updated**: 2026-09-21
 - **Status**: In Progress — 배포 preflight까지 검증한 1인용 제한 출시 후보
-- **Summary**: 공통 tool 결과 계약, bounded profile·chart·multi-dataset join·구조화 통계 검정·직접 이상치 탐지와 승인형 source discovery를 production graph에 연결했다. application 123/123, migration 126/126, Level 3 17/17, 전체 참고 runner 217/217 PASS다. 실제 agent 독립 채점은 60/200이며 이상치 원문 3개와 통계 10개, join 별도 benchmark가 값 단위로 PASS했다. 원격 실행은 0회다.
-- **Next Session Focus**: 배포 대상·실제 호스트 gate·smoke/rollback → 남은 140문항 oracle와 이상치 행 후속 분석·시계열·다중 패널 범위.
+- **Summary**: 공통 tool 결과 계약, bounded profile·chart·multi-dataset join·구조화 통계 검정·직접 이상치 탐지와 승인형 source discovery를 production graph에 연결했다. 그룹 박스플롯까지 포함해 application 126/126, migration 126/126, Level 3 17/17, 전체 참고 runner 217/217 PASS다. 실제 agent 독립 채점은 63/200이며 그룹 박스플롯 3개도 실제 PNG·입력 digest 기준 PASS했다. 원격 실행은 0회다.
+- **Next Session Focus**: 배포 대상·실제 호스트 gate·smoke/rollback → 남은 137문항 oracle와 이상치 행 후속 분석·시계열·다중 패널 범위.
 
 ## Next Action Items
 - [x] 제품 승인 카드에서 사용자가 승인한 실제 Databricks 조회 → 저장 → 분석 → 후속 질문을 검증했다.
-- [ ] 남은 140문항의 독립 oracle과 고급 분석 도구 범위를 우선순위별로 확대한다.
+- [ ] 남은 137문항의 독립 oracle과 고급 분석 도구 범위를 우선순위별로 확대한다.
 - [ ] 로컬 단일·동시 용량 gate와 RSS 기준은 완료했다. 실제 배포 호스트와 Ollama 동시 추론으로 기준을 보정한다.
 - [x] 현재 변경을 `agentic-analysis-rc4-2026-09-15` release candidate로 커밋·push하고 원격 release gate 성공 후 tag로 고정했다.
 - [x] 컬럼 metadata 복구를 `agentic-analysis-rc5-2026-09-15`로 고정했다. GitHub Actions run `34978831986`이 성공했다.
@@ -22,6 +22,18 @@
 - [x] bounded `join_datasets`로 cardinality·NULL·출력 규모·양쪽 parent lineage와 후속 집계·재시작을 검증했다.
 - [x] `statistical_test`로 독립·대응 t, 카이제곱, 일원 ANOVA, Mann–Whitney, 평균 CI의 구조화 근거와 fail-closed 계약을 검증했다.
 - [x] `detect_outliers`로 IQR·Z-score·MAD·분위수 기준과 tail·결측·건수·비율의 구조화 근거와 fail-closed 계약을 검증했다.
+- [x] 수치값+범주의 그룹 박스플롯을 실제 PNG·입력 digest로 검증하고 전체 범주 라벨과 부분 필터를 구별했다.
+
+---
+
+## [2026-09-21 22:08:50 KST] [Agent: Codex] User Request: 계속 진행하고 진행 사항과 남은 일을 보여줘
+- **Request**: 사용자 결정이나 원격 조회 승인 없이 수행 가능한 남은 작업을 계속하고 현재 진행과 잔여 목록을 명확히 갱신한다.
+- **Action**: 고급 시각화 공백 중 그룹별 박스플롯을 기존 bounded `render_chart_spec`에 확장하고, 변경하지 않은 Level 2 원문 3건으로 production graph를 독립 평가한다.
+- **Safety**: 로컬 fixture와 보유 raw DataFrame만 사용했다. Databricks 조회·schema refresh·배포 변경은 실행하지 않았다.
+- **Implementation**: 수치 x와 최대 20개 범주 category를 받는 그룹 박스플롯을 추가했다. 범주별 최소 2개 유효값을 요구하고 실제 PNG, 표시 행 수, 입력 digest, dataset lineage를 보존한다. `y='yes'` 대 `y='no'`처럼 사용자가 모든 관측 그룹을 열거한 경우에만 비교 라벨로 해석하며, 일부 그룹만 지정하면 기존 필터 계약을 유지한다.
+- **Evaluation**: `L2_042` 직업별 balance, `L2_045` Pclass별 Fare, `L2_050` y별 duration이 실제 PNG·정확한 그룹 데이터 digest 기준 3/3 PASS했다. 각 요청은 `render_chart_spec` 1회, 모델 0회, 원격 0회로 완료됐다. 독립 채점 범위는 63/200이다.
+- **Validation**: application 126/126, migration 126/126, Level 3 17/17, 전체 참고 runner 217/217, compileall과 `git diff --check` PASS.
+- **Outcome**: 그룹 박스플롯 공백을 해소했다. 남은 137문항과 이상치 행 후속 분석, 시계열 준비, 다중 패널·이중축 차트는 계속 미검증 범위다.
 
 ---
 
@@ -281,8 +293,8 @@
 ## Current Status
 - **Last Updated**: 2026-09-21
 - **Status**: Limited-scope Release Candidate Validation
-- **Summary**: R14의 공통 tool 결과 계약, dataset profile, 승인형 source discovery, 제한된 chart spec, bounded multi-dataset join, 구조화 statistical test와 직접 outlier detection을 완료했다. 전체 회귀 application 123 + migration 126 = 249/249, 참고 코드 217/217, agentic recovery 17/17 PASS다. 실제 agent 독립 채점은 60/200이므로 전체 기능 출시는 계속 NO-GO다.
-- **Next Session Focus**: 배포 대상·실제 호스트 검증 → 남은 140문항 oracle와 이상치 행 후속 분석·시계열·다중 패널 범위. Canonical list: docs/agent_remaining_tasks_2026-09-13.md.
+- **Summary**: R14의 공통 tool 결과 계약, dataset profile, 승인형 source discovery, 제한된 chart spec, bounded multi-dataset join, 구조화 statistical test와 직접 outlier detection을 완료했다. 그룹 박스플롯까지 포함한 전체 회귀 application 126 + migration 126 = 252/252, 참고 코드 217/217, agentic recovery 17/17 PASS다. 실제 agent 독립 채점은 63/200이므로 전체 기능 출시는 계속 NO-GO다.
+- **Next Session Focus**: 배포 대상·실제 호스트 검증 → 남은 137문항 oracle와 이상치 행 후속 분석·시계열·다중 패널 범위. Canonical list: docs/agent_remaining_tasks_2026-09-13.md.
 
 ## Next Action Items (Pending tasks for the next session)
 - [x] R01: Connect grounded request scope to calculation/chart/recovery and reject wrong or unresolved scope.
@@ -291,8 +303,8 @@
 - [x] R04: Restart the server with the 205/205-tested code and verify the visible app.
 - [ ] R05: Local p95/RSS capacity gate is READY; recalibrate it on the selected deployment host and measure concurrent Ollama inference.
 - [x] R06: Validate 750,000-row storage, cache eviction, restart/crash recovery and retained PNG.
-- [ ] R07: Expand independent actual-agent grading beyond 60/200 supported cases.
-- [ ] R08: Bounded join, chart specification, structured statistical tests, and direct outlier detection are complete; implement outlier-row follow-up, time-series, and multi-panel scope as prioritized.
+- [ ] R07: Expand independent actual-agent grading beyond 63/200 supported cases.
+- [ ] R08: Bounded join, grouped boxplots, structured statistical tests, and direct outlier detection are complete; implement outlier-row follow-up, time-series, and multi-panel scope as prioritized.
 - [x] R09: Approved live Databricks load/reuse validated and release candidate tag fixed.
 - [x] R10: Remove production dependencies on fixed table/schema facts and validate schema drift and freshness behavior.
 - [ ] R11: Deployment contract and preflight are ready; review draft PR #68, merge, choose the target, and verify smoke/rollback there.
@@ -307,10 +319,10 @@ Task definitions and acceptance conditions: docs/agent_remaining_tasks_2026-09-1
 ## Daily Wrap-ups
 
 ### 2026-09-21 Daily Summary
-- **Work completed**: Added bounded `detect_outliers` to the production registry and agent recovery loop. It supports IQR, sample Z-score, MAD-based modified Z-score, and quantile thresholds with upper/lower/both tails, structured missingness and provenance, deterministic routing, fail-closed validation, and restart recovery.
-- **Evidence**: Unchanged `L2_036`, `L2_039`, and `L2_048` prompts passed independent reference values 3/3 with one structured tool call each, zero model calls, and zero remote executions. Application 123/123, migration 126/126, Level 3 17/17, and the full 217/217 reference runner passed. Independent grading coverage is 60/200.
-- **Remaining**: Expand 140 independent oracles; add lineage-safe outlier-row follow-up analysis, time-series preparation, and multi-panel charts; review/merge/deploy PR #68 and run selected-host capacity plus smoke/rollback gates. Four stale production TableContexts still require separate user-approved refreshes.
-- **Reports**: `docs/actual_agent_evaluation_outliers_2026-09-21.json`, `docs/agent_remaining_tasks_2026-09-13.md`, `docs/agent_tool_audit_2026-09-16.md`, `docs/agent_tool_contract_matrix_2026-09-18.md`.
+- **Work completed**: Added bounded `detect_outliers` with IQR, sample Z-score, MAD, and quantile methods, then extended `render_chart_spec` and deterministic recovery for one-numeric/one-category grouped boxplots with exact group-scope validation.
+- **Evidence**: Direct outlier prompts `L2_036`, `L2_039`, `L2_048` and grouped boxplots `L2_042`, `L2_045`, `L2_050` each passed independent references 3/3 with one structured tool call, zero model calls, and zero remote executions. Application 126/126, migration 126/126, Level 3 17/17, and the full 217/217 reference runner passed. Independent grading coverage is 63/200.
+- **Remaining**: Expand 137 independent oracles; add lineage-safe outlier-row follow-up analysis, time-series preparation, and multi-panel/dual-axis charts; review/merge/deploy PR #68 and run selected-host capacity plus smoke/rollback gates. Four stale production TableContexts still require separate user-approved refreshes.
+- **Reports**: `docs/actual_agent_evaluation_outliers_2026-09-21.json`, `docs/actual_agent_evaluation_grouped_boxplots_2026-09-21.json`, `docs/agent_remaining_tasks_2026-09-13.md`, `docs/agent_tool_audit_2026-09-16.md`, `docs/agent_tool_contract_matrix_2026-09-18.md`.
 
 ### 2026-09-19 Daily Summary
 - **Work completed**: Added bounded multi-dataset joins and a structured statistical tool to the production graph. Statistical coverage includes Welch independent t, paired t, chi-square, one-way ANOVA, Mann–Whitney, and mean confidence intervals with sample/missingness, assumptions, effect sizes, applicable confidence intervals, deterministic recovery, and strict raw-grain validation.

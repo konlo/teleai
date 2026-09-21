@@ -31,7 +31,7 @@
 | `recommend_chart_images` | 완료 | 완료 | 원격 실행 없음 | 완료 | 완료 | 실제 PNG 저장 |
 | `prepare_histogram` | 완료 | 완료 | 데이터 부족 시 계획만 반환 | 완료 | 완료 | 완전한 raw/frequency/PNG 재사용 |
 | `render_histogram` | 완료 | 완료 | 원격 실행 없음 | 완료 | 완료 | 빈도 lineage 검증 |
-| `render_chart_spec` | 완료 | 완료 | 원격 실행 없음 | 완료 | 완료 | 5개 kind와 제한된 축·집계·정렬·표시 수·라벨, 실제 PNG와 입력 digest |
+| `render_chart_spec` | 완료 | 완료 | 원격 실행 없음 | 완료 | 완료 | 5개 kind, 수치+범주 그룹 박스플롯과 제한된 축·집계·정렬·표시 수·라벨, 실제 PNG와 입력 digest |
 | `show_chart` | 완료 | 완료 | 원격 실행 없음 | 완료 | 완료 | 실제 PNG 재표시·missing ID 오류 직접 검증 |
 | `local_analysis_sql` | 완료 | 완료 | 원격 실행 없음 | 완료 | 완료 | 단일 `data`와 CTE, 외부 접근 차단 |
 | `join_datasets` | 완료 | 완료 | 원격 실행 없음 | 완료 | 완료 | key dtype·NULL·cardinality·행 증가 사전 검사, 양쪽 parent lineage 보존 |
@@ -47,11 +47,11 @@
 - source discovery는 현재 문맥에 확인된 catalog만 사용한다. catalog가 없거나 둘 이상인데 지정되지 않으면 `needs_context`이며 SQL을 만들거나 실행하지 않는다.
 - source discovery graph 테스트는 `information_schema.tables` SELECT를 만든 뒤 정확한 승인 카드에서 멈추며 remote executor 호출이 0회임을 확인한다.
 - 결측치와 범주형 고유값 문항 `L1_006`, `L1_008`, `L1_009`는 production graph와 독립 reference oracle로 3/3 PASS했다. 모델 호출과 원격 실행은 모두 0회다.
-- `render_chart_spec`은 임의 Python·파일·URL 없이 histogram/bar/line/scatter/boxplot을 실제 PNG로 만든다. `L1_077`, `L1_078`, `L1_086`의 데이터 digest·표시 범위·lineage가 독립 oracle과 일치했고 모델·원격 호출은 0회였다. 재시작 후 PNG 복구와 한국어 글꼴 선택도 검증했다.
+- `render_chart_spec`은 임의 Python·파일·URL 없이 histogram/bar/line/scatter/boxplot을 실제 PNG로 만든다. 단일 차트 3건에 더해 `L2_042`, `L2_045`, `L2_050` 그룹 박스플롯의 정확한 그룹·값 digest·lineage가 독립 oracle과 일치했고 모델·원격 호출은 0회였다. 그룹값 명시는 실제 전체 범주와 같을 때만 비교 라벨로 인정하고 부분 목록은 필터로 유지한다. 재시작 후 PNG 복구와 한국어 글꼴 선택도 검증했다.
 - `join_datasets`는 1,000행 고객과 5,000행 거래 fixture를 `customer_id`로 one-to-many inner join해 5,000행을 만들었다. 실제 값과 독립 pandas merge digest가 일치했고 모델·원격 호출은 0회였다. many-to-many·출력 한도·dtype 불일치는 새 dataset 생성 전에 차단하며, 명시적 key별 집계 후 안전한 재조인, outer join의 오른쪽 전용 key, 후속 집계와 재시작도 검증했다.
 - `statistical_test`는 독립·대응 t, 카이제곱, 일원 ANOVA, Mann–Whitney, 평균 CI의 표본 수·결측·가정·통계량·p-value·효과크기·CI를 구조화한다. 변경하지 않은 `L2_051`–`L2_060` 10문항이 독립 SciPy oracle와 값 단위로 일치했고 모델·원격 호출은 0회였다.
 - `detect_outliers`는 원시 행을 노출하거나 파생 dataset을 만들지 않고 IQR·Z-score·MAD·분위수 기준선, 결측, 상하한 건수·비율과 범위를 구조화한다. 변경하지 않은 `L2_036`, `L2_039`, `L2_048`이 독립 reference와 값 단위로 3/3 일치했고 모델·원격 호출은 0회였다.
-- application tests 123/123, migration tests 126/126, Level 3 17/17, 전체 참고 runner 217/217, compileall과 `git diff --check`가 통과했다.
+- application tests 126/126, migration tests 126/126, Level 3 17/17, 전체 참고 runner 217/217, compileall과 `git diff --check`가 통과했다.
 
 ## 남은 tool 공백
 

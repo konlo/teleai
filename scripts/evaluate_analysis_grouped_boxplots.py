@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Evaluate production outlier recovery against unchanged Level 2 references."""
+"""Evaluate grouped boxplot recovery against unchanged Level 2 references."""
 from __future__ import annotations
 
 import argparse
@@ -17,7 +17,7 @@ from scripts.evaluate_analysis_agent import evaluate_case, load_frames, load_gra
 from scripts.evaluate_analysis_statistics import ForbiddenModel
 
 
-CASE_IDS = ["L2_036", "L2_039", "L2_048"]
+CASE_IDS = ["L2_042", "L2_045", "L2_050"]
 
 
 def evaluate() -> dict:
@@ -31,7 +31,7 @@ def evaluate() -> dict:
     ]
     passed = all(
         result.get("status") == "PASS"
-        and result.get("tools") == {"detect_outliers": 1}
+        and result.get("tools") == {"render_chart_spec": 1}
         and result.get("runtime_metadata", {}).get("recovery_model_calls") == 0
         and result.get("remote_executions") == 0
         for result in results
@@ -51,16 +51,17 @@ def evaluate() -> dict:
         "elapsed_seconds": round(time.monotonic() - started, 3),
         "limitations": [
             "Local fixture evaluation; no Databricks or browser execution",
-            "Only direct single-column IQR/Z-score detection journeys are graded here",
-            "Outlier-row profiling, winsorization, and transformation remain ungraded",
+            "Only grouped boxplots with one numeric value and one category are graded here",
+            "Multi-panel, dual-axis, and time-series visualizations remain ungraded",
         ],
     }
 
 
 def main(argv=None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--output", type=Path,
-                        default=ROOT / "docs/actual_agent_evaluation_outliers_2026-09-21.json")
+    parser.add_argument(
+        "--output", type=Path,
+        default=ROOT / "docs/actual_agent_evaluation_grouped_boxplots_2026-09-21.json")
     args = parser.parse_args(argv)
     report = evaluate()
     args.output.parent.mkdir(parents=True, exist_ok=True)

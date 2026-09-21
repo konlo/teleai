@@ -252,8 +252,8 @@ def render_chart_spec(store: DatasetStore, dataset_id: str, *, kind: str, x: str
         raise ValueError("이미 집계된 결과를 다시 집계하지 않습니다.")
     if kind != "bar" and orientation != "vertical":
         raise ValueError("orientation은 막대 차트에서만 사용할 수 있습니다.")
-    if kind != "scatter" and category:
-        raise ValueError("category는 산점도 범주 구분에만 사용할 수 있습니다.")
+    if kind not in {"scatter", "boxplot"} and category:
+        raise ValueError("category는 산점도 범주 구분 또는 그룹 박스플롯에만 사용할 수 있습니다.")
 
     def numeric(series, name):
         if not pd.api.types.is_numeric_dtype(series) or pd.api.types.is_bool_dtype(series):
@@ -310,16 +310,34 @@ def render_chart_spec(store: DatasetStore, dataset_id: str, *, kind: str, x: str
         default_title = f"{x}와 {y}의 관계"
         reason = f"완전한 좌표 {len(frame):,}개 중 {len(plotted):,}개를 표시했습니다. 상관만으로 인과를 판단할 수 없습니다."
     elif kind == "boxplot":
-        if y or category or aggregation != "none":
-            raise ValueError("박스플롯은 수치 x 하나를 집계 없이 사용합니다.")
-        values = numeric(source[x], x).dropna()
-        if len(values) < 5:
-            raise ValueError("박스플롯에는 유효한 수치가 5개 이상 필요합니다.")
-        plotted = values.to_frame(name=x)
-        ax.boxplot(values, orientation="horizontal")
-        ax.set(xlabel=x_label or x, ylabel=y_label)
-        default_title = f"{x} 중앙값과 퍼짐"
-        reason = "중앙값과 사분위 범위를 표시합니다. 바깥 점이 반드시 오류인 것은 아닙니다."
+        if y or aggregation != "none":
+            raise ValueError("박스플롯은 수치 x와 선택적 category를 집계 없이 사용합니다.")
+        if category:
+            frame = pd.DataFrame({category: source[category], x: numeric(source[x], x)}).dropna()
+            groups = sorted(frame[category].unique(), key=lambda value: str(value))
+            if not 2 <= len(groups) <= 20:
+                raise ValueError("그룹 박스플롯의 category 고유값은 2~20개여야 합니다.")
+            arrays = [frame.loc[frame[category] == value, x].to_numpy() for value in groups]
+            if any(len(values) < 2 for values in arrays):
+                raise ValueError("그룹 박스플롯은 각 category에 유효값이 2개 이상 필요합니다.")
+            plotted = pd.concat([
+                pd.DataFrame({category: [value] * len(values), x: values})
+                for value, values in zip(groups, arrays)
+            ], ignore_index=True)
+            ax.boxplot(arrays, tick_labels=[str(value) for value in groups])
+            ax.set(xlabel=x_label or category, ylabel=y_label or x)
+            ax.tick_params(axis="x", rotation=30)
+            default_title = f"{category}별 {x} 분포"
+            reason = f"{len(groups)}개 그룹의 중앙값과 사분위 범위를 비교합니다. 바깥 점이 반드시 오류인 것은 아닙니다."
+        else:
+            values = numeric(source[x], x).dropna()
+            if len(values) < 5:
+                raise ValueError("박스플롯에는 유효한 수치가 5개 이상 필요합니다.")
+            plotted = values.to_frame(name=x)
+            ax.boxplot(values, orientation="horizontal")
+            ax.set(xlabel=x_label or x, ylabel=y_label)
+            default_title = f"{x} 중앙값과 퍼짐"
+            reason = "중앙값과 사분위 범위를 표시합니다. 바깥 점이 반드시 오류인 것은 아닙니다."
     elif kind == "bar":
         if category:
             raise ValueError("막대 차트의 범주는 x로 지정하세요.")

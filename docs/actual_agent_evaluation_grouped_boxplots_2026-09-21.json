@@ -1,11 +1,11 @@
 {
-  "generated_at": "2026-09-21T12:49:34.542780+00:00",
+  "generated_at": "2026-09-21T13:06:24.316586+00:00",
   "status": "PASS",
   "runtime": "core.analysis_agent.runtime.GraphAnalysisRuntime",
   "case_ids": [
-    "L2_036",
-    "L2_039",
-    "L2_048"
+    "L2_042",
+    "L2_045",
+    "L2_050"
   ],
   "passed": 3,
   "total": 3,
@@ -13,55 +13,48 @@
   "remote_executions": 0,
   "results": [
     {
-      "id": "L2_036",
-      "prompt": "계좌 잔액(balance)의 IQR(Q3 - Q1)을 계산하고 상한 이상치 기준선(Q3 + 1.5*IQR)을 넘는 이상치 고객 수를 출력해줘.",
+      "id": "L2_042",
+      "prompt": "직업(job)별 잔액(balance)의 이상치 분포를 한눈에 비교할 수 있도록 박스플롯(Boxplot)을 그려줘.",
       "target_table": "bank_loan",
-      "reference_sha256": "aec47a57bf163fb0070901aee1d6dce161ea99d055bd4fc13b5449302644e7ac",
+      "reference_sha256": "3656af17a9c5d0a53ac26ebd92d55754066fddbe4b96c4c60224208cce181651",
       "status": "PASS",
-      "reason": "Structured outlier evidence matches the independent reference",
+      "reason": "Real PNG and declarative chart data match the independent reference",
       "evidence": {
-        "expected": {
-          "parameters.q1": 98.0,
-          "parameters.q3": 1824.0,
-          "parameters.iqr": 1726.0,
-          "thresholds.upper": 4413.0,
-          "counts.selected": 137.0,
-          "counts.selected_percent": 6.8500000000000005
-        },
-        "actual": {
-          "parameters.q1": 98.0,
-          "parameters.q3": 1824.0,
-          "parameters.iqr": 1726.0,
-          "thresholds.upper": 4413.0,
-          "counts.selected": 137.0,
-          "counts.selected_percent": 6.8500000000000005
-        },
-        "dataset_id": "d640505a-f89a-4124-8012-40d6d8ee3968",
-        "scope": "bank_loan의 로딩된 raw dataset 2,000행 중 유효값 2,000개에 iqr/upper 기준을 적용했습니다. coverage=complete; snapshot=fixture:6fd6aefae0385fe96f9884c3154048e19641fc9ae55f872378551b8c1e268c25."
+        "charts": [
+          {
+            "chart_id": "dbcb7add-45b5-4513-84af-9870659a18af",
+            "png_sha256": "a6aad37adefe3543b0bc7c0b2efbd76f9fb10052fc9a5803c4a6ca53e3e7e8dd",
+            "kind": "boxplot",
+            "columns": [
+              "balance",
+              "job"
+            ],
+            "data_sha256": "c2ea57ed64e6ced6a3053d4d2714799dcf759a0ab98530d43c5b06ae9725a25f"
+          }
+        ]
       },
       "agent_status": "answered",
       "runtime_state": "idle",
-      "elapsed_seconds": 0.284,
+      "elapsed_seconds": 7.968,
       "tools": {
-        "detect_outliers": 1
+        "render_chart_spec": 1
       },
       "tool_calls": [
         {
-          "id": "96fab981-1ec8-4f0a-805b-55900f1c4f2b",
-          "tool": "detect_outliers",
+          "id": "c318f7d9-4784-41de-9e47-8396c1439245",
+          "tool": "render_chart_spec",
           "arguments": {
-            "dataset_id": "d640505a-f89a-4124-8012-40d6d8ee3968",
-            "column": "balance",
-            "method": "iqr",
-            "tail": "upper",
-            "threshold": 1.5
+            "dataset_id": "40590b02-5118-4a91-8b99-4e636610a06d",
+            "kind": "boxplot",
+            "x": "balance",
+            "category": "job"
           }
         }
       ],
       "queries": [],
       "observations": [
         {
-          "tool": "detect_outliers",
+          "tool": "render_chart_spec",
           "status": "ready",
           "error_code": null
         }
@@ -71,8 +64,8 @@
       "error_type": null,
       "error_id": null,
       "runtime_metadata": {
-        "case_id": "L2_036",
-        "run_id": "e6e887867d9e4edc9075de8887173846",
+        "case_id": "L2_042",
+        "run_id": "cf97357c65d342ed949903d4b6b5dd2b",
         "state": "idle",
         "message_count": 4,
         "pending_requests": 0,
@@ -399,7 +392,7 @@
         ],
         "datasets": [
           {
-            "id": "d640505a-f89a-4124-8012-40d6d8ee3968",
+            "id": "40590b02-5118-4a91-8b99-4e636610a06d",
             "source": "bank_loan",
             "columns": [
               "id",
@@ -433,53 +426,65 @@
             "parent_ids": []
           }
         ],
-        "charts": [],
+        "charts": [
+          {
+            "id": "dbcb7add-45b5-4513-84af-9870659a18af",
+            "dataset_id": "40590b02-5118-4a91-8b99-4e636610a06d",
+            "kind": "boxplot",
+            "columns": [
+              "balance",
+              "job"
+            ],
+            "png_sha256": "a6aad37adefe3543b0bc7c0b2efbd76f9fb10052fc9a5803c4a6ca53e3e7e8dd",
+            "png_valid": true
+          }
+        ],
         "diagnostics": [
           {
-            "time": "2026-09-21T12:49:34.303533+00:00",
+            "time": "2026-09-21T13:06:16.130850+00:00",
             "event": "run_started",
-            "run_id": "e6e887867d9e4edc9075de8887173846",
+            "run_id": "cf97357c65d342ed949903d4b6b5dd2b",
             "operation": "submit"
           },
           {
-            "time": "2026-09-21T12:49:34.462005+00:00",
+            "time": "2026-09-21T13:06:16.259897+00:00",
             "event": "recovery_transition",
-            "run_id": "e6e887867d9e4edc9075de8887173846",
-            "tool": "detect_outliers"
+            "run_id": "cf97357c65d342ed949903d4b6b5dd2b",
+            "tool": "render_chart_spec"
           },
           {
-            "time": "2026-09-21T12:49:34.463289+00:00",
+            "time": "2026-09-21T13:06:16.261331+00:00",
             "event": "tool_started",
-            "run_id": "e6e887867d9e4edc9075de8887173846",
-            "tool": "detect_outliers"
+            "run_id": "cf97357c65d342ed949903d4b6b5dd2b",
+            "tool": "render_chart_spec"
           },
           {
-            "time": "2026-09-21T12:49:34.464246+00:00",
+            "time": "2026-09-21T13:06:24.001699+00:00",
             "event": "tool_completed",
-            "run_id": "e6e887867d9e4edc9075de8887173846",
-            "tool": "detect_outliers",
+            "run_id": "cf97357c65d342ed949903d4b6b5dd2b",
+            "tool": "render_chart_spec",
             "status": "ready",
-            "elapsed_seconds": 0.001
+            "elapsed_seconds": 7.74
           },
           {
-            "time": "2026-09-21T12:49:34.465287+00:00",
+            "time": "2026-09-21T13:06:24.003747+00:00",
             "event": "completion_checked",
-            "run_id": "e6e887867d9e4edc9075de8887173846",
+            "run_id": "cf97357c65d342ed949903d4b6b5dd2b",
             "status": "complete",
             "attempts": 0
           },
           {
-            "time": "2026-09-21T12:49:34.466592+00:00",
+            "time": "2026-09-21T13:06:24.004910+00:00",
             "event": "run_completed",
-            "run_id": "e6e887867d9e4edc9075de8887173846",
+            "run_id": "cf97357c65d342ed949903d4b6b5dd2b",
             "status": "answered",
-            "elapsed_seconds": 0.163
+            "elapsed_seconds": 7.874
           },
           {
-            "time": "2026-09-21T12:49:34.466629+00:00",
+            "time": "2026-09-21T13:06:24.004965+00:00",
             "event": "turn_slo",
-            "run_id": "e6e887867d9e4edc9075de8887173846",
-            "elapsed_seconds": 0.163,
+            "run_id": "cf97357c65d342ed949903d4b6b5dd2b",
+            "elapsed_seconds": 7.874,
             "limit": 180.0,
             "status": "ok"
           }
@@ -487,51 +492,48 @@
       }
     },
     {
-      "id": "L2_039",
-      "prompt": "통화 상담 시간(duration)의 Z-Score가 3을 초과하는 극단치 통화 건수와 최장 통화 시간을 구해줘.",
-      "target_table": "bank_loan",
-      "reference_sha256": "5f38480ccd192642b97f6514f77a9d60882aa3bead404e6e378b374c879deb7c",
+      "id": "L2_045",
+      "prompt": "타이타닉 승객 등급(Pclass)별 요금(Fare)의 이상치 유무를 비교하는 박스플롯을 그려줘.",
+      "target_table": "titanic",
+      "reference_sha256": "90107db59b0dc18d5a84dbe9b28745569e5ff43519020b0ccc353e823a3c1a4a",
       "status": "PASS",
-      "reason": "Structured outlier evidence matches the independent reference",
+      "reason": "Real PNG and declarative chart data match the independent reference",
       "evidence": {
-        "expected": {
-          "parameters.mean": 261.825,
-          "parameters.sample_std": 253.03320983151366,
-          "counts.selected": 35.0,
-          "distribution.maximum": 2372.0
-        },
-        "actual": {
-          "parameters.mean": 261.825,
-          "parameters.sample_std": 253.03320983151366,
-          "counts.selected": 35.0,
-          "distribution.maximum": 2372.0
-        },
-        "dataset_id": "ffabb4a6-92a6-4373-9104-6822203a9ad3",
-        "scope": "bank_loan의 로딩된 raw dataset 2,000행 중 유효값 2,000개에 zscore/upper 기준을 적용했습니다. coverage=complete; snapshot=fixture:6fd6aefae0385fe96f9884c3154048e19641fc9ae55f872378551b8c1e268c25."
+        "charts": [
+          {
+            "chart_id": "7056b0c8-0cba-4930-aa88-e1c9ae3c5dc4",
+            "png_sha256": "4661407692daf9ce1cff6d7107de9572986ea36f42fee851b8233e3af0155e9b",
+            "kind": "boxplot",
+            "columns": [
+              "Fare",
+              "Pclass"
+            ],
+            "data_sha256": "6c0837933de92f93d1c0364b916527ae1c7ba20554e55bc41b60979fb9284824"
+          }
+        ]
       },
       "agent_status": "answered",
       "runtime_state": "idle",
-      "elapsed_seconds": 0.036,
+      "elapsed_seconds": 0.118,
       "tools": {
-        "detect_outliers": 1
+        "render_chart_spec": 1
       },
       "tool_calls": [
         {
-          "id": "a5931712-41b1-4473-a40f-b5435c790eb5",
-          "tool": "detect_outliers",
+          "id": "088f10d4-eedd-41a3-ab6a-1567643e0774",
+          "tool": "render_chart_spec",
           "arguments": {
-            "dataset_id": "ffabb4a6-92a6-4373-9104-6822203a9ad3",
-            "column": "duration",
-            "method": "zscore",
-            "tail": "upper",
-            "threshold": 3.0
+            "dataset_id": "1015120d-5afc-4450-bb7a-dad7cfdb7b39",
+            "kind": "boxplot",
+            "x": "Fare",
+            "category": "Pclass"
           }
         }
       ],
       "queries": [],
       "observations": [
         {
-          "tool": "detect_outliers",
+          "tool": "render_chart_spec",
           "status": "ready",
           "error_code": null
         }
@@ -541,8 +543,8 @@
       "error_type": null,
       "error_id": null,
       "runtime_metadata": {
-        "case_id": "L2_039",
-        "run_id": "66aafecfdb554c03bca3a921be85f403",
+        "case_id": "L2_045",
+        "run_id": "fc19aa8f0c86417d8aa2f2556681227d",
         "state": "idle",
         "message_count": 4,
         "pending_requests": 0,
@@ -551,405 +553,337 @@
         "recovery_model_calls": 0,
         "reference_context": [
           {
-            "table": "bank_loan",
+            "table": "titanic",
             "training_status": "fixture_profile",
             "columns": [
               {
-                "name": "id",
+                "name": "PassengerId",
                 "dtype": "int64",
-                "distinct_count": 2000,
+                "distinct_count": 891,
                 "null_count": 0,
                 "top_values": [],
                 "aliases": [
-                  "아이디"
+                  "승객 번호"
                 ]
               },
               {
-                "name": "age",
+                "name": "Survived",
                 "dtype": "int64",
-                "distinct_count": 57,
+                "distinct_count": 2,
                 "null_count": 0,
-                "top_values": [],
+                "top_values": [
+                  {
+                    "value": 0,
+                    "count": 564
+                  },
+                  {
+                    "value": 1,
+                    "count": 327
+                  }
+                ],
                 "aliases": [
-                  "나이",
-                  "연령",
-                  "20대",
-                  "30대",
-                  "40대",
-                  "50대"
+                  "생존율",
+                  "생존 여부"
                 ]
               },
               {
-                "name": "job",
-                "dtype": "object",
-                "distinct_count": 12,
-                "null_count": 0,
-                "top_values": [],
-                "aliases": [
-                  "직업",
-                  "직종",
-                  "일"
-                ]
-              },
-              {
-                "name": "marital",
-                "dtype": "object",
+                "name": "Pclass",
+                "dtype": "int64",
                 "distinct_count": 3,
                 "null_count": 0,
                 "top_values": [
                   {
-                    "value": "married",
-                    "count": 1207
+                    "value": 3,
+                    "count": 490
                   },
                   {
-                    "value": "single",
-                    "count": 547
+                    "value": 1,
+                    "count": 223
                   },
                   {
-                    "value": "divorced",
-                    "count": 246
+                    "value": 2,
+                    "count": 178
                   }
                 ],
                 "aliases": [
-                  "결혼",
-                  "혼인",
-                  "혼인 상태",
-                  "기혼",
-                  "미혼",
-                  "이혼",
+                  "등급",
+                  "좌석 등급",
+                  "객실 등급"
+                ]
+              },
+              {
+                "name": "Name",
+                "dtype": "object",
+                "distinct_count": 891,
+                "null_count": 0,
+                "top_values": [],
+                "aliases": [
+                  "이름"
+                ]
+              },
+              {
+                "name": "Sex",
+                "dtype": "object",
+                "distinct_count": 2,
+                "null_count": 0,
+                "top_values": [
+                  {
+                    "value": "male",
+                    "count": 583
+                  },
+                  {
+                    "value": "female",
+                    "count": 308
+                  }
+                ],
+                "aliases": [
+                  "성별",
+                  "남성",
+                  "여성"
+                ]
+              },
+              {
+                "name": "Age",
+                "dtype": "float64",
+                "distinct_count": 382,
+                "null_count": 193,
+                "top_values": [],
+                "aliases": [
+                  "나이",
+                  "연령"
+                ]
+              },
+              {
+                "name": "SibSp",
+                "dtype": "int64",
+                "distinct_count": 7,
+                "null_count": 0,
+                "top_values": [
+                  {
+                    "value": 0,
+                    "count": 621
+                  },
+                  {
+                    "value": 1,
+                    "count": 185
+                  },
+                  {
+                    "value": 2,
+                    "count": 48
+                  },
+                  {
+                    "value": 4,
+                    "count": 16
+                  },
+                  {
+                    "value": 3,
+                    "count": 14
+                  },
+                  {
+                    "value": 8,
+                    "count": 5
+                  },
+                  {
+                    "value": 5,
+                    "count": 2
+                  }
+                ],
+                "aliases": [
+                  "형제자매",
                   "배우자"
                 ]
               },
               {
-                "name": "education",
-                "dtype": "object",
-                "distinct_count": 4,
-                "null_count": 0,
-                "top_values": [
-                  {
-                    "value": "secondary",
-                    "count": 1075
-                  },
-                  {
-                    "value": "tertiary",
-                    "count": 571
-                  },
-                  {
-                    "value": "primary",
-                    "count": 291
-                  },
-                  {
-                    "value": "unknown",
-                    "count": 63
-                  }
-                ],
-                "aliases": [
-                  "학력",
-                  "교육",
-                  "학교"
-                ]
-              },
-              {
-                "name": "default",
-                "dtype": "object",
-                "distinct_count": 2,
-                "null_count": 0,
-                "top_values": [
-                  {
-                    "value": "no",
-                    "count": 1970
-                  },
-                  {
-                    "value": "yes",
-                    "count": 30
-                  }
-                ],
-                "aliases": [
-                  "연체",
-                  "불이행",
-                  "디폴트"
-                ]
-              },
-              {
-                "name": "balance",
+                "name": "Parch",
                 "dtype": "int64",
-                "distinct_count": 1565,
+                "distinct_count": 7,
+                "null_count": 0,
+                "top_values": [
+                  {
+                    "value": 0,
+                    "count": 652
+                  },
+                  {
+                    "value": 1,
+                    "count": 119
+                  },
+                  {
+                    "value": 2,
+                    "count": 103
+                  },
+                  {
+                    "value": 4,
+                    "count": 6
+                  },
+                  {
+                    "value": 3,
+                    "count": 5
+                  },
+                  {
+                    "value": 5,
+                    "count": 5
+                  },
+                  {
+                    "value": 6,
+                    "count": 1
+                  }
+                ],
+                "aliases": [
+                  "부모",
+                  "자녀"
+                ]
+              },
+              {
+                "name": "Ticket",
+                "dtype": "object",
+                "distinct_count": 891,
                 "null_count": 0,
                 "top_values": [],
                 "aliases": [
-                  "잔액",
-                  "잔고",
-                  "예금액",
-                  "통장 잔액"
+                  "티켓"
                 ]
               },
               {
-                "name": "housing",
-                "dtype": "object",
-                "distinct_count": 2,
+                "name": "Fare",
+                "dtype": "float64",
+                "distinct_count": 798,
                 "null_count": 0,
-                "top_values": [
-                  {
-                    "value": "yes",
-                    "count": 1055
-                  },
-                  {
-                    "value": "no",
-                    "count": 945
-                  }
-                ],
+                "top_values": [],
                 "aliases": [
-                  "주택 대출",
-                  "집 대출",
-                  "부동산 대출"
+                  "요금",
+                  "운임",
+                  "승선료"
                 ]
               },
               {
-                "name": "loan",
+                "name": "Cabin",
                 "dtype": "object",
-                "distinct_count": 2,
-                "null_count": 0,
-                "top_values": [
-                  {
-                    "value": "no",
-                    "count": 1652
-                  },
-                  {
-                    "value": "yes",
-                    "count": 348
-                  }
-                ],
+                "distinct_count": 50,
+                "null_count": 672,
+                "top_values": [],
                 "aliases": [
-                  "개인 대출",
-                  "신용 대출"
+                  "객실 번호",
+                  "객실"
                 ]
               },
               {
-                "name": "contact",
+                "name": "Embarked",
                 "dtype": "object",
                 "distinct_count": 3,
-                "null_count": 0,
+                "null_count": 12,
                 "top_values": [
                   {
-                    "value": "cellular",
-                    "count": 1232
+                    "value": "S",
+                    "count": 639
                   },
                   {
-                    "value": "unknown",
-                    "count": 636
+                    "value": "C",
+                    "count": 181
                   },
                   {
-                    "value": "telephone",
-                    "count": 132
+                    "value": "Q",
+                    "count": 59
                   }
                 ],
                 "aliases": [
-                  "연락 방법",
-                  "통신 수단"
-                ]
-              },
-              {
-                "name": "day",
-                "dtype": "int64",
-                "distinct_count": 31,
-                "null_count": 0,
-                "top_values": [],
-                "aliases": [
-                  "접촉 날짜"
-                ]
-              },
-              {
-                "name": "month",
-                "dtype": "object",
-                "distinct_count": 12,
-                "null_count": 0,
-                "top_values": [],
-                "aliases": [
-                  "월",
-                  "달"
-                ]
-              },
-              {
-                "name": "duration",
-                "dtype": "int64",
-                "distinct_count": 692,
-                "null_count": 0,
-                "top_values": [],
-                "aliases": [
-                  "상담 시간",
-                  "통화 시간",
-                  "상담 길이"
-                ]
-              },
-              {
-                "name": "campaign",
-                "dtype": "int64",
-                "distinct_count": 13,
-                "null_count": 0,
-                "top_values": [],
-                "aliases": [
-                  "접촉 횟수",
-                  "캠페인 횟수"
-                ]
-              },
-              {
-                "name": "pdays",
-                "dtype": "int64",
-                "distinct_count": 326,
-                "null_count": 0,
-                "top_values": [],
-                "aliases": [
-                  "경과일"
-                ]
-              },
-              {
-                "name": "previous",
-                "dtype": "int64",
-                "distinct_count": 13,
-                "null_count": 0,
-                "top_values": [],
-                "aliases": [
-                  "이전 접촉 횟수"
-                ]
-              },
-              {
-                "name": "poutcome",
-                "dtype": "object",
-                "distinct_count": 4,
-                "null_count": 0,
-                "top_values": [
-                  {
-                    "value": "unknown",
-                    "count": 1596
-                  },
-                  {
-                    "value": "failure",
-                    "count": 241
-                  },
-                  {
-                    "value": "other",
-                    "count": 109
-                  },
-                  {
-                    "value": "success",
-                    "count": 54
-                  }
-                ],
-                "aliases": [
-                  "이전 결과",
-                  "이전 마케팅 결과"
-                ]
-              },
-              {
-                "name": "y",
-                "dtype": "object",
-                "distinct_count": 2,
-                "null_count": 0,
-                "top_values": [
-                  {
-                    "value": "no",
-                    "count": 1730
-                  },
-                  {
-                    "value": "yes",
-                    "count": 270
-                  }
-                ],
-                "aliases": [
-                  "가입",
-                  "가입 여부",
-                  "정기예금",
-                  "예금 가입"
+                  "승선 항구",
+                  "출발지"
                 ]
               }
             ],
-            "alias_source": "test_set/README.md > 데이터 스키마 > workspace.default.bank_loan; complete table-level aliases, not question-specific synonym_mapping",
+            "alias_source": "test_set/README.md > 데이터 스키마 > workspace.default.titanic; complete table-level aliases, not question-specific synonym_mapping",
             "source": "local test_set fixture; not a live Databricks table"
           }
         ],
         "datasets": [
           {
-            "id": "ffabb4a6-92a6-4373-9104-6822203a9ad3",
-            "source": "bank_loan",
+            "id": "1015120d-5afc-4450-bb7a-dad7cfdb7b39",
+            "source": "titanic",
             "columns": [
-              "id",
-              "age",
-              "job",
-              "marital",
-              "education",
-              "default",
-              "balance",
-              "housing",
-              "loan",
-              "contact",
-              "day",
-              "month",
-              "duration",
-              "campaign",
-              "pdays",
-              "previous",
-              "poutcome",
-              "y"
+              "PassengerId",
+              "Survived",
+              "Pclass",
+              "Name",
+              "Sex",
+              "Age",
+              "SibSp",
+              "Parch",
+              "Ticket",
+              "Fare",
+              "Cabin",
+              "Embarked"
             ],
-            "rows": 2000,
+            "rows": 891,
             "coverage": "complete",
             "conditions": [],
             "predicate_known": true,
             "grain": "raw",
             "aggregation": "",
-            "snapshot": "fixture:6fd6aefae0385fe96f9884c3154048e19641fc9ae55f872378551b8c1e268c25",
+            "snapshot": "fixture:261728c6b4aefb97391c652943bd7af2acea038e39d35f98779a975f900e0688",
             "query": "",
             "parent_id": "",
             "parent_ids": []
           }
         ],
-        "charts": [],
+        "charts": [
+          {
+            "id": "7056b0c8-0cba-4930-aa88-e1c9ae3c5dc4",
+            "dataset_id": "1015120d-5afc-4450-bb7a-dad7cfdb7b39",
+            "kind": "boxplot",
+            "columns": [
+              "Fare",
+              "Pclass"
+            ],
+            "png_sha256": "4661407692daf9ce1cff6d7107de9572986ea36f42fee851b8233e3af0155e9b",
+            "png_valid": true
+          }
+        ],
         "diagnostics": [
           {
-            "time": "2026-09-21T12:49:34.492853+00:00",
+            "time": "2026-09-21T13:06:24.048477+00:00",
             "event": "run_started",
-            "run_id": "66aafecfdb554c03bca3a921be85f403",
+            "run_id": "fc19aa8f0c86417d8aa2f2556681227d",
             "operation": "submit"
           },
           {
-            "time": "2026-09-21T12:49:34.500891+00:00",
+            "time": "2026-09-21T13:06:24.111160+00:00",
             "event": "recovery_transition",
-            "run_id": "66aafecfdb554c03bca3a921be85f403",
-            "tool": "detect_outliers"
+            "run_id": "fc19aa8f0c86417d8aa2f2556681227d",
+            "tool": "render_chart_spec"
           },
           {
-            "time": "2026-09-21T12:49:34.501972+00:00",
+            "time": "2026-09-21T13:06:24.112434+00:00",
             "event": "tool_started",
-            "run_id": "66aafecfdb554c03bca3a921be85f403",
-            "tool": "detect_outliers"
+            "run_id": "fc19aa8f0c86417d8aa2f2556681227d",
+            "tool": "render_chart_spec"
           },
           {
-            "time": "2026-09-21T12:49:34.502591+00:00",
+            "time": "2026-09-21T13:06:24.143175+00:00",
             "event": "tool_completed",
-            "run_id": "66aafecfdb554c03bca3a921be85f403",
-            "tool": "detect_outliers",
+            "run_id": "fc19aa8f0c86417d8aa2f2556681227d",
+            "tool": "render_chart_spec",
             "status": "ready",
-            "elapsed_seconds": 0.001
+            "elapsed_seconds": 0.031
           },
           {
-            "time": "2026-09-21T12:49:34.504111+00:00",
+            "time": "2026-09-21T13:06:24.144574+00:00",
             "event": "completion_checked",
-            "run_id": "66aafecfdb554c03bca3a921be85f403",
+            "run_id": "fc19aa8f0c86417d8aa2f2556681227d",
             "status": "complete",
             "attempts": 0
           },
           {
-            "time": "2026-09-21T12:49:34.505306+00:00",
+            "time": "2026-09-21T13:06:24.145509+00:00",
             "event": "run_completed",
-            "run_id": "66aafecfdb554c03bca3a921be85f403",
+            "run_id": "fc19aa8f0c86417d8aa2f2556681227d",
             "status": "answered",
-            "elapsed_seconds": 0.013
+            "elapsed_seconds": 0.097
           },
           {
-            "time": "2026-09-21T12:49:34.505350+00:00",
+            "time": "2026-09-21T13:06:24.145541+00:00",
             "event": "turn_slo",
-            "run_id": "66aafecfdb554c03bca3a921be85f403",
-            "elapsed_seconds": 0.013,
+            "run_id": "fc19aa8f0c86417d8aa2f2556681227d",
+            "elapsed_seconds": 0.097,
             "limit": 180.0,
             "status": "ok"
           }
@@ -957,53 +891,48 @@
       }
     },
     {
-      "id": "L2_048",
-      "prompt": "나이(age) 데이터에서 정상 범위를 벗어난 이상치가 있는지 최솟값, 최댓값 및 3-시그마 범위를 점검해줘.",
+      "id": "L2_050",
+      "prompt": "예금 가입 성공(y='yes') 고객과 실패(y='no') 고객의 상담 시간(duration) 이상치를 비교하는 박스플롯을 그려줘.",
       "target_table": "bank_loan",
-      "reference_sha256": "1f4fe1c10c132cf0f385cd2e87898a1df947834de4b8a1d482689a681fedec7b",
+      "reference_sha256": "1c33f947b803841829ed6d437c040980a7504a26b7c22096dc64cc41d8ea1aa7",
       "status": "PASS",
-      "reason": "Structured outlier evidence matches the independent reference",
+      "reason": "Real PNG and declarative chart data match the independent reference",
       "evidence": {
-        "expected": {
-          "thresholds.lower": 8.947152677434694,
-          "thresholds.upper": 73.18084732256531,
-          "counts.selected": 4.0,
-          "distribution.minimum": 18.0,
-          "distribution.maximum": 83.0
-        },
-        "actual": {
-          "thresholds.lower": 8.947152677434694,
-          "thresholds.upper": 73.18084732256531,
-          "counts.selected": 4.0,
-          "distribution.minimum": 18.0,
-          "distribution.maximum": 83.0
-        },
-        "dataset_id": "82a6b22c-42ee-4eae-b4a2-f9c6af340942",
-        "scope": "bank_loan의 로딩된 raw dataset 2,000행 중 유효값 2,000개에 zscore/both 기준을 적용했습니다. coverage=complete; snapshot=fixture:6fd6aefae0385fe96f9884c3154048e19641fc9ae55f872378551b8c1e268c25."
+        "charts": [
+          {
+            "chart_id": "c7104b00-e9a4-4b35-b080-778f69b4e30e",
+            "png_sha256": "3d27b5abe2f3a2c5df7a3825a279393419ae6258c6239d7f1cf1412d2c5a6d02",
+            "kind": "boxplot",
+            "columns": [
+              "duration",
+              "y"
+            ],
+            "data_sha256": "5170b57262371738167569e5a1eb0dbb1604a30ab33ae74bf054eaa67787316d"
+          }
+        ]
       },
       "agent_status": "answered",
       "runtime_state": "idle",
-      "elapsed_seconds": 0.033,
+      "elapsed_seconds": 0.149,
       "tools": {
-        "detect_outliers": 1
+        "render_chart_spec": 1
       },
       "tool_calls": [
         {
-          "id": "aff5c59e-e052-47f8-864b-7ceaef4ca319",
-          "tool": "detect_outliers",
+          "id": "7aa18d40-9048-47da-b362-e5b3bbc3db51",
+          "tool": "render_chart_spec",
           "arguments": {
-            "dataset_id": "82a6b22c-42ee-4eae-b4a2-f9c6af340942",
-            "column": "age",
-            "method": "zscore",
-            "tail": "both",
-            "threshold": 3.0
+            "dataset_id": "37d65ee5-6081-445b-a26d-188a7a47950d",
+            "kind": "boxplot",
+            "x": "duration",
+            "category": "y"
           }
         }
       ],
       "queries": [],
       "observations": [
         {
-          "tool": "detect_outliers",
+          "tool": "render_chart_spec",
           "status": "ready",
           "error_code": null
         }
@@ -1013,8 +942,8 @@
       "error_type": null,
       "error_id": null,
       "runtime_metadata": {
-        "case_id": "L2_048",
-        "run_id": "2e704e3b8d194704b43e8e5981752c8c",
+        "case_id": "L2_050",
+        "run_id": "4721f451649841e89784b6126787f6ab",
         "state": "idle",
         "message_count": 4,
         "pending_requests": 0,
@@ -1341,7 +1270,7 @@
         ],
         "datasets": [
           {
-            "id": "82a6b22c-42ee-4eae-b4a2-f9c6af340942",
+            "id": "37d65ee5-6081-445b-a26d-188a7a47950d",
             "source": "bank_loan",
             "columns": [
               "id",
@@ -1375,53 +1304,65 @@
             "parent_ids": []
           }
         ],
-        "charts": [],
+        "charts": [
+          {
+            "id": "c7104b00-e9a4-4b35-b080-778f69b4e30e",
+            "dataset_id": "37d65ee5-6081-445b-a26d-188a7a47950d",
+            "kind": "boxplot",
+            "columns": [
+              "duration",
+              "y"
+            ],
+            "png_sha256": "3d27b5abe2f3a2c5df7a3825a279393419ae6258c6239d7f1cf1412d2c5a6d02",
+            "png_valid": true
+          }
+        ],
         "diagnostics": [
           {
-            "time": "2026-09-21T12:49:34.531199+00:00",
+            "time": "2026-09-21T13:06:24.187905+00:00",
             "event": "run_started",
-            "run_id": "2e704e3b8d194704b43e8e5981752c8c",
+            "run_id": "4721f451649841e89784b6126787f6ab",
             "operation": "submit"
           },
           {
-            "time": "2026-09-21T12:49:34.536287+00:00",
+            "time": "2026-09-21T13:06:24.283178+00:00",
             "event": "recovery_transition",
-            "run_id": "2e704e3b8d194704b43e8e5981752c8c",
-            "tool": "detect_outliers"
+            "run_id": "4721f451649841e89784b6126787f6ab",
+            "tool": "render_chart_spec"
           },
           {
-            "time": "2026-09-21T12:49:34.537561+00:00",
+            "time": "2026-09-21T13:06:24.284412+00:00",
             "event": "tool_started",
-            "run_id": "2e704e3b8d194704b43e8e5981752c8c",
-            "tool": "detect_outliers"
+            "run_id": "4721f451649841e89784b6126787f6ab",
+            "tool": "render_chart_spec"
           },
           {
-            "time": "2026-09-21T12:49:34.538136+00:00",
+            "time": "2026-09-21T13:06:24.311136+00:00",
             "event": "tool_completed",
-            "run_id": "2e704e3b8d194704b43e8e5981752c8c",
-            "tool": "detect_outliers",
+            "run_id": "4721f451649841e89784b6126787f6ab",
+            "tool": "render_chart_spec",
             "status": "ready",
-            "elapsed_seconds": 0.001
+            "elapsed_seconds": 0.027
           },
           {
-            "time": "2026-09-21T12:49:34.539180+00:00",
+            "time": "2026-09-21T13:06:24.312932+00:00",
             "event": "completion_checked",
-            "run_id": "2e704e3b8d194704b43e8e5981752c8c",
+            "run_id": "4721f451649841e89784b6126787f6ab",
             "status": "complete",
             "attempts": 0
           },
           {
-            "time": "2026-09-21T12:49:34.540254+00:00",
+            "time": "2026-09-21T13:06:24.313942+00:00",
             "event": "run_completed",
-            "run_id": "2e704e3b8d194704b43e8e5981752c8c",
+            "run_id": "4721f451649841e89784b6126787f6ab",
             "status": "answered",
-            "elapsed_seconds": 0.009
+            "elapsed_seconds": 0.126
           },
           {
-            "time": "2026-09-21T12:49:34.540282+00:00",
+            "time": "2026-09-21T13:06:24.313979+00:00",
             "event": "turn_slo",
-            "run_id": "2e704e3b8d194704b43e8e5981752c8c",
-            "elapsed_seconds": 0.009,
+            "run_id": "4721f451649841e89784b6126787f6ab",
+            "elapsed_seconds": 0.126,
             "limit": 180.0,
             "status": "ok"
           }
@@ -1429,10 +1370,10 @@
       }
     }
   ],
-  "elapsed_seconds": 0.36,
+  "elapsed_seconds": 8.322,
   "limitations": [
     "Local fixture evaluation; no Databricks or browser execution",
-    "Only direct single-column IQR/Z-score detection journeys are graded here",
-    "Outlier-row profiling, winsorization, and transformation remain ungraded"
+    "Only grouped boxplots with one numeric value and one category are graded here",
+    "Multi-panel, dual-axis, and time-series visualizations remain ungraded"
   ]
 }

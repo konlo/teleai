@@ -22,7 +22,7 @@
 | join | `join_datasets` | 보유 raw dataset 두 개를 명시적 key와 방식으로 결합 | dtype·NULL·cardinality·예상 행 수·증가율을 실행 전에 검사하고 두 부모 lineage를 보존한다. many-to-many는 실행하지 않는다. |
 | statistics | `statistical_test` | 보유 raw dataset의 선언된 가설 검정·평균 신뢰구간 | 독립·대응 t, 카이제곱, 일원 ANOVA, Mann–Whitney, 평균 CI를 enum으로 제한하고 표본·결측·가정·통계량·p-value·효과크기·CI를 반환한다. |
 | outliers | `detect_outliers` | 보유 raw dataset의 단일 수치 컬럼 이상치 기준·건수 계산 | IQR·Z-score·MAD·분위수와 tail을 제한하고 임계값·결측·상하한 건수·비율·범위를 원시 행 없이 반환한다. |
-| visualization | `recommend_chart_images`, `prepare_histogram`, `render_histogram`, `render_chart_spec`, `show_chart` | 실제 PNG 추천·생성·재표시 | histogram/bar/line/scatter/boxplot의 축·집계·정렬·top-N·bins·제목·라벨을 제한된 schema로 실행한다. 임의 코드·파일·URL·style dictionary는 받지 않는다. |
+| visualization | `recommend_chart_images`, `prepare_histogram`, `render_histogram`, `render_chart_spec`, `show_chart` | 실제 PNG 추천·생성·재표시 | histogram/bar/line/scatter/boxplot과 수치값+범주 그룹 박스플롯의 축·집계·정렬·top-N·bins·제목·라벨을 제한된 schema로 실행한다. 임의 코드·파일·URL·style dictionary는 받지 않는다. |
 | remote | `query_databricks` | 정확한 SELECT를 승인 후 1회 실행 | fingerprint·연결 identity·제출 불명 상태 차단이 강하다. 테이블 탐색용 전용 계획 tool은 없다. |
 
 과거 `core/tools.py`에는 join, 이상치, 시계열, heatmap 등 27개가량의 legacy tool이 있으나 현재 v1 production 경로에는 등록되지 않는다. 이들을 그대로 되살리면 Streamlit session state 의존, 문자열 결과, 불균일한 오류 계약이 다시 유입된다. 필요한 기능만 현재의 `ToolDefinition`·lineage·artifact 계약으로 재구현해야 한다.
@@ -90,19 +90,19 @@
 
 ## 평가 근거와 공백
 
-독립 oracle은 200문항 중 60문항을 지원한다. 미채점 140문항의 구성은 다음과 같다.
+독립 oracle은 200문항 중 63문항을 지원한다. 미채점 137문항의 구성은 다음과 같다.
 
 | 구분 | 미채점 수 |
 |---|---:|
 | table/계산 | 79 |
-| chart | 52 |
+| chart | 49 |
 | schema | 9 |
 | 단일 그룹 집계·요약표 | 25 |
-| 단일 차트 | 22 |
+| 단일 차트 | 19 |
 | 피벗·소계 | 15 |
 | 전환율·이중축 | 15 |
 | 다중 패널·고급 시각화 | 15 |
-| 이상치 | 11 |
+| 이상치 | 8 |
 | 통계 검정 | 0 |
 
 `show_chart`의 실제 PNG 재사용과 missing ID 오류 계약을 추가했다. 전체 활성 tool의 성공, 입력/복구 오류, 승인 안전성, 재시작, 중복/재사용 상태는 `agent_tool_contract_matrix_2026-09-18.md`에 기록했다. `use_dataset`과 `read_analysis_skill`의 전용 조합 테스트 확대는 후속 보강 대상이다.

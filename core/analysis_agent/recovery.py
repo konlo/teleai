@@ -546,28 +546,48 @@ class RecoveryMiddleware(AgentMiddleware):
         """
         if not self._has_scope(current):
             return True
-        scope = current.get('scope', {})
-        valid = False
-        if (not scope.get('unresolved') and not scope.get('any_conditions')
-                and not scope.get('measure_conditions') and not scope.get('ratio')
-                and arguments.get('test') in {'independent_t', 'mann_whitney'}):
-            conditions = scope.get('conditions', [])
-            group_column = arguments.get('group_column')
-            if (len(conditions) == 1 and conditions[0].get('column') == group_column
-                    and conditions[0].get('op') == 'in' and self.context is not None
-                    and info.id in self.context.datasets.frames and group_column in info.columns):
-                def canonical(value):
-                    if hasattr(value, 'item'):
-                        try:
-                            value = value.item()
-                        except (TypeError, ValueError):
-                            pass
-                    return json.dumps(value, ensure_ascii=False, sort_keys=True, default=str)
-                requested = {canonical(value) for value in conditions[0].get('value', [])}
-                observed = {canonical(value) for value in
-                            self.context.datasets.frames[info.id][group_column].dropna().unique().tolist()}
-                valid = bool(requested) and requested == observed
+        valid = (arguments.get('test') in {'independent_t', 'mann_whitney'}
+                 and self._all_group_levels_scope_valid(
+                     info, arguments.get('group_column'), current))
         if valid:
+            return True
+        self._record_scope_error(current)
+        return False
+
+    def _all_group_levels_scope_valid(self, info, group_column, current):
+        """Treat explicit values as labels only when they cover every group."""
+        scope = current.get('scope', {})
+        if (scope.get('unresolved') or scope.get('any_conditions')
+                or scope.get('measure_conditions') or scope.get('ratio')
+                or self.context is None or info.id not in self.context.datasets.frames
+                or not group_column or group_column not in info.columns):
+            return False
+        conditions = scope.get('conditions', [])
+        if (len(conditions) != 1 or conditions[0].get('column') != group_column
+                or conditions[0].get('op') != 'in'):
+            return False
+
+        def canonical(value):
+            if hasattr(value, 'item'):
+                try:
+                    value = value.item()
+                except (TypeError, ValueError):
+                    pass
+            return json.dumps(value, ensure_ascii=False, sort_keys=True, default=str)
+
+        requested = {canonical(value) for value in conditions[0].get('value', [])}
+        observed = {canonical(value) for value in
+                    self.context.datasets.frames[info.id][group_column].dropna().unique().tolist()}
+        return bool(requested) and requested == observed
+
+    def _chart_scope_valid(self, info, arguments, current):
+        if not self._has_scope(current):
+            return True
+        histogram_column = arguments.get('x') if arguments.get('kind') == 'histogram' else None
+        if scope_matches(info, current['scope'], histogram_column=histogram_column):
+            return True
+        if (arguments.get('kind') == 'boxplot' and arguments.get('category')
+                and self._all_group_levels_scope_valid(info, arguments['category'], current)):
             return True
         self._record_scope_error(current)
         return False
@@ -598,7 +618,13 @@ class RecoveryMiddleware(AgentMiddleware):
             if info is None or not self._source_matches(info, current): return False
             if not self._fresh_for_request(info, current): return False
             value_column = card.columns[0] if card.kind == 'histogram' and len(card.columns) == 1 else None
-            if not self._scope_valid(info, current, value_column): return False
+            if card.kind == 'boxplot' and len(card.columns) == 2:
+                if not self._chart_scope_valid(info, {
+                        'kind': 'boxplot', 'x': card.columns[0],
+                        'category': card.columns[1]}, current):
+                    return False
+            elif not self._scope_valid(info, current, value_column):
+                return False
             if info.coverage != 'complete' and not current.get('current_result_only'): return False
             if current.get('plan'):
                 if self._source_key(info.source) != self._source_key(current['plan']['source']) or card.dataset_id != current.get('loaded_dataset'):
@@ -1027,8 +1053,7 @@ class RecoveryMiddleware(AgentMiddleware):
             if not any(c.get('name') == 'render_histogram' and c.get('args') == arguments for c in calls.values()):
                 return {'name': 'render_histogram', 'args': arguments}
         if (self.context and current.get('chart') and current.get('kind') in {'bar', 'line', 'scatter', 'boxplot'}
-                and not current.get('fresh_source_required') and not current.get('artifact_ids')
-                and not self._has_scope(current)):
+                and not current.get('fresh_source_required') and not current.get('artifact_ids')):
             columns = current.get('required_columns', [])
             candidates = [info for info in self.context.datasets.metadata.values()
                 if info.grain == 'raw' and set(columns).issubset(info.columns)
@@ -1042,6 +1067,25 @@ class RecoveryMiddleware(AgentMiddleware):
                 arguments = None
                 if current['kind'] == 'boxplot' and len(columns) == 1 and is_numeric_dtype(frame[columns[0]]):
                     arguments = {'dataset_id':candidates[0].id,'kind':'boxplot','x':columns[0]}
+                elif current['kind'] == 'boxplot' and len(columns) == 2:
+                    numeric_columns = [column for column in columns if is_numeric_dtype(frame[column])]
+                    if len(numeric_columns) == 1:
+                        value_column = numeric_columns[0]
+                        category_columns = [column for column in columns if column != value_column
+                                            and frame[column].nunique(dropna=True) <= 20]
+                    elif len(numeric_columns) == 2:
+                        ordered = sorted(numeric_columns,
+                            key=lambda column: frame[column].nunique(dropna=True))
+                        category_columns = [ordered[0]] if (
+                            frame[ordered[0]].nunique(dropna=True) <= 20
+                            and frame[ordered[0]].nunique(dropna=True)
+                                < frame[ordered[1]].nunique(dropna=True)) else []
+                        value_column = ordered[1] if category_columns else None
+                    else:
+                        value_column, category_columns = None, []
+                    if value_column and len(category_columns) == 1:
+                        arguments = {'dataset_id':candidates[0].id,'kind':'boxplot',
+                                     'x':value_column,'category':category_columns[0]}
                 elif current['kind'] == 'scatter' and len(columns) == 2 and all(
                         is_numeric_dtype(frame[column]) for column in columns):
                     arguments = {'dataset_id':candidates[0].id,'kind':'scatter','x':columns[0],'y':columns[1]}
@@ -1054,8 +1098,9 @@ class RecoveryMiddleware(AgentMiddleware):
                     if len(time_columns) == 1 and len(numeric_columns) == 1 and frame[time_columns[0]].is_unique:
                         arguments = {'dataset_id':candidates[0].id,'kind':'line',
                                      'x':time_columns[0],'y':numeric_columns[0],'sort':'ascending'}
-                if arguments and not any(c.get('name') == 'render_chart_spec' and c.get('args') == arguments
-                                         for c in calls.values()):
+                if (arguments and self._chart_scope_valid(candidates[0], arguments, current)
+                        and not any(c.get('name') == 'render_chart_spec' and c.get('args') == arguments
+                                    for c in calls.values())):
                     return {'name':'render_chart_spec','args':arguments}
         scope = current.get('scope', {})
         if (self.context and current.get('chart') and current.get('kind') == 'histogram'
@@ -1356,6 +1401,8 @@ class RecoveryMiddleware(AgentMiddleware):
         if call.get('name') in {'recommend_chart_images', 'render_chart_spec', 'render_histogram'} and self.context:
             info = self.context.datasets.metadata.get(arguments.get('dataset_id'))
             if info is None: return True  # The tool adapter reports unknown IDs.
+            if call.get('name') == 'render_chart_spec':
+                return self._chart_scope_valid(info, arguments, current)
             column = arguments.get('value_column') or (
                 arguments.get('x') if arguments.get('kind') == 'histogram' else None)
             return self._scope_valid(info, current, column)

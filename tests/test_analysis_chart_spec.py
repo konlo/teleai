@@ -87,6 +87,7 @@ class ChartSpecTests(unittest.TestCase):
             ("line", {"x":"time", "y":"value", "sort":"ascending"}),
             ("scatter", {"x":"value", "y":"score", "category":"segment"}),
             ("boxplot", {"x":"value"}),
+            ("boxplot", {"x":"value", "category":"segment"}),
         ]
         for kind, arguments in cases:
             with self.subTest(kind=kind):
@@ -135,6 +136,33 @@ class ChartSpecTests(unittest.TestCase):
             card = runtime.artifacts[chart_ids[0]]
             self.assertEqual(card.kind, "scatter")
             self.assertTrue(card.image.startswith(b"\x89PNG\r\n\x1a\n"))
+            runtime.close()
+
+    def test_grouped_boxplot_is_completed_deterministically_without_model(self):
+        with tempfile.TemporaryDirectory() as root:
+            runtime = GraphAnalysisRuntime(root, "owner", "grouped-boxplot", NoModelCall())
+            runtime.datasets.register(frame(), source=SOURCE, coverage="complete", predicate_known=True)
+            result = runtime.submit("segment별 value 분포를 박스플롯으로 보여줘")
+            self.assertEqual(result["status"], "answered", result)
+            card = runtime.artifacts[runtime.inspect()["chart_ids"][0]]
+            self.assertEqual(card.kind, "boxplot")
+            self.assertEqual(card.columns, ("value", "segment"))
+            runtime.close()
+
+    def test_group_labels_must_cover_every_observed_level_to_avoid_filtering(self):
+        with tempfile.TemporaryDirectory() as root:
+            runtime = GraphAnalysisRuntime(root, "owner", "group-label-scope", NoModelCall())
+            info = runtime.datasets.register(
+                frame(), source=SOURCE, coverage="complete", predicate_known=True)
+            current = {"scope": {"conditions": [{
+                "column": "segment", "op": "in", "value": ["A", "B", "C"]}],
+                "any_conditions": [], "measure_conditions": [], "unresolved": [],
+                "ratio": None}}
+            self.assertTrue(runtime.recovery._all_group_levels_scope_valid(
+                info, "segment", current))
+            current["scope"]["conditions"][0]["value"] = ["A", "B"]
+            self.assertFalse(runtime.recovery._all_group_levels_scope_valid(
+                info, "segment", current))
             runtime.close()
 
     def test_custom_histogram_uses_explicit_spec_instead_of_cached_default(self):

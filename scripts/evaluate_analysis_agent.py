@@ -147,9 +147,16 @@ class HistogramCapture:
         def observed_boxplot(axis, x, *args, **kwargs):
             result = original_boxplot(axis, x, *args, **kwargs)
             try:
-                values = np.asarray(x)
-                if values.ndim == 1:
-                    self.boxplots.append({"figure": id(axis.figure), "values": values})
+                if isinstance(x, (list, tuple)) and x and all(
+                        np.asarray(group).ndim == 1 for group in x):
+                    groups = [np.asarray(group) for group in x]
+                    labels = kwargs.get("tick_labels") or kwargs.get("labels")
+                    self.boxplots.append({"figure": id(axis.figure), "groups": groups,
+                                          "labels": list(labels) if labels is not None else None})
+                else:
+                    values = np.asarray(x)
+                    if values.ndim == 1:
+                        self.boxplots.append({"figure": id(axis.figure), "values": values})
             except (TypeError, ValueError):
                 pass
             return result
@@ -200,6 +207,24 @@ def reference_oracle(spec, grading, frames):
                 raise ValueError("Reference must produce exactly one boxplot")
             plotted = pd.DataFrame({grading["column"]: capture.boxplots[0]["values"]})
             return {"data_sha256": _frame_digest(plotted), "rows": len(plotted)}
+        if grading["kind"] == "chart_grouped_boxplot":
+            grouped = [item for item in capture.boxplots if item.get("groups")]
+            if len(grouped) != 1:
+                raise ValueError("Reference must produce exactly one grouped boxplot")
+            observed = grouped[0]
+            source = frames[spec["target_table"]][[grading["category"], grading["column"]]].dropna()
+            group_values = sorted(source[grading["category"]].unique(), key=lambda value: str(value))
+            if observed.get("labels") and [str(value) for value in group_values] != [str(value) for value in observed["labels"]]:
+                raise ValueError("Reference grouped boxplot labels differ from source groups")
+            if len(observed["groups"]) != len(group_values):
+                raise ValueError("Reference grouped boxplot labels do not match groups")
+            plotted = pd.concat([
+                pd.DataFrame({grading["category"]: [group] * len(values),
+                              grading["column"]: pd.to_numeric(values)})
+                for group, values in zip(group_values, observed["groups"])
+            ], ignore_index=True)
+            return {"data_sha256": _frame_digest(plotted), "rows": len(plotted),
+                    "groups": [str(value) for value in group_values]}
         if grading["kind"] == "chart_bar_counts":
             value = namespace[grading["variable"]]
             if not isinstance(value, pd.Series) or value.empty:
@@ -503,10 +528,10 @@ def grade_evidence(runtime, outcome, spec, grading, oracle, fixture_id, capture)
         return ("PASS", "Structured dataset profile matches the independent reference",
                 {"profile": matches[-1]}) if matches else (
                 "FAIL", "Missing complete profile evidence or profile counts differ from reference", {})
-    if grading["kind"] in {"chart_scatter", "chart_boxplot", "chart_bar_counts"}:
+    if grading["kind"] in {"chart_scatter", "chart_boxplot", "chart_grouped_boxplot", "chart_bar_counts"}:
         matches = []
         expected_kind = {"chart_scatter":"scatter", "chart_boxplot":"boxplot",
-                         "chart_bar_counts":"bar"}[grading["kind"]]
+                         "chart_grouped_boxplot":"boxplot", "chart_bar_counts":"bar"}[grading["kind"]]
         for message in runtime.events():
             if not isinstance(message, ToolMessage) or message.name != "render_chart_spec":
                 continue
@@ -529,6 +554,13 @@ def grade_evidence(runtime, outcome, spec, grading, oracle, fixture_id, capture)
                               for point in summary.get("points", [])}
                     correct = (actual == oracle and spec_result.get("aggregation") == "count"
                                and spec_result.get("x") == grading["column"])
+                elif grading["kind"] == "chart_grouped_boxplot":
+                    expected_columns = [grading["column"], grading["category"]]
+                    correct = (list(card.columns) == expected_columns
+                               and spec_result.get("x") == grading["column"]
+                               and spec_result.get("category") == grading["category"]
+                               and summary.get("data_sha256") == oracle["data_sha256"]
+                               and summary.get("rendered_rows") == oracle["rows"])
                 else:
                     expected_columns = ([grading["column"]] if grading["kind"] == "chart_boxplot"
                                         else [grading["x"], grading["y"]])
