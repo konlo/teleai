@@ -34,6 +34,7 @@
 - **Evaluation**: 변경하지 않은 `L2_036`, `L2_039`, `L2_048` 원문이 독립 reference 기준값과 3/3 일치했다. 각 여정은 production graph의 `detect_outliers` 1회로 완료됐고 모델·Databricks 호출은 0회였다. 독립 채점 범위는 60/200으로 늘었다.
 - **Validation**: application 123/123, migration 126/126, Level 3 17/17, 전체 참고 runner 217/217 PASS. raw grain·dtype·상수·표본·임계값 오류 차단과 재시작 후 evidence 복원도 확인했다.
 - **Outcome**: 직접 이상치 탐지를 완료했다. 이상치 행의 후속 그룹 분석·제거 전후 비교·winsorization은 파생 dataset lineage 계약이 필요해 남은 범위로 유지한다.
+- **Remote**: commit `8ed86fd`를 PR #68 브랜치에 push했다. GitHub Actions run `35601863076`, job `106339618660`이 migration, application, Level 3, 전체 runner와 compile 검사를 1분 34초에 모두 통과했다.
 
 ---
 
