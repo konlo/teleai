@@ -1,14 +1,14 @@
 # Project Progress Log
 
 ## Current Status
-- **Last Updated**: 2026-09-19
+- **Last Updated**: 2026-09-21
 - **Status**: In Progress — 배포 preflight까지 검증한 1인용 제한 출시 후보
-- **Summary**: 공통 tool 결과 계약, bounded profile·chart·multi-dataset join·구조화 통계 검정과 승인형 source discovery를 production graph에 연결했다. application 115/115, migration 126/126, Level 3 17/17, 전체 참고 runner 217/217 PASS다. 실제 agent 독립 채점은 57/200이며 통계 10문항과 join 별도 benchmark가 값 단위로 PASS했다. 원격 실행은 0회다.
-- **Next Session Focus**: 배포 대상·실제 호스트 gate·smoke/rollback → 남은 143문항 oracle와 이상치·시계열·다중 패널 범위.
+- **Summary**: 공통 tool 결과 계약, bounded profile·chart·multi-dataset join·구조화 통계 검정·직접 이상치 탐지와 승인형 source discovery를 production graph에 연결했다. application 123/123, migration 126/126, Level 3 17/17, 전체 참고 runner 217/217 PASS다. 실제 agent 독립 채점은 60/200이며 이상치 원문 3개와 통계 10개, join 별도 benchmark가 값 단위로 PASS했다. 원격 실행은 0회다.
+- **Next Session Focus**: 배포 대상·실제 호스트 gate·smoke/rollback → 남은 140문항 oracle와 이상치 행 후속 분석·시계열·다중 패널 범위.
 
 ## Next Action Items
 - [x] 제품 승인 카드에서 사용자가 승인한 실제 Databricks 조회 → 저장 → 분석 → 후속 질문을 검증했다.
-- [ ] 남은 143문항의 독립 oracle과 고급 분석 도구 범위를 우선순위별로 확대한다.
+- [ ] 남은 140문항의 독립 oracle과 고급 분석 도구 범위를 우선순위별로 확대한다.
 - [ ] 로컬 단일·동시 용량 gate와 RSS 기준은 완료했다. 실제 배포 호스트와 Ollama 동시 추론으로 기준을 보정한다.
 - [x] 현재 변경을 `agentic-analysis-rc4-2026-09-15` release candidate로 커밋·push하고 원격 release gate 성공 후 tag로 고정했다.
 - [x] 컬럼 metadata 복구를 `agentic-analysis-rc5-2026-09-15`로 고정했다. GitHub Actions run `34978831986`이 성공했다.
@@ -21,6 +21,19 @@
 - [x] 제한된 `render_chart_spec`으로 histogram/bar/line/scatter/boxplot의 실제 PNG·lineage·재시작 복구를 검증했다.
 - [x] bounded `join_datasets`로 cardinality·NULL·출력 규모·양쪽 parent lineage와 후속 집계·재시작을 검증했다.
 - [x] `statistical_test`로 독립·대응 t, 카이제곱, 일원 ANOVA, Mann–Whitney, 평균 CI의 구조화 근거와 fail-closed 계약을 검증했다.
+- [x] `detect_outliers`로 IQR·Z-score·MAD·분위수 기준과 tail·결측·건수·비율의 구조화 근거와 fail-closed 계약을 검증했다.
+
+---
+
+## [2026-09-21 21:14:05 KST] [Agent: Codex] User Request: 지금 남아 있는 일들 다시 진행해줘
+- **Request**: 사용자 승인이나 배포 대상 결정 없이 진행할 수 있는 남은 작업을 계속 수행한다.
+- **Action**: 미검증 고급 분석 영역 중 이상치 분석을 다음 구현 대상으로 선정했다. 운영 agent에 bounded 이상치 탐지 tool, 구조화 evidence 완료 계약, 모델 없는 명확 요청 복구 경로와 변경하지 않은 Level 2 원문 기반 독립 oracle을 추가한다.
+- **Safety**: 로컬 fixture와 이미 로딩된 raw DataFrame만 사용한다. Databricks 원격 조회와 stale schema 갱신은 실행하지 않는다.
+- **Acceptance**: 기준값·표본/결측·이상치 수와 비율·최솟값/최댓값·coverage/grain/snapshot을 구조화해 반환하고, 잘못된 dtype·집계 grain·표본 부족·유효하지 않은 임계값은 fail-closed한다. production graph와 독립 reference 값 일치, 전체 회귀, 원격 실행 0회를 확인한다.
+- **Implementation**: `detect_outliers`를 공통 tool registry와 recovery loop에 연결했다. IQR·Z-score·MAD·분위수와 upper/lower/both tail을 제한된 schema로 받고, 임계값·표본·결측·상하한 건수·비율·전체 범위를 원시 행 없이 반환한다. 명확한 단일 컬럼 요청은 모델 없이 실행하며 구조화 evidence가 없으면 완료하지 않는다.
+- **Evaluation**: 변경하지 않은 `L2_036`, `L2_039`, `L2_048` 원문이 독립 reference 기준값과 3/3 일치했다. 각 여정은 production graph의 `detect_outliers` 1회로 완료됐고 모델·Databricks 호출은 0회였다. 독립 채점 범위는 60/200으로 늘었다.
+- **Validation**: application 123/123, migration 126/126, Level 3 17/17, 전체 참고 runner 217/217 PASS. raw grain·dtype·상수·표본·임계값 오류 차단과 재시작 후 evidence 복원도 확인했다.
+- **Outcome**: 직접 이상치 탐지를 완료했다. 이상치 행의 후속 그룹 분석·제거 전후 비교·winsorization은 파생 dataset lineage 계약이 필요해 남은 범위로 유지한다.
 
 ---
 
@@ -265,10 +278,10 @@
 - **Diagnosis correction**: 체크포인트에 도구 호출 인자는 보존됨. 실제 결함은 summarization HumanMessage를 사용자 요청으로 오인하여 필수 컬럼과 재시도 예산을 재설정하는 것. 이전 인자 유실 가설은 기각.
 
 ## Current Status
-- **Last Updated**: 2026-09-19
+- **Last Updated**: 2026-09-21
 - **Status**: Limited-scope Release Candidate Validation
-- **Summary**: R14의 공통 tool 결과 계약, dataset profile, 승인형 source discovery, 제한된 chart spec, bounded multi-dataset join과 구조화 statistical test를 완료했다. 전체 회귀 application 115 + migration 126 = 241/241, 참고 코드 217/217, agentic recovery 17/17 PASS다. 실제 agent 독립 채점은 57/200이므로 전체 기능 출시는 계속 NO-GO다.
-- **Next Session Focus**: 배포 대상·실제 호스트 검증 → 남은 143문항 oracle와 이상치·시계열·다중 패널 범위. Canonical list: docs/agent_remaining_tasks_2026-09-13.md.
+- **Summary**: R14의 공통 tool 결과 계약, dataset profile, 승인형 source discovery, 제한된 chart spec, bounded multi-dataset join, 구조화 statistical test와 직접 outlier detection을 완료했다. 전체 회귀 application 123 + migration 126 = 249/249, 참고 코드 217/217, agentic recovery 17/17 PASS다. 실제 agent 독립 채점은 60/200이므로 전체 기능 출시는 계속 NO-GO다.
+- **Next Session Focus**: 배포 대상·실제 호스트 검증 → 남은 140문항 oracle와 이상치 행 후속 분석·시계열·다중 패널 범위. Canonical list: docs/agent_remaining_tasks_2026-09-13.md.
 
 ## Next Action Items (Pending tasks for the next session)
 - [x] R01: Connect grounded request scope to calculation/chart/recovery and reject wrong or unresolved scope.
@@ -277,20 +290,26 @@
 - [x] R04: Restart the server with the 205/205-tested code and verify the visible app.
 - [ ] R05: Local p95/RSS capacity gate is READY; recalibrate it on the selected deployment host and measure concurrent Ollama inference.
 - [x] R06: Validate 750,000-row storage, cache eviction, restart/crash recovery and retained PNG.
-- [ ] R07: Expand independent actual-agent grading beyond 57/200 supported cases.
-- [ ] R08: Bounded join, chart specification, and structured statistical tests are complete; implement later outlier, time-series, and multi-panel scope as prioritized.
+- [ ] R07: Expand independent actual-agent grading beyond 60/200 supported cases.
+- [ ] R08: Bounded join, chart specification, structured statistical tests, and direct outlier detection are complete; implement outlier-row follow-up, time-series, and multi-panel scope as prioritized.
 - [x] R09: Approved live Databricks load/reuse validated and release candidate tag fixed.
 - [x] R10: Remove production dependencies on fixed table/schema facts and validate schema drift and freshness behavior.
 - [ ] R11: Deployment contract and preflight are ready; review draft PR #68, merge, choose the target, and verify smoke/rollback there.
 - [ ] R12: Refresh four stale production TableContext schemas only through per-query user approval.
 - [x] R13: Repair the Level 2 reference environment and replace Level 3 placeholders with 17 production contracts.
-- [x] R14 P0/P1 core: Standardize tool outputs, add dataset profiling and approval-gated source discovery, and implement bounded chart specification, multi-dataset join, and structured statistical tests.
+- [x] R14 P0/P1 core: Standardize tool outputs, add dataset profiling and approval-gated source discovery, and implement bounded chart specification, multi-dataset join, structured statistical tests, and direct outlier detection.
 
 Task definitions and acceptance conditions: docs/agent_remaining_tasks_2026-09-13.md. Prior completed work remains recorded in the dated entries above.
 
 ---
 
 ## Daily Wrap-ups
+
+### 2026-09-21 Daily Summary
+- **Work completed**: Added bounded `detect_outliers` to the production registry and agent recovery loop. It supports IQR, sample Z-score, MAD-based modified Z-score, and quantile thresholds with upper/lower/both tails, structured missingness and provenance, deterministic routing, fail-closed validation, and restart recovery.
+- **Evidence**: Unchanged `L2_036`, `L2_039`, and `L2_048` prompts passed independent reference values 3/3 with one structured tool call each, zero model calls, and zero remote executions. Application 123/123, migration 126/126, Level 3 17/17, and the full 217/217 reference runner passed. Independent grading coverage is 60/200.
+- **Remaining**: Expand 140 independent oracles; add lineage-safe outlier-row follow-up analysis, time-series preparation, and multi-panel charts; review/merge/deploy PR #68 and run selected-host capacity plus smoke/rollback gates. Four stale production TableContexts still require separate user-approved refreshes.
+- **Reports**: `docs/actual_agent_evaluation_outliers_2026-09-21.json`, `docs/agent_remaining_tasks_2026-09-13.md`, `docs/agent_tool_audit_2026-09-16.md`, `docs/agent_tool_contract_matrix_2026-09-18.md`.
 
 ### 2026-09-19 Daily Summary
 - **Work completed**: Added bounded multi-dataset joins and a structured statistical tool to the production graph. Statistical coverage includes Welch independent t, paired t, chi-square, one-way ANOVA, Mann–Whitney, and mean confidence intervals with sample/missingness, assumptions, effect sizes, applicable confidence intervals, deterministic recovery, and strict raw-grain validation.

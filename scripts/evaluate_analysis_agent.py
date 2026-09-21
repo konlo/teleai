@@ -277,6 +277,25 @@ def reference_oracle(spec, grading, frames):
             if not all(np.isfinite(value) for value in result.values()):
                 raise ValueError("Reference mean confidence interval is not finite")
             return result
+        if grading["kind"] == "outlier":
+            result = {}
+            for path, definition in grading["fields"].items():
+                value = namespace[definition["variable"]]
+                reduction = definition.get("reduction")
+                if reduction == "rows":
+                    value = len(value)
+                elif reduction == "row_percent":
+                    value = len(value) / len(namespace[definition["denominator"]]) * 100
+                elif reduction == "column_min":
+                    value = value[definition["column"]].min()
+                elif reduction == "column_max":
+                    value = value[definition["column"]].max()
+                elif reduction is not None:
+                    raise ValueError("Unsupported outlier oracle reduction")
+                if not np.isscalar(value) or not np.isfinite(float(value)):
+                    raise ValueError("Reference outlier metric is not finite")
+                result[path] = float(value)
+            return result
         if grading["kind"] == "category_counts":
             return _category_counts(namespace[grading["variable"]])
         raise ValueError("Unsupported grading kind")
@@ -634,6 +653,54 @@ def grade_evidence(runtime, outcome, spec, grading, oracle, fixture_id, capture)
         return (("PASS", "Structured statistical evidence matches the independent reference", details)
                 if grounded and correct else
                 ("FAIL", "Statistical evidence lacks complete provenance or differs from the reference", details))
+    if grading["kind"] == "outlier":
+        observations = []
+        for message in runtime.events():
+            if not isinstance(message, ToolMessage) or message.name != "detect_outliers":
+                continue
+            try:
+                observation = json.loads(message.content)
+                if observation.get("status") == "ready":
+                    observations.append(observation)
+            except (ValueError, TypeError, AttributeError):
+                continue
+        if not observations:
+            return "FAIL", "No structured outlier result; assistant prose is not evidence", {}
+        observation = observations[-1]
+        try:
+            dataset_id = observation["dataset_id"]
+            result = observation["outlier_result"]
+            info = runtime.datasets.metadata[dataset_id]
+            actual = {}
+            for path in grading["fields"]:
+                value = result
+                for part in path.split("."):
+                    value = value[part]
+                actual[path] = float(value)
+            grounded = (
+                info.source == spec["target_table"]
+                and info.coverage == "complete"
+                and info.predicate_known
+                and info.grain == "raw"
+                and _fixture_descendant(runtime, dataset_id, fixture_id)
+                and result.get("kind") == "outlier_detection"
+                and result.get("method") == grading["method"]
+                and result.get("tail") == grading["tail"]
+                and result.get("column") == grading["column"]
+                and result.get("sample", {}).get("input_rows") == info.rows
+                and result.get("sample", {}).get("valid_rows", 0)
+                    + result.get("sample", {}).get("missing_rows", -1) == info.rows
+                and result.get("boundary_policy")
+            )
+            correct = all(np.isclose(actual[path], expected, rtol=1e-10, atol=1e-12)
+                          for path, expected in oracle.items())
+            details = {"expected": oracle, "actual": actual, "dataset_id": dataset_id,
+                       "scope": observation.get("scope")}
+        except (KeyError, TypeError, ValueError):
+            return "FAIL", "Outlier result shape or type does not match the grading contract", {}
+        return (("PASS", "Structured outlier evidence matches the independent reference", details)
+                if grounded and correct else
+                ("FAIL", "Outlier evidence lacks complete provenance or differs from the reference", details))
     candidates = []
     for message in runtime.events():
         if isinstance(message, ToolMessage) and message.name == "local_analysis_sql":

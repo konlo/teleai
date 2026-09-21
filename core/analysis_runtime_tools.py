@@ -23,6 +23,7 @@ from core.analysis_sql import local_query, validate_query
 from utils.analysis_profile import profile_dataset as build_dataset_profile
 from utils.analysis_join import join_datasets as build_joined_dataset
 from utils.analysis_statistics import statistical_test as run_statistical_test
+from utils.analysis_outliers import detect_outliers as run_outlier_detection
 
 
 def build_analysis_tools(context: AnalysisToolContext) -> list[ToolDefinition]:
@@ -138,6 +139,19 @@ def build_analysis_tools(context: AnalysisToolContext) -> list[ToolDefinition]:
             group_column=group_column,
             paired_column=paired_column,
             alpha=alpha,
+        )
+
+    def detect_outliers(dataset_id, column, method, tail="both", threshold=1.5,
+                        lower_quantile=0.01, upper_quantile=0.99):
+        return run_outlier_detection(
+            datasets,
+            dataset_id,
+            column=column,
+            method=method,
+            tail=tail,
+            threshold=threshold,
+            lower_quantile=lower_quantile,
+            upper_quantile=upper_quantile,
         )
 
     def propose_query(source, query, reason):
@@ -410,6 +424,15 @@ def build_analysis_tools(context: AnalysisToolContext) -> list[ToolDefinition]:
               "paired_column": string,
               "alpha": {"type":"number","minimum":0.001,"maximum":0.2}},
              ["dataset_id","test","value_column"], statistical_test),
+        tool("detect_outliers", "로딩된 raw dataset의 수치 컬럼에서 IQR, Z-score, MAD 또는 분위수 기준 이상치를 탐지합니다. 원시 행을 반환하거나 새 dataset을 만들지 않고 기준선, 표본·결측, 상·하한 이상치 수와 비율, 범위를 구조화해 반환합니다.",
+             {"dataset_id": string,
+              "column": string,
+              "method": {"type":"string","enum":["iqr","zscore","mad","quantile"]},
+              "tail": {"type":"string","enum":["both","upper","lower"]},
+              "threshold": {"type":"number","minimum":0.1,"maximum":10},
+              "lower_quantile": {"type":"number","minimum":0,"maximum":1},
+              "upper_quantile": {"type":"number","minimum":0,"maximum":1}},
+             ["dataset_id","column","method"], detect_outliers),
         tool("propose_databricks_query", "Databricks 조회를 사용자에게 제안합니다. 이 도구는 실행하지 않습니다. 정확한 SQL과 이유를 표시하고 승인 대기합니다.",
              {"source": string, "query": string, "reason": string}, ["source", "query", "reason"], propose_query),
         tool("recommend_chart_images", "현재 데이터의 통계로 실제 이미지 후보를 만듭니다. 원격 조회 없음. 반환된 카드 ID의 이미지는 UI가 표시합니다.",

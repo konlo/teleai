@@ -36,6 +36,7 @@
 | `local_analysis_sql` | 완료 | 완료 | 원격 실행 없음 | 완료 | 완료 | 단일 `data`와 CTE, 외부 접근 차단 |
 | `join_datasets` | 완료 | 완료 | 원격 실행 없음 | 완료 | 완료 | key dtype·NULL·cardinality·행 증가 사전 검사, 양쪽 parent lineage 보존 |
 | `statistical_test` | 완료 | 완료 | 원격 실행 없음 | 완료 | 완료 | 6개 선언형 방법, raw grain·dtype·그룹 수·분산·범위 fail-closed |
+| `detect_outliers` | 완료 | 완료 | 원격 실행 없음 | 완료 | 완료 | IQR·Z-score·MAD·분위수, tail·임계값·raw grain·dtype·표본·변이 fail-closed |
 | `query_databricks` | 완료 | 완료 | 정확한 fingerprint별 HITL, 불명 제출 자동 재실행 금지 | 완료 | 완료 | 원격 연결이 있을 때만 등록 |
 
 `propose_databricks_query`는 registry 호환 정의에는 남아 있지만 production LangGraph에서는 등록하지 않는다. production은 `query_databricks`와 `HumanInTheLoopMiddleware`를 사용한다.
@@ -49,11 +50,12 @@
 - `render_chart_spec`은 임의 Python·파일·URL 없이 histogram/bar/line/scatter/boxplot을 실제 PNG로 만든다. `L1_077`, `L1_078`, `L1_086`의 데이터 digest·표시 범위·lineage가 독립 oracle과 일치했고 모델·원격 호출은 0회였다. 재시작 후 PNG 복구와 한국어 글꼴 선택도 검증했다.
 - `join_datasets`는 1,000행 고객과 5,000행 거래 fixture를 `customer_id`로 one-to-many inner join해 5,000행을 만들었다. 실제 값과 독립 pandas merge digest가 일치했고 모델·원격 호출은 0회였다. many-to-many·출력 한도·dtype 불일치는 새 dataset 생성 전에 차단하며, 명시적 key별 집계 후 안전한 재조인, outer join의 오른쪽 전용 key, 후속 집계와 재시작도 검증했다.
 - `statistical_test`는 독립·대응 t, 카이제곱, 일원 ANOVA, Mann–Whitney, 평균 CI의 표본 수·결측·가정·통계량·p-value·효과크기·CI를 구조화한다. 변경하지 않은 `L2_051`–`L2_060` 10문항이 독립 SciPy oracle와 값 단위로 일치했고 모델·원격 호출은 0회였다.
-- application tests 115/115, migration tests 126/126, Level 3 17/17, 전체 참고 runner 217/217, compileall과 `git diff --check`가 통과했다.
+- `detect_outliers`는 원시 행을 노출하거나 파생 dataset을 만들지 않고 IQR·Z-score·MAD·분위수 기준선, 결측, 상하한 건수·비율과 범위를 구조화한다. 변경하지 않은 `L2_036`, `L2_039`, `L2_048`이 독립 reference와 값 단위로 3/3 일치했고 모델·원격 호출은 0회였다.
+- application tests 123/123, migration tests 126/126, Level 3 17/17, 전체 참고 runner 217/217, compileall과 `git diff --check`가 통과했다.
 
 ## 남은 tool 공백
 
-P0의 공통 계약, dataset profile, 승인형 source discovery와 P1의 제한된 chart spec·다중 dataset join·구조화 통계 검정은 구현됐다. 범용 분석 범위를 넓히려면 다음을 별도 release candidate로 구현해야 한다.
+P0의 공통 계약, dataset profile, 승인형 source discovery와 P1의 제한된 chart spec·다중 dataset join·구조화 통계 검정·직접 이상치 탐지는 구현됐다. 범용 분석 범위를 넓히려면 다음을 별도 release candidate로 구현해야 한다.
 
-1. 이상치 탐지, 시계열 준비, 다중 패널 차트와 결과 내보내기 중 미채점 사용자 의도에 필요한 tool.
+1. 이상치 행의 후속 집계·변환, 시계열 준비, 다중 패널 차트와 결과 내보내기 중 미채점 사용자 의도에 필요한 tool.
 2. source discovery의 승인 완료·거절·재시작 전용 사용자 여정 확대. 현재 공통 `query_databricks` 계약은 검증됐지만 discovery 결과 전용 승인 후 실행 테스트는 실제 원격 없이 추가할 수 있다.

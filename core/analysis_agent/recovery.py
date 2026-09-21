@@ -106,6 +106,37 @@ class RecoveryMiddleware(AgentMiddleware):
                 statistical_kind = 'mean_ci'
             else:
                 statistical_kind = None
+            outlier_spec = None
+            if not chart:
+                if re.search(r'\bIQR\b|사분위\s*범위', text, re.I) and re.search(
+                        r'이상치|극단치|상한|하한|fence|기준선', text, re.I):
+                    match = re.search(r'(\d+(?:\.\d+)?)\s*\*?\s*IQR', text, re.I)
+                    outlier_spec = {'method':'iqr', 'threshold':float(match.group(1)) if match else 1.5}
+                elif re.search(r'Z[\s-]*Score|Z\s*점수|시그마|sigma', text, re.I) and re.search(
+                        r'이상치|극단치|초과|범위|점검', text, re.I):
+                    match = re.search(r'(?:Z[\s-]*Score|Z\s*점수).{0,12}?(\d+(?:\.\d+)?)|'
+                                      r'(\d+(?:\.\d+)?)\s*[- ]?시그마', text, re.I)
+                    value = next((group for group in match.groups() if group is not None), '3') if match else '3'
+                    outlier_spec = {'method':'zscore', 'threshold':float(value)}
+                elif re.search(r'\bMAD\b|중앙값\s*절대\s*편차', text, re.I) and re.search(
+                        r'이상치|극단치|초과|범위|점검', text, re.I):
+                    match = re.search(r'(?:MAD|수정\s*Z[\s-]*Score).{0,12}?(\d+(?:\.\d+)?)', text, re.I)
+                    outlier_spec = {'method':'mad', 'threshold':float(match.group(1)) if match else 3.5}
+                elif re.search(r'이상치|극단치', text, re.I):
+                    match = re.search(r'(상위|하위|양쪽|상하위)\s*(\d+(?:\.\d+)?)\s*%', text, re.I)
+                    if match and 0 < float(match.group(2)) < 50:
+                        fraction = float(match.group(2)) / 100
+                        outlier_spec = {'method':'quantile', 'threshold':1.5,
+                            'lower_quantile':fraction, 'upper_quantile':1-fraction}
+                if outlier_spec:
+                    if re.search(r'범위|양쪽|상하위|상·?하한|하한.*상한|상한.*하한|절대값|\|Z\|', text, re.I):
+                        outlier_spec['tail'] = 'both'
+                    elif re.search(r'하한|미만|낮은|하위', text, re.I):
+                        outlier_spec['tail'] = 'lower'
+                    elif re.search(r'상한|초과|높은|고액|상위|최장', text, re.I):
+                        outlier_spec['tail'] = 'upper'
+                    else:
+                        outlier_spec['tail'] = 'both'
             profile_kind = None
             if not chart and re.search(r'결측|누락|\b(?:null|missing|nan)\b', text, re.I):
                 profile_kind = 'missing'
@@ -171,6 +202,12 @@ class RecoveryMiddleware(AgentMiddleware):
             if re.search(r'비율|성공률|생존율|전환율|[가-힣A-Za-z]+[율률]|\b(?:ratio|rate|percentage|percent)\b',
                          objective_text, re.I): operations.append('RATIO')
             if count_request and 'COUNT' not in operations: operations.append('COUNT')
+            # A one-column detector cannot prove a request that profiles,
+            # compares, or aggregates other columns for the detected rows.
+            # Keep compound requests in the general agent loop until a
+            # lineage-safe derived-row tool exists.
+            if outlier_spec and (len(mentioned_columns) != 1 or 'RATIO' in operations):
+                outlier_spec = None
             if (join_requested and set(operations) <= {'COUNT'} and
                     re.search(r'조인\s*결과.*(?:행|열|컬럼)|(?:행|열|컬럼).*개수|결합된\s*컬럼', text, re.I)):
                 # join_datasets returns these structural counts as grounded
@@ -179,6 +216,8 @@ class RecoveryMiddleware(AgentMiddleware):
             if profile_kind:
                 calculation, operations = False, []
             if statistical_kind:
+                calculation, operations = False, []
+            if outlier_spec:
                 calculation, operations = False, []
             metadata_kind = None
             column_words = bool(re.search(r'컬럼|필드|\bcolumns?\b|\bfields?\b', text, re.I))
@@ -199,6 +238,7 @@ class RecoveryMiddleware(AgentMiddleware):
             current = dict(request_id=human.id, attempts=0, chart=chart, kind=kind,
                 join=join_requested, join_how=join_how,
                 statistical_kind=statistical_kind,
+                outlier_spec=outlier_spec,
                 calculation=calculation, operations=operations, metadata_kind=metadata_kind,
                 profile_kind=profile_kind, chart_spec_requested=chart_spec_requested,
                 data_load=data_load,
@@ -230,7 +270,7 @@ class RecoveryMiddleware(AgentMiddleware):
                 # The exact source and query are already bound to the approval
                 # envelope.  Natural-language scope extraction from the reason
                 # text would invent an analysis obligation.
-                current.update(chart=False,kind=None,join=False,join_how=None,statistical_kind=None,
+                current.update(chart=False,kind=None,join=False,join_how=None,statistical_kind=None,outlier_spec=None,
                     calculation=False,operations=[],metadata_kind=None,profile_kind=None,
                     chart_spec_requested=False,whole_row_count=False,current_result_only=False,fresh_source_required=False,
                     required_columns=[])
@@ -264,7 +304,7 @@ class RecoveryMiddleware(AgentMiddleware):
             # Upgrade an in-flight legacy checkpoint.  Its successful tool
             # observation may already be marked processed, so the loop below
             # is also allowed to reconsider that single observation.
-            current.update(data_load=True,chart=False,kind=None,join=False,join_how=None,statistical_kind=None,calculation=False,
+            current.update(data_load=True,chart=False,kind=None,join=False,join_how=None,statistical_kind=None,outlier_spec=None,calculation=False,
                 operations=[],metadata_kind=None,profile_kind=None,chart_spec_requested=False,whole_row_count=False,
                 current_result_only=False,fresh_source_required=False)
             current['scope']={'conditions':[],'any_conditions':[],
@@ -405,6 +445,30 @@ class RecoveryMiddleware(AgentMiddleware):
                              or (info.coverage == 'complete' and info.predicate_known))
                         and self._statistical_scope_valid(info, arguments, current)):
                     current['statistical_evidence'] = observation
+                    current['failed'].pop(name, None)
+            if name == 'detect_outliers' and observation.get('status') == 'ready':
+                dataset_id = arguments.get('dataset_id') or observation.get('dataset_id')
+                info = self.context.datasets.metadata.get(dataset_id) if self.context and dataset_id else None
+                result = observation.get('outlier_result', {})
+                spec = current.get('outlier_spec') or {}
+                if (info is not None
+                        and dataset_id == observation.get('dataset_id')
+                        and result.get('kind') == 'outlier_detection'
+                        and result.get('method') == arguments.get('method') == spec.get('method')
+                        and result.get('tail') == arguments.get('tail') == spec.get('tail')
+                        and (result.get('method') == 'quantile'
+                             and arguments.get('lower_quantile') == spec.get('lower_quantile')
+                             and arguments.get('upper_quantile') == spec.get('upper_quantile')
+                             or result.get('method') != 'quantile'
+                             and arguments.get('threshold') == spec.get('threshold'))
+                        and set(current.get('required_columns', [])) == {result.get('column')}
+                        and not current.get('calculation')
+                        and self._source_matches(info, current)
+                        and self._fresh_for_request(info, current)
+                        and (current.get('current_result_only')
+                             or (info.coverage == 'complete' and info.predicate_known))
+                        and self._scope_valid(info, current)):
+                    current['outlier_evidence'] = observation
                     current['failed'].pop(name, None)
             if name in {'local_analysis_sql', 'query_databricks'} and observation.get('status') == 'ready':
                 dataset_id = observation.get('dataset', {}).get('id')
@@ -617,6 +681,7 @@ class RecoveryMiddleware(AgentMiddleware):
         if current.get('data_load'): return bool(current.get('load_evidence_id'))
         if current.get('join') and not current.get('join_evidence'): return False
         if current.get('statistical_kind') and not current.get('statistical_evidence'): return False
+        if current.get('outlier_spec') and not current.get('outlier_evidence'): return False
         if current.get('metadata_kind') and not current.get('metadata_evidence'): return False
         if current.get('profile_kind') and not current.get('profile_evidence'): return False
         if current.get('chart') and not current['artifact_ids']: return False
@@ -720,6 +785,23 @@ class RecoveryMiddleware(AgentMiddleware):
                 line += "\n관측치 독립성은 데이터만으로 검증할 수 없습니다."
             line += f"\n분석 범위: {evidence.get('scope')}"
             parts.append(line)
+        if current.get('outlier_evidence'):
+            evidence = current['outlier_evidence']
+            result = evidence['outlier_result']
+            sample, counts = result['sample'], result['counts']
+            thresholds, distribution = result['thresholds'], result['distribution']
+            line = (
+                f"{result['column']}에 {result['method']} {result['tail']} 기준을 적용했습니다. "
+                f"유효값 {sample['valid_rows']:,}개, 결측 제외 {sample['missing_rows']:,}개.\n"
+                f"하한 {thresholds['lower']}, 상한 {thresholds['upper']}; "
+                f"선택된 이상치 {counts['selected']:,}개 ({counts['selected_percent']:.2f}%).\n"
+                f"전체 유효값 범위: {distribution['minimum']} ~ {distribution['maximum']}; "
+                f"하한 미만 {counts['lower']:,}개, 상한 초과 {counts['upper']:,}개."
+            )
+            if result.get('warnings'):
+                line += "\n주의: " + " ".join(result['warnings'])
+            line += f"\n분석 범위: {evidence.get('scope')}"
+            parts.append(line)
         for card_id in current.get('artifact_ids', []):
             card = self.artifacts[card_id]
             parts.append(f'{card.title} 이미지를 생성했습니다.\n분석 범위: {card.scope}')
@@ -783,6 +865,31 @@ class RecoveryMiddleware(AgentMiddleware):
         return {'recovery': current, 'messages': [message]}
 
     def _next_local(self, current, calls):
+        if (self.context and current.get('outlier_spec')
+                and not current.get('outlier_evidence') and not self._has_scope(current)):
+            required = list(current.get('required_columns', []))
+            candidates = [info for info in self.context.datasets.metadata.values()
+                if info.grain == 'raw' and not info.aggregation
+                and len(required) == 1 and required[0] in info.columns
+                and self._source_matches(info, current)
+                and self._fresh_for_request(info, current)
+                and (current.get('current_result_only')
+                    or (info.coverage == 'complete' and info.predicate_known))]
+            if len(candidates) == 1:
+                info = candidates[0]
+                frame = self.context.datasets.frames[info.id]
+                from pandas.api.types import is_numeric_dtype
+                if is_numeric_dtype(frame[required[0]]):
+                    spec = current['outlier_spec']
+                    arguments = {'dataset_id':info.id, 'column':required[0],
+                                 'method':spec['method'], 'tail':spec['tail'],
+                                 'threshold':spec['threshold']}
+                    if spec['method'] == 'quantile':
+                        arguments.update(lower_quantile=spec['lower_quantile'],
+                                         upper_quantile=spec['upper_quantile'])
+                    if not any(c.get('name') == 'detect_outliers' and c.get('args') == arguments
+                               for c in calls.values()):
+                        return {'name':'detect_outliers', 'args':arguments}
         if (self.context and current.get('statistical_kind')
                 and not current.get('statistical_evidence')):
             required = list(current.get('required_columns', []))
@@ -1186,7 +1293,7 @@ class RecoveryMiddleware(AgentMiddleware):
 
     def before_step(self, state):
         current, calls = self._state(state)
-        if (current.get('data_load') or current.get('plan') or current.get('join') or current.get('statistical_kind') or current.get('chart') or current.get('calculation') or current.get('metadata_kind') or current.get('profile_kind')) and self._complete(current):
+        if (current.get('data_load') or current.get('plan') or current.get('join') or current.get('statistical_kind') or current.get('outlier_spec') or current.get('chart') or current.get('calculation') or current.get('metadata_kind') or current.get('profile_kind')) and self._complete(current):
             return {**self._finish(current), 'jump_to': 'end'}
         reason = self._limit_reason(current)
         if reason: return {**self._finish(current, reason=reason), 'jump_to': 'end'}
@@ -1255,6 +1362,9 @@ class RecoveryMiddleware(AgentMiddleware):
         if call.get('name') == 'statistical_test' and self.context:
             info = self.context.datasets.metadata.get(arguments.get('dataset_id'))
             return True if info is None else self._statistical_scope_valid(info, arguments, current)
+        if call.get('name') == 'detect_outliers' and self.context:
+            info = self.context.datasets.metadata.get(arguments.get('dataset_id'))
+            return True if info is None else self._scope_valid(info, current)
         if call.get('name') == 'join_datasets' and self.context:
             if current.get('scope', {}).get('any_conditions'):
                 return False
@@ -1313,6 +1423,12 @@ class RecoveryMiddleware(AgentMiddleware):
             if call['name'] in {'recommend_chart_images', 'render_chart_spec', 'render_histogram', 'show_chart'}: current['chart'] = True
             if call['name'] == 'join_datasets': current['join'] = True
             if call['name'] == 'statistical_test': current['statistical_kind'] = call.get('args', {}).get('test')
+            if (call['name'] == 'detect_outliers' and not current.get('outlier_spec')
+                    and not current.get('calculation')
+                    and len(current.get('required_columns', [])) == 1):
+                current['outlier_spec'] = {key:call.get('args', {}).get(key)
+                                           for key in ('method', 'tail', 'threshold',
+                                                       'lower_quantile', 'upper_quantile')}
         remote_block = current.get('remote_rejected') or any(o.get('status') == 'unavailable' for o in current['failed'].values())
         if self._complete(current) and (current.get('plan') or not last.tool_calls):
             return self._finish(current, last)
@@ -1344,11 +1460,13 @@ class RecoveryMiddleware(AgentMiddleware):
             missing_chart=bool(current.get('chart') and not current['artifact_ids']),
             missing_calculation=bool(current.get('calculation') and not current['evidence_ids']),
             missing_join=bool(current.get('join') and not current.get('join_evidence')),
-            missing_statistical_test=bool(current.get('statistical_kind') and not current.get('statistical_evidence')))
+            missing_statistical_test=bool(current.get('statistical_kind') and not current.get('statistical_evidence')),
+            missing_outlier_detection=bool(current.get('outlier_spec') and not current.get('outlier_evidence')))
         instruction = ('이전 응답은 완료 증거가 없어 채택되지 않았습니다. 원래 사용자 요청을 계속 수행하세요. '
             '수치/통계는 local_analysis_sql의 실제 계산 결과가 필요하고 결측·고유값·기초 통계는 profile_dataset의 구조화 결과가 필요합니다. 테이블 설명이나 미리보기는 계산 증거가 아닙니다. '
             '두 로딩 dataset의 결합은 join_datasets로 cardinality와 lineage를 확인해야 합니다. many-to-many 차단을 우회하지 말고 먼저 한쪽 grain을 명확히 하세요. '
             '가설 검정과 평균 신뢰구간은 statistical_test의 구조화 결과가 완료 증거입니다. 표본 수·결측·가정·효과크기·신뢰구간을 확인하세요. '
+            '이상치 기준과 건수는 detect_outliers의 구조화 결과가 완료 증거입니다. IQR·Z-score·MAD·분위수 기준, tail, 결측과 coverage를 확인하세요. '
             '요청한 출처, 컬럼, 집계와 필터를 유지하세요. 지정 차트와 수정은 render_chart_spec을 사용하고, 원격 데이터가 필요한 히스토그램은 prepare_histogram(source, column, where_sql)을 사용하세요. '
             '이 도구는 먼저 재사용 가능한 보유 데이터를 찾고, 부족한 경우에만 승인형 로딩과 렌더링 계획을 만듭니다. '
             'query_databricks 호출이 승인 카드를 생성하며 실제 조회는 사용자 승인을 기다립니다. '
