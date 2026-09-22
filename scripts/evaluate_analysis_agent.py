@@ -321,6 +321,28 @@ def reference_oracle(spec, grading, frames):
                     raise ValueError("Reference outlier metric is not finite")
                 result[path] = float(value)
             return result
+        if grading["kind"] == "outlier_cohort_scalar_set":
+            selected = namespace[grading["selection_variable"]]
+            if not isinstance(selected, pd.DataFrame) or selected.empty:
+                raise ValueError("Reference outlier cohort must be a non-empty DataFrame")
+            values = {}
+            for result_column, definition in grading["variables"].items():
+                value = namespace[definition["variable"]]
+                reduction = definition.get("reduction")
+                if reduction == "rows":
+                    value = len(value)
+                elif reduction == "column_mean_percent":
+                    value = value[definition["column"]].mean() * 100
+                else:
+                    raise ValueError("Unsupported outlier cohort reduction")
+                if not np.isscalar(value) or not np.isfinite(float(value)):
+                    raise ValueError("Reference outlier cohort metric is not finite")
+                values[result_column] = float(value)
+            threshold = namespace[grading["threshold_variable"]]
+            if not np.isscalar(threshold) or not np.isfinite(float(threshold)):
+                raise ValueError("Reference outlier threshold is not finite")
+            return {"data_sha256": _frame_digest(selected), "rows": len(selected),
+                    "threshold": float(threshold), "values": values}
         if grading["kind"] == "category_counts":
             return _category_counts(namespace[grading["variable"]])
         raise ValueError("Unsupported grading kind")
@@ -685,6 +707,73 @@ def grade_evidence(runtime, outcome, spec, grading, oracle, fixture_id, capture)
         return (("PASS", "Structured statistical evidence matches the independent reference", details)
                 if grounded and correct else
                 ("FAIL", "Statistical evidence lacks complete provenance or differs from the reference", details))
+    if grading["kind"] == "outlier_cohort_scalar_set":
+        selections, calculations = [], []
+        for message in runtime.events():
+            if not isinstance(message, ToolMessage):
+                continue
+            try:
+                observation = json.loads(message.content)
+            except (ValueError, TypeError, AttributeError):
+                continue
+            if observation.get("status") != "ready":
+                continue
+            if message.name == "select_outlier_rows":
+                selections.append(observation)
+            elif message.name == "local_analysis_sql":
+                calculations.append(observation)
+        if not selections or not calculations:
+            return "FAIL", "Outlier cohort selection and follow-up calculation evidence are both required", {}
+        selection, calculation = selections[-1], calculations[-1]
+        try:
+            child_id = selection["dataset"]["id"]
+            result_id = calculation["dataset"]["id"]
+            child = runtime.datasets.metadata[child_id]
+            result_info = runtime.datasets.metadata[result_id]
+            result = selection["outlier_result"]
+            summary = selection["selection_summary"]
+            frame = runtime.datasets.frames[result_id]
+            selected_frame = runtime.datasets.frames[child_id]
+            actual = {column: float(frame.iloc[0][column]) for column in grading["variables"]}
+            grounded = (
+                child.source == spec["target_table"]
+                and child.coverage == "complete" and not child.predicate_known
+                and child.grain == "raw" and not child.aggregation
+                and child.parent_id == fixture_id
+                and _fixture_descendant(runtime, child_id, fixture_id)
+                and result_info.parent_id == child_id
+                and result_info.source == child.source
+                and result_info.snapshot == child.snapshot
+                and result_info.coverage == "complete"
+                and _computed_projection(result_info.query)
+                and result.get("kind") == "outlier_detection"
+                and result.get("method") == grading["method"]
+                and result.get("tail") == grading["tail"]
+                and result.get("column") == grading["column"]
+                and summary.get("selection") == grading["selection"]
+                and summary.get("parent_dataset_id") == fixture_id
+                and summary.get("selected_rows") == child.rows == oracle["rows"]
+                and summary.get("data_sha256") == oracle["data_sha256"]
+                and _frame_digest(selected_frame) == oracle["data_sha256"]
+                and result.get("sample", {}).get("input_rows")
+                    == runtime.datasets.metadata[fixture_id].rows
+                and not selection.get("preview")
+            )
+            correct = (
+                frame.shape[0] == 1
+                and np.isclose(float(result["thresholds"]["upper"]), oracle["threshold"],
+                               rtol=1e-10, atol=1e-12)
+                and all(np.isclose(actual[column], expected, rtol=1e-10, atol=1e-12)
+                        for column, expected in oracle["values"].items())
+            )
+            details = {"expected": oracle, "actual": actual,
+                       "cohort_dataset_id": child_id, "result_dataset_id": result_id,
+                       "scope": selection.get("scope")}
+        except (KeyError, TypeError, ValueError, IndexError):
+            return "FAIL", "Outlier cohort evidence shape or type does not match the grading contract", {}
+        return (("PASS", "Lineage-safe outlier cohort and follow-up metrics match the independent reference", details)
+                if grounded and correct else
+                ("FAIL", "Outlier cohort lineage or follow-up metrics differ from the reference", details))
     if grading["kind"] == "outlier":
         observations = []
         for message in runtime.events():

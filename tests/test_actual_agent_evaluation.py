@@ -119,7 +119,7 @@ class ActualAgentEvaluationTests(unittest.TestCase):
         self.assertEqual(result["evidence"]["counterfactual_probes"], 2)
 
     def test_every_declared_reference_oracle_is_executable_without_a_model(self):
-        self.assertEqual(len(self.grading), 63)
+        self.assertEqual(len(self.grading), 64)
         self.assertTrue(set(self.grading).issubset(self.specs))
         for case, grading in self.grading.items():
             with self.subTest(case=case):
@@ -154,6 +154,14 @@ class ActualAgentEvaluationTests(unittest.TestCase):
             result = self.evaluate(
                 "L2_036", EvaluationModel(answer="IQR과 이상치 수를 계산했습니다."))
         self.assertIn(result["status"], {"FAIL", "NOT_COMPLETE"}, result)
+
+    def test_outlier_cohort_followup_uses_lineage_and_matches_reference(self):
+        result = self.evaluate("L2_040", EvaluationModel())
+        self.assertEqual(result["status"], "PASS", result)
+        self.assertEqual(result["tools"], {
+            "select_outlier_rows": 1, "local_analysis_sql": 1})
+        self.assertEqual(result["runtime_metadata"]["recovery_model_calls"], 0)
+        self.assertEqual(result["remote_executions"], 0)
 
     def test_grouped_boxplot_cases_use_real_png_and_exact_grouped_data(self):
         for case in ("L2_042", "L2_045", "L2_050"):

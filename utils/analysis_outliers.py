@@ -1,6 +1,9 @@
 """Bounded, table-neutral outlier detection for loaded analysis datasets."""
 from __future__ import annotations
 
+from dataclasses import asdict
+from hashlib import sha256
+import json
 from typing import Any
 
 import numpy as np
@@ -19,6 +22,14 @@ def _number(value: Any) -> int | float | None:
     if not np.isfinite(result):
         return None
     return int(result) if result.is_integer() else result
+
+
+def dataset_digest(frame: pd.DataFrame) -> str:
+    """Return the stable digest used to bind a materialized cohort to evidence."""
+    normalized = frame.reset_index(drop=True)
+    encoded_columns = json.dumps(list(normalized.columns), ensure_ascii=False).encode()
+    hashed = pd.util.hash_pandas_object(normalized, index=False).values.tobytes()
+    return sha256(encoded_columns + hashed).hexdigest()
 
 
 def detect_outliers(
@@ -150,5 +161,102 @@ def detect_outliers(
             f"{info.source}의 로딩된 raw dataset {len(frame):,}행 중 유효값 {valid_rows:,}개에 "
             f"{method}/{tail} 기준을 적용했습니다. coverage={info.coverage}; "
             f"snapshot={info.snapshot or 'unknown'}."
+        ),
+    }
+
+
+def select_outlier_rows(
+    store: DatasetStore,
+    dataset_id: str,
+    *,
+    column: str,
+    method: str,
+    selection: str = "outliers",
+    tail: str = "both",
+    threshold: float = 1.5,
+    lower_quantile: float = 0.01,
+    upper_quantile: float = 0.99,
+) -> dict[str, Any]:
+    """Materialize a bounded outlier cohort while preserving parent lineage.
+
+    The rows stay in the dataset store. Only counts, thresholds and a digest are
+    returned to the model, so a follow-up calculation can use the cohort without
+    exposing raw records in the tool observation.
+    """
+    if selection not in {"outliers", "inliers"}:
+        raise ValueError("selection은 outliers 또는 inliers여야 합니다.")
+    detected = detect_outliers(
+        store,
+        dataset_id,
+        column=column,
+        method=method,
+        tail=tail,
+        threshold=threshold,
+        lower_quantile=lower_quantile,
+        upper_quantile=upper_quantile,
+    )
+    result = detected["outlier_result"]
+    info = store.metadata[dataset_id]
+    frame = store.frames[dataset_id]
+    values = pd.to_numeric(frame[column], errors="coerce")
+    valid = values.notna() & np.isfinite(values)
+    lower, upper = result["thresholds"]["lower"], result["thresholds"]["upper"]
+    lower_mask = valid & values.lt(float(lower))
+    upper_mask = valid & values.gt(float(upper))
+    outlier_mask = (lower_mask | upper_mask if tail == "both"
+                    else upper_mask if tail == "upper" else lower_mask)
+    selected_mask = outlier_mask if selection == "outliers" else valid & ~outlier_mask
+    selected = frame.loc[selected_mask].copy()
+    if selected.empty:
+        return {
+            "status": "needs_data",
+            "dataset_id": dataset_id,
+            "outlier_result": result,
+            "message": "선택 기준에 해당하는 행이 없어 후속 분석 dataset을 만들지 않았습니다.",
+            "scope": detected["scope"],
+        }
+
+    quoted = '"' + column.replace('"', '""') + '"'
+    lower_sql, upper_sql = repr(float(lower)), repr(float(upper))
+    if tail == "upper":
+        predicate = f"{quoted} > {upper_sql}" if selection == "outliers" else f"{quoted} <= {upper_sql}"
+    elif tail == "lower":
+        predicate = f"{quoted} < {lower_sql}" if selection == "outliers" else f"{quoted} >= {lower_sql}"
+    else:
+        predicate = (f"({quoted} < {lower_sql} OR {quoted} > {upper_sql})"
+                     if selection == "outliers" else
+                     f"({quoted} >= {lower_sql} AND {quoted} <= {upper_sql})")
+    query = f"SELECT * FROM data WHERE isfinite({quoted}) AND {predicate}"
+    derived = store.register(
+        selected,
+        source=info.source,
+        coverage=info.coverage,
+        # The reuse engine represents conjunctions only and cannot safely
+        # express every outlier selection (especially two-tailed OR or finite
+        # filtering). Keep the exact query but prevent later whole-source reuse.
+        predicate_known=False,
+        conditions=info.conditions,
+        grain="raw",
+        aggregation="",
+        snapshot=info.snapshot,
+        query=query,
+        parent_id=dataset_id,
+    )
+    selection_summary = {
+        "selection": selection,
+        "selected_rows": len(selected),
+        "parent_rows": len(frame),
+        "data_sha256": dataset_digest(selected),
+        "predicate": predicate,
+        "parent_dataset_id": dataset_id,
+    }
+    return {
+        "status": "ready",
+        "dataset": asdict(derived),
+        "outlier_result": result,
+        "selection_summary": selection_summary,
+        "scope": (
+            f"{detected['scope']} {selection} 기준 {len(selected):,}행을 부모 {dataset_id}에서 "
+            f"파생 dataset {derived.id}로 저장했습니다."
         ),
     }

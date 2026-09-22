@@ -1,14 +1,14 @@
 # Project Progress Log
 
 ## Current Status
-- **Last Updated**: 2026-09-21
+- **Last Updated**: 2026-09-22
 - **Status**: In Progress — 배포 preflight까지 검증한 1인용 제한 출시 후보
-- **Summary**: 공통 tool 결과 계약, bounded profile·chart·multi-dataset join·구조화 통계 검정·직접 이상치 탐지와 승인형 source discovery를 production graph에 연결했다. 그룹 박스플롯까지 포함해 application 126/126, migration 126/126, Level 3 17/17, 전체 참고 runner 217/217 PASS다. 실제 agent 독립 채점은 63/200이며 그룹 박스플롯 3개도 실제 PNG·입력 digest 기준 PASS했다. 원격 실행은 0회다.
-- **Next Session Focus**: 배포 대상·실제 호스트 gate·smoke/rollback → 남은 137문항 oracle와 이상치 행 후속 분석·시계열·다중 패널 범위.
+- **Summary**: 공통 tool 결과 계약, bounded profile·chart·multi-dataset join·구조화 통계 검정·직접 이상치 탐지와 계보가 있는 이상치 cohort 후속 계산을 production graph에 연결했다. application 128/128, migration 126/126, Level 3 17/17, 전체 참고 runner 217/217 PASS다. 실제 agent 독립 채점은 64/200이며 `L2_040`은 모델·원격 호출 없이 기준 이상치 81명과 생존율 70.37%를 독립 reference와 일치시켰다.
+- **Next Session Focus**: 배포 대상·실제 호스트 gate·smoke/rollback → 남은 136문항 oracle와 시계열·다중 패널·이상치 cohort 그룹 집계 범위.
 
 ## Next Action Items
 - [x] 제품 승인 카드에서 사용자가 승인한 실제 Databricks 조회 → 저장 → 분석 → 후속 질문을 검증했다.
-- [ ] 남은 137문항의 독립 oracle과 고급 분석 도구 범위를 우선순위별로 확대한다.
+- [ ] 남은 136문항의 독립 oracle과 고급 분석 도구 범위를 우선순위별로 확대한다.
 - [ ] 로컬 단일·동시 용량 gate와 RSS 기준은 완료했다. 실제 배포 호스트와 Ollama 동시 추론으로 기준을 보정한다.
 - [x] 현재 변경을 `agentic-analysis-rc4-2026-09-15` release candidate로 커밋·push하고 원격 release gate 성공 후 tag로 고정했다.
 - [x] 컬럼 metadata 복구를 `agentic-analysis-rc5-2026-09-15`로 고정했다. GitHub Actions run `34978831986`이 성공했다.
@@ -22,7 +22,26 @@
 - [x] bounded `join_datasets`로 cardinality·NULL·출력 규모·양쪽 parent lineage와 후속 집계·재시작을 검증했다.
 - [x] `statistical_test`로 독립·대응 t, 카이제곱, 일원 ANOVA, Mann–Whitney, 평균 CI의 구조화 근거와 fail-closed 계약을 검증했다.
 - [x] `detect_outliers`로 IQR·Z-score·MAD·분위수 기준과 tail·결측·건수·비율의 구조화 근거와 fail-closed 계약을 검증했다.
+- [x] `select_outlier_rows`로 이상치 cohort의 parent·snapshot·predicate·행 수·digest를 보존하고 해당 child dataset의 후속 count·ratio 계산과 재시작 복구를 검증했다.
 - [x] 수치값+범주의 그룹 박스플롯을 실제 PNG·입력 digest로 검증하고 전체 범주 라벨과 부분 필터를 구별했다.
+
+---
+
+## [2026-09-21 22:24:49 KST] [Agent: Codex] User Request: 남은 작업 진행
+- **Request**: 남아 있는 자율 작업을 다음 우선순위부터 계속 수행한다.
+- **Action**: 직접 이상치 탐지 다음 단계로, 이상치 또는 정상 행을 lineage가 있는 파생 dataset으로 선택하고 후속 성공률·평균·그룹 집계를 수행할 수 있는 bounded tool과 recovery 경로를 구현한다.
+- **Safety**: 보유 raw DataFrame과 로컬 fixture만 사용한다. 원시 행은 모델 응답에 노출하지 않고, Databricks 조회·schema refresh·배포 변경은 실행하지 않는다.
+- **Acceptance**: 선택 기준·부모 dataset·snapshot·행 수·데이터 digest를 보존하고, 후속 계산은 해당 파생 dataset에만 실행한다. 변경하지 않은 Level 2 복합 이상치 원문과 독립 oracle, 전체 회귀, 원격 실행 0회를 확인한다.
+- **Implementation**: `select_outlier_rows`를 공통 registry와 recovery loop에 연결했다. 원시 행은 tool observation에 포함하지 않고 outlier/inlier child dataset의 parent, snapshot, predicate, 행 수와 SHA-256 digest를 영속화한다. 복합 요청은 해당 child에 `current_result_only=true`인 후속 SQL만 실행한다.
+- **Evaluation**: 변경하지 않은 `L2_040`에서 IQR 상한 `$84.77`, 고액 요금 이상치 81명, 생존율 70.37%가 독립 reference와 일치했다. `select_outlier_rows`와 `local_analysis_sql` 각 1회, 모델 0회, 원격 0회였다.
+- **Validation**: application 128/128, migration 126/126, Level 3 17/17, 전체 참고 runner 217/217, compileall과 `git diff --check` PASS. 재시작 후 cohort와 후속 결과의 두 단계 lineage가 모두 복원됐다.
+- **Artifact**: `docs/actual_agent_evaluation_outlier_cohorts_2026-09-22.json`.
+- **Outcome**: scalar 이상치 cohort 후속 분석 공백을 해소했다. 독립 채점은 64/200이며 남은 136문항, 시계열, 다중 패널, cohort 그룹 집계·변환은 계속 미검증 범위다.
+
+## [2026-09-22 09:00:20 KST] [Agent: Codex] User Request: 계속 진행
+- **Request**: 진행 중인 이상치 cohort 후속 분석 작업을 중단하지 말고 평가·전체 회귀·문서화까지 완료한다.
+- **Action**: 운영 reference 문맥에서 `생존율`을 `Survived`로 해석하고, 이상치 승객 수와 생존율을 하나의 계보 체인으로 검증했다. 남은 작업 목록과 tool audit·contract matrix를 최신 증거로 갱신한다.
+- **Safety**: 로컬 fixture만 사용했으며 Databricks 조회, schema refresh, 배포 변경은 실행하지 않았다.
 
 ---
 
@@ -292,10 +311,10 @@
 - **Diagnosis correction**: 체크포인트에 도구 호출 인자는 보존됨. 실제 결함은 summarization HumanMessage를 사용자 요청으로 오인하여 필수 컬럼과 재시도 예산을 재설정하는 것. 이전 인자 유실 가설은 기각.
 
 ## Current Status
-- **Last Updated**: 2026-09-21
+- **Last Updated**: 2026-09-22
 - **Status**: Limited-scope Release Candidate Validation
-- **Summary**: R14의 공통 tool 결과 계약, dataset profile, 승인형 source discovery, 제한된 chart spec, bounded multi-dataset join, 구조화 statistical test와 직접 outlier detection을 완료했다. 그룹 박스플롯까지 포함한 전체 회귀 application 126 + migration 126 = 252/252, 참고 코드 217/217, agentic recovery 17/17 PASS다. 실제 agent 독립 채점은 63/200이므로 전체 기능 출시는 계속 NO-GO다.
-- **Next Session Focus**: 배포 대상·실제 호스트 검증 → 남은 137문항 oracle와 이상치 행 후속 분석·시계열·다중 패널 범위. Canonical list: docs/agent_remaining_tasks_2026-09-13.md.
+- **Summary**: R14의 공통 tool 결과 계약, dataset profile, 승인형 source discovery, 제한된 chart spec, bounded multi-dataset join, 구조화 statistical test, 직접 outlier detection과 bounded cohort 후속 계산을 완료했다. 전체 회귀 application 128 + migration 126 = 254/254, 참고 코드 217/217, agentic recovery 17/17 PASS다. 실제 agent 독립 채점은 64/200이므로 전체 기능 출시는 계속 NO-GO다.
+- **Next Session Focus**: 배포 대상·실제 호스트 검증 → 남은 136문항 oracle와 시계열·다중 패널·이상치 cohort 그룹 집계 범위. Canonical list: docs/agent_remaining_tasks_2026-09-13.md.
 
 ## Next Action Items (Pending tasks for the next session)
 - [x] R01: Connect grounded request scope to calculation/chart/recovery and reject wrong or unresolved scope.
@@ -304,8 +323,8 @@
 - [x] R04: Restart the server with the 205/205-tested code and verify the visible app.
 - [ ] R05: Local p95/RSS capacity gate is READY; recalibrate it on the selected deployment host and measure concurrent Ollama inference.
 - [x] R06: Validate 750,000-row storage, cache eviction, restart/crash recovery and retained PNG.
-- [ ] R07: Expand independent actual-agent grading beyond 63/200 supported cases.
-- [ ] R08: Bounded join, grouped boxplots, structured statistical tests, and direct outlier detection are complete; implement outlier-row follow-up, time-series, and multi-panel scope as prioritized.
+- [ ] R07: Expand independent actual-agent grading beyond 64/200 supported cases.
+- [ ] R08: Bounded join, grouped boxplots, structured statistical tests, direct outlier detection, and scalar cohort follow-up are complete; implement time-series, multi-panel, and cohort group/transform scope as prioritized.
 - [x] R09: Approved live Databricks load/reuse validated and release candidate tag fixed.
 - [x] R10: Remove production dependencies on fixed table/schema facts and validate schema drift and freshness behavior.
 - [ ] R11: Deployment contract and preflight are ready; review draft PR #68, merge, choose the target, and verify smoke/rollback there.
@@ -318,6 +337,12 @@ Task definitions and acceptance conditions: docs/agent_remaining_tasks_2026-09-1
 ---
 
 ## Daily Wrap-ups
+
+### 2026-09-22 Daily Summary
+- **Work completed**: Added bounded `select_outlier_rows` and deterministic recovery for outlier/inlier cohort creation followed by calculations on the exact child dataset. Parent ID, snapshot, predicate, selected row count, and data digest persist without returning raw rows to the model.
+- **Evidence**: Unchanged `L2_040` produced the independent IQR upper fence 84.7725, 81 high-fare passengers, and 70.37037% survival using one cohort tool plus one local calculation, zero model calls, and zero remote executions. The lineage survived runtime restart. Application 128/128, migration 126/126, Level 3 17/17, full runner 217/217, compileall, and diff checks passed. Independent grading coverage is 64/200.
+- **Remaining**: Expand 136 independent oracles; add time-series preparation, multi-panel/dual-axis charts, and outlier cohort group/transform analysis; review/merge/deploy PR #68 and run selected-host capacity plus smoke/rollback gates. Four stale production TableContexts still require separate user-approved refreshes.
+- **Reports**: `docs/actual_agent_evaluation_outlier_cohorts_2026-09-22.json`, `docs/agent_remaining_tasks_2026-09-13.md`, `docs/agent_tool_audit_2026-09-16.md`, `docs/agent_tool_contract_matrix_2026-09-18.md`.
 
 ### 2026-09-21 Daily Summary
 - **Work completed**: Added bounded `detect_outliers` with IQR, sample Z-score, MAD, and quantile methods, then extended `render_chart_spec` and deterministic recovery for one-numeric/one-category grouped boxplots with exact group-scope validation.

@@ -145,7 +145,7 @@ class RecoveryMiddleware(AgentMiddleware):
             elif not chart and re.search(r'기초\s*통계|요약\s*통계|데이터\s*프로파일|\b(?:describe|profile)\b', text, re.I):
                 profile_kind = 'summary'
             count_request = not chart and not profile_kind and bool(re.search(
-                r'건수|인원\s*수|명수|빈도|결측|고유값|(?:사람|고객|신청자|가입자|사용자|행)[\'\"]*(?:들)?(?:의)?\s*수',
+                r'건수|인원\s*수|명수|빈도|결측|고유값|(?:사람|고객|승객|신청자|가입자|사용자|행)[\'\"]*(?:들)?(?:의)?\s*수',
                 text))
             calculation = bool(re.search(
                 r'평균|중앙값|합계|총합|최솟값|최댓값|최소값|최대값|표준편차|상관|비율|성공률|개수|몇\s*(?:명|개|건)|계산|통계|'
@@ -202,12 +202,19 @@ class RecoveryMiddleware(AgentMiddleware):
             if re.search(r'비율|성공률|생존율|전환율|[가-힣A-Za-z]+[율률]|\b(?:ratio|rate|percentage|percent)\b',
                          objective_text, re.I): operations.append('RATIO')
             if count_request and 'COUNT' not in operations: operations.append('COUNT')
-            # A one-column detector cannot prove a request that profiles,
-            # compares, or aggregates other columns for the detected rows.
-            # Keep compound requests in the general agent loop until a
-            # lineage-safe derived-row tool exists.
-            if outlier_spec and (len(mentioned_columns) != 1 or 'RATIO' in operations):
+            # A compound request first materializes a lineage-safe cohort, then
+            # computes against that exact child dataset.  The first mentioned
+            # column is the detector column because the prompt introduces the
+            # outlier criterion before its follow-up metric.
+            if outlier_spec and not mentioned_columns:
                 outlier_spec = None
+            outlier_column = mentioned_columns[0] if outlier_spec else None
+            outlier_followup = bool(outlier_spec and (
+                len(mentioned_columns) > 1 or 'RATIO' in operations))
+            outlier_selection = (
+                'inliers' if outlier_followup and re.search(
+                    r'이상치.{0,12}(?:제외|제거)|(?:일반|정상)\s*(?:고객|승객|행)', text)
+                else 'outliers')
             if (join_requested and set(operations) <= {'COUNT'} and
                     re.search(r'조인\s*결과.*(?:행|열|컬럼)|(?:행|열|컬럼).*개수|결합된\s*컬럼', text, re.I)):
                 # join_datasets returns these structural counts as grounded
@@ -217,7 +224,7 @@ class RecoveryMiddleware(AgentMiddleware):
                 calculation, operations = False, []
             if statistical_kind:
                 calculation, operations = False, []
-            if outlier_spec:
+            if outlier_spec and not outlier_followup:
                 calculation, operations = False, []
             metadata_kind = None
             column_words = bool(re.search(r'컬럼|필드|\bcolumns?\b|\bfields?\b', text, re.I))
@@ -239,6 +246,9 @@ class RecoveryMiddleware(AgentMiddleware):
                 join=join_requested, join_how=join_how,
                 statistical_kind=statistical_kind,
                 outlier_spec=outlier_spec,
+                outlier_column=outlier_column,
+                outlier_followup=outlier_followup,
+                outlier_selection=outlier_selection,
                 calculation=calculation, operations=operations, metadata_kind=metadata_kind,
                 profile_kind=profile_kind, chart_spec_requested=chart_spec_requested,
                 data_load=data_load,
@@ -271,6 +281,7 @@ class RecoveryMiddleware(AgentMiddleware):
                 # envelope.  Natural-language scope extraction from the reason
                 # text would invent an analysis obligation.
                 current.update(chart=False,kind=None,join=False,join_how=None,statistical_kind=None,outlier_spec=None,
+                    outlier_column=None,outlier_followup=False,outlier_selection='outliers',
                     calculation=False,operations=[],metadata_kind=None,profile_kind=None,
                     chart_spec_requested=False,whole_row_count=False,current_result_only=False,fresh_source_required=False,
                     required_columns=[])
@@ -304,7 +315,8 @@ class RecoveryMiddleware(AgentMiddleware):
             # Upgrade an in-flight legacy checkpoint.  Its successful tool
             # observation may already be marked processed, so the loop below
             # is also allowed to reconsider that single observation.
-            current.update(data_load=True,chart=False,kind=None,join=False,join_how=None,statistical_kind=None,outlier_spec=None,calculation=False,
+            current.update(data_load=True,chart=False,kind=None,join=False,join_how=None,statistical_kind=None,outlier_spec=None,
+                outlier_column=None,outlier_followup=False,outlier_selection='outliers',calculation=False,
                 operations=[],metadata_kind=None,profile_kind=None,chart_spec_requested=False,whole_row_count=False,
                 current_result_only=False,fresh_source_required=False)
             current['scope']={'conditions':[],'any_conditions':[],
@@ -446,29 +458,60 @@ class RecoveryMiddleware(AgentMiddleware):
                         and self._statistical_scope_valid(info, arguments, current)):
                     current['statistical_evidence'] = observation
                     current['failed'].pop(name, None)
-            if name == 'detect_outliers' and observation.get('status') == 'ready':
-                dataset_id = arguments.get('dataset_id') or observation.get('dataset_id')
-                info = self.context.datasets.metadata.get(dataset_id) if self.context and dataset_id else None
+            if name in {'detect_outliers', 'select_outlier_rows'} and observation.get('status') == 'ready':
+                parent_id = arguments.get('dataset_id')
+                parent = self.context.datasets.metadata.get(parent_id) if self.context and parent_id else None
                 result = observation.get('outlier_result', {})
                 spec = current.get('outlier_spec') or {}
-                if (info is not None
-                        and dataset_id == observation.get('dataset_id')
-                        and result.get('kind') == 'outlier_detection'
-                        and result.get('method') == arguments.get('method') == spec.get('method')
-                        and result.get('tail') == arguments.get('tail') == spec.get('tail')
-                        and (result.get('method') == 'quantile'
-                             and arguments.get('lower_quantile') == spec.get('lower_quantile')
-                             and arguments.get('upper_quantile') == spec.get('upper_quantile')
-                             or result.get('method') != 'quantile'
-                             and arguments.get('threshold') == spec.get('threshold'))
+                common_valid = (
+                    parent is not None
+                    and result.get('kind') == 'outlier_detection'
+                    and result.get('column') == arguments.get('column') == current.get('outlier_column')
+                    and result.get('method') == arguments.get('method') == spec.get('method')
+                    and result.get('tail') == arguments.get('tail') == spec.get('tail')
+                    and (result.get('method') == 'quantile'
+                         and arguments.get('lower_quantile') == spec.get('lower_quantile')
+                         and arguments.get('upper_quantile') == spec.get('upper_quantile')
+                         or result.get('method') != 'quantile'
+                         and arguments.get('threshold') == spec.get('threshold'))
+                    and self._source_matches(parent, current)
+                    and self._fresh_for_request(parent, current)
+                    and (current.get('current_result_only')
+                         or (parent.coverage == 'complete' and parent.predicate_known)))
+                if name == 'detect_outliers':
+                    valid = (common_valid
+                        and parent_id == observation.get('dataset_id')
                         and set(current.get('required_columns', [])) == {result.get('column')}
                         and not current.get('calculation')
-                        and self._source_matches(info, current)
-                        and self._fresh_for_request(info, current)
-                        and (current.get('current_result_only')
-                             or (info.coverage == 'complete' and info.predicate_known))
-                        and self._scope_valid(info, current)):
+                        and self._scope_valid(parent, current))
+                else:
+                    child_id = observation.get('dataset', {}).get('id')
+                    child = self.context.datasets.metadata.get(child_id) if self.context and child_id else None
+                    summary = observation.get('selection_summary', {})
+                    expected_rows = (result.get('counts', {}).get('selected')
+                        if arguments.get('selection', 'outliers') == 'outliers'
+                        else result.get('sample', {}).get('valid_rows', 0)
+                             - result.get('counts', {}).get('selected', 0))
+                    digest = summary.get('data_sha256', '')
+                    from utils.analysis_outliers import dataset_digest
+                    actual_digest = (dataset_digest(self.context.datasets.frames[child_id])
+                                     if child is not None else None)
+                    valid = (common_valid and current.get('outlier_followup')
+                        and child is not None and child.parent_id == parent_id
+                        and child.source == parent.source and child.snapshot == parent.snapshot
+                        and child.grain == 'raw' and not child.aggregation
+                        and not child.predicate_known
+                        and child.rows == summary.get('selected_rows') == expected_rows
+                        and summary.get('parent_dataset_id') == parent_id
+                        and summary.get('parent_rows') == parent.rows
+                        and summary.get('selection') == arguments.get('selection') == current.get('outlier_selection')
+                        and isinstance(digest, str) and len(digest) == 64
+                        and digest == actual_digest
+                        and bool(child.query) and not observation.get('preview'))
+                if valid:
                     current['outlier_evidence'] = observation
+                    if name == 'select_outlier_rows':
+                        current['outlier_dataset'] = child_id
                     current['failed'].pop(name, None)
             if name in {'local_analysis_sql', 'query_databricks'} and observation.get('status') == 'ready':
                 dataset_id = observation.get('dataset', {}).get('id')
@@ -664,7 +707,8 @@ class RecoveryMiddleware(AgentMiddleware):
         if not measure_scope_matches(info.query, current.get('scope', {})): return False
         if arguments.get('current_result_only') and not current.get('current_result_only'):
             joined = current.get('join_evidence', {}).get('dataset_id')
-            if arguments.get('dataset_id') != joined:
+            derived = current.get('outlier_dataset')
+            if arguments.get('dataset_id') not in {joined, derived}:
                 return False
         if info.coverage != 'complete' and not current.get('current_result_only'): return False
         if not info.query: return False
@@ -893,10 +937,10 @@ class RecoveryMiddleware(AgentMiddleware):
     def _next_local(self, current, calls):
         if (self.context and current.get('outlier_spec')
                 and not current.get('outlier_evidence') and not self._has_scope(current)):
-            required = list(current.get('required_columns', []))
+            column = current.get('outlier_column')
             candidates = [info for info in self.context.datasets.metadata.values()
                 if info.grain == 'raw' and not info.aggregation
-                and len(required) == 1 and required[0] in info.columns
+                and column and column in info.columns
                 and self._source_matches(info, current)
                 and self._fresh_for_request(info, current)
                 and (current.get('current_result_only')
@@ -905,17 +949,21 @@ class RecoveryMiddleware(AgentMiddleware):
                 info = candidates[0]
                 frame = self.context.datasets.frames[info.id]
                 from pandas.api.types import is_numeric_dtype
-                if is_numeric_dtype(frame[required[0]]):
+                if is_numeric_dtype(frame[column]):
                     spec = current['outlier_spec']
-                    arguments = {'dataset_id':info.id, 'column':required[0],
+                    arguments = {'dataset_id':info.id, 'column':column,
                                  'method':spec['method'], 'tail':spec['tail'],
                                  'threshold':spec['threshold']}
                     if spec['method'] == 'quantile':
                         arguments.update(lower_quantile=spec['lower_quantile'],
                                          upper_quantile=spec['upper_quantile'])
-                    if not any(c.get('name') == 'detect_outliers' and c.get('args') == arguments
+                    tool_name = ('select_outlier_rows' if current.get('outlier_followup')
+                                 else 'detect_outliers')
+                    if tool_name == 'select_outlier_rows':
+                        arguments['selection'] = current.get('outlier_selection', 'outliers')
+                    if not any(c.get('name') == tool_name and c.get('args') == arguments
                                for c in calls.values()):
-                        return {'name':'detect_outliers', 'args':arguments}
+                        return {'name':tool_name, 'args':arguments}
         if (self.context and current.get('statistical_kind')
                 and not current.get('statistical_evidence')):
             required = list(current.get('required_columns', []))
@@ -1103,6 +1151,33 @@ class RecoveryMiddleware(AgentMiddleware):
                                     for c in calls.values())):
                     return {'name':'render_chart_spec','args':arguments}
         scope = current.get('scope', {})
+        if (self.context and current.get('outlier_followup')
+                and current.get('outlier_dataset') and current.get('calculation')
+                and set(current.get('operations', [])) in ({'RATIO'}, {'COUNT', 'RATIO'})
+                and not current.get('evidence_ids')):
+            ratio = scope.get('ratio') or {}
+            measure = scope.get('measure_conditions') or []
+            child_id = current['outlier_dataset']
+            child = self.context.datasets.metadata.get(child_id)
+            if (child is not None and ratio.get('column') in child.columns
+                    and len(measure) == 1 and measure[0].get('op') == 'eq'
+                    and measure[0].get('column') == ratio.get('column')
+                    and not scope.get('unresolved')):
+                column = '"' + ratio['column'].replace('"', '""') + '"'
+                value = measure[0]['value']
+                if isinstance(value, bool): literal = 'TRUE' if value else 'FALSE'
+                elif isinstance(value, (int, float)): literal = repr(value)
+                else: literal = "'" + str(value).replace("'", "''") + "'"
+                prefix = 'COUNT(*) AS count, ' if 'COUNT' in current.get('operations', []) else ''
+                if ratio.get('aggregation') == 'mean_zero_one':
+                    query = f'SELECT {prefix}100.0 * AVG({column}) AS percent FROM data'
+                else:
+                    query = (f'SELECT {prefix}100.0 * SUM(CASE WHEN {column} = {literal} THEN 1 ELSE 0 END) '
+                             f'/ NULLIF(COUNT(*), 0) AS percent FROM data')
+                arguments = {'dataset_id':child_id, 'query':query, 'current_result_only':True}
+                if not any(c.get('name') == 'local_analysis_sql' and c.get('args') == arguments
+                           for c in calls.values()):
+                    return {'name':'local_analysis_sql', 'args':arguments}
         if (self.context and current.get('chart') and current.get('kind') == 'histogram'
                 and not current.get('fresh_source_required') and not current.get('chart_spec_requested')
                 and not current.get('plan')
@@ -1409,7 +1484,7 @@ class RecoveryMiddleware(AgentMiddleware):
         if call.get('name') == 'statistical_test' and self.context:
             info = self.context.datasets.metadata.get(arguments.get('dataset_id'))
             return True if info is None else self._statistical_scope_valid(info, arguments, current)
-        if call.get('name') == 'detect_outliers' and self.context:
+        if call.get('name') in {'detect_outliers', 'select_outlier_rows'} and self.context:
             info = self.context.datasets.metadata.get(arguments.get('dataset_id'))
             return True if info is None else self._scope_valid(info, current)
         if call.get('name') == 'join_datasets' and self.context:
@@ -1470,12 +1545,13 @@ class RecoveryMiddleware(AgentMiddleware):
             if call['name'] in {'recommend_chart_images', 'render_chart_spec', 'render_histogram', 'show_chart'}: current['chart'] = True
             if call['name'] == 'join_datasets': current['join'] = True
             if call['name'] == 'statistical_test': current['statistical_kind'] = call.get('args', {}).get('test')
-            if (call['name'] == 'detect_outliers' and not current.get('outlier_spec')
+            if (call['name'] in {'detect_outliers', 'select_outlier_rows'} and not current.get('outlier_spec')
                     and not current.get('calculation')
                     and len(current.get('required_columns', [])) == 1):
                 current['outlier_spec'] = {key:call.get('args', {}).get(key)
                                            for key in ('method', 'tail', 'threshold',
                                                        'lower_quantile', 'upper_quantile')}
+                current['outlier_column'] = call.get('args', {}).get('column')
         remote_block = current.get('remote_rejected') or any(o.get('status') == 'unavailable' for o in current['failed'].values())
         if self._complete(current) and (current.get('plan') or not last.tool_calls):
             return self._finish(current, last)

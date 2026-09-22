@@ -4,41 +4,14 @@ import unittest
 
 import numpy as np
 import pandas as pd
-from langchain_core.language_models.chat_models import BaseChatModel
-from langchain_core.messages import AIMessage
-from langchain_core.outputs import ChatGeneration, ChatResult
 
 from core.analysis_agent.runtime import GraphAnalysisRuntime
 from core.analysis_agent.tools import local_tools
 from core.analysis_runtime_tools import build_analysis_tools
 from core.analysis_tool_contract import AnalysisToolContext
+from scripts.evaluate_analysis_agent import fixture_reference_context
 from scripts.evaluate_analysis_statistics import ForbiddenModel
 from utils.analysis_datasets import DatasetStore
-
-
-class OutlierOnlyModel(BaseChatModel):
-    dataset_id: str
-    calls: int = 0
-
-    @property
-    def _llm_type(self):
-        return "compound-outlier-test"
-
-    def bind_tools(self, tools, **kwargs):
-        return self
-
-    def _generate(self, messages, stop=None, run_manager=None, **kwargs):
-        if self.calls == 0:
-            message = AIMessage(content="", tool_calls=[{
-                "name": "detect_outliers",
-                "args": {"dataset_id": self.dataset_id, "column": "Fare",
-                         "method": "iqr", "tail": "upper", "threshold": 1.5},
-                "id": "compound-outlier-call",
-            }])
-        else:
-            message = AIMessage(content="이상치와 생존율 분석을 완료했습니다.")
-        self.calls += 1
-        return ChatResult(generations=[ChatGeneration(message=message)])
 
 
 class AnalysisOutlierTests(unittest.TestCase):
@@ -77,6 +50,24 @@ class AnalysisOutlierTests(unittest.TestCase):
         quantile = self.tools["detect_outliers"](
             self.info.id, "value", "quantile", "upper", 1.5, 0.01, 0.9)["outlier_result"]
         self.assertAlmostEqual(quantile["thresholds"]["upper"], clean.quantile(0.9))
+
+    def test_outlier_selection_materializes_lineage_without_exposing_rows(self):
+        result = self.tools["select_outlier_rows"](
+            self.info.id, "value", "iqr", "outliers", "upper", 1.5)
+        child = result["dataset"]
+        summary = result["selection_summary"]
+        self.assertEqual(result["status"], "ready")
+        self.assertEqual(child["parent_id"], self.info.id)
+        self.assertEqual(child["source"], self.info.source)
+        self.assertEqual(child["snapshot"], self.info.snapshot)
+        self.assertFalse(child["predicate_known"])
+        self.assertIn("isfinite", child["query"])
+        self.assertEqual(child["rows"], 1)
+        self.assertEqual(summary["selected_rows"], 1)
+        self.assertEqual(len(summary["data_sha256"]), 64)
+        self.assertEqual(self.store.frames[child["id"]]["value"].tolist(), [100.0])
+        self.assertNotIn("rows", result)
+        self.assertNotIn("preview", result)
 
     def test_invalid_grain_dtype_constant_and_parameters_fail_closed(self):
         aggregated = self.store.register(
@@ -140,23 +131,36 @@ class AnalysisOutlierTests(unittest.TestCase):
             finally:
                 reopened.close()
 
-    def test_compound_outlier_cohort_metric_is_not_falsely_completed(self):
+    def test_compound_outlier_cohort_metric_completes_without_model_or_remote(self):
         with tempfile.TemporaryDirectory() as root:
-            model = OutlierOnlyModel(dataset_id="pending")
-            runtime = GraphAnalysisRuntime(root, "owner", "compound-outlier", model)
-            info = runtime.datasets.register(
+            runtime = GraphAnalysisRuntime(root, "owner", "compound-outlier", ForbiddenModel())
+            parent = runtime.datasets.register(
                 pd.DataFrame({"Fare": [1, 2, 3, 100], "Survived": [0, 1, 0, 1]}),
                 source="titanic", coverage="complete", predicate_known=True, snapshot="fixture:v1")
-            model.dataset_id = info.id
+            runtime.context.reference_context[:] = [fixture_reference_context(
+                "titanic", runtime.datasets.frames[parent.id])]
             try:
                 outcome = runtime.submit(
                     "타이타닉 요금(Fare)에서 IQR 상한 이상치 승객 수와 이들의 생존율을 구해줘")
-                self.assertNotEqual(outcome["status"], "answered", outcome)
+                self.assertEqual(outcome["status"], "answered", outcome)
                 recovery = runtime.inspect()["recovery"]
-                self.assertIsNone(recovery.get("outlier_spec"))
-                self.assertNotIn("outlier_evidence", recovery)
+                self.assertEqual(recovery["model_calls"], 0)
+                child_id = recovery["outlier_dataset"]
+                result_id = recovery["evidence_ids"][-1]
+                self.assertEqual(runtime.datasets.metadata[child_id].parent_id, parent.id)
+                self.assertEqual(runtime.datasets.metadata[result_id].parent_id, child_id)
+                result = runtime.datasets.frames[result_id]
+                self.assertEqual(int(result.iloc[0]["count"]), 1)
+                self.assertAlmostEqual(float(result.iloc[0]["percent"]), 100.0)
             finally:
                 runtime.close()
+            reopened = GraphAnalysisRuntime(root, "owner", "compound-outlier", ForbiddenModel())
+            try:
+                recovery = reopened.inspect()["recovery"]
+                self.assertIn(recovery["outlier_dataset"], reopened.datasets.metadata)
+                self.assertIn(recovery["evidence_ids"][-1], reopened.datasets.metadata)
+            finally:
+                reopened.close()
 
 
 if __name__ == "__main__":

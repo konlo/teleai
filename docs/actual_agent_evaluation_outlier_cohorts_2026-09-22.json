@@ -1,0 +1,504 @@
+{
+  "generated_at": "2026-09-22T00:05:11.451432+00:00",
+  "status": "PASS",
+  "runtime": "core.analysis_agent.runtime.GraphAnalysisRuntime",
+  "case_ids": [
+    "L2_040"
+  ],
+  "passed": 1,
+  "total": 1,
+  "model_calls": 0,
+  "remote_executions": 0,
+  "results": [
+    {
+      "id": "L2_040",
+      "prompt": "타이타닉 요금(Fare)에서 IQR 기준 상한 이상치(Q3 + 1.5*IQR)를 초과하는 고액 요금 승객 수와 이들의 생존율을 구해줘.",
+      "target_table": "titanic",
+      "reference_sha256": "6439b983d3fa742f04f0e8c15fbadd90e7432e78d3c3e7e445c08f14e73cdee0",
+      "status": "PASS",
+      "reason": "Lineage-safe outlier cohort and follow-up metrics match the independent reference",
+      "evidence": {
+        "expected": {
+          "data_sha256": "240ec5fb5cfdccf02e1c8913e2f051bd907a8a74ec9aaf61b2ec0bdbb3a41ea9",
+          "rows": 81,
+          "threshold": 84.77250000000001,
+          "values": {
+            "count": 81.0,
+            "percent": 70.37037037037037
+          }
+        },
+        "actual": {
+          "count": 81.0,
+          "percent": 70.37037037037037
+        },
+        "cohort_dataset_id": "5e82843c-380b-4565-8aeb-d371e6f6b2f3",
+        "result_dataset_id": "8d81b16c-4f4f-46ed-9c1b-97f2defe9755",
+        "scope": "titanic의 로딩된 raw dataset 891행 중 유효값 891개에 iqr/upper 기준을 적용했습니다. coverage=complete; snapshot=fixture:261728c6b4aefb97391c652943bd7af2acea038e39d35f98779a975f900e0688. outliers 기준 81행을 부모 7c639a9f-4ddb-4fd5-a995-b4d757d76f0d에서 파생 dataset 5e82843c-380b-4565-8aeb-d371e6f6b2f3로 저장했습니다."
+      },
+      "agent_status": "answered",
+      "runtime_state": "idle",
+      "elapsed_seconds": 0.253,
+      "tools": {
+        "select_outlier_rows": 1,
+        "local_analysis_sql": 1
+      },
+      "tool_calls": [
+        {
+          "id": "fdcc8572-d212-48bc-9422-860dbf46ee25",
+          "tool": "select_outlier_rows",
+          "arguments": {
+            "dataset_id": "7c639a9f-4ddb-4fd5-a995-b4d757d76f0d",
+            "column": "Fare",
+            "method": "iqr",
+            "tail": "upper",
+            "threshold": 1.5,
+            "selection": "outliers"
+          }
+        },
+        {
+          "id": "f0ab4bd3-4a4b-436c-b242-f99dd1a37994",
+          "tool": "local_analysis_sql",
+          "arguments": {
+            "dataset_id": "5e82843c-380b-4565-8aeb-d371e6f6b2f3",
+            "query": "SELECT COUNT(*) AS count, 100.0 * AVG(\"Survived\") AS percent FROM data",
+            "current_result_only": true
+          }
+        }
+      ],
+      "queries": [
+        {
+          "tool": "local_analysis_sql",
+          "query": "SELECT COUNT(*) AS count, 100.0 * AVG(\"Survived\") AS percent FROM data"
+        }
+      ],
+      "observations": [
+        {
+          "tool": "select_outlier_rows",
+          "status": "ready",
+          "error_code": null
+        },
+        {
+          "tool": "local_analysis_sql",
+          "status": "ready",
+          "error_code": null
+        }
+      ],
+      "remote_executions": 0,
+      "forbidden_executor_invocations": 0,
+      "error_type": null,
+      "error_id": null,
+      "runtime_metadata": {
+        "case_id": "L2_040",
+        "run_id": "f9728e1cf00241d99636a49ef77532a5",
+        "state": "idle",
+        "message_count": 6,
+        "pending_requests": 0,
+        "recovery_status": "complete",
+        "recovery_attempts": 0,
+        "recovery_model_calls": 0,
+        "reference_context": [
+          {
+            "table": "titanic",
+            "training_status": "fixture_profile",
+            "columns": [
+              {
+                "name": "PassengerId",
+                "dtype": "int64",
+                "distinct_count": 891,
+                "null_count": 0,
+                "top_values": [],
+                "aliases": [
+                  "승객 번호"
+                ]
+              },
+              {
+                "name": "Survived",
+                "dtype": "int64",
+                "distinct_count": 2,
+                "null_count": 0,
+                "top_values": [
+                  {
+                    "value": 0,
+                    "count": 564
+                  },
+                  {
+                    "value": 1,
+                    "count": 327
+                  }
+                ],
+                "aliases": [
+                  "생존율",
+                  "생존 여부"
+                ]
+              },
+              {
+                "name": "Pclass",
+                "dtype": "int64",
+                "distinct_count": 3,
+                "null_count": 0,
+                "top_values": [
+                  {
+                    "value": 3,
+                    "count": 490
+                  },
+                  {
+                    "value": 1,
+                    "count": 223
+                  },
+                  {
+                    "value": 2,
+                    "count": 178
+                  }
+                ],
+                "aliases": [
+                  "등급",
+                  "좌석 등급",
+                  "객실 등급"
+                ]
+              },
+              {
+                "name": "Name",
+                "dtype": "object",
+                "distinct_count": 891,
+                "null_count": 0,
+                "top_values": [],
+                "aliases": [
+                  "이름"
+                ]
+              },
+              {
+                "name": "Sex",
+                "dtype": "object",
+                "distinct_count": 2,
+                "null_count": 0,
+                "top_values": [
+                  {
+                    "value": "male",
+                    "count": 583
+                  },
+                  {
+                    "value": "female",
+                    "count": 308
+                  }
+                ],
+                "aliases": [
+                  "성별",
+                  "남성",
+                  "여성"
+                ]
+              },
+              {
+                "name": "Age",
+                "dtype": "float64",
+                "distinct_count": 382,
+                "null_count": 193,
+                "top_values": [],
+                "aliases": [
+                  "나이",
+                  "연령"
+                ]
+              },
+              {
+                "name": "SibSp",
+                "dtype": "int64",
+                "distinct_count": 7,
+                "null_count": 0,
+                "top_values": [
+                  {
+                    "value": 0,
+                    "count": 621
+                  },
+                  {
+                    "value": 1,
+                    "count": 185
+                  },
+                  {
+                    "value": 2,
+                    "count": 48
+                  },
+                  {
+                    "value": 4,
+                    "count": 16
+                  },
+                  {
+                    "value": 3,
+                    "count": 14
+                  },
+                  {
+                    "value": 8,
+                    "count": 5
+                  },
+                  {
+                    "value": 5,
+                    "count": 2
+                  }
+                ],
+                "aliases": [
+                  "형제자매",
+                  "배우자"
+                ]
+              },
+              {
+                "name": "Parch",
+                "dtype": "int64",
+                "distinct_count": 7,
+                "null_count": 0,
+                "top_values": [
+                  {
+                    "value": 0,
+                    "count": 652
+                  },
+                  {
+                    "value": 1,
+                    "count": 119
+                  },
+                  {
+                    "value": 2,
+                    "count": 103
+                  },
+                  {
+                    "value": 4,
+                    "count": 6
+                  },
+                  {
+                    "value": 3,
+                    "count": 5
+                  },
+                  {
+                    "value": 5,
+                    "count": 5
+                  },
+                  {
+                    "value": 6,
+                    "count": 1
+                  }
+                ],
+                "aliases": [
+                  "부모",
+                  "자녀"
+                ]
+              },
+              {
+                "name": "Ticket",
+                "dtype": "object",
+                "distinct_count": 891,
+                "null_count": 0,
+                "top_values": [],
+                "aliases": [
+                  "티켓"
+                ]
+              },
+              {
+                "name": "Fare",
+                "dtype": "float64",
+                "distinct_count": 798,
+                "null_count": 0,
+                "top_values": [],
+                "aliases": [
+                  "요금",
+                  "운임",
+                  "승선료"
+                ]
+              },
+              {
+                "name": "Cabin",
+                "dtype": "object",
+                "distinct_count": 50,
+                "null_count": 672,
+                "top_values": [],
+                "aliases": [
+                  "객실 번호",
+                  "객실"
+                ]
+              },
+              {
+                "name": "Embarked",
+                "dtype": "object",
+                "distinct_count": 3,
+                "null_count": 12,
+                "top_values": [
+                  {
+                    "value": "S",
+                    "count": 639
+                  },
+                  {
+                    "value": "C",
+                    "count": 181
+                  },
+                  {
+                    "value": "Q",
+                    "count": 59
+                  }
+                ],
+                "aliases": [
+                  "승선 항구",
+                  "출발지"
+                ]
+              }
+            ],
+            "alias_source": "test_set/README.md > 데이터 스키마 > workspace.default.titanic; complete table-level aliases, not question-specific synonym_mapping",
+            "source": "local test_set fixture; not a live Databricks table"
+          }
+        ],
+        "datasets": [
+          {
+            "id": "7c639a9f-4ddb-4fd5-a995-b4d757d76f0d",
+            "source": "titanic",
+            "columns": [
+              "PassengerId",
+              "Survived",
+              "Pclass",
+              "Name",
+              "Sex",
+              "Age",
+              "SibSp",
+              "Parch",
+              "Ticket",
+              "Fare",
+              "Cabin",
+              "Embarked"
+            ],
+            "rows": 891,
+            "coverage": "complete",
+            "conditions": [],
+            "predicate_known": true,
+            "grain": "raw",
+            "aggregation": "",
+            "snapshot": "fixture:261728c6b4aefb97391c652943bd7af2acea038e39d35f98779a975f900e0688",
+            "query": "",
+            "parent_id": "",
+            "parent_ids": []
+          },
+          {
+            "id": "5e82843c-380b-4565-8aeb-d371e6f6b2f3",
+            "source": "titanic",
+            "columns": [
+              "PassengerId",
+              "Survived",
+              "Pclass",
+              "Name",
+              "Sex",
+              "Age",
+              "SibSp",
+              "Parch",
+              "Ticket",
+              "Fare",
+              "Cabin",
+              "Embarked"
+            ],
+            "rows": 81,
+            "coverage": "complete",
+            "conditions": [],
+            "predicate_known": false,
+            "grain": "raw",
+            "aggregation": "",
+            "snapshot": "fixture:261728c6b4aefb97391c652943bd7af2acea038e39d35f98779a975f900e0688",
+            "query": "SELECT * FROM data WHERE isfinite(\"Fare\") AND \"Fare\" > 84.77250000000001",
+            "parent_id": "7c639a9f-4ddb-4fd5-a995-b4d757d76f0d",
+            "parent_ids": []
+          },
+          {
+            "id": "8d81b16c-4f4f-46ed-9c1b-97f2defe9755",
+            "source": "titanic",
+            "columns": [
+              "count",
+              "percent"
+            ],
+            "rows": 1,
+            "coverage": "complete",
+            "conditions": [],
+            "predicate_known": false,
+            "grain": "aggregate",
+            "aggregation": "SELECT COUNT(*) AS count, 100.0 * AVG(\"Survived\") AS percent FROM data",
+            "snapshot": "fixture:261728c6b4aefb97391c652943bd7af2acea038e39d35f98779a975f900e0688",
+            "query": "SELECT COUNT(*) AS count, 100.0 * AVG(\"Survived\") AS percent FROM data",
+            "parent_id": "5e82843c-380b-4565-8aeb-d371e6f6b2f3",
+            "parent_ids": []
+          }
+        ],
+        "charts": [],
+        "diagnostics": [
+          {
+            "time": "2026-09-22T00:05:11.307868+00:00",
+            "event": "run_started",
+            "run_id": "f9728e1cf00241d99636a49ef77532a5",
+            "operation": "submit"
+          },
+          {
+            "time": "2026-09-22T00:05:11.415958+00:00",
+            "event": "recovery_transition",
+            "run_id": "f9728e1cf00241d99636a49ef77532a5",
+            "tool": "select_outlier_rows"
+          },
+          {
+            "time": "2026-09-22T00:05:11.417134+00:00",
+            "event": "tool_started",
+            "run_id": "f9728e1cf00241d99636a49ef77532a5",
+            "tool": "select_outlier_rows"
+          },
+          {
+            "time": "2026-09-22T00:05:11.420134+00:00",
+            "event": "tool_completed",
+            "run_id": "f9728e1cf00241d99636a49ef77532a5",
+            "tool": "select_outlier_rows",
+            "status": "ready",
+            "elapsed_seconds": 0.003
+          },
+          {
+            "time": "2026-09-22T00:05:11.422986+00:00",
+            "event": "recovery_transition",
+            "run_id": "f9728e1cf00241d99636a49ef77532a5",
+            "tool": "local_analysis_sql"
+          },
+          {
+            "time": "2026-09-22T00:05:11.423898+00:00",
+            "event": "tool_started",
+            "run_id": "f9728e1cf00241d99636a49ef77532a5",
+            "tool": "local_analysis_sql"
+          },
+          {
+            "time": "2026-09-22T00:05:11.443455+00:00",
+            "event": "tool_completed",
+            "run_id": "f9728e1cf00241d99636a49ef77532a5",
+            "tool": "local_analysis_sql",
+            "status": "ready",
+            "elapsed_seconds": 0.02
+          },
+          {
+            "time": "2026-09-22T00:05:11.445110+00:00",
+            "event": "calculation_evidence",
+            "run_id": "f9728e1cf00241d99636a49ef77532a5"
+          },
+          {
+            "time": "2026-09-22T00:05:11.446112+00:00",
+            "event": "completion_checked",
+            "run_id": "f9728e1cf00241d99636a49ef77532a5",
+            "status": "complete",
+            "attempts": 0
+          },
+          {
+            "time": "2026-09-22T00:05:11.447131+00:00",
+            "event": "run_completed",
+            "run_id": "f9728e1cf00241d99636a49ef77532a5",
+            "status": "answered",
+            "elapsed_seconds": 0.139
+          },
+          {
+            "time": "2026-09-22T00:05:11.447161+00:00",
+            "event": "turn_slo",
+            "run_id": "f9728e1cf00241d99636a49ef77532a5",
+            "elapsed_seconds": 0.139,
+            "limit": 180.0,
+            "status": "ok"
+          }
+        ]
+      }
+    }
+  ],
+  "elapsed_seconds": 0.259,
+  "limitations": [
+    "Local fixture evaluation; no Databricks or browser execution",
+    "Covers the unchanged L2_040 IQR upper-outlier cohort journey",
+    "Other outlier cohort methods and grouped follow-ups remain ungraded"
+  ]
+}
