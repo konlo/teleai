@@ -80,12 +80,15 @@ class RecoveryMiddleware(AgentMiddleware):
             elif re.search(r'산점도|산포도|\bscatter(?:\s*plot)?\b', text, re.I): kind = 'scatter'
             elif re.search(r'박스\s*플롯|상자\s*수염|상자\s*그림|\bbox\s*plot\b|\bboxplot\b', text, re.I): kind = 'boxplot'
             elif re.search(r'막대|바\s*차트|\bbar(?:\s*chart)?\b', text, re.I): kind = 'bar'
-            elif re.search(r'선\s*(?:그래프|차트)|꺾은선|\bline(?:\s*chart)?\b', text, re.I): kind = 'line'
+            elif re.search(r'선\s*(?:그래프|차트)|꺾은선|(?:누적|성장).{0,40}곡선|\bline(?:\s*chart)?\b|\bcurve\b', text, re.I): kind = 'line'
             else: kind = None
             chart = bool(kind or re.search(r'차트|시각화|그래프|\bchart|\bplot', text, re.I))
+            chart_cumulative = bool(chart and re.search(
+                r'누적(?:합|곡선|성장)?|\bcumulative(?:\s+sum)?\b|\bcumsum\b', text, re.I))
             chart_spec_requested = bool(chart and (
                 kind in {'bar', 'line', 'scatter', 'boxplot'} or
-                re.search(r'제목|축\s*라벨|정렬|상위\s*\d+|top\s*\d+|\bbins?\b|\d+\s*(?:개\s*)?구간|가로|세로', text, re.I)))
+                chart_cumulative or re.search(
+                    r'제목|축\s*라벨|정렬|상위\s*\d+|top\s*\d+|\bbins?\b|\d+\s*(?:개\s*)?구간|가로|세로', text, re.I)))
             join_requested = bool(re.search(r'조인|병합|데이터\s*결합|\bjoin\b|\bmerge\b', text, re.I))
             if re.search(r'좌측|왼쪽|\bleft\s*(?:outer\s*)?join\b', text, re.I): join_how = 'left'
             elif re.search(r'우측|오른쪽|\bright\s*(?:outer\s*)?join\b', text, re.I): join_how = 'right'
@@ -202,6 +205,10 @@ class RecoveryMiddleware(AgentMiddleware):
             if re.search(r'비율|성공률|생존율|전환율|[가-힣A-Za-z]+[율률]|\b(?:ratio|rate|percentage|percent)\b',
                          objective_text, re.I): operations.append('RATIO')
             if count_request and 'COUNT' not in operations: operations.append('COUNT')
+            if chart_cumulative and set(operations) <= {'SUM'}:
+                # The sum is the declared chart transform, not a separate
+                # scalar result obligation.
+                calculation, operations = False, []
             # A compound request first materializes a lineage-safe cohort, then
             # computes against that exact child dataset.  The first mentioned
             # column is the detector column because the prompt introduces the
@@ -251,6 +258,7 @@ class RecoveryMiddleware(AgentMiddleware):
                 outlier_selection=outlier_selection,
                 calculation=calculation, operations=operations, metadata_kind=metadata_kind,
                 profile_kind=profile_kind, chart_spec_requested=chart_spec_requested,
+                chart_cumulative=chart_cumulative,
                 data_load=data_load,
                 expected_load_source=human.additional_kwargs.get('source','') if data_load else '',
                 expected_load_query=human.additional_kwargs.get('query','') if data_load else '',
@@ -283,7 +291,7 @@ class RecoveryMiddleware(AgentMiddleware):
                 current.update(chart=False,kind=None,join=False,join_how=None,statistical_kind=None,outlier_spec=None,
                     outlier_column=None,outlier_followup=False,outlier_selection='outliers',
                     calculation=False,operations=[],metadata_kind=None,profile_kind=None,
-                    chart_spec_requested=False,whole_row_count=False,current_result_only=False,fresh_source_required=False,
+                    chart_spec_requested=False,chart_cumulative=False,whole_row_count=False,current_result_only=False,fresh_source_required=False,
                     required_columns=[])
                 current['scope']={'conditions':[],'any_conditions':[],
                     'measure_conditions':[],'ratio':None,'unresolved':[],'columns':[]}
@@ -317,7 +325,7 @@ class RecoveryMiddleware(AgentMiddleware):
             # is also allowed to reconsider that single observation.
             current.update(data_load=True,chart=False,kind=None,join=False,join_how=None,statistical_kind=None,outlier_spec=None,
                 outlier_column=None,outlier_followup=False,outlier_selection='outliers',calculation=False,
-                operations=[],metadata_kind=None,profile_kind=None,chart_spec_requested=False,whole_row_count=False,
+                operations=[],metadata_kind=None,profile_kind=None,chart_spec_requested=False,chart_cumulative=False,whole_row_count=False,
                 current_result_only=False,fresh_source_required=False)
             current['scope']={'conditions':[],'any_conditions':[],
                 'measure_conditions':[],'ratio':None,'unresolved':[],'columns':[]}
@@ -1140,6 +1148,25 @@ class RecoveryMiddleware(AgentMiddleware):
                 elif current['kind'] == 'bar' and len(columns) == 1 and 1 <= frame[columns[0]].nunique() <= 50:
                     arguments = {'dataset_id':candidates[0].id,'kind':'bar','x':columns[0],
                                  'aggregation':'count','sort':'descending','top_n':50}
+                elif current['kind'] == 'line' and len(columns) == 1:
+                    column = columns[0]
+                    unique = frame[column].nunique(dropna=True)
+                    if is_numeric_dtype(frame[column]) and 2 <= unique <= 5_000:
+                        arguments = {'dataset_id':candidates[0].id,'kind':'line','x':column,
+                                     'aggregation':'count','sort':'ascending'}
+                        if current.get('chart_cumulative'):
+                            arguments['cumulative'] = True
+                    elif current.get('chart_cumulative') and 2 <= unique <= 12:
+                        month_tokens = {
+                            'jan','january','feb','february','mar','march','apr','april','may',
+                            'jun','june','jul','july','aug','august','sep','sept','september',
+                            'oct','october','nov','november','dec','december'}
+                        observed = {str(value).strip().casefold()
+                                    for value in frame[column].dropna().unique().tolist()}
+                        if observed and observed.issubset(month_tokens):
+                            arguments = {'dataset_id':candidates[0].id,'kind':'line','x':column,
+                                         'aggregation':'count','sort':'calendar_month',
+                                         'cumulative':True}
                 elif current['kind'] == 'line' and len(columns) == 2:
                     time_columns = [column for column in columns if is_datetime64_any_dtype(frame[column])]
                     numeric_columns = [column for column in columns if is_numeric_dtype(frame[column])]

@@ -21,6 +21,7 @@ SOURCE = "catalog.analytics.events"
 def frame():
     return pd.DataFrame({
         "time": pd.date_range("2026-01-01", periods=12, freq="D"),
+        "month": ["mar", "jan", "feb", "mar"] * 3,
         "segment": ["A", "B", "A", "C"] * 3,
         "value": [1, 4, 2, 8, 3, 7, 5, 9, 6, 10, 11, 12],
         "score": [2, 1, 4, 3, 6, 5, 8, 7, 10, 9, 12, 11],
@@ -107,6 +108,30 @@ class ChartSpecTests(unittest.TestCase):
         self.assertEqual(first["render_summary"]["data_sha256"],
                          second["render_summary"]["data_sha256"])
 
+    def test_ordered_frequency_line_is_bounded_and_deterministic(self):
+        result = self.tools["render_chart_spec"](
+            self.info.id, kind="line", x="value", aggregation="count", sort="ascending")
+        card = self.assert_png(result, "line")
+        self.assertEqual(card.columns, ("value",))
+        self.assertEqual(result["chart_spec"]["aggregation"], "count")
+        self.assertEqual(result["chart_spec"]["sort"], "ascending")
+        self.assertEqual(
+            [point["x"] for point in result["render_summary"]["points"]],
+            sorted(frame()["value"].unique().tolist()))
+        self.assertTrue(all(point["value"] == 1 for point in result["render_summary"]["points"]))
+
+    def test_calendar_month_cumulative_line_uses_declared_transform(self):
+        result = self.tools["render_chart_spec"](
+            self.info.id, kind="line", x="month", aggregation="count",
+            sort="calendar_month", cumulative=True)
+        self.assert_png(result, "line")
+        self.assertTrue(result["chart_spec"]["cumulative"])
+        self.assertEqual(result["render_summary"]["points"], [
+            {"x": "jan", "value": 3},
+            {"x": "feb", "value": 6},
+            {"x": "mar", "value": 12},
+        ])
+
     def test_invalid_spec_and_reaggregation_return_structured_errors(self):
         structured = {tool.name: tool for tool in local_tools(self.context)}
         bad_column = structured["render_chart_spec"].invoke({
@@ -147,6 +172,28 @@ class ChartSpecTests(unittest.TestCase):
             card = runtime.artifacts[runtime.inspect()["chart_ids"][0]]
             self.assertEqual(card.kind, "boxplot")
             self.assertEqual(card.columns, ("value", "segment"))
+            runtime.close()
+
+    def test_ordered_frequency_line_is_completed_without_model(self):
+        with tempfile.TemporaryDirectory() as root:
+            runtime = GraphAnalysisRuntime(root, "owner", "frequency-line", NoModelCall())
+            runtime.datasets.register(frame(), source=SOURCE, coverage="complete", predicate_known=True)
+            result = runtime.submit("value별 건수 추이를 꺾은선 그래프로 보여줘")
+            self.assertEqual(result["status"], "answered", result)
+            card = runtime.artifacts[runtime.inspect()["chart_ids"][0]]
+            self.assertEqual(card.kind, "line")
+            self.assertEqual(card.columns, ("value",))
+            runtime.close()
+
+    def test_calendar_month_cumulative_line_is_completed_without_model(self):
+        with tempfile.TemporaryDirectory() as root:
+            runtime = GraphAnalysisRuntime(root, "owner", "cumulative-line", NoModelCall())
+            runtime.datasets.register(frame(), source=SOURCE, coverage="complete", predicate_known=True)
+            result = runtime.submit("month별 접촉 건수의 누적합 곡선을 선 그래프로 보여줘")
+            self.assertEqual(result["status"], "answered", result)
+            card = runtime.artifacts[runtime.inspect()["chart_ids"][0]]
+            self.assertEqual(card.kind, "line")
+            self.assertEqual(card.columns, ("month",))
             runtime.close()
 
     def test_group_labels_must_cover_every_observed_level_to_avoid_filtering(self):

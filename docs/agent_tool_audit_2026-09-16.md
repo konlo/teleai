@@ -90,15 +90,15 @@
 
 ## 평가 근거와 공백
 
-독립 oracle은 200문항 중 64문항을 지원한다. 미채점 136문항의 구성은 다음과 같다.
+독립 oracle은 200문항 중 66문항을 지원한다. 미채점 134문항의 구성은 다음과 같다.
 
 | 구분 | 미채점 수 |
 |---|---:|
 | table/계산 | 78 |
-| chart | 49 |
+| chart | 47 |
 | schema | 9 |
 | 단일 그룹 집계·요약표 | 25 |
-| 단일 차트 | 19 |
+| 단일 차트 | 17 |
 | 피벗·소계 | 15 |
 | 전환율·이중축 | 15 |
 | 다중 패널·고급 시각화 | 15 |
@@ -113,6 +113,6 @@
 2. `profile_dataset`과 승인형 source discovery를 추가한다.
 3. 실제 agent 독립 oracle 중 schema/결측/고유값/기본 그룹 집계를 우선 확대한다.
 4. 제한된 `render_chart_spec`과 지정 차트·수정·재시작 검증을 완료한다.
-5. multi-dataset join, statistical test, 직접 outlier detection과 bounded cohort 후속 계산을 완료했다. 다음 tool 보강은 시계열·다중 패널 또는 cohort 그룹 집계 중에서 선택한다.
+5. multi-dataset join, statistical test, 직접 outlier detection과 bounded cohort 후속 계산, 숫자축 빈도 선·영문 월 누적 곡선을 완료했다. 다음 tool 보강은 datetime resampling·gap·다중 series, 다중 패널 또는 cohort 그룹 집계 중에서 선택한다.
 
 이 순서라면 tool 수를 통제하면서도 자주 실패하는 사용자 의도를 결정적이고 검증 가능한 실행으로 옮길 수 있다.

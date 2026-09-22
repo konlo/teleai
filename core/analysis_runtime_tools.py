@@ -261,11 +261,12 @@ def build_analysis_tools(context: AnalysisToolContext) -> list[ToolDefinition]:
 
     def render_chart_spec(dataset_id, kind, x, y="", category="", aggregation="none",
                           sort="none", top_n=50, bins=20, title="", x_label="",
-                          y_label="", orientation="vertical"):
+                          y_label="", orientation="vertical", cumulative=False):
         card, summary, spec = build_chart_from_spec(
             datasets, dataset_id, kind=kind, x=x, y=y, category=category,
             aggregation=aggregation, sort=sort, top_n=top_n, bins=bins,
-            title=title, x_label=x_label, y_label=y_label, orientation=orientation)
+            title=title, x_label=x_label, y_label=y_label, orientation=orientation,
+            cumulative=cumulative)
         context.artifacts[card.id] = card
         return {"status": "ready", "cards": [card_entry(card)],
                 "chart_spec": spec, "render_summary": summary}
@@ -466,18 +467,19 @@ def build_analysis_tools(context: AnalysisToolContext) -> list[ToolDefinition]:
         tool("recommend_chart_images", "현재 데이터의 통계로 실제 이미지 후보를 만듭니다. 원격 조회 없음. 반환된 카드 ID의 이미지는 UI가 표시합니다.",
              {"dataset_id": string, "columns": {"type": "array", "items": string}},
              ["dataset_id"], chart_options),
-        tool("render_chart_spec", "사용자가 지정한 차트 종류와 축·집계·정렬·상위 N개·bin·제목·축 라벨을 제한된 schema로 실제 PNG에 렌더링합니다. 임의 코드나 파일·URL은 받지 않습니다. 로딩된 dataset 범위를 넓히지 않으며 반환 scope와 sample 여부를 설명하세요.",
+        tool("render_chart_spec", "사용자가 지정한 차트 종류와 축·집계·정렬·상위 N개·bin·제목·축 라벨을 제한된 schema로 실제 PNG에 렌더링합니다. 선 그래프는 숫자 축 빈도와 영문 월의 calendar_month 정렬·누적 변환을 지원합니다. 임의 코드나 파일·URL은 받지 않습니다. 로딩된 dataset 범위를 넓히지 않으며 반환 scope와 sample 여부를 설명하세요.",
              {"dataset_id": string,
               "kind": {"type":"string","enum":["histogram","bar","line","scatter","boxplot"]},
               "x": string, "y": string, "category": string,
               "aggregation": {"type":"string","enum":["none","count","sum","mean","median","min","max"]},
-              "sort": {"type":"string","enum":["none","ascending","descending"]},
+              "sort": {"type":"string","enum":["none","ascending","descending","calendar_month"]},
               "top_n": {"type":"integer","minimum":1,"maximum":50},
               "bins": {"type":"integer","minimum":2,"maximum":100},
               "title": {"type":"string","maxLength":120},
               "x_label": {"type":"string","maxLength":120},
               "y_label": {"type":"string","maxLength":120},
-              "orientation": {"type":"string","enum":["vertical","horizontal"]}},
+              "orientation": {"type":"string","enum":["vertical","horizontal"]},
+              "cumulative": {"type":"boolean"}},
              ["dataset_id","kind","x"], render_chart_spec),
         tool("prepare_histogram", "보유한 완전한 빈도·원본 데이터와 이미지를 먼저 재사용하여 히스토그램을 만듭니다. 데이터가 부족할 때만 승인형 조회 계획을 반환합니다. source는 정확한 테이블명, column은 수치 컬럼, where_sql은 유지해야 할 사용자 필터 SQL(없으면 빈 문자열)입니다. 사용자가 최신/현재 원본을 명시하면 fresh_source_required=true로 지정해 캐시를 재사용하지 않습니다. 직접 원격 조회하지 않습니다.",
              {"source":string,"column":string,"where_sql":string,

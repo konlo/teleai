@@ -43,6 +43,7 @@
     "L1_083": {"kind": "histogram", "column": "duration", "bin_policy": "The prompt specifies no bin count. Compare the full weighted input distribution and real PNG; record reference bins without requiring identical styling or bins."},
     "L1_086": {"kind": "chart_scatter", "x": "age", "y": "balance"},
     "L1_093": {"kind": "histogram", "column": "Age", "bin_policy": "The prompt requests 20 reference bins, but product validation compares the full non-null weighted distribution and real PNG so rendering style may differ."},
+    "L1_098": {"kind": "chart_line_counts", "variable": "day_counts", "column": "day"},
     "L2_005": {"kind": "scalar", "variable": "sub_yes"},
     "L2_010": {"kind": "scalar", "variable": "high_risk", "reduction": "rows"},
     "L2_012": {"kind": "scalar", "variable": "h_rate", "unit": "percent"},
@@ -65,6 +66,7 @@
     "L2_057": {"kind": "statistical", "test": "mann_whitney", "columns": ["balance", "y"], "statistic_variable": "u_stat", "p_value_variable": "p_val"},
     "L2_058": {"kind": "statistical", "test": "independent_t", "columns": ["Fare", "Survived"], "statistic_variable": "t_stat", "p_value_variable": "p_val"},
     "L2_059": {"kind": "statistical_mean_ci", "test": "mean_ci", "columns": ["balance"], "estimate_variable": "mean_b", "ci_variable": "ci"},
-    "L2_060": {"kind": "statistical", "test": "chi_square", "columns": ["default", "loan"], "statistic_variable": "chi2", "p_value_variable": "p_val", "df_variable": "dof"}
+    "L2_060": {"kind": "statistical", "test": "chi_square", "columns": ["default", "loan"], "statistic_variable": "chi2", "p_value_variable": "p_val", "df_variable": "dof"},
+    "L2_068": {"kind": "chart_line_counts", "variable": "cumsum_months", "column": "month", "sort": "calendar_month", "cumulative": true}
   }
 }

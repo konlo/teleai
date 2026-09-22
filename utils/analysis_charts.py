@@ -221,7 +221,7 @@ def render_chart_spec(store: DatasetStore, dataset_id: str, *, kind: str, x: str
                       y: str = "", category: str = "", aggregation: str = "none",
                       sort: str = "none", top_n: int = 50, bins: int = 20,
                       title: str = "", x_label: str = "", y_label: str = "",
-                      orientation: str = "vertical"):
+                      orientation: str = "vertical", cumulative: bool = False):
     """Render one bounded, declarative chart from a loaded dataset.
 
     No expression strings, Python code, file paths, URLs, or arbitrary style
@@ -232,8 +232,8 @@ def render_chart_spec(store: DatasetStore, dataset_id: str, *, kind: str, x: str
     aggregations = {"none", "count", "sum", "mean", "median", "min", "max"}
     if kind not in kinds or aggregation not in aggregations:
         raise ValueError("지원하는 차트 종류와 집계 방식을 사용해주세요.")
-    if sort not in {"none", "ascending", "descending"}:
-        raise ValueError("sort는 none, ascending, descending 중 하나여야 합니다.")
+    if sort not in {"none", "ascending", "descending", "calendar_month"}:
+        raise ValueError("sort는 none, ascending, descending, calendar_month 중 하나여야 합니다.")
     if orientation not in {"vertical", "horizontal"}:
         raise ValueError("orientation은 vertical 또는 horizontal이어야 합니다.")
     if not 1 <= int(top_n) <= 50 or not 2 <= int(bins) <= 100:
@@ -252,6 +252,10 @@ def render_chart_spec(store: DatasetStore, dataset_id: str, *, kind: str, x: str
         raise ValueError("이미 집계된 결과를 다시 집계하지 않습니다.")
     if kind != "bar" and orientation != "vertical":
         raise ValueError("orientation은 막대 차트에서만 사용할 수 있습니다.")
+    if sort == "calendar_month" and kind != "line":
+        raise ValueError("calendar_month 정렬은 선 차트에서만 지원합니다.")
+    if cumulative and kind != "line":
+        raise ValueError("누적 변환은 선 차트에서만 지원합니다.")
     if kind not in {"scatter", "boxplot"} and category:
         raise ValueError("category는 산점도 범주 구분 또는 그룹 박스플롯에만 사용할 수 있습니다.")
 
@@ -273,6 +277,7 @@ def render_chart_spec(store: DatasetStore, dataset_id: str, *, kind: str, x: str
     reason = ""
     default_title = ""
     sampled = False
+    point_value_column = "value"
 
     if kind == "histogram":
         if y or category or aggregation != "none":
@@ -383,27 +388,54 @@ def render_chart_spec(store: DatasetStore, dataset_id: str, *, kind: str, x: str
             reason += f" 값 기준 상위 {int(top_n)}개만 포함합니다."
     else:  # line
         if not y:
-            raise ValueError("선 차트에는 y가 필요합니다.")
-        frame = pd.DataFrame({x: source[x], y: numeric(source[y], y)}).dropna()
-        if aggregation == "count":
-            raise ValueError("선 차트의 count 집계에는 별도 y가 필요하지 않으므로 지원하지 않습니다.")
-        if aggregation == "none":
-            if frame[x].duplicated().any():
-                raise ValueError("집계 없는 선 차트의 x는 고유해야 합니다.")
-            plotted = frame.rename(columns={y: "value"})
+            if aggregation != "count":
+                raise ValueError("y가 없는 선 차트는 count 집계만 지원합니다.")
+            point_value_column = "count" if x == "value" else "value"
+            plotted = (source[x].dropna().value_counts(sort=False)
+                       .rename(point_value_column).rename_axis(x).reset_index())
+            effective_aggregation = "count"
+            value_label = "Count"
         else:
-            plotted = (frame.groupby(x, sort=False, observed=True)[y]
-                       .agg(aggregation).rename("value").reset_index())
+            point_value_column = "measure" if x == "value" else "value"
+            frame = pd.DataFrame({x: source[x], y: numeric(source[y], y)}).dropna()
+            if aggregation == "count":
+                raise ValueError("선 차트의 count 집계에는 y를 지정하지 마세요.")
+            if aggregation == "none":
+                if frame[x].duplicated().any():
+                    raise ValueError("집계 없는 선 차트의 x는 고유해야 합니다.")
+                plotted = frame.rename(columns={y: point_value_column})
+            else:
+                plotted = (frame.groupby(x, sort=False, observed=True)[y]
+                           .agg(aggregation).rename(point_value_column).reset_index())
+            value_label = y if aggregation == "none" else f"{aggregation}({y})"
         if len(plotted) < 2 or len(plotted) > 5_000:
             raise ValueError("선 차트는 2~5,000개의 점이 필요합니다. 더 큰 데이터는 먼저 집계하세요.")
-        if sort != "none":
+        if sort == "calendar_month":
+            month_number = {
+                "jan": 1, "january": 1, "feb": 2, "february": 2,
+                "mar": 3, "march": 3, "apr": 4, "april": 4,
+                "may": 5, "jun": 6, "june": 6, "jul": 7, "july": 7,
+                "aug": 8, "august": 8, "sep": 9, "sept": 9, "september": 9,
+                "oct": 10, "october": 10, "nov": 11, "november": 11,
+                "dec": 12, "december": 12,
+            }
+            keys = plotted[x].astype(str).str.strip().str.casefold().map(month_number)
+            if keys.isna().any() or keys.duplicated().any():
+                raise ValueError("calendar_month 정렬에는 중복되지 않는 영문 월 이름/약어가 필요합니다.")
+            plotted = plotted.assign(_calendar_order=keys).sort_values(
+                "_calendar_order").drop(columns="_calendar_order")
+        elif sort != "none":
             plotted = plotted.sort_values(x, ascending=sort == "ascending")
-        ax.plot(plotted[x], plotted["value"], color="#3278b9")
-        ax.set(xlabel=x_label or x, ylabel=y_label or (y if aggregation == "none" else f"{aggregation}({y})"))
+        if cumulative:
+            plotted[point_value_column] = plotted[point_value_column].cumsum()
+        ax.plot(plotted[x], plotted[point_value_column], marker="o", color="#3278b9")
+        ax.set(xlabel=x_label or x, ylabel=y_label or value_label)
         if pd.api.types.is_datetime64_any_dtype(plotted[x]):
             fig.autofmt_xdate()
-        default_title = f"{x}에 따른 {y}"
+        default_title = f"{x}별 {'누적 ' if cumulative else ''}{value_label}"
         reason = f"{effective_aggregation} 기준 {len(plotted):,}개 점을 연결했습니다."
+        if cumulative:
+            reason += " 정렬 후 누적합을 적용했습니다."
 
     final_title = title or default_title
     ax.set_title(final_title)
@@ -423,7 +455,7 @@ def render_chart_spec(store: DatasetStore, dataset_id: str, *, kind: str, x: str
         "sampled": sampled,
         "aggregation": effective_aggregation,
     }
-    if kind == "bar":
+    if kind in {"bar", "line"}:
         def json_scalar(value):
             if hasattr(value, "item"):
                 value = value.item()
@@ -431,11 +463,12 @@ def render_chart_spec(store: DatasetStore, dataset_id: str, *, kind: str, x: str
                 return value.isoformat()
             return value if value is None or isinstance(value, (str, int, float, bool)) else str(value)
         summary["points"] = [
-            {"x": json_scalar(row[x]), "value": json_scalar(row["value"])}
+            {"x": json_scalar(row[x]), "value": json_scalar(row[point_value_column])}
             for _, row in plotted.iterrows()
         ]
     spec = {"kind": kind, "x": x, "y": y, "category": category,
             "aggregation": effective_aggregation, "sort": sort,
+            "cumulative": bool(cumulative),
             "top_n": int(top_n), "bins": int(bins), "title": final_title,
             "x_label": ax.get_xlabel(), "y_label": ax.get_ylabel(),
             "orientation": orientation}

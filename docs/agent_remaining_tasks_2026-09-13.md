@@ -10,8 +10,8 @@
 | R04 | P0 | 최종 회귀와 서버 반영 | 완료 | 최신 회귀 205/205, compileall·diff PASS. 서버 실제 화면에서 18개 컬럼 전체를 0.160초에 표시, 모델 0회·로컬 도구 1회·추가 조회 0회 |
 | R05 | P1 | 응답 지연과 실행 한도 | 부분 완료 | 초기 용량 gate READY: 단일 p95 0.162초, 4 worker·20/20 p95 0.549초, peak RSS 약 361 MiB. 1 GiB/768 MiB 경고/896 MiB 위험 계약과 preflight 검증 적용. 실제 배포 호스트 재측정 남음 |
 | R06 | P1 | 대용량 DataFrame·캐시·저장소 | 검증 완료 | 750,000행 복구와 함께 100k행·256열·512MiB·대화별 2GiB 한도, 30일 정리 후보 보고 적용. 자동 삭제 없음 |
-| R07 | P2 | 실제 agent 독립 채점 확대 | 진행 중 | 누적 64/200문항 지원. `L2_040` 이상치 cohort 후속 계산이 parent lineage·데이터 digest·독립 값 기준 PASS. 모델·원격 0회이며 나머지 136문항은 PASS로 계산하지 않음 |
-| R08 | P2 | 고급 분석·차트·스킬 범위 | 진행 중 | 전체 행·IN·공통조건+OR·백분율·피어슨 상관, 5종 차트와 그룹 박스플롯, bounded join, 6개 구조화 통계 방법, IQR/Z-score/MAD/분위수 이상치 탐지와 bounded cohort scalar 후속 계산을 검증. cohort 그룹 집계·변환, 다중 패널·시계열은 미검증 |
+| R07 | P2 | 실제 agent 독립 채점 확대 | 진행 중 | 누적 66/200문항 지원. `L1_098` 숫자축 빈도 선 그래프와 `L2_068` 월별 누적 곡선이 실제 PNG·plot data digest의 독립 기준으로 PASS. 모델·원격 0회이며 나머지 134문항은 PASS로 계산하지 않음 |
+| R08 | P2 | 고급 분석·차트·스킬 범위 | 진행 중 | 전체 행·IN·공통조건+OR·백분율·피어슨 상관, 5종 차트와 그룹 박스플롯, 숫자축 빈도 선·영문 월 누적 곡선, bounded join, 6개 구조화 통계 방법, 이상치 탐지와 bounded cohort scalar 후속 계산을 검증. datetime resampling·gap·다중 series, cohort 그룹 집계·변환, 다중 패널·이중축은 미검증 |
 | R09 | P1 | 운영 승인 여정과 출시 판정 | 완료 | 실제 승인·1회 조회·10,000행 저장·로컬 분석 재사용 완료. RC3 보존, 원격 gate 성공한 `cd40480`에 RC4 tag 고정·push |
 | R10 | P0 | 특정 테이블·스키마 의존 제거 | 완료 | production 테이블 하드코딩 제거, stale schema 차단, 동적 loader, schema fingerprint, 최신 원본 캐시 우회와 승인 대기 검증 |
 | R11 | P0 | 제한 출시 후보 승격 | 진행 중 | RC7 tag `e31150f`, draft PR #68, GitHub run `35095497759` 성공. secret-safe preflight와 1인용 배포·용량·smoke·rollback 계약 준비. 대상 확정, 코드 리뷰/병합과 실제 환경 검증 남음 |
@@ -24,4 +24,4 @@
 1. 1인용 배포 대상·secret manager·영속 볼륨·Ollama 배치를 확정한 뒤 후보를 리뷰·병합·배포하고, 승인형 Databricks 적재와 로컬 재사용 smoke test 및 rollback을 확인한다.
 2. 실제 배포 호스트에서 용량 gate를 재실행해 p95·RSS 기준을 보정하고 Ollama 동시 추론 표본을 수집한다.
 3. 출시 대상 테이블의 최신 TableContext와 업무 alias를 준비하고 schema 변경 운영 절차를 확인한다.
-4. 남은 136문항의 oracle을 우선순위별로 확대하며 시계열·다중 패널·이상치 cohort 그룹 집계 tool 범위를 결정한다.
+4. 남은 134문항의 oracle을 우선순위별로 확대하며 datetime 시계열·다중 패널·이상치 cohort 그룹 집계 tool 범위를 결정한다.
