@@ -33,7 +33,15 @@
 - **Agentic Recovery**: 명확한 시간 컬럼·빈도·집계·선 그래프 요청은 로딩 metadata와 dtype으로 축을 선택해 `prepare_time_series` 후 `render_chart_spec`을 호출한다. 모호한 집계·시간 컬럼, 숫자 epoch 단위, DST 충돌은 추측하지 않는다.
 - **Evaluation**: 임의 source `evaluation.runtime_events`의 임의 컬럼에서 일별 그룹 합계, `Asia/Seoul`, 중복 시각 2행, 빈 날짜 2행과 두 series PNG를 생성했다. production graph의 파생 frame·plot points가 독립 pandas oracle과 일치했고 모델 0회·원격 0회였다. 이 별도 benchmark는 66/200 점수에 포함하지 않았다.
 - **Validation**: time-series/chart focused 17/17, application 140/140, migration 126/126, actual-agent harness 40/40, Level 3 17/17, 전체 runner 217/217, compileall과 diff check PASS.
+- **Remote Gate**: commit `d87c887`을 PR #68 브랜치에 push했다. GitHub Actions run `35786432923`, job `106944249753`가 migration, application, agentic recovery, reference/agentic suite와 compile 검사를 1분 25초에 모두 통과했다.
 - **Artifact**: `docs/actual_agent_evaluation_time_series_2026-09-23.json`.
+
+---
+
+## [2026-09-23 06:27:02 KST] [Agent: Codex] User Request: 계속 진행
+- **Request**: 시계열 구현 이후 남은 작업을 계속 진행하고 원격 검증·기록 상태를 마무리한다.
+- **Action**: 코드 commit의 GitHub Actions release gate를 확인하고, 로컬·원격 revision 일치와 실행 중인 chatbot health를 검증한 뒤 canonical 진행 기록을 갱신한다.
+- **Outcome**: run `35786432923` 성공, 로컬·원격 HEAD `d87c8878c0eac1f8fda71a5a9cb24fa520d54c30` 일치, `127.0.0.1:8502/_stcore/health` 응답 `ok`를 확인했다. Databricks 조회는 0회다.
 
 ---
 
@@ -387,7 +395,7 @@
 - [ ] R05: Local p95/RSS capacity gate is READY; recalibrate it on the selected deployment host and measure concurrent Ollama inference.
 - [x] R06: Validate 750,000-row storage, cache eviction, restart/crash recovery and retained PNG.
 - [ ] R07: Expand independent actual-agent grading beyond 66/200 supported cases.
-- [ ] R08: Bounded join, grouped boxplots, structured statistical tests, direct outlier detection, scalar cohort follow-up, ordered frequency lines, and calendar-month cumulative lines are complete; implement datetime time-series, multi-panel, and cohort group/transform scope as prioritized.
+- [ ] R08: Bounded join, grouped boxplots, structured statistical tests, direct outlier detection, scalar cohort follow-up, ordered frequency/calendar-month lines, and datetime time-series are complete; implement multi-panel/dual-axis and cohort group/transform scope as prioritized.
 - [x] R09: Approved live Databricks load/reuse validated and release candidate tag fixed.
 - [x] R10: Remove production dependencies on fixed table/schema facts and validate schema drift and freshness behavior.
 - [ ] R11: Deployment contract and preflight are ready; review draft PR #68, merge, choose the target, and verify smoke/rollback there.
@@ -403,7 +411,7 @@ Task definitions and acceptance conditions: docs/agent_remaining_tasks_2026-09-1
 
 ### 2026-09-23 Daily Summary
 - **Work completed**: Added table-neutral `prepare_time_series` and multi-series line rendering with explicit timezone, duplicate timestamp, gap, frequency, cardinality, output-size, lineage, and restart contracts.
-- **Evidence**: An arbitrary-schema production journey created a two-series daily sum with `Asia/Seoul`, two duplicate-time rows, and two zero-filled gap rows. The derived frame and plotted points matched an independent pandas oracle with zero model and remote calls. Application 140/140, migration 126/126, actual-agent 40/40, Level 3 17/17, and full runner 217/217 passed.
+- **Evidence**: An arbitrary-schema production journey created a two-series daily sum with `Asia/Seoul`, two duplicate-time rows, and two zero-filled gap rows. The derived frame and plotted points matched an independent pandas oracle with zero model and remote calls. Application 140/140, migration 126/126, actual-agent 40/40, Level 3 17/17, and full runner 217/217 passed. GitHub Actions run `35786432923` passed the release gate for commit `d87c887`.
 - **Remaining**: Independent grading remains 66/200 with 134 cases ungraded. Multi-panel/dual-axis charts, outlier-cohort group transformations, PR review/merge/deployment, selected-host capacity and smoke/rollback gates remain. Four stale production TableContexts still require separate user-approved refreshes.
 - **Report**: `docs/actual_agent_evaluation_time_series_2026-09-23.json`.
 
