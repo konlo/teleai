@@ -256,8 +256,8 @@ def render_chart_spec(store: DatasetStore, dataset_id: str, *, kind: str, x: str
         raise ValueError("calendar_month 정렬은 선 차트에서만 지원합니다.")
     if cumulative and kind != "line":
         raise ValueError("누적 변환은 선 차트에서만 지원합니다.")
-    if kind not in {"scatter", "boxplot"} and category:
-        raise ValueError("category는 산점도 범주 구분 또는 그룹 박스플롯에만 사용할 수 있습니다.")
+    if kind not in {"scatter", "boxplot", "line"} and category:
+        raise ValueError("category는 산점도, 그룹 박스플롯 또는 다중 선 차트에만 사용할 수 있습니다.")
 
     def numeric(series, name):
         if not pd.api.types.is_numeric_dtype(series) or pd.api.types.is_bool_dtype(series):
@@ -391,25 +391,40 @@ def render_chart_spec(store: DatasetStore, dataset_id: str, *, kind: str, x: str
             if aggregation != "count":
                 raise ValueError("y가 없는 선 차트는 count 집계만 지원합니다.")
             point_value_column = "count" if x == "value" else "value"
-            plotted = (source[x].dropna().value_counts(sort=False)
-                       .rename(point_value_column).rename_axis(x).reset_index())
+            if category:
+                plotted = (source[[x, category]].dropna()
+                           .groupby([x, category], sort=False, observed=True).size()
+                           .rename(point_value_column).reset_index())
+            else:
+                plotted = (source[x].dropna().value_counts(sort=False)
+                           .rename(point_value_column).rename_axis(x).reset_index())
             effective_aggregation = "count"
             value_label = "Count"
         else:
             point_value_column = "measure" if x == "value" else "value"
-            frame = pd.DataFrame({x: source[x], y: numeric(source[y], y)}).dropna()
+            frame = pd.DataFrame({x: source[x], y: numeric(source[y], y)})
+            if category:
+                frame[category] = source[category]
+            frame = frame.dropna(subset=[x] + ([category] if category else []))
             if aggregation == "count":
                 raise ValueError("선 차트의 count 집계에는 y를 지정하지 마세요.")
             if aggregation == "none":
-                if frame[x].duplicated().any():
-                    raise ValueError("집계 없는 선 차트의 x는 고유해야 합니다.")
+                if frame[y].notna().sum() < 2:
+                    raise ValueError("선 차트에는 유효한 y 값이 2개 이상 필요합니다.")
+                uniqueness = [x, category] if category else [x]
+                if frame.duplicated(uniqueness).any():
+                    raise ValueError("집계 없는 선 차트의 시간·category 조합은 고유해야 합니다.")
                 plotted = frame.rename(columns={y: point_value_column})
             else:
-                plotted = (frame.groupby(x, sort=False, observed=True)[y]
+                frame = frame.dropna(subset=[y])
+                group_keys = [x, category] if category else x
+                plotted = (frame.groupby(group_keys, sort=False, observed=True)[y]
                            .agg(aggregation).rename(point_value_column).reset_index())
             value_label = y if aggregation == "none" else f"{aggregation}({y})"
         if len(plotted) < 2 or len(plotted) > 5_000:
             raise ValueError("선 차트는 2~5,000개의 점이 필요합니다. 더 큰 데이터는 먼저 집계하세요.")
+        if category and not 1 <= plotted[category].nunique(dropna=True) <= 20:
+            raise ValueError("다중 선 차트의 category 고유값은 1~20개여야 합니다.")
         if sort == "calendar_month":
             month_number = {
                 "jan": 1, "january": 1, "feb": 2, "february": 2,
@@ -420,15 +435,26 @@ def render_chart_spec(store: DatasetStore, dataset_id: str, *, kind: str, x: str
                 "dec": 12, "december": 12,
             }
             keys = plotted[x].astype(str).str.strip().str.casefold().map(month_number)
-            if keys.isna().any() or keys.duplicated().any():
+            duplicate_keys = pd.DataFrame({"month": keys})
+            if category:
+                duplicate_keys[category] = plotted[category].to_numpy()
+            if keys.isna().any() or duplicate_keys.duplicated().any():
                 raise ValueError("calendar_month 정렬에는 중복되지 않는 영문 월 이름/약어가 필요합니다.")
+            sort_columns = ([category] if category else []) + ["_calendar_order"]
             plotted = plotted.assign(_calendar_order=keys).sort_values(
-                "_calendar_order").drop(columns="_calendar_order")
+                sort_columns).drop(columns="_calendar_order")
         elif sort != "none":
-            plotted = plotted.sort_values(x, ascending=sort == "ascending")
+            sort_columns = ([category] if category else []) + [x]
+            plotted = plotted.sort_values(sort_columns, ascending=sort == "ascending")
         if cumulative:
-            plotted[point_value_column] = plotted[point_value_column].cumsum()
-        ax.plot(plotted[x], plotted[point_value_column], marker="o", color="#3278b9")
+            plotted[point_value_column] = (plotted.groupby(category, sort=False)[point_value_column].cumsum()
+                                           if category else plotted[point_value_column].cumsum())
+        if category:
+            for value, group in plotted.groupby(category, sort=False, observed=True):
+                ax.plot(group[x], group[point_value_column], marker="o", label=str(value))
+            ax.legend(fontsize=8)
+        else:
+            ax.plot(plotted[x], plotted[point_value_column], marker="o", color="#3278b9")
         ax.set(xlabel=x_label or x, ylabel=y_label or value_label)
         if pd.api.types.is_datetime64_any_dtype(plotted[x]):
             fig.autofmt_xdate()
@@ -459,13 +485,17 @@ def render_chart_spec(store: DatasetStore, dataset_id: str, *, kind: str, x: str
         def json_scalar(value):
             if hasattr(value, "item"):
                 value = value.item()
+            if pd.isna(value):
+                return None
             if isinstance(value, pd.Timestamp):
                 return value.isoformat()
             return value if value is None or isinstance(value, (str, int, float, bool)) else str(value)
-        summary["points"] = [
-            {"x": json_scalar(row[x]), "value": json_scalar(row[point_value_column])}
-            for _, row in plotted.iterrows()
-        ]
+        summary["points"] = []
+        for _, row in plotted.iterrows():
+            point = {"x": json_scalar(row[x]), "value": json_scalar(row[point_value_column])}
+            if category:
+                point["category"] = json_scalar(row[category])
+            summary["points"].append(point)
     spec = {"kind": kind, "x": x, "y": y, "category": category,
             "aggregation": effective_aggregation, "sort": sort,
             "cumulative": bool(cumulative),

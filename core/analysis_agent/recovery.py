@@ -89,6 +89,33 @@ class RecoveryMiddleware(AgentMiddleware):
                 kind in {'bar', 'line', 'scatter', 'boxplot'} or
                 chart_cumulative or re.search(
                     r'제목|축\s*라벨|정렬|상위\s*\d+|top\s*\d+|\bbins?\b|\d+\s*(?:개\s*)?구간|가로|세로', text, re.I)))
+            time_series_context = bool(kind == 'line' and re.search(
+                r'시계열|리샘플|재표본|시간\s*간격|날짜|일시|타임스탬프|'
+                r'\b(?:time[ -]?series|resampl(?:e|ing)|datetime|timestamp)\b', text, re.I))
+            if time_series_context and re.search(r'시간별|매\s*시간|hourly|\b1h\b', text, re.I):
+                time_series_frequency = 'hour'
+            elif time_series_context and re.search(r'일별|매일|daily|\b1d\b', text, re.I):
+                time_series_frequency = 'day'
+            elif time_series_context and re.search(r'주별|주간|weekly|\b1w\b', text, re.I):
+                time_series_frequency = 'week'
+            elif time_series_context and re.search(r'월별|매월|monthly|\b1m\b', text, re.I):
+                time_series_frequency = 'month'
+            else:
+                time_series_frequency = None
+            if time_series_frequency and re.search(
+                    r'빈\s*(?:시간|날짜|구간).{0,12}(?:0|제로)|(?:gap|missing).{0,12}(?:zero|0)|fill.{0,8}zero',
+                    text, re.I):
+                time_series_gap_policy = 'zero'
+            elif time_series_frequency and re.search(
+                    r'빈\s*(?:시간|날짜|구간).{0,12}(?:NaN|결측)|(?:gap|missing).{0,12}(?:nan|null)',
+                    text, re.I):
+                time_series_gap_policy = 'nan'
+            else:
+                time_series_gap_policy = 'omit'
+            timezone_match = re.search(
+                r'(?:timezone|시간대)\s*(?:은|는|을|를|:|=)?\s*'
+                r'(UTC|[A-Za-z_]+/[A-Za-z0-9_+\-]+(?:/[A-Za-z0-9_+\-]+)*)', text, re.I)
+            time_series_timezone = timezone_match.group(1) if timezone_match else ''
             join_requested = bool(re.search(r'조인|병합|데이터\s*결합|\bjoin\b|\bmerge\b', text, re.I))
             if re.search(r'좌측|왼쪽|\bleft\s*(?:outer\s*)?join\b', text, re.I): join_how = 'left'
             elif re.search(r'우측|오른쪽|\bright\s*(?:outer\s*)?join\b', text, re.I): join_how = 'right'
@@ -205,6 +232,20 @@ class RecoveryMiddleware(AgentMiddleware):
             if re.search(r'비율|성공률|생존율|전환율|[가-힣A-Za-z]+[율률]|\b(?:ratio|rate|percentage|percent)\b',
                          objective_text, re.I): operations.append('RATIO')
             if count_request and 'COUNT' not in operations: operations.append('COUNT')
+            time_series_aggregation = None
+            if time_series_frequency:
+                operation_to_aggregation = {
+                    'COUNT':'count', 'SUM':'sum', 'AVG':'mean', 'MEDIAN':'median',
+                    'MIN':'min', 'MAX':'max'}
+                declared = [operation_to_aggregation[operation] for operation in operations
+                            if operation in operation_to_aggregation]
+                if len(declared) == 1:
+                    time_series_aggregation = declared[0]
+                    calculation, operations = False, []
+                else:
+                    # A time bucket without one explicit aggregation is
+                    # ambiguous. Leave it to the model rather than guessing.
+                    time_series_frequency = None
             if chart_cumulative and set(operations) <= {'SUM'}:
                 # The sum is the declared chart transform, not a separate
                 # scalar result obligation.
@@ -259,6 +300,10 @@ class RecoveryMiddleware(AgentMiddleware):
                 calculation=calculation, operations=operations, metadata_kind=metadata_kind,
                 profile_kind=profile_kind, chart_spec_requested=chart_spec_requested,
                 chart_cumulative=chart_cumulative,
+                time_series_frequency=time_series_frequency,
+                time_series_aggregation=time_series_aggregation,
+                time_series_gap_policy=time_series_gap_policy,
+                time_series_timezone=time_series_timezone,
                 data_load=data_load,
                 expected_load_source=human.additional_kwargs.get('source','') if data_load else '',
                 expected_load_query=human.additional_kwargs.get('query','') if data_load else '',
@@ -292,6 +337,8 @@ class RecoveryMiddleware(AgentMiddleware):
                     outlier_column=None,outlier_followup=False,outlier_selection='outliers',
                     calculation=False,operations=[],metadata_kind=None,profile_kind=None,
                     chart_spec_requested=False,chart_cumulative=False,whole_row_count=False,current_result_only=False,fresh_source_required=False,
+                    time_series_frequency=None,time_series_aggregation=None,
+                    time_series_gap_policy='omit',time_series_timezone='',
                     required_columns=[])
                 current['scope']={'conditions':[],'any_conditions':[],
                     'measure_conditions':[],'ratio':None,'unresolved':[],'columns':[]}
@@ -469,6 +516,34 @@ class RecoveryMiddleware(AgentMiddleware):
                         'summary': summary,
                         'scope': observation.get('scope'),
                     }
+                    current['failed'].pop(name, None)
+            if name == 'prepare_time_series' and observation.get('status') == 'ready':
+                parent_id = arguments.get('dataset_id')
+                child_id = observation.get('dataset', {}).get('id')
+                parent = self.context.datasets.metadata.get(parent_id) if self.context else None
+                child = self.context.datasets.metadata.get(child_id) if self.context else None
+                result = observation.get('time_series_result', {})
+                from utils.analysis_timeseries import dataset_digest
+                valid = (
+                    parent is not None and child is not None
+                    and result.get('kind') == 'time_series_preparation'
+                    and result.get('parent_dataset_id') == parent_id
+                    and child.parent_id == parent_id and child.source == parent.source
+                    and child.snapshot == parent.snapshot and child.grain == 'aggregate'
+                    and result.get('time_column') == arguments.get('time_column')
+                    and result.get('frequency') == arguments.get('frequency') == current.get('time_series_frequency')
+                    and result.get('aggregation') == arguments.get('aggregation') == current.get('time_series_aggregation')
+                    and result.get('gap_policy') == arguments.get('gap_policy') == current.get('time_series_gap_policy')
+                    and result.get('output_rows') == child.rows
+                    and result.get('data_sha256') == dataset_digest(self.context.datasets.frames[child_id])
+                    and self._source_matches(parent, current)
+                    and self._fresh_for_request(parent, current)
+                    and (current.get('current_result_only')
+                         or (parent.coverage == 'complete' and parent.predicate_known))
+                    and not self._has_scope(current))
+                if valid:
+                    current['time_series_evidence'] = observation
+                    current['time_series_dataset'] = child_id
                     current['failed'].pop(name, None)
             if name == 'statistical_test' and observation.get('status') == 'ready':
                 dataset_id = arguments.get('dataset_id') or observation.get('dataset_id')
@@ -777,6 +852,7 @@ class RecoveryMiddleware(AgentMiddleware):
     def _complete(self, current):
         if current.get('data_load'): return bool(current.get('load_evidence_id'))
         if current.get('join') and not current.get('join_evidence'): return False
+        if current.get('time_series_frequency') and not current.get('time_series_evidence'): return False
         if current.get('statistical_kind') and not current.get('statistical_evidence'): return False
         if current.get('outlier_spec') and not current.get('outlier_evidence'): return False
         if current.get('metadata_kind') and not current.get('metadata_evidence'): return False
@@ -849,6 +925,21 @@ class RecoveryMiddleware(AgentMiddleware):
                 f"NULL key 왼쪽 {summary['left_null_key_rows']:,}행, 오른쪽 {summary['right_null_key_rows']:,}행.\n"
                 f"분석 범위: {evidence.get('scope')}"
             )
+        if current.get('time_series_evidence'):
+            evidence = current['time_series_evidence']
+            result = evidence['time_series_result']
+            line = (
+                f"{result['time_column']}을 {result['frequency']} 단위로 준비했습니다. "
+                f"{result['aggregation']} 집계 {result['output_rows']:,}행, "
+                f"timezone {result['timezone']}입니다.\n"
+                f"사용 {result['complete_rows']:,}행, 제외 {result['dropped_rows']:,}행, "
+                f"중복 시각 관측 {result['duplicate_time_rows']:,}행, "
+                f"추가한 빈 구간 {result['gap_rows_added']:,}행(gap policy: {result['gap_policy']})."
+            )
+            if result.get('group_column'):
+                line += f"\n{result['group_column']} 기준 {result['group_count']:,}개 series를 분리했습니다."
+            line += f"\n기간: {result['start']} ~ {result['end']}.\n분석 범위: {evidence.get('scope')}"
+            parts.append(line)
         if current.get('statistical_evidence'):
             evidence = current['statistical_evidence']
             result = evidence['test_result']
@@ -962,6 +1053,88 @@ class RecoveryMiddleware(AgentMiddleware):
         return {'recovery': current, 'messages': [message]}
 
     def _next_local(self, current, calls):
+        if (self.context and current.get('time_series_frequency')
+                and not current.get('time_series_evidence') and not self._has_scope(current)):
+            required = list(current.get('required_columns', []))
+            candidates = [info for info in self.context.datasets.metadata.values()
+                if info.grain == 'raw' and not info.aggregation
+                and set(required).issubset(info.columns)
+                and self._source_matches(info, current)
+                and self._fresh_for_request(info, current)
+                and (current.get('current_result_only')
+                    or (info.coverage == 'complete' and info.predicate_known))]
+            plans = []
+            from pandas.api.types import is_datetime64_any_dtype, is_numeric_dtype
+            import pandas as pd
+            for info in candidates:
+                frame = self.context.datasets.frames[info.id]
+                time_columns = []
+                for column in required:
+                    series = frame[column]
+                    if is_datetime64_any_dtype(series):
+                        time_columns.append(column)
+                    elif not is_numeric_dtype(series):
+                        non_null = int(series.notna().sum())
+                        parsed = pd.to_datetime(series, errors='coerce', format='mixed')
+                        if non_null >= 2 and int(parsed.notna().sum()) / non_null >= 0.95:
+                            time_columns.append(column)
+                if len(time_columns) != 1:
+                    continue
+                time_column = time_columns[0]
+                remaining = [column for column in required if column != time_column]
+                aggregation = current.get('time_series_aggregation')
+                if aggregation == 'count':
+                    value_column = ''
+                    group_candidates = remaining
+                else:
+                    numeric_columns = [column for column in remaining
+                                       if is_numeric_dtype(frame[column])]
+                    if len(numeric_columns) != 1:
+                        continue
+                    value_column = numeric_columns[0]
+                    group_candidates = [column for column in remaining if column != value_column]
+                if len(group_candidates) > 1:
+                    continue
+                group_column = group_candidates[0] if group_candidates else ''
+                if group_column and not 1 <= frame[group_column].nunique(dropna=True) <= 20:
+                    continue
+                plans.append((info, time_column, value_column, group_column))
+            if len(plans) == 1:
+                info, time_column, value_column, group_column = plans[0]
+                arguments = {
+                    'dataset_id':info.id,
+                    'time_column':time_column,
+                    'frequency':current['time_series_frequency'],
+                    'aggregation':current['time_series_aggregation'],
+                    'gap_policy':current.get('time_series_gap_policy', 'omit'),
+                    'timezone':current.get('time_series_timezone', ''),
+                    'max_output_rows':5000,
+                }
+                if value_column:
+                    arguments['value_column'] = value_column
+                if group_column:
+                    arguments['group_column'] = group_column
+                if not any(c.get('name') == 'prepare_time_series' and c.get('args') == arguments
+                           for c in calls.values()):
+                    return {'name':'prepare_time_series', 'args':arguments}
+        if (self.context and current.get('time_series_evidence')
+                and current.get('chart') and not current.get('artifact_ids')):
+            evidence = current['time_series_evidence']['time_series_result']
+            arguments = {
+                'dataset_id':current['time_series_dataset'],
+                'kind':'line',
+                'x':evidence['time_column'],
+                'y':evidence['value_column'],
+                'aggregation':'none',
+                'sort':'ascending',
+            }
+            if evidence.get('group_column'):
+                arguments['category'] = evidence['group_column']
+            if current.get('chart_cumulative'):
+                arguments['cumulative'] = True
+            if not any(c.get('name') == 'render_chart_spec' and c.get('args') == arguments
+                       for c in calls.values()):
+                return {'name':'render_chart_spec', 'args':arguments}
         if (self.context and current.get('outlier_spec')
                 and not current.get('outlier_evidence') and not self._has_scope(current)):
             column = current.get('outlier_column')
@@ -1127,7 +1300,8 @@ class RecoveryMiddleware(AgentMiddleware):
                          'weight_column': current['plan']['weight_column']}
             if not any(c.get('name') == 'render_histogram' and c.get('args') == arguments for c in calls.values()):
                 return {'name': 'render_histogram', 'args': arguments}
-        if (self.context and current.get('chart') and current.get('kind') in {'bar', 'line', 'scatter', 'boxplot'}
+        if (self.context and current.get('chart') and not current.get('time_series_frequency')
+                and current.get('kind') in {'bar', 'line', 'scatter', 'boxplot'}
                 and not current.get('fresh_source_required') and not current.get('artifact_ids')):
             columns = current.get('required_columns', [])
             candidates = [info for info in self.context.datasets.metadata.values()
@@ -1479,7 +1653,10 @@ class RecoveryMiddleware(AgentMiddleware):
 
     def before_step(self, state):
         current, calls = self._state(state)
-        if (current.get('data_load') or current.get('plan') or current.get('join') or current.get('statistical_kind') or current.get('outlier_spec') or current.get('chart') or current.get('calculation') or current.get('metadata_kind') or current.get('profile_kind')) and self._complete(current):
+        if (current.get('data_load') or current.get('plan') or current.get('join')
+                or current.get('time_series_frequency') or current.get('statistical_kind')
+                or current.get('outlier_spec') or current.get('chart') or current.get('calculation')
+                or current.get('metadata_kind') or current.get('profile_kind')) and self._complete(current):
             return {**self._finish(current), 'jump_to': 'end'}
         reason = self._limit_reason(current)
         if reason: return {**self._finish(current, reason=reason), 'jump_to': 'end'}
@@ -1550,6 +1727,10 @@ class RecoveryMiddleware(AgentMiddleware):
         if call.get('name') == 'statistical_test' and self.context:
             info = self.context.datasets.metadata.get(arguments.get('dataset_id'))
             return True if info is None else self._statistical_scope_valid(info, arguments, current)
+        if call.get('name') == 'prepare_time_series' and self.context:
+            info = self.context.datasets.metadata.get(arguments.get('dataset_id'))
+            return (True if info is None else not self._has_scope(current)
+                    and self._scope_valid(info, current))
         if call.get('name') in {'detect_outliers', 'select_outlier_rows'} and self.context:
             info = self.context.datasets.metadata.get(arguments.get('dataset_id'))
             return True if info is None else self._scope_valid(info, current)
@@ -1611,6 +1792,11 @@ class RecoveryMiddleware(AgentMiddleware):
             if call['name'] in {'recommend_chart_images', 'render_chart_spec', 'render_histogram', 'show_chart'}: current['chart'] = True
             if call['name'] == 'join_datasets': current['join'] = True
             if call['name'] == 'statistical_test': current['statistical_kind'] = call.get('args', {}).get('test')
+            if call['name'] == 'prepare_time_series' and not current.get('time_series_frequency'):
+                current['time_series_frequency'] = call.get('args', {}).get('frequency')
+                current['time_series_aggregation'] = call.get('args', {}).get('aggregation')
+                current['time_series_gap_policy'] = call.get('args', {}).get('gap_policy', 'omit')
+                current['time_series_timezone'] = call.get('args', {}).get('timezone', '')
             if (call['name'] in {'detect_outliers', 'select_outlier_rows'} and not current.get('outlier_spec')
                     and not current.get('calculation')
                     and len(current.get('required_columns', [])) == 1):
@@ -1649,11 +1835,13 @@ class RecoveryMiddleware(AgentMiddleware):
             missing_chart=bool(current.get('chart') and not current['artifact_ids']),
             missing_calculation=bool(current.get('calculation') and not current['evidence_ids']),
             missing_join=bool(current.get('join') and not current.get('join_evidence')),
+            missing_time_series=bool(current.get('time_series_frequency') and not current.get('time_series_evidence')),
             missing_statistical_test=bool(current.get('statistical_kind') and not current.get('statistical_evidence')),
             missing_outlier_detection=bool(current.get('outlier_spec') and not current.get('outlier_evidence')))
         instruction = ('이전 응답은 완료 증거가 없어 채택되지 않았습니다. 원래 사용자 요청을 계속 수행하세요. '
             '수치/통계는 local_analysis_sql의 실제 계산 결과가 필요하고 결측·고유값·기초 통계는 profile_dataset의 구조화 결과가 필요합니다. 테이블 설명이나 미리보기는 계산 증거가 아닙니다. '
             '두 로딩 dataset의 결합은 join_datasets로 cardinality와 lineage를 확인해야 합니다. many-to-many 차단을 우회하지 말고 먼저 한쪽 grain을 명확히 하세요. '
+            '시간 재집계는 prepare_time_series로 datetime 파싱·timezone·중복 시각·gap·빈도·lineage를 확인한 뒤 파생 dataset을 render_chart_spec으로 그리세요. '
             '가설 검정과 평균 신뢰구간은 statistical_test의 구조화 결과가 완료 증거입니다. 표본 수·결측·가정·효과크기·신뢰구간을 확인하세요. '
             '이상치 기준과 건수는 detect_outliers의 구조화 결과가 완료 증거입니다. IQR·Z-score·MAD·분위수 기준, tail, 결측과 coverage를 확인하세요. '
             '요청한 출처, 컬럼, 집계와 필터를 유지하세요. 지정 차트와 수정은 render_chart_spec을 사용하고, 원격 데이터가 필요한 히스토그램은 prepare_histogram(source, column, where_sql)을 사용하세요. '

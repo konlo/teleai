@@ -4,7 +4,7 @@
 
 현재 production `GraphAnalysisRuntime`의 tool 구조는 **승인형 데이터 로딩, 보유 DataFrame 재사용, 기본 SQL 계산, 기본 차트 생성과 복구**에는 적합하다. 중앙 registry와 실행 wrapper, 승인 ledger, lineage 검사, 영속 artifact가 연결돼 있어 단순 tool 모음은 아니다.
 
-2026-09-22까지 P0 공백인 공통 결과 계약, 데이터셋 프로파일, 승인형 source discovery와 P1의 제한된 차트 사양·다중 dataset join·구조화 통계 검정, 직접 이상치 탐지 및 계보가 있는 이상치 cohort 후속 계산을 구현했다. 현재 남은 tool 범위는 이상치 cohort의 그룹 집계·변환, 시계열, 다중 패널 차트와 결과 내보내기다.
+2026-09-23까지 P0 공백인 공통 결과 계약, 데이터셋 프로파일, 승인형 source discovery와 P1의 제한된 차트 사양·다중 dataset join·구조화 통계 검정, 직접 이상치 탐지, 계보가 있는 이상치 cohort 후속 계산과 bounded datetime 시계열 준비를 구현했다. 현재 남은 tool 범위는 이상치 cohort의 그룹 집계·변환, 다중 패널·이중축 차트와 결과 내보내기다.
 
 따라서 현재 상태는 **검증된 제한 범위에 적합**하며, 범용 분석 agent로 승격하려면 남은 의도와 배포 환경 검증이 필요하다.
 
@@ -77,7 +77,7 @@
 ### P2 — 사용 범위를 선언한 뒤 추가
 
 7. **`detect_outliers`·`select_outlier_rows` — 직접 탐지와 bounded 후속 계산 구현 완료**: IQR/Z-score/MAD/분위수 결과와 threshold·행 수·범위를 구조화한다. 선택 cohort의 parent·snapshot·predicate·digest를 보존하고 scalar 후속 계산을 해당 child에 고정한다. 그룹 집계·winsorization 등 변환 범위는 아직 미검증이다.
-8. **`prepare_time_series`**: datetime 검증, timezone, 빈도, gap, 중복 시각, resampling 정의를 명시한다.
+8. **`prepare_time_series`**: 완료. 실제 dtype·95% 파싱 성공률, IANA timezone, hour/day/week/month, gap omit/zero/nan, 중복 시각, 최대 20개 series와 5,000행 한도를 검증하고 parent lineage가 있는 aggregate dataset을 만든다.
 9. **`export_result`**: 검증된 dataset/chart만 CSV·PNG로 내보내고 provenance manifest를 함께 만든다.
 
 ## 추가하지 말아야 할 것
@@ -113,6 +113,6 @@
 2. `profile_dataset`과 승인형 source discovery를 추가한다.
 3. 실제 agent 독립 oracle 중 schema/결측/고유값/기본 그룹 집계를 우선 확대한다.
 4. 제한된 `render_chart_spec`과 지정 차트·수정·재시작 검증을 완료한다.
-5. multi-dataset join, statistical test, 직접 outlier detection과 bounded cohort 후속 계산, 숫자축 빈도 선·영문 월 누적 곡선을 완료했다. 다음 tool 보강은 datetime resampling·gap·다중 series, 다중 패널 또는 cohort 그룹 집계 중에서 선택한다.
+5. multi-dataset join, statistical test, 직접 outlier detection과 bounded cohort 후속 계산, 숫자축 빈도 선·영문 월 누적 곡선, datetime resampling·gap·다중 series를 완료했다. 다음 tool 보강은 다중 패널·이중축 또는 cohort 그룹 집계 중에서 선택한다.
 
 이 순서라면 tool 수를 통제하면서도 자주 실패하는 사용자 의도를 결정적이고 검증 가능한 실행으로 옮길 수 있다.

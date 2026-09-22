@@ -27,6 +27,7 @@ from utils.analysis_outliers import (
     detect_outliers as run_outlier_detection,
     select_outlier_rows as run_outlier_selection,
 )
+from utils.analysis_timeseries import prepare_time_series as build_time_series
 
 
 def build_analysis_tools(context: AnalysisToolContext) -> list[ToolDefinition]:
@@ -170,6 +171,22 @@ def build_analysis_tools(context: AnalysisToolContext) -> list[ToolDefinition]:
             threshold=threshold,
             lower_quantile=lower_quantile,
             upper_quantile=upper_quantile,
+        )
+
+    def prepare_time_series(dataset_id, time_column, value_column="", group_column="",
+                            frequency="day", aggregation="count", gap_policy="omit",
+                            timezone="", max_output_rows=5_000):
+        return build_time_series(
+            datasets,
+            dataset_id,
+            time_column=time_column,
+            value_column=value_column,
+            group_column=group_column,
+            frequency=frequency,
+            aggregation=aggregation,
+            gap_policy=gap_policy,
+            timezone=timezone,
+            max_output_rows=max_output_rows,
         )
 
     def propose_query(source, query, reason):
@@ -462,6 +479,17 @@ def build_analysis_tools(context: AnalysisToolContext) -> list[ToolDefinition]:
               "lower_quantile": {"type":"number","minimum":0,"maximum":1},
               "upper_quantile": {"type":"number","minimum":0,"maximum":1}},
              ["dataset_id","column","method"], select_outlier_rows),
+        tool("prepare_time_series", "로딩된 raw dataset의 실제 시간 컬럼을 검증하고 hour/day/week/month 단위로 제한된 재집계를 수행합니다. timezone, 파싱 실패, 중복 시각, 빈 구간, group cardinality와 출력 행 한도를 검사하며 부모 lineage를 가진 aggregate dataset을 저장합니다. 숫자 epoch 단위나 DST 충돌을 추측하지 않습니다.",
+             {"dataset_id": string,
+              "time_column": string,
+              "value_column": string,
+              "group_column": string,
+              "frequency": {"type":"string","enum":["hour","day","week","month"]},
+              "aggregation": {"type":"string","enum":["count","sum","mean","median","min","max"]},
+              "gap_policy": {"type":"string","enum":["omit","zero","nan"]},
+              "timezone": {"type":"string","maxLength":64},
+              "max_output_rows": {"type":"integer","minimum":2,"maximum":5000}},
+             ["dataset_id","time_column","frequency","aggregation"], prepare_time_series),
         tool("propose_databricks_query", "Databricks 조회를 사용자에게 제안합니다. 이 도구는 실행하지 않습니다. 정확한 SQL과 이유를 표시하고 승인 대기합니다.",
              {"source": string, "query": string, "reason": string}, ["source", "query", "reason"], propose_query),
         tool("recommend_chart_images", "현재 데이터의 통계로 실제 이미지 후보를 만듭니다. 원격 조회 없음. 반환된 카드 ID의 이미지는 UI가 표시합니다.",
