@@ -36,6 +36,7 @@
 - **Implementation**: `render_chart_spec`의 line 경로에 `aggregation=count`, 숫자축 정렬, 영문 월 `calendar_month` 정렬과 명시적 `cumulative` 변환을 추가했다. 월 이름 검증·중복 차단·실제 plotted points와 digest 보존을 적용하고 production recovery가 변경하지 않은 두 요청을 모델 없이 결정적으로 dispatch하도록 연결했다.
 - **Evaluation**: `L1_098` 접촉일별 건수 선 그래프와 `L2_068` 월별 누적 접촉 건수 곡선이 실제 PNG와 독립 pandas reference digest에 2/2 일치했다. 모델 호출 0회, 원격 실행 0회다.
 - **Validation**: chart spec 12/12, application 133/133, migration 126/126, actual-agent evaluation harness 40/40, Level 3 17/17, 전체 참고 runner 217/217 PASS.
+- **Remote Gate**: commit `0e4350c`를 push했고 GitHub Actions run `35732188306`, job `106760277927`이 1분 29초에 성공했다.
 - **Artifact**: `docs/actual_agent_evaluation_ordered_lines_2026-09-22.json`.
 - **Outcome**: 독립 채점은 66/200, 미채점은 134문항이다. datetime resampling·timezone·gap·중복 시각·다중 series, 다중 패널·이중축, cohort 그룹 집계·변환은 계속 남아 있다.
 
