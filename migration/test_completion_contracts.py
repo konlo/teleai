@@ -318,7 +318,9 @@ class CompletionTests(unittest.TestCase):
             r = GraphAnalysisRuntime(root, 'owner', 'scope-repair', model)
             model.dataset_id = r.datasets.register(pd.DataFrame(FIXTURE['rows']), source=SOURCE,
                 coverage='complete', predicate_known=True).id
-            outcome = r.submit(FIXTURE['turns'][0]['prompt'])
+            # Keep this fault-injection contract on the model path. Explicit
+            # "보유 데이터" requests now use deterministic local scalar recovery.
+            outcome = r.submit('2026-08의 value 평균을 계산해줘.')
             state = r.inspect()['recovery']
             self.assertEqual(outcome['status'], 'answered', outcome)
             self.assertEqual(float(r.datasets.frames[state['evidence_ids'][0]].iloc[0, 0]),
@@ -343,7 +345,9 @@ class CompletionTests(unittest.TestCase):
             r = GraphAnalysisRuntime(root, 'owner', 'scope-followup', model)
             model.dataset_id = r.datasets.register(pd.DataFrame(FIXTURE['rows']), source=SOURCE,
                 coverage='complete', predicate_known=True).id
-            self.assertEqual(r.submit(first['prompt'])['status'], 'answered')
+            # Keep the first turn on the model path so the second scripted call
+            # can prove that inherited scope is rejected when it loses a month.
+            self.assertEqual(r.submit('2026-08의 value 평균을 계산해줘.')['status'], 'answered')
             outcome = r.submit(followup['prompt'])
             state = r.inspect()['recovery']
             self.assertNotEqual(outcome['status'], 'answered', outcome)

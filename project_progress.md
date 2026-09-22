@@ -3,7 +3,7 @@
 ## Current Status
 - **Last Updated**: 2026-09-22
 - **Status**: In Progress — 배포 preflight까지 검증한 1인용 제한 출시 후보
-- **Summary**: 공통 tool 결과 계약, bounded profile·chart·multi-dataset join·구조화 통계 검정·직접 이상치 탐지와 계보가 있는 이상치 cohort 후속 계산을 production graph에 연결했다. application 133/133, migration 126/126, actual-agent evaluation harness 40/40, Level 3 17/17, 전체 참고 runner 217/217 PASS다. 실제 agent 독립 채점은 66/200이며 `L1_098` 숫자축 빈도 선과 `L2_068` 월별 누적 곡선은 모델·원격 호출 없이 실제 PNG·plot data digest를 독립 reference와 일치시켰다.
+- **Summary**: 공통 tool 결과 계약, bounded profile·chart·multi-dataset join·구조화 통계 검정·직접 이상치 탐지와 계보가 있는 이상치 cohort 후속 계산을 production graph에 연결했다. 보유 DataFrame의 기본 scalar 분석과 연속 follow-up도 런타임 schema로 결정적으로 처리한다. application 135/135, migration 126/126, actual-agent evaluation harness 40/40, Level 3 17/17, 전체 참고 runner 217/217 PASS다. 실제 agent 독립 채점은 66/200이다.
 - **Next Session Focus**: 배포 대상·실제 호스트 gate·smoke/rollback → 남은 134문항 oracle와 datetime 시계열·다중 패널·이상치 cohort 그룹 집계 범위.
 
 ## Next Action Items
@@ -25,6 +25,34 @@
 - [x] `select_outlier_rows`로 이상치 cohort의 parent·snapshot·predicate·행 수·digest를 보존하고 해당 child dataset의 후속 count·ratio 계산과 재시작 복구를 검증했다.
 - [x] 수치값+범주의 그룹 박스플롯을 실제 PNG·입력 digest로 검증하고 전체 범주 라벨과 부분 필터를 구별했다.
 - [x] 숫자축 빈도 선과 영문 월의 calendar 정렬·누적 곡선을 실제 PNG·plot data digest로 검증했다.
+
+---
+
+## [2026-09-22 22:52:03 KST] [Agent: Antigravity] User Request: 외부 agentic 평가하는 tool이 있는지 찾아봐줘
+- **Request**: 외부 agentic AI 시스템 평가 도구/프레임워크 조사 및 정리 요청.
+- **Action**: 외부 AI Agent 평가 도구 및 프레임워크(DeepEval, Promptfoo, Inspect, LangSmith, Braintrust, Arize Phoenix, AgentBench, SWE-bench 등)를 분류별(단위테스트, 프로덕션 관측/트레이싱, 표준 벤치마크)로 조사 완료.
+- **Outcome**: 개발/단위테스트, 프로덕션 Observability, 표준 벤치마크 프레임워크 3개 카테고리별 주요 도구 및 선택 가이드 정리 완료.
+
+---
+
+## [2026-09-22 KST] [Agent: Codex] User Request: database/table schema 비의존성 유지
+- **Request**: agent가 특정 database·table schema에 의존하지 않고, 필요한 정보는 실제 schema를 찾아 확인한 뒤 진행해야 한다.
+- **Decision**: production 코드·공통 prompt에 특정 테이블명·컬럼명·업무값을 하드코딩하지 않는다. 로딩 dataset metadata와 TableContext를 우선 사용하고, 정보 부재·stale 상태에서는 추측하지 않고 schema inspection 또는 사용자 승인형 discovery로 전환한다.
+- **Validation Plan**: 이번 scalar recovery를 임의 source와 `batch_code`·`cohort_key`·`metric_amount` 컬럼으로 재실행하여 동일한 결정적 계산과 후속 조건 보존을 검증한다.
+- **Implementation**: 기본 scalar recovery는 런타임 dataset metadata의 실제 컬럼·dtype·coverage·freshness를 확인한다. predicate 컬럼과 measure 컬럼을 분리하고, 후속 질문에서는 기존 measure를 보존한다. metadata 부재·stale 상태에서는 계산을 추측하지 않고 기존 schema inspection 또는 승인형 discovery 계약을 유지한다.
+- **Validation**: 임의 source `arbitrary.runtime_table`과 임의 컬럼 `batch_code`·`cohort_key`·`metric_amount`에서 W1 평균 6.0, alpha 후속 평균 3.0을 모델 호출 0회로 계산했다. production 영역에서 `bank_loan`, `age`, `balance`, `duration`, acceptance fixture 이름 하드코딩이 없음을 검색으로 확인했다.
+- **Outcome**: release criteria에 schema neutrality를 명시했고 application 135/135, migration 126/126, actual-agent 40/40, Level 3 17/17, 전체 runner 217/217가 통과했다.
+
+---
+
+## [2026-09-22 22:37:52 KST] [Agent: Codex] User Request: 현재 chatbot 직접 실행·테스트
+- **Request**: 최신 브랜치 상태로 실제 Streamlit chatbot을 실행하고 직접 테스트할 수 있게 한다.
+- **Action**: localhost:8502에서 pinned v1 환경으로 앱을 시작하고, 저장된 데이터만 쓰는 대표 분석 요청의 화면·로그·tool 호출·원격 조회 횟수를 확인한다.
+- **Safety**: Databricks 재조회 또는 stale TableContext 갱신은 승인 카드 이전에 멈추며 자동 실행하지 않는다. 기존 대화와 저장 데이터는 보존한다.
+- **Finding**: 첫 실제 화면의 단일 평균 요청이 로컬 scalar 경로 없이 Ollama로 넘어가 60초 `ReadTimeout`(`a30d7ae636cf`)이 발생했다. 원격 조회는 0회였고 기존 데이터는 보존됐다.
+- **Fix**: 보유 데이터의 기본 집계를 bounded local SQL로 처리하고, `그중 segment A` 같은 후속 조건이 이전 measure를 잃지 않도록 복구 상태 병합을 수정했다.
+- **Live Validation**: 새 대화 `24ddb8bf-ab41-42a9-a3f9-8e9ec65af3e8`에서 40.0 → 40.0 → 20.0 → 4.0의 4-turn follow-up을 실제 화면으로 확인했다. 각 turn은 모델 0회·로컬 tool 1회·원격 실행 0회였고 0.187초 이하에 완료됐다.
+- **Artifact**: `docs/live_chatbot_scalar_recovery_2026-09-22.md`.
 
 ---
 
@@ -329,7 +357,7 @@
 ## Current Status
 - **Last Updated**: 2026-09-22
 - **Status**: Limited-scope Release Candidate Validation
-- **Summary**: R14의 공통 tool 결과 계약, dataset profile, 승인형 source discovery, 제한된 chart spec, bounded multi-dataset join, 구조화 statistical test, 직접 outlier detection과 bounded cohort 후속 계산을 완료했다. 숫자축 빈도 선과 영문 월 누적 곡선까지 포함해 application 133 + migration 126 = 259/259, actual-agent evaluation harness 40/40, 참고 코드 217/217, agentic recovery 17/17 PASS다. 실제 agent 독립 채점은 66/200이므로 전체 기능 출시는 계속 NO-GO다.
+- **Summary**: R14의 공통 tool 결과 계약, dataset profile, 승인형 source discovery, 제한된 chart spec, bounded multi-dataset join, 구조화 statistical test, 직접 outlier detection과 bounded cohort 후속 계산을 완료했다. 런타임 schema 기반 local scalar follow-up까지 포함해 application 135 + migration 126 = 261/261, actual-agent evaluation harness 40/40, 참고 코드 217/217, agentic recovery 17/17 PASS다. 실제 agent 독립 채점은 66/200이므로 전체 기능 출시는 계속 NO-GO다.
 - **Next Session Focus**: 배포 대상·실제 호스트 검증 → 남은 134문항 oracle와 datetime 시계열·다중 패널·이상치 cohort 그룹 집계 범위. Canonical list: docs/agent_remaining_tasks_2026-09-13.md.
 
 ## Next Action Items (Pending tasks for the next session)
@@ -355,10 +383,10 @@ Task definitions and acceptance conditions: docs/agent_remaining_tasks_2026-09-1
 ## Daily Wrap-ups
 
 ### 2026-09-22 Daily Summary
-- **Work completed**: Added bounded `select_outlier_rows` and deterministic cohort follow-up. Extended `render_chart_spec` and recovery with table-neutral numeric frequency lines plus validated English calendar-month cumulative curves.
-- **Evidence**: `L2_040` retained exact cohort lineage and results. Unchanged `L1_098` and `L2_068` matched real PNG plus independent plot-data digests with zero model and remote calls. Application 133/133, migration 126/126, actual-agent evaluation harness 40/40, Level 3 17/17, and full runner 217/217 passed. Independent grading coverage is 66/200.
+- **Work completed**: Added bounded `select_outlier_rows` and deterministic cohort follow-up. Extended `render_chart_spec` and recovery with table-neutral numeric frequency lines plus validated English calendar-month cumulative curves. Reproduced and fixed a live single-scalar timeout, preserved measures across predicate follow-ups, and made this path depend only on runtime schema metadata.
+- **Evidence**: `L2_040` retained exact cohort lineage and results. Unchanged `L1_098` and `L2_068` matched real PNG plus independent plot-data digests. A visible four-turn scalar journey returned 40.0, 40.0, 20.0, and 4.0 in at most 0.187 seconds with zero model and remote calls. Arbitrary source/column tests passed. Application 135/135, migration 126/126, actual-agent evaluation harness 40/40, Level 3 17/17, and full runner 217/217 passed. Independent grading coverage is 66/200.
 - **Remaining**: Expand 134 independent oracles; add datetime resampling/timezone/gap/multi-series preparation, multi-panel/dual-axis charts, and outlier cohort group/transform analysis; review/merge/deploy PR #68 and run selected-host capacity plus smoke/rollback gates. Four stale production TableContexts still require separate user-approved refreshes.
-- **Reports**: `docs/actual_agent_evaluation_outlier_cohorts_2026-09-22.json`, `docs/actual_agent_evaluation_ordered_lines_2026-09-22.json`, `docs/agent_remaining_tasks_2026-09-13.md`, `docs/agent_tool_audit_2026-09-16.md`, `docs/agent_tool_contract_matrix_2026-09-18.md`.
+- **Reports**: `docs/live_chatbot_scalar_recovery_2026-09-22.md`, `docs/actual_agent_evaluation_outlier_cohorts_2026-09-22.json`, `docs/actual_agent_evaluation_ordered_lines_2026-09-22.json`, `docs/agent_remaining_tasks_2026-09-13.md`, `docs/agent_tool_audit_2026-09-16.md`, `docs/agent_tool_contract_matrix_2026-09-18.md`.
 
 ### 2026-09-21 Daily Summary
 - **Work completed**: Added bounded `detect_outliers` with IQR, sample Z-score, MAD, and quantile methods, then extended `render_chart_spec` and deterministic recovery for one-numeric/one-category grouped boxplots with exact group-scope validation.

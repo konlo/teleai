@@ -304,8 +304,27 @@ class RecoveryMiddleware(AgentMiddleware):
                 # require fresh evidence. Explicit replacement operations win.
                 current['calculation'] = calculation or previous.get('calculation', False)
                 current['chart'] = chart or (previous.get('chart', False) and not calculation)
+                current['current_result_only'] = bool(
+                    current.get('current_result_only') or previous.get('current_result_only'))
                 if not operations and current['calculation']: current['operations'] = previous.get('operations', [])
-                if not current['required_columns']: current['required_columns'] = previous.get('required_columns', [])
+                if current['calculation']:
+                    # A follow-up such as "그중 segment A" mentions only a new
+                    # predicate column. Keep the previous measure instead of
+                    # accidentally aggregating the predicate itself.
+                    predicate_columns = {item['column'] for item in (
+                        current['scope'].get('conditions', [])
+                        + current['scope'].get('any_conditions', []))}
+                    measures = [column for column in current['required_columns']
+                                if column not in predicate_columns]
+                    if not measures:
+                        previous_predicates = {item['column'] for item in (
+                            previous.get('scope', {}).get('conditions', [])
+                            + previous.get('scope', {}).get('any_conditions', []))}
+                        measures = [column for column in previous.get('required_columns', [])
+                                    if column not in previous_predicates]
+                    current['required_columns'] = measures
+                elif not current['required_columns']:
+                    current['required_columns'] = previous.get('required_columns', [])
                 if not current['required_sources']: current['required_sources'] = previous.get('required_sources', [])
                 if current['chart'] and not kind: current['kind'] = previous.get('kind')
                 if current['chart'] and re.search(r'제목|축|라벨|정렬|상위|top|bin|구간|가로|세로|바꿔|수정', text, re.I):
@@ -1337,19 +1356,29 @@ class RecoveryMiddleware(AgentMiddleware):
                     return {'name':'local_analysis_sql', 'args':arguments}
         aggregate_operations = current.get('operations', [])
         supported_aggregates = {'AVG', 'MEDIAN', 'SUM', 'MIN', 'MAX'}
-        if (self.context and current.get('calculation') and len(aggregate_operations) > 1
+        deterministic_scalar = bool(current.get('current_result_only') or (
+            len(aggregate_operations) > 1 and not self._has_scope(current)))
+        if (self.context and current.get('calculation') and deterministic_scalar
+                and len(aggregate_operations) >= 1
                 and set(aggregate_operations).issubset(supported_aggregates)
-                and not self._has_scope(current) and not current.get('evidence_ids')):
-            # Multiple descriptive aggregates over one numeric column have a
-            # single deterministic local plan. This prevents a slow model turn
-            # from dropping one requested statistic (for example average age
-            # plus oldest age) when the complete frame is already available.
-            columns = current.get('required_columns') or scope.get('columns', [])
+                and not scope.get('unresolved') and not current.get('evidence_ids')):
+            # One or more descriptive aggregates over one numeric measure have
+            # a single deterministic local plan. Conditions are applied by the
+            # bounded tool contract, so a loaded DataFrame never needs a model
+            # merely to compute a basic filtered scalar.
+            predicate_columns = {item['column'] for item in (
+                scope.get('conditions', []) + scope.get('any_conditions', []))}
+            columns = [column for column in current.get('required_columns', [])
+                       if column not in predicate_columns]
+            if not columns:
+                columns = [column for column in scope.get('columns', [])
+                           if column not in predicate_columns]
             if len(columns) != 1:
                 return None
+            needed_columns = predicate_columns | {columns[0]}
             candidates = [info for info in self.context.datasets.metadata.values()
                 if info.grain == 'raw' and (current.get('current_result_only') or info.predicate_known)
-                and columns[0] in info.columns and self._source_matches(info, current)
+                and needed_columns.issubset(info.columns) and self._source_matches(info, current)
                 and (current.get('current_result_only')
                     or (info.coverage == 'complete' and self._fresh_for_request(info, current)))]
             from pandas.api.types import is_numeric_dtype
@@ -1366,8 +1395,18 @@ class RecoveryMiddleware(AgentMiddleware):
                            'MIN':'minimum', 'MAX':'maximum'}
                 projections = [f'{operation}({quoted}) AS {aliases[operation]}'
                                for operation in aggregate_operations]
-                arguments = {'dataset_id':numeric_candidates[0].id,
-                    'query':'SELECT ' + ', '.join(projections) + ' FROM data'}
+                query = 'SELECT ' + ', '.join(projections) + ' FROM data'
+                if scope.get('any_conditions'):
+                    pieces = []
+                    if scope.get('conditions'):
+                        pieces.append(self._where_sql(scope['conditions']))
+                    pieces.append('(' + ' OR '.join(
+                        self._where_sql([item]) for item in scope['any_conditions']) + ')')
+                    query += ' WHERE ' + ' AND '.join(pieces)
+                    arguments = {'dataset_id':numeric_candidates[0].id, 'query':query}
+                else:
+                    arguments = {'dataset_id':numeric_candidates[0].id, 'query':query,
+                                 'requested_conditions':deepcopy(scope.get('conditions', []))}
                 if current.get('current_result_only'):
                     arguments['current_result_only'] = True
                 if not any(c.get('name') == 'local_analysis_sql' and c.get('args') == arguments
