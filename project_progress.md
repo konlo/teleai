@@ -42,6 +42,7 @@
 - **Implementation**: 기본 scalar recovery는 런타임 dataset metadata의 실제 컬럼·dtype·coverage·freshness를 확인한다. predicate 컬럼과 measure 컬럼을 분리하고, 후속 질문에서는 기존 measure를 보존한다. metadata 부재·stale 상태에서는 계산을 추측하지 않고 기존 schema inspection 또는 승인형 discovery 계약을 유지한다.
 - **Validation**: 임의 source `arbitrary.runtime_table`과 임의 컬럼 `batch_code`·`cohort_key`·`metric_amount`에서 W1 평균 6.0, alpha 후속 평균 3.0을 모델 호출 0회로 계산했다. production 영역에서 `bank_loan`, `age`, `balance`, `duration`, acceptance fixture 이름 하드코딩이 없음을 검색으로 확인했다.
 - **Outcome**: release criteria에 schema neutrality를 명시했고 application 135/135, migration 126/126, actual-agent 40/40, Level 3 17/17, 전체 runner 217/217가 통과했다.
+- **Remote Gate**: commit `5b79943`을 PR #68 브랜치에 push했고 GitHub Actions run `35736997698`, job `106776696144`가 migration, application, Level 3, 전체 runner와 compile 검사를 1분 10초에 모두 통과했다.
 
 ---
 
@@ -53,6 +54,7 @@
 - **Fix**: 보유 데이터의 기본 집계를 bounded local SQL로 처리하고, `그중 segment A` 같은 후속 조건이 이전 measure를 잃지 않도록 복구 상태 병합을 수정했다.
 - **Live Validation**: 새 대화 `24ddb8bf-ab41-42a9-a3f9-8e9ec65af3e8`에서 40.0 → 40.0 → 20.0 → 4.0의 4-turn follow-up을 실제 화면으로 확인했다. 각 turn은 모델 0회·로컬 tool 1회·원격 실행 0회였고 0.187초 이하에 완료됐다.
 - **Artifact**: `docs/live_chatbot_scalar_recovery_2026-09-22.md`.
+- **Handoff**: 최종 commit으로 서버를 재시작하고 위 대화의 네 결과가 화면에 복원되는 것을 확인했다. 사용자가 직접 입력할 수 있도록 localhost:8502의 해당 대화를 열린 상태로 유지했다.
 
 ---
 
