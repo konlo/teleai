@@ -38,6 +38,7 @@
 - **Evaluation**: 임의 source `evaluation.runtime_observations`와 임의 컬럼에서 이상치 cohort의 전체 평균+그룹 TOP 2, 정상 cohort의 그룹 평균이 독립 pandas oracle 2/2와 일치했다. 모든 요청은 production graph에서 모델 0회·원격 0회였고 재시작 후 2단계 lineage가 복원됐다.
 - **Validation**: focused aggregate/outlier 11/11, application 144/144, migration 126/126, actual-agent harness 40/40, Level 3 17/17, 전체 runner 217/217 PASS. `PYTHONWARNINGS=error` 전체 실행의 기존 reference font/deprecation 경고 실패는 CI와 같은 기본 경고 정책 재실행에서 144/144 PASS로 구분했다.
 - **Artifact**: `docs/actual_agent_evaluation_cohort_aggregates_2026-09-23.json`.
+- **Remote Gate**: code·evaluation commit `0d1e614`을 PR #68 브랜치에 push했다. GitHub Actions run `35855100123`, job `107161585019`가 migration, application, agentic recovery, 전체 runner와 compile 검사를 1분 36초에 모두 통과했다.
 - **Primary Evaluation**: 변경하지 않은 `L2_037`을 주 평가 계약에 편입했다. `bank_loan` fixture의 balance IQR 상한 이상치 137행, 평균 나이 41.7153, 직업 TOP 3(technician 34, blue-collar 29, management 19)가 독립 reference와 일치했다. `select_outlier_rows` 1회와 `aggregate_dataset` 2회, 모델·원격 0회였고 독립 채점은 67/200으로 증가했다.
 - **Final Validation**: application 146/146, migration 126/126, actual-agent harness 41/41, Level 3 17/17, 전체 runner 217/217, cohort 평가 3/3, compileall과 diff check PASS. 따옴표가 포함된 runtime 컬럼명도 생성 SQL을 재실행해 동일 frame을 얻었다.
 - **Remote Gate**: code·evaluation commit `8069aaf`을 PR #68 브랜치에 push했다. GitHub Actions run `35847295885`, job `107136423254`가 pinned 환경에서 migration, application, agentic recovery, 전체 runner와 compile 검사를 1분 26초에 모두 통과했다.
@@ -427,7 +428,7 @@ Task definitions and acceptance conditions: docs/agent_remaining_tasks_2026-09-1
 
 ### 2026-09-23 Daily Summary
 - **Work completed**: Added table-neutral `prepare_time_series`, bounded `aggregate_dataset`, and `compare_group_aggregates` for cohort overall/group/TOP-N and lineage-safe parent-versus-cohort comparison. They preserve source, snapshot, digest, cardinality, output-size, and restart contracts.
-- **Evidence**: Time-series and three arbitrary-schema cohort journeys matched independent pandas oracles. Unchanged `L2_037` and `L2_038` passed the primary grader with zero model and remote calls. Application 151/151, migration 126/126, actual-agent 42/42, Level 3 17/17, and full runner 217/217 passed. The comparison change awaits its own remote gate.
+- **Evidence**: Time-series and three arbitrary-schema cohort journeys matched independent pandas oracles. Unchanged `L2_037` and `L2_038` passed the primary grader with zero model and remote calls. Application 151/151, migration 126/126, actual-agent 42/42, Level 3 17/17, and full runner 217/217 passed. GitHub Actions run `35855100123` passed the comparison release gate for commit `0d1e614`.
 - **Remaining**: Independent grading is 68/200 with 132 cases ungraded. Multi-panel/dual-axis charts, winsorization, PR review/merge/deployment, selected-host capacity and smoke/rollback gates remain. Four stale production TableContexts still require separate user-approved refreshes.
 - **Reports**: `docs/actual_agent_evaluation_time_series_2026-09-23.json`, `docs/actual_agent_evaluation_cohort_aggregates_2026-09-23.json`.
 
