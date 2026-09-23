@@ -34,6 +34,7 @@
 | `render_chart_spec` | 완료 | 완료 | 원격 실행 없음 | 완료 | 완료 | 5개 kind, 수치+범주 그룹 박스플롯, 숫자축 빈도 선, 영문 월 calendar 정렬·누적 곡선과 제한된 축·집계·표시 수·라벨, 실제 PNG와 입력 digest |
 | `prepare_time_series` | 완료 | 완료 | 원격 실행 없음 | 완료 | 완료 | runtime schema 기반 datetime 파싱, timezone, hour/day/week/month, 중복 시각, gap omit/zero/nan, 최대 20 series·5,000행, parent lineage |
 | `aggregate_dataset` | 완료 | 완료 | 원격 실행 없음 | 완료 | 완료 | count/mean/sum/median/min/max, 단일 group, 정렬·TOP-N, 최대 1,000 groups/rows, parent lineage·digest |
+| `compare_group_aggregates` | 완료 | 완료 | 원격 실행 없음 | 완료 | 완료 | 같은 source·snapshot의 ancestor/cohort만 허용, 동일 그룹 집계의 기준값·cohort값·차이·변화율, 두 parent lineage·digest |
 | `show_chart` | 완료 | 완료 | 원격 실행 없음 | 완료 | 완료 | 실제 PNG 재표시·missing ID 오류 직접 검증 |
 | `local_analysis_sql` | 완료 | 완료 | 원격 실행 없음 | 완료 | 완료 | 단일 `data`와 CTE, 외부 접근 차단 |
 | `join_datasets` | 완료 | 완료 | 원격 실행 없음 | 완료 | 완료 | key dtype·NULL·cardinality·행 증가 사전 검사, 양쪽 parent lineage 보존 |
@@ -58,11 +59,12 @@
 - `prepare_time_series`는 임의 source와 `occurred_at`·`cohort_key`·`metric_amount`에서 일별 그룹 합계, `Asia/Seoul`, 중복 시각, 빈 날짜 0 채움과 두 series PNG를 만들었다. production graph의 tool sequence와 파생 frame·plot points가 독립 pandas oracle에 일치했고 모델·원격 호출은 0회였다. 숫자 epoch, DST 충돌, 파싱률 95% 미만, 20개 초과 group과 5,000행 초과 결과는 추측 없이 차단한다.
 - `aggregate_dataset`은 임의 source와 `anomaly_value`·`segment_code`·`score_value`에서 IQR 이상치 cohort의 전체 평균과 그룹 TOP-N, 정상 cohort의 그룹 평균을 계산했다. production graph의 frame이 독립 pandas oracle 2/2에 일치했고 모델·원격 호출은 0회였다. aggregate grain, 비수치 measure, group cardinality와 출력 한도 위반은 새 dataset 생성 전에 차단하며 재시작 후 2단계 lineage도 복원한다.
 - 변경하지 않은 `L2_037`의 평균 연령과 직업 TOP 3도 같은 구조화 결과·lineage·digest를 독립 reference와 비교해 주 평가에 편입했다. 독립 채점 범위는 67/200이며 모델·원격 호출은 0회다.
-- application tests 146/146, migration tests 126/126, actual-agent evaluation harness 41/41, Level 3 17/17, 전체 참고 runner 217/217가 통과했다. compileall과 `git diff --check`는 같은 변경의 정적 gate로 실행한다.
+- `compare_group_aggregates`는 같은 source·snapshot과 ancestor 관계를 실행 전에 강제한다. 변경하지 않은 `L2_038`의 12개 직업별 전체·이상치 제외 평균, 차이, 변화율이 독립 reference와 일치했고 서로 무관한 dataset, snapshot 불일치, 비수치 measure, 0 기준 변화율을 fail-closed/명시적 NaN으로 처리한다. 독립 채점 범위는 68/200이다.
+- application tests 151/151, migration tests 126/126, actual-agent evaluation harness 42/42, Level 3 17/17, 전체 참고 runner 217/217가 통과했다. compileall과 `git diff --check`는 같은 변경의 정적 gate로 실행한다.
 
 ## 남은 tool 공백
 
 P0의 공통 계약, dataset profile, 승인형 source discovery와 P1의 제한된 chart spec·다중 dataset join·구조화 통계 검정·직접 이상치 탐지·bounded cohort 후속 계산은 구현됐다. 범용 분석 범위를 넓히려면 다음을 별도 release candidate로 구현해야 한다.
 
-1. parent-versus-cohort 비교·winsorization, 다중 패널·이중축 차트와 결과 내보내기 중 미채점 사용자 의도에 필요한 tool.
+1. winsorization, 다중 패널·이중축 차트와 결과 내보내기 중 미채점 사용자 의도에 필요한 tool.
 2. source discovery의 승인 완료·거절·재시작 전용 사용자 여정 확대. 현재 공통 `query_databricks` 계약은 검증됐지만 discovery 결과 전용 승인 후 실행 테스트는 실제 원격 없이 추가할 수 있다.

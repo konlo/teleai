@@ -56,7 +56,7 @@ def run_case(root: str, conversation: str, prompt: str, frame: pd.DataFrame) -> 
         observations: dict[str, list[dict]] = {}
         for message in runtime.events():
             if isinstance(message, ToolMessage) and message.name in {
-                    "select_outlier_rows", "aggregate_dataset"}:
+                    "select_outlier_rows", "aggregate_dataset", "compare_group_aggregates"}:
                 observations.setdefault(message.name, []).append(json.loads(message.content))
         recovery = runtime.inspect().get("recovery", {})
         evidence = recovery.get("outlier_aggregate_evidence", {})
@@ -64,14 +64,17 @@ def run_case(root: str, conversation: str, prompt: str, frame: pd.DataFrame) -> 
             key: runtime.datasets.frames[item["dataset"]["id"]].copy()
             for key, item in evidence.items()
         }
-        lineage = {
-            key: {
-                "aggregate_parent": runtime.datasets.metadata[item["dataset"]["id"]].parent_id,
-                "cohort_parent": runtime.datasets.metadata[
-                    runtime.datasets.metadata[item["dataset"]["id"]].parent_id].parent_id,
+        lineage = {}
+        for key, item in evidence.items():
+            info = runtime.datasets.metadata[item["dataset"]["id"]]
+            parents = tuple(info.parent_ids) or ((info.parent_id,) if info.parent_id else ())
+            cohort_id = parents[-1] if parents else ""
+            lineage[key] = {
+                "aggregate_parent": info.parent_id,
+                "aggregate_parents": list(parents),
+                "cohort_parent": (runtime.datasets.metadata[cohort_id].parent_id
+                                  if cohort_id in runtime.datasets.metadata else ""),
             }
-            for key, item in evidence.items()
-        }
         return {
             "outcome": outcome,
             "recovery": recovery,
@@ -95,6 +98,19 @@ def evaluate() -> dict:
                         .rename("mean_anomaly_value").reset_index()
                         .sort_values("mean_anomaly_value", ascending=False, kind="mergesort")
                         .reset_index(drop=True))
+    baseline_mean = (frame.groupby("segment_code", sort=False)["anomaly_value"].mean()
+                     .rename("baseline_mean_anomaly_value").reset_index())
+    cohort_mean = (inliers.groupby("segment_code", sort=False)["anomaly_value"].mean()
+                   .rename("cohort_mean_anomaly_value").reset_index())
+    expected_comparison = baseline_mean.merge(
+        cohort_mean, on="segment_code", how="outer", validate="one_to_one")
+    expected_comparison["difference"] = (
+        expected_comparison["cohort_mean_anomaly_value"]
+        - expected_comparison["baseline_mean_anomaly_value"])
+    expected_comparison["percent_change"] = (
+        expected_comparison["difference"]
+        / expected_comparison["baseline_mean_anomaly_value"].abs() * 100)
+    expected_comparison = expected_comparison.sort_values("segment_code").reset_index(drop=True)
     started = time.monotonic()
     with tempfile.TemporaryDirectory(prefix="telly-cohort-aggregate-eval-") as root:
         top = run_case(
@@ -109,10 +125,18 @@ def evaluate() -> dict:
             "segment_code별 anomaly_value 평균을 보여줘",
             frame,
         )
+        compared = run_case(
+            root, "grouped-comparison",
+            "anomaly_value IQR 상한 이상치를 제외한 일반 행의 segment_code별 "
+            "anomaly_value 평균을 계산하고 이상치 포함 전후 평균을 비교해줘",
+            frame,
+        )
     specs = {item["id"]: item for item in load_specs()}
     grading = load_grading()
     benchmark = evaluate_case(
         specs["L2_037"], grading["L2_037"], ForbiddenModel(), frames=load_frames())
+    comparison_benchmark = evaluate_case(
+        specs["L2_038"], grading["L2_038"], ForbiddenModel(), frames=load_frames())
 
     top_matches = (
         top["frames"].get("overall") is not None
@@ -133,6 +157,16 @@ def evaluate() -> dict:
         item["aggregate_parent"] == grouped["recovery"].get("outlier_dataset")
         and item["cohort_parent"] == grouped["parent_id"]
         for item in grouped["lineage"].values()
+    )
+    comparison_matches = (
+        compared["frames"].get("comparison") is not None
+        and compared["frames"]["comparison"].equals(expected_comparison)
+    )
+    comparison_lineage = all(
+        item["aggregate_parents"] == [
+            compared["parent_id"], compared["recovery"].get("outlier_dataset")]
+        and item["cohort_parent"] == compared["parent_id"]
+        for item in compared["lineage"].values()
     )
     cases = [
         {
@@ -173,6 +207,30 @@ def evaluate() -> dict:
             "reference_id": "L2_037",
             "evidence": benchmark.get("evidence", {}),
         },
+        {
+            "name": "parent-versus-inlier grouped mean",
+            "status": "PASS" if (
+                compared["outcome"].get("status") == "answered"
+                and len(compared["observations"].get("select_outlier_rows", [])) == 1
+                and len(compared["observations"].get("compare_group_aggregates", [])) == 1
+                and compared["recovery"].get("model_calls") == 0
+                and comparison_matches and comparison_lineage
+            ) else "FAIL",
+            "tools": {name: len(items) for name, items in compared["observations"].items()},
+            "model_calls": compared["recovery"].get("model_calls"),
+            "frame_matches": comparison_matches,
+            "lineage_matches": comparison_lineage,
+        },
+        {
+            "name": "unchanged L2_038 bank_loan prompt",
+            "status": comparison_benchmark["status"],
+            "tools": comparison_benchmark.get("tools", {}),
+            "model_calls": comparison_benchmark.get("runtime_metadata", {}).get("recovery_model_calls"),
+            "frame_matches": comparison_benchmark["status"] == "PASS",
+            "lineage_matches": comparison_benchmark["status"] == "PASS",
+            "reference_id": "L2_038",
+            "evidence": comparison_benchmark.get("evidence", {}),
+        },
     ]
     passed = all(case["status"] == "PASS" for case in cases)
     return {
@@ -188,6 +246,7 @@ def evaluate() -> dict:
             "overall": expected_overall.to_dict(orient="records"),
             "top_groups": expected_top.to_dict(orient="records"),
             "grouped_mean": expected_grouped.to_dict(orient="records"),
+            "grouped_comparison": expected_comparison.to_dict(orient="records"),
         },
         "cases": cases,
         "passed": sum(case["status"] == "PASS" for case in cases),
@@ -197,8 +256,7 @@ def evaluate() -> dict:
         "elapsed_seconds": round(time.monotonic() - started, 3),
         "limitations": [
             "Local synthetic fixture; no Databricks or browser execution",
-            "L2_037 increases primary independent grading coverage to 67/200; the two arbitrary-schema cases are supplementary",
-            "Parent-versus-cohort side-by-side comparison remains outside these cases",
+            "L2_037 and L2_038 increase primary independent grading coverage to 68/200; three arbitrary-schema cases are supplementary",
         ],
     }
 

@@ -321,8 +321,17 @@ class RecoveryMiddleware(AgentMiddleware):
                     elif re.search(r'별|그룹별', text):
                         metric_candidates = [column for column in mentioned_columns
                                              if column != outlier_group_column]
+                        if len(metric_candidates) > 1 and outlier_column in metric_candidates:
+                            non_detector = [column for column in metric_candidates
+                                            if column != outlier_column]
+                            if len(non_detector) == 1:
+                                metric_candidates = non_detector
                         if len(declared) == 1 and len(metric_candidates) == 1:
-                            outlier_aggregate_mode = 'grouped_metric'
+                            outlier_aggregate_mode = (
+                                'grouped_comparison' if re.search(
+                                    r'(?:포함|제외).{0,12}(?:전|후)|(?:전|후).{0,12}(?:포함|제외)|비교',
+                                    text, re.I)
+                                else 'grouped_metric')
                             outlier_metric_aggregation = declared[0]
                             outlier_metric_column = metric_candidates[0]
                 if outlier_top_n > 50:
@@ -750,6 +759,39 @@ class RecoveryMiddleware(AgentMiddleware):
                 if evidence_key:
                     current['outlier_aggregate_evidence'][evidence_key] = observation
                     current['failed'].pop(name, None)
+            if (name == 'compare_group_aggregates' and observation.get('status') == 'ready'
+                    and current.get('outlier_aggregate_mode') == 'grouped_comparison'):
+                baseline_id = arguments.get('baseline_dataset_id')
+                cohort_id = arguments.get('cohort_dataset_id')
+                result_id = observation.get('dataset', {}).get('id')
+                baseline = self.context.datasets.metadata.get(baseline_id) if self.context else None
+                cohort = self.context.datasets.metadata.get(cohort_id) if self.context else None
+                result_info = self.context.datasets.metadata.get(result_id) if self.context else None
+                result = observation.get('comparison_result', {})
+                from utils.analysis_compare import dataset_digest
+                actual_digest = (dataset_digest(self.context.datasets.frames[result_id])
+                                 if result_info is not None else None)
+                valid = (
+                    baseline is not None and cohort is not None and result_info is not None
+                    and cohort_id == current.get('outlier_dataset')
+                    and cohort.parent_id == baseline_id
+                    and baseline.source == cohort.source == result_info.source
+                    and baseline.snapshot == cohort.snapshot == result_info.snapshot
+                    and tuple(result_info.parent_ids) == (baseline_id, cohort_id)
+                    and result_info.grain == 'aggregate'
+                    and result.get('kind') == 'group_aggregate_comparison'
+                    and result.get('baseline_dataset_id') == baseline_id
+                    and result.get('cohort_dataset_id') == cohort_id
+                    and result.get('aggregation') == current.get('outlier_metric_aggregation')
+                    and result.get('value_column') == current.get('outlier_metric_column')
+                    and result.get('group_column') == current.get('outlier_group_column')
+                    and result.get('output_rows') == result_info.rows
+                    and result.get('data_sha256') == actual_digest
+                    and isinstance(observation.get('preview'), list)
+                    and not observation.get('rows'))
+                if valid:
+                    current['outlier_aggregate_evidence']['comparison'] = observation
+                    current['failed'].pop(name, None)
             if name in {'local_analysis_sql', 'query_databricks'} and observation.get('status') == 'ready':
                 dataset_id = observation.get('dataset', {}).get('id')
                 if self._valid_calculation(dataset_id, arguments, current):
@@ -992,7 +1034,9 @@ class RecoveryMiddleware(AgentMiddleware):
         if current.get('outlier_spec') and not current.get('outlier_evidence'): return False
         if current.get('outlier_aggregate_requested'):
             evidence = current.get('outlier_aggregate_evidence', {})
-            if 'grouped' not in evidence: return False
+            required_key = ('comparison' if current.get('outlier_aggregate_mode') == 'grouped_comparison'
+                            else 'grouped')
+            if required_key not in evidence: return False
             if (current.get('outlier_aggregate_mode') == 'top_frequency'
                     and current.get('outlier_metric_aggregation') and 'overall' not in evidence):
                 return False
@@ -1145,6 +1189,18 @@ class RecoveryMiddleware(AgentMiddleware):
                 + '```csv\n'
                 + self.context.datasets.frames[evidence['dataset']['id']].head(15).to_csv(index=False).strip()
                 + '\n```\n분석 범위: ' + str(evidence.get('scope', ''))
+            )
+        comparison = current.get('outlier_aggregate_evidence', {}).get('comparison')
+        if comparison:
+            result = comparison['comparison_result']
+            parts.append(
+                f"원본 전체와 cohort의 그룹 집계 비교: {result['aggregation']}"
+                + (f"({result['value_column']})" if result.get('value_column') else "(*)")
+                + f" by {result['group_column']} · 기준 {result['baseline_complete_rows']:,}행 · "
+                + f"cohort {result['cohort_complete_rows']:,}행\n"
+                + '```csv\n'
+                + self.context.datasets.frames[comparison['dataset']['id']].head(15).to_csv(index=False).strip()
+                + '\n```\n분석 범위: ' + str(comparison.get('scope', ''))
             )
         for card_id in current.get('artifact_ids', []):
             card = self.artifacts[card_id]
@@ -1327,6 +1383,20 @@ class RecoveryMiddleware(AgentMiddleware):
             evidence = current.get('outlier_aggregate_evidence', {})
             if child is not None and child.grain == 'raw' and not child.aggregation:
                 mode = current.get('outlier_aggregate_mode')
+                if mode == 'grouped_comparison' and 'comparison' not in evidence:
+                    baseline_id = child.parent_id
+                    arguments = {
+                        'baseline_dataset_id': baseline_id,
+                        'cohort_dataset_id': child_id,
+                        'aggregation': current['outlier_metric_aggregation'],
+                        'value_column': current['outlier_metric_column'],
+                        'group_column': current['outlier_group_column'],
+                        'sort': 'group_ascending',
+                    }
+                    if (baseline_id and not any(
+                            c.get('name') == 'compare_group_aggregates' and c.get('args') == arguments
+                            for c in calls.values())):
+                        return {'name':'compare_group_aggregates', 'args':arguments}
                 if (mode == 'top_frequency' and current.get('outlier_metric_aggregation')
                         and 'overall' not in evidence):
                     arguments = {
@@ -1937,6 +2007,15 @@ class RecoveryMiddleware(AgentMiddleware):
             if current.get('outlier_aggregate_requested'):
                 return info.id == current.get('outlier_dataset') and info.grain == 'raw'
             return self._scope_valid(info, current)
+        if call.get('name') == 'compare_group_aggregates' and self.context:
+            baseline = self.context.datasets.metadata.get(arguments.get('baseline_dataset_id'))
+            cohort = self.context.datasets.metadata.get(arguments.get('cohort_dataset_id'))
+            if baseline is None or cohort is None:
+                return True
+            return (current.get('outlier_aggregate_mode') == 'grouped_comparison'
+                    and cohort.id == current.get('outlier_dataset')
+                    and cohort.parent_id == baseline.id
+                    and baseline.grain == cohort.grain == 'raw')
         if call.get('name') in {'detect_outliers', 'select_outlier_rows'} and self.context:
             info = self.context.datasets.metadata.get(arguments.get('dataset_id'))
             return True if info is None else self._scope_valid(info, current)

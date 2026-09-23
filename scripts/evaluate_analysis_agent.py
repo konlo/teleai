@@ -379,6 +379,43 @@ def reference_oracle(spec, grading, frames):
                 raise ValueError("Reference outlier threshold is not finite")
             return {"data_sha256": _frame_digest(selected), "rows": len(selected),
                     "threshold": float(threshold), "aggregates": aggregates}
+        if grading["kind"] == "outlier_cohort_group_comparison":
+            baseline = namespace[grading["baseline_variable"]]
+            selected = namespace[grading["selection_variable"]]
+            if not all(isinstance(frame, pd.DataFrame) and not frame.empty
+                       for frame in (baseline, selected)):
+                raise ValueError("Reference comparison datasets must be non-empty DataFrames")
+            group_column, value_column = grading["group_column"], grading["value_column"]
+            aggregation = grading["aggregation"]
+            baseline_column = f"baseline_{aggregation}_{value_column}"
+            cohort_column = f"cohort_{aggregation}_{value_column}"
+            left = (baseline.groupby(group_column, sort=False)[value_column].agg(aggregation)
+                    .rename(baseline_column).reset_index())
+            right = (selected.groupby(group_column, sort=False)[value_column].agg(aggregation)
+                     .rename(cohort_column).reset_index())
+            comparison = left.merge(right, on=group_column, how="outer", validate="one_to_one")
+            comparison["difference"] = comparison[cohort_column] - comparison[baseline_column]
+            comparable = comparison[baseline_column].notna() & (comparison[baseline_column] != 0)
+            comparison["percent_change"] = np.nan
+            comparison.loc[comparable, "percent_change"] = (
+                comparison.loc[comparable, "difference"]
+                / comparison.loc[comparable, baseline_column].abs() * 100)
+            if grading.get("sort") == "group_ascending":
+                comparison = (comparison.assign(_group_sort=comparison[group_column].astype(str))
+                              .sort_values("_group_sort", kind="mergesort")
+                              .drop(columns="_group_sort"))
+            comparison = comparison.reset_index(drop=True)
+            threshold = namespace[grading["threshold_variable"]]
+            if not np.isscalar(threshold) or not np.isfinite(float(threshold)):
+                raise ValueError("Reference outlier threshold is not finite")
+            return {
+                "selected_data_sha256": _frame_digest(selected),
+                "selected_rows": len(selected),
+                "threshold": float(threshold),
+                "comparison_data_sha256": _frame_digest(comparison),
+                "comparison_rows": len(comparison),
+                "comparison_records": comparison.to_dict(orient="records"),
+            }
         if grading["kind"] == "category_counts":
             return _category_counts(namespace[grading["variable"]])
         raise ValueError("Unsupported grading kind")
@@ -912,6 +949,89 @@ def grade_evidence(runtime, outcome, spec, grading, oracle, fixture_id, capture)
         return (("PASS", "Lineage-safe outlier cohort aggregates match the independent reference", details)
                 if grounded and correct else
                 ("FAIL", "Outlier cohort lineage or aggregate results differ from the reference", details))
+    if grading["kind"] == "outlier_cohort_group_comparison":
+        selections, comparisons = [], []
+        for message in runtime.events():
+            if not isinstance(message, ToolMessage):
+                continue
+            try:
+                observation = json.loads(message.content)
+            except (ValueError, TypeError, AttributeError):
+                continue
+            if observation.get("status") != "ready":
+                continue
+            if message.name == "select_outlier_rows":
+                selections.append(observation)
+            elif message.name == "compare_group_aggregates":
+                comparisons.append(observation)
+        if len(selections) != 1 or len(comparisons) != 1:
+            return "FAIL", "One cohort selection and one grouped comparison are required", {}
+        selection, comparison = selections[0], comparisons[0]
+        try:
+            cohort_id = selection["dataset"]["id"]
+            result_id = comparison["dataset"]["id"]
+            cohort_info = runtime.datasets.metadata[cohort_id]
+            result_info = runtime.datasets.metadata[result_id]
+            selected_frame = runtime.datasets.frames[cohort_id]
+            result_frame = runtime.datasets.frames[result_id].reset_index(drop=True)
+            outlier_result = selection["outlier_result"]
+            selection_summary = selection["selection_summary"]
+            comparison_summary = comparison["comparison_result"]
+            expected = pd.DataFrame(oracle["comparison_records"])
+            values_match = list(result_frame.columns) == list(expected.columns) and len(result_frame) == len(expected)
+            if values_match:
+                for column in result_frame.columns:
+                    if pd.api.types.is_numeric_dtype(expected[column]):
+                        values_match = values_match and bool(np.allclose(
+                            pd.to_numeric(result_frame[column]), pd.to_numeric(expected[column]),
+                            rtol=1e-10, atol=1e-12, equal_nan=True))
+                    else:
+                        values_match = values_match and (
+                            result_frame[column].astype(str).tolist()
+                            == expected[column].astype(str).tolist())
+            grounded = (
+                cohort_info.parent_id == fixture_id
+                and cohort_info.source == spec["target_table"]
+                and cohort_info.coverage == "complete"
+                and cohort_info.grain == "raw" and not cohort_info.aggregation
+                and _fixture_descendant(runtime, cohort_id, fixture_id)
+                and selection_summary.get("selection") == grading["selection"]
+                and selection_summary.get("parent_dataset_id") == fixture_id
+                and selection_summary.get("selected_rows") == oracle["selected_rows"]
+                and selection_summary.get("data_sha256") == oracle["selected_data_sha256"]
+                and _frame_digest(selected_frame) == oracle["selected_data_sha256"]
+                and not selection.get("preview")
+                and outlier_result.get("method") == grading["method"]
+                and outlier_result.get("tail") == grading["tail"]
+                and outlier_result.get("column") == grading["column"]
+                and tuple(result_info.parent_ids) == (fixture_id, cohort_id)
+                and result_info.source == cohort_info.source
+                and result_info.snapshot == cohort_info.snapshot
+                and result_info.grain == "aggregate"
+                and comparison_summary.get("kind") == "group_aggregate_comparison"
+                and comparison_summary.get("baseline_dataset_id") == fixture_id
+                and comparison_summary.get("cohort_dataset_id") == cohort_id
+                and comparison_summary.get("aggregation") == grading["aggregation"]
+                and comparison_summary.get("value_column") == grading["value_column"]
+                and comparison_summary.get("group_column") == grading["group_column"]
+                and comparison_summary.get("sort") == grading["sort"]
+                and comparison_summary.get("output_rows") == oracle["comparison_rows"]
+                and comparison_summary.get("data_sha256") == oracle["comparison_data_sha256"]
+                and _frame_digest(result_frame) == oracle["comparison_data_sha256"]
+            )
+            correct = (
+                values_match
+                and np.isclose(float(outlier_result["thresholds"]["upper"]), oracle["threshold"],
+                               rtol=1e-10, atol=1e-12)
+            )
+            details = {"expected": oracle, "actual": result_frame.to_dict(orient="records"),
+                       "cohort_dataset_id": cohort_id, "result_dataset_id": result_id,
+                       "scope": comparison.get("scope")}
+        except (KeyError, TypeError, ValueError, IndexError):
+            return "FAIL", "Outlier cohort comparison evidence does not match the grading contract", {}
+        return (("PASS", "Lineage-safe parent-versus-cohort comparison matches the independent reference", details)
+                if grounded and correct else
+                ("FAIL", "Parent-versus-cohort lineage or values differ from the reference", details))
     if grading["kind"] == "outlier":
         observations = []
         for message in runtime.events():

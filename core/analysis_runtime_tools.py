@@ -29,6 +29,7 @@ from utils.analysis_outliers import (
 )
 from utils.analysis_timeseries import prepare_time_series as build_time_series
 from utils.analysis_aggregate import aggregate_dataset as build_aggregate_dataset
+from utils.analysis_compare import compare_group_aggregates as build_group_comparison
 
 
 def build_analysis_tools(context: AnalysisToolContext) -> list[ToolDefinition]:
@@ -201,6 +202,21 @@ def build_analysis_tools(context: AnalysisToolContext) -> list[ToolDefinition]:
             group_column=group_column,
             sort=sort,
             top_n=top_n,
+            max_groups=max_groups,
+            max_output_rows=max_output_rows,
+        )
+
+    def compare_group_aggregates(baseline_dataset_id, cohort_dataset_id, aggregation,
+                                 group_column, value_column="", sort="group_ascending",
+                                 max_groups=1_000, max_output_rows=1_000):
+        return build_group_comparison(
+            datasets,
+            baseline_dataset_id,
+            cohort_dataset_id,
+            aggregation=aggregation,
+            group_column=group_column,
+            value_column=value_column,
+            sort=sort,
             max_groups=max_groups,
             max_output_rows=max_output_rows,
         )
@@ -516,6 +532,17 @@ def build_analysis_tools(context: AnalysisToolContext) -> list[ToolDefinition]:
               "max_groups": {"type":"integer","minimum":1,"maximum":1000},
               "max_output_rows": {"type":"integer","minimum":1,"maximum":1000}},
              ["dataset_id","aggregation"], aggregate_dataset),
+        tool("compare_group_aggregates", "같은 source·snapshot에서 기준 raw dataset과 그 lineage 후손 cohort의 동일한 그룹 집계를 비교합니다. 그룹별 기준값, cohort값, 차이와 변화율을 계산하고 두 부모 ID와 digest를 보존합니다. 임의의 서로 무관한 dataset은 비교하지 않습니다.",
+             {"baseline_dataset_id": string,
+              "cohort_dataset_id": string,
+              "aggregation": {"type":"string","enum":["count","mean","sum","median","min","max"]},
+              "group_column": string,
+              "value_column": string,
+              "sort": {"type":"string","enum":["group_ascending","difference_descending","none"]},
+              "max_groups": {"type":"integer","minimum":1,"maximum":1000},
+              "max_output_rows": {"type":"integer","minimum":1,"maximum":1000}},
+             ["baseline_dataset_id","cohort_dataset_id","aggregation","group_column"],
+             compare_group_aggregates),
         tool("propose_databricks_query", "Databricks 조회를 사용자에게 제안합니다. 이 도구는 실행하지 않습니다. 정확한 SQL과 이유를 표시하고 승인 대기합니다.",
              {"source": string, "query": string, "reason": string}, ["source", "query", "reason"], propose_query),
         tool("recommend_chart_images", "현재 데이터의 통계로 실제 이미지 후보를 만듭니다. 원격 조회 없음. 반환된 카드 ID의 이미지는 UI가 표시합니다.",

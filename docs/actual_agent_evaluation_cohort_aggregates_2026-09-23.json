@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-09-23T10:07:12.345368+00:00",
+  "generated_at": "2026-09-23T11:31:48.398878+00:00",
   "status": "PASS",
   "runtime": "core.analysis_agent.runtime.GraphAnalysisRuntime",
   "data_scope": {
@@ -43,6 +43,29 @@
       {
         "segment_code": "north",
         "mean_anomaly_value": 4.0
+      }
+    ],
+    "grouped_comparison": [
+      {
+        "segment_code": "east",
+        "baseline_mean_anomaly_value": 6.0,
+        "cohort_mean_anomaly_value": 6.0,
+        "difference": 0.0,
+        "percent_change": 0.0
+      },
+      {
+        "segment_code": "north",
+        "baseline_mean_anomaly_value": 44.4,
+        "cohort_mean_anomaly_value": 4.0,
+        "difference": -40.4,
+        "percent_change": -90.990990990991
+      },
+      {
+        "segment_code": "south",
+        "baseline_mean_anomaly_value": 33.75,
+        "cohort_mean_anomaly_value": 5.0,
+        "difference": -28.75,
+        "percent_change": -85.18518518518519
       }
     ]
   },
@@ -136,23 +159,229 @@
             }
           ]
         },
-        "cohort_dataset_id": "20e4f71a-5ca4-49c2-9e2e-81923c6fc1fb",
+        "cohort_dataset_id": "86e86a46-87d4-4323-afec-dea1d7fa056f",
         "result_dataset_ids": {
-          "overall": "0cf572e2-5ca2-49a6-8de8-0dc32470b1ad",
-          "grouped": "c602696a-5cd8-4371-a64f-8110830140ee"
+          "overall": "028426e3-fb4e-4699-bc73-d5829b1477c8",
+          "grouped": "e23d5e6b-b903-4be1-9f1c-03174d6e2b36"
         },
-        "scope": "bank_loan의 로딩된 raw dataset 2,000행 중 유효값 2,000개에 iqr/upper 기준을 적용했습니다. coverage=complete; snapshot=fixture:6fd6aefae0385fe96f9884c3154048e19641fc9ae55f872378551b8c1e268c25. outliers 기준 137행을 부모 018d6c08-c8ab-4430-bc01-46e95402f835에서 파생 dataset 20e4f71a-5ca4-49c2-9e2e-81923c6fc1fb로 저장했습니다."
+        "scope": "bank_loan의 로딩된 raw dataset 2,000행 중 유효값 2,000개에 iqr/upper 기준을 적용했습니다. coverage=complete; snapshot=fixture:6fd6aefae0385fe96f9884c3154048e19641fc9ae55f872378551b8c1e268c25. outliers 기준 137행을 부모 4d85058c-4c7c-4860-807f-bd9199ae6db3에서 파생 dataset 86e86a46-87d4-4323-afec-dea1d7fa056f로 저장했습니다."
+      }
+    },
+    {
+      "name": "parent-versus-inlier grouped mean",
+      "status": "PASS",
+      "tools": {
+        "select_outlier_rows": 1,
+        "compare_group_aggregates": 1
+      },
+      "model_calls": 0,
+      "frame_matches": true,
+      "lineage_matches": true
+    },
+    {
+      "name": "unchanged L2_038 bank_loan prompt",
+      "status": "PASS",
+      "tools": {
+        "select_outlier_rows": 1,
+        "compare_group_aggregates": 1
+      },
+      "model_calls": 0,
+      "frame_matches": true,
+      "lineage_matches": true,
+      "reference_id": "L2_038",
+      "evidence": {
+        "expected": {
+          "selected_data_sha256": "eb66bb65593fc909d95f5a9be9b0b8de0273fc43281c17f8ddca1a232435fcd4",
+          "selected_rows": 1863,
+          "threshold": 4413.0,
+          "comparison_data_sha256": "72176cb9878b9e8844cd14c3711f439d716fd202f7be1fa48c639751014848bc",
+          "comparison_rows": 12,
+          "comparison_records": [
+            {
+              "job": "admin.",
+              "baseline_mean_balance": 2718.5057471264367,
+              "cohort_mean_balance": 847.0658436213992,
+              "difference": -1871.4399035050376,
+              "percent_change": -68.84075582636602
+            },
+            {
+              "job": "blue-collar",
+              "baseline_mean_balance": 3029.3356807511736,
+              "cohort_mean_balance": 823.5465994962217,
+              "difference": -2205.789081254952,
+              "percent_change": -72.81428384681325
+            },
+            {
+              "job": "entrepreneur",
+              "baseline_mean_balance": 3565.672727272727,
+              "cohort_mean_balance": 575.3469387755102,
+              "difference": -2990.3257884972168,
+              "percent_change": -83.86428080247354
+            },
+            {
+              "job": "housemaid",
+              "baseline_mean_balance": 1086.046875,
+              "cohort_mean_balance": 867.1967213114754,
+              "difference": -218.85015368852464,
+              "percent_change": -20.151078072806445
+            },
+            {
+              "job": "management",
+              "baseline_mean_balance": 1964.0588235294117,
+              "cohort_mean_balance": 813.0172413793103,
+              "difference": -1151.0415821501015,
+              "percent_change": -58.60524992228496
+            },
+            {
+              "job": "retired",
+              "baseline_mean_balance": 2257.3333333333335,
+              "cohort_mean_balance": 925.5225225225225,
+              "difference": -1331.8108108108108,
+              "percent_change": -58.99929758464902
+            },
+            {
+              "job": "self-employed",
+              "baseline_mean_balance": 1241.0967741935483,
+              "cohort_mean_balance": 487.54237288135596,
+              "difference": -753.5544013121923,
+              "percent_change": -60.716812498513185
+            },
+            {
+              "job": "services",
+              "baseline_mean_balance": 2615.0,
+              "cohort_mean_balance": 890.5192307692307,
+              "difference": -1724.4807692307693,
+              "percent_change": -65.94572731284013
+            },
+            {
+              "job": "student",
+              "baseline_mean_balance": 1907.3333333333333,
+              "cohort_mean_balance": 827.9655172413793,
+              "difference": -1079.367816091954,
+              "percent_change": -56.59041328689028
+            },
+            {
+              "job": "technician",
+              "baseline_mean_balance": 4030.8830769230767,
+              "cohort_mean_balance": 719.2542955326461,
+              "difference": -3311.6287813904305,
+              "percent_change": -82.15640886111537
+            },
+            {
+              "job": "unemployed",
+              "baseline_mean_balance": 5314.085106382979,
+              "cohort_mean_balance": 875.3333333333334,
+              "difference": -4438.751773049646,
+              "percent_change": -83.52805203887435
+            },
+            {
+              "job": "unknown",
+              "baseline_mean_balance": 1224.6,
+              "cohort_mean_balance": 959.421052631579,
+              "difference": -265.17894736842095,
+              "percent_change": -21.654331811891307
+            }
+          ]
+        },
+        "actual": [
+          {
+            "job": "admin.",
+            "baseline_mean_balance": 2718.5057471264367,
+            "cohort_mean_balance": 847.0658436213992,
+            "difference": -1871.4399035050376,
+            "percent_change": -68.84075582636602
+          },
+          {
+            "job": "blue-collar",
+            "baseline_mean_balance": 3029.3356807511736,
+            "cohort_mean_balance": 823.5465994962217,
+            "difference": -2205.789081254952,
+            "percent_change": -72.81428384681325
+          },
+          {
+            "job": "entrepreneur",
+            "baseline_mean_balance": 3565.672727272727,
+            "cohort_mean_balance": 575.3469387755102,
+            "difference": -2990.3257884972168,
+            "percent_change": -83.86428080247354
+          },
+          {
+            "job": "housemaid",
+            "baseline_mean_balance": 1086.046875,
+            "cohort_mean_balance": 867.1967213114754,
+            "difference": -218.85015368852464,
+            "percent_change": -20.151078072806445
+          },
+          {
+            "job": "management",
+            "baseline_mean_balance": 1964.0588235294117,
+            "cohort_mean_balance": 813.0172413793103,
+            "difference": -1151.0415821501015,
+            "percent_change": -58.60524992228496
+          },
+          {
+            "job": "retired",
+            "baseline_mean_balance": 2257.3333333333335,
+            "cohort_mean_balance": 925.5225225225225,
+            "difference": -1331.8108108108108,
+            "percent_change": -58.99929758464902
+          },
+          {
+            "job": "self-employed",
+            "baseline_mean_balance": 1241.0967741935483,
+            "cohort_mean_balance": 487.54237288135596,
+            "difference": -753.5544013121923,
+            "percent_change": -60.716812498513185
+          },
+          {
+            "job": "services",
+            "baseline_mean_balance": 2615.0,
+            "cohort_mean_balance": 890.5192307692307,
+            "difference": -1724.4807692307693,
+            "percent_change": -65.94572731284013
+          },
+          {
+            "job": "student",
+            "baseline_mean_balance": 1907.3333333333333,
+            "cohort_mean_balance": 827.9655172413793,
+            "difference": -1079.367816091954,
+            "percent_change": -56.59041328689028
+          },
+          {
+            "job": "technician",
+            "baseline_mean_balance": 4030.8830769230767,
+            "cohort_mean_balance": 719.2542955326461,
+            "difference": -3311.6287813904305,
+            "percent_change": -82.15640886111537
+          },
+          {
+            "job": "unemployed",
+            "baseline_mean_balance": 5314.085106382979,
+            "cohort_mean_balance": 875.3333333333334,
+            "difference": -4438.751773049646,
+            "percent_change": -83.52805203887435
+          },
+          {
+            "job": "unknown",
+            "baseline_mean_balance": 1224.6,
+            "cohort_mean_balance": 959.421052631579,
+            "difference": -265.17894736842095,
+            "percent_change": -21.654331811891307
+          }
+        ],
+        "cohort_dataset_id": "071b396e-5de0-4f28-88ac-01647a997440",
+        "result_dataset_id": "c0feb672-cb05-48b4-b53d-41505d5c8dc1",
+        "scope": "bank_loan의 같은 snapshot에서 기준 2,000행과 cohort 1,863행의 mean 그룹 집계를 비교한 12행"
       }
     }
   ],
-  "passed": 3,
-  "total": 3,
+  "passed": 5,
+  "total": 5,
   "model_calls": 0,
   "remote_executions": 0,
-  "elapsed_seconds": 0.372,
+  "elapsed_seconds": 0.494,
   "limitations": [
     "Local synthetic fixture; no Databricks or browser execution",
-    "L2_037 increases primary independent grading coverage to 67/200; the two arbitrary-schema cases are supplementary",
-    "Parent-versus-cohort side-by-side comparison remains outside these cases"
+    "L2_037 and L2_038 increase primary independent grading coverage to 68/200; three arbitrary-schema cases are supplementary"
   ]
 }

@@ -14,7 +14,8 @@ def local_tools(context, diagnostics=None):
             started = time.monotonic()
             if diagnostics: diagnostics.emit('tool_started', tool=definition.name)
             dataset_ids = {key: arguments.get(key) for key in (
-                'dataset_id', 'left_dataset_id', 'right_dataset_id') if arguments.get(key) is not None}
+                'dataset_id', 'left_dataset_id', 'right_dataset_id',
+                'baseline_dataset_id', 'cohort_dataset_id') if arguments.get(key) is not None}
             missing_ids = {key: value for key, value in dataset_ids.items()
                            if value not in context.datasets.metadata}
             dataset_id = arguments.get('dataset_id')

@@ -77,7 +77,7 @@
 
 ### P2 — 사용 범위를 선언한 뒤 추가
 
-7. **`detect_outliers`·`select_outlier_rows`·`aggregate_dataset` — 직접 탐지와 bounded 후속 계산 구현 완료**: IQR/Z-score/MAD/분위수 결과와 threshold·행 수·범위를 구조화한다. 선택 cohort의 parent·snapshot·predicate·digest를 보존하고 scalar, 단일 그룹, TOP-N 후속 집계를 해당 child에 고정한다. parent-versus-cohort 비교와 winsorization은 아직 미검증이다.
+7. **`detect_outliers`·`select_outlier_rows`·`aggregate_dataset`·`compare_group_aggregates` — 직접 탐지와 bounded 후속 계산 구현 완료**: IQR/Z-score/MAD/분위수 결과와 threshold·행 수·범위를 구조화한다. 선택 cohort의 parent·snapshot·predicate·digest를 보존하고 scalar, 단일 그룹, TOP-N 및 같은 snapshot의 원본-versus-cohort 그룹 비교를 해당 lineage에 고정한다. winsorization은 아직 미검증이다.
 8. **`prepare_time_series`**: 완료. 실제 dtype·95% 파싱 성공률, IANA timezone, hour/day/week/month, gap omit/zero/nan, 중복 시각, 최대 20개 series와 5,000행 한도를 검증하고 parent lineage가 있는 aggregate dataset을 만든다.
 9. **`export_result`**: 검증된 dataset/chart만 CSV·PNG로 내보내고 provenance manifest를 함께 만든다.
 
@@ -91,11 +91,11 @@
 
 ## 평가 근거와 공백
 
-독립 oracle은 200문항 중 67문항을 지원한다. 미채점 133문항의 구성은 다음과 같다.
+독립 oracle은 200문항 중 68문항을 지원한다. 미채점 132문항의 구성은 다음과 같다.
 
 | 구분 | 미채점 수 |
 |---|---:|
-| table/계산 | 77 |
+| table/계산 | 76 |
 | chart | 47 |
 | schema | 9 |
 | 단일 그룹 집계·요약표 | 25 |
@@ -107,6 +107,8 @@
 | 통계 검정 | 0 |
 
 변경하지 않은 `L2_037`은 `bank_loan` fixture에서 잔액 IQR 상한 이상치 137행을 선택한 뒤 평균 나이 41.7153과 직업 TOP 3(technician 34, blue-collar 29, management 19)를 두 aggregate child로 계산했다. 독립 reference, parent lineage, snapshot, digest가 모두 일치했고 모델·원격 호출은 0회였다.
+
+변경하지 않은 `L2_038`은 같은 fixture에서 원본 2,000행과 IQR 상한 이상치를 제외한 1,863행을 직업별 평균 잔액으로 비교했다. 12개 그룹의 전체·cohort 평균, 차이, 변화율과 두 부모 lineage·snapshot·digest가 독립 reference와 일치했고 모델·원격 호출은 0회였다.
 
 `show_chart`의 실제 PNG 재사용과 missing ID 오류 계약을 추가했다. 전체 활성 tool의 성공, 입력/복구 오류, 승인 안전성, 재시작, 중복/재사용 상태는 `agent_tool_contract_matrix_2026-09-18.md`에 기록했다. `use_dataset`과 `read_analysis_skill`의 전용 조합 테스트 확대는 후속 보강 대상이다.
 
