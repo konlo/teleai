@@ -493,6 +493,7 @@ class RecoveryMiddleware(AgentMiddleware):
             current['scope'] = resolve_request_scope(text, self.context, current['previous_scope'])
             if current.get('pivot_requested'):
                 scope = current['scope']
+                explicit_scope = resolve_request_scope(text, self.context, {})
                 ratio = scope.get('ratio') or {}
                 measures = scope.get('measure_conditions') or []
                 aggregation = current.get('pivot_aggregation')
@@ -522,17 +523,46 @@ class RecoveryMiddleware(AgentMiddleware):
                                 after.append((min(positions), column))
                         if after:
                             current['pivot_value_column'] = min(after)[1]
-                condition_items = list(scope.get('conditions', []))
-                if aggregation not in {'success_rate', 'overall_percent'}:
-                    condition_items += list(measures)
-                condition_columns = {item.get('column') for item in condition_items}
+                    if not current.get('pivot_value_column') and self.context:
+                        from pandas.api.types import is_bool_dtype, is_numeric_dtype
+                        numeric_mentions = []
+                        for column in mentioned_columns:
+                            observed = [frame[column] for frame in self.context.datasets.frames.values()
+                                        if column in frame.columns]
+                            if (observed and all(is_numeric_dtype(series) and not is_bool_dtype(series)
+                                                 for series in observed)):
+                                numeric_mentions.append(column)
+                        if len(numeric_mentions) == 1:
+                            current['pivot_value_column'] = numeric_mentions[0]
+                explicit_condition_items = list(explicit_scope.get('conditions', []))
+                if aggregation != 'overall_percent':
+                    explicit_condition_items += list(
+                        explicit_scope.get('measure_conditions', []))
+                explicit_condition_columns = {
+                    item.get('column') for item in explicit_condition_items
+                }
                 axes = [column for column in mentioned_columns
                         if column != current.get('pivot_value_column')
-                        and column not in condition_columns]
+                        and column not in explicit_condition_columns]
+                # An explicitly named pivot axis changes the grouping scope.
+                # Remove only inherited filters on those axes while preserving
+                # inherited filters on every other column.
+                axis_columns = set(axes)
+                condition_items = [item for item in scope.get('conditions', [])
+                                   if item.get('column') not in axis_columns]
+                if aggregation not in {'success_rate', 'overall_percent'}:
+                    condition_items += [item for item in measures
+                                        if item.get('column') not in axis_columns]
                 if 2 <= len(axes) <= 3:
                     current['pivot_index_columns'] = [axes[0]]
                     current['pivot_column_columns'] = axes[1:]
                     current['pivot_conditions'] = condition_items
+                    scope['conditions'] = [item for item in scope.get('conditions', [])
+                                           if item.get('column') not in axis_columns]
+                    scope['measure_conditions'] = [
+                        item for item in scope.get('measure_conditions', [])
+                        if (aggregation == 'success_rate'
+                            or item.get('column') not in axis_columns)]
                 else:
                     current['pivot_requested'] = False
             # Prefer an explicitly named canonical grouping column over an

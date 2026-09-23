@@ -144,6 +144,39 @@ class AnalysisPivotTests(unittest.TestCase):
                 finally:
                     reopened.close()
 
+    def test_new_pivot_axes_replace_inherited_filters_on_the_same_columns(self):
+        frame = pd.DataFrame({
+            "period": ["2026-07", "2026-07", "2026-08", "2026-08"],
+            "segment": ["A", "B", "A", "B"],
+            "value": [4.0, 8.0, 20.0, 60.0],
+        })
+        with tempfile.TemporaryDirectory() as root:
+            runtime = GraphAnalysisRuntime(root, "owner", "pivot-followup", ForbiddenModel())
+            source = "acceptance.synthetic_events"
+            parent = runtime.datasets.register(
+                frame.copy(), source=source, coverage="complete", predicate_known=True,
+                snapshot="fixture:v1")
+            runtime.context.reference_context[:] = [fixture_reference_context(source, frame)]
+            try:
+                first = runtime.submit("보유 데이터에서 2026-08의 value 평균을 계산해줘.")
+                self.assertEqual(first["status"], "answered", first)
+                second = runtime.submit(
+                    "segment를 행 축, period를 열 축으로 value 평균 피벗 테이블을 만들어줘")
+                self.assertEqual(second["status"], "answered", second)
+                recovery = runtime.inspect()["recovery"]
+                self.assertEqual(recovery["model_calls"], 0)
+                evidence = recovery["pivot_evidence"]
+                self.assertEqual(evidence["pivot_result"]["conditions"], [])
+                self.assertEqual(evidence["pivot_result"]["parent_dataset_id"], parent.id)
+                result = runtime.datasets.frames[evidence["dataset"]["id"]]
+                expected = frame.pivot_table(
+                    index="segment", columns="period", values="value", aggfunc="mean",
+                    observed=True).reset_index()
+                expected.columns = [str(column) for column in expected.columns]
+                pd.testing.assert_frame_equal(result, expected)
+            finally:
+                runtime.close()
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -66,7 +66,7 @@
 - `render_count_rate_chart`는 그룹별 전체 행 수, outcome 비결측 분모, 명시적 성공값의 성공수와 성공률을 하나의 구조화 결과에 묶어 dual-axis 또는 split-panel PNG를 만든다. 변경하지 않은 `L2_061`·`L2_064`·`L2_065`·`L2_066`·`L2_089`와 임의 schema fixture가 독립 pandas oracle에 일치했고 모델·원격 호출은 0회였다.
 - `winsorize_numeric`은 raw 수치 컬럼에 사용자가 지정한 양쪽 quantile clipping을 적용해 경계·clip 건수·원본/보정 평균과 범위를 구조화한다. 원본을 변경하지 않으며 변경하지 않은 `L2_096`과 임의 schema fixture가 독립 pandas oracle에 일치했다. 독립 채점 범위는 74/200이다.
 - `pivot_dataset`은 실제 runtime schema에서 축과 값 컬럼을 해석하고 raw dataset만 사용한다. 변경하지 않은 피벗 질문 13문항과 임의 schema fixture가 독립 pandas oracle에 일치했고 모델·원격 호출은 0회였다. 영문 월 값은 데이터 기반으로 달력 순서를 적용하며 lineage·digest·재시작 증거를 보존한다. 독립 채점 범위는 87/200이다.
-- application tests 166/166, migration tests 126/126, actual-agent evaluation harness 45/45, Level 3 17/17, 전체 참고 runner 217/217가 통과했다. compileall과 `git diff --check`는 같은 변경의 정적 gate로 실행한다.
+- application tests 167/167, migration tests 126/126, actual-agent evaluation harness 45/45, Level 3 17/17, 전체 참고 runner 217/217가 통과했다. compileall과 `git diff --check`는 같은 변경의 정적 gate로 실행한다.
 
 ## 남은 tool 공백
 

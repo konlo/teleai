@@ -1379,3 +1379,5 @@ Task definitions and acceptance conditions: docs/agent_remaining_tasks_2026-09-1
 - **Artifact** [Agent: Codex]: `docs/actual_agent_evaluation_pivots_2026-09-24.json`과 tool audit·contract matrix·remaining tasks를 갱신했다.
 - **Remaining** [Agent: Codex]: 독립 채점 113문항, 피벗 계열의 구간화·다중 지표 요약 5문항, 범용 다중 패널, 검증된 결과 내보내기, 실제 배포 호스트 검증이 남았다.
 - **Remote gate** [Agent: Codex]: commit `ecf1feb`을 `codex/agentic-analysis-rc-2026-09-14`에 push했고 원격 SHA 일치를 확인했다. PR #68의 GitHub Actions release gate run `35926556192`가 migration, application, agentic recovery, 전체 reference suite와 compile 단계를 모두 통과했다.
+- **Live UI defect and fix** [Agent: Codex]: 최신 서버의 기존 `acceptance.synthetic_events` 대화에서 직전 `period=2026-08`·`segment=A` 조건 뒤 `segment` 행 축·`period` 열 축·`value` 평균 피벗을 요청했다. 이전 필터가 새 축을 가려 모델 경로로 빠지는 결함을 재현했다. 새 요청에 명시된 피벗 축만 상속 필터에서 해제하고 다른 상속 조건은 유지하며, 집계어 앞에 놓인 유일한 수치 컬럼도 runtime dtype으로 값 컬럼으로 확정하도록 수정했다.
+- **Regression** [Agent: Codex]: 실제 화면과 같은 2-turn 회귀를 추가해 전체 4개 segment-period 셀이 나오고 모델 호출 0회·원격 실행 0회임을 검증했다. application 167/167, migration 126/126, Level 3 17/17, 전체 runner 217/217, pivot 직접 테스트 6/6, 독립 pivot 평가 14/14 PASS.
