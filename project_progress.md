@@ -40,6 +40,8 @@
 - **Evaluation**: 변경하지 않은 `L2_089` 월별 count/rate 2열 패널과 `L2_096` balance 상하위 1% winsorization이 독립 pandas reference에 일치했다. 임의 source·임의 컬럼 winsorization에서도 정확한 경계와 평균, 원본 불변, 재시작 복원을 확인했다. 모든 여정은 model 0회·remote 0회다.
 - **Validation**: application 160/160, migration 126/126, actual-agent harness 44/44, Level 3 17/17, 전체 runner 217/217 PASS. 독립 채점은 74/200이며 미채점은 126문항이다.
 - **Artifacts**: `docs/actual_agent_evaluation_count_rate_charts_2026-09-23.json`, `docs/actual_agent_evaluation_winsorization_2026-09-23.json`.
+- **Remote Gate**: code·evaluation commit `1d52390`을 PR #68 브랜치에 push했다. GitHub Actions run `35870808597`, job `107214084797`가 migration, application, agentic recovery, 전체 runner와 compile 검사를 1분 35초에 모두 통과했다.
+- **Runtime**: 최신 commit으로 `127.0.0.1:8502`의 실제 chatbot을 재시작했다. `/_stcore/health`가 `ok`를 반환했고 브라우저에서 기존 대화와 보유 결과 5개, 후속 평균→중앙값→이전 달 요청 결과가 보존된 것을 확인했다.
 
 ---
 
