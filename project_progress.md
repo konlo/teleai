@@ -39,6 +39,7 @@
 - **Artifact**: `docs/actual_agent_evaluation_cohort_aggregates_2026-09-23.json`.
 - **Primary Evaluation**: 변경하지 않은 `L2_037`을 주 평가 계약에 편입했다. `bank_loan` fixture의 balance IQR 상한 이상치 137행, 평균 나이 41.7153, 직업 TOP 3(technician 34, blue-collar 29, management 19)가 독립 reference와 일치했다. `select_outlier_rows` 1회와 `aggregate_dataset` 2회, 모델·원격 0회였고 독립 채점은 67/200으로 증가했다.
 - **Final Validation**: application 146/146, migration 126/126, actual-agent harness 41/41, Level 3 17/17, 전체 runner 217/217, cohort 평가 3/3, compileall과 diff check PASS. 따옴표가 포함된 runtime 컬럼명도 생성 SQL을 재실행해 동일 frame을 얻었다.
+- **Remote Gate**: code·evaluation commit `8069aaf`을 PR #68 브랜치에 push했다. GitHub Actions run `35847295885`, job `107136423254`가 pinned 환경에서 migration, application, agentic recovery, 전체 runner와 compile 검사를 1분 26초에 모두 통과했다.
 
 ---
 
@@ -425,7 +426,7 @@ Task definitions and acceptance conditions: docs/agent_remaining_tasks_2026-09-1
 
 ### 2026-09-23 Daily Summary
 - **Work completed**: Added table-neutral `prepare_time_series` with multi-series rendering and bounded `aggregate_dataset` for cohort overall, single-group, and TOP-N aggregation. Both preserve lineage, snapshot, digest, cardinality, output-size, and restart contracts.
-- **Evidence**: The time-series journey matched an independent pandas oracle with zero model and remote calls. Two arbitrary-schema cohort journeys and unchanged `L2_037` matched independent pandas oracles 3/3 with zero model and remote calls. Application 146/146, migration 126/126, actual-agent 41/41, Level 3 17/17, and full runner 217/217 passed. GitHub Actions run `35786432923` passed the earlier time-series release gate for commit `d87c887`; the cohort change awaits its own remote gate.
+- **Evidence**: The time-series journey matched an independent pandas oracle with zero model and remote calls. Two arbitrary-schema cohort journeys and unchanged `L2_037` matched independent pandas oracles 3/3 with zero model and remote calls. Application 146/146, migration 126/126, actual-agent 41/41, Level 3 17/17, and full runner 217/217 passed. GitHub Actions run `35847295885` passed the cohort release gate for commit `8069aaf`.
 - **Remaining**: Independent grading is 67/200 with 133 cases ungraded. Multi-panel/dual-axis charts, parent-versus-cohort comparison transforms, PR review/merge/deployment, selected-host capacity and smoke/rollback gates remain. Four stale production TableContexts still require separate user-approved refreshes.
 - **Reports**: `docs/actual_agent_evaluation_time_series_2026-09-23.json`, `docs/actual_agent_evaluation_cohort_aggregates_2026-09-23.json`.
 
