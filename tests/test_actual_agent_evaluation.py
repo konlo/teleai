@@ -119,7 +119,7 @@ class ActualAgentEvaluationTests(unittest.TestCase):
         self.assertEqual(result["evidence"]["counterfactual_probes"], 2)
 
     def test_every_declared_reference_oracle_is_executable_without_a_model(self):
-        self.assertEqual(len(self.grading), 74)
+        self.assertEqual(len(self.grading), 87)
         self.assertTrue(set(self.grading).issubset(self.specs))
         for case, grading in self.grading.items():
             with self.subTest(case=case):
@@ -215,6 +215,21 @@ class ActualAgentEvaluationTests(unittest.TestCase):
         self.assertEqual(result["runtime_metadata"]["recovery_model_calls"], 0)
         self.assertEqual(result["remote_executions"], 0)
         self.assertEqual(len(result["evidence"]["comparisons"]), 1)
+
+    def test_pivot_cases_use_structured_lineage_and_match_reference(self):
+        cases = (
+            "L1_062", "L1_063", "L1_064",
+            "L2_021", "L2_022", "L2_023", "L2_024", "L2_025",
+            "L2_027", "L2_028", "L2_029", "L2_031", "L2_034",
+        )
+        for case in cases:
+            with self.subTest(case=case):
+                result = self.evaluate(case, EvaluationModel())
+                self.assertEqual(result["status"], "PASS", result)
+                self.assertEqual(result["tools"], {"pivot_dataset": 1})
+                self.assertEqual(result["runtime_metadata"]["recovery_model_calls"], 0)
+                self.assertEqual(result["remote_executions"], 0)
+                self.assertEqual(len(result["evidence"]["pivots"]), 1)
 
     def test_scalar_reductions_are_computed_from_reference_objects(self):
         self.assertEqual(reference_oracle(self.specs["L1_005"], self.grading["L1_005"], self.frames),

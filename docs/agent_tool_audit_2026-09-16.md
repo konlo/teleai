@@ -4,13 +4,13 @@
 
 현재 production `GraphAnalysisRuntime`의 tool 구조는 **승인형 데이터 로딩, 보유 DataFrame 재사용, 기본 SQL 계산, 기본 차트 생성과 복구**에는 적합하다. 중앙 registry와 실행 wrapper, 승인 ledger, lineage 검사, 영속 artifact가 연결돼 있어 단순 tool 모음은 아니다.
 
-2026-09-23까지 P0 공백인 공통 결과 계약, 데이터셋 프로파일, 승인형 source discovery와 P1의 제한된 차트 사양·다중 dataset join·구조화 통계 검정, 직접 이상치 탐지, 계보가 있는 이상치 cohort 후속 계산, bounded datetime 시계열 준비, 단일 그룹·TOP-N 집계, 그룹별 건수·성공률 dual-axis/split-panel과 winsorization을 구현했다. 현재 남은 tool 범위는 범용 다중 패널, 피벗·소계와 결과 내보내기다.
+2026-09-24까지 P0 공백인 공통 결과 계약, 데이터셋 프로파일, 승인형 source discovery와 P1의 제한된 차트 사양·다중 dataset join·구조화 통계 검정, 직접 이상치 탐지, 계보가 있는 이상치 cohort 후속 계산, bounded datetime 시계열 준비, 단일 그룹·TOP-N 집계, 그룹별 건수·성공률 dual-axis/split-panel, winsorization과 bounded 피벗을 구현했다. 현재 남은 tool 범위는 범용 다중 패널, 구간화·다중 지표 소계와 결과 내보내기다.
 
 따라서 현재 상태는 **검증된 제한 범위에 적합**하며, 범용 분석 agent로 승격하려면 남은 의도와 배포 환경 검증이 필요하다.
 
 ## 실제 활성 tool 구성
 
-2026-09-23 winsorization 보강 후 `build_analysis_tools()`는 23개 정의를 만든다. production agent에는 `propose_databricks_query`를 제외한 로컬 tool 22개가 등록되고, 원격 연결이 있을 때 승인 middleware가 적용된 `query_databricks` 1개가 추가된다.
+2026-09-24 피벗 보강 후 `build_analysis_tools()`는 24개 정의를 만든다. production agent에는 `propose_databricks_query`를 제외한 로컬 tool 23개가 등록되고, 원격 연결이 있을 때 승인 middleware가 적용된 `query_databricks` 1개가 추가된다.
 
 | 영역 | 활성 tool | 현재 역할 | 진단 |
 |---|---|---|---|
@@ -23,6 +23,7 @@
 | statistics | `statistical_test` | 보유 raw dataset의 선언된 가설 검정·평균 신뢰구간 | 독립·대응 t, 카이제곱, 일원 ANOVA, Mann–Whitney, 평균 CI를 enum으로 제한하고 표본·결측·가정·통계량·p-value·효과크기·CI를 반환한다. |
 | outliers | `detect_outliers`, `select_outlier_rows`, `winsorize_numeric` | 보유 raw dataset의 이상치 기준·건수 계산, 후속 cohort 파생과 원본/clip 통계 비교 | IQR·Z-score·MAD·분위수와 tail을 제한한다. cohort는 원시 행을 반환하지 않고 lineage를 보존하며, winsorization은 원본을 변경하지 않고 aggregate evidence만 반환한다. |
 | aggregation | `aggregate_dataset` | 보유 raw 또는 파생 cohort의 전체·단일 그룹·TOP-N 집계 | count/mean/sum/median/min/max, 단일 group, 정렬, TOP-N, group/output 한도를 제한하고 parent·snapshot·digest가 있는 aggregate child를 만든다. |
+| pivot | `pivot_dataset` | 보유 raw dataset의 bounded 피벗·교차표 | 실제 runtime schema에서 행 1~3개·열 1~2개를 선택하고 count/mean/sum/median/min/max/success-rate/overall-percent, 조건, margins, 월 순서를 제한한다. 최대 4축·축당 100값·1,000셀과 parent·snapshot·digest를 강제한다. |
 | visualization | `recommend_chart_images`, `prepare_histogram`, `render_histogram`, `render_chart_spec`, `render_count_rate_chart`, `show_chart` | 실제 PNG 추천·생성·재표시 | 기본 5종 차트와 그룹 박스플롯, 그룹별 전체 건수+명시적 성공률의 dual-axis/split-panel을 제한된 schema로 실행한다. 임의 코드·파일·URL·style dictionary는 받지 않는다. |
 | remote | `query_databricks` | 정확한 SELECT를 승인 후 1회 실행 | fingerprint·연결 identity·제출 불명 상태 차단이 강하다. 테이블 탐색용 전용 계획 tool은 없다. |
 
@@ -79,7 +80,8 @@
 
 7. **`detect_outliers`·`select_outlier_rows`·`aggregate_dataset`·`compare_group_aggregates`·`winsorize_numeric` — 직접 탐지와 bounded 후속 계산 구현 완료**: IQR/Z-score/MAD/분위수 결과와 threshold·행 수·범위를 구조화한다. 선택 cohort의 lineage를 보존하며 원본-versus-cohort 비교와 원본 불변 quantile clipping 비교를 구조화한다.
 8. **`prepare_time_series`**: 완료. 실제 dtype·95% 파싱 성공률, IANA timezone, hour/day/week/month, gap omit/zero/nan, 중복 시각, 최대 20개 series와 5,000행 한도를 검증하고 parent lineage가 있는 aggregate dataset을 만든다.
-9. **`export_result`**: 검증된 dataset/chart만 CSV·PNG로 내보내고 provenance manifest를 함께 만든다.
+9. **`pivot_dataset` — 기본 피벗 구현 완료**: 단일·복수 축, count/수치 집계/성공률/전체 백분율, 필터, margins와 영문 월 달력 정렬을 지원한다. 구간화 축과 한 요청의 다중 지표 요약은 후속 범위다.
+10. **`export_result`**: 검증된 dataset/chart만 CSV·PNG로 내보내고 provenance manifest를 함께 만든다.
 
 ## 추가하지 말아야 할 것
 
@@ -91,16 +93,16 @@
 
 ## 평가 근거와 공백
 
-독립 oracle은 200문항 중 74문항을 지원한다. 미채점 126문항의 구성은 다음과 같다.
+독립 oracle은 200문항 중 87문항을 지원한다. 미채점 113문항의 구성은 다음과 같다. 아래 기능별 수는 서로 중첩될 수 있다.
 
 | 구분 | 미채점 수 |
 |---|---:|
-| table/계산 | 75 |
+| table/계산 | 62 |
 | chart | 42 |
 | schema | 9 |
 | 단일 그룹 집계·요약표 | 25 |
 | 단일 차트 | 17 |
-| 피벗·소계 | 15 |
+| 피벗·소계 | 5 |
 | 전환율·이중축 | 11 |
 | 다중 패널·고급 시각화 | 14 |
 | 이상치 | 7 |
@@ -114,6 +116,8 @@
 
 변경하지 않은 `L2_089`는 같은 count/rate 계약으로 월별 건수와 전환율 2열 패널을 만들었다. `L2_096`은 balance 상하위 1% 경계, clip 건수, 원본/보정 평균·최솟값·최댓값이 독립 reference와 일치했다. 임의 수치 컬럼에서도 원본 DataFrame 불변과 재시작 복원을 확인했고 모델·원격 호출은 0회였다.
 
+`pivot_dataset`은 변경하지 않은 `L1_062`–`L1_064`와 `L2_021`–`L2_025`·`L2_027`–`L2_029`·`L2_031`·`L2_034`를 count, 수치 집계, 성공률, 전체 백분율, 조건, 복수 열 축, margins와 월 달력 순서로 실행했다. 13/13 결과가 독립 pandas oracle과 셀 단위로 일치했고 임의 schema에서도 lineage·digest·재시작 복원을 확인했다. 모델·원격 호출은 0회였다.
+
 `show_chart`의 실제 PNG 재사용과 missing ID 오류 계약을 추가했다. 전체 활성 tool의 성공, 입력/복구 오류, 승인 안전성, 재시작, 중복/재사용 상태는 `agent_tool_contract_matrix_2026-09-18.md`에 기록했다. `use_dataset`과 `read_analysis_skill`의 전용 조합 테스트 확대는 후속 보강 대상이다.
 
 ## 권장 실행 순서
@@ -122,6 +126,6 @@
 2. `profile_dataset`과 승인형 source discovery를 추가한다.
 3. 실제 agent 독립 oracle 중 schema/결측/고유값/기본 그룹 집계를 우선 확대한다.
 4. 제한된 `render_chart_spec`과 지정 차트·수정·재시작 검증을 완료한다.
-5. multi-dataset join, statistical test, 직접 outlier detection과 bounded cohort 후속 계산, 숫자축 빈도 선·영문 월 누적 곡선, datetime resampling·gap·다중 series를 완료했다. 다음 tool 보강은 다중 패널·이중축 또는 cohort 그룹 집계 중에서 선택한다.
+5. multi-dataset join, statistical test, 직접 outlier detection과 bounded cohort 후속 계산, 숫자축 빈도 선·영문 월 누적 곡선, datetime resampling·gap·다중 series와 기본 피벗을 완료했다. 다음 tool 보강은 구간화·다중 지표 소계, 범용 다중 패널 또는 결과 내보내기 중에서 선택한다.
 
 이 순서라면 tool 수를 통제하면서도 자주 실패하는 사용자 의도를 결정적이고 검증 가능한 실행으로 옮길 수 있다.

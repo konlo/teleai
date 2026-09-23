@@ -1363,3 +1363,18 @@ Task definitions and acceptance conditions: docs/agent_remaining_tasks_2026-09-1
 - **Evaluation**: 임의 schema 비교와 변경하지 않은 `L2_038`이 독립 pandas/reference oracle에 일치했다. `bank_loan` 원본 2,000행과 정상 cohort 1,863행의 12개 직업별 평균·차이·변화율을 검증했고 모델·원격 호출은 0회였다. 독립 채점은 68/200으로 증가했다.
 - **Validation**: application 151/151, migration 126/126, actual-agent harness 42/42, Level 3 17/17, 전체 runner 217/217, cohort 평가 5/5, compileall과 diff check PASS. 무관한 dataset, snapshot 불일치, 비수치 measure, 0 기준 변화율과 cohort에서 사라진 group을 별도로 검증했다.
 - **Artifact**: `docs/actual_agent_evaluation_cohort_aggregates_2026-09-23.json`.
+
+---
+
+## [2026-09-23 23:08:49 KST] [Agent: Codex] User Request: 나머지 작업 진행
+- **Request**: 남아 있는 agent 기능과 독립 평가 범위를 다음 우선순위부터 계속 수행한다.
+- **Action Plan**: 미채점 126문항에서 반복성이 높은 피벗·소계와 범용 다중 패널 요청을 분류하고, table-neutral bounded tool·production recovery·독립 oracle·회귀 테스트를 한 묶음으로 구현한다.
+- **Safety**: 로컬 fixture와 이미 로딩된 DataFrame만 사용한다. Databricks 조회나 stale TableContext refresh는 실행하지 않는다.
+
+## [2026-09-24 05:45:32 KST] [Agent: Codex] User Request: 계속
+- **Action**: 피벗·소계 우선순위 구현을 계속한다. bounded pivot tool, production recovery, 독립 oracle과 전체 release gate를 순서대로 진행한다.
+- **Implementation** [Agent: Codex]: table-neutral `pivot_dataset`을 production registry와 recovery loop에 추가했다. raw grain만 허용하고 실제 runtime schema에서 행 1~3개·열 1~2개를 선택하며 count/mean/sum/median/min/max/success_rate/overall_percent, 조건, margins, 월 달력 정렬을 지원한다. 축당 100값·최대 1,000셀, parent lineage·snapshot·digest, 오류 fail-closed 계약을 적용했다.
+- **Evaluation** [Agent: Codex]: 변경하지 않은 피벗 질문 13개(`L1_062`–`L1_064`, `L2_021`–`L2_025`, `L2_027`–`L2_029`, `L2_031`, `L2_034`)와 임의 schema production 질문 1개가 독립 pandas oracle과 일치했다. 14/14 PASS, 모델 호출 0회, 원격 실행 0회이며 재시작 후 evidence 복원도 확인했다. 독립 채점은 87/200으로 증가했다.
+- **Validation** [Agent: Codex]: application 166/166, migration 126/126, actual-agent harness 45/45, Level 3 17/17, 전체 runner 217/217, pivot evaluator 14/14, compileall·`git diff --check` PASS. Databricks 조회는 실행하지 않았다.
+- **Artifact** [Agent: Codex]: `docs/actual_agent_evaluation_pivots_2026-09-24.json`과 tool audit·contract matrix·remaining tasks를 갱신했다.
+- **Remaining** [Agent: Codex]: 독립 채점 113문항, 피벗 계열의 구간화·다중 지표 요약 5문항, 범용 다중 패널, 검증된 결과 내보내기, 실제 배포 호스트 검증이 남았다.

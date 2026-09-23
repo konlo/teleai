@@ -12,6 +12,7 @@ from langchain_core.messages import AIMessage, ToolMessage, SystemMessage, Remov
 from core.analysis_agent.failure_messages import remote_failure_message
 from core.analysis_agent.memory import latest_user_request
 from core.analysis_agent.intent_scope import resolve_request_scope, scope_matches, measure_scope_matches
+from utils.analysis_pivot import MONTH_ORDER
 
 
 def _dtype_family(value):
@@ -91,6 +92,9 @@ class RecoveryMiddleware(AgentMiddleware):
                 r'최신|새로\s*(?:갱신|업데이트|변경)된|현재\s*(?:원본|테이블|DB|데이터베이스)|'
                 r'지금\s*(?:원본|테이블|DB|데이터베이스)|오늘\s*기준|방금\s*갱신', text, re.I)) and not current_loaded_reference
             objective_text = re.sub(r'(?:평균|중앙값|합계|최소값|최대값)\s*(?:말고|대신|아닌|아니라)', '', text)
+            # Pivot margin labels such as "전체총합계" describe presentation,
+            # not an additional SUM measure alongside the requested row count.
+            objective_text = re.sub(r'전체\s*총합계|총합계', '총계', objective_text)
             if re.search(r'히스토그램|\bhistogram', text, re.I): kind = 'histogram'
             elif re.search(r'산점도|산포도|\bscatter(?:\s*plot)?\b', text, re.I): kind = 'scatter'
             elif re.search(r'박스\s*플롯|상자\s*수염|상자\s*그림|\bbox\s*plot\b|\bboxplot\b', text, re.I): kind = 'boxplot'
@@ -98,6 +102,8 @@ class RecoveryMiddleware(AgentMiddleware):
             elif re.search(r'선\s*(?:그래프|차트)|꺾은선|(?:누적|성장).{0,40}곡선|\bline(?:\s*chart)?\b|\bcurve\b', text, re.I): kind = 'line'
             else: kind = None
             chart = bool(kind or re.search(r'차트|시각화|그래프|\bchart|\bplot', text, re.I))
+            pivot_requested = bool(not chart and re.search(
+                r'피벗(?:\s*테이블)?|\bpivot(?:\s*table)?\b|교차\s*(?:빈도)?표', text, re.I))
             count_rate_signal = bool(
                 re.search(r'건수|고객\s*수|승객\s*수|접촉\s*수|행\s*수|\b(?:row\s*)?count\b', text, re.I)
                 and re.search(r'비율|성공률|생존율|전환율|\b(?:ratio|rate|percentage|percent)\b', text, re.I))
@@ -269,6 +275,45 @@ class RecoveryMiddleware(AgentMiddleware):
             if re.search(r'비율|성공률|생존율|전환율|[가-힣A-Za-z]+[율률]|\b(?:ratio|rate|percentage|percent)\b',
                          objective_text, re.I): operations.append('RATIO')
             if count_request and 'COUNT' not in operations: operations.append('COUNT')
+            pivot_aggregation = None
+            pivot_value_column = None
+            pivot_success_value = None
+            pivot_margins = bool(pivot_requested and re.search(
+                r'margins?\s*=\s*True|행.{0,8}열.{0,12}(?:총계|합계)|전체\s*(?:총계|평균|생존율)',
+                text, re.I))
+            pivot_margin_match = re.search(
+                r'(전체\s*(?:총계|총합계|평균|생존율|성공률|전환율))', text, re.I)
+            pivot_margins_name = (re.sub(r'\s+', '', pivot_margin_match.group(1))
+                                  if pivot_margin_match else '전체')
+            pivot_sort = ('calendar_month' if pivot_requested and re.search(
+                          r'월\s*순서|달력\s*순서|calendar\s*(?:month\s*)?order', text, re.I)
+                          else 'ascending')
+            if pivot_requested:
+                if re.search(r'normalize\s*=\s*True|전체\s*대비\s*백분율|전체\s*대비\s*비율', text, re.I):
+                    pivot_aggregation = 'overall_percent'
+                elif 'RATIO' in operations:
+                    pivot_aggregation = 'success_rate'
+                else:
+                    declared = [item for item in operations
+                                if item in {'COUNT', 'AVG', 'SUM', 'MEDIAN', 'MIN', 'MAX'}]
+                    mapping = {'COUNT':'count', 'AVG':'mean', 'SUM':'sum',
+                               'MEDIAN':'median', 'MIN':'min', 'MAX':'max'}
+                    if len(declared) == 1:
+                        pivot_aggregation = mapping[declared[0]]
+                if pivot_aggregation:
+                    if pivot_margins:
+                        if pivot_margins_name == '전체총합계':
+                            pivot_margins_name = '전체총계'
+                        elif pivot_margins_name == '전체':
+                            if pivot_aggregation == 'count':
+                                pivot_margins_name = '전체총계'
+                            elif pivot_aggregation == 'mean':
+                                pivot_margins_name = '전체평균'
+                            elif pivot_aggregation == 'success_rate':
+                                rate_label = next((label for label in
+                                    ('생존율', '성공률', '전환율', '가입률') if label in text), '성공률')
+                                pivot_margins_name = '전체' + rate_label
+                    calculation, operations = False, []
             if winsor_spec:
                 calculation, operations = False, []
             time_series_aggregation = None
@@ -399,6 +444,13 @@ class RecoveryMiddleware(AgentMiddleware):
             current = dict(request_id=human.id, attempts=0, chart=chart, kind=kind,
                 join=join_requested, join_how=join_how,
                 statistical_kind=statistical_kind,
+                pivot_requested=pivot_requested and bool(pivot_aggregation),
+                pivot_aggregation=pivot_aggregation,
+                pivot_value_column=pivot_value_column,
+                pivot_success_value=pivot_success_value,
+                pivot_index_columns=[],pivot_column_columns=[],pivot_conditions=[],
+                pivot_margins=pivot_margins,pivot_sort=pivot_sort,
+                pivot_margins_name=pivot_margins_name,
                 winsor_spec=winsor_spec,
                 winsor_column=winsor_column,
                 outlier_spec=outlier_spec,
@@ -439,6 +491,50 @@ class RecoveryMiddleware(AgentMiddleware):
                 columns=[], failed={}, status='working')
             current['previous_scope'] = previous.get('scope', {})
             current['scope'] = resolve_request_scope(text, self.context, current['previous_scope'])
+            if current.get('pivot_requested'):
+                scope = current['scope']
+                ratio = scope.get('ratio') or {}
+                measures = scope.get('measure_conditions') or []
+                aggregation = current.get('pivot_aggregation')
+                if aggregation == 'success_rate':
+                    current['pivot_value_column'] = ratio.get('column')
+                    matches = [item for item in measures
+                               if item.get('column') == current['pivot_value_column']
+                               and item.get('op') == 'eq']
+                    if len(matches) == 1:
+                        current['pivot_success_value'] = matches[0].get('value')
+                elif aggregation not in {'count', 'overall_percent'}:
+                    operation_patterns = {
+                        'mean':r'평균|\b(?:mean|average|avg)\b',
+                        'sum':r'합계|총합|\bsum\b',
+                        'median':r'중앙값|\bmedian\b',
+                        'min':r'최솟값|최소값|\bmin\b',
+                        'max':r'최댓값|최대값|\bmax\b',
+                    }
+                    operation_match = re.search(operation_patterns[aggregation], text, re.I)
+                    if operation_match:
+                        after = []
+                        for column in mentioned_columns:
+                            positions = [text.find(term, operation_match.end())
+                                         for term in (column, *column_aliases.get(column, ()))
+                                         if text.find(term, operation_match.end()) >= 0]
+                            if positions:
+                                after.append((min(positions), column))
+                        if after:
+                            current['pivot_value_column'] = min(after)[1]
+                condition_items = list(scope.get('conditions', []))
+                if aggregation not in {'success_rate', 'overall_percent'}:
+                    condition_items += list(measures)
+                condition_columns = {item.get('column') for item in condition_items}
+                axes = [column for column in mentioned_columns
+                        if column != current.get('pivot_value_column')
+                        and column not in condition_columns]
+                if 2 <= len(axes) <= 3:
+                    current['pivot_index_columns'] = [axes[0]]
+                    current['pivot_column_columns'] = axes[1:]
+                    current['pivot_conditions'] = condition_items
+                else:
+                    current['pivot_requested'] = False
             # Prefer an explicitly named canonical grouping column over an
             # incidental alias match. For example, a short alias such as
             # "일" must not make ``job`` compete with an explicit ``day`` in
@@ -463,6 +559,10 @@ class RecoveryMiddleware(AgentMiddleware):
                 # envelope.  Natural-language scope extraction from the reason
                 # text would invent an analysis obligation.
                 current.update(chart=False,kind=None,join=False,join_how=None,statistical_kind=None,outlier_spec=None,
+                    pivot_requested=False,pivot_aggregation=None,pivot_value_column=None,
+                    pivot_success_value=None,pivot_index_columns=[],pivot_column_columns=[],
+                    pivot_conditions=[],pivot_margins=False,pivot_sort='ascending',
+                    pivot_margins_name='전체',
                     winsor_spec=None,winsor_column=None,
                     outlier_column=None,outlier_followup=False,outlier_selection='outliers',
                     outlier_group_column=None,outlier_metric_column=None,
@@ -524,6 +624,10 @@ class RecoveryMiddleware(AgentMiddleware):
             # observation may already be marked processed, so the loop below
             # is also allowed to reconsider that single observation.
             current.update(data_load=True,chart=False,kind=None,join=False,join_how=None,statistical_kind=None,outlier_spec=None,
+                pivot_requested=False,pivot_aggregation=None,pivot_value_column=None,
+                pivot_success_value=None,pivot_index_columns=[],pivot_column_columns=[],
+                pivot_conditions=[],pivot_margins=False,pivot_sort='ascending',
+                pivot_margins_name='전체',
                 winsor_spec=None,winsor_column=None,
                 outlier_column=None,outlier_followup=False,outlier_selection='outliers',
                 outlier_group_column=None,outlier_metric_column=None,
@@ -547,6 +651,9 @@ class RecoveryMiddleware(AgentMiddleware):
                 ('outlier_aggregate_evidence', {}), ('count_rate_evidence', None),
                 ('count_rate_layout', None), ('count_rate_group_column', None),
                 ('winsor_evidence', None), ('winsor_spec', None), ('winsor_column', None),
+                ('pivot_evidence', None), ('pivot_requested', False),
+                ('pivot_index_columns', []), ('pivot_column_columns', []),
+                ('pivot_conditions', []), ('pivot_margins_name', '전체'),
                 ('explicit_columns', [])]:
             current.setdefault(key, default)
         start = next((i for i, m in enumerate(messages) if human and m.id == human.id), 0)
@@ -730,6 +837,44 @@ class RecoveryMiddleware(AgentMiddleware):
                     and self._scope_valid(info, current))
                 if valid:
                     current['winsor_evidence'] = observation
+                    current['failed'].pop(name, None)
+            if name == 'pivot_dataset' and observation.get('status') == 'ready':
+                parent_id = arguments.get('dataset_id')
+                child_id = observation.get('dataset', {}).get('id')
+                parent = self.context.datasets.metadata.get(parent_id) if self.context else None
+                child = self.context.datasets.metadata.get(child_id) if self.context else None
+                result = observation.get('pivot_result', {})
+                from utils.analysis_pivot import dataset_digest
+                actual_digest = (dataset_digest(self.context.datasets.frames[child_id])
+                                 if child is not None else None)
+                valid = (
+                    current.get('pivot_requested')
+                    and parent is not None and child is not None
+                    and result.get('kind') == 'dataset_pivot'
+                    and result.get('parent_dataset_id') == parent_id
+                    and child.parent_id == parent_id and child.source == parent.source
+                    and child.snapshot == parent.snapshot and child.grain == 'aggregate'
+                    and result.get('index_columns') == arguments.get('index_columns')
+                    and result.get('column_columns') == arguments.get('column_columns')
+                    and result.get('aggregation') == arguments.get('aggregation')
+                    and result.get('value_column') == arguments.get('value_column', '')
+                    and result.get('success_value') == arguments.get('success_value')
+                    and result.get('conditions') == arguments.get('conditions', [])
+                    and result.get('margins') == arguments.get('margins', False)
+                    and result.get('margins_name') == arguments.get('margins_name', '전체')
+                    and result.get('sort') == arguments.get('sort', 'ascending')
+                    and result.get('output_rows') == child.rows
+                    and result.get('output_columns') == len(child.columns)
+                    and result.get('data_sha256') == actual_digest
+                    and isinstance(observation.get('preview'), list)
+                    and not observation.get('rows')
+                    and self._source_matches(parent, current)
+                    and self._fresh_for_request(parent, current)
+                    and (current.get('current_result_only')
+                         or (parent.coverage == 'complete' and parent.predicate_known))
+                    and self._pivot_scope_valid(parent, arguments, current))
+                if valid:
+                    current['pivot_evidence'] = observation
                     current['failed'].pop(name, None)
             if name in {'detect_outliers', 'select_outlier_rows'} and observation.get('status') == 'ready':
                 parent_id = arguments.get('dataset_id')
@@ -1017,6 +1162,33 @@ class RecoveryMiddleware(AgentMiddleware):
             return False
         return self._scope_valid(info, current)
 
+    def _pivot_scope_valid(self, info, arguments, current):
+        if info is None or not current.get('pivot_requested'):
+            return False
+        scope = current.get('scope', {})
+        if scope.get('unresolved') or scope.get('any_conditions'):
+            return False
+        expected_conditions = current.get('pivot_conditions', [])
+        if arguments.get('conditions', []) != expected_conditions:
+            return False
+        axes = list(arguments.get('index_columns', [])) + list(
+            arguments.get('column_columns', []))
+        if (arguments.get('index_columns') != current.get('pivot_index_columns')
+                or arguments.get('column_columns') != current.get('pivot_column_columns')
+                or arguments.get('aggregation') != current.get('pivot_aggregation')
+                or arguments.get('value_column', '') != (current.get('pivot_value_column') or '')
+                or arguments.get('success_value') != current.get('pivot_success_value')
+                or arguments.get('margins', False) != current.get('pivot_margins', False)
+                or arguments.get('margins_name', '전체') != current.get('pivot_margins_name', '전체')
+                or arguments.get('sort', 'ascending') != current.get('pivot_sort', 'ascending')):
+            return False
+        required = set(axes)
+        if current.get('pivot_value_column'):
+            required.add(current['pivot_value_column'])
+        required.update(item.get('column') for item in expected_conditions)
+        return (required.issubset(info.columns)
+                and set(current.get('required_columns', [])).issubset(required))
+
     @staticmethod
     def _source_key(source):
         import sqlglot
@@ -1137,6 +1309,7 @@ class RecoveryMiddleware(AgentMiddleware):
 
     def _complete(self, current):
         if current.get('data_load'): return bool(current.get('load_evidence_id'))
+        if current.get('pivot_requested') and not current.get('pivot_evidence'): return False
         if current.get('count_rate_layout') and not current.get('count_rate_evidence'): return False
         if current.get('join') and not current.get('join_evidence'): return False
         if current.get('time_series_frequency') and not current.get('time_series_evidence'): return False
@@ -1286,6 +1459,26 @@ class RecoveryMiddleware(AgentMiddleware):
             if result.get('warnings'):
                 line += "\n주의: " + " ".join(result['warnings'])
             parts.append(line)
+        if current.get('pivot_evidence') and self.context:
+            evidence = current['pivot_evidence']
+            result = evidence['pivot_result']
+            dataset_id = evidence['dataset']['id']
+            frame = self.context.datasets.frames[dataset_id]
+            line = (
+                f"{', '.join(result['index_columns'])} 행 축과 "
+                f"{', '.join(result['column_columns'])} 열 축으로 "
+                f"{result['aggregation']} 피벗 표를 만들었습니다. "
+                f"조건 적용 {result['filtered_rows']:,}행, 완전한 관측값 "
+                f"{result['complete_rows']:,}행, 결과 {result['output_rows']:,}행 × "
+                f"{result['output_columns']:,}열입니다."
+            )
+            if result.get('margins'):
+                line += f" 행·열 총계는 {result['margins_name']}으로 표시했습니다."
+            line += ('\n```csv\n' + frame.head(15).to_csv(index=False).strip()
+                     + '\n```\n분석 범위: ' + str(evidence.get('scope', '')))
+            if len(frame) > 15:
+                line += f"\n총 {len(frame):,}행 중 앞 15행입니다. 전체 결과는 저장된 데이터에서 확인할 수 있습니다."
+            parts.append(line)
         if current.get('outlier_evidence'):
             evidence = current['outlier_evidence']
             result = evidence['outlier_result']
@@ -1393,6 +1586,63 @@ class RecoveryMiddleware(AgentMiddleware):
         return {'recovery': current, 'messages': [message]}
 
     def _next_local(self, current, calls):
+        if (self.context and current.get('pivot_requested')
+                and not current.get('pivot_evidence')
+                and not current.get('fresh_source_required')):
+            axes = (list(current.get('pivot_index_columns', []))
+                    + list(current.get('pivot_column_columns', [])))
+            value_column = current.get('pivot_value_column') or ''
+            condition_columns = {item.get('column')
+                                 for item in current.get('pivot_conditions', [])}
+            required = set(axes) | condition_columns
+            if value_column:
+                required.add(value_column)
+            candidates = [info for info in self.context.datasets.metadata.values()
+                if info.grain == 'raw' and not info.aggregation
+                and required.issubset(info.columns)
+                and self._source_matches(info, current)
+                and self._fresh_for_request(info, current)
+                and (current.get('current_result_only')
+                    or (info.coverage == 'complete' and info.predicate_known))]
+            aggregation = current.get('pivot_aggregation')
+            valid_spec = (bool(current.get('pivot_index_columns'))
+                          and bool(current.get('pivot_column_columns'))
+                          and aggregation in {'count','mean','sum','median','min','max',
+                                              'success_rate','overall_percent'}
+                          and (aggregation in {'count','overall_percent'} or bool(value_column))
+                          and (aggregation != 'success_rate'
+                               or current.get('pivot_success_value') is not None))
+            if len(candidates) == 1 and valid_spec:
+                # Month categories have a stable semantic order even when the
+                # user does not spell out "calendar order".  Infer that order
+                # from the loaded values rather than a table or column name.
+                if len(current.get('pivot_index_columns', [])) == 1:
+                    index_column = current['pivot_index_columns'][0]
+                    observed = {
+                        str(value).strip().casefold()
+                        for value in self.context.datasets.frames[candidates[0].id][index_column]
+                            .dropna().unique().tolist()
+                    }
+                    if observed and observed.issubset(MONTH_ORDER):
+                        current['pivot_sort'] = 'calendar_month'
+                arguments = {
+                    'dataset_id':candidates[0].id,
+                    'index_columns':current['pivot_index_columns'],
+                    'column_columns':current['pivot_column_columns'],
+                    'aggregation':aggregation,
+                    'conditions':current.get('pivot_conditions', []),
+                    'margins':current.get('pivot_margins', False),
+                    'margins_name':current.get('pivot_margins_name', '전체'),
+                    'sort':current.get('pivot_sort', 'ascending'),
+                }
+                if value_column:
+                    arguments['value_column'] = value_column
+                if aggregation == 'success_rate':
+                    arguments['success_value'] = current.get('pivot_success_value')
+                if (self._pivot_scope_valid(candidates[0], arguments, current)
+                        and not any(c.get('name') == 'pivot_dataset' and c.get('args') == arguments
+                                    for c in calls.values())):
+                    return {'name':'pivot_dataset', 'args':arguments}
         if (self.context and current.get('winsor_spec')
                 and not current.get('winsor_evidence') and not self._has_scope(current)):
             column = current.get('winsor_column')
@@ -2131,6 +2381,7 @@ class RecoveryMiddleware(AgentMiddleware):
         current, calls = self._state(state)
         if (current.get('data_load') or current.get('plan') or current.get('join')
                 or current.get('time_series_frequency') or current.get('statistical_kind')
+                or current.get('pivot_requested')
                 or current.get('winsor_spec') or current.get('outlier_spec')
                 or current.get('chart') or current.get('calculation')
                 or current.get('metadata_kind') or current.get('profile_kind')) and self._complete(current):
@@ -2210,6 +2461,9 @@ class RecoveryMiddleware(AgentMiddleware):
             info = self.context.datasets.metadata.get(arguments.get('dataset_id'))
             return (True if info is None else not self._has_scope(current)
                     and self._scope_valid(info, current))
+        if call.get('name') == 'pivot_dataset' and self.context:
+            info = self.context.datasets.metadata.get(arguments.get('dataset_id'))
+            return True if info is None else self._pivot_scope_valid(info, arguments, current)
         if call.get('name') == 'winsorize_numeric' and self.context:
             info = self.context.datasets.metadata.get(arguments.get('dataset_id'))
             if info is None:
@@ -2347,6 +2601,7 @@ class RecoveryMiddleware(AgentMiddleware):
             missing_join=bool(current.get('join') and not current.get('join_evidence')),
             missing_time_series=bool(current.get('time_series_frequency') and not current.get('time_series_evidence')),
             missing_statistical_test=bool(current.get('statistical_kind') and not current.get('statistical_evidence')),
+            missing_pivot=bool(current.get('pivot_requested') and not current.get('pivot_evidence')),
             missing_winsorization=bool(current.get('winsor_spec') and not current.get('winsor_evidence')),
             missing_outlier_detection=bool(current.get('outlier_spec') and not current.get('outlier_evidence')))
         instruction = ('이전 응답은 완료 증거가 없어 채택되지 않았습니다. 원래 사용자 요청을 계속 수행하세요. '
@@ -2354,6 +2609,7 @@ class RecoveryMiddleware(AgentMiddleware):
             '두 로딩 dataset의 결합은 join_datasets로 cardinality와 lineage를 확인해야 합니다. many-to-many 차단을 우회하지 말고 먼저 한쪽 grain을 명확히 하세요. '
             '시간 재집계는 prepare_time_series로 datetime 파싱·timezone·중복 시각·gap·빈도·lineage를 확인한 뒤 파생 dataset을 render_chart_spec으로 그리세요. '
             '가설 검정과 평균 신뢰구간은 statistical_test의 구조화 결과가 완료 증거입니다. 표본 수·결측·가정·효과크기·신뢰구간을 확인하세요. '
+            '피벗과 교차표는 pivot_dataset의 구조화 결과로 실제 행·열 축, 집계, 조건, 총계와 출력 한도를 확인하세요. '
             '윈저화는 winsorize_numeric의 구조화 결과로 경계·clip 건수·원본/보정 평균을 확인하세요. 원본 dataset을 변경하지 마세요. '
             '이상치 기준과 건수는 detect_outliers의 구조화 결과가 완료 증거입니다. IQR·Z-score·MAD·분위수 기준, tail, 결측과 coverage를 확인하세요. '
             '요청한 출처, 컬럼, 집계와 필터를 유지하세요. 지정 차트와 수정은 render_chart_spec을 사용하고, 그룹별 전체 건수와 명시된 성공값 비율의 이중축·2열 패널은 render_count_rate_chart를 사용하세요. 원격 데이터가 필요한 히스토그램은 prepare_histogram(source, column, where_sql)을 사용하세요. '

@@ -35,6 +35,7 @@
 | `render_count_rate_chart` | 완료 | 완료 | 원격 실행 없음 | 완료 | 완료 | raw dataset의 그룹별 전체 행 수와 명시적 성공값 비율, 비결측 분모, dual-axis/split-panel, 50그룹 한도, 실제 PNG와 입력 digest |
 | `prepare_time_series` | 완료 | 완료 | 원격 실행 없음 | 완료 | 완료 | runtime schema 기반 datetime 파싱, timezone, hour/day/week/month, 중복 시각, gap omit/zero/nan, 최대 20 series·5,000행, parent lineage |
 | `aggregate_dataset` | 완료 | 완료 | 원격 실행 없음 | 완료 | 완료 | count/mean/sum/median/min/max, 단일 group, 정렬·TOP-N, 최대 1,000 groups/rows, parent lineage·digest |
+| `pivot_dataset` | 완료 | 완료 | 원격 실행 없음 | 완료 | 완료 | raw grain, 행 1~3·열 1~2축, 8개 집계, 조건·margins·월 정렬, 최대 100값/축·1,000셀, parent lineage·digest |
 | `compare_group_aggregates` | 완료 | 완료 | 원격 실행 없음 | 완료 | 완료 | 같은 source·snapshot의 ancestor/cohort만 허용, 동일 그룹 집계의 기준값·cohort값·차이·변화율, 두 parent lineage·digest |
 | `show_chart` | 완료 | 완료 | 원격 실행 없음 | 완료 | 완료 | 실제 PNG 재표시·missing ID 오류 직접 검증 |
 | `local_analysis_sql` | 완료 | 완료 | 원격 실행 없음 | 완료 | 완료 | 단일 `data`와 CTE, 외부 접근 차단 |
@@ -64,11 +65,12 @@
 - `compare_group_aggregates`는 같은 source·snapshot과 ancestor 관계를 실행 전에 강제한다. 변경하지 않은 `L2_038`의 12개 직업별 전체·이상치 제외 평균, 차이, 변화율이 독립 reference와 일치했고 서로 무관한 dataset, snapshot 불일치, 비수치 measure, 0 기준 변화율을 fail-closed/명시적 NaN으로 처리한다. 독립 채점 범위는 68/200이다.
 - `render_count_rate_chart`는 그룹별 전체 행 수, outcome 비결측 분모, 명시적 성공값의 성공수와 성공률을 하나의 구조화 결과에 묶어 dual-axis 또는 split-panel PNG를 만든다. 변경하지 않은 `L2_061`·`L2_064`·`L2_065`·`L2_066`·`L2_089`와 임의 schema fixture가 독립 pandas oracle에 일치했고 모델·원격 호출은 0회였다.
 - `winsorize_numeric`은 raw 수치 컬럼에 사용자가 지정한 양쪽 quantile clipping을 적용해 경계·clip 건수·원본/보정 평균과 범위를 구조화한다. 원본을 변경하지 않으며 변경하지 않은 `L2_096`과 임의 schema fixture가 독립 pandas oracle에 일치했다. 독립 채점 범위는 74/200이다.
-- application tests 160/160, migration tests 126/126, actual-agent evaluation harness 44/44, Level 3 17/17, 전체 참고 runner 217/217가 통과했다. compileall과 `git diff --check`는 같은 변경의 정적 gate로 실행한다.
+- `pivot_dataset`은 실제 runtime schema에서 축과 값 컬럼을 해석하고 raw dataset만 사용한다. 변경하지 않은 피벗 질문 13문항과 임의 schema fixture가 독립 pandas oracle에 일치했고 모델·원격 호출은 0회였다. 영문 월 값은 데이터 기반으로 달력 순서를 적용하며 lineage·digest·재시작 증거를 보존한다. 독립 채점 범위는 87/200이다.
+- application tests 166/166, migration tests 126/126, actual-agent evaluation harness 45/45, Level 3 17/17, 전체 참고 runner 217/217가 통과했다. compileall과 `git diff --check`는 같은 변경의 정적 gate로 실행한다.
 
 ## 남은 tool 공백
 
 P0의 공통 계약, dataset profile, 승인형 source discovery와 P1의 제한된 chart spec·다중 dataset join·구조화 통계 검정·직접 이상치 탐지·bounded cohort 후속 계산은 구현됐다. 범용 분석 범위를 넓히려면 다음을 별도 release candidate로 구현해야 한다.
 
-1. 범용 다중 패널 차트, 피벗·소계와 결과 내보내기 중 미채점 사용자 의도에 필요한 tool. 그룹별 건수+성공률 dual-axis/split-panel과 winsorization은 완료했다.
+1. 범용 다중 패널 차트, 구간화·다중 지표 소계와 결과 내보내기 중 미채점 사용자 의도에 필요한 tool. 기본 피벗, 그룹별 건수+성공률 dual-axis/split-panel과 winsorization은 완료했다.
 2. source discovery의 승인 완료·거절·재시작 전용 사용자 여정 확대. 현재 공통 `query_databricks` 계약은 검증됐지만 discovery 결과 전용 승인 후 실행 테스트는 실제 원격 없이 추가할 수 있다.

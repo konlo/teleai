@@ -32,6 +32,7 @@ from utils.analysis_outliers import (
 from utils.analysis_timeseries import prepare_time_series as build_time_series
 from utils.analysis_aggregate import aggregate_dataset as build_aggregate_dataset
 from utils.analysis_compare import compare_group_aggregates as build_group_comparison
+from utils.analysis_pivot import pivot_dataset as build_pivot_dataset
 
 
 def build_analysis_tools(context: AnalysisToolContext) -> list[ToolDefinition]:
@@ -216,6 +217,26 @@ def build_analysis_tools(context: AnalysisToolContext) -> list[ToolDefinition]:
             top_n=top_n,
             max_groups=max_groups,
             max_output_rows=max_output_rows,
+        )
+
+    def pivot_dataset(dataset_id, index_columns, column_columns, aggregation,
+                      value_column="", success_value=None, conditions=None,
+                      margins=False, margins_name="전체", sort="ascending",
+                      max_axis_values=100, max_output_cells=1_000):
+        return build_pivot_dataset(
+            datasets,
+            dataset_id,
+            index_columns=index_columns,
+            column_columns=column_columns,
+            aggregation=aggregation,
+            value_column=value_column,
+            success_value=success_value,
+            conditions=conditions,
+            margins=margins,
+            margins_name=margins_name,
+            sort=sort,
+            max_axis_values=max_axis_values,
+            max_output_cells=max_output_cells,
         )
 
     def compare_group_aggregates(baseline_dataset_id, cohort_dataset_id, aggregation,
@@ -562,6 +583,22 @@ def build_analysis_tools(context: AnalysisToolContext) -> list[ToolDefinition]:
               "max_groups": {"type":"integer","minimum":1,"maximum":1000},
               "max_output_rows": {"type":"integer","minimum":1,"maximum":1000}},
              ["dataset_id","aggregation"], aggregate_dataset),
+        tool("pivot_dataset", "로딩된 raw dataset에서 schema에 실제 존재하는 행 축 1~3개와 열 축 1~2개를 사용해 bounded 피벗 표를 만듭니다. count, mean, sum, median, min, max, success_rate, overall_percent를 지원하며 명시적 조건·총계·월 정렬·출력 셀 한도를 검증합니다. success_rate는 success_value를 반드시 명시합니다.",
+             {"dataset_id":string,
+              "index_columns":{"type":"array","items":string,"minItems":1,"maxItems":3,"uniqueItems":True},
+              "column_columns":{"type":"array","items":string,"minItems":1,"maxItems":2,"uniqueItems":True},
+              "aggregation":{"type":"string","enum":["count","mean","sum","median","min","max","success_rate","overall_percent"]},
+              "value_column":string,
+              "success_value":{},
+              "conditions":{"type":"array","items":{"type":"object",
+                  "properties":{"column":string,"op":{"type":"string","enum":["eq","ne","gt","ge","lt","le","in"]},"value":{}},
+                  "required":["column","op","value"],"additionalProperties":False}},
+              "margins":{"type":"boolean"},
+              "margins_name":{"type":"string","minLength":1,"maxLength":40},
+              "sort":{"type":"string","enum":["ascending","descending","calendar_month"]},
+              "max_axis_values":{"type":"integer","minimum":1,"maximum":100},
+              "max_output_cells":{"type":"integer","minimum":1,"maximum":10000}},
+             ["dataset_id","index_columns","column_columns","aggregation"], pivot_dataset),
         tool("compare_group_aggregates", "같은 source·snapshot에서 기준 raw dataset과 그 lineage 후손 cohort의 동일한 그룹 집계를 비교합니다. 그룹별 기준값, cohort값, 차이와 변화율을 계산하고 두 부모 ID와 digest를 보존합니다. 임의의 서로 무관한 dataset은 비교하지 않습니다.",
              {"baseline_dataset_id": string,
               "cohort_dataset_id": string,

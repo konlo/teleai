@@ -75,6 +75,19 @@
     "L2_066": {"kind": "chart_count_rate", "variable": "day_stats", "group_column": "day", "count_column": "접촉수", "rate_column": "가입률", "outcome_column": "y", "success_value": "yes", "layout": "dual_axis", "sort": "group_ascending"},
     "L2_068": {"kind": "chart_line_counts", "variable": "cumsum_months", "column": "month", "sort": "calendar_month", "cumulative": true},
     "L2_089": {"kind": "chart_count_rate", "variable": "m_stats", "group_column": "month", "count_column": "고객수", "rate_column": "전환율", "outcome_column": "y", "success_value": "yes", "layout": "split_panel", "sort": "calendar_month"},
-    "L2_096": {"kind": "winsorization", "column": "balance", "lower_quantile": 0.01, "upper_quantile": 0.99, "lower_variable": "lower_bound", "upper_variable": "upper_bound", "clipped_variable": "clipped_balance", "source_variable": "df_bank"}
+    "L2_096": {"kind": "winsorization", "column": "balance", "lower_quantile": 0.01, "upper_quantile": 0.99, "lower_variable": "lower_bound", "upper_variable": "upper_bound", "clipped_variable": "clipped_balance", "source_variable": "df_bank"},
+    "L1_062": {"kind": "pivot", "variable": "pivot_jm", "index_columns": ["job"], "column_columns": ["marital"], "aggregation": "count"},
+    "L1_063": {"kind": "pivot", "variable": "pivot_eh", "index_columns": ["education"], "column_columns": ["housing"], "aggregation": "mean", "value_column": "balance", "atol": 0.01},
+    "L1_064": {"kind": "pivot", "variable": "pivot_ps", "index_columns": ["Pclass"], "column_columns": ["Sex"], "aggregation": "success_rate", "value_column": "Survived", "success_value": 1, "atol": 0.01},
+    "L2_021": {"kind": "pivot", "variable": "pivot_jm_margin", "index_columns": ["job"], "column_columns": ["marital"], "aggregation": "count", "margins": true, "margins_name": "전체총계"},
+    "L2_022": {"kind": "pivot", "variable": "pivot_eh_margin", "index_columns": ["education"], "column_columns": ["housing"], "aggregation": "mean", "value_column": "balance", "margins": true, "margins_name": "전체평균", "atol": 0.01},
+    "L2_023": {"kind": "pivot", "variable": "pivot_surv_margin", "index_columns": ["Pclass"], "column_columns": ["Sex"], "aggregation": "success_rate", "value_column": "Survived", "success_value": 1, "margins": true, "margins_name": "전체생존율", "atol": 0.01},
+    "L2_024": {"kind": "pivot", "variable": "pivot_multi_loan", "index_columns": ["job"], "column_columns": ["housing", "loan"], "aggregation": "count"},
+    "L2_025": {"kind": "pivot", "variable": "pivot_month_contact", "index_columns": ["month"], "column_columns": ["contact"], "aggregation": "count", "conditions": [{"column": "y", "op": "eq", "value": "yes"}], "sort": "calendar_month"},
+    "L2_027": {"kind": "pivot", "variable": "pivot_jy_dur", "index_columns": ["job"], "column_columns": ["y"], "aggregation": "mean", "value_column": "duration", "margins": true, "margins_name": "전체평균", "atol": 0.1},
+    "L2_028": {"kind": "pivot", "variable": "pivot_pe_fare", "index_columns": ["Pclass"], "column_columns": ["Embarked"], "aggregation": "mean", "value_column": "Fare", "atol": 0.01},
+    "L2_029": {"kind": "pivot", "variable": "crosstab_em", "index_columns": ["education"], "column_columns": ["marital"], "aggregation": "success_rate", "value_column": "y", "success_value": "yes", "atol": 0.01},
+    "L2_031": {"kind": "pivot", "variable": "pivot_mh", "index_columns": ["month"], "column_columns": ["housing"], "aggregation": "count", "sort": "calendar_month"},
+    "L2_034": {"kind": "pivot", "variable": "ct_pct", "index_columns": ["poutcome"], "column_columns": ["y"], "aggregation": "overall_percent", "atol": 0.01}
   }
 }

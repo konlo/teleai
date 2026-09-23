@@ -267,6 +267,22 @@ def reference_oracle(spec, grading, frames):
                 raise ValueError("Reference chart values differ from the raw-data contract")
             return {"data_sha256": _frame_digest(contract), "rows": len(contract),
                     "records": contract.to_dict(orient="records")}
+        if grading["kind"] == "pivot":
+            reference = namespace[grading["variable"]]
+            if not isinstance(reference, pd.DataFrame) or reference.empty:
+                raise ValueError("Reference pivot must be a non-empty DataFrame")
+            expected = reference.reset_index()
+            if isinstance(expected.columns, pd.MultiIndex):
+                expected.columns = [
+                    " | ".join(str(part) for part in column if str(part) not in {"", "None"})
+                    for column in expected.columns.to_flat_index()
+                ]
+            else:
+                expected.columns = [str(column) for column in expected.columns]
+            if len(expected.columns) != len(set(expected.columns)):
+                raise ValueError("Reference pivot columns are ambiguous after flattening")
+            return {"columns": list(expected.columns), "rows": len(expected),
+                    "records": json.loads(expected.to_json(orient="records"))}
         if grading["kind"] == "winsorization":
             source = namespace[grading["source_variable"]]
             clipped = namespace[grading["clipped_variable"]]
@@ -749,6 +765,72 @@ def grade_evidence(runtime, outcome, spec, grading, oracle, fixture_id, capture)
         return ("PASS", "Real PNG and declarative chart data match the independent reference",
                 {"charts": matches}) if matches else (
                 "FAIL", "Missing grounded chart PNG or rendered data differs from reference", {})
+    if grading["kind"] == "pivot":
+        matches = []
+        for message in runtime.events():
+            if not isinstance(message, ToolMessage) or message.name != "pivot_dataset":
+                continue
+            try:
+                observation = json.loads(message.content)
+                result = observation["pivot_result"]
+                dataset_id = observation["dataset"]["id"]
+                info = runtime.datasets.metadata[dataset_id]
+                actual = runtime.datasets.frames[dataset_id].reset_index(drop=True)
+                expected = pd.DataFrame(oracle["records"], columns=oracle["columns"])
+                same_values = (list(actual.columns) == oracle["columns"]
+                               and len(actual) == oracle["rows"])
+                if same_values:
+                    for column in grading["index_columns"]:
+                        same_values = (column in actual and column in expected
+                                       and actual[column].astype(str).tolist()
+                                           == expected[column].astype(str).tolist())
+                        if not same_values:
+                            break
+                if same_values:
+                    for column in [name for name in oracle["columns"]
+                                   if name not in grading["index_columns"]]:
+                        left = pd.to_numeric(actual[column], errors="coerce").to_numpy(float)
+                        right = pd.to_numeric(expected[column], errors="coerce").to_numpy(float)
+                        if not np.allclose(left, right, rtol=1e-10,
+                                           atol=float(grading.get("atol", 0)), equal_nan=True):
+                            same_values = False
+                            break
+                grounded = (
+                    observation.get("status") == "ready"
+                    and info.source == spec["target_table"]
+                    and info.coverage == "complete" and info.predicate_known
+                    and info.grain == "aggregate" and info.parent_id == fixture_id
+                    and _fixture_descendant(runtime, dataset_id, fixture_id)
+                    and result.get("kind") == "dataset_pivot"
+                    and result.get("parent_dataset_id") == fixture_id
+                    and result.get("index_columns") == grading["index_columns"]
+                    and result.get("column_columns") == grading["column_columns"]
+                    and result.get("aggregation") == grading["aggregation"]
+                    and result.get("value_column") == grading.get("value_column", "")
+                    and result.get("success_value") == grading.get("success_value")
+                    and result.get("conditions") == grading.get("conditions", [])
+                    and result.get("margins") == grading.get("margins", False)
+                    and result.get("margins_name") == grading.get("margins_name", "전체")
+                    and result.get("sort") == grading.get("sort", "ascending")
+                    and result.get("output_rows") == info.rows == oracle["rows"]
+                    and result.get("output_columns") == len(info.columns) == len(oracle["columns"])
+                    and result.get("data_sha256") == _frame_digest(actual)
+                    and isinstance(observation.get("preview"), list)
+                    and not observation.get("rows"))
+                if grounded and same_values:
+                    matches.append({"dataset_id":dataset_id,
+                                    "shape":[len(actual), len(actual.columns)],
+                                    "data_sha256":result["data_sha256"],
+                                    "specification":{
+                                        key:result.get(key) for key in
+                                        ("index_columns","column_columns","aggregation",
+                                         "value_column","success_value","conditions",
+                                         "margins","margins_name","sort")}})
+            except (KeyError, TypeError, ValueError):
+                continue
+        return (("PASS", "Pivot values, axes, aggregation and lineage match the reference",
+                 {"pivots": matches}) if matches else
+                ("FAIL", "Missing grounded pivot evidence or cells differ from reference", {}))
     if grading["kind"] == "chart_count_rate":
         matches = []
         for message in runtime.events():
