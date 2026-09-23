@@ -1,14 +1,14 @@
 # Project Progress Log
 
 ## Current Status
-- **Last Updated**: 2026-09-23
+- **Last Updated**: 2026-09-24
 - **Status**: In Progress — 배포 preflight까지 검증한 1인용 제한 출시 후보
-- **Summary**: 공통 tool 결과 계약, bounded profile·chart·multi-dataset join·구조화 통계 검정·직접 이상치 탐지, cohort 집계·원본 비교, datetime 시계열, 그룹별 count/rate 차트와 원본 불변 winsorization을 production graph에 연결했다. application 160/160, migration 126/126, actual-agent evaluation harness 44/44, Level 3 17/17, 전체 참고 runner 217/217 PASS다. 실제 agent 독립 채점은 74/200이다.
-- **Next Session Focus**: 배포 대상·실제 호스트 gate·smoke/rollback → 남은 126문항 oracle와 범용 다중 패널·피벗·소계.
+- **Summary**: 공통 tool 결과 계약과 bounded profile·chart·join·통계·이상치·cohort·시계열·count/rate·winsorization·피벗을 production graph에 연결했다. application 167/167, migration 126/126, actual-agent evaluation harness 45/45, Level 3 17/17, 전체 참고 runner 217/217 PASS다. 실제 agent 독립 채점은 87/200이며 최신 화면의 후속 피벗은 0.053초, 모델·원격 0회로 완료됐다.
+- **Next Session Focus**: 배포 대상·실제 호스트 gate·smoke/rollback → 남은 113문항 oracle와 구간화·다중 지표 소계, 범용 다중 패널, 결과 내보내기.
 
 ## Next Action Items
 - [x] 제품 승인 카드에서 사용자가 승인한 실제 Databricks 조회 → 저장 → 분석 → 후속 질문을 검증했다.
-- [ ] 남은 126문항의 독립 oracle과 고급 분석 도구 범위를 우선순위별로 확대한다.
+- [ ] 남은 113문항의 독립 oracle과 고급 분석 도구 범위를 우선순위별로 확대한다.
 - [ ] 로컬 단일·동시 용량 gate와 RSS 기준은 완료했다. 실제 배포 호스트와 Ollama 동시 추론으로 기준을 보정한다.
 - [x] 현재 변경을 `agentic-analysis-rc4-2026-09-15` release candidate로 커밋·push하고 원격 release gate 성공 후 tag로 고정했다.
 - [x] 컬럼 metadata 복구를 `agentic-analysis-rc5-2026-09-15`로 고정했다. GitHub Actions run `34978831986`이 성공했다.
@@ -28,6 +28,7 @@
 - [x] 수치값+범주의 그룹 박스플롯을 실제 PNG·입력 digest로 검증하고 전체 범주 라벨과 부분 필터를 구별했다.
 - [x] 숫자축 빈도 선과 영문 월의 calendar 정렬·누적 곡선을 실제 PNG·plot data digest로 검증했다.
 - [x] `render_count_rate_chart`로 그룹별 전체 건수와 명시적 성공률을 dual-axis/split-panel PNG, 분모·성공수·digest와 함께 검증했다.
+- [x] `pivot_dataset`으로 13개 원문 질문과 임의 schema, 후속 대화의 축 전환을 값·lineage·digest·재시작·모델/원격 0회 계약으로 검증했다.
 
 
 ---
