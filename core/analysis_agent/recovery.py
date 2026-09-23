@@ -26,6 +26,21 @@ def _dtype_family(value):
     return 'other'
 
 
+def _strip_outlier_method_scope(scope, column):
+    """Do not mistake an outlier method token for a literal row filter."""
+    if not column:
+        return scope
+    cleaned = deepcopy(scope)
+    method_tokens = {'iqr', 'mad', 'zscore', 'sigma', '시그마'}
+    for key in ('conditions', 'any_conditions'):
+        cleaned[key] = [item for item in cleaned.get(key, []) if not (
+            item.get('column') == column
+            and isinstance(item.get('value'), str)
+            and re.sub(r'[\s_-]+', '', item['value']).casefold() in method_tokens
+        )]
+    return cleaned
+
+
 class RecoveryState(AgentState):
     recovery: NotRequired[dict]
 
@@ -263,6 +278,60 @@ class RecoveryMiddleware(AgentMiddleware):
                 'inliers' if outlier_followup and re.search(
                     r'이상치.{0,12}(?:제외|제거)|(?:일반|정상)\s*(?:고객|승객|행)', text)
                 else 'outliers')
+            outlier_group_column = None
+            outlier_metric_column = None
+            outlier_metric_aggregation = None
+            outlier_aggregate_mode = None
+            top_match = re.search(r'(?:TOP|상위)\s*(\d+)', text, re.I)
+            outlier_top_n = int(top_match.group(1)) if top_match else 0
+            if outlier_followup:
+                group_candidates = []
+                top_group_candidates = []
+                for name in mentioned_columns:
+                    if name == outlier_column:
+                        continue
+                    terms = [name, *column_aliases.get(name, ())]
+                    by_signal = any(re.search(
+                        r'(?<![A-Za-z0-9_가-힣])' + re.escape(term)
+                        + r'\s*(?:별|그룹별)(?![A-Za-z0-9_])', text, re.I) for term in terms)
+                    top_signal = any(re.search(
+                        r'(?:주요|빈도가\s*높은)\s*' + re.escape(term)
+                        + r'|' + re.escape(term) + r'\s*(?:TOP|상위)\s*\d+', text, re.I)
+                        for term in terms)
+                    if by_signal or top_signal:
+                        group_candidates.append(name)
+                    if top_signal:
+                        top_group_candidates.append(name)
+                if len(group_candidates) == 1:
+                    outlier_group_column = group_candidates[0]
+                    aggregate_map = {'AVG':'mean', 'SUM':'sum', 'MEDIAN':'median',
+                                     'MIN':'min', 'MAX':'max'}
+                    declared = [aggregate_map[item] for item in operations if item in aggregate_map]
+                    if len(top_group_candidates) == 1:
+                        outlier_aggregate_mode = 'top_frequency'
+                        metric_candidates = [column for column in mentioned_columns
+                                             if column not in {outlier_column, outlier_group_column}]
+                        if len(declared) == 1 and len(metric_candidates) == 1:
+                            outlier_metric_aggregation = declared[0]
+                            outlier_metric_column = metric_candidates[0]
+                        elif declared:
+                            outlier_aggregate_mode = None
+                        if not outlier_top_n:
+                            outlier_top_n = 3
+                    elif re.search(r'별|그룹별', text):
+                        metric_candidates = [column for column in mentioned_columns
+                                             if column != outlier_group_column]
+                        if len(declared) == 1 and len(metric_candidates) == 1:
+                            outlier_aggregate_mode = 'grouped_metric'
+                            outlier_metric_aggregation = declared[0]
+                            outlier_metric_column = metric_candidates[0]
+                if outlier_top_n > 50:
+                    outlier_aggregate_mode = None
+            outlier_aggregate_requested = bool(outlier_aggregate_mode)
+            if outlier_aggregate_requested:
+                # aggregate_dataset provides the structured completion evidence
+                # for this cohort request; do not also require arbitrary SQL.
+                calculation = False
             if (join_requested and set(operations) <= {'COUNT'} and
                     re.search(r'조인\s*결과.*(?:행|열|컬럼)|(?:행|열|컬럼).*개수|결합된\s*컬럼', text, re.I)):
                 # join_datasets returns these structural counts as grounded
@@ -297,6 +366,12 @@ class RecoveryMiddleware(AgentMiddleware):
                 outlier_column=outlier_column,
                 outlier_followup=outlier_followup,
                 outlier_selection=outlier_selection,
+                outlier_group_column=outlier_group_column,
+                outlier_metric_column=outlier_metric_column,
+                outlier_metric_aggregation=outlier_metric_aggregation,
+                outlier_aggregate_mode=outlier_aggregate_mode,
+                outlier_aggregate_requested=outlier_aggregate_requested,
+                outlier_top_n=outlier_top_n,
                 calculation=calculation, operations=operations, metadata_kind=metadata_kind,
                 profile_kind=profile_kind, chart_spec_requested=chart_spec_requested,
                 chart_cumulative=chart_cumulative,
@@ -323,6 +398,9 @@ class RecoveryMiddleware(AgentMiddleware):
                 columns=[], failed={}, status='working')
             current['previous_scope'] = previous.get('scope', {})
             current['scope'] = resolve_request_scope(text, self.context, current['previous_scope'])
+            if outlier_spec:
+                current['scope'] = _strip_outlier_method_scope(
+                    current['scope'], outlier_column)
             if join_requested and len(current['required_sources']) == 2:
                 # Two explicitly named sources are expected for a join and do
                 # not represent the single-source ambiguity used by scalar and
@@ -335,6 +413,9 @@ class RecoveryMiddleware(AgentMiddleware):
                 # text would invent an analysis obligation.
                 current.update(chart=False,kind=None,join=False,join_how=None,statistical_kind=None,outlier_spec=None,
                     outlier_column=None,outlier_followup=False,outlier_selection='outliers',
+                    outlier_group_column=None,outlier_metric_column=None,
+                    outlier_metric_aggregation=None,outlier_aggregate_mode=None,
+                    outlier_aggregate_requested=False,outlier_top_n=0,
                     calculation=False,operations=[],metadata_kind=None,profile_kind=None,
                     chart_spec_requested=False,chart_cumulative=False,whole_row_count=False,current_result_only=False,fresh_source_required=False,
                     time_series_frequency=None,time_series_aggregation=None,
@@ -390,7 +471,10 @@ class RecoveryMiddleware(AgentMiddleware):
             # observation may already be marked processed, so the loop below
             # is also allowed to reconsider that single observation.
             current.update(data_load=True,chart=False,kind=None,join=False,join_how=None,statistical_kind=None,outlier_spec=None,
-                outlier_column=None,outlier_followup=False,outlier_selection='outliers',calculation=False,
+                outlier_column=None,outlier_followup=False,outlier_selection='outliers',
+                outlier_group_column=None,outlier_metric_column=None,
+                outlier_metric_aggregation=None,outlier_aggregate_mode=None,
+                outlier_aggregate_requested=False,outlier_top_n=0,calculation=False,
                 operations=[],metadata_kind=None,profile_kind=None,chart_spec_requested=False,chart_cumulative=False,whole_row_count=False,
                 current_result_only=False,fresh_source_required=False)
             current['scope']={'conditions':[],'any_conditions':[],
@@ -399,9 +483,13 @@ class RecoveryMiddleware(AgentMiddleware):
             # Metadata discovery may resolve an ambiguous column. Re-read only
             # the original human request, never model-generated SQL or summaries.
             current['scope'] = resolve_request_scope(str(human.content), self.context, current.get('previous_scope'))
+            if current.get('outlier_spec'):
+                current['scope'] = _strip_outlier_method_scope(
+                    current['scope'], current.get('outlier_column'))
         for key, default in [('processed', []), ('sent_calls', []), ('failed_signatures', {}),
                 ('evidence_ids', []), ('artifact_ids', []), ('failed', {}), ('attempts', 0),
-                ('model_calls', 0), ('model_seconds', 0.0), ('columns', [])]:
+                ('model_calls', 0), ('model_seconds', 0.0), ('columns', []),
+                ('outlier_aggregate_evidence', {})]:
             current.setdefault(key, default)
         start = next((i for i, m in enumerate(messages) if human and m.id == human.id), 0)
         # Tool-call de-duplication is request scoped.  Reusing the same safe
@@ -614,6 +702,53 @@ class RecoveryMiddleware(AgentMiddleware):
                     current['outlier_evidence'] = observation
                     if name == 'select_outlier_rows':
                         current['outlier_dataset'] = child_id
+                    current['failed'].pop(name, None)
+            if (name == 'aggregate_dataset' and observation.get('status') == 'ready'
+                    and current.get('outlier_aggregate_requested')):
+                parent_id = arguments.get('dataset_id')
+                child_id = observation.get('dataset', {}).get('id')
+                parent = self.context.datasets.metadata.get(parent_id) if self.context else None
+                child = self.context.datasets.metadata.get(child_id) if self.context else None
+                result = observation.get('aggregation_result', {})
+                from utils.analysis_aggregate import dataset_digest
+                actual_digest = (dataset_digest(self.context.datasets.frames[child_id])
+                                 if child is not None else None)
+                common_valid = (
+                    parent_id == current.get('outlier_dataset')
+                    and parent is not None and child is not None
+                    and result.get('kind') == 'dataset_aggregation'
+                    and result.get('parent_dataset_id') == parent_id
+                    and child.parent_id == parent_id and child.source == parent.source
+                    and child.snapshot == parent.snapshot and child.grain == 'aggregate'
+                    and result.get('aggregation') == arguments.get('aggregation')
+                    and result.get('value_column') == arguments.get('value_column', '')
+                    and result.get('group_column') == arguments.get('group_column', '')
+                    and result.get('top_n') == arguments.get('top_n', 0)
+                    and result.get('output_rows') == child.rows
+                    and result.get('data_sha256') == actual_digest
+                    and isinstance(observation.get('preview'), list)
+                    and not observation.get('rows'))
+                evidence_key = None
+                mode = current.get('outlier_aggregate_mode')
+                if (common_valid and mode == 'top_frequency'
+                        and arguments.get('aggregation') == 'count'
+                        and arguments.get('group_column') == current.get('outlier_group_column')
+                        and arguments.get('top_n') == current.get('outlier_top_n')):
+                    evidence_key = 'grouped'
+                elif (common_valid and mode == 'top_frequency'
+                        and current.get('outlier_metric_aggregation')
+                        and arguments.get('aggregation') == current.get('outlier_metric_aggregation')
+                        and arguments.get('value_column') == current.get('outlier_metric_column')
+                        and not arguments.get('group_column')):
+                    evidence_key = 'overall'
+                elif (common_valid and mode == 'grouped_metric'
+                        and arguments.get('aggregation') == current.get('outlier_metric_aggregation')
+                        and arguments.get('value_column') == current.get('outlier_metric_column')
+                        and arguments.get('group_column') == current.get('outlier_group_column')
+                        and not arguments.get('top_n', 0)):
+                    evidence_key = 'grouped'
+                if evidence_key:
+                    current['outlier_aggregate_evidence'][evidence_key] = observation
                     current['failed'].pop(name, None)
             if name in {'local_analysis_sql', 'query_databricks'} and observation.get('status') == 'ready':
                 dataset_id = observation.get('dataset', {}).get('id')
@@ -855,6 +990,12 @@ class RecoveryMiddleware(AgentMiddleware):
         if current.get('time_series_frequency') and not current.get('time_series_evidence'): return False
         if current.get('statistical_kind') and not current.get('statistical_evidence'): return False
         if current.get('outlier_spec') and not current.get('outlier_evidence'): return False
+        if current.get('outlier_aggregate_requested'):
+            evidence = current.get('outlier_aggregate_evidence', {})
+            if 'grouped' not in evidence: return False
+            if (current.get('outlier_aggregate_mode') == 'top_frequency'
+                    and current.get('outlier_metric_aggregation') and 'overall' not in evidence):
+                return False
         if current.get('metadata_kind') and not current.get('metadata_evidence'): return False
         if current.get('profile_kind') and not current.get('profile_evidence'): return False
         if current.get('chart') and not current['artifact_ids']: return False
@@ -990,6 +1131,21 @@ class RecoveryMiddleware(AgentMiddleware):
                 line += "\n주의: " + " ".join(result['warnings'])
             line += f"\n분석 범위: {evidence.get('scope')}"
             parts.append(line)
+        for evidence_key in ('overall', 'grouped'):
+            evidence = current.get('outlier_aggregate_evidence', {}).get(evidence_key)
+            if not evidence:
+                continue
+            result = evidence['aggregation_result']
+            label = 'cohort 전체 집계' if evidence_key == 'overall' else 'cohort 그룹 집계'
+            parts.append(
+                f"{label}: {result['aggregation']}"
+                + (f"({result['value_column']})" if result.get('value_column') else "(*)")
+                + (f" by {result['group_column']}" if result.get('group_column') else "")
+                + f" · 완전한 관측값 {result['complete_rows']:,}행 · 제외 {result['dropped_rows']:,}행\n"
+                + '```csv\n'
+                + self.context.datasets.frames[evidence['dataset']['id']].head(15).to_csv(index=False).strip()
+                + '\n```\n분석 범위: ' + str(evidence.get('scope', ''))
+            )
         for card_id in current.get('artifact_ids', []):
             card = self.artifacts[card_id]
             parts.append(f'{card.title} 이미지를 생성했습니다.\n분석 범위: {card.scope}')
@@ -1164,6 +1320,49 @@ class RecoveryMiddleware(AgentMiddleware):
                     if not any(c.get('name') == tool_name and c.get('args') == arguments
                                for c in calls.values()):
                         return {'name':tool_name, 'args':arguments}
+        if (self.context and current.get('outlier_aggregate_requested')
+                and current.get('outlier_dataset')):
+            child_id = current['outlier_dataset']
+            child = self.context.datasets.metadata.get(child_id)
+            evidence = current.get('outlier_aggregate_evidence', {})
+            if child is not None and child.grain == 'raw' and not child.aggregation:
+                mode = current.get('outlier_aggregate_mode')
+                if (mode == 'top_frequency' and current.get('outlier_metric_aggregation')
+                        and 'overall' not in evidence):
+                    arguments = {
+                        'dataset_id': child_id,
+                        'aggregation': current['outlier_metric_aggregation'],
+                        'value_column': current['outlier_metric_column'],
+                        'sort': 'descending',
+                        'top_n': 0,
+                    }
+                    if not any(c.get('name') == 'aggregate_dataset' and c.get('args') == arguments
+                               for c in calls.values()):
+                        return {'name':'aggregate_dataset', 'args':arguments}
+                if 'grouped' not in evidence:
+                    if mode == 'top_frequency':
+                        arguments = {
+                            'dataset_id': child_id,
+                            'aggregation': 'count',
+                            'group_column': current['outlier_group_column'],
+                            'sort': 'descending',
+                            'top_n': current.get('outlier_top_n', 0),
+                        }
+                    elif mode == 'grouped_metric':
+                        arguments = {
+                            'dataset_id': child_id,
+                            'aggregation': current['outlier_metric_aggregation'],
+                            'value_column': current['outlier_metric_column'],
+                            'group_column': current['outlier_group_column'],
+                            'sort': 'descending',
+                            'top_n': 0,
+                        }
+                    else:
+                        arguments = None
+                    if (arguments and not any(
+                            c.get('name') == 'aggregate_dataset' and c.get('args') == arguments
+                            for c in calls.values())):
+                        return {'name':'aggregate_dataset', 'args':arguments}
         if (self.context and current.get('statistical_kind')
                 and not current.get('statistical_evidence')):
             required = list(current.get('required_columns', []))
@@ -1731,6 +1930,13 @@ class RecoveryMiddleware(AgentMiddleware):
             info = self.context.datasets.metadata.get(arguments.get('dataset_id'))
             return (True if info is None else not self._has_scope(current)
                     and self._scope_valid(info, current))
+        if call.get('name') == 'aggregate_dataset' and self.context:
+            info = self.context.datasets.metadata.get(arguments.get('dataset_id'))
+            if info is None:
+                return True
+            if current.get('outlier_aggregate_requested'):
+                return info.id == current.get('outlier_dataset') and info.grain == 'raw'
+            return self._scope_valid(info, current)
         if call.get('name') in {'detect_outliers', 'select_outlier_rows'} and self.context:
             info = self.context.datasets.metadata.get(arguments.get('dataset_id'))
             return True if info is None else self._scope_valid(info, current)

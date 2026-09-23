@@ -119,7 +119,7 @@ class ActualAgentEvaluationTests(unittest.TestCase):
         self.assertEqual(result["evidence"]["counterfactual_probes"], 2)
 
     def test_every_declared_reference_oracle_is_executable_without_a_model(self):
-        self.assertEqual(len(self.grading), 66)
+        self.assertEqual(len(self.grading), 67)
         self.assertTrue(set(self.grading).issubset(self.specs))
         for case, grading in self.grading.items():
             with self.subTest(case=case):
@@ -162,6 +162,15 @@ class ActualAgentEvaluationTests(unittest.TestCase):
             "select_outlier_rows": 1, "local_analysis_sql": 1})
         self.assertEqual(result["runtime_metadata"]["recovery_model_calls"], 0)
         self.assertEqual(result["remote_executions"], 0)
+
+    def test_outlier_cohort_aggregates_use_lineage_and_match_reference(self):
+        result = self.evaluate("L2_037", EvaluationModel())
+        self.assertEqual(result["status"], "PASS", result)
+        self.assertEqual(result["tools"], {
+            "select_outlier_rows": 1, "aggregate_dataset": 2})
+        self.assertEqual(result["runtime_metadata"]["recovery_model_calls"], 0)
+        self.assertEqual(result["remote_executions"], 0)
+        self.assertEqual(len(result["evidence"]["result_dataset_ids"]), 2)
 
     def test_grouped_boxplot_cases_use_real_png_and_exact_grouped_data(self):
         for case in ("L2_042", "L2_045", "L2_050"):

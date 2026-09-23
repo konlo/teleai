@@ -349,6 +349,36 @@ def reference_oracle(spec, grading, frames):
                 raise ValueError("Reference outlier threshold is not finite")
             return {"data_sha256": _frame_digest(selected), "rows": len(selected),
                     "threshold": float(threshold), "values": values}
+        if grading["kind"] == "outlier_cohort_aggregate_set":
+            selected = namespace[grading["selection_variable"]]
+            if not isinstance(selected, pd.DataFrame) or selected.empty:
+                raise ValueError("Reference outlier cohort must be a non-empty DataFrame")
+            aggregates = {}
+            for key, definition in grading["aggregates"].items():
+                reference = namespace[definition["reference_variable"]]
+                reduction = definition.get("reference_reduction")
+                if reduction == "column_mean":
+                    value = reference[definition["reference_column"]].mean()
+                    frame = pd.DataFrame({definition["result_column"]: [value]})
+                elif reduction is None:
+                    if not isinstance(reference, pd.DataFrame):
+                        raise ValueError("Reference grouped aggregate must be a DataFrame")
+                    frame = reference.rename(columns={
+                        definition["reference_group_column"]: definition["group_column"],
+                        definition["reference_result_column"]: definition["result_column"],
+                    })[[definition["group_column"], definition["result_column"]]].reset_index(drop=True)
+                else:
+                    raise ValueError("Unsupported outlier cohort aggregate reduction")
+                aggregates[key] = {
+                    "data_sha256": _frame_digest(frame),
+                    "rows": len(frame),
+                    "records": frame.to_dict(orient="records"),
+                }
+            threshold = namespace[grading["threshold_variable"]]
+            if not np.isscalar(threshold) or not np.isfinite(float(threshold)):
+                raise ValueError("Reference outlier threshold is not finite")
+            return {"data_sha256": _frame_digest(selected), "rows": len(selected),
+                    "threshold": float(threshold), "aggregates": aggregates}
         if grading["kind"] == "category_counts":
             return _category_counts(namespace[grading["variable"]])
         raise ValueError("Unsupported grading kind")
@@ -792,6 +822,96 @@ def grade_evidence(runtime, outcome, spec, grading, oracle, fixture_id, capture)
         return (("PASS", "Lineage-safe outlier cohort and follow-up metrics match the independent reference", details)
                 if grounded and correct else
                 ("FAIL", "Outlier cohort lineage or follow-up metrics differ from the reference", details))
+    if grading["kind"] == "outlier_cohort_aggregate_set":
+        selections, calculations = [], []
+        for message in runtime.events():
+            if not isinstance(message, ToolMessage):
+                continue
+            try:
+                observation = json.loads(message.content)
+            except (ValueError, TypeError, AttributeError):
+                continue
+            if observation.get("status") != "ready":
+                continue
+            if message.name == "select_outlier_rows":
+                selections.append(observation)
+            elif message.name == "aggregate_dataset":
+                calculations.append(observation)
+        if not selections or len(calculations) != len(grading["aggregates"]):
+            return "FAIL", "Outlier cohort selection and every requested aggregate are required", {}
+        selection = selections[-1]
+        try:
+            child_id = selection["dataset"]["id"]
+            child = runtime.datasets.metadata[child_id]
+            selected_frame = runtime.datasets.frames[child_id]
+            outlier_result = selection["outlier_result"]
+            summary = selection["selection_summary"]
+            grounded = (
+                child.source == spec["target_table"]
+                and child.coverage == "complete" and not child.predicate_known
+                and child.grain == "raw" and not child.aggregation
+                and child.parent_id == fixture_id
+                and _fixture_descendant(runtime, child_id, fixture_id)
+                and outlier_result.get("kind") == "outlier_detection"
+                and outlier_result.get("method") == grading["method"]
+                and outlier_result.get("tail") == grading["tail"]
+                and outlier_result.get("column") == grading["column"]
+                and summary.get("selection") == grading["selection"]
+                and summary.get("parent_dataset_id") == fixture_id
+                and summary.get("selected_rows") == child.rows == oracle["rows"]
+                and summary.get("data_sha256") == oracle["data_sha256"]
+                and _frame_digest(selected_frame) == oracle["data_sha256"]
+                and not selection.get("preview")
+            )
+            actual, result_ids = {}, {}
+            for key, definition in grading["aggregates"].items():
+                matches = [item for item in calculations
+                           if item.get("aggregation_result", {}).get("aggregation") == definition["aggregation"]
+                           and item.get("aggregation_result", {}).get("value_column") == definition["value_column"]
+                           and item.get("aggregation_result", {}).get("group_column") == definition["group_column"]]
+                if len(matches) != 1:
+                    raise ValueError("Requested aggregate evidence is missing or ambiguous")
+                observation = matches[0]
+                aggregate = observation["aggregation_result"]
+                result_id = observation["dataset"]["id"]
+                result_info = runtime.datasets.metadata[result_id]
+                frame = runtime.datasets.frames[result_id].reset_index(drop=True)
+                expected = pd.DataFrame(oracle["aggregates"][key]["records"])
+                if list(frame.columns) != list(expected.columns) or len(frame) != len(expected):
+                    raise ValueError("Aggregate result columns or rows differ")
+                for column in frame.columns:
+                    if pd.api.types.is_numeric_dtype(expected[column]):
+                        if not np.allclose(pd.to_numeric(frame[column]), pd.to_numeric(expected[column]),
+                                           rtol=1e-10, atol=1e-12):
+                            grounded = False
+                    elif frame[column].astype(str).tolist() != expected[column].astype(str).tolist():
+                        grounded = False
+                grounded = grounded and (
+                    result_info.parent_id == child_id
+                    and result_info.source == child.source
+                    and result_info.snapshot == child.snapshot
+                    and result_info.coverage == child.coverage
+                    and result_info.grain == "aggregate"
+                    and aggregate.get("parent_dataset_id") == child_id
+                    and aggregate.get("result_column") == definition["result_column"]
+                    and aggregate.get("top_n") == definition.get("top_n", 0)
+                    and aggregate.get("sort") == definition.get("sort", "descending")
+                    and aggregate.get("output_rows") == oracle["aggregates"][key]["rows"]
+                    and aggregate.get("data_sha256") == oracle["aggregates"][key]["data_sha256"]
+                    and _frame_digest(frame) == oracle["aggregates"][key]["data_sha256"]
+                )
+                actual[key] = frame.to_dict(orient="records")
+                result_ids[key] = result_id
+            correct = np.isclose(float(outlier_result["thresholds"]["upper"]), oracle["threshold"],
+                                 rtol=1e-10, atol=1e-12)
+            details = {"expected": oracle, "actual": actual,
+                       "cohort_dataset_id": child_id, "result_dataset_ids": result_ids,
+                       "scope": selection.get("scope")}
+        except (KeyError, TypeError, ValueError, IndexError):
+            return "FAIL", "Outlier cohort aggregate evidence does not match the grading contract", {}
+        return (("PASS", "Lineage-safe outlier cohort aggregates match the independent reference", details)
+                if grounded and correct else
+                ("FAIL", "Outlier cohort lineage or aggregate results differ from the reference", details))
     if grading["kind"] == "outlier":
         observations = []
         for message in runtime.events():

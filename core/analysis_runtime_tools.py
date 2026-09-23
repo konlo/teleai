@@ -28,6 +28,7 @@ from utils.analysis_outliers import (
     select_outlier_rows as run_outlier_selection,
 )
 from utils.analysis_timeseries import prepare_time_series as build_time_series
+from utils.analysis_aggregate import aggregate_dataset as build_aggregate_dataset
 
 
 def build_analysis_tools(context: AnalysisToolContext) -> list[ToolDefinition]:
@@ -186,6 +187,21 @@ def build_analysis_tools(context: AnalysisToolContext) -> list[ToolDefinition]:
             aggregation=aggregation,
             gap_policy=gap_policy,
             timezone=timezone,
+            max_output_rows=max_output_rows,
+        )
+
+    def aggregate_dataset(dataset_id, aggregation, value_column="", group_column="",
+                          sort="descending", top_n=0, max_groups=1_000,
+                          max_output_rows=1_000):
+        return build_aggregate_dataset(
+            datasets,
+            dataset_id,
+            aggregation=aggregation,
+            value_column=value_column,
+            group_column=group_column,
+            sort=sort,
+            top_n=top_n,
+            max_groups=max_groups,
             max_output_rows=max_output_rows,
         )
 
@@ -490,6 +506,16 @@ def build_analysis_tools(context: AnalysisToolContext) -> list[ToolDefinition]:
               "timezone": {"type":"string","maxLength":64},
               "max_output_rows": {"type":"integer","minimum":2,"maximum":5000}},
              ["dataset_id","time_column","frequency","aggregation"], prepare_time_series),
+        tool("aggregate_dataset", "로딩된 raw dataset을 count, mean, sum, median, min, max 중 하나로 제한 집계합니다. 선택적 단일 group 컬럼, 정렬, TOP-N과 출력 한도를 검증하고 부모 lineage와 digest가 있는 aggregate dataset을 저장합니다. 이상치 cohort 후속 그룹 분석에는 select_outlier_rows가 반환한 dataset_id를 사용하세요.",
+             {"dataset_id": string,
+              "aggregation": {"type":"string","enum":["count","mean","sum","median","min","max"]},
+              "value_column": string,
+              "group_column": string,
+              "sort": {"type":"string","enum":["ascending","descending"]},
+              "top_n": {"type":"integer","minimum":0,"maximum":50},
+              "max_groups": {"type":"integer","minimum":1,"maximum":1000},
+              "max_output_rows": {"type":"integer","minimum":1,"maximum":1000}},
+             ["dataset_id","aggregation"], aggregate_dataset),
         tool("propose_databricks_query", "Databricks 조회를 사용자에게 제안합니다. 이 도구는 실행하지 않습니다. 정확한 SQL과 이유를 표시하고 승인 대기합니다.",
              {"source": string, "query": string, "reason": string}, ["source", "query", "reason"], propose_query),
         tool("recommend_chart_images", "현재 데이터의 통계로 실제 이미지 후보를 만듭니다. 원격 조회 없음. 반환된 카드 ID의 이미지는 UI가 표시합니다.",

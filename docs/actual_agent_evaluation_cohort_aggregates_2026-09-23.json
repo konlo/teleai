@@ -1,0 +1,158 @@
+{
+  "generated_at": "2026-09-23T10:07:12.345368+00:00",
+  "status": "PASS",
+  "runtime": "core.analysis_agent.runtime.GraphAnalysisRuntime",
+  "data_scope": {
+    "source": "evaluation.runtime_observations",
+    "rows": 12,
+    "columns": [
+      "anomaly_value",
+      "segment_code",
+      "score_value"
+    ]
+  },
+  "oracle": {
+    "implementation": "independent pandas quantile/filter/groupby/mean/size/sort/head",
+    "iqr_upper": 73.75,
+    "outlier_rows": 3,
+    "inlier_rows": 9,
+    "overall": [
+      {
+        "mean_score_value": 20.0
+      }
+    ],
+    "top_groups": [
+      {
+        "segment_code": "north",
+        "count": 2
+      },
+      {
+        "segment_code": "south",
+        "count": 1
+      }
+    ],
+    "grouped_mean": [
+      {
+        "segment_code": "east",
+        "mean_anomaly_value": 6.0
+      },
+      {
+        "segment_code": "south",
+        "mean_anomaly_value": 5.0
+      },
+      {
+        "segment_code": "north",
+        "mean_anomaly_value": 4.0
+      }
+    ]
+  },
+  "cases": [
+    {
+      "name": "outlier overall mean plus grouped top frequency",
+      "status": "PASS",
+      "tools": {
+        "select_outlier_rows": 1,
+        "aggregate_dataset": 2
+      },
+      "model_calls": 0,
+      "frame_matches": true,
+      "lineage_matches": true
+    },
+    {
+      "name": "inlier grouped mean",
+      "status": "PASS",
+      "tools": {
+        "select_outlier_rows": 1,
+        "aggregate_dataset": 1
+      },
+      "model_calls": 0,
+      "frame_matches": true,
+      "lineage_matches": true
+    },
+    {
+      "name": "unchanged L2_037 bank_loan prompt",
+      "status": "PASS",
+      "tools": {
+        "select_outlier_rows": 1,
+        "aggregate_dataset": 2
+      },
+      "model_calls": 0,
+      "frame_matches": true,
+      "lineage_matches": true,
+      "reference_id": "L2_037",
+      "evidence": {
+        "expected": {
+          "data_sha256": "0288b01cf7aefa7a45a58e98af85219e8af0d2e5da94fc1b3e01078f9c634177",
+          "rows": 137,
+          "threshold": 4413.0,
+          "aggregates": {
+            "overall": {
+              "data_sha256": "2eed30aae1fc7424e208b90400aba5c51c3481c49576267dd1dde7ce5d949352",
+              "rows": 1,
+              "records": [
+                {
+                  "mean_age": 41.715328467153284
+                }
+              ]
+            },
+            "grouped": {
+              "data_sha256": "4b92cf4dfa4ece6a1fb83dc4d214f046f5bc1c1eead33c55787918a0e5f1155b",
+              "rows": 3,
+              "records": [
+                {
+                  "job": "technician",
+                  "count": 34
+                },
+                {
+                  "job": "blue-collar",
+                  "count": 29
+                },
+                {
+                  "job": "management",
+                  "count": 19
+                }
+              ]
+            }
+          }
+        },
+        "actual": {
+          "overall": [
+            {
+              "mean_age": 41.715328467153284
+            }
+          ],
+          "grouped": [
+            {
+              "job": "technician",
+              "count": 34
+            },
+            {
+              "job": "blue-collar",
+              "count": 29
+            },
+            {
+              "job": "management",
+              "count": 19
+            }
+          ]
+        },
+        "cohort_dataset_id": "20e4f71a-5ca4-49c2-9e2e-81923c6fc1fb",
+        "result_dataset_ids": {
+          "overall": "0cf572e2-5ca2-49a6-8de8-0dc32470b1ad",
+          "grouped": "c602696a-5cd8-4371-a64f-8110830140ee"
+        },
+        "scope": "bank_loan의 로딩된 raw dataset 2,000행 중 유효값 2,000개에 iqr/upper 기준을 적용했습니다. coverage=complete; snapshot=fixture:6fd6aefae0385fe96f9884c3154048e19641fc9ae55f872378551b8c1e268c25. outliers 기준 137행을 부모 018d6c08-c8ab-4430-bc01-46e95402f835에서 파생 dataset 20e4f71a-5ca4-49c2-9e2e-81923c6fc1fb로 저장했습니다."
+      }
+    }
+  ],
+  "passed": 3,
+  "total": 3,
+  "model_calls": 0,
+  "remote_executions": 0,
+  "elapsed_seconds": 0.372,
+  "limitations": [
+    "Local synthetic fixture; no Databricks or browser execution",
+    "L2_037 increases primary independent grading coverage to 67/200; the two arbitrary-schema cases are supplementary",
+    "Parent-versus-cohort side-by-side comparison remains outside these cases"
+  ]
+}

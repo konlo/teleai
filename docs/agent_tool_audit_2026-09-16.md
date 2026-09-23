@@ -4,13 +4,13 @@
 
 현재 production `GraphAnalysisRuntime`의 tool 구조는 **승인형 데이터 로딩, 보유 DataFrame 재사용, 기본 SQL 계산, 기본 차트 생성과 복구**에는 적합하다. 중앙 registry와 실행 wrapper, 승인 ledger, lineage 검사, 영속 artifact가 연결돼 있어 단순 tool 모음은 아니다.
 
-2026-09-23까지 P0 공백인 공통 결과 계약, 데이터셋 프로파일, 승인형 source discovery와 P1의 제한된 차트 사양·다중 dataset join·구조화 통계 검정, 직접 이상치 탐지, 계보가 있는 이상치 cohort 후속 계산과 bounded datetime 시계열 준비를 구현했다. 현재 남은 tool 범위는 이상치 cohort의 그룹 집계·변환, 다중 패널·이중축 차트와 결과 내보내기다.
+2026-09-23까지 P0 공백인 공통 결과 계약, 데이터셋 프로파일, 승인형 source discovery와 P1의 제한된 차트 사양·다중 dataset join·구조화 통계 검정, 직접 이상치 탐지, 계보가 있는 이상치 cohort 후속 계산, bounded datetime 시계열 준비와 단일 그룹·TOP-N 집계를 구현했다. 현재 남은 tool 범위는 parent-versus-cohort 비교 변환, 다중 패널·이중축 차트와 결과 내보내기다.
 
 따라서 현재 상태는 **검증된 제한 범위에 적합**하며, 범용 분석 agent로 승격하려면 남은 의도와 배포 환경 검증이 필요하다.
 
 ## 실제 활성 tool 구성
 
-2026-09-22 이상치 cohort 보강 후 `build_analysis_tools()`는 18개 정의를 만든다. production agent에는 `propose_databricks_query`를 제외한 로컬 tool 17개가 등록되고, 원격 연결이 있을 때 승인 middleware가 적용된 `query_databricks` 1개가 추가된다.
+2026-09-23 cohort 집계 보강 후 `build_analysis_tools()`는 20개 정의를 만든다. production agent에는 `propose_databricks_query`를 제외한 로컬 tool 19개가 등록되고, 원격 연결이 있을 때 승인 middleware가 적용된 `query_databricks` 1개가 추가된다.
 
 | 영역 | 활성 tool | 현재 역할 | 진단 |
 |---|---|---|---|
@@ -22,6 +22,7 @@
 | join | `join_datasets` | 보유 raw dataset 두 개를 명시적 key와 방식으로 결합 | dtype·NULL·cardinality·예상 행 수·증가율을 실행 전에 검사하고 두 부모 lineage를 보존한다. many-to-many는 실행하지 않는다. |
 | statistics | `statistical_test` | 보유 raw dataset의 선언된 가설 검정·평균 신뢰구간 | 독립·대응 t, 카이제곱, 일원 ANOVA, Mann–Whitney, 평균 CI를 enum으로 제한하고 표본·결측·가정·통계량·p-value·효과크기·CI를 반환한다. |
 | outliers | `detect_outliers`, `select_outlier_rows` | 보유 raw dataset의 이상치 기준·건수 계산과 후속 cohort 파생 | IQR·Z-score·MAD·분위수와 tail을 제한한다. cohort는 원시 행을 모델에 반환하지 않고 parent·snapshot·predicate·행 수·digest를 보존하며 후속 계산은 해당 child dataset에만 실행한다. |
+| aggregation | `aggregate_dataset` | 보유 raw 또는 파생 cohort의 전체·단일 그룹·TOP-N 집계 | count/mean/sum/median/min/max, 단일 group, 정렬, TOP-N, group/output 한도를 제한하고 parent·snapshot·digest가 있는 aggregate child를 만든다. |
 | visualization | `recommend_chart_images`, `prepare_histogram`, `render_histogram`, `render_chart_spec`, `show_chart` | 실제 PNG 추천·생성·재표시 | histogram/bar/line/scatter/boxplot과 수치값+범주 그룹 박스플롯의 축·집계·정렬·top-N·bins·제목·라벨을 제한된 schema로 실행한다. 임의 코드·파일·URL·style dictionary는 받지 않는다. |
 | remote | `query_databricks` | 정확한 SELECT를 승인 후 1회 실행 | fingerprint·연결 identity·제출 불명 상태 차단이 강하다. 테이블 탐색용 전용 계획 tool은 없다. |
 
@@ -76,7 +77,7 @@
 
 ### P2 — 사용 범위를 선언한 뒤 추가
 
-7. **`detect_outliers`·`select_outlier_rows` — 직접 탐지와 bounded 후속 계산 구현 완료**: IQR/Z-score/MAD/분위수 결과와 threshold·행 수·범위를 구조화한다. 선택 cohort의 parent·snapshot·predicate·digest를 보존하고 scalar 후속 계산을 해당 child에 고정한다. 그룹 집계·winsorization 등 변환 범위는 아직 미검증이다.
+7. **`detect_outliers`·`select_outlier_rows`·`aggregate_dataset` — 직접 탐지와 bounded 후속 계산 구현 완료**: IQR/Z-score/MAD/분위수 결과와 threshold·행 수·범위를 구조화한다. 선택 cohort의 parent·snapshot·predicate·digest를 보존하고 scalar, 단일 그룹, TOP-N 후속 집계를 해당 child에 고정한다. parent-versus-cohort 비교와 winsorization은 아직 미검증이다.
 8. **`prepare_time_series`**: 완료. 실제 dtype·95% 파싱 성공률, IANA timezone, hour/day/week/month, gap omit/zero/nan, 중복 시각, 최대 20개 series와 5,000행 한도를 검증하고 parent lineage가 있는 aggregate dataset을 만든다.
 9. **`export_result`**: 검증된 dataset/chart만 CSV·PNG로 내보내고 provenance manifest를 함께 만든다.
 
@@ -90,11 +91,11 @@
 
 ## 평가 근거와 공백
 
-독립 oracle은 200문항 중 66문항을 지원한다. 미채점 134문항의 구성은 다음과 같다.
+독립 oracle은 200문항 중 67문항을 지원한다. 미채점 133문항의 구성은 다음과 같다.
 
 | 구분 | 미채점 수 |
 |---|---:|
-| table/계산 | 78 |
+| table/계산 | 77 |
 | chart | 47 |
 | schema | 9 |
 | 단일 그룹 집계·요약표 | 25 |
@@ -104,6 +105,8 @@
 | 다중 패널·고급 시각화 | 15 |
 | 이상치 | 7 |
 | 통계 검정 | 0 |
+
+변경하지 않은 `L2_037`은 `bank_loan` fixture에서 잔액 IQR 상한 이상치 137행을 선택한 뒤 평균 나이 41.7153과 직업 TOP 3(technician 34, blue-collar 29, management 19)를 두 aggregate child로 계산했다. 독립 reference, parent lineage, snapshot, digest가 모두 일치했고 모델·원격 호출은 0회였다.
 
 `show_chart`의 실제 PNG 재사용과 missing ID 오류 계약을 추가했다. 전체 활성 tool의 성공, 입력/복구 오류, 승인 안전성, 재시작, 중복/재사용 상태는 `agent_tool_contract_matrix_2026-09-18.md`에 기록했다. `use_dataset`과 `read_analysis_skill`의 전용 조합 테스트 확대는 후속 보강 대상이다.
 
