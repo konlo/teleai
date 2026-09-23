@@ -30,6 +30,15 @@
 
 ---
 
+## [2026-09-23 21:39:21 KST] [Agent: Codex] User Request: 현재 남은 작업 비율 확인
+- **Request**: 장기간 진행된 현재 작업의 실제 완료율과 남은 비율을 다시 산정한다.
+- **Evidence**: 핵심 상태·승인·스키마 중립성·계보·복구 계약과 주요 bounded 분석 도구는 구현됐다. application 151/151, migration 126/126, actual-agent harness 42/42, Level 3 17/17, 전체 runner 217/217 및 원격 CI가 통과했다. 반면 독립 사용자 요청 채점은 68/200(34%)이며 132건은 아직 통과로 계산할 수 없다.
+- **Estimate**: 전체 범용 분석 agent 목표는 약 65~70% 완료, 약 30~35% 남은 것으로 평가한다. 이는 핵심 구조·도구 구현, 독립 평가 범위, 실제 배포 검증을 함께 가중한 작업량 추정치이며 단순 테스트 개수 비율이 아니다.
+- **Limited Release**: 현재 정의된 로컬/1인용 제한 출시만 보면 약 80~85% 완료, 약 15~20% 남았다. 남은 gate는 PR 리뷰·병합, 배포 대상 확정, 해당 호스트의 p95/RSS/Ollama 측정, smoke/rollback, 필요한 TableContext의 승인형 갱신이다.
+- **General Scope**: 200개 전체 요청을 지원·독립 검증하는 범용 출시 기준에서는 132/200(66%)가 미채점이다. 다중 패널·이중축, winsorization, 피벗·소계·전환율 계열이 주요 기능 공백이다.
+
+---
+
 ## [2026-09-23 16:37:14 KST] [Agent: Codex] User Request: 남아 있는 일들 계속 진행
 - **Request**: 현재 release candidate에서 사용자 승인 없이 진행 가능한 남은 agent 작업을 계속 수행한다.
 - **Action**: R08의 다음 공백인 이상치 cohort 그룹 집계·변환을 runtime schema와 저장된 lineage만 사용하도록 구현하고, 임의 schema fixture·독립 oracle·재시작·전체 release gate로 검증한다.
