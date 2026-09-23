@@ -15,6 +15,7 @@ from utils.analysis_skill_registry import AnalysisSkillRegistry
 from utils.analysis_charts import (
     histogram_from_counts,
     recommend_charts,
+    render_count_rate_chart as build_count_rate_chart,
     render_chart_spec as build_chart_from_spec,
     validate_frequency_dataset,
 )
@@ -320,6 +321,18 @@ def build_analysis_tools(context: AnalysisToolContext) -> list[ToolDefinition]:
         return {"status": "ready", "cards": [card_entry(card)],
                 "chart_spec": spec, "render_summary": summary}
 
+    def render_count_rate_chart(dataset_id, group_column, outcome_column, success_value,
+                                layout="dual_axis", sort="none", top_n=50, title="",
+                                x_label="", count_label="", rate_label=""):
+        card, summary, spec = build_count_rate_chart(
+            datasets, dataset_id, group_column=group_column,
+            outcome_column=outcome_column, success_value=success_value,
+            layout=layout, sort=sort, top_n=top_n, title=title,
+            x_label=x_label, count_label=count_label, rate_label=rate_label)
+        context.artifacts[card.id] = card
+        return {"status": "ready", "cards": [card_entry(card)],
+                "chart_spec": spec, "render_summary": summary}
+
     def card_entry(card):
         return {'id':card.id,'dataset_id':card.dataset_id,'title':card.title,
                 'reason':card.reason,'kind':card.kind,'columns':card.columns,'scope':card.scope}
@@ -562,6 +575,20 @@ def build_analysis_tools(context: AnalysisToolContext) -> list[ToolDefinition]:
               "orientation": {"type":"string","enum":["vertical","horizontal"]},
               "cumulative": {"type":"boolean"}},
              ["dataset_id","kind","x"], render_chart_spec),
+        tool("render_count_rate_chart", "로딩된 raw dataset에서 그룹별 전체 행 수와 명시한 outcome 성공값의 비율을 계산해 이중 Y축 또는 2열 패널 PNG로 렌더링합니다. 성공률 분모는 outcome 비결측 행이며 points와 digest를 반환합니다. 성공값·분모·컬럼을 추측하지 않습니다.",
+             {"dataset_id": string,
+              "group_column": string,
+              "outcome_column": string,
+              "success_value": {},
+              "layout": {"type":"string","enum":["dual_axis","split_panel"]},
+              "sort": {"type":"string","enum":["none","group_ascending","count_descending","calendar_month"]},
+              "top_n": {"type":"integer","minimum":1,"maximum":50},
+              "title": {"type":"string","maxLength":120},
+              "x_label": {"type":"string","maxLength":120},
+              "count_label": {"type":"string","maxLength":120},
+              "rate_label": {"type":"string","maxLength":120}},
+             ["dataset_id","group_column","outcome_column","success_value"],
+             render_count_rate_chart),
         tool("prepare_histogram", "보유한 완전한 빈도·원본 데이터와 이미지를 먼저 재사용하여 히스토그램을 만듭니다. 데이터가 부족할 때만 승인형 조회 계획을 반환합니다. source는 정확한 테이블명, column은 수치 컬럼, where_sql은 유지해야 할 사용자 필터 SQL(없으면 빈 문자열)입니다. 사용자가 최신/현재 원본을 명시하면 fresh_source_required=true로 지정해 캐시를 재사용하지 않습니다. 직접 원격 조회하지 않습니다.",
              {"source":string,"column":string,"where_sql":string,
               "fresh_source_required":{"type":"boolean"}},["source","column"],prepare_histogram),

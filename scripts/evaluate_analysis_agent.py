@@ -236,6 +236,37 @@ def reference_oracle(spec, grading, frames):
                 raise ValueError("Reference line counts must be a non-empty ordered Series")
             plotted = value.rename("value").rename_axis(grading["column"]).reset_index()
             return {"data_sha256": _frame_digest(plotted), "rows": len(plotted)}
+        if grading["kind"] == "chart_count_rate":
+            reference = namespace[grading["variable"]]
+            if not isinstance(reference, pd.DataFrame) or reference.empty:
+                raise ValueError("Reference count/rate chart data must be a non-empty DataFrame")
+            group = grading["group_column"]
+            if grading["count_column"] not in reference or grading["rate_column"] not in reference:
+                raise ValueError("Reference count/rate columns are missing")
+            expected = reference[[grading["count_column"], grading["rate_column"]]].reset_index()
+            expected = expected.rename(columns={expected.columns[0]: group,
+                grading["count_column"]: "row_count", grading["rate_column"]: "rate_percent"})
+            source = frames[spec["target_table"]][[group, grading["outcome_column"]]].dropna(
+                subset=[group]).copy()
+            grouped = source.groupby(group, sort=False, observed=True)[grading["outcome_column"]]
+            contract = grouped.agg(row_count="size", denominator_count="count").reset_index()
+            successes = grouped.apply(
+                lambda values: int(values.eq(grading["success_value"]).sum())).reset_index(
+                    name="success_count")
+            contract = contract.merge(successes, on=group, how="inner", validate="one_to_one")
+            contract["rate_percent"] = (
+                100.0 * contract["success_count"] / contract["denominator_count"])
+            order = {str(value): index for index, value in enumerate(expected[group].tolist())}
+            contract["_order"] = contract[group].astype(str).map(order)
+            if contract["_order"].isna().any() or len(contract) != len(expected):
+                raise ValueError("Reference and raw count/rate groups differ")
+            contract = contract.sort_values("_order").drop(columns="_order").reset_index(drop=True)
+            if (contract[group].astype(str).tolist() != expected[group].astype(str).tolist()
+                    or not np.allclose(contract["row_count"], expected["row_count"])
+                    or not np.allclose(contract["rate_percent"], expected["rate_percent"])):
+                raise ValueError("Reference chart values differ from the raw-data contract")
+            return {"data_sha256": _frame_digest(contract), "rows": len(contract),
+                    "records": contract.to_dict(orient="records")}
         if grading["kind"] == "metadata_columns":
             columns = namespace[grading["variable"]]
             if not isinstance(columns, list) or not columns or not all(isinstance(value, str) for value in columns):
@@ -683,6 +714,57 @@ def grade_evidence(runtime, outcome, spec, grading, oracle, fixture_id, capture)
         return ("PASS", "Real PNG and declarative chart data match the independent reference",
                 {"charts": matches}) if matches else (
                 "FAIL", "Missing grounded chart PNG or rendered data differs from reference", {})
+    if grading["kind"] == "chart_count_rate":
+        matches = []
+        for message in runtime.events():
+            if not isinstance(message, ToolMessage) or message.name != "render_count_rate_chart":
+                continue
+            try:
+                observation = json.loads(message.content)
+                entry = observation["cards"][0]
+                card = runtime.artifacts[entry["id"]]
+                info = runtime.datasets.metadata[card.dataset_id]
+                summary = observation["render_summary"]
+                spec_result = observation["chart_spec"]
+                digest = sha256(card.image).hexdigest()
+                actual = pd.DataFrame(summary["points"])
+                expected = pd.DataFrame(oracle["records"])
+                values_match = len(actual) == len(expected)
+                if values_match:
+                    group = grading["group_column"]
+                    values_match = (
+                        actual["group"].astype(str).tolist() == expected[group].astype(str).tolist()
+                        and np.array_equal(actual["row_count"].to_numpy(), expected["row_count"].to_numpy())
+                        and np.array_equal(actual["denominator_count"].to_numpy(), expected["denominator_count"].to_numpy())
+                        and np.array_equal(actual["success_count"].to_numpy(), expected["success_count"].to_numpy())
+                        and np.allclose(actual["rate_percent"], expected["rate_percent"],
+                                        rtol=1e-10, atol=1e-12))
+                grounded = (
+                    observation.get("status") == "ready"
+                    and card.kind == grading["layout"]
+                    and list(card.columns) == [grading["group_column"], grading["outcome_column"]]
+                    and spec_result.get("layout") == grading["layout"]
+                    and spec_result.get("group_column") == grading["group_column"]
+                    and spec_result.get("outcome_column") == grading["outcome_column"]
+                    and spec_result.get("success_value") == grading["success_value"]
+                    and spec_result.get("sort") == grading["sort"]
+                    and info.source == spec["target_table"] and info.coverage == "complete"
+                    and info.predicate_known and info.grain == "raw"
+                    and _fixture_descendant(runtime, card.dataset_id, fixture_id)
+                    and card.image.startswith(b"\x89PNG\r\n\x1a\n")
+                    and digest in capture.saved
+                    and summary.get("data_sha256") == oracle["data_sha256"]
+                    and summary.get("rendered_groups") == oracle["rows"])
+                if grounded and values_match:
+                    matches.append({"chart_id": card.id, "png_sha256": digest,
+                                    "kind": card.kind, "columns": list(card.columns),
+                                    "data_sha256": summary["data_sha256"],
+                                    "points": summary["points"]})
+            except (KeyError, TypeError, ValueError):
+                continue
+        return (("PASS", "Count/rate chart PNG and numerator/denominator evidence match the reference",
+                 {"charts": matches}) if matches else
+                ("FAIL", "Missing grounded count/rate chart or grouped values differ from reference", {}))
     if grading["kind"] == "histogram":
         matches = []
         for chart_id in state["chart_ids"]:

@@ -503,3 +503,169 @@ def render_chart_spec(store: DatasetStore, dataset_id: str, *, kind: str, x: str
             "x_label": ax.get_xlabel(), "y_label": ax.get_ylabel(),
             "orientation": orientation}
     return card, summary, spec
+
+
+def render_count_rate_chart(store: DatasetStore, dataset_id: str, *,
+                            group_column: str, outcome_column: str,
+                            success_value, layout: str = "dual_axis",
+                            sort: str = "none", top_n: int = 50,
+                            title: str = "", x_label: str = "",
+                            count_label: str = "", rate_label: str = ""):
+    """Render grouped row counts and an explicit success rate.
+
+    The success numerator is bound to ``outcome_column == success_value`` and
+    the denominator is the non-null outcome count within each non-null group.
+    This avoids asking the model to infer a percentage from plotted pixels or
+    silently treating missing outcomes as failures.
+    """
+    if layout not in {"dual_axis", "split_panel"}:
+        raise ValueError("layout은 dual_axis 또는 split_panel이어야 합니다.")
+    if sort not in {"none", "group_ascending", "count_descending", "calendar_month"}:
+        raise ValueError("지원하는 정렬 방식을 사용해주세요.")
+    if not 1 <= int(top_n) <= 50:
+        raise ValueError("top_n은 1~50이어야 합니다.")
+    labels = (title, x_label, count_label, rate_label)
+    if any(not isinstance(value, str) or len(value) > 120 for value in labels):
+        raise ValueError("차트 제목과 축 라벨은 120자 이하 문자열이어야 합니다.")
+    if not group_column or not outcome_column or group_column == outcome_column:
+        raise ValueError("서로 다른 group_column과 outcome_column이 필요합니다.")
+    info = store.metadata[dataset_id]
+    source = store.frames[dataset_id]
+    if info.grain != "raw" or info.aggregation:
+        raise ValueError("건수·비율 차트는 집계되지 않은 raw dataset만 사용합니다.")
+    if not {group_column, outcome_column}.issubset(source.columns):
+        raise ValueError("차트 컬럼은 로딩된 dataset의 실제 컬럼이어야 합니다.")
+    frame = source[[group_column, outcome_column]].dropna(subset=[group_column]).copy()
+    if frame.empty:
+        raise ValueError("그룹값이 있는 행이 필요합니다.")
+    observed = frame[outcome_column].dropna()
+    if observed.empty or not observed.eq(success_value).any():
+        raise ValueError("success_value가 outcome 컬럼의 실제 값과 일치해야 합니다.")
+    groups = int(frame[group_column].nunique(dropna=True))
+    if not 1 <= groups <= 50:
+        raise ValueError("그룹 고유값은 1~50개여야 합니다.")
+
+    grouped = frame.groupby(group_column, sort=False, observed=True)[outcome_column]
+    plotted = grouped.agg(row_count="size", denominator_count="count").reset_index()
+    successes = (frame.assign(_success=frame[outcome_column].eq(success_value))
+                 .groupby(group_column, sort=False, observed=True)["_success"].sum()
+                 .astype(int).reset_index(name="success_count"))
+    plotted = plotted.merge(successes, on=group_column, how="inner", validate="one_to_one")
+    if (plotted["denominator_count"] <= 0).any():
+        raise ValueError("각 그룹에는 결측이 아닌 outcome 값이 하나 이상 필요합니다.")
+    plotted["rate_percent"] = 100.0 * plotted["success_count"] / plotted["denominator_count"]
+
+    if sort == "calendar_month":
+        month_number = {
+            "jan": 1, "january": 1, "feb": 2, "february": 2,
+            "mar": 3, "march": 3, "apr": 4, "april": 4,
+            "may": 5, "jun": 6, "june": 6, "jul": 7, "july": 7,
+            "aug": 8, "august": 8, "sep": 9, "sept": 9, "september": 9,
+            "oct": 10, "october": 10, "nov": 11, "november": 11,
+            "dec": 12, "december": 12,
+        }
+        keys = plotted[group_column].astype(str).str.strip().str.casefold().map(month_number)
+        if keys.isna().any() or keys.duplicated().any():
+            raise ValueError("calendar_month 정렬에는 중복되지 않는 영문 월 이름/약어가 필요합니다.")
+        plotted = plotted.assign(_order=keys).sort_values("_order").drop(columns="_order")
+    elif sort == "group_ascending":
+        try:
+            plotted = plotted.sort_values(group_column)
+        except TypeError as exc:
+            raise ValueError("그룹값을 오름차순으로 정렬할 수 없습니다.") from exc
+    elif sort == "count_descending":
+        plotted = (plotted.assign(_group_sort=plotted[group_column].astype(str))
+                   .sort_values(["row_count", "_group_sort"], ascending=[False, True],
+                                kind="mergesort")
+                   .drop(columns="_group_sort"))
+    if len(plotted) > int(top_n):
+        if sort != "count_descending":
+            plotted = plotted.nlargest(int(top_n), "row_count")
+        else:
+            plotted = plotted.head(int(top_n))
+    plotted = plotted.reset_index(drop=True)
+
+    count_axis_label = count_label or "Count"
+    rate_axis_label = rate_label or "Rate (%)"
+    final_title = title or f"{group_column}별 건수와 {outcome_column} 성공률"
+    if layout == "dual_axis":
+        fig = Figure(figsize=(8, 4.5))
+        ax_count = fig.subplots()
+        ax_rate = ax_count.twinx()
+        labels_for_axis = plotted[group_column].astype(str)
+        ax_count.bar(labels_for_axis, plotted["row_count"], color="#6f9fd8", alpha=0.68)
+        ax_rate.plot(labels_for_axis, plotted["rate_percent"], color="#c43b4d",
+                     marker="o", linewidth=2)
+        ax_count.set(xlabel=x_label or group_column, ylabel=count_axis_label)
+        ax_rate.set_ylabel(rate_axis_label)
+        ax_count.tick_params(axis="x", rotation=30)
+        ax_count.set_title(final_title)
+    else:
+        fig = Figure(figsize=(10, 4.5))
+        ax_count, ax_rate = fig.subplots(1, 2)
+        labels_for_axis = plotted[group_column].astype(str)
+        ax_count.bar(labels_for_axis, plotted["row_count"], color="#6f9fd8")
+        ax_rate.plot(labels_for_axis, plotted["rate_percent"], color="#c43b4d",
+                     marker="o", linewidth=2)
+        ax_count.set(xlabel=x_label or group_column, ylabel=count_axis_label,
+                     title=count_axis_label)
+        ax_rate.set(xlabel=x_label or group_column, ylabel=rate_axis_label,
+                    title=rate_axis_label)
+        ax_count.tick_params(axis="x", rotation=30)
+        ax_rate.tick_params(axis="x", rotation=30)
+        fig.suptitle(final_title)
+
+    encoded_columns = json.dumps(list(plotted.columns), ensure_ascii=False).encode()
+    hashed = pd.util.hash_pandas_object(plotted, index=False).values.tobytes()
+    data_sha256 = sha256(encoded_columns + hashed).hexdigest()
+    buffer = BytesIO()
+    FigureCanvasAgg(fig)
+    _apply_unicode_font(fig)
+    fig.tight_layout()
+    fig.savefig(buffer, format="png", dpi=110)
+    missing_outcomes = int(frame[outcome_column].isna().sum())
+    reason = (f"{len(plotted):,}개 그룹의 전체 행 수와 {outcome_column}={success_value!r} 비율을 "
+              f"결측 outcome을 분모에서 제외해 표시했습니다.")
+    scope = (f"보유 {len(source):,}행 기준 · {info.coverage} · raw · "
+             f"그룹 {len(plotted):,}개 · outcome 결측 {missing_outcomes:,}행")
+    card = ChartPreview(str(uuid4()), dataset_id, final_title, reason, layout,
+                        (group_column, outcome_column), scope, buffer.getvalue())
+
+    def scalar(value):
+        if hasattr(value, "item"):
+            value = value.item()
+        if pd.isna(value):
+            return None
+        return value if isinstance(value, (str, int, float, bool)) else str(value)
+
+    # ``iterrows`` coerces an integer grouping column to float when the same
+    # row also contains ``rate_percent``. Records preserve the source dtype so
+    # the structured evidence reports group 1 as 1 rather than 1.0.
+    points = [{
+        "group": scalar(row[group_column]),
+        "row_count": int(row["row_count"]),
+        "denominator_count": int(row["denominator_count"]),
+        "success_count": int(row["success_count"]),
+        "rate_percent": float(row["rate_percent"]),
+    } for row in plotted.to_dict(orient="records")]
+    summary = {
+        "source_rows": len(source),
+        "grouped_source_rows": len(frame),
+        "rendered_groups": len(plotted),
+        "missing_outcome_rows": missing_outcomes,
+        "data_sha256": data_sha256,
+        "points": points,
+    }
+    spec = {
+        "layout": layout,
+        "group_column": group_column,
+        "outcome_column": outcome_column,
+        "success_value": scalar(success_value),
+        "sort": sort,
+        "top_n": int(top_n),
+        "title": final_title,
+        "x_label": x_label or group_column,
+        "count_label": count_axis_label,
+        "rate_label": rate_axis_label,
+    }
+    return card, summary, spec

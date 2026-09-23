@@ -1,0 +1,581 @@
+{
+  "generated_at": "2026-09-23T13:10:20.547501+00:00",
+  "status": "PASS",
+  "runtime": "core.analysis_agent.runtime.GraphAnalysisRuntime",
+  "cases": [
+    {
+      "name": "arbitrary-schema count/rate dual axis",
+      "status": "PASS",
+      "tools": {
+        "render_count_rate_chart": 1
+      },
+      "model_calls": 0,
+      "expected": [
+        {
+          "group": "jan",
+          "row_count": 2,
+          "denominator_count": 2,
+          "success_count": 1,
+          "rate_percent": 50.0
+        },
+        {
+          "group": "feb",
+          "row_count": 3,
+          "denominator_count": 2,
+          "success_count": 1,
+          "rate_percent": 50.0
+        },
+        {
+          "group": "mar",
+          "row_count": 1,
+          "denominator_count": 1,
+          "success_count": 1,
+          "rate_percent": 100.0
+        }
+      ],
+      "actual": [
+        {
+          "group": "jan",
+          "row_count": 2,
+          "denominator_count": 2,
+          "success_count": 1,
+          "rate_percent": 50.0
+        },
+        {
+          "group": "feb",
+          "row_count": 3,
+          "denominator_count": 2,
+          "success_count": 1,
+          "rate_percent": 50.0
+        },
+        {
+          "group": "mar",
+          "row_count": 1,
+          "denominator_count": 1,
+          "success_count": 1,
+          "rate_percent": 100.0
+        }
+      ]
+    },
+    {
+      "name": "unchanged L2_061 prompt",
+      "reference_id": "L2_061",
+      "status": "PASS",
+      "tools": {
+        "render_count_rate_chart": 1
+      },
+      "model_calls": 0,
+      "remote_executions": 0,
+      "evidence": {
+        "charts": [
+          {
+            "chart_id": "7790bb1c-0ef2-4093-94f7-e3875ad46260",
+            "png_sha256": "260d8c9512160fc9a6b7aa27045e4c3d8ebbbaee177d0159cda0ce56f43646bb",
+            "kind": "dual_axis",
+            "columns": [
+              "month",
+              "y"
+            ],
+            "data_sha256": "7a2528e9103b9b5439f49feeefcca579140590851eb986444798ae6a0acb92fa",
+            "points": [
+              {
+                "group": "jan",
+                "row_count": 69,
+                "denominator_count": 69,
+                "success_count": 10,
+                "rate_percent": 14.492753623188406
+              },
+              {
+                "group": "feb",
+                "row_count": 128,
+                "denominator_count": 128,
+                "success_count": 17,
+                "rate_percent": 13.28125
+              },
+              {
+                "group": "mar",
+                "row_count": 19,
+                "denominator_count": 19,
+                "success_count": 2,
+                "rate_percent": 10.526315789473685
+              },
+              {
+                "group": "apr",
+                "row_count": 100,
+                "denominator_count": 100,
+                "success_count": 13,
+                "rate_percent": 13.0
+              },
+              {
+                "group": "may",
+                "row_count": 625,
+                "denominator_count": 625,
+                "success_count": 88,
+                "rate_percent": 14.08
+              },
+              {
+                "group": "jun",
+                "row_count": 204,
+                "denominator_count": 204,
+                "success_count": 29,
+                "rate_percent": 14.215686274509803
+              },
+              {
+                "group": "jul",
+                "row_count": 297,
+                "denominator_count": 297,
+                "success_count": 33,
+                "rate_percent": 11.11111111111111
+              },
+              {
+                "group": "aug",
+                "row_count": 298,
+                "denominator_count": 298,
+                "success_count": 45,
+                "rate_percent": 15.100671140939598
+              },
+              {
+                "group": "sep",
+                "row_count": 17,
+                "denominator_count": 17,
+                "success_count": 3,
+                "rate_percent": 17.647058823529413
+              },
+              {
+                "group": "oct",
+                "row_count": 41,
+                "denominator_count": 41,
+                "success_count": 5,
+                "rate_percent": 12.195121951219512
+              },
+              {
+                "group": "nov",
+                "row_count": 168,
+                "denominator_count": 168,
+                "success_count": 20,
+                "rate_percent": 11.904761904761905
+              },
+              {
+                "group": "dec",
+                "row_count": 34,
+                "denominator_count": 34,
+                "success_count": 5,
+                "rate_percent": 14.705882352941176
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "name": "unchanged L2_064 prompt",
+      "reference_id": "L2_064",
+      "status": "PASS",
+      "tools": {
+        "render_count_rate_chart": 1
+      },
+      "model_calls": 0,
+      "remote_executions": 0,
+      "evidence": {
+        "charts": [
+          {
+            "chart_id": "aec0c249-3425-4bd9-b234-34bcaafdbbb1",
+            "png_sha256": "7acbcf02e779f15c3b5a59228326552b495578dafbd09c402b4381813b5672b7",
+            "kind": "dual_axis",
+            "columns": [
+              "job",
+              "y"
+            ],
+            "data_sha256": "26180b8f1c184e382499b1b36a2c4c1f334809adb8c750ae136460e002c6deb6",
+            "points": [
+              {
+                "group": "blue-collar",
+                "row_count": 426,
+                "denominator_count": 426,
+                "success_count": 61,
+                "rate_percent": 14.31924882629108
+              },
+              {
+                "group": "management",
+                "row_count": 425,
+                "denominator_count": 425,
+                "success_count": 51,
+                "rate_percent": 12.0
+              },
+              {
+                "group": "technician",
+                "row_count": 325,
+                "denominator_count": 325,
+                "success_count": 39,
+                "rate_percent": 12.0
+              },
+              {
+                "group": "admin.",
+                "row_count": 261,
+                "denominator_count": 261,
+                "success_count": 34,
+                "rate_percent": 13.026819923371647
+              },
+              {
+                "group": "services",
+                "row_count": 165,
+                "denominator_count": 165,
+                "success_count": 31,
+                "rate_percent": 18.78787878787879
+              },
+              {
+                "group": "retired",
+                "row_count": 117,
+                "denominator_count": 117,
+                "success_count": 12,
+                "rate_percent": 10.256410256410257
+              },
+              {
+                "group": "housemaid",
+                "row_count": 64,
+                "denominator_count": 64,
+                "success_count": 7,
+                "rate_percent": 10.9375
+              },
+              {
+                "group": "self-employed",
+                "row_count": 62,
+                "denominator_count": 62,
+                "success_count": 11,
+                "rate_percent": 17.741935483870968
+              },
+              {
+                "group": "entrepreneur",
+                "row_count": 55,
+                "denominator_count": 55,
+                "success_count": 4,
+                "rate_percent": 7.2727272727272725
+              },
+              {
+                "group": "unemployed",
+                "row_count": 47,
+                "denominator_count": 47,
+                "success_count": 6,
+                "rate_percent": 12.76595744680851
+              },
+              {
+                "group": "student",
+                "row_count": 33,
+                "denominator_count": 33,
+                "success_count": 11,
+                "rate_percent": 33.333333333333336
+              },
+              {
+                "group": "unknown",
+                "row_count": 20,
+                "denominator_count": 20,
+                "success_count": 3,
+                "rate_percent": 15.0
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "name": "unchanged L2_065 prompt",
+      "reference_id": "L2_065",
+      "status": "PASS",
+      "tools": {
+        "render_count_rate_chart": 1
+      },
+      "model_calls": 0,
+      "remote_executions": 0,
+      "evidence": {
+        "charts": [
+          {
+            "chart_id": "768c6e7d-096b-4919-9054-ade61c4f7369",
+            "png_sha256": "157464dcc08b3b2a4ad056c261c151e8fdf2a2694b16874aadefd8638fc6dd69",
+            "kind": "dual_axis",
+            "columns": [
+              "Pclass",
+              "Survived"
+            ],
+            "data_sha256": "0afc43972ea1a1971a156f6b7ddddbce2ca9879e8deb5bd03eac8f46e95f5e80",
+            "points": [
+              {
+                "group": 1,
+                "row_count": 223,
+                "denominator_count": 223,
+                "success_count": 139,
+                "rate_percent": 62.33183856502242
+              },
+              {
+                "group": 2,
+                "row_count": 178,
+                "denominator_count": 178,
+                "success_count": 69,
+                "rate_percent": 38.764044943820224
+              },
+              {
+                "group": 3,
+                "row_count": 490,
+                "denominator_count": 490,
+                "success_count": 119,
+                "rate_percent": 24.285714285714285
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "name": "unchanged L2_066 prompt",
+      "reference_id": "L2_066",
+      "status": "PASS",
+      "tools": {
+        "render_count_rate_chart": 1
+      },
+      "model_calls": 0,
+      "remote_executions": 0,
+      "evidence": {
+        "charts": [
+          {
+            "chart_id": "b7fe4237-79d9-4a40-aacc-f6d354b7df84",
+            "png_sha256": "3bc28b77b6f717d0d1527c5d6312541fc419196ae25f7eff9770d7c74485e500",
+            "kind": "dual_axis",
+            "columns": [
+              "day",
+              "y"
+            ],
+            "data_sha256": "1f1d959148545597eca1d1d49bf7864f29bc2483222b3fe00ff05dccd38ec9a0",
+            "points": [
+              {
+                "group": 1,
+                "row_count": 58,
+                "denominator_count": 58,
+                "success_count": 5,
+                "rate_percent": 8.620689655172415
+              },
+              {
+                "group": 2,
+                "row_count": 57,
+                "denominator_count": 57,
+                "success_count": 12,
+                "rate_percent": 21.05263157894737
+              },
+              {
+                "group": 3,
+                "row_count": 74,
+                "denominator_count": 74,
+                "success_count": 7,
+                "rate_percent": 9.45945945945946
+              },
+              {
+                "group": 4,
+                "row_count": 62,
+                "denominator_count": 62,
+                "success_count": 6,
+                "rate_percent": 9.67741935483871
+              },
+              {
+                "group": 5,
+                "row_count": 72,
+                "denominator_count": 72,
+                "success_count": 11,
+                "rate_percent": 15.277777777777779
+              },
+              {
+                "group": 6,
+                "row_count": 66,
+                "denominator_count": 66,
+                "success_count": 9,
+                "rate_percent": 13.636363636363637
+              },
+              {
+                "group": 7,
+                "row_count": 43,
+                "denominator_count": 43,
+                "success_count": 3,
+                "rate_percent": 6.976744186046512
+              },
+              {
+                "group": 8,
+                "row_count": 67,
+                "denominator_count": 67,
+                "success_count": 8,
+                "rate_percent": 11.940298507462687
+              },
+              {
+                "group": 9,
+                "row_count": 73,
+                "denominator_count": 73,
+                "success_count": 9,
+                "rate_percent": 12.32876712328767
+              },
+              {
+                "group": 10,
+                "row_count": 71,
+                "denominator_count": 71,
+                "success_count": 9,
+                "rate_percent": 12.67605633802817
+              },
+              {
+                "group": 11,
+                "row_count": 65,
+                "denominator_count": 65,
+                "success_count": 7,
+                "rate_percent": 10.76923076923077
+              },
+              {
+                "group": 12,
+                "row_count": 74,
+                "denominator_count": 74,
+                "success_count": 9,
+                "rate_percent": 12.162162162162161
+              },
+              {
+                "group": 13,
+                "row_count": 75,
+                "denominator_count": 75,
+                "success_count": 12,
+                "rate_percent": 16.0
+              },
+              {
+                "group": 14,
+                "row_count": 50,
+                "denominator_count": 50,
+                "success_count": 5,
+                "rate_percent": 10.0
+              },
+              {
+                "group": 15,
+                "row_count": 74,
+                "denominator_count": 74,
+                "success_count": 13,
+                "rate_percent": 17.56756756756757
+              },
+              {
+                "group": 16,
+                "row_count": 66,
+                "denominator_count": 66,
+                "success_count": 6,
+                "rate_percent": 9.090909090909092
+              },
+              {
+                "group": 17,
+                "row_count": 64,
+                "denominator_count": 64,
+                "success_count": 9,
+                "rate_percent": 14.0625
+              },
+              {
+                "group": 18,
+                "row_count": 61,
+                "denominator_count": 61,
+                "success_count": 14,
+                "rate_percent": 22.950819672131146
+              },
+              {
+                "group": 19,
+                "row_count": 79,
+                "denominator_count": 79,
+                "success_count": 11,
+                "rate_percent": 13.924050632911392
+              },
+              {
+                "group": 20,
+                "row_count": 61,
+                "denominator_count": 61,
+                "success_count": 6,
+                "rate_percent": 9.836065573770492
+              },
+              {
+                "group": 21,
+                "row_count": 72,
+                "denominator_count": 72,
+                "success_count": 3,
+                "rate_percent": 4.166666666666667
+              },
+              {
+                "group": 22,
+                "row_count": 65,
+                "denominator_count": 65,
+                "success_count": 9,
+                "rate_percent": 13.846153846153847
+              },
+              {
+                "group": 23,
+                "row_count": 64,
+                "denominator_count": 64,
+                "success_count": 8,
+                "rate_percent": 12.5
+              },
+              {
+                "group": 24,
+                "row_count": 62,
+                "denominator_count": 62,
+                "success_count": 12,
+                "rate_percent": 19.35483870967742
+              },
+              {
+                "group": 25,
+                "row_count": 60,
+                "denominator_count": 60,
+                "success_count": 9,
+                "rate_percent": 15.0
+              },
+              {
+                "group": 26,
+                "row_count": 58,
+                "denominator_count": 58,
+                "success_count": 12,
+                "rate_percent": 20.689655172413794
+              },
+              {
+                "group": 27,
+                "row_count": 61,
+                "denominator_count": 61,
+                "success_count": 12,
+                "rate_percent": 19.672131147540984
+              },
+              {
+                "group": 28,
+                "row_count": 66,
+                "denominator_count": 66,
+                "success_count": 12,
+                "rate_percent": 18.181818181818183
+              },
+              {
+                "group": 29,
+                "row_count": 72,
+                "denominator_count": 72,
+                "success_count": 8,
+                "rate_percent": 11.11111111111111
+              },
+              {
+                "group": 30,
+                "row_count": 56,
+                "denominator_count": 56,
+                "success_count": 9,
+                "rate_percent": 16.071428571428573
+              },
+              {
+                "group": 31,
+                "row_count": 52,
+                "denominator_count": 52,
+                "success_count": 5,
+                "rate_percent": 9.615384615384615
+              }
+            ]
+          }
+        ]
+      }
+    }
+  ],
+  "passed": 5,
+  "total": 5,
+  "model_calls": 0,
+  "remote_executions": 0,
+  "elapsed_seconds": 8.668,
+  "limitations": [
+    "Local fixtures; no Databricks or browser execution",
+    "L2_061, L2_064, L2_065 and L2_066 increase primary independent grading coverage to 72/200",
+    "General 2x2 dashboards and arbitrary multi-measure panels remain ungraded"
+  ]
+}

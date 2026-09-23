@@ -98,6 +98,17 @@ class RecoveryMiddleware(AgentMiddleware):
             elif re.search(r'선\s*(?:그래프|차트)|꺾은선|(?:누적|성장).{0,40}곡선|\bline(?:\s*chart)?\b|\bcurve\b', text, re.I): kind = 'line'
             else: kind = None
             chart = bool(kind or re.search(r'차트|시각화|그래프|\bchart|\bplot', text, re.I))
+            count_rate_signal = bool(
+                re.search(r'건수|고객\s*수|승객\s*수|접촉\s*수|행\s*수|\b(?:row\s*)?count\b', text, re.I)
+                and re.search(r'비율|성공률|생존율|전환율|\b(?:ratio|rate|percentage|percent)\b', text, re.I))
+            if chart and count_rate_signal and re.search(
+                    r'이중\s*(?:Y\s*)?축|dual\s*(?:Y[- ]?)?axis|twinx', text, re.I):
+                count_rate_layout = 'dual_axis'
+            elif chart and count_rate_signal and re.search(
+                    r'(?:2|두)\s*열.{0,12}(?:서브\s*플롯|패널)|split\s*panel', text, re.I):
+                count_rate_layout = 'split_panel'
+            else:
+                count_rate_layout = None
             chart_cumulative = bool(chart and re.search(
                 r'누적(?:합|곡선|성장)?|\bcumulative(?:\s+sum)?\b|\bcumsum\b', text, re.I))
             chart_spec_requested = bool(chart and (
@@ -233,6 +244,9 @@ class RecoveryMiddleware(AgentMiddleware):
                             + r'(?:자|여부|유무|상태|율)(?![A-Za-z0-9_])', text):
                         return True
                 return False
+            explicit_columns = [name for name in names if mentioned(name)]
+            explicit_columns.sort(
+                key=lambda name: (text.find(name) if text.find(name) >= 0 else len(text), name))
             mentioned_columns = [name for name in names if mentioned_column(name)]
             mentioned_columns.sort(key=lambda name: (text.find(name) if text.find(name) >= 0 else len(text), name))
             operations = []
@@ -352,6 +366,10 @@ class RecoveryMiddleware(AgentMiddleware):
                 calculation, operations = False, []
             if outlier_spec and not outlier_followup:
                 calculation, operations = False, []
+            if count_rate_layout:
+                # The chart tool returns the structured count, denominator,
+                # numerator and percentage evidence for this compound request.
+                calculation = False
             metadata_kind = None
             column_words = bool(re.search(r'컬럼|필드|\bcolumns?\b|\bfields?\b', text, re.I))
             if (not chart and not join_requested and not operations and column_words and
@@ -383,6 +401,7 @@ class RecoveryMiddleware(AgentMiddleware):
                 outlier_top_n=outlier_top_n,
                 calculation=calculation, operations=operations, metadata_kind=metadata_kind,
                 profile_kind=profile_kind, chart_spec_requested=chart_spec_requested,
+                count_rate_layout=count_rate_layout,
                 chart_cumulative=chart_cumulative,
                 time_series_frequency=time_series_frequency,
                 time_series_aggregation=time_series_aggregation,
@@ -399,6 +418,7 @@ class RecoveryMiddleware(AgentMiddleware):
                 fresh_source_required=fresh_source_required,
                 request_started_at=time.time(),
                 required_columns=mentioned_columns,
+                explicit_columns=explicit_columns,
                 required_sources=sorted(
                     (s for s in sources if mentioned(s) or mentioned(s.split('.')[-1])),
                     key=lambda source: min(
@@ -407,6 +427,16 @@ class RecoveryMiddleware(AgentMiddleware):
                 columns=[], failed={}, status='working')
             current['previous_scope'] = previous.get('scope', {})
             current['scope'] = resolve_request_scope(text, self.context, current['previous_scope'])
+            # Prefer an explicitly named canonical grouping column over an
+            # incidental alias match. For example, a short alias such as
+            # "일" must not make ``job`` compete with an explicit ``day`` in
+            # "일별(day)". This rule is derived from live schema names and is
+            # independent of any particular table.
+            if count_rate_layout:
+                outcome = (current['scope'].get('ratio') or {}).get('column')
+                explicit_groups = [column for column in explicit_columns if column != outcome]
+                if outcome and len(explicit_groups) == 1:
+                    current['required_columns'] = [explicit_groups[0], outcome]
             if outlier_spec:
                 current['scope'] = _strip_outlier_method_scope(
                     current['scope'], outlier_column)
@@ -427,9 +457,10 @@ class RecoveryMiddleware(AgentMiddleware):
                     outlier_aggregate_requested=False,outlier_top_n=0,
                     calculation=False,operations=[],metadata_kind=None,profile_kind=None,
                     chart_spec_requested=False,chart_cumulative=False,whole_row_count=False,current_result_only=False,fresh_source_required=False,
+                    count_rate_layout=None,
                     time_series_frequency=None,time_series_aggregation=None,
                     time_series_gap_policy='omit',time_series_timezone='',
-                    required_columns=[])
+                    required_columns=[],explicit_columns=[])
                 current['scope']={'conditions':[],'any_conditions':[],
                     'measure_conditions':[],'ratio':None,'unresolved':[],'columns':[]}
                 if current['expected_load_source']:
@@ -486,6 +517,7 @@ class RecoveryMiddleware(AgentMiddleware):
                 outlier_aggregate_requested=False,outlier_top_n=0,calculation=False,
                 operations=[],metadata_kind=None,profile_kind=None,chart_spec_requested=False,chart_cumulative=False,whole_row_count=False,
                 current_result_only=False,fresh_source_required=False)
+            current['count_rate_layout'] = None
             current['scope']={'conditions':[],'any_conditions':[],
                 'measure_conditions':[],'ratio':None,'unresolved':[],'columns':[]}
         if human and ('scope' not in current or current['scope'].get('unresolved')):
@@ -498,7 +530,9 @@ class RecoveryMiddleware(AgentMiddleware):
         for key, default in [('processed', []), ('sent_calls', []), ('failed_signatures', {}),
                 ('evidence_ids', []), ('artifact_ids', []), ('failed', {}), ('attempts', 0),
                 ('model_calls', 0), ('model_seconds', 0.0), ('columns', []),
-                ('outlier_aggregate_evidence', {})]:
+                ('outlier_aggregate_evidence', {}), ('count_rate_evidence', None),
+                ('count_rate_layout', None), ('count_rate_group_column', None),
+                ('explicit_columns', [])]:
             current.setdefault(key, default)
         start = next((i for i, m in enumerate(messages) if human and m.id == human.id), 0)
         # Tool-call de-duplication is request scoped.  Reusing the same safe
@@ -796,7 +830,7 @@ class RecoveryMiddleware(AgentMiddleware):
                 dataset_id = observation.get('dataset', {}).get('id')
                 if self._valid_calculation(dataset_id, arguments, current):
                     current['evidence_ids'].append(dataset_id)
-            if name in {'recommend_chart_images', 'render_chart_spec', 'render_histogram', 'prepare_histogram', 'show_chart'} and observation.get('cards'):
+            if name in {'recommend_chart_images', 'render_chart_spec', 'render_count_rate_chart', 'render_histogram', 'prepare_histogram', 'show_chart'} and observation.get('cards'):
                 current['chart'] = True
                 dataset_id = arguments.get('dataset_id') or observation.get('loaded_dataset')
                 valid = []
@@ -807,7 +841,15 @@ class RecoveryMiddleware(AgentMiddleware):
                     if self._valid_card(card, current, candidate_dataset): valid.append(card.id)
                 if valid:
                     current['artifact_ids'] = valid
-                    for tool in ('recommend_chart_images', 'render_chart_spec', 'render_histogram', 'prepare_histogram', 'show_chart'):
+                    if (name == 'render_count_rate_chart'
+                            and self._count_rate_scope_valid(
+                                self.context.datasets.metadata.get(dataset_id), arguments, current)
+                            and observation.get('chart_spec', {}).get('layout') == current.get('count_rate_layout')
+                            and isinstance(observation.get('render_summary', {}).get('points'), list)
+                            and len(observation['render_summary']['points']) > 0
+                            and len(observation['render_summary'].get('data_sha256', '')) == 64):
+                        current['count_rate_evidence'] = observation
+                    for tool in ('recommend_chart_images', 'render_chart_spec', 'render_count_rate_chart', 'render_histogram', 'prepare_histogram', 'show_chart'):
                         current['failed'].pop(tool, None)
         return current, calls
 
@@ -914,6 +956,27 @@ class RecoveryMiddleware(AgentMiddleware):
         self._record_scope_error(current)
         return False
 
+    def _count_rate_scope_valid(self, info, arguments, current):
+        if info is None or not current.get('count_rate_layout'):
+            return False
+        scope = current.get('scope', {})
+        ratio = scope.get('ratio') or {}
+        measures = scope.get('measure_conditions') or []
+        if (scope.get('unresolved') or scope.get('any_conditions')
+                or len(measures) != 1 or measures[0].get('op') != 'eq'):
+            return False
+        outcome = arguments.get('outcome_column')
+        group = arguments.get('group_column')
+        required = set(current.get('required_columns', []))
+        if (outcome != ratio.get('column') or measures[0].get('column') != outcome
+                or arguments.get('success_value') != measures[0].get('value')
+                or arguments.get('layout') != current.get('count_rate_layout')
+                or not group or group == outcome
+                or not {group, outcome}.issubset(info.columns)
+                or not {group, outcome}.issubset(required)):
+            return False
+        return self._scope_valid(info, current)
+
     @staticmethod
     def _source_key(source):
         import sqlglot
@@ -927,8 +990,14 @@ class RecoveryMiddleware(AgentMiddleware):
     def _valid_card(self, card, current, dataset_id):
         if not card.image.startswith(b'\x89PNG\r\n\x1a\n'): return False
         if card.dataset_id != dataset_id: return False
-        if current.get('kind') and card.kind != current['kind']: return False
-        expected = current.get('required_columns') or current.get('columns', [])
+        expected_kind = current.get('count_rate_layout') or current.get('kind')
+        if expected_kind and card.kind != expected_kind: return False
+        if current.get('count_rate_layout') and current.get('count_rate_group_column'):
+            ratio = current.get('scope', {}).get('ratio') or {}
+            expected = [current['count_rate_group_column'], ratio.get('column')]
+            expected = [column for column in expected if column]
+        else:
+            expected = current.get('required_columns') or current.get('columns', [])
         # Predicate columns restrict the rows; they need not be chart axes.
         if self._has_scope(current):
             filters = {c['column'] for c in (current['scope'].get('conditions', [])
@@ -1028,6 +1097,7 @@ class RecoveryMiddleware(AgentMiddleware):
 
     def _complete(self, current):
         if current.get('data_load'): return bool(current.get('load_evidence_id'))
+        if current.get('count_rate_layout') and not current.get('count_rate_evidence'): return False
         if current.get('join') and not current.get('join_evidence'): return False
         if current.get('time_series_frequency') and not current.get('time_series_evidence'): return False
         if current.get('statistical_kind') and not current.get('statistical_evidence'): return False
@@ -1569,8 +1639,62 @@ class RecoveryMiddleware(AgentMiddleware):
                          'weight_column': current['plan']['weight_column']}
             if not any(c.get('name') == 'render_histogram' and c.get('args') == arguments for c in calls.values()):
                 return {'name': 'render_histogram', 'args': arguments}
+        if (self.context and current.get('count_rate_layout')
+                and not current.get('count_rate_evidence')
+                and not current.get('fresh_source_required')):
+            scope = current.get('scope', {})
+            ratio = scope.get('ratio') or {}
+            measures = scope.get('measure_conditions') or []
+            outcome = ratio.get('column')
+            required = list(current.get('required_columns', []))
+            groups = [column for column in required if column != outcome]
+            explicit_groups = [column for column in current.get('explicit_columns', [])
+                               if column != outcome and column in groups]
+            if len(groups) != 1 and len(explicit_groups) == 1:
+                groups = explicit_groups
+            candidates = [info for info in self.context.datasets.metadata.values()
+                if info.grain == 'raw' and not info.aggregation
+                and outcome and len(groups) == 1
+                and {groups[0], outcome}.issubset(info.columns)
+                and self._source_matches(info, current)
+                and self._fresh_for_request(info, current)
+                and (current.get('current_result_only')
+                    or (info.coverage == 'complete' and info.predicate_known))]
+            if (len(candidates) == 1 and len(measures) == 1
+                    and measures[0].get('column') == outcome
+                    and measures[0].get('op') == 'eq'):
+                info = candidates[0]
+                frame = self.context.datasets.frames[info.id]
+                group = groups[0]
+                current['count_rate_group_column'] = group
+                observed = {str(value).strip().casefold()
+                            for value in frame[group].dropna().unique().tolist()}
+                month_tokens = {
+                    'jan','january','feb','february','mar','march','apr','april','may',
+                    'jun','june','jul','july','aug','august','sep','sept','september',
+                    'oct','october','nov','november','dec','december'}
+                if observed and observed.issubset(month_tokens):
+                    sorting = 'calendar_month'
+                elif _dtype_family(frame[group].dtype) == 'numeric':
+                    sorting = 'group_ascending'
+                else:
+                    sorting = 'count_descending'
+                arguments = {
+                    'dataset_id':info.id,
+                    'group_column':group,
+                    'outcome_column':outcome,
+                    'success_value':measures[0].get('value'),
+                    'layout':current['count_rate_layout'],
+                    'sort':sorting,
+                    'top_n':50,
+                }
+                if (self._count_rate_scope_valid(info, arguments, current)
+                        and not any(c.get('name') == 'render_count_rate_chart'
+                                    and c.get('args') == arguments for c in calls.values())):
+                    return {'name':'render_count_rate_chart', 'args':arguments}
         if (self.context and current.get('chart') and not current.get('time_series_frequency')
                 and current.get('kind') in {'bar', 'line', 'scatter', 'boxplot'}
+                and not current.get('count_rate_layout')
                 and not current.get('fresh_source_required') and not current.get('artifact_ids')):
             columns = current.get('required_columns', [])
             candidates = [info for info in self.context.datasets.metadata.values()
@@ -1985,9 +2109,11 @@ class RecoveryMiddleware(AgentMiddleware):
             except (KeyError, OSError, ValueError, TypeError):
                 return True
             return self._valid_card(card, current, card.dataset_id)
-        if call.get('name') in {'recommend_chart_images', 'render_chart_spec', 'render_histogram'} and self.context:
+        if call.get('name') in {'recommend_chart_images', 'render_chart_spec', 'render_count_rate_chart', 'render_histogram'} and self.context:
             info = self.context.datasets.metadata.get(arguments.get('dataset_id'))
             if info is None: return True  # The tool adapter reports unknown IDs.
+            if call.get('name') == 'render_count_rate_chart':
+                return self._count_rate_scope_valid(info, arguments, current)
             if call.get('name') == 'render_chart_spec':
                 return self._chart_scope_valid(info, arguments, current)
             column = arguments.get('value_column') or (
@@ -2074,7 +2200,7 @@ class RecoveryMiddleware(AgentMiddleware):
         started = current.pop('model_started_at', None)
         if started: current['model_seconds'] += max(0, time.time() - started)
         for call in last.tool_calls:
-            if call['name'] in {'recommend_chart_images', 'render_chart_spec', 'render_histogram', 'show_chart'}: current['chart'] = True
+            if call['name'] in {'recommend_chart_images', 'render_chart_spec', 'render_count_rate_chart', 'render_histogram', 'show_chart'}: current['chart'] = True
             if call['name'] == 'join_datasets': current['join'] = True
             if call['name'] == 'statistical_test': current['statistical_kind'] = call.get('args', {}).get('test')
             if call['name'] == 'prepare_time_series' and not current.get('time_series_frequency'):
@@ -2129,7 +2255,7 @@ class RecoveryMiddleware(AgentMiddleware):
             '시간 재집계는 prepare_time_series로 datetime 파싱·timezone·중복 시각·gap·빈도·lineage를 확인한 뒤 파생 dataset을 render_chart_spec으로 그리세요. '
             '가설 검정과 평균 신뢰구간은 statistical_test의 구조화 결과가 완료 증거입니다. 표본 수·결측·가정·효과크기·신뢰구간을 확인하세요. '
             '이상치 기준과 건수는 detect_outliers의 구조화 결과가 완료 증거입니다. IQR·Z-score·MAD·분위수 기준, tail, 결측과 coverage를 확인하세요. '
-            '요청한 출처, 컬럼, 집계와 필터를 유지하세요. 지정 차트와 수정은 render_chart_spec을 사용하고, 원격 데이터가 필요한 히스토그램은 prepare_histogram(source, column, where_sql)을 사용하세요. '
+            '요청한 출처, 컬럼, 집계와 필터를 유지하세요. 지정 차트와 수정은 render_chart_spec을 사용하고, 그룹별 전체 건수와 명시된 성공값 비율의 이중축·2열 패널은 render_count_rate_chart를 사용하세요. 원격 데이터가 필요한 히스토그램은 prepare_histogram(source, column, where_sql)을 사용하세요. '
             '이 도구는 먼저 재사용 가능한 보유 데이터를 찾고, 부족한 경우에만 승인형 로딩과 렌더링 계획을 만듭니다. '
             'query_databricks 호출이 승인 카드를 생성하며 실제 조회는 사용자 승인을 기다립니다. '
             '동일한 실패 호출을 반복하거나 증거 없이 완료했다고 말하지 마세요.')

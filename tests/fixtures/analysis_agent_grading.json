@@ -69,6 +69,10 @@
     "L2_058": {"kind": "statistical", "test": "independent_t", "columns": ["Fare", "Survived"], "statistic_variable": "t_stat", "p_value_variable": "p_val"},
     "L2_059": {"kind": "statistical_mean_ci", "test": "mean_ci", "columns": ["balance"], "estimate_variable": "mean_b", "ci_variable": "ci"},
     "L2_060": {"kind": "statistical", "test": "chi_square", "columns": ["default", "loan"], "statistic_variable": "chi2", "p_value_variable": "p_val", "df_variable": "dof"},
+    "L2_061": {"kind": "chart_count_rate", "variable": "m_stats", "group_column": "month", "count_column": "총접촉", "rate_column": "가입률", "outcome_column": "y", "success_value": "yes", "layout": "dual_axis", "sort": "calendar_month"},
+    "L2_064": {"kind": "chart_count_rate", "variable": "job_stats", "group_column": "job", "count_column": "고객수", "rate_column": "가입률", "outcome_column": "y", "success_value": "yes", "layout": "dual_axis", "sort": "count_descending"},
+    "L2_065": {"kind": "chart_count_rate", "variable": "pc_stats", "group_column": "Pclass", "count_column": "승객수", "rate_column": "생존율", "outcome_column": "Survived", "success_value": 1, "layout": "dual_axis", "sort": "group_ascending"},
+    "L2_066": {"kind": "chart_count_rate", "variable": "day_stats", "group_column": "day", "count_column": "접촉수", "rate_column": "가입률", "outcome_column": "y", "success_value": "yes", "layout": "dual_axis", "sort": "group_ascending"},
     "L2_068": {"kind": "chart_line_counts", "variable": "cumsum_months", "column": "month", "sort": "calendar_month", "cumulative": true}
   }
 }
