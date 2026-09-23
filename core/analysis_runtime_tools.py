@@ -27,6 +27,7 @@ from utils.analysis_statistics import statistical_test as run_statistical_test
 from utils.analysis_outliers import (
     detect_outliers as run_outlier_detection,
     select_outlier_rows as run_outlier_selection,
+    winsorize_numeric_summary as run_winsorization,
 )
 from utils.analysis_timeseries import prepare_time_series as build_time_series
 from utils.analysis_aggregate import aggregate_dataset as build_aggregate_dataset
@@ -172,6 +173,16 @@ def build_analysis_tools(context: AnalysisToolContext) -> list[ToolDefinition]:
             selection=selection,
             tail=tail,
             threshold=threshold,
+            lower_quantile=lower_quantile,
+            upper_quantile=upper_quantile,
+        )
+
+    def winsorize_numeric(dataset_id, column, lower_quantile=0.01,
+                          upper_quantile=0.99):
+        return run_winsorization(
+            datasets,
+            dataset_id,
+            column=column,
             lower_quantile=lower_quantile,
             upper_quantile=upper_quantile,
         )
@@ -524,6 +535,12 @@ def build_analysis_tools(context: AnalysisToolContext) -> list[ToolDefinition]:
               "lower_quantile": {"type":"number","minimum":0,"maximum":1},
               "upper_quantile": {"type":"number","minimum":0,"maximum":1}},
              ["dataset_id","column","method"], select_outlier_rows),
+        tool("winsorize_numeric", "로딩된 raw dataset의 수치 컬럼을 지정한 하·상위 분위수 경계로 clip하고 원본/보정 평균·최솟값·최댓값과 실제 clip 건수를 구조화해 비교합니다. 원본 dataset을 변경하거나 행을 반환하지 않습니다.",
+             {"dataset_id": string,
+              "column": string,
+              "lower_quantile": {"type":"number","exclusiveMinimum":0,"maximum":0.25},
+              "upper_quantile": {"type":"number","minimum":0.75,"exclusiveMaximum":1}},
+             ["dataset_id","column"], winsorize_numeric),
         tool("prepare_time_series", "로딩된 raw dataset의 실제 시간 컬럼을 검증하고 hour/day/week/month 단위로 제한된 재집계를 수행합니다. timezone, 파싱 실패, 중복 시각, 빈 구간, group cardinality와 출력 행 한도를 검사하며 부모 lineage를 가진 aggregate dataset을 저장합니다. 숫자 epoch 단위나 DST 충돌을 추측하지 않습니다.",
              {"dataset_id": string,
               "time_column": string,

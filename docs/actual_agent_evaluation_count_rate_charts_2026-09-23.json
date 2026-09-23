@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-09-23T13:10:20.547501+00:00",
+  "generated_at": "2026-09-23T13:50:27.494075+00:00",
   "status": "PASS",
   "runtime": "core.analysis_agent.runtime.GraphAnalysisRuntime",
   "cases": [
@@ -69,7 +69,7 @@
       "evidence": {
         "charts": [
           {
-            "chart_id": "7790bb1c-0ef2-4093-94f7-e3875ad46260",
+            "chart_id": "0552f053-8310-433a-b587-9d311ec5a782",
             "png_sha256": "260d8c9512160fc9a6b7aa27045e4c3d8ebbbaee177d0159cda0ce56f43646bb",
             "kind": "dual_axis",
             "columns": [
@@ -179,7 +179,7 @@
       "evidence": {
         "charts": [
           {
-            "chart_id": "aec0c249-3425-4bd9-b234-34bcaafdbbb1",
+            "chart_id": "91b8e9fb-ab9f-416b-a761-7f9c9d4ea125",
             "png_sha256": "7acbcf02e779f15c3b5a59228326552b495578dafbd09c402b4381813b5672b7",
             "kind": "dual_axis",
             "columns": [
@@ -289,7 +289,7 @@
       "evidence": {
         "charts": [
           {
-            "chart_id": "768c6e7d-096b-4919-9054-ade61c4f7369",
+            "chart_id": "d0949f57-5146-4397-a2a2-40ad857088be",
             "png_sha256": "157464dcc08b3b2a4ad056c261c151e8fdf2a2694b16874aadefd8638fc6dd69",
             "kind": "dual_axis",
             "columns": [
@@ -336,7 +336,7 @@
       "evidence": {
         "charts": [
           {
-            "chart_id": "b7fe4237-79d9-4a40-aacc-f6d354b7df84",
+            "chart_id": "734ba5b7-4320-4b14-b2d7-b891ff201d54",
             "png_sha256": "3bc28b77b6f717d0d1527c5d6312541fc419196ae25f7eff9770d7c74485e500",
             "kind": "dual_axis",
             "columns": [
@@ -566,16 +566,126 @@
           }
         ]
       }
+    },
+    {
+      "name": "unchanged L2_089 prompt",
+      "reference_id": "L2_089",
+      "status": "PASS",
+      "tools": {
+        "render_count_rate_chart": 1
+      },
+      "model_calls": 0,
+      "remote_executions": 0,
+      "evidence": {
+        "charts": [
+          {
+            "chart_id": "ff28b562-795c-40bc-80ec-7b6ec24eaa00",
+            "png_sha256": "68f115bfc4592f97dd61ddbbd4eca3f2c1196cda6e8ce9757e58a0abbb3b4407",
+            "kind": "split_panel",
+            "columns": [
+              "month",
+              "y"
+            ],
+            "data_sha256": "7a2528e9103b9b5439f49feeefcca579140590851eb986444798ae6a0acb92fa",
+            "points": [
+              {
+                "group": "jan",
+                "row_count": 69,
+                "denominator_count": 69,
+                "success_count": 10,
+                "rate_percent": 14.492753623188406
+              },
+              {
+                "group": "feb",
+                "row_count": 128,
+                "denominator_count": 128,
+                "success_count": 17,
+                "rate_percent": 13.28125
+              },
+              {
+                "group": "mar",
+                "row_count": 19,
+                "denominator_count": 19,
+                "success_count": 2,
+                "rate_percent": 10.526315789473685
+              },
+              {
+                "group": "apr",
+                "row_count": 100,
+                "denominator_count": 100,
+                "success_count": 13,
+                "rate_percent": 13.0
+              },
+              {
+                "group": "may",
+                "row_count": 625,
+                "denominator_count": 625,
+                "success_count": 88,
+                "rate_percent": 14.08
+              },
+              {
+                "group": "jun",
+                "row_count": 204,
+                "denominator_count": 204,
+                "success_count": 29,
+                "rate_percent": 14.215686274509803
+              },
+              {
+                "group": "jul",
+                "row_count": 297,
+                "denominator_count": 297,
+                "success_count": 33,
+                "rate_percent": 11.11111111111111
+              },
+              {
+                "group": "aug",
+                "row_count": 298,
+                "denominator_count": 298,
+                "success_count": 45,
+                "rate_percent": 15.100671140939598
+              },
+              {
+                "group": "sep",
+                "row_count": 17,
+                "denominator_count": 17,
+                "success_count": 3,
+                "rate_percent": 17.647058823529413
+              },
+              {
+                "group": "oct",
+                "row_count": 41,
+                "denominator_count": 41,
+                "success_count": 5,
+                "rate_percent": 12.195121951219512
+              },
+              {
+                "group": "nov",
+                "row_count": 168,
+                "denominator_count": 168,
+                "success_count": 20,
+                "rate_percent": 11.904761904761905
+              },
+              {
+                "group": "dec",
+                "row_count": 34,
+                "denominator_count": 34,
+                "success_count": 5,
+                "rate_percent": 14.705882352941176
+              }
+            ]
+          }
+        ]
+      }
     }
   ],
-  "passed": 5,
-  "total": 5,
+  "passed": 6,
+  "total": 6,
   "model_calls": 0,
   "remote_executions": 0,
-  "elapsed_seconds": 8.668,
+  "elapsed_seconds": 12.491,
   "limitations": [
     "Local fixtures; no Databricks or browser execution",
-    "L2_061, L2_064, L2_065 and L2_066 increase primary independent grading coverage to 72/200",
+    "L2_061, L2_064, L2_065, L2_066 and L2_089 are covered by the count/rate contract",
     "General 2x2 dashboards and arbitrary multi-measure panels remain ungraded"
   ]
 }

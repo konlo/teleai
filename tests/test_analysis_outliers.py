@@ -88,6 +88,38 @@ class AnalysisOutlierTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             self.tools["detect_outliers"](constant.id, "value", "iqr")
 
+    def test_winsorization_compares_exact_means_without_mutating_source(self):
+        before = self.frame.copy(deep=True)
+        result = self.tools["winsorize_numeric"](
+            self.info.id, "value", lower_quantile=0.1, upper_quantile=0.9)
+        evidence = result["winsorization_result"]
+        clean = self.frame["value"].dropna().astype(float)
+        lower, upper = clean.quantile([0.1, 0.9])
+        expected = clean.clip(lower=lower, upper=upper)
+        self.assertEqual(result["status"], "ready")
+        self.assertEqual(evidence["kind"], "winsorization_comparison")
+        self.assertAlmostEqual(evidence["thresholds"]["lower"], lower)
+        self.assertAlmostEqual(evidence["thresholds"]["upper"], upper)
+        self.assertAlmostEqual(evidence["original"]["mean"], clean.mean())
+        self.assertAlmostEqual(evidence["winsorized"]["mean"], expected.mean())
+        self.assertEqual(evidence["clipped_counts"]["lower"], int(clean.lt(lower).sum()))
+        self.assertEqual(evidence["clipped_counts"]["upper"], int(clean.gt(upper).sum()))
+        pd.testing.assert_frame_equal(self.frame, before)
+        self.assertNotIn("rows", result)
+        self.assertNotIn("preview", result)
+
+    def test_winsorization_rejects_aggregate_constant_and_unsafe_bounds(self):
+        with self.assertRaises(ValueError):
+            self.tools["winsorize_numeric"](self.info.id, "value", 0, 0.99)
+        with self.assertRaises(ValueError):
+            self.tools["winsorize_numeric"](self.info.id, "value", 0.3, 0.7)
+        aggregated = self.store.register(
+            pd.DataFrame({"value": [1, 2, 3, 4]}), source="fixture.outliers",
+            coverage="complete", predicate_known=True, grain="aggregate",
+            aggregation="SELECT AVG(value) FROM data")
+        with self.assertRaises(ValueError):
+            self.tools["winsorize_numeric"](aggregated.id, "value", 0.01, 0.99)
+
     def test_unambiguous_iqr_and_sigma_prompts_route_without_model(self):
         prompts = {
             "iqr": "fixture.outliers의 value IQR과 상한선 1.5*IQR 초과 이상치 수를 알려줘",
@@ -128,6 +160,31 @@ class AnalysisOutlierTests(unittest.TestCase):
             reopened = GraphAnalysisRuntime(root, "owner", "restart-outlier", ForbiddenModel())
             try:
                 self.assertEqual(reopened.inspect()["recovery"]["outlier_evidence"], before)
+            finally:
+                reopened.close()
+
+    def test_unambiguous_winsorization_routes_without_model_and_survives_restart(self):
+        with tempfile.TemporaryDirectory() as root:
+            runtime = GraphAnalysisRuntime(root, "owner", "winsorization", ForbiddenModel())
+            runtime.datasets.register(
+                self.frame.copy(), source="fixture.outliers", coverage="complete",
+                predicate_known=True, snapshot="fixture:v1")
+            try:
+                outcome = runtime.submit(
+                    "fixture.outliers의 value 극단치 왜곡을 줄이도록 상하위 10% 윈저화(Clipping)를 적용하고 원본 평균과 보정 평균을 비교해줘")
+                self.assertEqual(outcome["status"], "answered", outcome)
+                recovery = runtime.inspect()["recovery"]
+                self.assertEqual(recovery["model_calls"], 0)
+                evidence = recovery["winsor_evidence"]["winsorization_result"]
+                self.assertEqual(evidence["parameters"], {
+                    "lower_quantile": 0.1, "upper_quantile": 0.9})
+                self.assertIsNone(recovery["outlier_spec"])
+                before = recovery["winsor_evidence"]
+            finally:
+                runtime.close()
+            reopened = GraphAnalysisRuntime(root, "owner", "winsorization", ForbiddenModel())
+            try:
+                self.assertEqual(reopened.inspect()["recovery"]["winsor_evidence"], before)
             finally:
                 reopened.close()
 

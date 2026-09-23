@@ -119,7 +119,7 @@ class ActualAgentEvaluationTests(unittest.TestCase):
         self.assertEqual(result["evidence"]["counterfactual_probes"], 2)
 
     def test_every_declared_reference_oracle_is_executable_without_a_model(self):
-        self.assertEqual(len(self.grading), 72)
+        self.assertEqual(len(self.grading), 74)
         self.assertTrue(set(self.grading).issubset(self.specs))
         for case, grading in self.grading.items():
             with self.subTest(case=case):
@@ -200,13 +200,21 @@ class ActualAgentEvaluationTests(unittest.TestCase):
                 self.assertEqual(result["remote_executions"], 0)
 
     def test_count_rate_dual_axis_uses_real_png_and_exact_denominators(self):
-        for case in ("L2_061", "L2_064", "L2_065", "L2_066"):
+        for case in ("L2_061", "L2_064", "L2_065", "L2_066", "L2_089"):
             with self.subTest(case=case):
                 result = self.evaluate(case, EvaluationModel())
                 self.assertEqual(result["status"], "PASS", result)
                 self.assertEqual(result["tools"], {"render_count_rate_chart": 1})
                 self.assertEqual(result["runtime_metadata"]["recovery_model_calls"], 0)
                 self.assertEqual(result["remote_executions"], 0)
+
+    def test_winsorization_matches_reference_without_model_or_mutation(self):
+        result = self.evaluate("L2_096", EvaluationModel())
+        self.assertEqual(result["status"], "PASS", result)
+        self.assertEqual(result["tools"], {"winsorize_numeric": 1})
+        self.assertEqual(result["runtime_metadata"]["recovery_model_calls"], 0)
+        self.assertEqual(result["remote_executions"], 0)
+        self.assertEqual(len(result["evidence"]["comparisons"]), 1)
 
     def test_scalar_reductions_are_computed_from_reference_objects(self):
         self.assertEqual(reference_oracle(self.specs["L1_005"], self.grading["L1_005"], self.frames),

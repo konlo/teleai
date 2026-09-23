@@ -99,7 +99,7 @@ def evaluate() -> dict:
     grading = load_grading()
     frames = load_frames()
     cases = [arbitrary]
-    for reference_id in ("L2_061", "L2_064", "L2_065", "L2_066"):
+    for reference_id in ("L2_061", "L2_064", "L2_065", "L2_066", "L2_089"):
         result = evaluate_case(
             specs[reference_id], grading[reference_id], ForbiddenModel(), frames=frames)
         cases.append({
@@ -124,7 +124,7 @@ def evaluate() -> dict:
         "elapsed_seconds": round(time.monotonic() - started, 3),
         "limitations": [
             "Local fixtures; no Databricks or browser execution",
-            "L2_061, L2_064, L2_065 and L2_066 increase primary independent grading coverage to 72/200",
+            "L2_061, L2_064, L2_065, L2_066 and L2_089 are covered by the count/rate contract",
             "General 2x2 dashboards and arbitrary multi-measure panels remain ungraded",
         ],
     }

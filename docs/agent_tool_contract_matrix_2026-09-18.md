@@ -42,6 +42,7 @@
 | `statistical_test` | 완료 | 완료 | 원격 실행 없음 | 완료 | 완료 | 6개 선언형 방법, raw grain·dtype·그룹 수·분산·범위 fail-closed |
 | `detect_outliers` | 완료 | 완료 | 원격 실행 없음 | 완료 | 완료 | IQR·Z-score·MAD·분위수, tail·임계값·raw grain·dtype·표본·변이 fail-closed |
 | `select_outlier_rows` | 완료 | 완료 | 원격 실행 없음 | 완료 | 완료 | 원시 행 비노출, parent·snapshot·predicate·행 수·digest 보존, child dataset 후속 계산 고정 |
+| `winsorize_numeric` | 완료 | 완료 | 원격 실행 없음 | 완료 | 완료 | raw 수치 컬럼, 하·상위 분위수, clip 건수, 원본/보정 평균·범위, 원본 불변 계약 |
 | `query_databricks` | 완료 | 완료 | 정확한 fingerprint별 HITL, 불명 제출 자동 재실행 금지 | 완료 | 완료 | 원격 연결이 있을 때만 등록 |
 
 `propose_databricks_query`는 registry 호환 정의에는 남아 있지만 production LangGraph에서는 등록하지 않는다. production은 `query_databricks`와 `HumanInTheLoopMiddleware`를 사용한다.
@@ -61,12 +62,13 @@
 - `aggregate_dataset`은 임의 source와 `anomaly_value`·`segment_code`·`score_value`에서 IQR 이상치 cohort의 전체 평균과 그룹 TOP-N, 정상 cohort의 그룹 평균을 계산했다. production graph의 frame이 독립 pandas oracle 2/2에 일치했고 모델·원격 호출은 0회였다. aggregate grain, 비수치 measure, group cardinality와 출력 한도 위반은 새 dataset 생성 전에 차단하며 재시작 후 2단계 lineage도 복원한다.
 - 변경하지 않은 `L2_037`의 평균 연령과 직업 TOP 3도 같은 구조화 결과·lineage·digest를 독립 reference와 비교해 주 평가에 편입했다. 독립 채점 범위는 67/200이며 모델·원격 호출은 0회다.
 - `compare_group_aggregates`는 같은 source·snapshot과 ancestor 관계를 실행 전에 강제한다. 변경하지 않은 `L2_038`의 12개 직업별 전체·이상치 제외 평균, 차이, 변화율이 독립 reference와 일치했고 서로 무관한 dataset, snapshot 불일치, 비수치 measure, 0 기준 변화율을 fail-closed/명시적 NaN으로 처리한다. 독립 채점 범위는 68/200이다.
-- `render_count_rate_chart`는 그룹별 전체 행 수, outcome 비결측 분모, 명시적 성공값의 성공수와 성공률을 하나의 구조화 결과에 묶어 dual-axis 또는 split-panel PNG를 만든다. 변경하지 않은 `L2_061`·`L2_064`·`L2_065`·`L2_066`과 임의 schema fixture가 독립 pandas oracle에 일치했고 모델·원격 호출은 0회였다. 독립 채점 범위는 72/200이다.
-- application tests 156/156, migration tests 126/126, actual-agent evaluation harness 43/43, Level 3 17/17, 전체 참고 runner 217/217가 통과했다. compileall과 `git diff --check`는 같은 변경의 정적 gate로 실행한다.
+- `render_count_rate_chart`는 그룹별 전체 행 수, outcome 비결측 분모, 명시적 성공값의 성공수와 성공률을 하나의 구조화 결과에 묶어 dual-axis 또는 split-panel PNG를 만든다. 변경하지 않은 `L2_061`·`L2_064`·`L2_065`·`L2_066`·`L2_089`와 임의 schema fixture가 독립 pandas oracle에 일치했고 모델·원격 호출은 0회였다.
+- `winsorize_numeric`은 raw 수치 컬럼에 사용자가 지정한 양쪽 quantile clipping을 적용해 경계·clip 건수·원본/보정 평균과 범위를 구조화한다. 원본을 변경하지 않으며 변경하지 않은 `L2_096`과 임의 schema fixture가 독립 pandas oracle에 일치했다. 독립 채점 범위는 74/200이다.
+- application tests 160/160, migration tests 126/126, actual-agent evaluation harness 44/44, Level 3 17/17, 전체 참고 runner 217/217가 통과했다. compileall과 `git diff --check`는 같은 변경의 정적 gate로 실행한다.
 
 ## 남은 tool 공백
 
 P0의 공통 계약, dataset profile, 승인형 source discovery와 P1의 제한된 chart spec·다중 dataset join·구조화 통계 검정·직접 이상치 탐지·bounded cohort 후속 계산은 구현됐다. 범용 분석 범위를 넓히려면 다음을 별도 release candidate로 구현해야 한다.
 
-1. winsorization, 범용 다중 패널 차트와 결과 내보내기 중 미채점 사용자 의도에 필요한 tool. 그룹별 건수+성공률 dual-axis/split-panel은 완료했다.
+1. 범용 다중 패널 차트, 피벗·소계와 결과 내보내기 중 미채점 사용자 의도에 필요한 tool. 그룹별 건수+성공률 dual-axis/split-panel과 winsorization은 완료했다.
 2. source discovery의 승인 완료·거절·재시작 전용 사용자 여정 확대. 현재 공통 `query_databricks` 계약은 검증됐지만 discovery 결과 전용 승인 후 실행 테스트는 실제 원격 없이 추가할 수 있다.

@@ -32,6 +32,94 @@ def dataset_digest(frame: pd.DataFrame) -> str:
     return sha256(encoded_columns + hashed).hexdigest()
 
 
+def winsorize_numeric_summary(
+    store: DatasetStore,
+    dataset_id: str,
+    *,
+    column: str,
+    lower_quantile: float = 0.01,
+    upper_quantile: float = 0.99,
+) -> dict[str, Any]:
+    """Compare an observed numeric column with bounded quantile clipping.
+
+    The transformed values stay inside this function. Only aggregate evidence
+    is returned, which prevents a preprocessing request from silently replacing
+    the user's current dataset or exposing raw rows.
+    """
+    if not (0 < float(lower_quantile) < float(upper_quantile) < 1):
+        raise ValueError("윈저화 경계는 0 < lower < upper < 1이어야 합니다.")
+    if float(lower_quantile) > 0.25 or float(upper_quantile) < 0.75:
+        raise ValueError("윈저화는 각 tail의 최대 25%까지만 허용합니다.")
+    info = store.metadata[dataset_id]
+    frame = store.frames[dataset_id]
+    if info.grain != "raw" or info.aggregation:
+        raise ValueError("윈저화 비교는 집계되지 않은 raw dataset에서만 실행합니다.")
+    if column not in frame.columns or not is_numeric_dtype(frame[column]):
+        raise ValueError("column은 dataset에 존재하는 수치형 컬럼이어야 합니다.")
+    clean = frame[column].dropna().astype(float)
+    if len(clean) < 4:
+        raise ValueError("윈저화 비교에는 결측 제외 관측치가 최소 4개 필요합니다.")
+    if not np.isfinite(clean.to_numpy()).all():
+        raise ValueError("수치 컬럼에 무한대가 있어 윈저화를 계산할 수 없습니다.")
+    if clean.nunique() < 2:
+        raise ValueError("값의 변이가 없어 윈저화 효과를 계산할 수 없습니다.")
+
+    lower = float(clean.quantile(float(lower_quantile)))
+    upper = float(clean.quantile(float(upper_quantile)))
+    clipped = clean.clip(lower=lower, upper=upper)
+    original_mean = float(clean.mean())
+    winsorized_mean = float(clipped.mean())
+    result = {
+        "kind": "winsorization_comparison",
+        "column": column,
+        "parameters": {
+            "lower_quantile": float(lower_quantile),
+            "upper_quantile": float(upper_quantile),
+        },
+        "thresholds": {"lower": _number(lower), "upper": _number(upper)},
+        "sample": {
+            "input_rows": len(frame),
+            "valid_rows": len(clean),
+            "missing_rows": len(frame) - len(clean),
+        },
+        "clipped_counts": {
+            "lower": int(clean.lt(lower).sum()),
+            "upper": int(clean.gt(upper).sum()),
+            "total": int(clean.lt(lower).sum() + clean.gt(upper).sum()),
+        },
+        "original": {
+            "mean": _number(original_mean),
+            "minimum": _number(clean.min()),
+            "maximum": _number(clean.max()),
+        },
+        "winsorized": {
+            "mean": _number(winsorized_mean),
+            "minimum": _number(clipped.min()),
+            "maximum": _number(clipped.max()),
+        },
+        "mean_change": _number(winsorized_mean - original_mean),
+        "missing_policy": "대상 컬럼의 결측 행을 제외",
+        "boundary_policy": "경계 밖의 값만 경계값으로 clip하고 경계와 같은 값은 유지",
+        "source": info.source,
+        "coverage": info.coverage,
+        "grain": info.grain,
+        "snapshot": info.snapshot,
+        "warnings": [],
+    }
+    if info.coverage != "complete":
+        result["warnings"].append("현재 dataset이 전체 원본을 포함하지 않아 경계와 평균은 보유 범위에만 적용됩니다.")
+    return {
+        "status": "ready",
+        "dataset_id": dataset_id,
+        "winsorization_result": result,
+        "scope": (
+            f"{info.source}의 로딩된 raw dataset {len(frame):,}행 중 유효값 {len(clean):,}개에 "
+            f"quantile clipping을 적용해 원본과 보정 평균을 비교했습니다. coverage={info.coverage}; "
+            f"snapshot={info.snapshot or 'unknown'}."
+        ),
+    }
+
+
 def detect_outliers(
     store: DatasetStore,
     dataset_id: str,

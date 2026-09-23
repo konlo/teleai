@@ -162,8 +162,15 @@ class RecoveryMiddleware(AgentMiddleware):
                 statistical_kind = 'mean_ci'
             else:
                 statistical_kind = None
+            winsor_spec = None
+            if not chart and re.search(r'윈저화|winsori[sz]|clipping|\bclip\b', text, re.I):
+                quantile_match = re.search(
+                    r'(?:상\s*[·ㆍ]?\s*하위|상하위|양쪽)\s*(\d+(?:\.\d+)?)\s*%', text, re.I)
+                if quantile_match and 0 < float(quantile_match.group(1)) <= 25:
+                    fraction = float(quantile_match.group(1)) / 100
+                    winsor_spec = {'lower_quantile':fraction, 'upper_quantile':1-fraction}
             outlier_spec = None
-            if not chart:
+            if not chart and not winsor_spec:
                 if re.search(r'\bIQR\b|사분위\s*범위', text, re.I) and re.search(
                         r'이상치|극단치|상한|하한|fence|기준선', text, re.I):
                     match = re.search(r'(\d+(?:\.\d+)?)\s*\*?\s*IQR', text, re.I)
@@ -249,6 +256,7 @@ class RecoveryMiddleware(AgentMiddleware):
                 key=lambda name: (text.find(name) if text.find(name) >= 0 else len(text), name))
             mentioned_columns = [name for name in names if mentioned_column(name)]
             mentioned_columns.sort(key=lambda name: (text.find(name) if text.find(name) >= 0 else len(text), name))
+            winsor_column = mentioned_columns[0] if winsor_spec and len(mentioned_columns) == 1 else None
             operations = []
             for pattern, operation in [(r'평균|\b(?:mean|average|avg)\b', 'AVG'),
                     (r'합계|총합|\bsum\b', 'SUM'), (r'중앙값|\bmedian\b', 'MEDIAN'),
@@ -261,6 +269,8 @@ class RecoveryMiddleware(AgentMiddleware):
             if re.search(r'비율|성공률|생존율|전환율|[가-힣A-Za-z]+[율률]|\b(?:ratio|rate|percentage|percent)\b',
                          objective_text, re.I): operations.append('RATIO')
             if count_request and 'COUNT' not in operations: operations.append('COUNT')
+            if winsor_spec:
+                calculation, operations = False, []
             time_series_aggregation = None
             if time_series_frequency:
                 operation_to_aggregation = {
@@ -389,6 +399,8 @@ class RecoveryMiddleware(AgentMiddleware):
             current = dict(request_id=human.id, attempts=0, chart=chart, kind=kind,
                 join=join_requested, join_how=join_how,
                 statistical_kind=statistical_kind,
+                winsor_spec=winsor_spec,
+                winsor_column=winsor_column,
                 outlier_spec=outlier_spec,
                 outlier_column=outlier_column,
                 outlier_followup=outlier_followup,
@@ -451,6 +463,7 @@ class RecoveryMiddleware(AgentMiddleware):
                 # envelope.  Natural-language scope extraction from the reason
                 # text would invent an analysis obligation.
                 current.update(chart=False,kind=None,join=False,join_how=None,statistical_kind=None,outlier_spec=None,
+                    winsor_spec=None,winsor_column=None,
                     outlier_column=None,outlier_followup=False,outlier_selection='outliers',
                     outlier_group_column=None,outlier_metric_column=None,
                     outlier_metric_aggregation=None,outlier_aggregate_mode=None,
@@ -511,6 +524,7 @@ class RecoveryMiddleware(AgentMiddleware):
             # observation may already be marked processed, so the loop below
             # is also allowed to reconsider that single observation.
             current.update(data_load=True,chart=False,kind=None,join=False,join_how=None,statistical_kind=None,outlier_spec=None,
+                winsor_spec=None,winsor_column=None,
                 outlier_column=None,outlier_followup=False,outlier_selection='outliers',
                 outlier_group_column=None,outlier_metric_column=None,
                 outlier_metric_aggregation=None,outlier_aggregate_mode=None,
@@ -532,6 +546,7 @@ class RecoveryMiddleware(AgentMiddleware):
                 ('model_calls', 0), ('model_seconds', 0.0), ('columns', []),
                 ('outlier_aggregate_evidence', {}), ('count_rate_evidence', None),
                 ('count_rate_layout', None), ('count_rate_group_column', None),
+                ('winsor_evidence', None), ('winsor_spec', None), ('winsor_column', None),
                 ('explicit_columns', [])]:
             current.setdefault(key, default)
         start = next((i for i, m in enumerate(messages) if human and m.id == human.id), 0)
@@ -690,6 +705,31 @@ class RecoveryMiddleware(AgentMiddleware):
                              or (info.coverage == 'complete' and info.predicate_known))
                         and self._statistical_scope_valid(info, arguments, current)):
                     current['statistical_evidence'] = observation
+                    current['failed'].pop(name, None)
+            if name == 'winsorize_numeric' and observation.get('status') == 'ready':
+                dataset_id = arguments.get('dataset_id')
+                info = self.context.datasets.metadata.get(dataset_id) if self.context and dataset_id else None
+                result = observation.get('winsorization_result', {})
+                spec = current.get('winsor_spec') or {}
+                sample = result.get('sample', {})
+                valid = (
+                    info is not None
+                    and dataset_id == observation.get('dataset_id')
+                    and result.get('kind') == 'winsorization_comparison'
+                    and result.get('column') == arguments.get('column') == current.get('winsor_column')
+                    and arguments.get('lower_quantile') == spec.get('lower_quantile')
+                    and arguments.get('upper_quantile') == spec.get('upper_quantile')
+                    and result.get('parameters', {}).get('lower_quantile') == spec.get('lower_quantile')
+                    and result.get('parameters', {}).get('upper_quantile') == spec.get('upper_quantile')
+                    and sample.get('input_rows') == info.rows
+                    and sample.get('valid_rows', 0) + sample.get('missing_rows', -1) == info.rows
+                    and self._source_matches(info, current)
+                    and self._fresh_for_request(info, current)
+                    and (current.get('current_result_only')
+                         or (info.coverage == 'complete' and info.predicate_known))
+                    and self._scope_valid(info, current))
+                if valid:
+                    current['winsor_evidence'] = observation
                     current['failed'].pop(name, None)
             if name in {'detect_outliers', 'select_outlier_rows'} and observation.get('status') == 'ready':
                 parent_id = arguments.get('dataset_id')
@@ -1101,6 +1141,7 @@ class RecoveryMiddleware(AgentMiddleware):
         if current.get('join') and not current.get('join_evidence'): return False
         if current.get('time_series_frequency') and not current.get('time_series_evidence'): return False
         if current.get('statistical_kind') and not current.get('statistical_evidence'): return False
+        if current.get('winsor_spec') and not current.get('winsor_evidence'): return False
         if current.get('outlier_spec') and not current.get('outlier_evidence'): return False
         if current.get('outlier_aggregate_requested'):
             evidence = current.get('outlier_aggregate_evidence', {})
@@ -1228,6 +1269,23 @@ class RecoveryMiddleware(AgentMiddleware):
                 line += "\n관측치 독립성은 데이터만으로 검증할 수 없습니다."
             line += f"\n분석 범위: {evidence.get('scope')}"
             parts.append(line)
+        if current.get('winsor_evidence'):
+            evidence = current['winsor_evidence']
+            result = evidence['winsorization_result']
+            sample = result['sample']
+            clipped = result['clipped_counts']
+            line = (
+                f"{result['column']}에 하위 {result['parameters']['lower_quantile']:.2%}, "
+                f"상위 {1-result['parameters']['upper_quantile']:.2%} 윈저화를 적용해 비교했습니다. "
+                f"유효값 {sample['valid_rows']:,}개, 결측 제외 {sample['missing_rows']:,}개.\n"
+                f"경계: {result['thresholds']['lower']} ~ {result['thresholds']['upper']}; "
+                f"하한 clip {clipped['lower']:,}개, 상한 clip {clipped['upper']:,}개.\n"
+                f"원본 평균 {result['original']['mean']}, 보정 평균 {result['winsorized']['mean']}, "
+                f"평균 변화 {result['mean_change']}.\n분석 범위: {evidence.get('scope')}"
+            )
+            if result.get('warnings'):
+                line += "\n주의: " + " ".join(result['warnings'])
+            parts.append(line)
         if current.get('outlier_evidence'):
             evidence = current['outlier_evidence']
             result = evidence['outlier_result']
@@ -1335,6 +1393,31 @@ class RecoveryMiddleware(AgentMiddleware):
         return {'recovery': current, 'messages': [message]}
 
     def _next_local(self, current, calls):
+        if (self.context and current.get('winsor_spec')
+                and not current.get('winsor_evidence') and not self._has_scope(current)):
+            column = current.get('winsor_column')
+            candidates = [info for info in self.context.datasets.metadata.values()
+                if info.grain == 'raw' and not info.aggregation
+                and column and column in info.columns
+                and self._source_matches(info, current)
+                and self._fresh_for_request(info, current)
+                and (current.get('current_result_only')
+                    or (info.coverage == 'complete' and info.predicate_known))]
+            if len(candidates) == 1:
+                info = candidates[0]
+                frame = self.context.datasets.frames[info.id]
+                from pandas.api.types import is_numeric_dtype
+                if is_numeric_dtype(frame[column]):
+                    spec = current['winsor_spec']
+                    arguments = {
+                        'dataset_id':info.id,
+                        'column':column,
+                        'lower_quantile':spec['lower_quantile'],
+                        'upper_quantile':spec['upper_quantile'],
+                    }
+                    if not any(c.get('name') == 'winsorize_numeric' and c.get('args') == arguments
+                               for c in calls.values()):
+                        return {'name':'winsorize_numeric', 'args':arguments}
         if (self.context and current.get('time_series_frequency')
                 and not current.get('time_series_evidence') and not self._has_scope(current)):
             required = list(current.get('required_columns', []))
@@ -2048,7 +2131,8 @@ class RecoveryMiddleware(AgentMiddleware):
         current, calls = self._state(state)
         if (current.get('data_load') or current.get('plan') or current.get('join')
                 or current.get('time_series_frequency') or current.get('statistical_kind')
-                or current.get('outlier_spec') or current.get('chart') or current.get('calculation')
+                or current.get('winsor_spec') or current.get('outlier_spec')
+                or current.get('chart') or current.get('calculation')
                 or current.get('metadata_kind') or current.get('profile_kind')) and self._complete(current):
             return {**self._finish(current), 'jump_to': 'end'}
         reason = self._limit_reason(current)
@@ -2125,6 +2209,15 @@ class RecoveryMiddleware(AgentMiddleware):
         if call.get('name') == 'prepare_time_series' and self.context:
             info = self.context.datasets.metadata.get(arguments.get('dataset_id'))
             return (True if info is None else not self._has_scope(current)
+                    and self._scope_valid(info, current))
+        if call.get('name') == 'winsorize_numeric' and self.context:
+            info = self.context.datasets.metadata.get(arguments.get('dataset_id'))
+            if info is None:
+                return True
+            spec = current.get('winsor_spec') or {}
+            return (arguments.get('column') == current.get('winsor_column')
+                    and arguments.get('lower_quantile') == spec.get('lower_quantile')
+                    and arguments.get('upper_quantile') == spec.get('upper_quantile')
                     and self._scope_valid(info, current))
         if call.get('name') == 'aggregate_dataset' and self.context:
             info = self.context.datasets.metadata.get(arguments.get('dataset_id'))
@@ -2203,6 +2296,12 @@ class RecoveryMiddleware(AgentMiddleware):
             if call['name'] in {'recommend_chart_images', 'render_chart_spec', 'render_count_rate_chart', 'render_histogram', 'show_chart'}: current['chart'] = True
             if call['name'] == 'join_datasets': current['join'] = True
             if call['name'] == 'statistical_test': current['statistical_kind'] = call.get('args', {}).get('test')
+            if call['name'] == 'winsorize_numeric' and not current.get('winsor_spec'):
+                current['winsor_spec'] = {
+                    'lower_quantile':call.get('args', {}).get('lower_quantile', 0.01),
+                    'upper_quantile':call.get('args', {}).get('upper_quantile', 0.99),
+                }
+                current['winsor_column'] = call.get('args', {}).get('column')
             if call['name'] == 'prepare_time_series' and not current.get('time_series_frequency'):
                 current['time_series_frequency'] = call.get('args', {}).get('frequency')
                 current['time_series_aggregation'] = call.get('args', {}).get('aggregation')
@@ -2248,12 +2347,14 @@ class RecoveryMiddleware(AgentMiddleware):
             missing_join=bool(current.get('join') and not current.get('join_evidence')),
             missing_time_series=bool(current.get('time_series_frequency') and not current.get('time_series_evidence')),
             missing_statistical_test=bool(current.get('statistical_kind') and not current.get('statistical_evidence')),
+            missing_winsorization=bool(current.get('winsor_spec') and not current.get('winsor_evidence')),
             missing_outlier_detection=bool(current.get('outlier_spec') and not current.get('outlier_evidence')))
         instruction = ('이전 응답은 완료 증거가 없어 채택되지 않았습니다. 원래 사용자 요청을 계속 수행하세요. '
             '수치/통계는 local_analysis_sql의 실제 계산 결과가 필요하고 결측·고유값·기초 통계는 profile_dataset의 구조화 결과가 필요합니다. 테이블 설명이나 미리보기는 계산 증거가 아닙니다. '
             '두 로딩 dataset의 결합은 join_datasets로 cardinality와 lineage를 확인해야 합니다. many-to-many 차단을 우회하지 말고 먼저 한쪽 grain을 명확히 하세요. '
             '시간 재집계는 prepare_time_series로 datetime 파싱·timezone·중복 시각·gap·빈도·lineage를 확인한 뒤 파생 dataset을 render_chart_spec으로 그리세요. '
             '가설 검정과 평균 신뢰구간은 statistical_test의 구조화 결과가 완료 증거입니다. 표본 수·결측·가정·효과크기·신뢰구간을 확인하세요. '
+            '윈저화는 winsorize_numeric의 구조화 결과로 경계·clip 건수·원본/보정 평균을 확인하세요. 원본 dataset을 변경하지 마세요. '
             '이상치 기준과 건수는 detect_outliers의 구조화 결과가 완료 증거입니다. IQR·Z-score·MAD·분위수 기준, tail, 결측과 coverage를 확인하세요. '
             '요청한 출처, 컬럼, 집계와 필터를 유지하세요. 지정 차트와 수정은 render_chart_spec을 사용하고, 그룹별 전체 건수와 명시된 성공값 비율의 이중축·2열 패널은 render_count_rate_chart를 사용하세요. 원격 데이터가 필요한 히스토그램은 prepare_histogram(source, column, where_sql)을 사용하세요. '
             '이 도구는 먼저 재사용 가능한 보유 데이터를 찾고, 부족한 경우에만 승인형 로딩과 렌더링 계획을 만듭니다. '

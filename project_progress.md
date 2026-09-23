@@ -3,12 +3,12 @@
 ## Current Status
 - **Last Updated**: 2026-09-23
 - **Status**: In Progress — 배포 preflight까지 검증한 1인용 제한 출시 후보
-- **Summary**: 공통 tool 결과 계약, bounded profile·chart·multi-dataset join·구조화 통계 검정·직접 이상치 탐지, 계보가 있는 cohort 집계·원본 비교, runtime schema 기반 datetime 시계열과 그룹별 건수·성공률 복합 차트를 production graph에 연결했다. application 156/156, migration 126/126, actual-agent evaluation harness 43/43, Level 3 17/17, 전체 참고 runner 217/217 PASS다. 실제 agent 독립 채점은 72/200이다.
-- **Next Session Focus**: 배포 대상·실제 호스트 gate·smoke/rollback → 남은 128문항 oracle와 범용 다중 패널·winsorization.
+- **Summary**: 공통 tool 결과 계약, bounded profile·chart·multi-dataset join·구조화 통계 검정·직접 이상치 탐지, cohort 집계·원본 비교, datetime 시계열, 그룹별 count/rate 차트와 원본 불변 winsorization을 production graph에 연결했다. application 160/160, migration 126/126, actual-agent evaluation harness 44/44, Level 3 17/17, 전체 참고 runner 217/217 PASS다. 실제 agent 독립 채점은 74/200이다.
+- **Next Session Focus**: 배포 대상·실제 호스트 gate·smoke/rollback → 남은 126문항 oracle와 범용 다중 패널·피벗·소계.
 
 ## Next Action Items
 - [x] 제품 승인 카드에서 사용자가 승인한 실제 Databricks 조회 → 저장 → 분석 → 후속 질문을 검증했다.
-- [ ] 남은 128문항의 독립 oracle과 고급 분석 도구 범위를 우선순위별로 확대한다.
+- [ ] 남은 126문항의 독립 oracle과 고급 분석 도구 범위를 우선순위별로 확대한다.
 - [ ] 로컬 단일·동시 용량 gate와 RSS 기준은 완료했다. 실제 배포 호스트와 Ollama 동시 추론으로 기준을 보정한다.
 - [x] 현재 변경을 `agentic-analysis-rc4-2026-09-15` release candidate로 커밋·push하고 원격 release gate 성공 후 tag로 고정했다.
 - [x] 컬럼 metadata 복구를 `agentic-analysis-rc5-2026-09-15`로 고정했다. GitHub Actions run `34978831986`이 성공했다.
@@ -28,6 +28,18 @@
 - [x] 수치값+범주의 그룹 박스플롯을 실제 PNG·입력 digest로 검증하고 전체 범주 라벨과 부분 필터를 구별했다.
 - [x] 숫자축 빈도 선과 영문 월의 calendar 정렬·누적 곡선을 실제 PNG·plot data digest로 검증했다.
 - [x] `render_count_rate_chart`로 그룹별 전체 건수와 명시적 성공률을 dual-axis/split-panel PNG, 분모·성공수·digest와 함께 검증했다.
+
+
+---
+
+## [2026-09-23 22:37:39 KST] [Agent: Codex] User Request: 남은 작업 계속 진행
+- **Request**: 남아 있는 agent 기능과 독립 평가 작업을 다음 우선순위부터 계속 수행한다.
+- **Action**: 미채점 128문항을 재분류하고 반복도가 높은 사용자 의도를 table-neutral bounded tool, production recovery, 독립 oracle과 회귀 테스트로 구현한다.
+- **Safety**: 로컬 fixture와 이미 로딩된 DataFrame만 사용하며 Databricks 조회나 schema refresh는 실행하지 않는다.
+- **Implementation**: `winsorize_numeric`을 공통 registry와 production recovery에 연결했다. 실제 runtime schema의 단일 수치 컬럼과 사용자가 명시한 양쪽 quantile만 사용하고, raw grain·유효 표본·유한값·tail 최대 25%를 검증한다. 원본 DataFrame은 변경하지 않으며 경계·clip 건수·원본/보정 평균과 범위만 반환한다.
+- **Evaluation**: 변경하지 않은 `L2_089` 월별 count/rate 2열 패널과 `L2_096` balance 상하위 1% winsorization이 독립 pandas reference에 일치했다. 임의 source·임의 컬럼 winsorization에서도 정확한 경계와 평균, 원본 불변, 재시작 복원을 확인했다. 모든 여정은 model 0회·remote 0회다.
+- **Validation**: application 160/160, migration 126/126, actual-agent harness 44/44, Level 3 17/17, 전체 runner 217/217 PASS. 독립 채점은 74/200이며 미채점은 126문항이다.
+- **Artifacts**: `docs/actual_agent_evaluation_count_rate_charts_2026-09-23.json`, `docs/actual_agent_evaluation_winsorization_2026-09-23.json`.
 
 ---
 
@@ -426,8 +438,8 @@
 ## Current Status
 - **Last Updated**: 2026-09-23
 - **Status**: Limited-scope Release Candidate Validation
-- **Summary**: R14의 공통 tool 결과 계약, dataset profile, 승인형 source discovery, 제한된 chart spec, bounded multi-dataset join, 구조화 statistical test, 직접 outlier detection, bounded cohort 집계·원본 비교, runtime schema 기반 datetime 시계열과 count/rate 복합 차트를 완료했다. application 156 + migration 126 = 282/282, actual-agent evaluation harness 43/43, 참고 코드 217/217, agentic recovery 17/17 PASS다. 실제 agent 독립 채점은 72/200이므로 전체 기능 출시는 계속 NO-GO다.
-- **Next Session Focus**: 배포 대상·실제 호스트 검증 → 남은 128문항 oracle와 범용 다중 패널·winsorization. Canonical list: docs/agent_remaining_tasks_2026-09-13.md.
+- **Summary**: R14의 공통 tool 결과 계약, dataset profile, 승인형 source discovery, 제한된 chart spec, bounded multi-dataset join, 구조화 statistical test, outlier/cohort 분석, datetime 시계열, count/rate 복합 차트와 winsorization을 완료했다. application 160 + migration 126 = 286/286, actual-agent evaluation harness 44/44, 참고 코드 217/217, agentic recovery 17/17 PASS다. 실제 agent 독립 채점은 74/200이므로 전체 기능 출시는 계속 NO-GO다.
+- **Next Session Focus**: 배포 대상·실제 호스트 검증 → 남은 126문항 oracle와 범용 다중 패널·피벗·소계. Canonical list: docs/agent_remaining_tasks_2026-09-13.md.
 
 ## Next Action Items (Pending tasks for the next session)
 - [x] R01: Connect grounded request scope to calculation/chart/recovery and reject wrong or unresolved scope.
@@ -436,8 +448,8 @@
 - [x] R04: Restart the server with the 205/205-tested code and verify the visible app.
 - [ ] R05: Local p95/RSS capacity gate is READY; recalibrate it on the selected deployment host and measure concurrent Ollama inference.
 - [x] R06: Validate 750,000-row storage, cache eviction, restart/crash recovery and retained PNG.
-- [ ] R07: Expand independent actual-agent grading beyond 72/200 supported cases.
-- [ ] R08: Bounded join, grouped boxplots, structured statistical tests, direct outlier detection, cohort follow-up/comparison, ordered lines, datetime time-series, and grouped count/rate dual-axis/split-panel are complete; implement general multi-panel dashboards and winsorization as prioritized.
+- [ ] R07: Expand independent actual-agent grading beyond 74/200 supported cases.
+- [ ] R08: Bounded join, grouped boxplots, structured statistics, outlier/cohort analysis, ordered lines, datetime time-series, grouped count/rate panels and winsorization are complete; implement general multi-panel dashboards and pivot/subtotal analysis as prioritized.
 - [x] R09: Approved live Databricks load/reuse validated and release candidate tag fixed.
 - [x] R10: Remove production dependencies on fixed table/schema facts and validate schema drift and freshness behavior.
 - [ ] R11: Deployment contract and preflight are ready; review draft PR #68, merge, choose the target, and verify smoke/rollback there.
@@ -452,10 +464,10 @@ Task definitions and acceptance conditions: docs/agent_remaining_tasks_2026-09-1
 ## Daily Wrap-ups
 
 ### 2026-09-23 Daily Summary
-- **Work completed**: Added table-neutral `prepare_time_series`, bounded `aggregate_dataset`, `compare_group_aggregates`, and `render_count_rate_chart` for cohort aggregates/comparison plus grouped count/rate dual-axis or split-panel PNGs. They preserve source, snapshot, digest, cardinality, denominator and restart contracts.
-- **Evidence**: Time-series, arbitrary-schema cohort/count-rate journeys and unchanged `L2_037`, `L2_038`, `L2_061`, `L2_064`, `L2_065`, `L2_066` matched independent pandas oracles with zero model and remote calls. Application 156/156, migration 126/126, actual-agent 43/43, Level 3 17/17, and full runner 217/217 passed.
-- **Remaining**: Independent grading is 72/200 with 128 cases ungraded. General multi-panel dashboards, winsorization, PR review/merge/deployment, selected-host capacity and smoke/rollback gates remain. Four stale production TableContexts still require separate user-approved refreshes.
-- **Reports**: `docs/actual_agent_evaluation_time_series_2026-09-23.json`, `docs/actual_agent_evaluation_cohort_aggregates_2026-09-23.json`, `docs/actual_agent_evaluation_count_rate_charts_2026-09-23.json`.
+- **Work completed**: Added table-neutral `prepare_time_series`, bounded cohort aggregation/comparison, grouped count/rate charts and original-preserving `winsorize_numeric`. They preserve source, snapshot, digest, denominator, quantile boundary and restart contracts.
+- **Evidence**: Arbitrary-schema journeys and unchanged `L2_037`, `L2_038`, `L2_061`, `L2_064`, `L2_065`, `L2_066`, `L2_089`, `L2_096` matched independent pandas oracles with zero model and remote calls. Application 160/160, migration 126/126, actual-agent 44/44, Level 3 17/17, and full runner 217/217 passed.
+- **Remaining**: Independent grading is 74/200 with 126 cases ungraded. General multi-panel dashboards, pivot/subtotal analysis, PR review/merge/deployment, selected-host capacity and smoke/rollback gates remain. Four stale production TableContexts still require separate user-approved refreshes.
+- **Reports**: `docs/actual_agent_evaluation_time_series_2026-09-23.json`, `docs/actual_agent_evaluation_cohort_aggregates_2026-09-23.json`, `docs/actual_agent_evaluation_count_rate_charts_2026-09-23.json`, `docs/actual_agent_evaluation_winsorization_2026-09-23.json`.
 
 ### 2026-09-22 Daily Summary
 - **Work completed**: Added bounded `select_outlier_rows` and deterministic cohort follow-up. Extended `render_chart_spec` and recovery with table-neutral numeric frequency lines plus validated English calendar-month cumulative curves. Reproduced and fixed a live single-scalar timeout, preserved measures across predicate follow-ups, and made this path depend only on runtime schema metadata.

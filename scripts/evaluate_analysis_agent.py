@@ -267,6 +267,41 @@ def reference_oracle(spec, grading, frames):
                 raise ValueError("Reference chart values differ from the raw-data contract")
             return {"data_sha256": _frame_digest(contract), "rows": len(contract),
                     "records": contract.to_dict(orient="records")}
+        if grading["kind"] == "winsorization":
+            source = namespace[grading["source_variable"]]
+            clipped = namespace[grading["clipped_variable"]]
+            if not isinstance(source, pd.DataFrame) or grading["column"] not in source:
+                raise ValueError("Reference winsorization source is invalid")
+            if not isinstance(clipped, pd.Series):
+                raise ValueError("Reference clipped values must be a Series")
+            clean = source[grading["column"]].dropna().astype(float)
+            lower = float(namespace[grading["lower_variable"]])
+            upper = float(namespace[grading["upper_variable"]])
+            expected_lower = float(clean.quantile(grading["lower_quantile"]))
+            expected_upper = float(clean.quantile(grading["upper_quantile"]))
+            expected_clipped = clean.clip(lower=expected_lower, upper=expected_upper)
+            actual_clipped = clipped.dropna().astype(float)
+            if (not np.isclose(lower, expected_lower, rtol=1e-12, atol=1e-12)
+                    or not np.isclose(upper, expected_upper, rtol=1e-12, atol=1e-12)
+                    or len(actual_clipped) != len(expected_clipped)
+                    or not np.allclose(actual_clipped.to_numpy(), expected_clipped.to_numpy(),
+                                       rtol=1e-12, atol=1e-12)):
+                raise ValueError("Reference winsorization differs from the raw-data contract")
+            return {
+                "input_rows": len(source),
+                "valid_rows": len(clean),
+                "missing_rows": len(source) - len(clean),
+                "lower": lower,
+                "upper": upper,
+                "lower_clipped": int(clean.lt(lower).sum()),
+                "upper_clipped": int(clean.gt(upper).sum()),
+                "original_mean": float(clean.mean()),
+                "original_minimum": float(clean.min()),
+                "original_maximum": float(clean.max()),
+                "winsorized_mean": float(expected_clipped.mean()),
+                "winsorized_minimum": float(expected_clipped.min()),
+                "winsorized_maximum": float(expected_clipped.max()),
+            }
         if grading["kind"] == "metadata_columns":
             columns = namespace[grading["variable"]]
             if not isinstance(columns, list) or not columns or not all(isinstance(value, str) for value in columns):
@@ -765,6 +800,63 @@ def grade_evidence(runtime, outcome, spec, grading, oracle, fixture_id, capture)
         return (("PASS", "Count/rate chart PNG and numerator/denominator evidence match the reference",
                  {"charts": matches}) if matches else
                 ("FAIL", "Missing grounded count/rate chart or grouped values differ from reference", {}))
+    if grading["kind"] == "winsorization":
+        matches = []
+        for message in runtime.events():
+            if not isinstance(message, ToolMessage) or message.name != "winsorize_numeric":
+                continue
+            try:
+                observation = json.loads(message.content)
+                result = observation["winsorization_result"]
+                dataset_id = observation["dataset_id"]
+                info = runtime.datasets.metadata[dataset_id]
+                sample = result["sample"]
+                counts = result["clipped_counts"]
+                original = result["original"]
+                clipped = result["winsorized"]
+                grounded = (
+                    observation.get("status") == "ready"
+                    and info.source == spec["target_table"]
+                    and info.coverage == "complete" and info.predicate_known
+                    and info.grain == "raw" and not info.aggregation
+                    and _fixture_descendant(runtime, dataset_id, fixture_id)
+                    and result.get("kind") == "winsorization_comparison"
+                    and result.get("column") == grading["column"]
+                    and result.get("parameters") == {
+                        "lower_quantile": grading["lower_quantile"],
+                        "upper_quantile": grading["upper_quantile"]}
+                    and sample == {
+                        "input_rows": oracle["input_rows"],
+                        "valid_rows": oracle["valid_rows"],
+                        "missing_rows": oracle["missing_rows"]}
+                    and counts.get("lower") == oracle["lower_clipped"]
+                    and counts.get("upper") == oracle["upper_clipped"]
+                    and counts.get("total") == oracle["lower_clipped"] + oracle["upper_clipped"])
+                numeric_pairs = [
+                    (result["thresholds"]["lower"], oracle["lower"]),
+                    (result["thresholds"]["upper"], oracle["upper"]),
+                    (original["mean"], oracle["original_mean"]),
+                    (original["minimum"], oracle["original_minimum"]),
+                    (original["maximum"], oracle["original_maximum"]),
+                    (clipped["mean"], oracle["winsorized_mean"]),
+                    (clipped["minimum"], oracle["winsorized_minimum"]),
+                    (clipped["maximum"], oracle["winsorized_maximum"]),
+                    (result["mean_change"],
+                     oracle["winsorized_mean"] - oracle["original_mean"]),
+                ]
+                if grounded and all(np.isclose(float(actual), float(expected),
+                                               rtol=1e-12, atol=1e-12)
+                                    for actual, expected in numeric_pairs):
+                    matches.append({"dataset_id":dataset_id,
+                                    "thresholds":result["thresholds"],
+                                    "clipped_counts":counts,
+                                    "original":original,
+                                    "winsorized":clipped})
+            except (KeyError, TypeError, ValueError):
+                continue
+        return (("PASS", "Winsorization boundaries and before/after statistics match the reference",
+                 {"comparisons": matches}) if matches else
+                ("FAIL", "Missing grounded winsorization evidence or values differ from reference", {}))
     if grading["kind"] == "histogram":
         matches = []
         for chart_id in state["chart_ids"]:
