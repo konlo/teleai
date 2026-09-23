@@ -1378,3 +1378,4 @@ Task definitions and acceptance conditions: docs/agent_remaining_tasks_2026-09-1
 - **Validation** [Agent: Codex]: application 166/166, migration 126/126, actual-agent harness 45/45, Level 3 17/17, 전체 runner 217/217, pivot evaluator 14/14, compileall·`git diff --check` PASS. Databricks 조회는 실행하지 않았다.
 - **Artifact** [Agent: Codex]: `docs/actual_agent_evaluation_pivots_2026-09-24.json`과 tool audit·contract matrix·remaining tasks를 갱신했다.
 - **Remaining** [Agent: Codex]: 독립 채점 113문항, 피벗 계열의 구간화·다중 지표 요약 5문항, 범용 다중 패널, 검증된 결과 내보내기, 실제 배포 호스트 검증이 남았다.
+- **Remote gate** [Agent: Codex]: commit `ecf1feb`을 `codex/agentic-analysis-rc-2026-09-14`에 push했고 원격 SHA 일치를 확인했다. PR #68의 GitHub Actions release gate run `35926556192`가 migration, application, agentic recovery, 전체 reference suite와 compile 단계를 모두 통과했다.

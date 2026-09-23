@@ -14,7 +14,7 @@
 | R08 | P2 | 고급 분석·차트·스킬 범위 | 진행 중 | 전체 행·IN·공통조건+OR·백분율·피어슨 상관, 5종 차트와 그룹 박스플롯, 숫자축 빈도 선·영문 월 누적 곡선, bounded join, 6개 구조화 통계 방법, 이상치 탐지와 bounded cohort 후속 계산을 검증. datetime 재집계, cohort 비교, dual-axis/split-panel, winsorization, bounded 피벗·교차표를 검증. 범용 다중 패널, 다중 지표·구간화 소계와 결과 내보내기는 미검증 |
 | R09 | P1 | 운영 승인 여정과 출시 판정 | 완료 | 실제 승인·1회 조회·10,000행 저장·로컬 분석 재사용 완료. RC3 보존, 원격 gate 성공한 `cd40480`에 RC4 tag 고정·push |
 | R10 | P0 | 특정 테이블·스키마 의존 제거 | 완료 | production 테이블 하드코딩 제거, stale schema 차단, 동적 loader, schema fingerprint, 최신 원본 캐시 우회와 승인 대기 검증 |
-| R11 | P0 | 제한 출시 후보 승격 | 진행 중 | RC7 tag `e31150f`, draft PR #68, GitHub run `35095497759` 성공. secret-safe preflight와 1인용 배포·용량·smoke·rollback 계약 준비. 대상 확정, 코드 리뷰/병합과 실제 환경 검증 남음 |
+| R11 | P0 | 제한 출시 후보 승격 | 진행 중 | draft PR #68의 피벗 보강 commit `ecf1feb`, GitHub run `35926556192` 성공. secret-safe preflight와 1인용 배포·용량·smoke·rollback 계약 준비. 대상 확정, 코드 리뷰/병합과 실제 환경 검증 남음 |
 | R12 | P1 | 운영 TableContext 준비 | 부분 완료 | bank_loan 18/18·titanic 12/12 alias 준비. 네 테이블 모두 stale여서 각각 승인형 schema refresh 필요 |
 | R13 | P1 | 평가 환경 정비 | 완료 | SciPy/NumPy 호환 수정 후 Level 1·2 참고 코드 200/200 PASS. 임의 placeholder를 제거하고 production agentic recovery 계약 17/17 PASS를 `--level 3`에 연결 |
 | R14 | P0 | agent tool 계약·기능 공백 보강 | P0·P1 핵심 완료 | 공통 출력 schema, `profile_dataset`, 승인형 source discovery, bounded chart·join·`statistical_test`·`detect_outliers`·`select_outlier_rows` 완료 |
