@@ -41,6 +41,8 @@
 - **Validation**: application 156/156, migration 126/126, actual-agent harness 43/43, Level 3 17/17, 전체 runner 217/217 PASS. 독립 채점은 72/200으로 증가했고 미채점은 128문항이다.
 - **Additional Check**: 기존 `test_scenario.py` 전체 실행은 현재 router가 후속 시각화 요청에 `SQL Builder`와 `EDA Analyst`를 함께 선택해 오래된 단일-agent 기대값 1건과 불일치했다(6/7). 공식 release gate와 이번 production graph 회귀는 모두 통과했으며, 이 legacy 기대값은 별도 정합화 대상으로 남긴다.
 - **Artifact**: `docs/actual_agent_evaluation_count_rate_charts_2026-09-23.json`.
+- **Remote Gate**: code·evaluation commit `1566d4f`를 PR #68 브랜치에 push했다. GitHub Actions run `35866152204`, job `107198128397`가 migration, application, agentic recovery, 전체 runner와 compile 검사를 1분 42초에 모두 통과했다.
+- **Runtime**: 최신 code commit으로 `127.0.0.1:8502`의 실제 chatbot을 재시작했고 `/_stcore/health`가 `ok`를 반환했다.
 
 ---
 
