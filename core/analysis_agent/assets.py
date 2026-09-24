@@ -1,18 +1,24 @@
-"""Local scoped assets. SQLite transactions bind metadata and Parquet/PNG payloads.
+"""Local scoped assets. SQLite binds metadata, legacy BLOBs and chart payloads.
+
+New remote datasets are staged as Parquet files, then published after validation.
 
 Scope identities must come from a trusted controller, not model arguments.
 """
 from collections import OrderedDict
 from collections.abc import Mapping, MutableMapping
-from dataclasses import asdict
+from dataclasses import asdict, replace
 from hashlib import sha256
 from io import BytesIO
 import json
+import os
 from pathlib import Path
 import sqlite3
 from threading import RLock
+from uuid import uuid4
 
 import pandas as pd
+import pyarrow as pa
+import pyarrow.parquet as pq
 from utils.analysis_datasets import DatasetStore, DatasetInfo, Condition
 from utils.analysis_charts import ChartPreview
 
@@ -43,6 +49,39 @@ class AssetDB:
             if preview is not None:
                 self.conn.execute('INSERT INTO dataset_previews VALUES (?,?)',
                     (key,json.dumps(preview,ensure_ascii=False)))
+
+    def put_staged_dataset(self, key, metadata, staged_path, *, preview):
+        """Publish a verified Parquet candidate without loading it as a BLOB."""
+        destination = self.directory / f'{key}.parquet'
+        if staged_path.parent != self.directory or destination.exists():
+            raise ValueError('저장 후보 경로가 유효하지 않습니다.')
+        with self.lock:
+            current = sum(path.stat().st_size for path in self.directory.iterdir() if path.is_file())
+            if self.max_scope_bytes is not None and current > self.max_scope_bytes:
+                raise MemoryError('이 대화의 저장 공간 한도를 초과합니다. 기존 결과를 보존했습니다.')
+            os.replace(staged_path, destination)
+            try:
+                with self.conn:
+                    self.conn.execute('INSERT INTO assets VALUES (?,?,?,NULL)',
+                        (key, 'dataset', json.dumps(metadata, ensure_ascii=False)))
+                    self.conn.execute('INSERT INTO dataset_previews VALUES (?,?)',
+                        (key, json.dumps(preview, ensure_ascii=False)))
+            except BaseException:
+                destination.unlink(missing_ok=True)
+                raise
+
+    def dataset_file(self, key):
+        with self.lock:
+            row = self.conn.execute('SELECT payload FROM assets WHERE id=? AND kind=?',
+                                    (key, 'dataset')).fetchone()
+        if row is None:
+            raise KeyError('로컬 자산이 없거나 만료되었습니다. 자동 재조회하지 않습니다.')
+        if row[0] is not None:
+            return None  # Legacy SQLite BLOB.
+        path = self.directory / f'{key}.parquet'
+        if not path.is_file():
+            raise FileNotFoundError('저장된 데이터 파일이 없습니다. 자동 재조회하지 않습니다.')
+        return path
 
     def dataset_preview(self,key):
         """Read the small display sample without decoding the stored frame."""
@@ -98,8 +137,12 @@ class FrameCache(Mapping):
             if key in self.cache:
                 frame,size=self.cache.pop(key);self.cache[key]=(frame,size)
                 return frame.copy(deep=True)
-            _,payload=self.db.get(key,'dataset')
-            frame=pd.read_parquet(BytesIO(payload))
+            path=self.db.dataset_file(key)
+            if path is None:
+                _,payload=self.db.get(key,'dataset')
+                frame=pd.read_parquet(BytesIO(payload))
+            else:
+                frame=pd.read_parquet(path)
             size=int(frame.memory_usage(index=True,deep=True).sum())
             while self.cache and self.bytes+size>self.budget:
                 _,(_,old)=self.cache.popitem(last=False);self.bytes-=old
@@ -109,6 +152,14 @@ class FrameCache(Mapping):
             # This newly decoded frame is not retained by the store. Returning
             # it directly preserves isolation without a second full allocation.
             return frame
+
+    def project(self, key, columns):
+        """Read only requested Parquet columns; leave the full-frame cache cold."""
+        path = self.db.dataset_file(key)
+        if path is None:
+            _, payload = self.db.get(key, 'dataset')
+            return pd.read_parquet(BytesIO(payload), columns=list(columns))
+        return pd.read_parquet(path, columns=list(columns))
 
 
 class PersistentDatasets(DatasetStore):
@@ -149,6 +200,96 @@ class PersistentDatasets(DatasetStore):
                   for column,value in row.items()} for row in sample.to_dict(orient='records')]
         self.db.put(info.id,'dataset',asdict(info),buffer.getvalue(),preview=preview)
         return info
+
+    def inspect(self, dataset_id):
+        info = self.metadata[dataset_id]
+        path = self.db.dataset_file(dataset_id)
+        if path is None:
+            frame = self.frames[dataset_id]
+            dtypes = frame.dtypes.astype(str).to_dict()
+        else:
+            schema = pq.ParquetFile(path).schema_arrow
+            dtypes = {}
+            for field in schema:
+                if field.name in info.columns:
+                    try:
+                        dtypes[field.name] = str(pd.Series(dtype=field.type.to_pandas_dtype()).dtype)
+                    except (TypeError, NotImplementedError):
+                        dtypes[field.name] = str(field.type)
+        return {'dataset': asdict(info), 'dtypes': dtypes,
+                'preview': self.db.dataset_preview(dataset_id) or []}
+
+    def register_batches(self, batches, *, columns, source, max_rows,
+                         final_provenance=None, **provenance):
+        """Stage bounded remote batches on disk and publish only after full validation.
+
+        The first batch determines Arrow types. A later incompatible type fails
+        closed, leaving every previously published dataset and selection intact.
+        """
+        if self.max_columns is not None and len(columns) > self.max_columns:
+            raise ValueError('데이터 컬럼 수가 운영 한도를 초과합니다.')
+        if not columns or len(set(columns)) != len(columns):
+            raise ValueError('데이터 컬럼 이름이 유효하지 않습니다.')
+        staged = self.db.directory / f'.{uuid4().hex}.staging.parquet'
+        writer = None
+        count = 0
+        estimated_bytes = 0
+        preview = []
+        try:
+            for batch in batches:
+                if tuple(batch.columns) != tuple(columns):
+                    raise ValueError('조회 결과 컬럼 구조가 일치하지 않습니다.')
+                if count + len(batch) > max_rows:
+                    raise ValueError('조회 후보가 행 한도를 초과했습니다.')
+                estimated_bytes += int(batch.memory_usage(index=True, deep=True).sum())
+                if self.max_frame_bytes is not None and estimated_bytes > self.max_frame_bytes:
+                    raise MemoryError('조회 결과가 데이터 메모리 한도를 초과해 발행하지 않았습니다.')
+                if len(preview) < 5:
+                    preview.extend(self._preview_rows(batch.head(5 - len(preview))))
+                table = pa.Table.from_pandas(batch, preserve_index=False)
+                if writer is None:
+                    writer = pq.ParquetWriter(staged, table.schema)
+                else:
+                    table = table.cast(writer.schema, safe=True)
+                writer.write_table(table)
+                count += len(batch)
+                if self.db.max_scope_bytes is not None:
+                    used = sum(path.stat().st_size for path in self.db.directory.iterdir()
+                               if path.is_file())
+                    if used > self.db.max_scope_bytes:
+                        raise MemoryError('이 대화의 저장 공간 한도를 초과합니다. 기존 결과를 보존했습니다.')
+            if writer is None:
+                writer = pq.ParquetWriter(staged, pa.Table.from_pandas(
+                    pd.DataFrame(columns=columns), preserve_index=False).schema)
+            writer.close()
+            writer = None
+            with staged.open('rb') as candidate_file:
+                os.fsync(candidate_file.fileno())
+            if final_provenance is not None:
+                provenance.update(final_provenance())
+            base = DatasetStore(metadata=self.metadata).register(
+                pd.DataFrame(columns=columns), source=source, **provenance)
+            info = replace(base, rows=count)
+            self.db.put_staged_dataset(info.id, asdict(info), staged, preview=preview)
+            return info
+        finally:
+            try:
+                if writer is not None:
+                    writer.close()
+            finally:
+                staged.unlink(missing_ok=True)
+
+    @staticmethod
+    def _preview_rows(frame):
+        def display(value):
+            try:
+                if bool(pd.isna(value)):
+                    return None
+            except (TypeError, ValueError):
+                pass
+            return str(value)[:256]
+        return [{str(column): display(value) for column, value in row.items()}
+                for row in frame.to_dict(orient='records')]
 
 
 class PersistentCharts(MutableMapping):

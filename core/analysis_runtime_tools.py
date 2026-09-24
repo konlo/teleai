@@ -50,6 +50,8 @@ def build_analysis_tools(context: AnalysisToolContext) -> list[ToolDefinition]:
         return resolve_table_context(context.reference_context, datasets, table)
 
     def inspect_dataset(dataset_id):
+        if hasattr(datasets, 'inspect'):
+            return datasets.inspect(dataset_id)
         info = datasets.metadata[dataset_id]
         frame = datasets.frames[dataset_id]
         return {"dataset": asdict(info), "dtypes": frame.dtypes.astype(str).to_dict(),

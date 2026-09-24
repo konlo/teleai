@@ -3,12 +3,12 @@
 ## Current Status
 - **Last Updated**: 2026-09-24
 - **Status**: In Progress — T05~T07 부분 구현, 개발 화면 검증 완료, 운영 출시 NO-GO
-- **Summary**: 원본/분기 재사용과 영속 선택, 승인 SQL 출처 결합·결과 후보 검증, SQL 집계와 EDA 기준 분리, bounded UI 미리보기, 구조화 집계 완료 근거를 보강했다. 최종 application 201/201, migration 128/128, Level 3 17/17, 참고 전체 runner 217/217 PASS. localhost 재시작 후 실제 histogram PNG와 이전 대화 복원을 확인했다.
-- **Next Session Focus**: [출시 판정](docs/release_readiness_2026-09-24.md)의 실제 Databricks 승인 여정, 디스크 staging/부분 scan, 실제 모델 반복/held-out 평가, 배포 대상·영속 볼륨·접근제어를 해결한다.
+- **Summary**: 원본/분기 재사용과 영속 선택, 승인 SQL 출처 결합·후보 검증, 원격 배치의 파일 staging, 지정 컬럼 프로파일, bounded UI 미리보기, 구조화 집계 완료 근거를 보강했다. 최종 application 205/205, migration 128/128, Level 3 17/17, 참고 전체 runner 217/217 PASS. localhost 재시작 후 실제 histogram PNG와 보유 데이터 복원을 확인했다.
+- **Next Session Focus**: [출시 판정](docs/release_readiness_2026-09-24.md)의 정확한 SQL별 Databricks 승인 여정, 나머지 분석 도구의 부분 scan, 실제 모델 반복/held-out 평가, 배포 대상·영속 볼륨·접근제어를 해결한다.
 - **Current qualification**: 실제 모델 PRES_02 수정 후 2턴 PASS이나 첫 평균 55.274초; PRES_03은 timeout과 60.569초 PASS가 모두 기록됐다. 전체 agent 자연어 성공률은 아직 없고 기존 oracle 87/200은 coverage, 113개 미채점이다. DeepEval/Spider 공식 점수·새 Databricks 조회·운영 배포 검증은 없다.
 
 ## Next Action Items
-- [ ] D07/D08의 전체 로딩 의미 검증·디스크 staging/부분 scan·나머지 차트/계획 경로의 registry 재사용을 P0로 마무리한다. 출처/결과 구조 검증과 active 원본 선택은 이번에 부분 적용했다. T06/T07 및 J21~J24: docs/data_loading_and_preservation_contract_2026-09-24.md.
+- [ ] D07/D08의 전체 로딩 의미 검증·나머지 차트/SQL/통계의 부분 scan·registry 재사용을 P0로 마무리한다. 원격 파일 staging, 출처/결과 구조 검증과 active 원본 선택은 부분 적용했다. T06/T07 및 J21~J24: docs/data_loading_and_preservation_contract_2026-09-24.md.
 - [ ] 코딩 전에 T00~T02 baseline·요구/평가 매핑·독립 acceptance를 확정한다. 상세: docs/data_agent_requirements_and_evaluation_2026-09-24.md.
 - [x] 제품 승인 카드에서 사용자가 승인한 실제 Databricks 조회 → 저장 → 분석 → 후속 질문을 검증했다.
 - [ ] 남은 113문항의 독립 oracle과 고급 분석 도구 범위를 우선순위별로 확대한다.
@@ -470,10 +470,10 @@ Task definitions and acceptance conditions: docs/agent_remaining_tasks_2026-09-1
 ## Daily Wrap-ups
 
 ### 2026-09-24 Daily Summary
-- **Work completed**: 피벗·소계 WIP 회귀와 평가/보존 계약을 정리하고, SQL·필터·히스토그램의 부모/registry 재사용과 복수 root 오선택 차단을 연결했다. active dataset 영속 상태·원본 계보·승인 SQL 실제 출처 검증·원격 결과 컬럼/배치 한도·SQL 집계와 raw 기준 분리·작은 UI 미리보기·`aggregate_dataset` 완료 근거를 구현했다.
-- **Evidence**: migration 128/128, application 201/201, Level 3 17/17, 참고 runner 217/217, compileall·diff check PASS. 실제 모델 PRES_02는 수정 후 평균→원본 histogram 2/2 PASS(추가 원격 0), PRES_03은 timeout과 60.569초 PASS 모두 기록. localhost 프로세스 재시작 뒤 합성 원본 7행의 PNG와 이전 4턴 대화를 실제 화면에서 확인했다. [출시 판정](docs/release_readiness_2026-09-24.md).
-- **Major issues**: 실제 모델 지연/편차, 전체 SQL 의미 LoadPlan과 디스크 staging/부분 scan 부재, private-single-user preflight NOT READY(영속 볼륨·접근제어), 운영 DB/DeepEval/Spider 미검증. Streamlit hot reload의 이전 세션 객체가 새 화면과 충돌했으며 프로세스 재시작으로 복구했다.
-- **Next action items**: 사용자 승인형 Databricks J22~J24 실검증, 디스크 staging/부분 scan·실제 호스트 부하, 반복/held-out 실제 모델 평가, 외부 평가/113문항 oracle, PR 리뷰/병합·배포 smoke/rollback. 출시는 차단 상태다.
+- **Work completed**: 피벗·소계 WIP 회귀와 평가/보존 계약을 정리하고, SQL·필터·히스토그램의 부모/registry 재사용과 복수 root 오선택 차단을 연결했다. active dataset 영속 상태·원본 계보·승인 SQL 실제 출처 검증·원격 결과 컬럼/배치 한도·SQL 집계와 raw 기준 분리·작은 UI 미리보기·`aggregate_dataset` 완료 근거를 구현했다. 이후 원격 배치의 파일 staging과 검증 후 발행, 파일 기반 검사·지정 컬럼 프로파일, 실패/용량 초과 시 원본 보존을 추가했다.
+- **Evidence**: migration 128/128, application 205/205, Level 3 17/17, 참고 runner 217/217, compileall·diff check PASS. 실제 모델 PRES_02/PRES_03 재검사 3/3턴 PASS(45.007/8.324/51.748초, 추가 원격 0), 이전 PRES_03 timeout도 보존. 10만 행×64열 로컬 모의 커서 적재 1.185초·32.79 MiB 파일·peak RSS 178.1 MiB. localhost 재시작 뒤 합성 원본 7행의 PNG와 대화를 화면에서 확인했다. [출시 판정](docs/release_readiness_2026-09-24.md).
+- **Major issues**: 실제 모델 지연/편차, 전체 SQL 의미 LoadPlan과 차트/SQL/통계의 부분 scan 부재, private-single-user preflight NOT READY(영속 볼륨·접근제어), 운영 DB/DeepEval/Spider 미검증. Streamlit hot reload의 이전 세션 객체가 새 화면과 충돌했으며 프로세스 재시작으로 복구했다.
+- **Next action items**: 사용자 승인형 Databricks J22~J24 실검증, 나머지 분석의 부분 scan·실제 호스트 부하, 반복/held-out 실제 모델 평가, 외부 평가/113문항 oracle, PR 리뷰/병합·배포 smoke/rollback. 출시는 차단 상태다.
 
 ### 2026-09-23 Daily Summary
 - **Work completed**: Added table-neutral `prepare_time_series`, bounded cohort aggregation/comparison, grouped count/rate charts and original-preserving `winsorize_numeric`. They preserve source, snapshot, digest, denominator, quantile boundary and restart contracts.
@@ -1486,3 +1486,11 @@ Task definitions and acceptance conditions: docs/agent_remaining_tasks_2026-09-1
 - **Release gate**: local-desktop preflight READY(프로젝트 내부 저장소 경고). private-single-user preflight NOT READY(영속 볼륨/접근제어 미설정). 운영 출시 판정은 [NO-GO](docs/release_readiness_2026-09-24.md); DeepEval/Spider 공식 점수와 이번 변경 후 Databricks 실여정은 없음.
 - **Remote update** [12:28 KST]: commit `98560f7`을 기존 draft PR #68 브랜치에 push했다. GitHub Actions run `35951364068`의 migration/application/agentic/reference/compile deterministic-validation이 모두 성공했다. PR은 draft를 유지하고 병합·배포하지 않았다.
 - **Approval/input pending**: live Databricks smoke용 정확한 SQL `SELECT * FROM workspace.default.bank_loan LIMIT 10` 1회 승인과 출시 대상(별도 1인용 서버/현재 localhost/미정)을 사용자에게 함께 요청했다. 응답 전 원격 실행 0회 유지.
+## [2026-09-24 13:05:58 KST] [Agent: /root] User Request: 모든 것을 다 마무리 해줘
+- **Action**: 남은 릴리스 차단 항목을 현재 코드와 실제 평가 근거에 대조하고, 승인 없이 진행 가능한 구현·검증·문서·PR 업데이트를 완료한다. Databricks 추가 조회는 기존 사용자별 SQL 승인 계약에 따라 별도로 취급한다.
+- **Current baseline**: 브랜치 `codex/agentic-analysis-rc-2026-09-14`, HEAD `d870744`, 작업 트리 clean. localhost 앱과 draft PR #68 유지.
+- **Implementation**: `core/analysis_databricks.py`가 최대 1,024행 배치를 후보 파일로 넘기고 `PersistentDatasets.register_batches`가 Arrow/Parquet에 순차 기록한 뒤 검증된 결과만 발행한다. `AssetDB`는 파일을 SQLite 메타데이터와 연결하며 이전 BLOB을 읽을 수 있다. 검사와 `profile_dataset`은 신규 파일의 메타데이터/지정 컬럼만 읽는다.
+- **Failure handling**: 원격 중간 배치 타입 오류·용량 초과·빈 결과·truncated 결과·재시작 복원을 회귀로 확인했다. 후보 실패 시 기존 원본과 분석 기준 선택이 유지된다. 미완료 staging 파일은 제거된다.
+- **Validation**: application 205/205, migration 128/128, Level 3 17/17, 전체 참고 runner 217/217, compileall·diff check PASS. 모의 커서 100,000행×64열 파일 적재 1.185초/32.79 MiB/peak RSS 178.1 MiB. 실제 모델 PRES_02/PRES_03 3/3턴 PASS(45.007/8.324/51.748초), 원본 보존·추가 원격 0회.
+- **Runtime**: Streamlit 127.0.0.1:8502를 새 프로세스로 재시작하고 health `ok`, 브라우저에서 기존 합성 7행 데이터와 histogram PNG·대화·입력창 복원을 확인했다. `local-desktop` preflight READY(저장소 경고), `private-single-user` NOT READY(영속 볼륨·접근제어).
+- **Decision/remaining**: 원격 SQL `SELECT * FROM workspace.default.bank_loan LIMIT 10`의 명시 승인을 재요청했다. 응답 전 운영 조회 0회. 외부 배포 대상도 미확정. 차트/SQL/통계는 여전히 전체 DataFrame을 읽고, DeepEval/Spider 공식 점수·동시 부하·운영 DB 실여정은 없다. [출시 판정](docs/release_readiness_2026-09-24.md)은 NO-GO다.

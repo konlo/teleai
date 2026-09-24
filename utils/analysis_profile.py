@@ -64,13 +64,14 @@ def _column_profile(series: pd.Series) -> dict[str, Any]:
 
 def profile_dataset(datasets, dataset_id: str, columns=None, offset: int = 0, limit: int = 50) -> dict:
     info = datasets.metadata[dataset_id]
-    frame = datasets.frames[dataset_id]
     if offset < 0 or not 1 <= limit <= 64:
         raise ValueError("offset은 0 이상, limit은 1~64여야 합니다.")
     selected = list(columns) if columns else list(info.columns)
     if len(selected) != len(set(selected)) or any(column not in info.columns for column in selected):
         raise ValueError("프로파일 컬럼은 로딩된 dataset의 중복 없는 실제 컬럼이어야 합니다.")
     page = selected[offset:offset + limit]
+    frame = (datasets.frames.project(dataset_id, page)
+             if hasattr(datasets.frames, 'project') else datasets.frames[dataset_id])
     return {
         "status": "ready",
         "dataset_id": dataset_id,

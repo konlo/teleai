@@ -4,13 +4,16 @@ import tempfile
 import unittest
 from pathlib import Path
 from unittest.mock import MagicMock
+from unittest.mock import patch
 
 import pandas as pd
 
 from core.analysis_agent.approvals import ApprovalLedger
 from core.analysis_databricks import execute_approved
 from core.analysis_load_plan import source_plan
+from core.analysis_agent.assets import AssetDB, PersistentDatasets
 from utils.analysis_datasets import DatasetStore
+from utils.analysis_profile import profile_dataset
 
 
 class LoadPlanTests(unittest.TestCase):
@@ -105,6 +108,100 @@ class LoadPlanTests(unittest.TestCase):
                 with self.assertRaises(expected_error):
                     execute_approved(request, MagicMock(), store, connect=connect)
                 self.assertFalse(store.metadata)
+
+    def test_persistent_remote_batches_publish_file_and_keep_truncated_coverage(self):
+        with tempfile.TemporaryDirectory() as root:
+            db = AssetDB(root, 'owner', 'stream-case')
+            store = PersistentDatasets(db, budget=0, max_frame_bytes=1024 * 1024)
+            original = store.register(pd.DataFrame({'amount': [99]}),
+                source='project.space.events', coverage='complete', predicate_known=True)
+            db.select_dataset(original.id)
+            connect = MagicMock()
+            cursor = connect.return_value.__enter__.return_value.cursor.return_value.__enter__.return_value
+            cursor.description = [('amount',)]
+            cursor.fetchmany.side_effect = [[(1,)], [(2,)], [(3,)], []]
+            request = SimpleNamespace(status='executing', source='project.space.events',
+                query='SELECT amount FROM project.space.events')
+            result = execute_approved(request, MagicMock(), store, max_rows=2,
+                connect=connect)
+            asset_id = result['dataset']['id']
+            self.assertEqual(result['dataset']['coverage'], 'truncated')
+            self.assertEqual(result['dataset']['rows'], 2)
+            self.assertEqual(result['preview'], [{'amount': 1}, {'amount': 2}])
+            self.assertEqual(db.selected_dataset_id(), original.id)
+            self.assertTrue(db.dataset_file(asset_id).is_file())
+            self.assertEqual(store.frames[asset_id]['amount'].tolist(), [1, 2])
+            with patch.object(type(store.frames), '__getitem__', side_effect=AssertionError('full decode')):
+                details = store.inspect(asset_id)
+                profile = profile_dataset(store, asset_id, columns=['amount'])
+            self.assertEqual(details['dtypes']['amount'], 'int64')
+            self.assertEqual(details['preview'], [{'amount': '1'}, {'amount': '2'}])
+            self.assertEqual(profile['profile']['columns'][0]['non_null_count'], 2)
+            db.close()
+            reopened = AssetDB(root, 'owner', 'stream-case')
+            restored = PersistentDatasets(reopened, budget=0)
+            self.assertEqual(restored.frames[asset_id]['amount'].tolist(), [1, 2])
+            self.assertEqual(restored.frames[original.id]['amount'].tolist(), [99])
+            reopened.close()
+
+    def test_empty_remote_candidate_is_valid_file_backed_dataset(self):
+        with tempfile.TemporaryDirectory() as root:
+            db = AssetDB(root, 'owner', 'empty-stream')
+            store = PersistentDatasets(db, budget=0)
+            connect = MagicMock()
+            cursor = connect.return_value.__enter__.return_value.cursor.return_value.__enter__.return_value
+            cursor.description = [('amount',)]
+            cursor.fetchmany.return_value = []
+            request = SimpleNamespace(status='executing', source='project.space.events',
+                query='SELECT amount FROM project.space.events')
+            result = execute_approved(request, MagicMock(), store, connect=connect)
+            self.assertEqual(result['dataset']['rows'], 0)
+            self.assertEqual(result['preview'], [])
+            self.assertTrue(store.frames[result['dataset']['id']].empty)
+            db.close()
+
+    def test_staging_quota_failure_does_not_publish_or_change_selection(self):
+        with tempfile.TemporaryDirectory() as root:
+            db = AssetDB(root, 'owner', 'quota-stream')
+            store = PersistentDatasets(db, budget=0)
+            original = store.register(pd.DataFrame({'amount': [99]}),
+                source='project.space.events', coverage='complete', predicate_known=True)
+            db.select_dataset(original.id)
+            db.max_scope_bytes = sum(p.stat().st_size for p in db.directory.iterdir()
+                                     if p.is_file()) + 32
+            connect = MagicMock()
+            cursor = connect.return_value.__enter__.return_value.cursor.return_value.__enter__.return_value
+            cursor.description = [('amount',)]
+            cursor.fetchmany.side_effect = [[(1,)], []]
+            request = SimpleNamespace(status='executing', source='project.space.events',
+                query='SELECT amount FROM project.space.events')
+            with self.assertRaises(MemoryError):
+                execute_approved(request, MagicMock(), store, connect=connect)
+            self.assertEqual(set(store.metadata), {original.id})
+            self.assertEqual(db.selected_dataset_id(), original.id)
+            self.assertFalse(list(db.directory.glob('*.staging.parquet')))
+            db.close()
+
+    def test_incompatible_later_batch_discards_candidate_and_preserves_root(self):
+        with tempfile.TemporaryDirectory() as root:
+            db = AssetDB(root, 'owner', 'bad-stream')
+            store = PersistentDatasets(db, budget=0)
+            original = store.register(pd.DataFrame({'amount': [99]}),
+                source='project.space.events', coverage='complete', predicate_known=True)
+            db.select_dataset(original.id)
+            connect = MagicMock()
+            cursor = connect.return_value.__enter__.return_value.cursor.return_value.__enter__.return_value
+            cursor.description = [('amount',)]
+            cursor.fetchmany.side_effect = [[(1,)], [('not-an-integer',)], []]
+            request = SimpleNamespace(status='executing', source='project.space.events',
+                query='SELECT amount FROM project.space.events')
+            with self.assertRaises((ValueError, TypeError)):
+                execute_approved(request, MagicMock(), store, connect=connect)
+            self.assertEqual(set(store.metadata), {original.id})
+            self.assertEqual(db.selected_dataset_id(), original.id)
+            self.assertFalse(list(db.directory.glob('*.staging.parquet')))
+            self.assertEqual(store.frames[original.id]['amount'].tolist(), [99])
+            db.close()
 
 
 if __name__ == '__main__':
