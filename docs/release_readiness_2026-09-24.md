@@ -2,6 +2,12 @@
 
 판정: **운영 출시 NO-GO, localhost 개발 화면은 사용 가능.** 현재 브랜치의 계약 회귀 통과는 실제 모델·대용량·Databricks·배포 환경을 포함한 출시 성공률이 아니다. 운영 조회를 새로 실행하지 않았으며 사용자별 정확한 SQL 승인을 유지했다. [draft PR #68](https://github.com/konlo/teleai/pull/68)은 리뷰·병합·배포하지 않았다.
 
+## 21:13 KST 1인용 배포 준비
+
+- Linux/systemd + SSH 터널 전용 [배포 절차](private_single_user_deployment_2026-09-24.md)와 서비스 템플릿, 호스트 read-only smoke, 데이터 볼륨을 건드리지 않는 코드 symlink 전환/rollback 도구를 추가했다.
+- `private-single-user` preflight는 `TELLY_EXTERNAL_ACCESS_CONTROL=confirmed`만으로 통과하지 않으며 `TELLY_ACCESS_MODE=ssh-tunnel`, 미리 존재하는 코드 밖 저장소와 mode 0700이 필요하다. 실제 SSH·방화벽 적용은 self-declaration이므로 별도 호스트 검증 전에는 GO 근거가 아니다.
+- 대상 호스트 주소/OS·영속 볼륨·SSH 계정 접근 방식이 아직 제공되지 않았다. 따라서 서비스 설치, 실제 preflight/smoke/rollback, 재부팅 보존, 외부 직접 접속 차단을 **실행하지 않았다**. 기존 Databricks SQL 승인 여정도 미실행이다. 운영 **NO-GO** 유지.
+
 ## 이번 실행으로 확인한 것
 
 | 항목 | 증거 | 판정 범위 |

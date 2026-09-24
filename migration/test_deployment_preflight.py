@@ -66,8 +66,35 @@ class DeploymentPreflightTests(unittest.TestCase):
                 profile="private-single-user",
                 project_root=Path("/workspace/teleai"),
             )
+            env["TELLY_ACCESS_MODE"] = "ssh-tunnel"
+            tunneled = evaluate_deployment(
+                env, profile="private-single-user", project_root=Path("/workspace/teleai")
+            )
         self.assertFalse(report.ready)
-        self.assertTrue(confirmed.ready)
+        self.assertFalse(confirmed.ready)
+        self.assertTrue(tunneled.ready)
+
+    def test_private_profile_rejects_missing_permissive_and_linked_storage(self):
+        with tempfile.TemporaryDirectory() as base:
+            root = Path(base)
+            storage = root / "storage"
+            env = valid_environment(str(storage))
+            env.update({"TELLY_EXTERNAL_ACCESS_CONTROL": "confirmed", "TELLY_ACCESS_MODE": "ssh-tunnel"})
+
+            def storage_status():
+                report = evaluate_deployment(
+                    env, profile="private-single-user", project_root=Path("/workspace/teleai")
+                )
+                return next(c.status for c in report.checks if c.name == "persistent_storage")
+
+            self.assertEqual(storage_status(), "fail")
+            storage.mkdir(mode=0o755)
+            self.assertEqual(storage_status(), "fail")
+            storage.chmod(0o700)
+            self.assertEqual(storage_status(), "pass")
+            storage.rename(root / "real")
+            storage.symlink_to(root / "real")
+            self.assertEqual(storage_status(), "fail")
 
     def test_multi_user_profile_is_blocked_by_identity_contract(self):
         with tempfile.TemporaryDirectory() as storage:

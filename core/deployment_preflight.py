@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 from dataclasses import asdict, dataclass
+import os
 from pathlib import Path
 from typing import Mapping
 from urllib.parse import urlparse
@@ -72,6 +73,15 @@ def _storage_check(
             status,
             "저장소가 코드 checkout 안에 있습니다. 배포 시 코드 교체와 분리된 영속 볼륨을 사용해야 합니다.",
         )
+    if profile == "private-single-user":
+        if path.is_symlink() or not path.is_dir():
+            return PreflightCheck(
+                "persistent_storage", "fail", "배포 저장소는 미리 생성된 실제 디렉터리여야 합니다."
+            )
+        if path.stat().st_mode & 0o077:
+            return PreflightCheck(
+                "persistent_storage", "fail", "배포 저장소의 그룹/타인 접근 권한을 제거해야 합니다."
+            )
     probe = path if path.exists() else path.parent
     while not probe.exists() and probe != probe.parent:
         probe = probe.parent
@@ -79,8 +89,6 @@ def _storage_check(
         return PreflightCheck(
             "persistent_storage", "fail", "저장소 상위 경로를 찾을 수 없습니다."
         )
-    import os
-
     if not os.access(probe, os.W_OK):
         return PreflightCheck(
             "persistent_storage", "fail", "저장소 또는 상위 경로에 쓰기 권한이 없습니다."
@@ -221,12 +229,13 @@ def evaluate_deployment(
         )
     elif profile == "private-single-user":
         confirmed = env.get("TELLY_EXTERNAL_ACCESS_CONTROL", "").strip().lower()
-        if confirmed in {"1", "true", "yes", "confirmed"}:
+        access_mode = env.get("TELLY_ACCESS_MODE", "").strip().lower()
+        if confirmed in {"1", "true", "yes", "confirmed"} and access_mode == "ssh-tunnel":
             checks.append(
                 PreflightCheck(
                     "identity_scope",
                     "warn",
-                    "외부 접근제어가 확인됐습니다. 이 revision은 한 명의 사용자만 사용해야 합니다.",
+                    "SSH 터널 접근제어가 설정됐다고 선언했습니다. 실제 loopback 리스너와 SSH 계정 제한은 호스트 smoke에서 별도로 검증해야 합니다.",
                 )
             )
         else:
@@ -234,7 +243,7 @@ def evaluate_deployment(
                 PreflightCheck(
                     "identity_scope",
                     "fail",
-                    "현재 앱은 local-owner를 사용합니다. 한 명만 접근하도록 외부 접근제어를 확인해야 합니다.",
+                    "현재 앱은 local-owner를 사용합니다. TELLY_ACCESS_MODE=ssh-tunnel과 한 명의 SSH 사용자 접근제어 확인이 필요합니다.",
                 )
             )
     else:

@@ -9,11 +9,13 @@
 ```sh
 .telly_runtime/v1-venv/bin/python scripts/deployment_preflight.py --profile local-desktop
 
-# 인증된 reverse proxy 또는 사설 접근제어 뒤에서 한 사람만 사용할 때
-TELLY_EXTERNAL_ACCESS_CONTROL=confirmed \
+# SSH 터널로 한 사람만 접근하는 호스트에서, 실제 접근제어를 확인한 뒤
+TELLY_EXTERNAL_ACCESS_CONTROL=confirmed TELLY_ACCESS_MODE=ssh-tunnel \
   .telly_runtime/v1-venv/bin/python scripts/deployment_preflight.py \
   --profile private-single-user
 ```
+
+`private-single-user` preflight는 저장소가 미리 생성된 실디렉터리이고 그룹/타인 권한이 없는지 검사한다. SSH 터널 설정값은 자기 선언이므로 preflight `READY`만으로 운영 GO가 아니다. 실행 중 리스너와 영속 저장소는 `scripts/private_host_smoke.py`로, 외부 차단과 SSH 계정 제한은 별도 네트워크 위치에서 확인한다. [1인용 Linux 배포 절차](private_single_user_deployment_2026-09-24.md)를 따른다.
 
 `multi-user` profile은 현재 revision에서 항상 실패한다. 이를 허용하려면 Streamlit OIDC(`st.login`, `st.user`)를 적용하고 검증된 사용자 claim을 runtime owner에 바인딩하며, 사용자별 저장소 접근제어와 세션 격리 회귀를 먼저 통과해야 한다.
 

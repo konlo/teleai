@@ -1555,3 +1555,9 @@ Task definitions and acceptance conditions: docs/agent_remaining_tasks_2026-09-1
 - **Actual-model finding**: 합성 L1_016 질문에서 실제 `gemma4:e4b`는 `aggregate_dataset` 평균을 정상 계산했지만 평가기가 `local_analysis_sql`만 인정해 53.842초 후 평가 FAIL이었다. 구조화 집계의 계보·해시·독립 수치·2개 반사실을 채점하도록 고쳤고, 잘못된 컬럼 집계는 FAIL로 유지했다. 같은 질문 재실행은 PASS(49.167초, 원격 0회). 이는 한 질문의 평가 오류 수정이며 모델 안정성·p95 증거가 아니다. [근거](docs/evaluation/preparation_2026-09-24/live_aggregate_evaluator_and_scope_2026-09-24.json).
 - **Regression**: application 231/231, migration 128/128, 전체 참고 runner 217/217(그중 Level 3 17/17), compileall·diff check PASS. 운영 DB 조회는 승인 전 0회다.
 - **PR/CI** [21:05 KST]: commit `4042f80`을 draft PR #68에 push하고 설명을 갱신했다. [GitHub Actions run 35996704902](https://github.com/konlo/teleai/actions/runs/35996704902)의 migration/application/agentic/reference/compile 전 단계 PASS. localhost:8502를 새 코드 프로세스로 재시작해 health `ok`를 확인했다. 병합·운영 배포·실 DB 조회는 수행하지 않았다.
+
+## [2026-09-24 21:08:25 KST] [Agent: /root] User Request: 별도 1인용 호스트의 영속 볼륨·접근제어·preflight·smoke·rollback도 진행하고 싶다
+- **Action** [Agent: /root]: 배포 계약, 사전점검, 저장소·인증 경계를 확인하고 실제 호스트 정보 없이 준비·검증 가능한 배포 패키지와 검증 절차를 구현한다. 실제 호스트 주소/접속 방식/영속 경로는 사용자에게 요청했다.
+- **Finding** [Agent: /root]: 기존 private preflight는 `TELLY_EXTERNAL_ACCESS_CONTROL=confirmed` 자기 선언만으로 READY가 됐고 저장소 경로가 아직 없어도 상위 디렉터리 쓰기 가능 여부로 통과했다. 실제 외부 차단·SSH 계정·리스너는 확인하지 않았다.
+- **Implementation** [Agent: /root]: SSH 터널 프로필에 접근 방식 설정과 생성된 0700 실디렉터리 검사를 추가했다. Linux systemd 템플릿, loopback 리스너/health/영속 저장소 read-only smoke, 영속 데이터를 건드리지 않는 릴리스 symlink preview/원자적 전환 도구, 배포·롤백 절차를 작성했다.
+- **Verification** [Agent: /root]: 신규 집중 12/12, migration 전체 132/132, application 전체 231/231, compileall·diff check PASS. rollback 단위 검증에서 기존 데이터 파일 바이트가 보존됐다. 현재 macOS 개발 호스트에는 Linux `ss`/systemd와 별도 SSH 호스트가 없어 실제 설치·네트워크 차단·재부팅 지속성·롤백 재시작은 미검증이며 운영 NO-GO를 유지한다. Databricks SQL은 실행하지 않았다.
