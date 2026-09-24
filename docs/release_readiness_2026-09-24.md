@@ -7,6 +7,7 @@
 - Linux/systemd + SSH 터널 전용 [배포 절차](private_single_user_deployment_2026-09-24.md)와 서비스 템플릿, 호스트 read-only smoke, 데이터 볼륨을 건드리지 않는 코드 symlink 전환/rollback 도구를 추가했다.
 - `private-single-user` preflight는 `TELLY_EXTERNAL_ACCESS_CONTROL=confirmed`만으로 통과하지 않으며 `TELLY_ACCESS_MODE=ssh-tunnel`, 미리 존재하는 코드 밖 저장소와 mode 0700이 필요하다. 실제 SSH·방화벽 적용은 self-declaration이므로 별도 호스트 검증 전에는 GO 근거가 아니다.
 - 대상 호스트 주소/OS·영속 볼륨·SSH 계정 접근 방식이 아직 제공되지 않았다. 따라서 서비스 설치, 실제 preflight/smoke/rollback, 재부팅 보존, 외부 직접 접속 차단을 **실행하지 않았다**. 기존 Databricks SQL 승인 여정도 미실행이다. 운영 **NO-GO** 유지.
+- 로컬 집중 12/12, migration 전체 132/132, application 전체 231/231, compileall·diff check PASS. 배포 패키지 commit `ac71f22`의 [GitHub Actions run 35997885430](https://github.com/konlo/teleai/actions/runs/35997885430)도 전체 단계 PASS.
 
 ## 이번 실행으로 확인한 것
 
