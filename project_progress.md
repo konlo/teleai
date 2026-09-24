@@ -1520,3 +1520,7 @@ Task definitions and acceptance conditions: docs/agent_remaining_tasks_2026-09-1
 - **Final local gate** [14:39 KST]: 이전 SQLite BLOB 자산 추천 호환 회귀를 추가해 application 220/220, migration 128/128, 참고/Level 3 runner 217/217(그중 Level 3 17/17), compileall·`git diff --check` PASS. 공식 DeepEval/Spider 2.0·실제 운영 Databricks/배포 호스트는 미검증이며 출시 판정 NO-GO를 유지한다.
 - **Remote/UI gate** [14:43 KST]: commit `f85a3bd`을 draft PR #68에 push하고 PR 설명을 최종 구현·한계에 맞게 갱신했다. [GitHub Actions run 35961029122](https://github.com/konlo/teleai/actions/runs/35961029122) PASS. 새 localhost:8502 프로세스의 저장 대화에서 자연어 분포 요청을 실제 제출해 7행 원본 PNG·답변 표시를 확인했다. 로그는 7.718초, 로컬 도구 1회, 모델/원격 0회.
 - **Deployment/model check**: `local-desktop` preflight READY(저장소 경고), `private-single-user` NOT READY(영속 볼륨·접근제어 미설정). 비교 모델 `qwen3:8b`의 PRES_02 첫 평균은 60초 ReadTimeout; 원본 보존·원격 0회. 모델 변경은 하지 않았다. 정확한 SQL별 사용자 승인 규칙과 운영 NO-GO는 유지한다.
+
+## [2026-09-24 16:08:00 KST] [Agent: /root] User Request: 디음 해야하는 일은?
+- **Action** [Agent: /root]: 최신 출시 판정·남은 작업표와 clean 브랜치를 대조해 다음 작업을 운영 GO 선행 순서로 재정리했다. 출시 판정 문서의 자동 추천 전체 복원 관련 오래된 설명을 최신 배치 표본 구현에 맞게 정정했다.
+- **Outcome**: 우선 ① 실제 승인형 Databricks J22~J24, ② 복잡 SQL/join/행 파생의 메모리 경계, ③ 모델 지연·held-out 반복 및 공식 평가, ④ 외부 영속 저장소·접근제어와 배포 smoke/rollback 순이다. SQL별 승인 없이 원격 조회를 실행하지 않는다.
