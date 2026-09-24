@@ -251,6 +251,17 @@ class ActualAgentEvaluationTests(unittest.TestCase):
         self.assertAlmostEqual(reference_oracle(self.specs["L1_045"], self.grading["L1_045"], self.frames),
                                float(high_fare["Survived"].mean()*100))
 
+    def test_reference_oracle_tracks_an_arbitrary_target_schema(self):
+        frames = {"bank_loan": pd.DataFrame({"old_metric": [100, 200]}),
+                  "titanic": pd.DataFrame({"old_metric": [300, 400]}),
+                  "synthetic_metrics": pd.DataFrame({"metric_x": [2.0, 3.0]})}
+        spec = {"id": "DYNAMIC_SCHEMA", "target_table": "synthetic_metrics",
+                "python_code": 'expected = float(df_target["metric_x"].mean())'}
+        grading = {"kind": "scalar", "variable": "expected"}
+        self.assertEqual(reference_oracle(spec, grading, frames), 2.5)
+        frames["synthetic_metrics"] = pd.DataFrame({"metric_x": [4.0, 6.0]})
+        self.assertEqual(reference_oracle(spec, grading, frames), 5.0)
+
     def test_metadata_columns_use_structured_inspection_without_model_or_remote(self):
         model = EvaluationModel()
         result = self.evaluate("L1_001", model)

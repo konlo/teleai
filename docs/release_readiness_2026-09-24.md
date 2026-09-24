@@ -17,6 +17,14 @@
 - 같은 `L1_016` 실제 모델 재실행: 기존 `gemma4:e4b` **3/3 PASS**(37.124/47.321/42.426초), `qwen3:8b` **3/3 PASS**(41.167/39.848/42.569초). 모두 `aggregate_dataset` 근거가 독립 정답 2760.0675 및 반사실 계산과 일치했고 추가 원격 조회 0회였다. 변경 전 두 모델은 각각 반복 0/3이었다. [기존 모델 반복](evaluation/preparation_2026-09-24/repeat_go_2026-09-24/gemma4_focused_summary.json), [대안 모델 반복](evaluation/preparation_2026-09-24/repeat_go_2026-09-24/qwen3_focused_summary.json). 이 한 질문의 3회 성공은 전체 핵심 여정 ≥95% 근거가 아니므로 모델 기본값은 유지한다.
 - application 236/236, migration 133/133, 참고/agentic 217/217, compileall·diff check PASS. 배포 호스트/정확한 SQL 승인 및 더 넓은 held-out 모델 여정이 남아 운영 **NO-GO**다.
 
+### 03:22 KST 추가 여정·배포 게이트
+
+- [최신 코드 CI run 36039977243](https://github.com/konlo/teleai/actions/runs/36039977243)의 migration/application/agentic/reference/compile 단계가 모두 성공했다.
+- L1_017(복수 수치), L1_018(조건 건수), L1_062(피벗), L1_076(연령 histogram)을 별도 합성 원본으로 실행해 독립 기준 4/4 PASS했다. [수치 결과](evaluation/preparation_2026-09-24/repeat_go_2026-09-24/heldout_l1_017_018.json), [피벗·이미지 결과](evaluation/preparation_2026-09-24/repeat_go_2026-09-24/heldout_chart_pivot.json). 네 요청 모두 결정적 로컬 경로로 수행되었으며 실제 모델 호출 0회다. 따라서 실제 모델의 일반화 성공률을 높여 계산하지 않는다.
+- 기존 평가기는 임의 테이블을 대상으로 한 반사실 검사에서도 고정 fixture 변수만 읽어 정확한 계산을 허위 FAIL로 표시했다. `df_target`을 대상 테이블의 원본에 바인딩해 바로잡았다. 컬럼이 완전히 다른 합성 원본의 `metric_x` 평균은 수치 55.5, 반사실 2개까지 [PASS](evaluation/preparation_2026-09-24/repeat_go_2026-09-24/heldout_dynamic_schema.json)했다. 이것도 결정적 경로다.
+- `private-single-user` preflight를 현재 호스트에서 다시 실행한 결과 **NOT READY**: `TELLY_V1_STORAGE` 영속 볼륨 미설정, `TELLY_ACCESS_MODE=ssh-tunnel` 및 한 명의 SSH 접근제어 미확인. 연결 변수 형식 검사는 통과했지만 Databricks 네트워크/SQL은 검사하지 않았다. 별도 호스트 주소·설정과 정확한 SQL 승인이 없어 운영 여정은 실행하지 않았다. **운영 NO-GO 유지.**
+- 위 평가기 수정 후 application 237/237, migration 133/133, 참고/agentic runner 217/217, compileall·diff check PASS.
+
 ## 21:13 KST 1인용 배포 준비
 
 - Linux/systemd + SSH 터널 전용 [배포 절차](private_single_user_deployment_2026-09-24.md)와 서비스 템플릿, 호스트 read-only smoke, 데이터 볼륨을 건드리지 않는 코드 symlink 전환/rollback 도구를 추가했다.

@@ -187,7 +187,8 @@ def reference_oracle(spec, grading, frames):
     """
     namespace = {"pd": pd, "np": np, "plt": plt, "matplotlib": matplotlib,
                  "df_bank": frames["bank_loan"].copy(),
-                 "df_titanic": frames["titanic"].copy()}
+                 "df_titanic": frames["titanic"].copy(),
+                 "df_target": frames[spec["target_table"]].copy()}
     try:
         plt.close("all")
         with HistogramCapture() as capture, redirect_stdout(StringIO()):

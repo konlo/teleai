@@ -1,11 +1,11 @@
 # Project Progress Log
 
 ## Current Status
-- **Last Updated**: 2026-09-24
-- **Status**: In Progress — T05~T07 부분 구현, 개발 화면 검증 완료, 운영 출시 NO-GO
-- **Summary**: 원본/분기 재사용과 영속 선택, 승인 SQL 출처 결합·후보 검증, 원격 배치의 파일 staging, 지정 컬럼 프로파일, 필터 히스토그램의 결정적 로컬 복구, bounded UI 미리보기, 구조화 집계 완료 근거를 보강했다. 최종 application 206/206, migration 128/128, Level 3 17/17, 참고 전체 runner 217/217 PASS. localhost 재시작 후 실제 histogram PNG와 보유 데이터 복원을 확인했다.
-- **Next Session Focus**: [출시 판정](docs/release_readiness_2026-09-24.md)의 정확한 SQL별 Databricks 승인 여정, 나머지 분석 도구의 부분 scan, 실제 모델 반복/held-out 평가, 배포 대상·영속 볼륨·접근제어를 해결한다.
-- **Current qualification**: 실제 모델 PRES_02 수정 후 2턴 PASS이나 첫 평균 55.274초; PRES_03은 timeout과 60.569초 PASS가 모두 기록됐다. 전체 agent 자연어 성공률은 아직 없고 기존 oracle 87/200은 coverage, 113개 미채점이다. DeepEval/Spider 공식 점수·새 Databricks 조회·운영 배포 검증은 없다.
+- **Last Updated**: 2026-09-25
+- **Status**: In Progress — localhost 개발 범위 검증, 운영 출시 NO-GO
+- **Summary**: 보호 원본과 승인형 적재, 파일 staging/부분 읽기, 분석 완료 근거·도구 선택을 보강했다. 최신 application 237/237, migration 133/133, 참고/agentic runner 217/217 PASS. 실제 `gemma4:e4b`의 미선택 원본 평균은 도구 집중 전 0/3, 후 3/3 PASS였고, 다른 네 참고 여정과 임의 schema 합성 검사는 결정적 로컬 경로로 PASS했다. 한 질문의 3회 성공만으로 운영 신뢰도를 판정하지 않는다.
+- **Next Session Focus**: [출시 판정](docs/release_readiness_2026-09-24.md)에 따라 별도 1인용 Linux 호스트의 영속 볼륨·SSH 접근제어/외부 차단·preflight/smoke/rollback과, 정확한 SQL별 승인 후 Databricks J22~J24 실여정을 확인한다. 실제 모델 held-out 반복/복구, 동시 메모리 한도와 DeepEval/Spider 공식 평가도 남아 있다.
+- **Current qualification**: 배포 호스트 정보와 새 SQL 승인이 없어 실제 운영 조회·호스트 검증은 0회다. 기존 oracle 87/200은 coverage이며 113개 미채점이다. DeepEval/Spider 공식 점수는 없다. Draft PR #68은 미병합이다.
 
 ## Next Action Items
 - [ ] D07/D08의 전체 로딩 의미 검증·나머지 차트/SQL/통계의 부분 scan·registry 재사용을 P0로 마무리한다. 원격 파일 staging, 출처/결과 구조 검증과 active 원본 선택은 부분 적용했다. T06/T07 및 J21~J24: docs/data_loading_and_preservation_contract_2026-09-24.md.
@@ -1572,3 +1572,7 @@ Task definitions and acceptance conditions: docs/agent_remaining_tasks_2026-09-1
 - **PR/CI** [Agent: /root]: commit `51668c4`를 draft PR #68에 push했고 [GitHub Actions run 36037384439](https://github.com/konlo/teleai/actions/runs/36037384439)의 migration/application/agentic/reference/compile 전 단계 PASS. PR 설명은 새 실패와 미완료 조건에 맞게 갱신했다.
 - **Model diagnosis** [2026-09-25, Agent: /root]: 전체 24개 도구 메뉴(설명/스키마 약 15,760자) 대비 단일 도구 메뉴의 같은 `qwen3:8b` 탐침은 31.189초·잘못된 profile 도구 선택 대 4.136초·집계 도구 선택이었다. 반복 qwen3 기본 설정 0/3, reasoning off·출력 1,024 제한도 0/3으로 구제되지 않았다. 이는 단순 로컬 집계에 대한 도구 선택 과부하 가설의 근거다.
 - **Tool focus** [Agent: /root]: 완전 raw 원본이 정확히 하나이고 단일 숫자 집계/무필터/새 조회 불필요한 경우에만 모델에 보이는 도구를 7개로 집중한다. 모호성·차트·조건·복수 연산은 전체 도구 메뉴를 유지한다. 같은 `L1_016` 실제 `gemma4:e4b` 3/3 PASS(37.124/47.321/42.426초), `qwen3:8b` 3/3 PASS(41.167/39.848/42.569초), 독립 수치·반사실 일치/원격 0회. application 236/236, migration 133/133, 참고 217/217 통과. 한 질문의 3회 성공만으로 운영 GO나 모델 변경을 선언하지 않는다.
+- **CI** [2026-09-25 03:17 KST, Agent: /root]: 도구 집중 commit `203584f`의 [GitHub Actions run 36039977243](https://github.com/konlo/teleai/actions/runs/36039977243)에서 migration/application/agentic/reference/compile 전 단계 PASS.
+- **Held-out scope** [2026-09-25 03:22 KST, Agent: /root]: L1_017·L1_018·L1_062·L1_076은 독립 기준 4/4 PASS. 네 실행 모두 결정적 로컬 도구 경로였으므로 실제 모델 일반화 점수에는 포함하지 않았다. 임의 테이블명·컬럼 합성 평가 중 기준 코드가 고정 `df_bank`만 참조하는 평가기 오류를 발견해 `df_target`을 추가했다. 합성 `synthetic_metrics.metric_x` 평균 55.5와 두 반사실 재계산이 PASS, 원격 호출 0회. 관련 근거는 `docs/evaluation/preparation_2026-09-24/repeat_go_2026-09-24/`에 저장했다.
+- **Host gate** [2026-09-25 03:22 KST, Agent: /root]: 현재 호스트의 `private-single-user` preflight는 NOT READY(외부 영속 볼륨과 SSH 한 명 접근제어 미설정). 실제 Linux 호스트 접속 정보가 없어 systemd 설치·외부 차단·재부팅·rollback 실측은 하지 않았고, 정확한 SQL 승인도 없어 Databricks 조회는 하지 않았다.
+- **Final local validation** [2026-09-25 03:23 KST, Agent: /root]: application 237/237, migration 133/133, 참고/agentic runner 217/217, compileall PASS. 운영 GO로 판정하지 않는다.
