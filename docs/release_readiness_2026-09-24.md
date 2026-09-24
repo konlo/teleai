@@ -18,7 +18,7 @@
 - 승인된 원격 결과를 1,024행 이하 배치로 Parquet 후보 파일에 쓰고, 모든 배치·quota 검증 후 메타데이터를 발행한다. 신규 원격 자산은 SQLite BLOB 대신 파일을 사용한다. 이전 BLOB 자산은 계속 읽힌다. 검사·지정 컬럼 프로파일은 신규 파일에서 전체 프레임을 복원하지 않는다. 중간 배치 타입 불일치·용량 초과 시 후보 파일을 폐기하고 기존 원본/선택을 유지하는 회귀를 추가했다.
 - 로컬 모의 커서 100,000행 × 64열 정수 결과: 적재 1.185초, Parquet 32.79 MiB, 프로세스 최고 RSS 178.1 MiB. 이 수치는 합성 단일 프로세스 측정으로 Databricks 전송·동시 세션·실제 데이터형 성능을 대표하지 않는다.
 - 실제 `gemma4:e4b` 재검사 [PRES_02/PRES_03](evaluation/preparation_2026-09-24/live_preservation_streaming_recheck.json): 3/3턴 PASS, 각 45.007/8.324/51.748초, 추가 승인·원격 실행 0회, 원본 불변. 이전 PRES_03 ReadTimeout 기록은 남아 있다.
-- 신규 코드에 대한 application 205/205, migration 128/128, Level 3 17/17, 전체 참고 runner 217/217, compileall·`git diff --check` PASS. 참고 runner 200문항은 실제 자연어 성공률로 계산하지 않는다.
+- 신규 코드에 대한 application 205/205, migration 128/128, Level 3 17/17, 전체 참고 runner 217/217, compileall·`git diff --check` PASS. commit `e00a370`의 [GitHub Actions run 35955184372](https://github.com/konlo/teleai/actions/runs/35955184372)도 deterministic-validation 전체 PASS. 참고 runner 200문항은 실제 자연어 성공률로 계산하지 않는다.
 
 ## 출시를 막는 일
 
