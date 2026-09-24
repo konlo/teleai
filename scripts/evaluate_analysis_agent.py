@@ -1338,13 +1338,29 @@ def grade_evidence(runtime, outcome, spec, grading, oracle, fixture_id, capture)
                 ("FAIL", "Outlier evidence lacks complete provenance or differs from the reference", details))
     candidates = []
     for message in runtime.events():
-        if isinstance(message, ToolMessage) and message.name == "local_analysis_sql":
-            try:
-                observation = json.loads(message.content)
-                if observation.get("status") == "ready":
-                    candidates.append(observation["dataset"]["id"])
-            except (ValueError, TypeError, KeyError):
-                pass
+        if not isinstance(message, ToolMessage) or message.name not in {
+                "local_analysis_sql", "aggregate_dataset"}:
+            continue
+        try:
+            observation = json.loads(message.content)
+            if observation.get("status") != "ready":
+                continue
+            dataset_id = observation["dataset"]["id"]
+            if message.name == "aggregate_dataset":
+                result = observation["aggregation_result"]
+                info = runtime.datasets.metadata[dataset_id]
+                if not (result.get("kind") == "dataset_aggregation"
+                        and result.get("parent_dataset_id") == info.parent_id
+                        and result.get("output_rows") == info.rows
+                        and result.get("data_sha256") == _frame_digest(
+                            runtime.datasets.frames[dataset_id])
+                        and info.grain == "aggregate"):
+                    return "FAIL", "Structured aggregate evidence is inconsistent", {}
+            candidates.append(dataset_id)
+        except (ValueError, TypeError, KeyError):
+            if message.name == "aggregate_dataset":
+                return "FAIL", "Structured aggregate evidence is unavailable", {}
+            continue
     if not candidates:
         return "FAIL", "No structured calculation result; assistant prose is not evidence", {}
     # Grade the last calculation, not a correct intermediate followed by a wrong answer.

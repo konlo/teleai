@@ -14,6 +14,7 @@ from core.analysis_agent.assets import AssetDB, FrameCache, PersistentDatasets
 from core.analysis_agent.recovery import RecoveryMiddleware, _bounded_preview_count
 from core.analysis_agent.runtime import GraphAnalysisRuntime
 from core.analysis_agent.policy import RuntimePolicy
+from core.analysis_agent.intent_scope import _grounding, resolve_request_scope
 from core.analysis_catalog import resolve_table_context
 from core.analysis_tool_contract import AnalysisToolContext
 from core.analysis_runtime_tools import build_analysis_tools
@@ -60,6 +61,34 @@ class AdaptiveBudgetModel(BaseChatModel):
 
 
 class FullReadBudgetTests(unittest.TestCase):
+    def test_small_row_scope_grounding_projects_columns_and_respects_read_budget(self):
+        with tempfile.TemporaryDirectory() as root:
+            runtime = GraphAnalysisRuntime(root, "owner", "scope-projection",
+                AdaptiveBudgetModel(), policy=RuntimePolicy(max_full_read_bytes=1_000_000))
+            large_label = "x" * 300
+            frame = pd.DataFrame({"group_code": ["alpha", "beta", large_label, "beta"],
+                                  **{f"field_{n}": [n] * 4 for n in range(15)}})
+            info = runtime.datasets.register_batches([frame], columns=list(frame.columns),
+                source="fixture.variable_schema", max_rows=10, coverage="complete",
+                predicate_known=True)
+            runtime.select_dataset(info.id)
+            original = runtime.db.dataset_file(info.id).read_bytes()
+            with patch.object(FrameCache, "__getitem__", side_effect=AssertionError("full decode")):
+                grounded = resolve_request_scope("group_code alpha만 보여줘", runtime.context)
+                self.assertIn({"column": "group_code", "op": "eq", "value": "alpha"},
+                              grounded["conditions"])
+                self.assertFalse(grounded["unresolved"])
+                labels, _ = _grounding("group_code alpha만 보여줘", runtime.context)
+                self.assertNotIn(large_label, labels["group_code"]["values"])
+
+                runtime.datasets.max_full_read_bytes = 64
+                limited = resolve_request_scope("group_code alpha만 보여줘", runtime.context)
+                self.assertIn("small_frame_unavailable", limited["unresolved"])
+                self.assertFalse(limited["conditions"])
+            self.assertEqual(runtime.db.dataset_file(info.id).read_bytes(), original)
+            self.assertEqual(runtime.db.selected_dataset_id(), info.id)
+            runtime.close()
+
     def test_selected_column_prefix_uses_saved_preview_without_model_or_remote(self):
         with tempfile.TemporaryDirectory() as root:
             model = AdaptiveBudgetModel()

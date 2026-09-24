@@ -1548,3 +1548,9 @@ Task definitions and acceptance conditions: docs/agent_remaining_tasks_2026-09-1
 - **Runtime/release**: Streamlit 프로세스를 새 코드로 재시작하고 localhost:8502 health `ok`를 확인했다. local-desktop preflight READY(프로젝트 내부 저장소 경고), private-single-user NOT READY(외부 영속 볼륨·접근제어 미설정). 변경된 원격 적재의 실제 Databricks 승인·조회, 운영 호스트·동시 부하, 공식 DeepEval/Spider 점수는 미완료라 운영 GO 판정은 불가하다.
 - **PR/CI** [20:12 KST]: commit `9a111fa`를 draft PR #68에 push하고 설명을 현재 범위로 갱신했다. [GitHub Actions run 35991339107](https://github.com/konlo/teleai/actions/runs/35991339107)의 migration/application/agentic/reference/compile 단계 모두 성공했다. 병합·운영 배포는 수행하지 않았다.
 - **Approval packet**: 실제 Databricks 첫 smoke 후보는 `SELECT * FROM workspace.default.bank_loan LIMIT 10` 정확히 1회다. 사용자별 SQL 승인 전 실행하지 않는다. 10행 결과는 연결·후보 발행 검사만 하고 전체 통계로 해석하지 않는다. 별도 1인용 배포의 영속 볼륨·접근제어 설정도 필요하다.
+
+## [2026-09-24 20:54:28 KST] [Agent: /root] User Request: 계속 진행해줘
+- **Action** [Agent: /root]: 승인 없이 진행 가능한 대용량 전체 복원 경로와 중앙 자원 한도를 조사하고, 안전하게 개선 가능한 경로를 실제 agent 여정과 회귀로 검증한다. 정확한 SQL 승인 전 Databricks를 조회하지 않는다.
+- **Implementation** [Agent: /root]: 256행 이하 원본의 조건값 해석이 전체 DataFrame을 읽던 경로를 8컬럼 projection과 Parquet 메타데이터 기반 한도 검사로 교체했다. 한도 초과에서는 추측한 조건으로 진행하지 않고 `small_frame_unavailable`을 남긴다. 256자 초과 셀은 조건값 목록에 넣지 않는다. 파일 바이트·선택 ID 보존을 확인했다.
+- **Actual-model finding**: 합성 L1_016 질문에서 실제 `gemma4:e4b`는 `aggregate_dataset` 평균을 정상 계산했지만 평가기가 `local_analysis_sql`만 인정해 53.842초 후 평가 FAIL이었다. 구조화 집계의 계보·해시·독립 수치·2개 반사실을 채점하도록 고쳤고, 잘못된 컬럼 집계는 FAIL로 유지했다. 같은 질문 재실행은 PASS(49.167초, 원격 0회). 이는 한 질문의 평가 오류 수정이며 모델 안정성·p95 증거가 아니다. [근거](docs/evaluation/preparation_2026-09-24/live_aggregate_evaluator_and_scope_2026-09-24.json).
+- **Regression**: application 231/231, migration 128/128, 전체 참고 runner 217/217(그중 Level 3 17/17), compileall·diff check PASS. 운영 DB 조회는 승인 전 0회다.

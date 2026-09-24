@@ -11,7 +11,7 @@ from datetime import date
 import json
 import re
 
-from utils.analysis_datasets import Condition
+from utils.analysis_datasets import Condition, full_read_preflight, project_dataset
 
 
 _ISO = re.compile(r'(?<![A-Za-z0-9_-])(\d{4}-\d{2}(?:-\d{2})?)(?![A-Za-z0-9_-])')
@@ -77,6 +77,8 @@ def _grounding(text, context):
         item['dtypes'].add(str(dtype).lower())
         for raw in values:
             value = _scalar(raw)
+            if isinstance(value, str) and len(value) > 256:
+                continue  # Large cell values are neither safe nor useful as NL scope labels.
             if value is not None and value not in item['values'] and len(item['values']) < 32:
                 item['values'].append(value)
 
@@ -92,11 +94,24 @@ def _grounding(text, context):
         for name in info.columns[:64]: add(name)
         if info.grain != 'raw' or info.rows > 256 or len(info.columns) > 64: continue
         try:
-            frame = context.datasets.frames[info.id]
-            if len(frame) > 256: continue
-            for name in info.columns:
-                add(name, str(frame[name].dtype), values=frame[name].dropna().head(256).tolist())
-        except (KeyError, OSError, ValueError, TypeError):
+            # A small row count does not imply a small frame: a few rows may
+            # contain large strings across many columns. Ground values from
+            # narrow projections only after the persisted-size preflight.
+            if full_read_preflight(context.datasets, [info.id]):
+                unresolved.append('small_frame_unavailable')
+                continue
+            if hasattr(context.datasets, 'inspect'):
+                dtypes = context.datasets.inspect(info.id).get('dtypes', {})
+                for name in info.columns:
+                    add(name, dtypes.get(name, ''))
+            for start in range(0, len(info.columns), 8):
+                names = info.columns[start:start + 8]
+                frame = project_dataset(context.datasets, info.id, names)
+                if len(frame) > 256:
+                    raise ValueError('Small-frame grounding exceeded its row bound')
+                for name in names:
+                    add(name, str(frame[name].dtype), values=frame[name].dropna().tolist())
+        except (KeyError, OSError, ValueError, TypeError, MemoryError):
             unresolved.append('small_frame_unavailable')
     return columns, unresolved
 

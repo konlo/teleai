@@ -62,6 +62,19 @@ class ActualAgentEvaluationTests(unittest.TestCase):
         self.assertEqual(result["tools"]["local_analysis_sql"], 1)
         self.assertEqual(result["remote_executions"], 0)
 
+    def test_structured_aggregate_is_graded_with_lineage_and_counterfactuals(self):
+        result = self.evaluate("L1_016", EvaluationModel(calls=[{"name": "aggregate_dataset", "args": {
+            "dataset_id": "$fixture", "aggregation": "mean", "value_column": "balance"}}]))
+        self.assertEqual(result["status"], "PASS", result)
+        self.assertEqual(result["tools"], {"aggregate_dataset": 1})
+        self.assertEqual(result["evidence"]["counterfactual_probes"], 2)
+        self.assertEqual(result["remote_executions"], 0)
+
+        wrong = self.evaluate("L1_016", EvaluationModel(calls=[{"name": "aggregate_dataset", "args": {
+            "dataset_id": "$fixture", "aggregation": "mean", "value_column": "age"}}],
+            answer="예금 잔고 평균을 계산했습니다."))
+        self.assertEqual(wrong["status"], "FAIL", wrong)
+
     def test_profile_cases_use_structured_local_evidence(self):
         for case in ("L1_006", "L1_008", "L1_009"):
             with self.subTest(case=case):
