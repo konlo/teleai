@@ -24,6 +24,9 @@
 - 기존 평가기는 임의 테이블을 대상으로 한 반사실 검사에서도 고정 fixture 변수만 읽어 정확한 계산을 허위 FAIL로 표시했다. `df_target`을 대상 테이블의 원본에 바인딩해 바로잡았다. 컬럼이 완전히 다른 합성 원본의 `metric_x` 평균은 수치 55.5, 반사실 2개까지 [PASS](evaluation/preparation_2026-09-24/repeat_go_2026-09-24/heldout_dynamic_schema.json)했다. 이것도 결정적 경로다.
 - `private-single-user` preflight를 현재 호스트에서 다시 실행한 결과 **NOT READY**: `TELLY_V1_STORAGE` 영속 볼륨 미설정, `TELLY_ACCESS_MODE=ssh-tunnel` 및 한 명의 SSH 접근제어 미확인. 연결 변수 형식 검사는 통과했지만 Databricks 네트워크/SQL은 검사하지 않았다. 별도 호스트 주소·설정과 정확한 SQL 승인이 없어 운영 여정은 실행하지 않았다. **운영 NO-GO 유지.**
 - 위 평가기 수정 후 application 237/237, migration 133/133, 참고/agentic runner 217/217, compileall·diff check PASS.
+- 평가기 수정 commit `b75aacd`의 [GitHub Actions run 36040985241](https://github.com/konlo/teleai/actions/runs/36040985241)도 전 단계 PASS. PR #68은 계속 draft다.
+- 대표 11개 생산 graph 합성 여정은 독립 채점 11/11 PASS(메타데이터, 수치·조건, 피벗, histogram·scatter, 이상치 cohort, 통계, 이중 축, winsorization). 실제 모델 도구 선택은 그중 L1_016 한 건뿐이며 28.118초, 나머지는 결정적 로컬 경로다. [여정 요약](evaluation/preparation_2026-09-24/repeat_go_2026-09-24/journey_matrix_summary.json).
+- 전체 200문항의 실제 graph 탐색은 **25문항에서 수동 중단**했다. 중단 전 독립 채점 가능 19/19 PASS, 미채점 6; 모델 직접 호출 6건 중 4건이 65~78초였다. 나머지 175문항과 전체 지원 87문항의 성공률은 이 실행에서 측정되지 않았다. 특히 113개 미채점 문항은 PASS로 계산하지 않는다. 지연과 불완전한 범위를 그대로 출시 차단 근거로 보존한다.
 
 ## 21:13 KST 1인용 배포 준비
 
