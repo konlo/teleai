@@ -1332,7 +1332,8 @@ class RecoveryMiddleware(AgentMiddleware):
 
         requested = {canonical(value) for value in conditions[0].get('value', [])}
         observed = {canonical(value) for value in
-                    self.context.datasets.frames[info.id][group_column].dropna().unique().tolist()}
+                    project_dataset(self.context.datasets, info.id, [group_column])
+                    [group_column].dropna().unique().tolist()}
         return bool(requested) and requested == observed
 
     def _chart_scope_valid(self, info, arguments, current):
@@ -1785,6 +1786,13 @@ class RecoveryMiddleware(AgentMiddleware):
             else:
                 current['stop_reason'] = 'request_scope_mismatch'
                 text = '생성된 분석의 기간·필터가 요청 조건과 일치하지 않아 결과를 채택하지 않았습니다. 조건을 유지한 복구가 실행 한도 안에 완료되지 않았습니다. 기존 데이터는 보존했습니다.'
+        budget_failure = next((observation for observation in current['failed'].values()
+            if observation.get('error_code') == 'full_frame_budget'), None)
+        if not success and budget_failure and not remote_block and not current.get('scope_error'):
+            current['status'] = 'blocked'
+            current['stop_reason'] = 'full_frame_budget'
+            text = (budget_failure.get('scope', '전체 데이터 복원 한도를 넘었습니다.') + ' '
+                    + budget_failure.get('user_action', '필요한 컬럼과 조건을 명시해주세요.'))
         kwargs = {'analysis_status': 'answered' if success else current['status']}
         message = (last.model_copy(update={'content': text or last.content, 'tool_calls': [],
                    'additional_kwargs': {**last.additional_kwargs, **kwargs}}) if last else
@@ -1842,7 +1850,8 @@ class RecoveryMiddleware(AgentMiddleware):
                     index_column = current['pivot_index_columns'][0]
                     observed = {
                         str(value).strip().casefold()
-                        for value in self.context.datasets.frames[candidates[0].id][index_column]
+                        for value in project_dataset(
+                            self.context.datasets, candidates[0].id, [index_column])[index_column]
                             .dropna().unique().tolist()
                     }
                     if observed and observed.issubset(MONTH_ORDER):
@@ -1878,7 +1887,7 @@ class RecoveryMiddleware(AgentMiddleware):
                     or (info.coverage == 'complete' and info.predicate_known))]
             if len(candidates) == 1:
                 info = candidates[0]
-                frame = self.context.datasets.frames[info.id]
+                frame = project_dataset(self.context.datasets, info.id, [column])
                 from pandas.api.types import is_numeric_dtype
                 if is_numeric_dtype(frame[column]):
                     spec = current['winsor_spec']
@@ -1905,7 +1914,7 @@ class RecoveryMiddleware(AgentMiddleware):
             from pandas.api.types import is_datetime64_any_dtype, is_numeric_dtype
             import pandas as pd
             for info in candidates:
-                frame = self.context.datasets.frames[info.id]
+                frame = project_dataset(self.context.datasets, info.id, required)
                 time_columns = []
                 for column in required:
                     series = frame[column]
@@ -1985,7 +1994,7 @@ class RecoveryMiddleware(AgentMiddleware):
                     or (info.coverage == 'complete' and info.predicate_known))]
             if len(candidates) == 1:
                 info = candidates[0]
-                frame = self.context.datasets.frames[info.id]
+                frame = project_dataset(self.context.datasets, info.id, [column])
                 from pandas.api.types import is_numeric_dtype
                 if is_numeric_dtype(frame[column]):
                     spec = current['outlier_spec']
@@ -2071,7 +2080,7 @@ class RecoveryMiddleware(AgentMiddleware):
                     or (info.coverage == 'complete' and info.predicate_known))]
             if len(candidates) == 1 and required:
                 info = candidates[0]
-                frame = self.context.datasets.frames[info.id]
+                frame = project_dataset(self.context.datasets, info.id, required)
                 numeric = [column for column in required
                            if _dtype_family(frame[column].dtype) == 'numeric']
                 low_cardinality = [column for column in required
@@ -2153,9 +2162,12 @@ class RecoveryMiddleware(AgentMiddleware):
                 if required:
                     arguments['columns'] = sorted(required)
                 elif current.get('profile_kind') == 'distinct':
-                    frame = self.context.datasets.frames[candidates[0].id]
-                    categorical = [str(column) for column in frame.columns
-                                   if _dtype_family(frame[column].dtype) == 'categorical']
+                    datasets = self.context.datasets
+                    dtypes = (datasets.inspect(candidates[0].id)['dtypes']
+                              if hasattr(datasets, 'inspect') else
+                              datasets.frames[candidates[0].id].dtypes.astype(str).to_dict())
+                    categorical = [str(column) for column, dtype in dtypes.items()
+                                   if _dtype_family(dtype) == 'categorical']
                     if not categorical:
                         return None
                     arguments['columns'] = categorical
@@ -2220,7 +2232,7 @@ class RecoveryMiddleware(AgentMiddleware):
                     and measures[0].get('column') == outcome
                     and measures[0].get('op') == 'eq'):
                 info = candidates[0]
-                frame = self.context.datasets.frames[info.id]
+                frame = project_dataset(self.context.datasets, info.id, [groups[0]])
                 group = groups[0]
                 current['count_rate_group_column'] = group
                 observed = {str(value).strip().casefold()

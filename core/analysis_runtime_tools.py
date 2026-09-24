@@ -11,7 +11,7 @@ from core.analysis_tool_contract import (
     ToolDefinition,
     normalize_tool_result,
 )
-from utils.analysis_datasets import AnalysisNeed, Condition, DatasetStore, assess_reuse, filter_frame, project_dataset, select_reusable_dataset
+from utils.analysis_datasets import AnalysisNeed, Condition, DatasetStore, assess_reuse, filter_frame, full_read_preflight, project_dataset, select_reusable_dataset
 from utils.analysis_skill_registry import AnalysisSkillRegistry
 from utils.analysis_charts import (
     histogram_from_counts,
@@ -378,6 +378,11 @@ def build_analysis_tools(context: AnalysisToolContext) -> list[ToolDefinition]:
                 # the source's actual columns.
                 input_frame["__telly_row_marker__"] = range(selected_info.rows)
         else:
+            rejected = full_read_preflight(datasets, [selection.dataset_id])
+            if rejected:
+                return {**rejected, 'requested_dataset_id': dataset_id,
+                        'selected_dataset_id': selection.dataset_id,
+                        'selection_origin': selection.origin}
             input_frame = datasets.frames[selection.dataset_id]
         if requested is not None:
             residual = tuple(c for c in requested if c not in selected_info.conditions)

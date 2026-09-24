@@ -162,6 +162,23 @@ class FrameCache(Mapping):
             return pd.read_parquet(BytesIO(payload), columns=list(columns))
         return pd.read_parquet(path, columns=list(columns))
 
+    def estimate_full_decode_bytes(self, key, expected_rows, columns):
+        """Conservative preflight from Parquet metadata without decoding rows."""
+        path = self.db.dataset_file(key)
+        if path is None:
+            _, payload = self.db.get(key, 'dataset')
+            source = BytesIO(payload)
+        else:
+            source = path
+        parquet = pq.ParquetFile(source)
+        if parquet.metadata.num_rows != expected_rows:
+            raise ValueError('저장된 데이터의 행 수가 메타데이터와 다릅니다.')
+        uncompressed = sum(
+            parquet.metadata.row_group(group).column(column).total_uncompressed_size
+            for group in range(parquet.metadata.num_row_groups)
+            for column in range(parquet.metadata.row_group(group).num_columns))
+        return max(2 * uncompressed, expected_rows * max(columns, 1) * 16)
+
     def sample(self, key, columns, *, rows, limit=20_000, seed=42):
         """Uniformly sample Parquet rows while decoding only bounded batches."""
         if rows < 0 or limit < 1:
@@ -195,11 +212,13 @@ class FrameCache(Mapping):
 
 
 class PersistentDatasets(DatasetStore):
-    def __init__(self,db,budget=64*1024*1024,max_columns=None,max_frame_bytes=None):
+    def __init__(self,db,budget=64*1024*1024,max_columns=None,max_frame_bytes=None,
+                 max_full_read_bytes=128*1024*1024):
         self.db=db
         self.frames=FrameCache(db,budget)
         self.max_columns=max_columns
         self.max_frame_bytes=max_frame_bytes
+        self.max_full_read_bytes=max_full_read_bytes
 
     @property
     def metadata(self):

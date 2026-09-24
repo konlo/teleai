@@ -104,6 +104,27 @@ def sample_dataset(store, dataset_id: str, columns, *, limit=20_000) -> pd.DataF
     return frame.sample(n=limit, random_state=42) if len(frame) > limit else frame
 
 
+def full_read_preflight(store, dataset_ids, *, output_rows=0, output_columns=0):
+    """Reject an oversized whole-frame operation before decoding source rows."""
+    budget = getattr(store, 'max_full_read_bytes', None)
+    if budget is None or not hasattr(store.frames, 'estimate_full_decode_bytes'):
+        return None
+    estimates = []
+    for dataset_id in dict.fromkeys(dataset_ids):
+        info = store.metadata[dataset_id]
+        estimates.append(store.frames.estimate_full_decode_bytes(
+            dataset_id, info.rows, len(info.columns)))
+    estimated = sum(estimates) + output_rows * output_columns * 16
+    if estimated <= budget:
+        return None
+    return {
+        'status': 'rejected', 'error_code': 'full_frame_budget', 'retryable': False,
+        'user_action': '필요한 컬럼과 조건을 명시하거나, 조인 전 각 데이터를 집계해 규모를 줄여주세요.',
+        'scope': '원본 전체 복원 전 메모리 예산 검사에서 중단했습니다. 기존 데이터와 분석 기준은 보존됩니다.',
+        'estimated_bytes': estimated, 'budget_bytes': budget,
+    }
+
+
 @dataclass(frozen=True)
 class AnalysisNeed:
     source: str

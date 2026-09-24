@@ -10,7 +10,7 @@ import numpy as np
 import pandas as pd
 from pandas.api.types import is_numeric_dtype
 
-from utils.analysis_datasets import DatasetStore, project_dataset
+from utils.analysis_datasets import DatasetStore, full_read_preflight, project_dataset
 
 
 SUPPORTED_METHODS = frozenset({"iqr", "zscore", "mad", "quantile"})
@@ -289,6 +289,12 @@ def select_outlier_rows(
     )
     result = detected["outlier_result"]
     info = store.metadata[dataset_id]
+    output_rows = (result["counts"]["selected"] if selection == "outliers" else
+                   result["sample"]["valid_rows"] - result["counts"]["selected"])
+    rejected = full_read_preflight(store, [dataset_id],
+        output_rows=output_rows, output_columns=len(info.columns))
+    if rejected:
+        return {**rejected, 'dataset_id': dataset_id, 'outlier_result': result}
     frame = store.frames[dataset_id]
     values = pd.to_numeric(frame[column], errors="coerce")
     valid = values.notna() & np.isfinite(values)

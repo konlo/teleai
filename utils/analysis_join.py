@@ -16,7 +16,7 @@ from pandas.api.types import (
     is_string_dtype,
 )
 
-from utils.analysis_datasets import DatasetStore
+from utils.analysis_datasets import DatasetStore, full_read_preflight, project_dataset
 
 
 def _quote(name: str) -> str:
@@ -93,34 +93,35 @@ def join_datasets(store: DatasetStore, left_dataset_id: str, right_dataset_id: s
         raise ValueError("join 운영 한도는 0보다 커야 합니다.")
 
     left_info, right_info = store.metadata[left_dataset_id], store.metadata[right_dataset_id]
-    left, right = store.frames[left_dataset_id], store.frames[right_dataset_id]
     for label, info in (("left", left_info), ("right", right_info)):
         if info.grain not in {"raw", "aggregate"}:
             raise ValueError(f"{label} dataset의 grain은 raw 또는 명시적 aggregate여야 합니다.")
         if (info.grain == "aggregate") != bool(info.aggregation):
             raise ValueError(f"{label} dataset의 grain과 aggregation provenance가 일치하지 않습니다.")
-    if any(column not in left.columns for column in left_on):
+    if any(column not in left_info.columns for column in left_on):
         raise ValueError("left_on에 왼쪽 dataset에 없는 컬럼이 있습니다.")
-    if any(column not in right.columns for column in right_on):
+    if any(column not in right_info.columns for column in right_on):
         raise ValueError("right_on에 오른쪽 dataset에 없는 컬럼이 있습니다.")
+    left_keys = project_dataset(store, left_dataset_id, left_on)
+    right_keys = project_dataset(store, right_dataset_id, right_on)
     incompatible = [
         {"left": lkey, "right": rkey,
-         "left_dtype": str(left[lkey].dtype), "right_dtype": str(right[rkey].dtype)}
+         "left_dtype": str(left_keys[lkey].dtype), "right_dtype": str(right_keys[rkey].dtype)}
         for lkey, rkey in zip(left_on, right_on)
-        if _dtype_family(left[lkey]) != _dtype_family(right[rkey])
+        if _dtype_family(left_keys[lkey]) != _dtype_family(right_keys[rkey])
     ]
     if incompatible:
         raise ValueError("조인 key의 자료형 계열이 서로 다릅니다. 명시적으로 정규화한 뒤 다시 시도하세요.")
 
-    left_counts, left_null_rows = _key_counts(left, left_on)
-    right_counts, right_null_rows = _key_counts(right, right_on)
+    left_counts, left_null_rows = _key_counts(left_keys, left_on)
+    right_counts, right_null_rows = _key_counts(right_keys, right_on)
     overlap = left_counts.rename("left").to_frame().join(
         right_counts.rename("right"), how="inner")
     inner_rows = int((overlap["left"] * overlap["right"]).sum()) if not overlap.empty else 0
     matched_left = int(overlap["left"].sum()) if not overlap.empty else 0
     matched_right = int(overlap["right"].sum()) if not overlap.empty else 0
-    unmatched_left = len(left) - matched_left
-    unmatched_right = len(right) - matched_right
+    unmatched_left = left_info.rows - matched_left
+    unmatched_right = right_info.rows - matched_right
     expected_rows = {
         "inner": inner_rows,
         "left": inner_rows + unmatched_left,
@@ -137,14 +138,14 @@ def join_datasets(store: DatasetStore, left_dataset_id: str, right_dataset_id: s
         "one_to_many" if right_many else
         "one_to_one" if not overlap.empty else "no_matches"
     )
-    expansion_ratio = expected_rows / max(len(left), len(right), 1)
+    expansion_ratio = expected_rows / max(left_info.rows, right_info.rows, 1)
     summary = {
         "how": how,
         "left_on": left_on,
         "right_on": right_on,
         "relationship": relationship,
-        "left_rows": len(left),
-        "right_rows": len(right),
+        "left_rows": left_info.rows,
+        "right_rows": right_info.rows,
         "left_coverage": left_info.coverage,
         "right_coverage": right_info.coverage,
         "left_conditions": [asdict(condition) for condition in left_info.conditions],
@@ -181,7 +182,12 @@ def join_datasets(store: DatasetStore, left_dataset_id: str, right_dataset_id: s
         }
 
     projections, output_columns = _projection(
-        list(left.columns), list(right.columns), left_on, right_on)
+        list(left_info.columns), list(right_info.columns), left_on, right_on)
+    rejected = full_read_preflight(store, [left_dataset_id, right_dataset_id],
+                                   output_rows=expected_rows, output_columns=len(output_columns))
+    if rejected:
+        return {**rejected, 'join_summary': summary}
+    left, right = store.frames[left_dataset_id], store.frames[right_dataset_id]
     conditions = " AND ".join(
         f"l.{_quote(lkey)} = r.{_quote(rkey)}"
         for lkey, rkey in zip(left_on, right_on)

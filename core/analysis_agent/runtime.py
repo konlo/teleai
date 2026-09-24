@@ -35,7 +35,8 @@ class GraphAnalysisRuntime:
         self.transcript=Transcript(self.db)
         self.on_progress=None
         self.datasets=PersistentDatasets(self.db,self.policy.frame_cache_bytes,
-            max_columns=self.policy.max_dataset_columns,max_frame_bytes=self.policy.max_dataset_bytes)
+            max_columns=self.policy.max_dataset_columns,max_frame_bytes=self.policy.max_dataset_bytes,
+            max_full_read_bytes=self.policy.max_full_read_bytes)
         self.artifacts=PersistentCharts(self.db)
         self.max_context_chars=max_context_chars
         self.reference_context_loader=reference_context_loader

@@ -1524,3 +1524,10 @@ Task definitions and acceptance conditions: docs/agent_remaining_tasks_2026-09-1
 ## [2026-09-24 16:08:00 KST] [Agent: /root] User Request: 디음 해야하는 일은?
 - **Action** [Agent: /root]: 최신 출시 판정·남은 작업표와 clean 브랜치를 대조해 다음 작업을 운영 GO 선행 순서로 재정리했다. 출시 판정 문서의 자동 추천 전체 복원 관련 오래된 설명을 최신 배치 표본 구현에 맞게 정정했다.
 - **Outcome**: 우선 ① 실제 승인형 Databricks J22~J24, ② 복잡 SQL/join/행 파생의 메모리 경계, ③ 모델 지연·held-out 반복 및 공식 평가, ④ 외부 영속 저장소·접근제어와 배포 smoke/rollback 순이다. SQL별 승인 없이 원격 조회를 실행하지 않는다.
+
+## [2026-09-24 16:09:01 KST] [Agent: /root] User Request: 이후 작업을 계속 진행해줘~
+- **Action** [Agent: /root]: 승인 없이 진행 가능한 대용량 전체 읽기 경계부터 구현한다. wildcard/복잡 SQL, join, 행 파생의 사전 검사와 실패 시 원본·선택 보존을 확인하고 회귀 및 실제 실행을 검증한다.
+- **Implementation** [Agent: /root]: 파일 기반 전체 복원 예상량을 Parquet metadata로 산출하고 `TELLY_MAX_FULL_READ_BYTES` 기본 128 MiB 경계를 추가했다. wildcard/복잡 로컬 SQL·join·이상치 행 파생에 전체 decode 전 거절을 연결했다. 조인 key와 복구 계획의 필요한 컬럼은 projection으로 바꿨다. 해소되지 않은 경계 오류의 최종 응답은 `blocked/full_frame_budget`과 구체적 축소 방안을 반환한다.
+- **Verification**: 300행×32열 파일 기반 원본 둘과 5 KiB 한도에서 전체 decode를 강제 금지해 wildcard SQL·join·inlier cohort의 조기 거절, 명시 컬럼 SQL 성공, 원본 파일 바이트와 선택 ID 불변을 확인했다. 합성 100,000행×128열(Parquet 66.95 MiB)에서 `SELECT * LIMIT 2` 추정 228.1 MiB 거절, 단일 컬럼 평균 성공, 전체 decode 0회, 도구 호출 0.091초, peak RSS 267.4 MiB였다. 이는 적재 포함 단일 프로세스 합성 결과다.
+- **Regression**: 변경 후 application 222/222, migration 128/128, 참고 runner 217/217(그중 Level 3 17/17), compileall·`git diff --check` PASS. 이 수치를 실제 자연어 성공률로 간주하지 않는다.
+- **Outcome**: 메타데이터 추정은 peak 메모리의 강제 상한이 아니고, 아직 다른 전체 복원 호출·동시 세션·실제 모델 대안 선택이 미검증이다. 실제 Databricks를 새로 조회하지 않았다. 운영 출시 NO-GO를 유지하고 [출시 판정](docs/release_readiness_2026-09-24.md)과 [남은 작업](docs/agent_remaining_tasks_2026-09-13.md)을 갱신했다.
