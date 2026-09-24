@@ -10,6 +10,13 @@
 - 용량 측정기는 파일 기반 Parquet·기존 BLOB을 읽고 최대 10,000행 표본만 복원하며, 실제 숫자 컬럼을 동적으로 선택하고 측정 전후 저장 자산 SHA-256을 비교한다. 합성 10,000행×16열 파일 자산에서 로컬 histogram 30회 p95 **0.133초**, 4 worker·20회 **20/20** p95 **0.431초**, peak RSS **384,516,096 bytes**, 원본 해시 불변으로 로컬 용량 gate PASS. [측정 근거](evaluation/preparation_2026-09-24/repeat_go_2026-09-24/capacity_dynamic_schema.json). 이는 실제 배포 호스트·동시 사용자·Databricks 전송 성능이 아니다.
 - application 234/234, migration 133/133, 참고/agentic 217/217, compileall·diff check PASS. 운영 호스트 정보와 정확한 SQL 승인은 아직 받지 못해 실제 배포 및 새 Databricks 조회는 실행하지 않았다. **운영 NO-GO 유지.**
 
+### 03:14 KST 모델 도구 선택 재검증
+
+- 실제 실패의 한 원인은 단순 로컬 평균에도 24개 도구가 모델에 제시되던 구조였다. 한 번의 격리 탐침에서 `qwen3:8b`는 계산 도구 1개를 제시하면 4.136초에 `aggregate_dataset`을 선택했고, 전체 24개를 제시하면 31.189초에 다른 `profile_dataset`을 선택했다. [탐침](evaluation/preparation_2026-09-24/repeat_go_2026-09-24/tool_focus_probe.json)은 단회 비교이므로 인과적 지연 증명은 아니다.
+- 분류된 단일 AVG/SUM/MEDIAN/MIN/MAX 요청에 완전한 raw 원본이 정확히 하나이고 필터·차트·원격 새로고침·다른 연산이 없을 때만 모델에 보이는 도구를 7개로 줄였다. 모호한 출처/여러 원본/미지 컬럼/필터/차트/새 데이터 요청은 기존 전체 도구를 유지한다. 승인·실행 검증은 그대로다.
+- 같은 `L1_016` 실제 모델 재실행: 기존 `gemma4:e4b` **3/3 PASS**(37.124/47.321/42.426초), `qwen3:8b` **3/3 PASS**(41.167/39.848/42.569초). 모두 `aggregate_dataset` 근거가 독립 정답 2760.0675 및 반사실 계산과 일치했고 추가 원격 조회 0회였다. 변경 전 두 모델은 각각 반복 0/3이었다. [기존 모델 반복](evaluation/preparation_2026-09-24/repeat_go_2026-09-24/gemma4_focused_summary.json), [대안 모델 반복](evaluation/preparation_2026-09-24/repeat_go_2026-09-24/qwen3_focused_summary.json). 이 한 질문의 3회 성공은 전체 핵심 여정 ≥95% 근거가 아니므로 모델 기본값은 유지한다.
+- application 236/236, migration 133/133, 참고/agentic 217/217, compileall·diff check PASS. 배포 호스트/정확한 SQL 승인 및 더 넓은 held-out 모델 여정이 남아 운영 **NO-GO**다.
+
 ## 21:13 KST 1인용 배포 준비
 
 - Linux/systemd + SSH 터널 전용 [배포 절차](private_single_user_deployment_2026-09-24.md)와 서비스 템플릿, 호스트 read-only smoke, 데이터 볼륨을 건드리지 않는 코드 symlink 전환/rollback 도구를 추가했다.

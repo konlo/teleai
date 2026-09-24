@@ -23,6 +23,7 @@ from core.analysis_agent.assets import AssetDB, PersistentDatasets, PersistentCh
 from core.analysis_agent.tools import local_tools
 from core.analysis_agent.progress import tool_progress
 from core.analysis_agent.policy import RuntimePolicy
+from core.analysis_agent.tool_focus import FocusedScalarToolsMiddleware
 
 
 class GraphAnalysisRuntime:
@@ -85,6 +86,7 @@ class GraphAnalysisRuntime:
             transcript=self.transcript,max_model_seconds=self.policy.turn_slo_seconds)
         self.recovery=recovery
         middleware=[QueuedRequestMiddleware(),RecoveryPlanningMiddleware(recovery),CompactDiscoveryMiddleware(),
+                    FocusedScalarToolsMiddleware(self.context,self.diagnostics),
                     memory_middleware(model,summary_trigger_tokens,summary_keep_messages,diagnostics=self.diagnostics),
                     ModelTimingMiddleware(self.diagnostics),prompt]
         if self.remote_execute is not None:
