@@ -77,6 +77,21 @@ class DatasetInfo:
     root_id: str = ""
 
 
+def project_dataset(store, dataset_id: str, columns) -> pd.DataFrame:
+    """Load only declared columns when the persistent store supports projection."""
+    selected = list(columns)
+    info = store.metadata[dataset_id]
+    if len(selected) != len(set(selected)) or not set(selected).issubset(info.columns):
+        raise ValueError("분석 컬럼은 현재 dataset의 중복 없는 실제 컬럼이어야 합니다.")
+    if not selected:
+        # pandas/pyarrow return zero rows for a zero-column Parquet projection.
+        # The immutable asset metadata is the row-count authority here.
+        return pd.DataFrame(index=range(info.rows))
+    if hasattr(store.frames, "project"):
+        return store.frames.project(dataset_id, selected)
+    return store.frames[dataset_id].loc[:, selected]
+
+
 @dataclass(frozen=True)
 class AnalysisNeed:
     source: str

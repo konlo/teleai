@@ -8,7 +8,7 @@ from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 
 import pandas as pd
 
-from utils.analysis_datasets import DatasetStore
+from utils.analysis_datasets import DatasetStore, project_dataset
 
 
 FREQUENCIES = {
@@ -93,17 +93,17 @@ def prepare_time_series(store: DatasetStore, dataset_id: str, *, time_column: st
     if not 2 <= int(max_output_rows) <= 5_000:
         raise ValueError("max_output_rows는 2~5,000이어야 합니다.")
     info = store.metadata[dataset_id]
-    source = store.frames[dataset_id]
     if info.grain != "raw" or info.aggregation:
         raise ValueError("시간 재집계는 완전한 raw grain dataset에서만 수행합니다.")
     requested = [column for column in (time_column, value_column, group_column) if column]
     if (not time_column or len(requested) != len(set(requested))
-            or any(column not in source.columns for column in requested)):
+            or any(column not in info.columns for column in requested)):
         raise ValueError("시간·값·그룹 컬럼은 현재 dataset의 중복 없는 실제 컬럼이어야 합니다.")
     if aggregation == "count" and value_column:
         raise ValueError("count 집계에는 value_column을 지정하지 않습니다.")
     if aggregation != "count" and not value_column:
         raise ValueError("수치 집계에는 value_column이 필요합니다.")
+    source = project_dataset(store, dataset_id, requested)
     if value_column and (not pd.api.types.is_numeric_dtype(source[value_column])
                          or pd.api.types.is_bool_dtype(source[value_column])):
         raise ValueError("value_column은 수치형이어야 합니다.")

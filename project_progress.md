@@ -1498,3 +1498,12 @@ Task definitions and acceptance conditions: docs/agent_remaining_tasks_2026-09-1
 - **Actual-model failure/fix** [13:30 KST]: PRES_01의 `zone=east` 필터 히스토그램이 3회 모델 호출/77.783초 후 exhausted였다. `_where_sql`의 DuckDB 이중 따옴표가 Databricks 파서에서 문자열로 읽혀 범위가 거절된 것이 원인. `prepare_histogram`에 대해 백틱 SQL과 grounded 단일 원본 로컬 계획을 사용하도록 수정했다. 두 schema fixture의 독립 분포 oracle와 모델 0/원격 0 회귀가 통과했다. 동일 실제 모델 4턴 4/4 PASS, 필터 턴 0.070초. 전체 application 206/206, migration 128/128, Level 3 17/17, 참고 runner 217/217, compileall·diff check PASS. 실패/수정 보고서를 보존했다.
 - **Live UI/log** [13:32 KST]: 최신 코드 프로세스로 localhost:8502를 재시작했다. 저장된 합성 7행 대화에서 `period=2026-08` 필터의 `value` histogram을 직접 제출하고 실제 PNG와 빈도 합계 4를 화면에서 확인했다. 진단 로그는 answered 8.145초·로컬 도구 1회·모델 0회·원격/승인 0회. 캐시 후보 검사 중 기록되던 허위 `request_scope_rejected` 이벤트를 억제하고 회귀로 확인했다.
 - **Final remote gate** [13:39 KST]: 필터 복구 commit `356ebcd`을 draft PR #68 브랜치에 push했다. [GitHub Actions run 35956329709](https://github.com/konlo/teleai/actions/runs/35956329709)의 migration/application/agentic/reference/compile 전체 단계가 성공했다. 최종 코드로 localhost 서버를 다시 시작했고 7행 원본·4행 필터 결과·두 PNG·대화 입력창이 복원됨을 확인했다. 운영 출시는 정확한 SQL 승인/실 Databricks 검증과 배포 환경 조건 때문에 계속 NO-GO다.
+
+## [2026-09-24 13:40:39 KST] [Agent: /root] User Request: 지금 작업이 얼마나 남았을까?
+- **Action** [Agent: /root]: 최신 출시 판정·남은 작업 문서, 작업 트리와 draft PR #68의 상태 및 CI를 재확인했다.
+- **Outcome**: 작업 트리는 clean, PR은 OPEN/draft·merge 상태 CLEAN, 최신 deterministic-validation run `35956501057` 성공. localhost 개발 검증은 완료했지만 실제 Databricks 승인 여정, 모델 안정성/독립 평가, 대용량 분석 경로, 운영 환경 및 배포 검증이 남아 운영 판정은 NO-GO다. 남은 비율은 검증 근거가 없어 산출하지 않고 범위별 예상 기간을 조건부로 안내한다.
+
+## [2026-09-24 13:41:41 KST] [Agent: /root] User Request: 계속해서 진행해줘
+- **Action** [Agent: /root]: 사용자별 승인 대상인 Databricks 새 조회는 보류하고, 출시 차단 항목 중 로컬에서 진행 가능한 대용량 분석 도구의 전체 DataFrame 복원 경로를 점검·개선한다. 관련 정상·실패·후속 사용 회귀를 실행한다.
+- **Implementation/Outcome** [Agent: /root, 13:55 KST]: file-backed 원본의 명시 컬럼 차트·집계·통계·시계열·피벗·그룹 비교/요약·이상치 요약과 단순 로컬 SQL에 부분 읽기를 연결했다. agent 열 식별 과정의 전 프레임 순회를 metadata로 대체했다. 빈 컬럼 전체 건수 집계가 정상 행을 빈 데이터로 오판하던 결함도 수정했다. wildcard SQL은 전체 스키마 보존을 검증했다.
+- **Validation**: 원본 파일 바이트와 선택 ID 불변, 실제 agent histogram PNG, 전체 decode 금지, 잘못된 컬럼의 decode 전 거절을 회귀로 확인. application 210/210, migration 128/128, Level 3 17/17, 참고 runner 217/217, compileall·diff check PASS. 합성 100,000행×64열/100배치: 적재 0.877초, chart 7.86초, 모델/전체 decode 0회, peak RSS 310.3 MiB. 실제 Databricks·실제 모델 반복·배포 호스트 성능은 미검증. 자세한 한계는 [출시 판정](docs/release_readiness_2026-09-24.md)에 반영했다.

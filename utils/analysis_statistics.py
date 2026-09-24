@@ -9,7 +9,7 @@ import pandas as pd
 from pandas.api.types import is_numeric_dtype
 from scipy import stats
 
-from utils.analysis_datasets import DatasetStore
+from utils.analysis_datasets import DatasetStore, project_dataset
 
 
 SUPPORTED_TESTS = {
@@ -403,7 +403,6 @@ def statistical_test(store: DatasetStore, dataset_id: str, *, test: str,
     if not 0.001 <= float(alpha) <= 0.2:
         raise ValueError("alpha는 0.001~0.2 범위여야 합니다.")
     info = store.metadata[dataset_id]
-    frame = store.frames[dataset_id]
     if info.grain != "raw" or info.aggregation:
         raise ValueError("통계 검정은 집계되지 않은 raw dataset에서만 실행합니다.")
     required = [value_column]
@@ -415,8 +414,9 @@ def statistical_test(store: DatasetStore, dataset_id: str, *, test: str,
         if not paired_column:
             raise ValueError("paired_t에는 paired_column이 필요합니다.")
         required.append(paired_column)
-    if len(set(required)) != len(required) or any(column not in frame.columns for column in required):
+    if len(set(required)) != len(required) or any(column not in info.columns for column in required):
         raise ValueError("검정 컬럼은 서로 달라야 하며 모두 dataset에 존재해야 합니다.")
+    frame = project_dataset(store, dataset_id, required)
 
     runners = {
         "independent_t": lambda: _independent_t(frame, info, value_column, group_column, float(alpha)),

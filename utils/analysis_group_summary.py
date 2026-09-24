@@ -9,7 +9,7 @@ from typing import Any
 import numpy as np
 import pandas as pd
 
-from utils.analysis_datasets import Condition, DatasetStore, filter_frame
+from utils.analysis_datasets import Condition, DatasetStore, filter_frame, project_dataset
 
 
 AGGREGATIONS = frozenset({
@@ -101,16 +101,29 @@ def summarize_groups(
         raise ValueError("그룹과 출력 행 한도가 허용 범위를 벗어났습니다.")
 
     info = store.metadata[dataset_id]
-    source = store.frames[dataset_id]
     if info.grain != "raw" or info.aggregation:
         raise ValueError("그룹 요약은 집계되지 않은 raw dataset에서만 실행합니다.")
-    if any(column not in source.columns for column in group_columns):
+    if any(column not in info.columns for column in group_columns):
         raise ValueError("그룹 컬럼은 현재 dataset의 실제 컬럼이어야 합니다.")
+    metric_columns = []
+    for metric in metrics:
+        if not isinstance(metric, dict):
+            continue
+        value_column = metric.get("value_column")
+        if isinstance(value_column, str) and value_column in info.columns:
+            metric_columns.append(value_column)
+        condition = metric.get("condition")
+        if isinstance(condition, dict) and condition.get("column") in info.columns:
+            metric_columns.append(condition["column"])
+    condition_objects = tuple(Condition(**item) for item in (conditions or []))
+    filter_columns = [condition.column for condition in condition_objects
+                      if condition.column in info.columns]
+    source = project_dataset(store, dataset_id,
+        dict.fromkeys([*group_columns, *metric_columns, *filter_columns]))
     normalized_metrics = _validated_metrics(source, list(metrics))
     if set(group_columns) & {metric["name"] for metric in normalized_metrics}:
         raise ValueError("지표 이름은 그룹 컬럼명과 달라야 합니다.")
 
-    condition_objects = tuple(Condition(**item) for item in (conditions or []))
     if any(condition.column not in source.columns for condition in condition_objects):
         raise ValueError("전체 필터 컬럼은 현재 dataset의 실제 컬럼이어야 합니다.")
     filtered = filter_frame(source, condition_objects) if condition_objects else source.copy()

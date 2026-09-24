@@ -10,7 +10,7 @@ import numpy as np
 import pandas as pd
 from pandas.api.types import is_numeric_dtype
 
-from utils.analysis_datasets import DatasetStore
+from utils.analysis_datasets import DatasetStore, project_dataset
 
 
 SUPPORTED_METHODS = frozenset({"iqr", "zscore", "mad", "quantile"})
@@ -51,10 +51,12 @@ def winsorize_numeric_summary(
     if float(lower_quantile) > 0.25 or float(upper_quantile) < 0.75:
         raise ValueError("윈저화는 각 tail의 최대 25%까지만 허용합니다.")
     info = store.metadata[dataset_id]
-    frame = store.frames[dataset_id]
     if info.grain != "raw" or info.aggregation:
         raise ValueError("윈저화 비교는 집계되지 않은 raw dataset에서만 실행합니다.")
-    if column not in frame.columns or not is_numeric_dtype(frame[column]):
+    if column not in info.columns:
+        raise ValueError("column은 dataset에 존재하는 수치형 컬럼이어야 합니다.")
+    frame = project_dataset(store, dataset_id, [column])
+    if not is_numeric_dtype(frame[column]):
         raise ValueError("column은 dataset에 존재하는 수치형 컬럼이어야 합니다.")
     clean = frame[column].dropna().astype(float)
     if len(clean) < 4:
@@ -137,10 +139,12 @@ def detect_outliers(
     if tail not in SUPPORTED_TAILS:
         raise ValueError("tail은 both, upper, lower 중 하나여야 합니다.")
     info = store.metadata[dataset_id]
-    frame = store.frames[dataset_id]
     if info.grain != "raw" or info.aggregation:
         raise ValueError("이상치 탐지는 집계되지 않은 raw dataset에서만 실행합니다.")
-    if column not in frame.columns or not is_numeric_dtype(frame[column]):
+    if column not in info.columns:
+        raise ValueError("column은 dataset에 존재하는 수치형 컬럼이어야 합니다.")
+    frame = project_dataset(store, dataset_id, [column])
+    if not is_numeric_dtype(frame[column]):
         raise ValueError("column은 dataset에 존재하는 수치형 컬럼이어야 합니다.")
 
     clean = frame[column].dropna().astype(float)

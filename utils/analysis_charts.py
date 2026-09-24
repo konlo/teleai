@@ -16,7 +16,7 @@ from matplotlib.figure import Figure
 from matplotlib.backends.backend_agg import FigureCanvasAgg
 from matplotlib.text import Text
 
-from utils.analysis_datasets import DatasetStore
+from utils.analysis_datasets import DatasetStore, project_dataset
 
 
 @dataclass(frozen=True)
@@ -65,10 +65,10 @@ def _apply_unicode_font(fig: Figure):
 def recommend_charts(store: DatasetStore, dataset_id: str,
                      columns: list[str] | None = None) -> list[ChartPreview]:
     info = store.metadata[dataset_id]
-    source = store.frames[dataset_id]
-    selected = columns or list(source.columns)
-    if not set(selected).issubset(source.columns):
+    selected = columns or list(info.columns)
+    if not set(selected).issubset(info.columns):
         raise ValueError("추천 대상 컬럼이 현재 데이터에 없습니다.")
+    source = project_dataset(store, dataset_id, selected)
     if source.empty:
         return []
     # Bounded local work. The same deterministic sample is used by the preview
@@ -196,9 +196,9 @@ def histogram_from_counts(store, dataset_id, value_column, weight_column):
     """Render complete value-frequency results without expanding source rows."""
     import numpy as np
     info = validate_frequency_dataset(store, dataset_id, value_column, weight_column)
-    frame = store.frames[dataset_id]
-    if value_column == weight_column or not {value_column, weight_column}.issubset(frame.columns):
+    if value_column == weight_column or not {value_column, weight_column}.issubset(info.columns):
         raise ValueError('값과 빈도 컬럼을 확인해주세요.')
+    frame = project_dataset(store, dataset_id, [value_column, weight_column])
     values = pd.to_numeric(frame[value_column], errors='raise')
     counts = pd.to_numeric(frame[weight_column], errors='raise')
     if not len(values) or not np.isfinite(values).all() or not np.isfinite(counts).all():
@@ -242,10 +242,10 @@ def render_chart_spec(store: DatasetStore, dataset_id: str, *, kind: str, x: str
     if any(not isinstance(value, str) or len(value) > 120 for value in labels.values()):
         raise ValueError("차트 제목과 축 라벨은 120자 이하 문자열이어야 합니다.")
     info = store.metadata[dataset_id]
-    source = store.frames[dataset_id]
     requested = [column for column in (x, y, category) if column]
-    if not x or len(requested) != len(set(requested)) or any(column not in source.columns for column in requested):
+    if not x or len(requested) != len(set(requested)) or any(column not in info.columns for column in requested):
         raise ValueError("차트 축은 로딩된 dataset의 중복 없는 실제 컬럼이어야 합니다.")
+    source = project_dataset(store, dataset_id, requested)
     if source.empty:
         raise ValueError("빈 데이터로 차트를 만들 수 없습니다.")
     if aggregation != "none" and (info.grain != "raw" or info.aggregation):
@@ -530,11 +530,11 @@ def render_count_rate_chart(store: DatasetStore, dataset_id: str, *,
     if not group_column or not outcome_column or group_column == outcome_column:
         raise ValueError("서로 다른 group_column과 outcome_column이 필요합니다.")
     info = store.metadata[dataset_id]
-    source = store.frames[dataset_id]
     if info.grain != "raw" or info.aggregation:
         raise ValueError("건수·비율 차트는 집계되지 않은 raw dataset만 사용합니다.")
-    if not {group_column, outcome_column}.issubset(source.columns):
+    if not {group_column, outcome_column}.issubset(info.columns):
         raise ValueError("차트 컬럼은 로딩된 dataset의 실제 컬럼이어야 합니다.")
+    source = project_dataset(store, dataset_id, [group_column, outcome_column])
     frame = source[[group_column, outcome_column]].dropna(subset=[group_column]).copy()
     if frame.empty:
         raise ValueError("그룹값이 있는 행이 필요합니다.")

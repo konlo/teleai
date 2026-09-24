@@ -9,7 +9,7 @@ from typing import Any
 import numpy as np
 import pandas as pd
 
-from utils.analysis_datasets import Condition, DatasetStore, filter_frame
+from utils.analysis_datasets import Condition, DatasetStore, filter_frame, project_dataset
 
 
 AGGREGATIONS = frozenset({
@@ -151,7 +151,6 @@ def pivot_dataset(
         raise ValueError("margins_name은 1~40자의 문자열이어야 합니다.")
 
     info = store.metadata[dataset_id]
-    source = store.frames[dataset_id]
     if info.grain != "raw" or info.aggregation:
         raise ValueError("피벗은 집계되지 않은 raw dataset에서만 실행합니다.")
     condition_objects = tuple(Condition(**item) for item in (conditions or []))
@@ -161,10 +160,11 @@ def pivot_dataset(
     derived_sources = {item.get("source_column") for item in raw_derived_bins if isinstance(item, dict)}
     requested = [column for column in axes if column not in derived_outputs]
     requested += ([value_column] if value_column else []) + condition_columns + list(derived_sources)
-    if any(column not in source.columns for column in requested):
+    if any(column not in info.columns for column in requested):
         raise ValueError("피벗 축·값·조건 컬럼은 현재 dataset의 실제 컬럼이어야 합니다.")
     if any(output not in axes for output in derived_outputs):
         raise ValueError("파생 구간 출력 컬럼은 피벗 축으로 사용해야 합니다.")
+    source = project_dataset(store, dataset_id, dict.fromkeys(requested))
     aggregations = [aggregation] if isinstance(aggregation, str) else aggregation
     if any(item in {"mean", "sum", "median", "min", "max", "success_rate"}
            for item in aggregations) and not value_column:

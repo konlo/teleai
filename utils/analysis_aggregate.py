@@ -8,7 +8,7 @@ import json
 import numpy as np
 import pandas as pd
 
-from utils.analysis_datasets import DatasetStore
+from utils.analysis_datasets import DatasetStore, project_dataset
 
 
 AGGREGATIONS = frozenset({"count", "mean", "sum", "median", "min", "max"})
@@ -45,16 +45,16 @@ def aggregate_dataset(
         raise ValueError("그룹과 출력 행 한도가 허용 범위를 벗어났습니다.")
 
     info = store.metadata[dataset_id]
-    source = store.frames[dataset_id]
     if info.grain != "raw" or info.aggregation:
         raise ValueError("집계는 raw grain dataset에서만 수행합니다.")
     requested = [column for column in (value_column, group_column) if column]
-    if len(requested) != len(set(requested)) or any(column not in source.columns for column in requested):
+    if len(requested) != len(set(requested)) or any(column not in info.columns for column in requested):
         raise ValueError("값·그룹 컬럼은 현재 dataset의 중복 없는 실제 컬럼이어야 합니다.")
     if aggregation == "count" and value_column:
         raise ValueError("count 집계에는 value_column을 지정하지 않습니다.")
     if aggregation != "count" and not value_column:
         raise ValueError("수치 집계에는 value_column이 필요합니다.")
+    source = project_dataset(store, dataset_id, requested)
     if value_column and (
         not pd.api.types.is_numeric_dtype(source[value_column])
         or pd.api.types.is_bool_dtype(source[value_column])
@@ -68,7 +68,7 @@ def aggregate_dataset(
             [np.inf, -np.inf], np.nan
         )
     complete = working.dropna(subset=required) if required else working
-    if complete.empty:
+    if len(complete) == 0:
         raise ValueError("집계할 완전한 관측값이 없습니다.")
 
     group_count = 0

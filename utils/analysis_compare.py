@@ -8,7 +8,7 @@ import json
 import numpy as np
 import pandas as pd
 
-from utils.analysis_datasets import DatasetStore
+from utils.analysis_datasets import DatasetStore, project_dataset
 
 
 AGGREGATIONS = frozenset({"count", "mean", "sum", "median", "min", "max"})
@@ -64,8 +64,6 @@ def compare_group_aggregates(
 
     baseline_info = store.metadata[baseline_dataset_id]
     cohort_info = store.metadata[cohort_dataset_id]
-    baseline = store.frames[baseline_dataset_id]
-    cohort = store.frames[cohort_dataset_id]
     if any(info.grain != "raw" or info.aggregation for info in (baseline_info, cohort_info)):
         raise ValueError("비교는 raw grain dataset 두 개에서만 수행합니다.")
     if baseline_info.coverage != "complete" or not baseline_info.predicate_known:
@@ -77,12 +75,14 @@ def compare_group_aggregates(
     required = [group_column] + ([value_column] if value_column else [])
     if not group_column or len(required) != len(set(required)):
         raise ValueError("그룹 컬럼과 값 컬럼은 중복 없이 지정해야 합니다.")
-    if any(column not in frame.columns for frame in (baseline, cohort) for column in required):
+    if any(column not in info.columns for info in (baseline_info, cohort_info) for column in required):
         raise ValueError("두 dataset 모두에 존재하는 실제 컬럼만 사용할 수 있습니다.")
     if aggregation == "count" and value_column:
         raise ValueError("count 집계에는 value_column을 지정하지 않습니다.")
     if aggregation != "count" and not value_column:
         raise ValueError("수치 집계에는 value_column이 필요합니다.")
+    baseline = project_dataset(store, baseline_dataset_id, required)
+    cohort = project_dataset(store, cohort_dataset_id, required)
     if value_column and any(
         not pd.api.types.is_numeric_dtype(frame[value_column])
         or pd.api.types.is_bool_dtype(frame[value_column])

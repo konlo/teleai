@@ -264,10 +264,11 @@ class RecoveryMiddleware(AgentMiddleware):
             mentioned_columns.sort(key=lambda name: (text.find(name) if text.find(name) >= 0 else len(text), name))
             # When exact schema names identify one loaded source, discard alias
             # collisions from other sources (for example ``age`` versus
-            # ``Age``). This is derived from the live frames, never a table map.
+            # ``Age``). Persisted schema metadata is sufficient here; opening
+            # every wide frame on each turn would defeat file-backed loading.
             exact_source_candidates = [
-                set(frame.columns) for frame in self.context.datasets.frames.values()
-                if set(explicit_columns).issubset(frame.columns)
+                set(info.columns) for info in self.context.datasets.metadata.values()
+                if set(explicit_columns).issubset(info.columns)
             ] if self.context and explicit_columns else []
             unique_column_sets = {tuple(sorted(columns)) for columns in exact_source_candidates}
             if len(unique_column_sets) == 1:

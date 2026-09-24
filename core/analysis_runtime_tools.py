@@ -11,7 +11,7 @@ from core.analysis_tool_contract import (
     ToolDefinition,
     normalize_tool_result,
 )
-from utils.analysis_datasets import AnalysisNeed, Condition, DatasetStore, assess_reuse, filter_frame, select_reusable_dataset
+from utils.analysis_datasets import AnalysisNeed, Condition, DatasetStore, assess_reuse, filter_frame, project_dataset, select_reusable_dataset
 from utils.analysis_skill_registry import AnalysisSkillRegistry
 from utils.analysis_charts import (
     histogram_from_counts,
@@ -358,7 +358,27 @@ def build_analysis_tools(context: AnalysisToolContext) -> list[ToolDefinition]:
                     'selection_origin': selection.origin,
                     'message': decision.reason + ' 요청 범위를 requested_conditions로 명시하거나, 사용자가 현재 결과 자체를 분석할 때만 current_result_only를 사용하세요.'}
         selected_info = datasets.metadata[selection.dataset_id]
-        input_frame = datasets.frames[selection.dataset_id]
+        # A single, explicit-column SELECT can scan only its referenced
+        # Parquet columns. Keep wildcard/CTE/compound queries on the general
+        # path because their output may depend on the complete schema.
+        projectable = (isinstance(tree, exp.Select)
+            and len(list(tree.find_all(exp.Select))) == 1
+            and not tree.args.get('with_') and not tree.args.get('joins')
+            and not any(column.name in output_aliases and column.name in selected_info.columns
+                        and column.find_ancestor(exp.Alias) is None for column in columns)
+            and not any(isinstance(node, exp.Star) and not isinstance(node.parent, exp.Count)
+                        for node in tree.walk()))
+        projected_columns = tuple(dict.fromkeys((
+            *sql_column_names, *(condition.column for condition in (requested or ())))))
+        if projectable and set(projected_columns).issubset(selected_info.columns):
+            input_frame = project_dataset(datasets, selection.dataset_id, projected_columns)
+            if not projected_columns:
+                # DuckDB cannot register a zero-column DataFrame. A private
+                # row marker preserves COUNT(*) cardinality without decoding
+                # the source's actual columns.
+                input_frame["__telly_row_marker__"] = range(selected_info.rows)
+        else:
+            input_frame = datasets.frames[selection.dataset_id]
         if requested is not None:
             residual = tuple(c for c in requested if c not in selected_info.conditions)
             input_frame = filter_frame(input_frame, residual)
