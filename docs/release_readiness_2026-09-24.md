@@ -78,4 +78,11 @@
 
 - 선택한 원본의 단일 컬럼 앞 1~5행 요청은 저장된 `inspect_dataset` 미리보기에서 값·출처·선택 ID를 검증해 답한다. 정렬·필터·상위값·6행 이상 요청에는 적용하지 않는다. 합성 300행×32열의 앞 2행은 0/1로 일치했고 0.091초, 모델·원격 호출 0회, 원본 파일·선택 불변이었다. 이전 같은 합성 질문은 실제 모델 경유 87.781초였다. [새 경로 근거](evaluation/preparation_2026-09-24/go_local_fast_paths_2026-09-24.json).
 - **명시적으로 선택한** 완전한 raw 원본의 단일 수치 집계는 출처·스키마·dtype·범위를 검증한 뒤 로컬 SQL로 실행한다. 선택이 없는 평가기의 모델 도구 오류 주입은 그대로 관찰된다. 합성 PRES_02 평균→원본 histogram은 2/2 PASS, 첫 턴 0.101초, 모델·추가 원격 0회, 원본 불변이었다. 이는 결정적 경로의 개선이며 모델의 자율 복구 성공률 증거가 아니다.
-- 현재 코드의 application 229/229, migration 128/128, Level 3 17/17 PASS. 전체 참고 runner와 CI 결과는 별도로 확인한다. `local-desktop` preflight READY(영속 저장소 경고), `private-single-user` NOT READY(영속 볼륨·외부 접근제어 미설정). 실제 Databricks 승인→조회와 배포 호스트 검증이 없어 **운영 출시 NO-GO**를 유지한다.
+- 현재 코드의 application 229/229, migration 128/128, Level 3 17/17 PASS. `local-desktop` preflight READY(영속 저장소 경고), `private-single-user` NOT READY(영속 볼륨·외부 접근제어 미설정). 실제 Databricks 승인→조회와 배포 호스트 검증이 없어 **운영 출시 NO-GO**를 유지한다.
+- commit `9a111fa`의 [GitHub Actions run 35991339107](https://github.com/konlo/teleai/actions/runs/35991339107)은 migration/application/agentic/reference/compile 전 단계 PASS. 전체 참고 runner도 로컬 217/217 PASS다.
+
+## 다음 운영 검증 승인 단위
+
+실제 연결 smoke의 첫 승인 대상은 정확히 `SELECT * FROM workspace.default.bank_loan LIMIT 10` 한 번이다. 이는 현재 저장된 스키마 힌트를 신뢰하지 않고 실제 반환 컬럼과 최대 10행의 후보 staging·검증·발행을 확인하는 작은 조회다. 테이블이 변경·이동됐다면 실패로 기록하고 임의의 다른 SQL을 자동 실행하지 않는다. 반환된 10행을 전체 모집단 통계나 운영 histogram의 정확성 근거로 사용하지 않는다. 추가 조회는 매번 별도 SQL 승인으로 진행한다. 이후 기존 원본/선택 보존, 실패/거절/재시작 복구와 후속 로컬 분석을 실제 연결에서 확인해야 한다.
+
+현재 호스트는 loopback 단일 사용자 개발 환경만 READY다. 별도 1인용 호스트의 영속 볼륨·외부 접근제어가 제공되고 그 호스트에서 preflight·smoke·rollback이 성공해야 운영 판정을 갱신할 수 있다.
