@@ -16,7 +16,7 @@ from matplotlib.figure import Figure
 from matplotlib.backends.backend_agg import FigureCanvasAgg
 from matplotlib.text import Text
 
-from utils.analysis_datasets import DatasetStore, project_dataset
+from utils.analysis_datasets import DatasetStore, project_dataset, sample_dataset
 
 
 @dataclass(frozen=True)
@@ -68,16 +68,12 @@ def recommend_charts(store: DatasetStore, dataset_id: str,
     selected = columns or list(info.columns)
     if not set(selected).issubset(info.columns):
         raise ValueError("추천 대상 컬럼이 현재 데이터에 없습니다.")
-    source = project_dataset(store, dataset_id, selected)
-    if source.empty:
+    if info.rows == 0:
         return []
     # Bounded local work. The same deterministic sample is used by the preview
     # and its final displayed image; it is never described as a full-population result.
-    frame = source[selected]
-    sampled = len(frame) > 20_000
-    if sampled:
-        frame = frame.sample(n=20_000, random_state=42)
-    scope = f"보유 {len(source):,}행 중 {len(frame):,}행 기준 · {info.coverage}"
+    frame = sample_dataset(store, dataset_id, selected)
+    scope = f"보유 {info.rows:,}행 중 {len(frame):,}행 기준 · {info.coverage}"
     numeric = [c for c in selected if pd.api.types.is_numeric_dtype(frame[c])
                and not pd.api.types.is_bool_dtype(frame[c])
                and frame[c].nunique() > 1]

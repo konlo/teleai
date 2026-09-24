@@ -17,6 +17,7 @@ from threading import RLock
 from uuid import uuid4
 
 import pandas as pd
+import numpy as np
 import pyarrow as pa
 import pyarrow.parquet as pq
 from utils.analysis_datasets import DatasetStore, DatasetInfo, Condition
@@ -160,6 +161,37 @@ class FrameCache(Mapping):
             _, payload = self.db.get(key, 'dataset')
             return pd.read_parquet(BytesIO(payload), columns=list(columns))
         return pd.read_parquet(path, columns=list(columns))
+
+    def sample(self, key, columns, *, rows, limit=20_000, seed=42):
+        """Uniformly sample Parquet rows while decoding only bounded batches."""
+        if rows < 0 or limit < 1:
+            raise ValueError('표본 행 수가 유효하지 않습니다.')
+        path = self.db.dataset_file(key)
+        if path is None:
+            _, payload = self.db.get(key, 'dataset')
+            source = BytesIO(payload)
+        else:
+            source = path
+        parquet = pq.ParquetFile(source)
+        if parquet.metadata.num_rows != rows:
+            raise ValueError('저장된 데이터의 행 수가 메타데이터와 다릅니다.')
+        count = min(rows, limit)
+        positions = np.sort(np.random.default_rng(seed).choice(rows, size=count, replace=False))
+        parts = []
+        offset = 0
+        for batch in parquet.iter_batches(batch_size=256, columns=list(columns)):
+            end = offset + batch.num_rows
+            first = np.searchsorted(positions, offset, side='left')
+            last = np.searchsorted(positions, end, side='left')
+            if first < last:
+                selected = positions[first:last] - offset
+                parts.append(batch.to_pandas().iloc[selected])
+            offset = end
+        if offset != rows:
+            raise ValueError('저장된 데이터의 행 수가 메타데이터와 다릅니다.')
+        if not parts:
+            return pd.read_parquet(source, columns=list(columns)).head(0)
+        return pd.concat(parts, ignore_index=True)
 
 
 class PersistentDatasets(DatasetStore):

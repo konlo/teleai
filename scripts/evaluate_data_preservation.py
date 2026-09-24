@@ -64,6 +64,16 @@ def histogram_matches(expected, observed, rendered_total):
     return expected == observed and rendered_total == sum(expected.values())
 
 
+def turn_event_count(diagnostics, event):
+    """Count actual attempts in the newest run, not recovery-loop counters."""
+    runs = [entry.get('run_id') for entry in diagnostics
+            if entry.get('event') == 'run_started']
+    if not runs:
+        return 0
+    return sum(entry.get('event') == event and entry.get('run_id') == runs[-1]
+               for entry in diagnostics)
+
+
 def run_case(spec, case, model, counter=None, artifact_dir=None):
     frame = pd.DataFrame(spec['rows']).astype(spec['dtypes'])
     expected_digest = fingerprint(frame)
@@ -102,6 +112,7 @@ def run_case(spec, case, model, counter=None, artifact_dir=None):
                         outcome = runtime.submit(turn['prompt'])
                     state = runtime.inspect()
                     recovery = state['recovery']
+                    diagnostics = [json.loads(line) for line in runtime.diagnostics.path.read_text().splitlines()]
                     root_unchanged = (fingerprint(runtime.datasets.frames[info.id]) == expected_digest
                                       and asdict(runtime.datasets.metadata[info.id]) == original_metadata)
                     new_histograms = {item['figure']: item for item in capture.histograms}
@@ -137,7 +148,8 @@ def run_case(spec, case, model, counter=None, artifact_dir=None):
                               'oracle_pass': bool(oracle_pass), 'approval_requests': pending,
                               'remote_executions': len(calls),
                               'runtime_model_calls': recovery.get('model_calls', 0),
-                              'runtime_tool_calls': recovery.get('tool_calls', 0),
+                              'runtime_tool_calls': turn_event_count(diagnostics, 'tool_started'),
+                              'recovery_tool_calls': recovery.get('tool_calls', 0),
                               'error_type': outcome.get('error_type'), 'error_id': outcome.get('error_id')}
                 except Exception as exc:
                     record = {'turn': index + 1, 'status': 'FAIL', 'error_type': type(exc).__name__,

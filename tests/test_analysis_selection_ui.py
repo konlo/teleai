@@ -25,6 +25,13 @@ class SelectionUiTests(unittest.TestCase):
             self.assertEqual(card.kind, 'boxplot')
             self.assertTrue(card.image.startswith(b'\x89PNG\r\n\x1a\n'))
             self.assertEqual(runtime.inspect()['recovery']['model_calls'], 0)
+            app.chat_input[0].set_value(
+                'value 값들이 어느 구간에 얼마나 모여 있는지 그림으로 보여줘. 보유 데이터만 사용해줘.').run()
+            self.assertFalse(app.exception)
+            self.assertEqual(len(app.image), 2)
+            latest = runtime.artifacts[runtime.inspect()['chart_ids'][-1]]
+            self.assertEqual(latest.kind, 'histogram')
+            self.assertEqual(runtime.inspect()['recovery']['model_calls'], 0)
             runtime.close()
 
     def test_example_then_switch_active_dataset_without_remote_query(self):

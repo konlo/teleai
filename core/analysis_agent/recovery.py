@@ -29,7 +29,7 @@ def _dtype_family(value):
 
 
 def _chart_kind(text):
-    """Recognize chart names even when an English name takes a Korean particle."""
+    """Recognize explicit chart names and a narrow distribution request."""
     patterns = (
         ('histogram', r'히스토그램|(?<![A-Za-z0-9_])histogram(?![A-Za-z0-9_])'),
         ('scatter', r'산점도|산포도|(?<![A-Za-z0-9_])scatter(?:\s*plot)?(?![A-Za-z0-9_])'),
@@ -38,7 +38,16 @@ def _chart_kind(text):
         ('line', r'선\s*(?:그래프|차트)|꺾은선|(?:누적|성장).{0,40}곡선|'
                  r'(?<![A-Za-z0-9_])line(?:\s*chart)?(?![A-Za-z0-9_])|(?<![A-Za-z0-9_])curve(?![A-Za-z0-9_])'),
     )
-    return next((kind for kind, pattern in patterns if re.search(pattern, text, re.I)), None)
+    explicit = next((kind for kind, pattern in patterns if re.search(pattern, text, re.I)), None)
+    if explicit:
+        return explicit
+    # This wording asks for a numeric distribution even without naming the
+    # chart. Require both a frequency idea and a visual action to avoid
+    # turning ordinary range comparisons into histograms.
+    if (re.search(r'(?:구간|범위).{0,30}(?:모여|몰려|빈도|분포)', text)
+            and re.search(r'보여|그림|시각화|차트|그래프', text)):
+        return 'histogram'
+    return None
 
 
 def _strip_outlier_method_scope(scope, column):
@@ -2476,7 +2485,7 @@ class RecoveryMiddleware(AgentMiddleware):
             from pandas.api.types import is_numeric_dtype
             for info in candidates:
                 try:
-                    frame = self.context.datasets.frames[info.id]
+                    frame = project_dataset(self.context.datasets, info.id, columns)
                     if all(is_numeric_dtype(frame[column]) for column in columns):
                         numeric_candidates.append(info)
                 except (KeyError, OSError, ValueError, TypeError):
@@ -2521,7 +2530,8 @@ class RecoveryMiddleware(AgentMiddleware):
             numeric_candidates = []
             for info in candidates:
                 try:
-                    if is_numeric_dtype(self.context.datasets.frames[info.id][columns[0]]):
+                    if is_numeric_dtype(project_dataset(
+                            self.context.datasets, info.id, [columns[0]])[columns[0]]):
                         numeric_candidates.append(info)
                 except (KeyError, OSError, ValueError, TypeError):
                     continue

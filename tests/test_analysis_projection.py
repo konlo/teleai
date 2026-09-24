@@ -6,12 +6,13 @@ from unittest.mock import patch
 import pandas as pd
 
 from core.analysis_agent.assets import AssetDB, FrameCache, PersistentDatasets
+from core.analysis_agent.recovery import _chart_kind
 from core.analysis_agent.runtime import GraphAnalysisRuntime
 from core.analysis_runtime_tools import build_analysis_tools
 from core.analysis_tool_contract import AnalysisToolContext
 from scripts.evaluate_analysis_statistics import ForbiddenModel
 from utils.analysis_aggregate import aggregate_dataset
-from utils.analysis_charts import render_chart_spec, render_count_rate_chart
+from utils.analysis_charts import recommend_charts, render_chart_spec, render_count_rate_chart
 from utils.analysis_compare import compare_group_aggregates
 from utils.analysis_group_summary import summarize_groups
 from utils.analysis_outliers import detect_outliers, winsorize_numeric_summary
@@ -21,6 +22,104 @@ from utils.analysis_timeseries import prepare_time_series
 
 
 class ProjectionTests(unittest.TestCase):
+    def test_file_backed_scalar_and_correlation_do_not_decode_full_frame(self):
+        with tempfile.TemporaryDirectory() as root:
+            runtime = GraphAnalysisRuntime(root, "owner", "projected-scalars", ForbiddenModel())
+            frame = pd.DataFrame({"signal": [float(n) for n in range(300)],
+                                  "paired": [float(2 * n) for n in range(300)],
+                                  "unused": ["wide"] * 300})
+            info = runtime.datasets.register_batches([frame], columns=list(frame.columns),
+                source="arbitrary.runtime_source", max_rows=500,
+                coverage="complete", predicate_known=True)
+            original = runtime.db.dataset_file(info.id).read_bytes()
+            try:
+                original_getitem = FrameCache.__getitem__
+                def reject_root_decode(cache, dataset_id):
+                    if dataset_id == info.id:
+                        raise AssertionError("root full decode")
+                    return original_getitem(cache, dataset_id)
+                with patch.object(FrameCache, "__getitem__", reject_root_decode):
+                    mean = runtime.submit("보유 데이터에서 signal 평균을 계산해줘")
+                    self.assertEqual(mean["status"], "answered", mean)
+                    correlation = runtime.submit("보유 데이터에서 signal과 paired의 상관계수를 계산해줘")
+                    self.assertEqual(correlation["status"], "answered", correlation)
+                state = runtime.inspect()["recovery"]
+                result = runtime.datasets.frames[state["evidence_ids"][-1]]
+                self.assertAlmostEqual(float(result.iloc[0, 0]), 1.0)
+                self.assertEqual(state["model_calls"], 0)
+                self.assertEqual(runtime.db.dataset_file(info.id).read_bytes(), original)
+            finally:
+                runtime.close()
+
+    def test_distribution_wording_produces_histogram_without_model(self):
+        with tempfile.TemporaryDirectory() as root:
+            runtime = GraphAnalysisRuntime(root, "owner", "distribution-wording", ForbiddenModel())
+            info = runtime.datasets.register_batches(
+                [pd.DataFrame({"signal": [float(n) for n in range(300)],
+                               "unused": ["wide"] * 300})],
+                columns=["signal", "unused"], source="arbitrary.runtime_source",
+                max_rows=500, coverage="complete", predicate_known=True)
+            try:
+                prompt = "signal 값들이 어느 구간에 얼마나 모여 있는지 그림으로 보여줘. 보유 데이터만 사용해줘."
+                with patch.object(FrameCache, "__getitem__", side_effect=AssertionError("full decode")):
+                    outcome = runtime.submit(prompt)
+                self.assertEqual(outcome["status"], "answered", outcome)
+                card = runtime.artifacts[runtime.inspect()["chart_ids"][0]]
+                self.assertEqual(card.kind, "histogram")
+                self.assertEqual(runtime.datasets.metadata[card.dataset_id].root_id, info.id)
+                self.assertEqual(runtime.inspect()["recovery"]["model_calls"], 0)
+                self.assertIsNone(_chart_kind("signal 범위 안의 평균을 계산해줘"))
+                self.assertEqual(_chart_kind("signal 구간별 빈도 막대그래프를 보여줘"), "bar")
+            finally:
+                runtime.close()
+
+    def test_file_backed_recommendations_sample_rows_without_full_decode(self):
+        with tempfile.TemporaryDirectory() as root:
+            db = AssetDB(root, "owner", "sampled-recommendations")
+            store = PersistentDatasets(db, budget=0)
+            columns = ["measure", "segment", *[f"unused_{n}" for n in range(30)]]
+            batches = (
+                pd.DataFrame({"measure": range(start, start + 1_000),
+                              "segment": ["a", "b"] * 500,
+                              **{f"unused_{n}": [n] * 1_000 for n in range(30)}})
+                for start in range(0, 30_000, 1_000)
+            )
+            info = store.register_batches(batches, columns=columns,
+                source="arbitrary.runtime_source", max_rows=40_000,
+                coverage="complete", predicate_known=True)
+            original = db.dataset_file(info.id).read_bytes()
+            db.select_dataset(info.id)
+            with patch.object(FrameCache, "__getitem__", side_effect=AssertionError("full decode")):
+                with patch.object(store.frames, "project", side_effect=AssertionError("full projection")):
+                    first = store.frames.sample(info.id, ["measure"], rows=30_000, limit=20_000)
+                    second = store.frames.sample(info.id, ["measure"], rows=30_000, limit=20_000)
+                    cards = recommend_charts(store, info.id)
+            self.assertEqual(len(first), 20_000)
+            self.assertEqual(first["measure"].tolist(), second["measure"].tolist())
+            self.assertTrue(first["measure"].is_monotonic_increasing)
+            self.assertTrue(any(value >= 29_000 for value in first["measure"]))
+            self.assertTrue(cards)
+            self.assertTrue(all("30,000행 중 20,000행 기준" in card.scope for card in cards))
+            self.assertTrue(all(card.image.startswith(b"\x89PNG\r\n\x1a\n") for card in cards))
+            self.assertEqual(db.selected_dataset_id(), info.id)
+            self.assertEqual(db.dataset_file(info.id).read_bytes(), original)
+            db.close()
+
+    def test_legacy_blob_recommendations_keep_existing_asset_readable(self):
+        with tempfile.TemporaryDirectory() as root:
+            db = AssetDB(root, "owner", "legacy-sampled-recommendations")
+            store = PersistentDatasets(db, budget=0)
+            info = store.register(pd.DataFrame({"measure": range(300),
+                                                "segment": ["a", "b"] * 150}),
+                                  source="arbitrary.source", coverage="complete",
+                                  predicate_known=True)
+            with patch.object(FrameCache, "__getitem__", side_effect=AssertionError("full decode")):
+                cards = recommend_charts(store, info.id)
+            self.assertTrue(cards)
+            self.assertTrue(all("300행 중 300행 기준" in card.scope for card in cards))
+            self.assertTrue(all(card.image.startswith(b"\x89PNG\r\n\x1a\n") for card in cards))
+            db.close()
+
     def test_agent_histogram_uses_file_backed_column_without_remote_or_model(self):
         with tempfile.TemporaryDirectory() as root:
             runtime = GraphAnalysisRuntime(root, "owner", "projected-agent", ForbiddenModel())

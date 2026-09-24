@@ -6,7 +6,7 @@ import unittest
 
 from jsonschema import Draft202012Validator
 from scripts.build_agent_readiness_manifest import build
-from scripts.evaluate_data_preservation import histogram_matches, run_case
+from scripts.evaluate_data_preservation import histogram_matches, run_case, turn_event_count
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -80,6 +80,14 @@ class ReadinessContractTests(unittest.TestCase):
         self.assertFalse(histogram_matches({1.0: 2, 9.0: 1}, {1.0: 3}, 3))
         self.assertFalse(histogram_matches({1.0: 2, 9.0: 1}, {1.0: 2, 9.0: 1}, 2))
 
+    def test_tool_attempt_count_is_scoped_to_newest_run(self):
+        events = [{'event': 'run_started', 'run_id': 'first'},
+                  {'event': 'tool_started', 'run_id': 'first'},
+                  {'event': 'run_started', 'run_id': 'second'},
+                  {'event': 'tool_started', 'run_id': 'second'},
+                  {'event': 'tool_started', 'run_id': 'second'}]
+        self.assertEqual(turn_event_count(events, 'tool_started'), 2)
+
     def test_runtime_evidence_survives_temporary_store_cleanup(self):
         import tempfile
         from scripts.evaluate_analysis_statistics import ForbiddenModel
@@ -93,6 +101,7 @@ class ReadinessContractTests(unittest.TestCase):
             self.assertTrue(Path(metadata['path']).is_file())
             self.assertTrue(metadata['diagnostics'])
             self.assertTrue(metadata['charts'])
+            self.assertGreater(record['turns'][0]['runtime_tool_calls'], 0)
             self.assertTrue(all(Path(chart['path']).is_file() for chart in metadata['charts']))
 
 

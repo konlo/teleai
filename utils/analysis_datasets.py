@@ -92,6 +92,18 @@ def project_dataset(store, dataset_id: str, columns) -> pd.DataFrame:
     return store.frames[dataset_id].loc[:, selected]
 
 
+def sample_dataset(store, dataset_id: str, columns, *, limit=20_000) -> pd.DataFrame:
+    """Sample declared columns without fully decoding a file-backed asset."""
+    selected = list(columns)
+    info = store.metadata[dataset_id]
+    if len(selected) != len(set(selected)) or not set(selected).issubset(info.columns):
+        raise ValueError("분석 컬럼은 현재 dataset의 중복 없는 실제 컬럼이어야 합니다.")
+    if hasattr(store.frames, "sample"):
+        return store.frames.sample(dataset_id, selected, rows=info.rows, limit=limit)
+    frame = project_dataset(store, dataset_id, selected)
+    return frame.sample(n=limit, random_state=42) if len(frame) > limit else frame
+
+
 @dataclass(frozen=True)
 class AnalysisNeed:
     source: str
