@@ -1484,3 +1484,5 @@ Task definitions and acceptance conditions: docs/agent_remaining_tasks_2026-09-1
 - **Actual model rerun**: 수정 후 PRES_02 평균→원본 histogram 2/2 PASS, 첫 요청 55.274초, 모델 1회, 추가 원격/승인 0회. PRES_03은 이번 한 번 ReadTimeout, 다음 번 60.569초 PASS라 지연·편차가 남는다. 실패와 성공을 모두 docs/evaluation/preparation_2026-09-24에 보존했다.
 - **Live UI**: localhost:8502의 기존 프로세스에서 hot reload된 UI와 이전 세션 객체가 섞여 AttributeError를 확인했다. 프로세스 재시작 후 합성 7행 데이터 선택·실제 histogram PNG를 브라우저에서 확인했고 기존 대화 4턴 결과가 복원됐다. 운영 DB 실행은 0회.
 - **Release gate**: local-desktop preflight READY(프로젝트 내부 저장소 경고). private-single-user preflight NOT READY(영속 볼륨/접근제어 미설정). 운영 출시 판정은 [NO-GO](docs/release_readiness_2026-09-24.md); DeepEval/Spider 공식 점수와 이번 변경 후 Databricks 실여정은 없음.
+- **Remote update** [12:28 KST]: commit `98560f7`을 기존 draft PR #68 브랜치에 push했다. GitHub Actions run `35951364068`의 migration/application/agentic/reference/compile deterministic-validation이 모두 성공했다. PR은 draft를 유지하고 병합·배포하지 않았다.
+- **Approval/input pending**: live Databricks smoke용 정확한 SQL `SELECT * FROM workspace.default.bank_loan LIMIT 10` 1회 승인과 출시 대상(별도 1인용 서버/현재 localhost/미정)을 사용자에게 함께 요청했다. 응답 전 원격 실행 0회 유지.
