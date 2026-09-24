@@ -7,9 +7,11 @@ import unittest
 import pandas as pd
 
 from core.analysis_agent.assets import AssetDB, PersistentDatasets, PersistentCharts
+from core.analysis_agent.runtime import GraphAnalysisRuntime
 from core.analysis_runtime_tools import build_analysis_tools
 from core.analysis_tool_contract import AnalysisToolContext
-from scripts.evaluate_analysis_agent import HistogramCapture
+from scripts.evaluate_analysis_agent import HistogramCapture, fixture_reference_context
+from scripts.evaluate_analysis_statistics import ForbiddenModel
 from utils.analysis_datasets import AnalysisNeed, Condition
 
 FIXTURE = Path(__file__).parent / 'fixtures/data_preservation_v1.json'
@@ -27,6 +29,38 @@ def load_fixture(renamed=False):
 
 
 class DataPreservationAcceptanceTests(unittest.TestCase):
+    def test_grounded_filtered_histogram_completes_without_model_or_reload(self):
+        for renamed in (False, True):
+            with self.subTest(renamed=renamed), tempfile.TemporaryDirectory() as root:
+                spec, frame = load_fixture(renamed)
+                measure, group = spec['roles']['measure'], spec['roles']['group']
+                runtime = GraphAnalysisRuntime(root, 'acceptance', 'filtered-chart',
+                    ForbiddenModel(), reference_context_loader=lambda: [
+                        fixture_reference_context(spec['source'], frame)])
+                original = runtime.datasets.register(frame.copy(), source=spec['source'],
+                    snapshot=spec['snapshot'], coverage='complete', predicate_known=True)
+                try:
+                    baseline = runtime.submit(f'보유 데이터의 {measure} histogram을 보여줘')
+                    self.assertEqual(baseline['status'], 'answered', baseline)
+                    with HistogramCapture() as capture:
+                        result = runtime.submit(
+                            f'{group}이 east인 데이터의 {measure} histogram을 보여줘')
+                    self.assertEqual(result['status'], 'answered', result)
+                    self.assertEqual(runtime.inspect()['recovery']['model_calls'], 0)
+                    self.assertFalse(runtime.inspect()['requests'])
+                    observed = capture.histograms[-1]['distribution']
+                    values = frame.loc[frame[group].eq('east'), measure].dropna().tolist()
+                    self.assertEqual(dict(observed), {value: values.count(value)
+                                                      for value in set(values)})
+                    events = [json.loads(line) for line in runtime.diagnostics.path.read_text().splitlines()]
+                    last_run = [event['run_id'] for event in events
+                                if event['event'] == 'run_started'][-1]
+                    self.assertFalse([event for event in events
+                        if event['run_id'] == last_run and event['event'] == 'request_scope_rejected'])
+                    pd.testing.assert_frame_equal(runtime.datasets.frames[original.id], frame)
+                finally:
+                    runtime.close()
+
     def test_derive_transform_aggregate_chart_restart_keeps_root(self):
         for renamed in (False, True):
             with self.subTest(renamed=renamed), tempfile.TemporaryDirectory() as root:

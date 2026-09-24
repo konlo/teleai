@@ -18,7 +18,9 @@
 - 승인된 원격 결과를 1,024행 이하 배치로 Parquet 후보 파일에 쓰고, 모든 배치·quota 검증 후 메타데이터를 발행한다. 신규 원격 자산은 SQLite BLOB 대신 파일을 사용한다. 이전 BLOB 자산은 계속 읽힌다. 검사·지정 컬럼 프로파일은 신규 파일에서 전체 프레임을 복원하지 않는다. 중간 배치 타입 불일치·용량 초과 시 후보 파일을 폐기하고 기존 원본/선택을 유지하는 회귀를 추가했다.
 - 로컬 모의 커서 100,000행 × 64열 정수 결과: 적재 1.185초, Parquet 32.79 MiB, 프로세스 최고 RSS 178.1 MiB. 이 수치는 합성 단일 프로세스 측정으로 Databricks 전송·동시 세션·실제 데이터형 성능을 대표하지 않는다.
 - 실제 `gemma4:e4b` 재검사 [PRES_02/PRES_03](evaluation/preparation_2026-09-24/live_preservation_streaming_recheck.json): 3/3턴 PASS, 각 45.007/8.324/51.748초, 추가 승인·원격 실행 0회, 원본 불변. 이전 PRES_03 ReadTimeout 기록은 남아 있다.
-- 신규 코드에 대한 application 205/205, migration 128/128, Level 3 17/17, 전체 참고 runner 217/217, compileall·`git diff --check` PASS. commit `e00a370`의 [GitHub Actions run 35955184372](https://github.com/konlo/teleai/actions/runs/35955184372)도 deterministic-validation 전체 PASS. 참고 runner 200문항은 실제 자연어 성공률로 계산하지 않는다.
+- 신규 코드에 대한 application 206/206, migration 128/128, Level 3 17/17, 전체 참고 runner 217/217, compileall·`git diff --check` PASS. 파일 staging commit `e00a370`의 [GitHub Actions run 35955184372](https://github.com/konlo/teleai/actions/runs/35955184372)과 이후 문서 commit `c3b88b0`의 [run 35955354672](https://github.com/konlo/teleai/actions/runs/35955354672)가 deterministic-validation 전체 PASS. 이번 필터 복구 수정의 원격 CI는 별도 확인 대상이다. 참고 runner 200문항은 실제 자연어 성공률로 계산하지 않는다.
+- 추가 실제 모델 [PRES_01 실패](evaluation/preparation_2026-09-24/live_preservation_root_roundtrip_final.json)에서 필터 조건 `zone=east`의 히스토그램을 요청했으나 Databricks 방언에서 이중 따옴표 식별자가 문자열로 해석돼 3회 모델 호출/77.783초 후 `exhausted`였다. 범위를 틀리게 실행하거나 원본을 변경하지는 않았다. 방언에 맞는 백틱 조건과 검증된 단일 로컬 원본의 결정적 계획을 추가했다. [동일 4턴 재검증](evaluation/preparation_2026-09-24/live_preservation_root_roundtrip_fixed.json)은 4/4 PASS; 실패했던 필터 턴 0.070초·모델/원격 0회, 원본 복귀와 재시작 복귀도 PASS. 임의 schema명 두 종류에서 정확한 필터 분포·원본 보존을 자동 회귀로 확인했다.
+- 최신 localhost 화면에서 별도 `period=2026-08` 필터 히스토그램 요청을 제출해 실제 PNG와 **빈도 합계 4**를 확인했다. 진단 로그는 8.145초, 로컬 도구 1회, 모델 0회, 원격 조회/승인 0회를 기록했다. 기존 7행 원본은 유지됐다. 캐시 후보 검사에서 실제 거절이 아닌 `request_scope_rejected` 로그가 생기던 잡음도 제거하고 두 schema 회귀로 확인했다.
 
 ## 출시를 막는 일
 

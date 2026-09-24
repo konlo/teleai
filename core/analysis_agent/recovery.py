@@ -1253,10 +1253,11 @@ class RecoveryMiddleware(AgentMiddleware):
         scope = current.get('scope', {})
         return bool(scope.get('conditions') or scope.get('any_conditions') or scope.get('unresolved'))
 
-    def _scope_valid(self, executed, current, histogram_column=None):
+    def _scope_valid(self, executed, current, histogram_column=None, *, record_error=True):
         if not self._has_scope(current): return True
         if scope_matches(executed, current['scope'], histogram_column=histogram_column): return True
-        self._record_scope_error(current)
+        if record_error:
+            self._record_scope_error(current)
         return False
 
     def _record_scope_error(self, current):
@@ -1411,7 +1412,7 @@ class RecoveryMiddleware(AgentMiddleware):
                         'kind': 'boxplot', 'x': card.columns[0],
                         'category': card.columns[1]}, current):
                     return False
-            elif not self._scope_valid(info, current, value_column):
+            elif not self._scope_valid(info, current, value_column, record_error=False):
                 return False
             if info.coverage != 'complete' and not current.get('current_result_only'): return False
             if current.get('plan'):
@@ -2324,21 +2325,43 @@ class RecoveryMiddleware(AgentMiddleware):
         if (self.context and current.get('chart') and current.get('kind') == 'histogram'
                 and not current.get('fresh_source_required') and not current.get('chart_spec_requested')
                 and not current.get('plan')
-                and not current.get('artifact_ids') and not self._has_scope(current)
-                and len(current.get('required_columns', [])) == 1):
-            column=current['required_columns'][0]
+                and not current.get('artifact_ids')):
+            # A grounded predicate can be applied to one complete local root.
+            # Planning it here avoids repeated model calls that propose an
+            # unfiltered histogram and are correctly rejected by scope checks.
+            scoped = current.get('scope', {})
+            conditions = scoped.get('conditions', [])
+            filter_columns = {item.get('column') for item in conditions}
+            measures = [name for name in current.get('required_columns', [])
+                        if name not in filter_columns]
+            supported_scope = (not scoped.get('unresolved')
+                and not scoped.get('any_conditions')
+                and not scoped.get('measure_conditions')
+                and not scoped.get('ratio'))
+            column = measures[0] if supported_scope and len(measures) == 1 else None
             candidates=[info for info in self.context.datasets.metadata.values()
-                if info.grain == 'raw' and column in info.columns
+                if column and info.grain == 'raw' and not info.aggregation
+                and {column, *filter_columns}.issubset(info.columns)
                 and self._source_matches(info,current)
                 and (current.get('current_result_only')
                     or (info.coverage == 'complete' and info.predicate_known
                         and self._fresh_for_request(info,current)))]
             if len(candidates) == 1:
-                arguments={'source':candidates[0].source,'column':column,
-                    'where_sql':'','current_result_only':bool(current.get('current_result_only'))}
-                if not any(c.get('name') == 'prepare_histogram' and c.get('args') == arguments
-                           for c in calls.values()):
-                    return {'name':'prepare_histogram','args':arguments}
+                from pandas.api.types import is_numeric_dtype
+                frames = self.context.datasets.frames
+                observed = (frames.project(candidates[0].id, [column])
+                            if hasattr(frames, 'project') else frames[candidates[0].id])
+                where = self._where_sql(conditions, identifier_quote='`') if conditions else ''
+                if (is_numeric_dtype(observed[column])
+                        and self._scope_valid('SELECT * FROM data' +
+                            (' WHERE ' + where if where else ''), current,
+                            histogram_column=column)):
+                    arguments={'source':candidates[0].source,'column':column,
+                        'where_sql':where,
+                        'current_result_only':bool(current.get('current_result_only'))}
+                    if not any(c.get('name') == 'prepare_histogram' and c.get('args') == arguments
+                               for c in calls.values()):
+                        return {'name':'prepare_histogram','args':arguments}
         if (self.context and current.get('calculation') and current.get('operations') == ['COUNT']
                 and (scope.get('conditions') or scope.get('any_conditions') or current.get('whole_row_count'))
                 and not scope.get('unresolved')
@@ -2512,12 +2535,14 @@ class RecoveryMiddleware(AgentMiddleware):
         return None
 
     @staticmethod
-    def _where_sql(conditions):
+    def _where_sql(conditions, *, identifier_quote='"'):
         ops = {'eq':'=', 'ne':'<>', 'gt':'>', 'ge':'>=', 'lt':'<', 'le':'<='}
         parts = []
         for item in conditions:
-            # This helper only builds DuckDB SQL for local_analysis_sql.
-            column = '"' + item['column'].replace('"', '""') + '"'
+            # DuckDB uses double quotes; approved Databricks plans use backticks.
+            column = (identifier_quote
+                + item['column'].replace(identifier_quote, identifier_quote * 2)
+                + identifier_quote)
             value = item['value']
             values = value if item['op'] == 'in' and isinstance(value, (list, tuple)) else [value]
             literals = []
@@ -2657,7 +2682,8 @@ class RecoveryMiddleware(AgentMiddleware):
             if arguments.get('current_result_only') and not current.get('current_result_only'):
                 return False
             where = arguments.get('where_sql', '').strip()
-            return self._scope_valid('SELECT * FROM data' + (' WHERE ' + where if where else ''), current)
+            return self._scope_valid('SELECT * FROM data' + (' WHERE ' + where if where else ''),
+                current, histogram_column=arguments.get('column'))
         if call.get('name') == 'show_chart':
             try:
                 card = self.artifacts[arguments.get('chart_id')]

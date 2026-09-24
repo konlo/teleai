@@ -1,0 +1,388 @@
+{
+  "case_id": "PRES_01-turn4",
+  "run_id": "5511f0d454cd443fac1c2cc81f7fd7c3",
+  "state": "idle",
+  "message_count": 16,
+  "pending_requests": 0,
+  "recovery_status": "complete",
+  "recovery_attempts": 0,
+  "recovery_model_calls": 0,
+  "reference_context": [
+    {
+      "table": "fixture.sensor_readings",
+      "training_status": "fixture_profile",
+      "columns": [
+        {
+          "name": "event_key",
+          "dtype": "int64",
+          "distinct_count": 8,
+          "null_count": 0,
+          "top_values": [
+            {
+              "value": 1,
+              "count": 1
+            },
+            {
+              "value": 2,
+              "count": 1
+            },
+            {
+              "value": 3,
+              "count": 1
+            },
+            {
+              "value": 4,
+              "count": 1
+            },
+            {
+              "value": 5,
+              "count": 1
+            },
+            {
+              "value": 6,
+              "count": 1
+            },
+            {
+              "value": 7,
+              "count": 1
+            },
+            {
+              "value": 8,
+              "count": 1
+            }
+          ],
+          "aliases": []
+        },
+        {
+          "name": "reading",
+          "dtype": "float64",
+          "distinct_count": 6,
+          "null_count": 1,
+          "top_values": [
+            {
+              "value": 2.0,
+              "count": 2
+            },
+            {
+              "value": -4.0,
+              "count": 1
+            },
+            {
+              "value": 0.0,
+              "count": 1
+            },
+            {
+              "value": 8.0,
+              "count": 1
+            },
+            {
+              "value": 12.0,
+              "count": 1
+            },
+            {
+              "value": 50.0,
+              "count": 1
+            }
+          ],
+          "aliases": []
+        },
+        {
+          "name": "zone",
+          "dtype": "object",
+          "distinct_count": 2,
+          "null_count": 0,
+          "top_values": [
+            {
+              "value": "east",
+              "count": 4
+            },
+            {
+              "value": "west",
+              "count": 4
+            }
+          ],
+          "aliases": []
+        }
+      ],
+      "alias_source": null,
+      "source": "local test_set fixture; not a live Databricks table"
+    }
+  ],
+  "datasets": [
+    {
+      "id": "4e37dbf2-827b-4685-9581-d94f14050f04",
+      "source": "fixture.sensor_readings",
+      "columns": [
+        "event_key",
+        "reading",
+        "zone"
+      ],
+      "rows": 8,
+      "coverage": "complete",
+      "conditions": [],
+      "predicate_known": true,
+      "grain": "raw",
+      "aggregation": "",
+      "snapshot": "fixture:preservation-v1",
+      "query": "",
+      "parent_id": "",
+      "parent_ids": [],
+      "role": "root",
+      "root_id": "4e37dbf2-827b-4685-9581-d94f14050f04"
+    },
+    {
+      "id": "681c1199-74f9-4184-9a75-3b95366762c9",
+      "source": "fixture.sensor_readings",
+      "columns": [
+        "reading",
+        "__frequency"
+      ],
+      "rows": 4,
+      "coverage": "complete",
+      "conditions": [
+        {
+          "column": "zone",
+          "op": "eq",
+          "value": "east"
+        }
+      ],
+      "predicate_known": false,
+      "grain": "aggregate",
+      "aggregation": "SELECT \"reading\", COUNT(*) AS \"__frequency\" FROM data WHERE NOT \"reading\" IS NULL AND (\"zone\" = 'east') GROUP BY \"reading\"",
+      "snapshot": "fixture:preservation-v1",
+      "query": "SELECT \"reading\", COUNT(*) AS \"__frequency\" FROM data WHERE NOT \"reading\" IS NULL AND (\"zone\" = 'east') GROUP BY \"reading\"",
+      "parent_id": "4e37dbf2-827b-4685-9581-d94f14050f04",
+      "parent_ids": [],
+      "role": "derived",
+      "root_id": "4e37dbf2-827b-4685-9581-d94f14050f04"
+    }
+  ],
+  "charts": [
+    {
+      "id": "2dafbc33-ca57-41a2-9f13-b58fae86e00f",
+      "dataset_id": "4e37dbf2-827b-4685-9581-d94f14050f04",
+      "kind": "histogram",
+      "columns": [
+        "reading"
+      ],
+      "png_sha256": "c084dfeef8490ac54e0e1730894472b2268ad106bab1e39b482894a53b6277b0",
+      "png_valid": true,
+      "path": "/Users/najongseong/git_repository/teleai/docs/evaluation/preparation_2026-09-24/preservation_artifacts/PRES_01-turn4-c084dfeef849.png"
+    },
+    {
+      "id": "66e04310-835d-4b9e-81a1-82bcfaf4b80d",
+      "dataset_id": "681c1199-74f9-4184-9a75-3b95366762c9",
+      "kind": "histogram",
+      "columns": [
+        "reading"
+      ],
+      "png_sha256": "8d6073a8dd4cc21713df317f7a484e54908a58f79c28dc86aec94af1af3c5f2b",
+      "png_valid": true,
+      "path": "/Users/najongseong/git_repository/teleai/docs/evaluation/preparation_2026-09-24/preservation_artifacts/PRES_01-turn4-8d6073a8dd4c.png"
+    }
+  ],
+  "diagnostics": [
+    {
+      "time": "2026-09-24T04:34:26.036518+00:00",
+      "event": "run_started",
+      "run_id": "c561c20e79a34a23b268d79923491ca1",
+      "operation": "submit"
+    },
+    {
+      "time": "2026-09-24T04:34:26.098793+00:00",
+      "event": "recovery_transition",
+      "run_id": "c561c20e79a34a23b268d79923491ca1",
+      "tool": "prepare_histogram"
+    },
+    {
+      "time": "2026-09-24T04:34:26.100227+00:00",
+      "event": "tool_started",
+      "run_id": "c561c20e79a34a23b268d79923491ca1",
+      "tool": "prepare_histogram"
+    },
+    {
+      "time": "2026-09-24T04:34:34.013047+00:00",
+      "event": "tool_completed",
+      "run_id": "c561c20e79a34a23b268d79923491ca1",
+      "tool": "prepare_histogram",
+      "status": "ready",
+      "elapsed_seconds": 7.913
+    },
+    {
+      "time": "2026-09-24T04:34:34.014983+00:00",
+      "event": "completion_checked",
+      "run_id": "c561c20e79a34a23b268d79923491ca1",
+      "status": "complete",
+      "attempts": 0
+    },
+    {
+      "time": "2026-09-24T04:34:34.015976+00:00",
+      "event": "run_completed",
+      "run_id": "c561c20e79a34a23b268d79923491ca1",
+      "status": "answered",
+      "elapsed_seconds": 7.979
+    },
+    {
+      "time": "2026-09-24T04:34:34.016011+00:00",
+      "event": "turn_slo",
+      "run_id": "c561c20e79a34a23b268d79923491ca1",
+      "elapsed_seconds": 7.979,
+      "limit": 180.0,
+      "status": "ok"
+    },
+    {
+      "time": "2026-09-24T04:34:34.019584+00:00",
+      "event": "run_started",
+      "run_id": "bd26a195bf7f42d084e6af02ad417e99",
+      "operation": "submit"
+    },
+    {
+      "time": "2026-09-24T04:34:34.023429+00:00",
+      "event": "recovery_transition",
+      "run_id": "bd26a195bf7f42d084e6af02ad417e99",
+      "tool": "prepare_histogram"
+    },
+    {
+      "time": "2026-09-24T04:34:34.024383+00:00",
+      "event": "tool_started",
+      "run_id": "bd26a195bf7f42d084e6af02ad417e99",
+      "tool": "prepare_histogram"
+    },
+    {
+      "time": "2026-09-24T04:34:34.085298+00:00",
+      "event": "tool_completed",
+      "run_id": "bd26a195bf7f42d084e6af02ad417e99",
+      "tool": "prepare_histogram",
+      "status": "ready",
+      "elapsed_seconds": 0.061
+    },
+    {
+      "time": "2026-09-24T04:34:34.087292+00:00",
+      "event": "completion_checked",
+      "run_id": "bd26a195bf7f42d084e6af02ad417e99",
+      "status": "complete",
+      "attempts": 0
+    },
+    {
+      "time": "2026-09-24T04:34:34.088269+00:00",
+      "event": "run_completed",
+      "run_id": "bd26a195bf7f42d084e6af02ad417e99",
+      "status": "answered",
+      "elapsed_seconds": 0.069
+    },
+    {
+      "time": "2026-09-24T04:34:34.088302+00:00",
+      "event": "turn_slo",
+      "run_id": "bd26a195bf7f42d084e6af02ad417e99",
+      "elapsed_seconds": 0.069,
+      "limit": 180.0,
+      "status": "ok"
+    },
+    {
+      "time": "2026-09-24T04:34:34.091607+00:00",
+      "event": "run_started",
+      "run_id": "1efaf7a150f147498eb35e736bf66d4d",
+      "operation": "submit"
+    },
+    {
+      "time": "2026-09-24T04:34:34.097724+00:00",
+      "event": "cached_chart_reuse_planned",
+      "run_id": "1efaf7a150f147498eb35e736bf66d4d"
+    },
+    {
+      "time": "2026-09-24T04:34:34.097771+00:00",
+      "event": "recovery_transition",
+      "run_id": "1efaf7a150f147498eb35e736bf66d4d",
+      "tool": "show_chart"
+    },
+    {
+      "time": "2026-09-24T04:34:34.098630+00:00",
+      "event": "tool_started",
+      "run_id": "1efaf7a150f147498eb35e736bf66d4d",
+      "tool": "show_chart"
+    },
+    {
+      "time": "2026-09-24T04:34:34.098706+00:00",
+      "event": "tool_completed",
+      "run_id": "1efaf7a150f147498eb35e736bf66d4d",
+      "tool": "show_chart",
+      "status": "ready",
+      "elapsed_seconds": 0.0
+    },
+    {
+      "time": "2026-09-24T04:34:34.099605+00:00",
+      "event": "completion_checked",
+      "run_id": "1efaf7a150f147498eb35e736bf66d4d",
+      "status": "complete",
+      "attempts": 0
+    },
+    {
+      "time": "2026-09-24T04:34:34.100829+00:00",
+      "event": "run_completed",
+      "run_id": "1efaf7a150f147498eb35e736bf66d4d",
+      "status": "answered",
+      "elapsed_seconds": 0.01
+    },
+    {
+      "time": "2026-09-24T04:34:34.100872+00:00",
+      "event": "turn_slo",
+      "run_id": "1efaf7a150f147498eb35e736bf66d4d",
+      "elapsed_seconds": 0.01,
+      "limit": 180.0,
+      "status": "ok"
+    },
+    {
+      "time": "2026-09-24T04:34:34.114975+00:00",
+      "event": "run_started",
+      "run_id": "5511f0d454cd443fac1c2cc81f7fd7c3",
+      "operation": "submit"
+    },
+    {
+      "time": "2026-09-24T04:34:34.119852+00:00",
+      "event": "cached_chart_reuse_planned",
+      "run_id": "5511f0d454cd443fac1c2cc81f7fd7c3"
+    },
+    {
+      "time": "2026-09-24T04:34:34.119922+00:00",
+      "event": "recovery_transition",
+      "run_id": "5511f0d454cd443fac1c2cc81f7fd7c3",
+      "tool": "show_chart"
+    },
+    {
+      "time": "2026-09-24T04:34:34.120879+00:00",
+      "event": "tool_started",
+      "run_id": "5511f0d454cd443fac1c2cc81f7fd7c3",
+      "tool": "show_chart"
+    },
+    {
+      "time": "2026-09-24T04:34:34.120967+00:00",
+      "event": "tool_completed",
+      "run_id": "5511f0d454cd443fac1c2cc81f7fd7c3",
+      "tool": "show_chart",
+      "status": "ready",
+      "elapsed_seconds": 0.0
+    },
+    {
+      "time": "2026-09-24T04:34:34.121947+00:00",
+      "event": "completion_checked",
+      "run_id": "5511f0d454cd443fac1c2cc81f7fd7c3",
+      "status": "complete",
+      "attempts": 0
+    },
+    {
+      "time": "2026-09-24T04:34:34.122930+00:00",
+      "event": "run_completed",
+      "run_id": "5511f0d454cd443fac1c2cc81f7fd7c3",
+      "status": "answered",
+      "elapsed_seconds": 0.008
+    },
+    {
+      "time": "2026-09-24T04:34:34.122959+00:00",
+      "event": "turn_slo",
+      "run_id": "5511f0d454cd443fac1c2cc81f7fd7c3",
+      "elapsed_seconds": 0.008,
+      "limit": 180.0,
+      "status": "ok"
+    }
+  ]
+}

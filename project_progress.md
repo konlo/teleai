@@ -3,7 +3,7 @@
 ## Current Status
 - **Last Updated**: 2026-09-24
 - **Status**: In Progress — T05~T07 부분 구현, 개발 화면 검증 완료, 운영 출시 NO-GO
-- **Summary**: 원본/분기 재사용과 영속 선택, 승인 SQL 출처 결합·후보 검증, 원격 배치의 파일 staging, 지정 컬럼 프로파일, bounded UI 미리보기, 구조화 집계 완료 근거를 보강했다. 최종 application 205/205, migration 128/128, Level 3 17/17, 참고 전체 runner 217/217 PASS. localhost 재시작 후 실제 histogram PNG와 보유 데이터 복원을 확인했다.
+- **Summary**: 원본/분기 재사용과 영속 선택, 승인 SQL 출처 결합·후보 검증, 원격 배치의 파일 staging, 지정 컬럼 프로파일, 필터 히스토그램의 결정적 로컬 복구, bounded UI 미리보기, 구조화 집계 완료 근거를 보강했다. 최종 application 206/206, migration 128/128, Level 3 17/17, 참고 전체 runner 217/217 PASS. localhost 재시작 후 실제 histogram PNG와 보유 데이터 복원을 확인했다.
 - **Next Session Focus**: [출시 판정](docs/release_readiness_2026-09-24.md)의 정확한 SQL별 Databricks 승인 여정, 나머지 분석 도구의 부분 scan, 실제 모델 반복/held-out 평가, 배포 대상·영속 볼륨·접근제어를 해결한다.
 - **Current qualification**: 실제 모델 PRES_02 수정 후 2턴 PASS이나 첫 평균 55.274초; PRES_03은 timeout과 60.569초 PASS가 모두 기록됐다. 전체 agent 자연어 성공률은 아직 없고 기존 oracle 87/200은 coverage, 113개 미채점이다. DeepEval/Spider 공식 점수·새 Databricks 조회·운영 배포 검증은 없다.
 
@@ -471,7 +471,7 @@ Task definitions and acceptance conditions: docs/agent_remaining_tasks_2026-09-1
 
 ### 2026-09-24 Daily Summary
 - **Work completed**: 피벗·소계 WIP 회귀와 평가/보존 계약을 정리하고, SQL·필터·히스토그램의 부모/registry 재사용과 복수 root 오선택 차단을 연결했다. active dataset 영속 상태·원본 계보·승인 SQL 실제 출처 검증·원격 결과 컬럼/배치 한도·SQL 집계와 raw 기준 분리·작은 UI 미리보기·`aggregate_dataset` 완료 근거를 구현했다. 이후 원격 배치의 파일 staging과 검증 후 발행, 파일 기반 검사·지정 컬럼 프로파일, 실패/용량 초과 시 원본 보존을 추가했다.
-- **Evidence**: migration 128/128, application 205/205, Level 3 17/17, 참고 runner 217/217, compileall·diff check PASS. 실제 모델 PRES_02/PRES_03 재검사 3/3턴 PASS(45.007/8.324/51.748초, 추가 원격 0), 이전 PRES_03 timeout도 보존. 10만 행×64열 로컬 모의 커서 적재 1.185초·32.79 MiB 파일·peak RSS 178.1 MiB. localhost 재시작 뒤 합성 원본 7행의 PNG와 대화를 화면에서 확인했다. [출시 판정](docs/release_readiness_2026-09-24.md).
+- **Evidence**: migration 128/128, application 206/206, Level 3 17/17, 참고 runner 217/217, compileall·diff check PASS. 실제 모델 PRES_02/PRES_03 재검사 3/3턴 PASS(45.007/8.324/51.748초, 추가 원격 0), 이전 PRES_03 timeout도 보존. PRES_01은 필터 턴 77.783초/exhausted를 재현해 수정하고 동일 4턴 4/4 PASS(필터 턴 0.070초·모델/원격 0)로 재검증했다. 10만 행×64열 로컬 모의 커서 적재 1.185초·32.79 MiB 파일·peak RSS 178.1 MiB. localhost 화면에서 원본 7행과 새 필터 히스토그램 빈도 합계 4를 확인했다(모델/원격 0). [출시 판정](docs/release_readiness_2026-09-24.md).
 - **Major issues**: 실제 모델 지연/편차, 전체 SQL 의미 LoadPlan과 차트/SQL/통계의 부분 scan 부재, private-single-user preflight NOT READY(영속 볼륨·접근제어), 운영 DB/DeepEval/Spider 미검증. Streamlit hot reload의 이전 세션 객체가 새 화면과 충돌했으며 프로세스 재시작으로 복구했다.
 - **Next action items**: 사용자 승인형 Databricks J22~J24 실검증, 나머지 분석의 부분 scan·실제 호스트 부하, 반복/held-out 실제 모델 평가, 외부 평가/113문항 oracle, PR 리뷰/병합·배포 smoke/rollback. 출시는 차단 상태다.
 
@@ -1495,3 +1495,5 @@ Task definitions and acceptance conditions: docs/agent_remaining_tasks_2026-09-1
 - **Runtime**: Streamlit 127.0.0.1:8502를 새 프로세스로 재시작하고 health `ok`, 브라우저에서 기존 합성 7행 데이터와 histogram PNG·대화·입력창 복원을 확인했다. `local-desktop` preflight READY(저장소 경고), `private-single-user` NOT READY(영속 볼륨·접근제어).
 - **Decision/remaining**: 원격 SQL `SELECT * FROM workspace.default.bank_loan LIMIT 10`의 명시 승인을 재요청했다. 응답 전 운영 조회 0회. 외부 배포 대상도 미확정. 차트/SQL/통계는 여전히 전체 DataFrame을 읽고, DeepEval/Spider 공식 점수·동시 부하·운영 DB 실여정은 없다. [출시 판정](docs/release_readiness_2026-09-24.md)은 NO-GO다.
 - **Remote update** [13:20 KST]: commit `e00a370`을 draft PR #68 브랜치에 push했다. GitHub Actions run `35955184372`의 migration/application/agentic/reference/compile 전체 단계가 성공했다. PR 제목·설명을 현재 구현과 NO-GO 근거에 맞게 갱신했다. 병합·운영 배포는 하지 않았다.
+- **Actual-model failure/fix** [13:30 KST]: PRES_01의 `zone=east` 필터 히스토그램이 3회 모델 호출/77.783초 후 exhausted였다. `_where_sql`의 DuckDB 이중 따옴표가 Databricks 파서에서 문자열로 읽혀 범위가 거절된 것이 원인. `prepare_histogram`에 대해 백틱 SQL과 grounded 단일 원본 로컬 계획을 사용하도록 수정했다. 두 schema fixture의 독립 분포 oracle와 모델 0/원격 0 회귀가 통과했다. 동일 실제 모델 4턴 4/4 PASS, 필터 턴 0.070초. 전체 application 206/206, migration 128/128, Level 3 17/17, 참고 runner 217/217, compileall·diff check PASS. 실패/수정 보고서를 보존했다.
+- **Live UI/log** [13:32 KST]: 최신 코드 프로세스로 localhost:8502를 재시작했다. 저장된 합성 7행 대화에서 `period=2026-08` 필터의 `value` histogram을 직접 제출하고 실제 PNG와 빈도 합계 4를 화면에서 확인했다. 진단 로그는 answered 8.145초·로컬 도구 1회·모델 0회·원격/승인 0회. 캐시 후보 검사 중 기록되던 허위 `request_scope_rejected` 이벤트를 억제하고 회귀로 확인했다.
