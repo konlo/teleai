@@ -63,4 +63,5 @@
 - 300행×32열 합성 원본 두 개에 5 KiB 한도를 적용해 전체 decode를 강제로 막은 상태에서 wildcard SQL, join, 이상치 inlier 파생이 모두 원본 decode 전에 거절되고, 명시 컬럼 SQL은 성공하며 원본 바이트·선택 ID가 유지됨을 확인했다. 합성 100,000행×128 수치열(Parquet 66.95 MiB)은 `SELECT * LIMIT 2`를 추정 228.1 MiB로 거절하고 명시 컬럼 평균은 성공했다. 이 단일 프로세스 도구 호출은 0.091초, 전체 decode 0회, peak RSS 267.4 MiB였다. 적재 비용을 포함한 RSS이며 모델·실제 DB·동시 세션 성능은 나타내지 않는다.
 - 거절 사유가 끝까지 해소되지 않으면 agent 응답은 완료를 주장하지 않고 `blocked/full_frame_budget`으로 분류하며 필요한 컬럼·조건 또는 선행 집계를 안내한다. 실제 모델이 이 안내를 보고 스스로 대안을 선택하는지에 대한 여정 검증은 남아 있다.
 - 변경 후 로컬 application 222/222, migration 128/128, 전체 참고 runner 217/217(그중 Level 3 17/17), compileall·`git diff --check` PASS. 참고 runner는 실제 자연어 agent 성공률이 아니다.
+- 구현 commit `b0b56ed`의 [GitHub Actions deterministic-validation](https://github.com/konlo/teleai/actions/runs/35969152630) PASS. localhost:8502 프로세스를 새 코드로 재시작하고 health 응답 `ok`를 확인했다. 브라우저 대화 재검증과 운영 연결 검증은 이 단계에 포함되지 않았다.
 - 이 검사는 일부 전체 복원 도구의 사전 경계다. 모든 `FrameCache` 호출을 중앙에서 차단하는 강제 한도는 아니고, 메타데이터 추정과 실제 pandas/DuckDB peak가 다를 수 있다. 다른 전체 복원 경로의 인벤토리, 전역 자원 예산과 동시 요청 부하 검증은 계속 남는다. 운영 출시 NO-GO 판정은 유지한다.
