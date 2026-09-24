@@ -131,6 +131,12 @@ def build_analysis_tools(context: AnalysisToolContext) -> list[ToolDefinition]:
         if decision.action == "query_source":
             return {"status": "needs_data", "requested_dataset_id": dataset_id,
                     "selection_origin": selection.origin, **asdict(decision)}
+        if decision.action == "derive_local":
+            rejected = full_read_preflight(datasets, [selection.dataset_id])
+            if rejected:
+                return {**rejected, "requested_dataset_id": dataset_id,
+                        "selected_dataset_id": selection.dataset_id,
+                        "selection_origin": selection.origin}
         result = datasets.derive(selection.dataset_id, need)
         return {"status": "ready", "dataset": asdict(result),
                 "requested_dataset_id": dataset_id,

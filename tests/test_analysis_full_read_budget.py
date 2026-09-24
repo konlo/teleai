@@ -2,7 +2,7 @@
 import json
 import tempfile
 import unittest
-from unittest.mock import patch
+from unittest.mock import Mock, patch
 
 import pandas as pd
 from langchain_core.language_models.chat_models import BaseChatModel
@@ -61,6 +61,39 @@ class AdaptiveBudgetModel(BaseChatModel):
 
 
 class FullReadBudgetTests(unittest.TestCase):
+    def test_use_dataset_filter_checks_whole_frame_budget_before_decode(self):
+        with tempfile.TemporaryDirectory() as root:
+            db = AssetDB(root, "owner", "filtered")
+            try:
+                store = PersistentDatasets(db, budget=0, max_full_read_bytes=5_000)
+                frame = pd.DataFrame({"event_key": range(300),
+                                      **{f"field_{n}": [n] * 300 for n in range(31)}})
+                info = store.register_batches([frame], columns=list(frame.columns),
+                    source="fixture.variable_schema", max_rows=500,
+                    coverage="complete", predicate_known=True)
+                db.select_dataset(info.id)
+                original = db.dataset_file(info.id).read_bytes()
+                tools = {tool.name: tool.run for tool in build_analysis_tools(
+                    AnalysisToolContext(store, {}, [], Mock()))}
+                arguments = (info.id, ["event_key"],
+                    [{"column": "event_key", "op": "ge", "value": 10}])
+                with patch.object(FrameCache, "__getitem__", side_effect=AssertionError("full decode")):
+                    rejected = tools["use_dataset"](*arguments)
+                self.assertEqual(rejected["status"], "rejected")
+                self.assertEqual(rejected["error_code"], "full_frame_budget")
+                self.assertEqual(db.dataset_file(info.id).read_bytes(), original)
+                self.assertEqual(db.selected_dataset_id(), info.id)
+                self.assertEqual(set(store.metadata), {info.id})
+
+                store.max_full_read_bytes = 1_000_000
+                ready = tools["use_dataset"](*arguments)
+                self.assertEqual(ready["status"], "ready")
+                self.assertEqual(ready["dataset"]["rows"], 290)
+                self.assertEqual(db.dataset_file(info.id).read_bytes(), original)
+                self.assertEqual(db.selected_dataset_id(), info.id)
+            finally:
+                db.close()
+
     def test_small_row_scope_grounding_projects_columns_and_respects_read_budget(self):
         with tempfile.TemporaryDirectory() as root:
             runtime = GraphAnalysisRuntime(root, "owner", "scope-projection",

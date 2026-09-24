@@ -1562,3 +1562,10 @@ Task definitions and acceptance conditions: docs/agent_remaining_tasks_2026-09-1
 - **Implementation** [Agent: /root]: SSH 터널 프로필에 접근 방식 설정과 생성된 0700 실디렉터리 검사를 추가했다. Linux systemd 템플릿, loopback 리스너/health/영속 저장소 read-only smoke, 영속 데이터를 건드리지 않는 릴리스 symlink preview/원자적 전환 도구, 배포·롤백 절차를 작성했다.
 - **Verification** [Agent: /root]: 신규 집중 12/12, migration 전체 132/132, application 전체 231/231, compileall·diff check PASS. rollback 단위 검증에서 기존 데이터 파일 바이트가 보존됐다. 현재 macOS 개발 호스트에는 Linux `ss`/systemd와 별도 SSH 호스트가 없어 실제 설치·네트워크 차단·재부팅 지속성·롤백 재시작은 미검증이며 운영 NO-GO를 유지한다. Databricks SQL은 실행하지 않았다.
 - **PR/CI** [21:17 KST]: 배포 패키지 commit `ac71f22`를 draft PR #68에 push했다. [GitHub Actions run 35997885430](https://github.com/konlo/teleai/actions/runs/35997885430)의 migration/application/agentic/reference/compile 전 단계 PASS. 실제 호스트 정보 대기 중이며 병합·운영 배포는 하지 않았다.
+
+## [2026-09-24 22:23:04 KST] [Agent: /root] User Request: 남아 있는 일 GO 할 수 있도록 모든 것을 수행해줘
+- **Action** [Agent: /root]: 출시 차단 항목을 코드·실제 모델·대용량·운영 연결·배포 환경으로 나눠 근거를 재점검하고, 접근 가능한 검증과 수정을 진행한다. 별도 호스트 정보와 첫 정확한 Databricks SQL 1회 승인 여부를 요청했다. 미확인 항목을 GO로 간주하지 않는다.
+- **Actual-model finding** [2026-09-25, Agent: /root]: 실제 `gemma4:e4b`의 합성 L1_016 독립 3회는 0/3 완료(두 번 ReadTimeout, 한 번 도구 없는 exhausted, 원격 실행 0회)였다. `qwen3:8b` 탐침 1/1 PASS이나 71.334초, `gemma3:1b`의 같은 질문은 미완료다. 빠른 L1_017 PASS는 결정적 SQL 경로라 자율 모델 성공으로 계산하지 않는다. 근거는 `docs/evaluation/preparation_2026-09-24/repeat_go_2026-09-24/`에 보존했다.
+- **Implementation** [Agent: /root]: `use_dataset` 로컬 필터 파생 전에 파일 원본 전체 복원 예산을 검사해 한도 초과를 구조화 거절로 반환한다. 용량 측정기는 파일 기반 자산 우선·기존 BLOB의 크기 상한·최대 10,000행 배치 표본·동적 숫자 컬럼·원본 자산 전후 SHA-256 검증으로 보강했다. 표본은 `benchmark.sample` 범위로 재등록해 전체 모집단 분석으로 오인하지 않도록 했다.
+- **Verification** [Agent: /root]: 낮은 예산의 `use_dataset`은 전체 decode 전 거절하고 원본 파일·선택·자산 목록을 보존했다. 충분한 예산의 파생은 290행으로 정상 동작했다. 합성 10,000행×16열의 로컬 용량 gate PASS: histogram 30회 p95 0.133초, 4 worker/20회 20/20 p95 0.431초, peak RSS 384,516,096 bytes, 원본 SHA 불변. application 234/234, migration 133/133, 참고 217/217, compileall·diff check PASS. 이 수치는 별도 호스트 성능이 아니다.
+- **Release** [Agent: /root]: 실제 모델 반복 실패와 미제공 호스트/미승인 SQL로 운영 NO-GO. 승인 없는 Databricks SQL 실행·병합·운영 배포는 하지 않았다.

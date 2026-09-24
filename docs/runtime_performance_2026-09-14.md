@@ -29,12 +29,15 @@
 ```bash
 .telly_runtime/v1-venv/bin/python scripts/report_runtime_performance.py \
   --asset-db <conversation>/assets.sqlite \
+  --dataset-id <persisted-dataset-id> --sample-rows 10000 \
   --server-pid <streamlit-pid> \
   --iterations 30 --concurrent-requests 20 --workers 4 \
   --output docs/runtime_performance_2026-09-14.json
 ```
 
 원본 결과는 [runtime_performance_2026-09-14.json](runtime_performance_2026-09-14.json)에 있다. 이 실행은 원본 asset DB를 읽기 전용으로 열며 Databricks와 모델을 호출하지 않는다.
+
+2026-09-25 보강: 측정기는 새 파일 기반 Parquet 자산을 우선 읽고, 지정한 자산의 최대 `--sample-rows`행만 배치로 복원한다. 기존 SQLite BLOB도 읽되 128 MiB보다 큰 BLOB은 거절한다. 숫자 컬럼은 저장된 실제 스키마에서 고르고 표본을 `benchmark.sample` 범위로 다시 등록하므로 전체 원본을 분석했다고 주장하지 않는다. 측정 전후의 정확한 저장 자산 메타데이터·payload SHA-256을 비교해 원본 변경 여부를 판정한다. 파일 기반 원본이 여러 개라면 `--dataset-id`로 대표 자산을 명시한다.
 
 ## 다음 운영 게이트
 

@@ -2,6 +2,14 @@
 
 판정: **운영 출시 NO-GO, localhost 개발 화면은 사용 가능.** 현재 브랜치의 계약 회귀 통과는 실제 모델·대용량·Databricks·배포 환경을 포함한 출시 성공률이 아니다. 운영 조회를 새로 실행하지 않았으며 사용자별 정확한 SQL 승인을 유지했다. [draft PR #68](https://github.com/konlo/teleai/pull/68)은 리뷰·병합·배포하지 않았다.
 
+## 2026-09-25 GO 재검증
+
+- 선택되지 않은 합성 원본의 평균 질문 `L1_016`을 실제 `gemma4:e4b`로 독립 3회 실행했지만 **0/3 완료**였다. 두 번은 60초 `ReadTimeout`, 한 번은 약 66초 후 계산 도구 없이 `exhausted`였다. 원격 실행/승인 우회는 0회다. [반복 근거](evaluation/preparation_2026-09-24/repeat_go_2026-09-24/summary.json). 이는 모델의 자율 처리 실패이므로 231개 이상의 계약 테스트 통과로 덮지 않는다.
+- 대안 모델 탐침: `qwen3:8b`는 같은 질문 1/1 PASS(구조화 집계와 반사실 2개 일치)였지만 **71.334초** 걸렸다. `gemma3:1b`는 같은 질문 NOT_COMPLETE이고, 별도 `L1_017`은 결정적 로컬 SQL로 PASS했다. 후자는 작은 모델의 자율성 근거가 아니다. 단회 탐침만으로 모델 교체나 안정성 달성을 선언하지 않는다.
+- 로컬 `use_dataset` 필터 파생 전에 전체 원본 복원 예산을 검사한다. 300행×32열 파일 자산에서 낮은 한도로 실행 전 거절·원본 파일/선택 불변을, 넉넉한 한도에서 기존 파생 동작을 확인했다.
+- 용량 측정기는 파일 기반 Parquet·기존 BLOB을 읽고 최대 10,000행 표본만 복원하며, 실제 숫자 컬럼을 동적으로 선택하고 측정 전후 저장 자산 SHA-256을 비교한다. 합성 10,000행×16열 파일 자산에서 로컬 histogram 30회 p95 **0.133초**, 4 worker·20회 **20/20** p95 **0.431초**, peak RSS **384,516,096 bytes**, 원본 해시 불변으로 로컬 용량 gate PASS. [측정 근거](evaluation/preparation_2026-09-24/repeat_go_2026-09-24/capacity_dynamic_schema.json). 이는 실제 배포 호스트·동시 사용자·Databricks 전송 성능이 아니다.
+- application 234/234, migration 133/133, 참고/agentic 217/217, compileall·diff check PASS. 운영 호스트 정보와 정확한 SQL 승인은 아직 받지 못해 실제 배포 및 새 Databricks 조회는 실행하지 않았다. **운영 NO-GO 유지.**
+
 ## 21:13 KST 1인용 배포 준비
 
 - Linux/systemd + SSH 터널 전용 [배포 절차](private_single_user_deployment_2026-09-24.md)와 서비스 템플릿, 호스트 read-only smoke, 데이터 볼륨을 건드리지 않는 코드 symlink 전환/rollback 도구를 추가했다.
