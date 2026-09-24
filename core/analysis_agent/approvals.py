@@ -2,7 +2,7 @@
 from hashlib import sha256
 import json
 import sqlite3
-from core.analysis_sql import validate_query
+from core.analysis_load_plan import source_plan
 
 
 class QueryNotSubmitted(RuntimeError):
@@ -22,7 +22,7 @@ class ApprovalLedger:
 
     @staticmethod
     def envelope(source,query,reason,connection):
-        validate_query(query)
+        source_plan(source, query)
         return dict(source=source,query=query,reason=reason,connection=connection)
 
     @staticmethod

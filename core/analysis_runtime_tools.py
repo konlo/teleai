@@ -1,5 +1,6 @@
 """Local dataset and skill tools for the shared analysis loop."""
-from dataclasses import asdict, replace
+from dataclasses import asdict
+from duckdb import BinderException
 from sqlglot import exp, parse
 from sqlglot.errors import SqlglotError
 from core.analysis_catalog import compact_catalog, resolve_table_context
@@ -10,7 +11,7 @@ from core.analysis_tool_contract import (
     ToolDefinition,
     normalize_tool_result,
 )
-from utils.analysis_datasets import AnalysisNeed, Condition, DatasetStore, assess_reuse, filter_frame
+from utils.analysis_datasets import AnalysisNeed, Condition, DatasetStore, assess_reuse, filter_frame, select_reusable_dataset
 from utils.analysis_skill_registry import AnalysisSkillRegistry
 from utils.analysis_charts import (
     histogram_from_counts,
@@ -33,6 +34,7 @@ from utils.analysis_timeseries import prepare_time_series as build_time_series
 from utils.analysis_aggregate import aggregate_dataset as build_aggregate_dataset
 from utils.analysis_compare import compare_group_aggregates as build_group_comparison
 from utils.analysis_pivot import pivot_dataset as build_pivot_dataset
+from utils.analysis_group_summary import summarize_groups as build_group_summary
 
 
 def build_analysis_tools(context: AnalysisToolContext) -> list[ToolDefinition]:
@@ -119,12 +121,19 @@ def build_analysis_tools(context: AnalysisToolContext) -> list[ToolDefinition]:
         info = datasets.metadata[dataset_id]
         need = AnalysisNeed(info.source, tuple(columns),
             conditions=tuple(Condition(**c) for c in (conditions or [])),
+            grain=info.grain if current_result_only else 'raw',
+            aggregation=info.aggregation if current_result_only else '',
             current_result_only=current_result_only)
-        decision = assess_reuse(info, need)
+        selection = select_reusable_dataset(datasets.metadata, dataset_id, need)
+        decision = selection.decision
         if decision.action == "query_source":
-            return {"status": "needs_data", **asdict(decision)}
-        result = datasets.derive(dataset_id, need)
-        return {"status": "ready", "dataset": asdict(result), **asdict(decision)}
+            return {"status": "needs_data", "requested_dataset_id": dataset_id,
+                    "selection_origin": selection.origin, **asdict(decision)}
+        result = datasets.derive(selection.dataset_id, need)
+        return {"status": "ready", "dataset": asdict(result),
+                "requested_dataset_id": dataset_id,
+                "selected_dataset_id": selection.dataset_id,
+                "selection_origin": selection.origin, **asdict(decision)}
 
     def join_datasets(left_dataset_id, right_dataset_id, left_on, right_on, how):
         return build_joined_dataset(
@@ -221,6 +230,7 @@ def build_analysis_tools(context: AnalysisToolContext) -> list[ToolDefinition]:
 
     def pivot_dataset(dataset_id, index_columns, column_columns, aggregation,
                       value_column="", success_value=None, conditions=None,
+                      derived_bins=None,
                       margins=False, margins_name="전체", sort="ascending",
                       max_axis_values=100, max_output_cells=1_000):
         return build_pivot_dataset(
@@ -232,11 +242,26 @@ def build_analysis_tools(context: AnalysisToolContext) -> list[ToolDefinition]:
             value_column=value_column,
             success_value=success_value,
             conditions=conditions,
+            derived_bins=derived_bins,
             margins=margins,
             margins_name=margins_name,
             sort=sort,
             max_axis_values=max_axis_values,
             max_output_cells=max_output_cells,
+        )
+
+    def summarize_groups(dataset_id, group_columns, metrics, conditions=None,
+                         sort="group_ascending", max_groups=1_000,
+                         max_output_rows=1_000):
+        return build_group_summary(
+            datasets,
+            dataset_id,
+            group_columns=group_columns,
+            metrics=metrics,
+            conditions=conditions,
+            sort=sort,
+            max_groups=max_groups,
+            max_output_rows=max_output_rows,
         )
 
     def compare_group_aggregates(baseline_dataset_id, cohort_dataset_id, aggregation,
@@ -300,37 +325,60 @@ def build_analysis_tools(context: AnalysisToolContext) -> list[ToolDefinition]:
             corrections.append('added_local_data_from')
         sql_conditions = query_conditions(tree)
         requested = tuple(Condition(**item) for item in requested_conditions) if requested_conditions is not None else None
+        # ORDER BY may refer to a SELECT alias rather than an input column.
+        # Projection expressions still retain their actual column references.
+        output_aliases = {item.alias for item in tree.expressions
+                          if isinstance(item, exp.Alias)}
+        sql_column_names = {column.name for column in columns
+                            if column.name not in output_aliases
+                            or column.find_ancestor(exp.Alias) is not None}
         # An omitted scope means the SQL's WHERE scope (or the whole source).
         # Never silently inherit a cached subset when the caller asks for all rows.
         scope = requested if requested is not None else (sql_conditions or ())
-        need = AnalysisNeed(info.source, info.columns, conditions=scope,
+        need = AnalysisNeed(info.source,
+            tuple(dict.fromkeys((*sql_column_names, *(c.column for c in scope)))),
+            conditions=scope,
             grain=info.grain if current_result_only else 'raw',
             aggregation=info.aggregation if current_result_only else '',
             current_result_only=current_result_only)
-        decision = assess_reuse(info, need)
+        selection = select_reusable_dataset(datasets.metadata, dataset_id, need)
+        decision = selection.decision
         if decision.action == 'query_source':
+            known_columns = {name for candidate in datasets.metadata.values()
+                             if candidate.source == info.source for name in candidate.columns}
+            unknown_sql_columns = sql_column_names - known_columns
+            if unknown_sql_columns:
+                # A model-invented column is a correctable SQL error, not
+                # evidence that a costly remote reload is required.
+                raise BinderException('Unknown local columns: ' + ', '.join(sorted(unknown_sql_columns)))
             return {'status': 'needs_data', **asdict(decision),
+                    'requested_dataset_id': dataset_id,
+                    'selection_origin': selection.origin,
                     'message': decision.reason + ' 요청 범위를 requested_conditions로 명시하거나, 사용자가 현재 결과 자체를 분석할 때만 current_result_only를 사용하세요.'}
-        input_frame = datasets.frames[dataset_id]
+        selected_info = datasets.metadata[selection.dataset_id]
+        input_frame = datasets.frames[selection.dataset_id]
         if requested is not None:
-            residual = tuple(c for c in requested if c not in info.conditions)
+            residual = tuple(c for c in requested if c not in selected_info.conditions)
             input_frame = filter_frame(input_frame, residual)
         frame, truncated, tree = local_query(input_frame, query)
         aggregated = bool(tree.args.get("group") or tree.find(exp.AggFunc))
         safe_conditions = raw_conditions(tree)
-        conditions = tuple(dict.fromkeys((*info.conditions, *(requested or ()), *(sql_conditions or ()))))
+        conditions = tuple(dict.fromkeys((*selected_info.conditions, *(requested or ()), *(sql_conditions or ()))))
         coverage = query_coverage(tree, truncated=truncated)
         if coverage == 'complete':
-            coverage = info.coverage
-        result = datasets.register(frame, source=info.source,
+            coverage = selected_info.coverage
+        result = datasets.register(frame, source=selected_info.source,
             coverage=coverage,
-            predicate_known=info.predicate_known and safe_conditions is not None,
-            conditions=conditions, grain="aggregate" if aggregated else info.grain,
-            aggregation=tree.sql() if aggregated else info.aggregation,
-            parent_id=dataset_id, query=query, snapshot=info.snapshot)
+            predicate_known=selected_info.predicate_known and safe_conditions is not None,
+            conditions=conditions, grain="aggregate" if aggregated else selected_info.grain,
+            aggregation=tree.sql() if aggregated else selected_info.aggregation,
+            parent_id=selection.dataset_id, query=query, snapshot=selected_info.snapshot)
         return {"status": "ready", "dataset": asdict(result),
                 "preview": frame.head(15).to_dict(orient="records"),
-                "applied_corrections": corrections}
+                "applied_corrections": corrections,
+                "requested_dataset_id": dataset_id,
+                "selected_dataset_id": selection.dataset_id,
+                "selection_origin": selection.origin}
 
     def chart_options(dataset_id, columns=None):
         previews = recommend_charts(datasets, dataset_id, columns)
@@ -384,13 +432,53 @@ def build_analysis_tools(context: AnalysisToolContext) -> list[ToolDefinition]:
         return tree.sql(dialect='databricks')
 
     def prepare_histogram(source, column, where_sql="", fresh_source_required=False,
-                          current_result_only=False):
+                          current_result_only=False, dataset_id=""):
         identity = source_key(source)
         matches=[t for t in context.reference_context if source_key(t.get('table','')) == identity and identity]
-        known = any(source_key(info.source) == identity and column in info.columns
-                    for info in datasets.metadata.values())
+        metadata = datasets.metadata
+        matching = [info for info in metadata.values()
+                    if source_key(info.source) == identity and column in info.columns]
+        known = bool(matching)
         if not identity or (not known and (len(matches)!=1 or column not in [c['name'] for c in matches[0].get('columns',[])])):
             return {'status':'needs_context','message':'정확한 테이블과 수치 컬럼을 inspect_table_context에서 확인하세요.'}
+
+        def lineage_root(info):
+            seen = set()
+            while info.id not in seen:
+                seen.add(info.id)
+                parents = info.parent_ids or ((info.parent_id,) if info.parent_id else ())
+                if not parents:
+                    return info.id
+                if len(parents) != 1 or parents[0] not in metadata:
+                    return None
+                info = metadata[parents[0]]
+            return None
+
+        selected_id = dataset_id
+        active = metadata.get(context.selected_dataset_id)
+        if (not selected_id and not fresh_source_required and active is not None
+                and source_key(active.source) == identity):
+            selected_id = active.id
+        if selected_id:
+            selected = metadata.get(selected_id)
+            if selected is None or source_key(selected.source) != identity:
+                return {'status':'needs_context', 'message':'선택한 dataset ID가 이 출처의 보유 데이터와 일치하지 않습니다.'}
+        elif matching and not fresh_source_required:
+            roots = {lineage_root(info) for info in matching}
+            if None in roots or len(roots) != 1 or (current_result_only and len(matching) != 1):
+                return {'status':'needs_context',
+                        'message':'같은 출처에 여러 원본 또는 결과가 있습니다. 분석할 dataset ID를 명시해주세요.',
+                        'candidate_dataset_ids':[info.id for info in matching]}
+            root_id = next(iter(roots))
+            selected_id = (root_id if (column in metadata[root_id].columns
+                                       and source_key(metadata[root_id].source) == identity) else
+                           matching[0].id if len(matching) == 1 else '')
+            if not selected_id:
+                return {'status':'needs_context',
+                        'message':'차트에 사용할 분기를 확정할 수 없습니다. dataset ID를 명시해주세요.',
+                        'candidate_dataset_ids':[info.id for info in matching]}
+
+        raw_id = ''
         # SQL is a read-only plan, never an execution or an approval.
         quoted='`'+column.replace('`','``')+'`'
         table='.'.join('`'+part.replace('`','``')+'`' for part in source.split('.'))
@@ -405,6 +493,18 @@ def build_analysis_tools(context: AnalysisToolContext) -> list[ToolDefinition]:
             'value_column':column,'weight_column':'__frequency'}
         scope_tree = validate_query(f'SELECT * FROM {table}'+(' WHERE '+where_sql if where_sql.strip() else ''))
         conditions = query_conditions(scope_tree)
+        if selected_id and not fresh_source_required and not current_result_only:
+            selected = metadata[selected_id]
+            decision = select_reusable_dataset(metadata, selected_id,
+                AnalysisNeed(selected.source, (column,), conditions=conditions or ()))
+            if decision.decision.action != 'query_source':
+                raw_id = decision.dataset_id
+
+        def in_selected_branch(info):
+            if not selected_id:
+                return True  # No local assets; only a remote plan can result.
+            return (info.id == selected_id or
+                    bool(raw_id and info.parent_id == raw_id))
 
         def ready(info):
             validate_frequency_dataset(datasets, info.id, column, '__frequency')
@@ -421,21 +521,31 @@ def build_analysis_tools(context: AnalysisToolContext) -> list[ToolDefinition]:
             # The user explicitly chose the loaded result as the population.
             # Render those rows directly and keep their partial/unknown scope
             # visible instead of converting the request into a source query.
-            for info in reversed(list(datasets.metadata.values())):
-                if source_key(info.source) != identity or column not in info.columns:
+            for info in ([metadata[selected_id]] if selected_id else []):
+                if column not in info.columns:
                     continue
                 need=AnalysisNeed(info.source,(column,),conditions=conditions or (),
+                    grain=info.grain, aggregation=info.aggregation,
                     current_result_only=True)
                 if assess_reuse(info,need).action == 'query_source':
                     continue
-                previews=recommend_charts(datasets,info.id,[column])
+                chart_info = info
+                if where_sql.strip():
+                    filtered = analyze_local(info.id,
+                        'SELECT * FROM data WHERE ' + where_sql,
+                        current_result_only=True)
+                    if filtered['status'] != 'ready':
+                        return filtered
+                    chart_info = datasets.metadata[filtered['dataset']['id']]
+                previews=recommend_charts(datasets,chart_info.id,[column])
                 card=next((item for item in previews if item.kind == 'histogram'
                     and item.columns == (column,)),None)
                 if card is None:
                     return {'status':'no_valid_chart',
+                        'loaded_dataset':chart_info.id,
                         'message':'현재 결과에는 히스토그램을 만들 수 있는 유효한 수치가 부족합니다.'}
                 context.artifacts[card.id]=card
-                return {'status':'ready','histogram_plan':plan,'loaded_dataset':info.id,
+                return {'status':'ready','histogram_plan':plan,'loaded_dataset':chart_info.id,
                     'cards':[card_entry(card)],'reused':True,'current_result_only':True}
             return {'status':'needs_data',
                 'message':'현재 보유 결과에서 요청한 컬럼을 찾지 못했습니다. 원격 조회는 실행하지 않았습니다.'}
@@ -443,17 +553,18 @@ def build_analysis_tools(context: AnalysisToolContext) -> list[ToolDefinition]:
         # First reuse exact, validated count results, including a previous local
         # realization of this plan. Source filters applied before local SQL must
         # also fit the requested population; SQL text alone is insufficient.
-        for info in ([] if fresh_source_required else reversed(list(datasets.metadata.values()))):
-            if source_key(info.source) != identity or info.coverage != 'complete':
+        for info in ([] if fresh_source_required else reversed(list(metadata.values()))):
+            if (source_key(info.source) != identity or info.coverage != 'complete'
+                    or not in_selected_branch(info)):
                 continue
             try:
                 candidate = validate_query(info.query, dialect='duckdb' if info.parent_id else 'databricks')
                 if info.parent_id:
-                    parent = datasets.metadata.get(info.parent_id)
+                    parent = metadata.get(info.parent_id)
                     if parent is None or not parent.predicate_known:
                         continue
-                    scope_info = replace(info, grain='raw', aggregation='', predicate_known=True)
-                    if assess_reuse(scope_info, AnalysisNeed(info.source, (column,), conditions=conditions or ())).action == 'query_source':
+                    if assess_reuse(parent, AnalysisNeed(parent.source, (column,),
+                            conditions=conditions or ())).action == 'query_source':
                         continue
                     local_table = single_table(candidate)
                     if local_table is None or local_table.name != 'data':
@@ -466,8 +577,8 @@ def build_analysis_tools(context: AnalysisToolContext) -> list[ToolDefinition]:
 
         # Complete compatible raw rows can fulfill the plan locally. The SQL
         # itself preserves even predicates outside the simple implication subset.
-        for info in ([] if fresh_source_required else reversed(list(datasets.metadata.values()))):
-            if source_key(info.source) != identity:
+        for info in ([] if fresh_source_required else reversed(list(metadata.values()))):
+            if source_key(info.source) != identity or info.id != raw_id:
                 continue
             need = AnalysisNeed(info.source, (column,), conditions=conditions or ())
             if assess_reuse(info, need).action == 'query_source':
@@ -517,7 +628,7 @@ def build_analysis_tools(context: AnalysisToolContext) -> list[ToolDefinition]:
              {"catalog": string, "schema": string, "pattern": string,
               "limit": {"type": "integer", "minimum": 1, "maximum": 200}},
              [], plan_source_discovery),
-        tool("use_dataset", "원본 범위에 대한 raw 데이터 충분성을 검사하고 가능하면 로컬 필터링합니다. conditions는 AND입니다. OR를 AND로 바꾸지 마세요. current_result_only는 사용자가 현재 결과 자체만 분석할 때 사용합니다.",
+        tool("use_dataset", "원본 범위에 대한 raw 데이터 충분성을 검사하고 현재 결과가 부족하면 보존된 부모·같은 버전의 registry 데이터를 찾아 로컬 필터링합니다. needs_data는 이 탐색 후에만 반환합니다. conditions는 AND입니다. OR를 AND로 바꾸지 마세요. current_result_only는 사용자가 현재 결과 자체만 분석할 때 사용합니다.",
              {"dataset_id": string, "columns": {"type": "array", "items": string},
               "conditions": {"type": "array", "items": {"type": "object",
                   "properties": {"column": string, "op": {"type": "string", "enum": ["eq", "ne", "gt", "ge", "lt", "le", "in"]},
@@ -583,22 +694,48 @@ def build_analysis_tools(context: AnalysisToolContext) -> list[ToolDefinition]:
               "max_groups": {"type":"integer","minimum":1,"maximum":1000},
               "max_output_rows": {"type":"integer","minimum":1,"maximum":1000}},
              ["dataset_id","aggregation"], aggregate_dataset),
-        tool("pivot_dataset", "로딩된 raw dataset에서 schema에 실제 존재하는 행 축 1~3개와 열 축 1~2개를 사용해 bounded 피벗 표를 만듭니다. count, mean, sum, median, min, max, success_rate, overall_percent를 지원하며 명시적 조건·총계·월 정렬·출력 셀 한도를 검증합니다. success_rate는 success_value를 반드시 명시합니다.",
+        tool("pivot_dataset", "로딩된 raw dataset에서 실행 시점 schema의 행 축 1~3개와 열 축 1~2개를 사용해 bounded 피벗 표를 만듭니다. 단일 또는 제한된 복수 집계, 명시적 숫자 구간 축, 조건·총계·월 정렬·출력 셀 한도를 검증합니다. success_rate는 success_value를 반드시 명시합니다.",
              {"dataset_id":string,
               "index_columns":{"type":"array","items":string,"minItems":1,"maxItems":3,"uniqueItems":True},
               "column_columns":{"type":"array","items":string,"minItems":1,"maxItems":2,"uniqueItems":True},
-              "aggregation":{"type":"string","enum":["count","mean","sum","median","min","max","success_rate","overall_percent"]},
+              "aggregation":{"oneOf":[
+                  {"type":"string","enum":["count","mean","sum","median","min","max","success_rate","overall_percent"]},
+                  {"type":"array","items":{"type":"string","enum":["count","mean","sum","median","min","max"]},"minItems":2,"maxItems":6,"uniqueItems":True}]},
               "value_column":string,
               "success_value":{},
               "conditions":{"type":"array","items":{"type":"object",
                   "properties":{"column":string,"op":{"type":"string","enum":["eq","ne","gt","ge","lt","le","in"]},"value":{}},
                   "required":["column","op","value"],"additionalProperties":False}},
+              "derived_bins":{"type":"array","maxItems":2,"items":{"type":"object",
+                  "properties":{"source_column":string,"output_column":string,
+                      "cut_points":{"type":"array","items":{"type":"number"},"minItems":1,"maxItems":20,"uniqueItems":True},
+                      "labels":{"type":"array","items":string,"minItems":2,"maxItems":21,"uniqueItems":True}},
+                  "required":["source_column","output_column","cut_points","labels"],"additionalProperties":False}},
               "margins":{"type":"boolean"},
               "margins_name":{"type":"string","minLength":1,"maxLength":40},
               "sort":{"type":"string","enum":["ascending","descending","calendar_month"]},
               "max_axis_values":{"type":"integer","minimum":1,"maximum":100},
               "max_output_cells":{"type":"integer","minimum":1,"maximum":10000}},
              ["dataset_id","index_columns","column_columns","aggregation"], pivot_dataset),
+        tool("summarize_groups", "로딩된 raw dataset을 실행 시점 schema의 그룹 컬럼 1~3개로 나누고 최대 8개의 선언형 지표를 한 표에 계산합니다. count·수치 집계와 명시적 조건의 conditional_count·conditional_percent·conditional_mean만 지원합니다. 전체 필터와 조건부 지표의 분모를 분리하고 그룹·출력 한도, lineage와 digest를 검증합니다.",
+             {"dataset_id":string,
+              "group_columns":{"type":"array","items":string,"minItems":1,"maxItems":3,"uniqueItems":True},
+              "metrics":{"type":"array","minItems":1,"maxItems":8,"items":{"type":"object",
+                  "properties":{"name":{"type":"string","minLength":1,"maxLength":80},
+                      "aggregation":{"type":"string","enum":["count","mean","sum","median","min","max","conditional_count","conditional_percent","conditional_mean"]},
+                      "value_column":string,
+                      "condition":{"type":"object","properties":{"column":string,
+                          "op":{"type":"string","enum":["eq","ne","gt","ge","lt","le","in"]},"value":{}},
+                          "required":["column","op","value"],"additionalProperties":False},
+                      "empty_value":{"type":"number"}},
+                  "required":["name","aggregation"],"additionalProperties":False}},
+              "conditions":{"type":"array","items":{"type":"object",
+                  "properties":{"column":string,"op":{"type":"string","enum":["eq","ne","gt","ge","lt","le","in"]},"value":{}},
+                  "required":["column","op","value"],"additionalProperties":False}},
+              "sort":{"type":"string","enum":["group_ascending","group_descending","none"]},
+              "max_groups":{"type":"integer","minimum":1,"maximum":1000},
+              "max_output_rows":{"type":"integer","minimum":1,"maximum":1000}},
+             ["dataset_id","group_columns","metrics"], summarize_groups),
         tool("compare_group_aggregates", "같은 source·snapshot에서 기준 raw dataset과 그 lineage 후손 cohort의 동일한 그룹 집계를 비교합니다. 그룹별 기준값, cohort값, 차이와 변화율을 계산하고 두 부모 ID와 digest를 보존합니다. 임의의 서로 무관한 dataset은 비교하지 않습니다.",
              {"baseline_dataset_id": string,
               "cohort_dataset_id": string,
@@ -643,15 +780,16 @@ def build_analysis_tools(context: AnalysisToolContext) -> list[ToolDefinition]:
               "rate_label": {"type":"string","maxLength":120}},
              ["dataset_id","group_column","outcome_column","success_value"],
              render_count_rate_chart),
-        tool("prepare_histogram", "보유한 완전한 빈도·원본 데이터와 이미지를 먼저 재사용하여 히스토그램을 만듭니다. 데이터가 부족할 때만 승인형 조회 계획을 반환합니다. source는 정확한 테이블명, column은 수치 컬럼, where_sql은 유지해야 할 사용자 필터 SQL(없으면 빈 문자열)입니다. 사용자가 최신/현재 원본을 명시하면 fresh_source_required=true로 지정해 캐시를 재사용하지 않습니다. 직접 원격 조회하지 않습니다.",
-             {"source":string,"column":string,"where_sql":string,
+        tool("prepare_histogram", "보유한 완전한 빈도·원본 데이터와 이미지를 먼저 재사용하여 히스토그램을 만듭니다. 여러 원본·버전·분기가 있으면 dataset_id로 사용자가 선택한 데이터의 계보를 지정하세요. 명시하지 않아 모호하면 다른 결과를 임의 선택하지 않습니다. source는 정확한 테이블명, column은 수치 컬럼, where_sql은 유지할 사용자 필터 SQL입니다. 최신 데이터 요청에만 fresh_source_required=true를 사용합니다. 직접 원격 조회하지 않습니다.",
+             {"source":string,"column":string,"where_sql":string,"dataset_id":string,
+              "current_result_only":{"type":"boolean"},
               "fresh_source_required":{"type":"boolean"}},["source","column"],prepare_histogram),
         tool("render_histogram", "완전한 값별 빈도 집계의 히스토그램을 생성합니다. value_column은 실제 수치값, weight_column은 해당 값의 COUNT(*) 빈도입니다. 원본 행이나 빈도 아닌 집계값을 넣지 마세요.",
              {"dataset_id":string,"value_column":string,"weight_column":string},
              ["dataset_id","value_column","weight_column"],render_histogram),
         tool("show_chart", "저장된 검증 완료 차트 이미지를 다시 표시합니다. 새 계산이나 원격 조회를 수행하지 않습니다.",
              {"chart_id":string}, ["chart_id"], show_chart),
-        tool("local_analysis_sql", "보유 dataset을 data라는 로컬 테이블로 SELECT 계산합니다. requested_conditions는 요청 모집단의 AND 조건이며 SQL 전에 실제 적용합니다. 생략하면 SQL WHERE의 범위(WHERE가 없으면 전체 원본)를 요구합니다. 이전 필터 결과를 이어서 분석할 때도 요청 조건을 명시하세요. 범위를 넓힐 수 없는 캐시는 거절합니다. current_result_only는 사용자가 현재 결과 자체만 분석할 때만 true로 지정합니다.",
+        tool("local_analysis_sql", "보유 dataset을 data라는 로컬 테이블로 SELECT 계산합니다. 현재 결과가 부족하면 보존된 부모·같은 버전의 registry 원본을 먼저 탐색합니다. requested_conditions는 요청 모집단의 AND 조건이며 SQL 전에 실제 적용합니다. 생략하면 SQL WHERE의 범위(WHERE가 없으면 전체 원본)를 요구합니다. 이전 필터 결과를 이어서 분석할 때도 요청 조건을 명시하세요. current_result_only는 사용자가 현재 결과 자체만 분석할 때만 true로 지정합니다.",
              {"dataset_id": string, "query": string, "current_result_only": {"type": "boolean"},
               "requested_conditions": {"type":"array","items":{"type":"object",
                   "properties":{"column":string,"op":{"type":"string","enum":["eq","ne","gt","ge","lt","le","in"]},"value":{}},

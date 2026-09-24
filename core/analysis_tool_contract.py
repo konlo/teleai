@@ -94,3 +94,4 @@ class AnalysisToolContext:
     propose_query: Callable[..., dict]
     max_join_rows: int = 100_000
     max_join_expansion_ratio: float = 5.0
+    selected_dataset_id: str = ""

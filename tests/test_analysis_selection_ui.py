@@ -1,0 +1,38 @@
+"""The Streamlit analysis page exposes the same persisted selection as runtime."""
+import os
+import tempfile
+import unittest
+from unittest.mock import patch
+from pathlib import Path
+
+import pandas as pd
+from streamlit.testing.v1 import AppTest
+
+
+class SelectionUiTests(unittest.TestCase):
+    def test_example_then_switch_active_dataset_without_remote_query(self):
+        with tempfile.TemporaryDirectory() as directory, patch.dict(
+                os.environ, {'TELLY_V1_STORAGE':directory}):
+            app = AppTest.from_file(str(Path(__file__).resolve().parents[1] /
+                                         'ui' / 'analysis_page.py'), default_timeout=20).run()
+            self.assertFalse(app.exception)
+            next(button for button in app.button if button.label == '예제 데이터로 시작').click().run()
+            self.assertFalse(app.exception)
+            runtime = app.session_state['v1_runtime']
+            original = runtime.inspect()['selected_dataset']
+            self.assertEqual(original['role'], 'root')
+            self.assertEqual(runtime.datasets.frames.bytes, 0,
+                             'Sidebar preview must not materialize the full dataset')
+            second = runtime.datasets.register(pd.DataFrame({'metric':[2, 4, 8]}),
+                source='fixture.second', coverage='complete', predicate_known=True)
+            app.run()
+            app.button(key='select-'+second.id).click().run()
+            self.assertFalse(app.exception)
+            self.assertEqual(runtime.inspect()['selected_dataset']['id'], second.id)
+            self.assertEqual(runtime.inspect()['requests'], [])
+            self.assertEqual(runtime.datasets.frames.bytes, 0)
+            runtime.close()
+
+
+if __name__ == '__main__':
+    unittest.main()

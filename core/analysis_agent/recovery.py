@@ -262,6 +262,18 @@ class RecoveryMiddleware(AgentMiddleware):
                 key=lambda name: (text.find(name) if text.find(name) >= 0 else len(text), name))
             mentioned_columns = [name for name in names if mentioned_column(name)]
             mentioned_columns.sort(key=lambda name: (text.find(name) if text.find(name) >= 0 else len(text), name))
+            # When exact schema names identify one loaded source, discard alias
+            # collisions from other sources (for example ``age`` versus
+            # ``Age``). This is derived from the live frames, never a table map.
+            exact_source_candidates = [
+                set(frame.columns) for frame in self.context.datasets.frames.values()
+                if set(explicit_columns).issubset(frame.columns)
+            ] if self.context and explicit_columns else []
+            unique_column_sets = {tuple(sorted(columns)) for columns in exact_source_candidates}
+            if len(unique_column_sets) == 1:
+                source_columns = set(next(iter(unique_column_sets)))
+                mentioned_columns = [column for column in mentioned_columns if column in source_columns]
+                explicit_columns = [column for column in explicit_columns if column in source_columns]
             winsor_column = mentioned_columns[0] if winsor_spec and len(mentioned_columns) == 1 else None
             operations = []
             for pattern, operation in [(r'평균|\b(?:mean|average|avg)\b', 'AVG'),
@@ -300,6 +312,9 @@ class RecoveryMiddleware(AgentMiddleware):
                                'MEDIAN':'median', 'MIN':'min', 'MAX':'max'}
                     if len(declared) == 1:
                         pivot_aggregation = mapping[declared[0]]
+                    elif len(set(declared)) > 1:
+                        canonical = ('COUNT', 'AVG', 'SUM', 'MEDIAN', 'MIN', 'MAX')
+                        pivot_aggregation = [mapping[item] for item in canonical if item in declared]
                 if pivot_aggregation:
                     if pivot_margins:
                         if pivot_margins_name == '전체총합계':
@@ -449,6 +464,7 @@ class RecoveryMiddleware(AgentMiddleware):
                 pivot_value_column=pivot_value_column,
                 pivot_success_value=pivot_success_value,
                 pivot_index_columns=[],pivot_column_columns=[],pivot_conditions=[],
+                pivot_derived_bins=[],
                 pivot_margins=pivot_margins,pivot_sort=pivot_sort,
                 pivot_margins_name=pivot_margins_name,
                 winsor_spec=winsor_spec,
@@ -463,6 +479,8 @@ class RecoveryMiddleware(AgentMiddleware):
                 outlier_aggregate_mode=outlier_aggregate_mode,
                 outlier_aggregate_requested=outlier_aggregate_requested,
                 outlier_top_n=outlier_top_n,
+                group_summary_requested=False,group_summary_columns=[],
+                group_summary_metrics=[],group_summary_conditions=[],
                 calculation=calculation, operations=operations, metadata_kind=metadata_kind,
                 profile_kind=profile_kind, chart_spec_requested=chart_spec_requested,
                 count_rate_layout=count_rate_layout,
@@ -504,7 +522,7 @@ class RecoveryMiddleware(AgentMiddleware):
                                and item.get('op') == 'eq']
                     if len(matches) == 1:
                         current['pivot_success_value'] = matches[0].get('value')
-                elif aggregation not in {'count', 'overall_percent'}:
+                elif not isinstance(aggregation, str) or aggregation not in {'count', 'overall_percent'}:
                     operation_patterns = {
                         'mean':r'평균|\b(?:mean|average|avg)\b',
                         'sum':r'합계|총합|\bsum\b',
@@ -512,7 +530,12 @@ class RecoveryMiddleware(AgentMiddleware):
                         'min':r'최솟값|최소값|\bmin\b',
                         'max':r'최댓값|최대값|\bmax\b',
                     }
-                    operation_match = re.search(operation_patterns[aggregation], text, re.I)
+                    value_aggregation = (
+                        next((item for item in aggregation if item != 'count'), None)
+                        if isinstance(aggregation, list) else aggregation)
+                    operation_match = re.search(
+                        operation_patterns[value_aggregation], text, re.I
+                    ) if value_aggregation in operation_patterns else None
                     if operation_match:
                         after = []
                         for column in mentioned_columns:
@@ -550,7 +573,7 @@ class RecoveryMiddleware(AgentMiddleware):
                 axis_columns = set(axes)
                 condition_items = [item for item in scope.get('conditions', [])
                                    if item.get('column') not in axis_columns]
-                if aggregation not in {'success_rate', 'overall_percent'}:
+                if aggregation not in ('success_rate', 'overall_percent'):
                     condition_items += [item for item in measures
                                         if item.get('column') not in axis_columns]
                 if 2 <= len(axes) <= 3:
@@ -563,8 +586,128 @@ class RecoveryMiddleware(AgentMiddleware):
                         item for item in scope.get('measure_conditions', [])
                         if (aggregation == 'success_rate'
                             or item.get('column') not in axis_columns)]
+                    decade_matches = re.findall(
+                        r'(\d{1,3})\s*대\s*(이상|이하)?', text)
+                    decades = []
+                    for value, qualifier in decade_matches:
+                        number = int(value)
+                        if number not in [item[0] for item in decades]:
+                            decades.append((number, qualifier))
+                    if len(decades) >= 2:
+                        numeric_axes = []
+                        from pandas.api.types import is_bool_dtype, is_numeric_dtype
+                        for axis in axes:
+                            observed = [frame[axis] for frame in self.context.datasets.frames.values()
+                                        if axis in frame.columns]
+                            if observed and all(is_numeric_dtype(series) and not is_bool_dtype(series)
+                                                for series in observed):
+                                numeric_axes.append(axis)
+                        if len(numeric_axes) == 1:
+                            source_axis = numeric_axes[0]
+                            ordered = sorted(decades, key=lambda item: item[0])
+                            values = [item[0] for item in ordered]
+                            if all(right - left == 10 for left, right in zip(values, values[1:])):
+                                output_axis = source_axis + '_group'
+                                labels = [f'{values[0]}대 이하',
+                                          *[f'{value}대' for value in values[1:-1]],
+                                          f'{values[-1]}대 이상']
+                                current['pivot_derived_bins'] = [{
+                                    'source_column':source_axis,
+                                    'output_column':output_axis,
+                                    'cut_points':values[1:],
+                                    'labels':labels,
+                                }]
+                                current['pivot_index_columns'] = [
+                                    output_axis if item == source_axis else item
+                                    for item in current['pivot_index_columns']]
+                                current['pivot_column_columns'] = [
+                                    output_axis if item == source_axis else item
+                                    for item in current['pivot_column_columns']]
+                                current['pivot_conditions'] = [
+                                    item for item in current['pivot_conditions']
+                                    if item.get('column') != source_axis]
+                                scope['conditions'] = [
+                                    item for item in scope.get('conditions', [])
+                                    if item.get('column') != source_axis]
                 else:
                     current['pivot_requested'] = False
+            if (not current.get('pivot_requested') and not chart and not outlier_spec
+                    and len(operations) >= 2):
+                group_candidates = []
+                for name in mentioned_columns:
+                    terms = [name, *column_aliases.get(name, ())]
+                    if any(re.search(
+                            r'(?<![A-Za-z0-9_가-힣])' + re.escape(term)
+                            + r'(?:\))?\s*(?:군|그룹)?별(?![A-Za-z0-9_])', text, re.I)
+                            for term in terms):
+                        group_candidates.append(name)
+                if len(group_candidates) == 1:
+                    group_column = group_candidates[0]
+                    metric_candidates = [column for column in mentioned_columns
+                                         if column != group_column]
+                    from pandas.api.types import is_bool_dtype, is_numeric_dtype
+                    numeric_metrics = []
+                    for column in metric_candidates:
+                        observed = [frame[column] for frame in self.context.datasets.frames.values()
+                                    if column in frame.columns]
+                        if observed and all(is_numeric_dtype(series) and not is_bool_dtype(series)
+                                            for series in observed):
+                            numeric_metrics.append(column)
+                    if len(numeric_metrics) == 1:
+                        value_column = numeric_metrics[0]
+                        metrics = []
+                        conditional_match = re.search(
+                            r'(<=|>=|<|>)\s*(-?\d+(?:\.\d+)?)', text)
+                        conditional = None
+                        if conditional_match and 'RATIO' in operations:
+                            op = {'<':'lt','<=':'le','>':'gt','>=':'ge'}[
+                                conditional_match.group(1)]
+                            raw_value = float(conditional_match.group(2))
+                            condition_value = int(raw_value) if raw_value.is_integer() else raw_value
+                            conditional = {'column':value_column, 'op':op,
+                                           'value':condition_value}
+                            current['scope']['unresolved'] = [
+                                item for item in current['scope'].get('unresolved', [])
+                                if item != 'ungrounded_ratio_numerator']
+                        operation_map = {'AVG':'mean', 'SUM':'sum', 'MEDIAN':'median',
+                                         'MIN':'min', 'MAX':'max'}
+                        if 'RATIO' in operations and conditional:
+                            metrics.append({
+                                'name':f'conditional_percent_{value_column}',
+                                'aggregation':'conditional_percent',
+                                'condition':conditional,
+                            })
+                        if 'COUNT' in operations:
+                            metrics.append({'name':'count', 'aggregation':'count'})
+                        for operation in ('AVG', 'MEDIAN', 'MAX', 'MIN', 'SUM'):
+                            if operation not in operations:
+                                continue
+                            aggregation_name = operation_map[operation]
+                            if conditional:
+                                metric = {
+                                    'name':f'conditional_{aggregation_name}_{value_column}',
+                                    'aggregation':f'conditional_{aggregation_name}',
+                                    'value_column':value_column,
+                                    'condition':conditional,
+                                }
+                                if aggregation_name == 'mean':
+                                    metric['empty_value'] = 0.0
+                                else:
+                                    metrics = []
+                                    break
+                            else:
+                                metric = {'name':f'{aggregation_name}_{value_column}',
+                                          'aggregation':aggregation_name,
+                                          'value_column':value_column}
+                            metrics.append(metric)
+                        if metrics:
+                            current['group_summary_requested'] = True
+                            current['group_summary_columns'] = [group_column]
+                            current['group_summary_metrics'] = metrics
+                            current['group_summary_conditions'] = (
+                                [] if conditional else list(current['scope'].get('conditions', [])))
+                            calculation, operations = False, []
+                            current['calculation'], current['operations'] = False, []
             # Prefer an explicitly named canonical grouping column over an
             # incidental alias match. For example, a short alias such as
             # "일" must not make ``job`` compete with an explicit ``day`` in
@@ -684,6 +827,10 @@ class RecoveryMiddleware(AgentMiddleware):
                 ('pivot_evidence', None), ('pivot_requested', False),
                 ('pivot_index_columns', []), ('pivot_column_columns', []),
                 ('pivot_conditions', []), ('pivot_margins_name', '전체'),
+                ('pivot_derived_bins', []),
+                ('group_summary_requested', False), ('group_summary_columns', []),
+                ('group_summary_metrics', []), ('group_summary_conditions', []),
+                ('group_summary_evidence', None),
                 ('explicit_columns', [])]:
             current.setdefault(key, default)
         start = next((i for i, m in enumerate(messages) if human and m.id == human.id), 0)
@@ -890,6 +1037,7 @@ class RecoveryMiddleware(AgentMiddleware):
                     and result.get('value_column') == arguments.get('value_column', '')
                     and result.get('success_value') == arguments.get('success_value')
                     and result.get('conditions') == arguments.get('conditions', [])
+                    and result.get('derived_bins') == arguments.get('derived_bins', [])
                     and result.get('margins') == arguments.get('margins', False)
                     and result.get('margins_name') == arguments.get('margins_name', '전체')
                     and result.get('sort') == arguments.get('sort', 'ascending')
@@ -1041,7 +1189,9 @@ class RecoveryMiddleware(AgentMiddleware):
                 if valid:
                     current['outlier_aggregate_evidence']['comparison'] = observation
                     current['failed'].pop(name, None)
-            if name in {'local_analysis_sql', 'query_databricks'} and observation.get('status') == 'ready':
+            if (name in {'local_analysis_sql', 'query_databricks', 'aggregate_dataset'}
+                    and observation.get('status') == 'ready'
+                    and not (name == 'aggregate_dataset' and current.get('outlier_aggregate_requested'))):
                 dataset_id = observation.get('dataset', {}).get('id')
                 if self._valid_calculation(dataset_id, arguments, current):
                     current['evidence_ids'].append(dataset_id)
@@ -1201,6 +1351,8 @@ class RecoveryMiddleware(AgentMiddleware):
         expected_conditions = current.get('pivot_conditions', [])
         if arguments.get('conditions', []) != expected_conditions:
             return False
+        if arguments.get('derived_bins', []) != current.get('pivot_derived_bins', []):
+            return False
         axes = list(arguments.get('index_columns', [])) + list(
             arguments.get('column_columns', []))
         if (arguments.get('index_columns') != current.get('pivot_index_columns')
@@ -1212,7 +1364,10 @@ class RecoveryMiddleware(AgentMiddleware):
                 or arguments.get('margins_name', '전체') != current.get('pivot_margins_name', '전체')
                 or arguments.get('sort', 'ascending') != current.get('pivot_sort', 'ascending')):
             return False
-        required = set(axes)
+        derived = current.get('pivot_derived_bins', [])
+        derived_outputs = {item.get('output_column') for item in derived}
+        required = set(axes) - derived_outputs
+        required.update(item.get('source_column') for item in derived)
         if current.get('pivot_value_column'):
             required.add(current['pivot_value_column'])
         required.update(item.get('column') for item in expected_conditions)
@@ -1624,7 +1779,10 @@ class RecoveryMiddleware(AgentMiddleware):
             value_column = current.get('pivot_value_column') or ''
             condition_columns = {item.get('column')
                                  for item in current.get('pivot_conditions', [])}
-            required = set(axes) | condition_columns
+            derived_bins = current.get('pivot_derived_bins', [])
+            derived_outputs = {item.get('output_column') for item in derived_bins}
+            required = (set(axes) - derived_outputs) | condition_columns
+            required.update(item.get('source_column') for item in derived_bins)
             if value_column:
                 required.add(value_column)
             candidates = [info for info in self.context.datasets.metadata.values()
@@ -1635,18 +1793,26 @@ class RecoveryMiddleware(AgentMiddleware):
                 and (current.get('current_result_only')
                     or (info.coverage == 'complete' and info.predicate_known))]
             aggregation = current.get('pivot_aggregation')
+            allowed = {'count','mean','sum','median','min','max',
+                       'success_rate','overall_percent'}
+            aggregation_valid = (
+                aggregation in allowed if isinstance(aggregation, str)
+                else isinstance(aggregation, list) and 2 <= len(aggregation) <= 6
+                and len(aggregation) == len(set(aggregation))
+                and set(aggregation).issubset({'count','mean','sum','median','min','max'}))
             valid_spec = (bool(current.get('pivot_index_columns'))
                           and bool(current.get('pivot_column_columns'))
-                          and aggregation in {'count','mean','sum','median','min','max',
-                                              'success_rate','overall_percent'}
-                          and (aggregation in {'count','overall_percent'} or bool(value_column))
+                          and aggregation_valid
+                          and (bool(value_column) or
+                               isinstance(aggregation, str)
+                               and aggregation in {'count','overall_percent'})
                           and (aggregation != 'success_rate'
                                or current.get('pivot_success_value') is not None))
             if len(candidates) == 1 and valid_spec:
                 # Month categories have a stable semantic order even when the
                 # user does not spell out "calendar order".  Infer that order
                 # from the loaded values rather than a table or column name.
-                if len(current.get('pivot_index_columns', [])) == 1:
+                if len(current.get('pivot_index_columns', [])) == 1 and not derived_bins:
                     index_column = current['pivot_index_columns'][0]
                     observed = {
                         str(value).strip().casefold()
@@ -1661,6 +1827,7 @@ class RecoveryMiddleware(AgentMiddleware):
                     'column_columns':current['pivot_column_columns'],
                     'aggregation':aggregation,
                     'conditions':current.get('pivot_conditions', []),
+                    'derived_bins':derived_bins,
                     'margins':current.get('pivot_margins', False),
                     'margins_name':current.get('pivot_margins_name', '전체'),
                     'sort':current.get('pivot_sort', 'ascending'),
@@ -2387,6 +2554,29 @@ class RecoveryMiddleware(AgentMiddleware):
             if self._valid_card(card, deepcopy(current), card.dataset_id):
                 valid.append(card)
         if valid:
+            if self.context and len(valid) > 1:
+                metadata = self.context.datasets.metadata
+                def root_id(asset_id):
+                    seen = set()
+                    while asset_id not in seen:
+                        seen.add(asset_id)
+                        info = metadata.get(asset_id)
+                        if info is None:
+                            return None
+                        parents = info.parent_ids or ((info.parent_id,) if info.parent_id else ())
+                        if not parents:
+                            return asset_id
+                        if len(parents) != 1:
+                            return None
+                        asset_id = parents[0]
+                    return None
+                roots = {root_id(card.dataset_id) for card in valid}
+                if (None in roots or len(roots) != 1 or
+                        (current.get('current_result_only') and
+                         len({card.dataset_id for card in valid}) != 1)):
+                    self.diagnostics.emit('cached_chart_reuse_ambiguous',
+                        request_id=current.get('request_id'), candidates=len(valid))
+                    return None
             card = valid[-1]
             if card.kind != 'histogram' or len(card.columns) != 1 or not self.context:
                 return None

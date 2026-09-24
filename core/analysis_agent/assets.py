@@ -28,9 +28,11 @@ class AssetDB:
         self.lock=RLock()
         self.conn=sqlite3.connect(self.directory/'assets.sqlite',check_same_thread=False)
         self.conn.execute('CREATE TABLE IF NOT EXISTS assets (id TEXT PRIMARY KEY, kind TEXT, metadata TEXT, payload BLOB)')
+        self.conn.execute('CREATE TABLE IF NOT EXISTS dataset_previews (id TEXT PRIMARY KEY, rows_json TEXT NOT NULL)')
+        self.conn.execute('CREATE TABLE IF NOT EXISTS selection (slot TEXT PRIMARY KEY, dataset_id TEXT NOT NULL)')
         self.conn.commit()
 
-    def put(self,key,kind,metadata,payload):
+    def put(self,key,kind,metadata,payload,*,preview=None):
         if self.max_scope_bytes is not None:
             current=sum(path.stat().st_size for path in self.directory.iterdir() if path.is_file())
             if current+len(payload)>self.max_scope_bytes:
@@ -38,6 +40,15 @@ class AssetDB:
         with self.lock,self.conn:
             self.conn.execute('INSERT INTO assets VALUES (?,?,?,?)',
                 (key,kind,json.dumps(metadata,ensure_ascii=False),payload))
+            if preview is not None:
+                self.conn.execute('INSERT INTO dataset_previews VALUES (?,?)',
+                    (key,json.dumps(preview,ensure_ascii=False)))
+
+    def dataset_preview(self,key):
+        """Read the small display sample without decoding the stored frame."""
+        with self.lock:
+            row=self.conn.execute('SELECT rows_json FROM dataset_previews WHERE id=?',(key,)).fetchone()
+        return json.loads(row[0]) if row else None
 
     def get(self,key,kind):
         with self.lock:
@@ -50,6 +61,19 @@ class AssetDB:
         with self.lock:
             row=self.conn.execute('SELECT 1 FROM assets WHERE id=? AND kind=?',(key,kind)).fetchone()
         if row is None: raise KeyError('로컬 자산이 없거나 만료되었습니다. 자동 재조회하지 않습니다.')
+
+    def selected_dataset_id(self):
+        with self.lock:
+            row=self.conn.execute("SELECT dataset_id FROM selection WHERE slot='active'").fetchone()
+        return row[0] if row else ''
+
+    def select_dataset(self,dataset_id):
+        with self.lock,self.conn:
+            present=self.conn.execute('SELECT 1 FROM assets WHERE id=? AND kind=?',
+                                      (dataset_id,'dataset')).fetchone()
+            if not present:
+                raise KeyError('선택할 로컬 데이터가 없습니다. 자동 재조회하지 않습니다.')
+            self.conn.execute("INSERT OR REPLACE INTO selection VALUES ('active',?)",(dataset_id,))
 
     def metadata(self,kind):
         with self.lock:
@@ -110,10 +134,20 @@ class PersistentDatasets(DatasetStore):
         frame_bytes=int(frame.memory_usage(index=True,deep=True).sum())
         if self.max_frame_bytes is not None and frame_bytes>self.max_frame_bytes:
             raise MemoryError(f'데이터 메모리 크기가 운영 한도({self.max_frame_bytes} bytes)를 초과합니다.')
-        info=DatasetStore().register(frame,source=source,**provenance)
+        info=DatasetStore(metadata=self.metadata).register(frame,source=source,**provenance)
         buffer=BytesIO()
         frame.to_parquet(buffer,index=True)
-        self.db.put(info.id,'dataset',asdict(info),buffer.getvalue())
+        sample=frame.head(5)
+        def display(value):
+            try:
+                if bool(pd.isna(value)):
+                    return None
+            except (TypeError,ValueError):
+                pass
+            return str(value)[:256]
+        preview=[{str(column):display(value)
+                  for column,value in row.items()} for row in sample.to_dict(orient='records')]
+        self.db.put(info.id,'dataset',asdict(info),buffer.getvalue(),preview=preview)
         return info
 
 

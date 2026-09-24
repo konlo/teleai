@@ -91,13 +91,24 @@ with st.sidebar:
             fixture=json.loads((ROOT/'tests/fixtures/analysis_acceptance.json').read_text())
             info=runtime.datasets.register(pd.DataFrame(fixture['rows']),source=fixture['source'],
                 coverage='complete',predicate_known=True)
+            runtime.select_dataset(info.id)
             return {'text':f'합성 예제 데이터 {info.rows}행을 로컬에 준비했습니다.'}
         action(example);st.rerun()
     st.subheader('보유한 결과')
+    selected_id=runtime.context.selected_dataset_id
     for index,info in enumerate(runtime.datasets.metadata.values(),1):
-        with st.expander(f'결과 {index} · {info.source} · {info.rows:,}행'):
-            st.caption(f'{info.grain} · {info.coverage}')
-            st.dataframe(runtime.datasets.frames[info.id].head(5),hide_index=True)
+        marker=' · 분석 기준' if info.id==selected_id else ''
+        with st.expander(f'결과 {index} · {info.source} · {info.rows:,}행{marker}'):
+            st.caption(f'{info.role} · {info.grain} · {info.coverage}')
+            preview=runtime.db.dataset_preview(info.id)
+            if preview is None:
+                st.caption('이전 형식으로 저장된 결과입니다. 전체 데이터를 화면 미리보기용으로 복원하지 않습니다.')
+            elif preview:
+                st.dataframe(preview,hide_index=True)
+            else:
+                st.caption('조회 결과에 행이 없습니다.')
+            if st.button('분석 기준으로 선택',key='select-'+info.id,disabled=info.id==selected_id):
+                action(lambda:runtime.select_dataset(info.id));st.rerun()
             if st.button('차트 추천',key='recommend-'+info.id):
                 action(lambda:runtime.recommend_charts(info.id));st.rerun()
     with st.expander('분석 스킬'):
@@ -150,7 +161,13 @@ if state.get('recovery',{}).get('status')=='blocked':
 for pending in state['requests']:
     with st.container(border=True):
         st.subheader('추가 데이터를 불러올까요?')
-        st.write(pending['reason']);st.code(pending['query'],language='sql')
+        from core.analysis_load_plan import source_plan
+        plan=source_plan(pending['source'],pending['query'])
+        st.write(pending['reason'])
+        st.caption('대상: '+(', '.join(plan.actual_tables) if plan.actual_tables else pending['source'])
+                   +' · 결과 유형: '+('집계' if plan.grain=='aggregate' else '행 데이터')
+                   +' · SQL 행 제한: '+('있음' if plan.bounded_result else '없음'))
+        st.code(pending['query'],language='sql')
         st.caption('이 조회에만 승인이 적용됩니다. 기존 결과는 유지됩니다.')
         yes,no=st.columns(2)
         if yes.button('불러오고 계속',key='yes-'+pending['id'],disabled=pending['status']!='proposed'):

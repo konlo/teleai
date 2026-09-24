@@ -16,6 +16,7 @@ AGGREGATIONS = frozenset({
     "count", "mean", "sum", "median", "min", "max",
     "success_rate", "overall_percent",
 })
+MULTI_AGGREGATIONS = frozenset({"count", "mean", "sum", "median", "min", "max"})
 MONTH_ORDER = {
     name: index for index, names in enumerate((
         ("jan", "january"), ("feb", "february"), ("mar", "march"),
@@ -56,16 +57,77 @@ def _calendar_sort(frame: pd.DataFrame, index_column: str) -> pd.DataFrame:
         "__month_order", kind="mergesort").drop(columns="__month_order").reset_index(drop=True)
 
 
+def _normalize_aggregation(aggregation: str | list[str]) -> str | list[str]:
+    if isinstance(aggregation, str):
+        if aggregation not in AGGREGATIONS:
+            raise ValueError("지원하지 않는 피벗 집계 방식입니다.")
+        return aggregation
+    if (not isinstance(aggregation, list) or not 2 <= len(aggregation) <= 6
+            or len(aggregation) != len(set(aggregation))
+            or any(item not in MULTI_AGGREGATIONS for item in aggregation)):
+        raise ValueError("복수 피벗 집계는 중복 없는 count, mean, sum, median, min, max 2~6개여야 합니다.")
+    return list(aggregation)
+
+
+def _apply_derived_bins(
+    frame: pd.DataFrame, derived_bins: list[dict[str, Any]]
+) -> tuple[pd.DataFrame, list[dict[str, Any]]]:
+    if len(derived_bins) > 2:
+        raise ValueError("파생 구간 축은 최대 2개까지 허용합니다.")
+    working = frame.copy()
+    normalized: list[dict[str, Any]] = []
+    outputs: set[str] = set()
+    for raw in derived_bins:
+        if not isinstance(raw, dict) or set(raw) != {
+                "source_column", "output_column", "cut_points", "labels"}:
+            raise ValueError("파생 구간은 source_column, output_column, cut_points, labels만 포함해야 합니다.")
+        source_column, output_column = raw["source_column"], raw["output_column"]
+        cut_points, labels = raw["cut_points"], raw["labels"]
+        if source_column not in working.columns:
+            raise ValueError("파생 구간의 원본 컬럼은 현재 dataset에 있어야 합니다.")
+        if (not isinstance(output_column, str) or not output_column or len(output_column) > 80
+                or output_column in working.columns or output_column in outputs):
+            raise ValueError("파생 구간 출력 컬럼은 새롭고 중복 없는 1~80자 이름이어야 합니다.")
+        if (not pd.api.types.is_numeric_dtype(working[source_column])
+                or pd.api.types.is_bool_dtype(working[source_column])):
+            raise ValueError("파생 구간의 원본 컬럼은 bool이 아닌 수치형이어야 합니다.")
+        if (not isinstance(cut_points, list) or not 1 <= len(cut_points) <= 20
+                or any(isinstance(value, bool) or not isinstance(value, (int, float))
+                       or not np.isfinite(value) for value in cut_points)
+                or cut_points != sorted(set(cut_points))):
+            raise ValueError("cut_points는 오름차순의 중복 없는 유한 숫자 1~20개여야 합니다.")
+        if (not isinstance(labels, list) or len(labels) != len(cut_points) + 1
+                or len(labels) != len(set(labels)) or any(
+                    not isinstance(label, str) or not label or len(label) > 40 for label in labels)):
+            raise ValueError("labels는 구간 수와 맞는 중복 없는 1~40자 문자열이어야 합니다.")
+        working[output_column] = pd.cut(
+            pd.to_numeric(working[source_column], errors="coerce"),
+            bins=[-np.inf, *cut_points, np.inf],
+            labels=labels,
+            right=False,
+            ordered=True,
+        )
+        outputs.add(output_column)
+        normalized.append({
+            "source_column": source_column,
+            "output_column": output_column,
+            "cut_points": list(cut_points),
+            "labels": list(labels),
+        })
+    return working, normalized
+
+
 def pivot_dataset(
     store: DatasetStore,
     dataset_id: str,
     *,
     index_columns: list[str],
     column_columns: list[str],
-    aggregation: str,
+    aggregation: str | list[str],
     value_column: str = "",
     success_value: Any = None,
     conditions: list[dict[str, Any]] | None = None,
+    derived_bins: list[dict[str, Any]] | None = None,
     margins: bool = False,
     margins_name: str = "전체",
     sort: str = "ascending",
@@ -80,8 +142,7 @@ def pivot_dataset(
         raise ValueError("피벗은 행 축 1~3개와 열 축 1~2개를 요구합니다.")
     if len(axes) != len(set(axes)) or len(axes) > 4:
         raise ValueError("피벗 축은 중복 없이 최대 4개까지만 허용합니다.")
-    if aggregation not in AGGREGATIONS:
-        raise ValueError("지원하지 않는 피벗 집계 방식입니다.")
+    aggregation = _normalize_aggregation(aggregation)
     if sort not in {"ascending", "descending", "calendar_month"}:
         raise ValueError("sort는 ascending, descending, calendar_month 중 하나여야 합니다.")
     if not 1 <= int(max_axis_values) <= 100 or not 1 <= int(max_output_cells) <= 10_000:
@@ -95,22 +156,31 @@ def pivot_dataset(
         raise ValueError("피벗은 집계되지 않은 raw dataset에서만 실행합니다.")
     condition_objects = tuple(Condition(**item) for item in (conditions or []))
     condition_columns = [condition.column for condition in condition_objects]
-    requested = axes + ([value_column] if value_column else []) + condition_columns
+    raw_derived_bins = list(derived_bins or [])
+    derived_outputs = {item.get("output_column") for item in raw_derived_bins if isinstance(item, dict)}
+    derived_sources = {item.get("source_column") for item in raw_derived_bins if isinstance(item, dict)}
+    requested = [column for column in axes if column not in derived_outputs]
+    requested += ([value_column] if value_column else []) + condition_columns + list(derived_sources)
     if any(column not in source.columns for column in requested):
         raise ValueError("피벗 축·값·조건 컬럼은 현재 dataset의 실제 컬럼이어야 합니다.")
-    if aggregation in {"mean", "sum", "median", "min", "max", "success_rate"} and not value_column:
+    if any(output not in axes for output in derived_outputs):
+        raise ValueError("파생 구간 출력 컬럼은 피벗 축으로 사용해야 합니다.")
+    aggregations = [aggregation] if isinstance(aggregation, str) else aggregation
+    if any(item in {"mean", "sum", "median", "min", "max", "success_rate"}
+           for item in aggregations) and not value_column:
         raise ValueError("요청한 피벗 집계에는 value_column이 필요합니다.")
-    if aggregation in {"mean", "sum", "median", "min", "max"} and (
+    if any(item in {"mean", "sum", "median", "min", "max"} for item in aggregations) and (
         not pd.api.types.is_numeric_dtype(source[value_column])
         or pd.api.types.is_bool_dtype(source[value_column])
     ):
         raise ValueError("수치 피벗의 value_column은 bool이 아닌 수치형이어야 합니다.")
     if aggregation == "success_rate" and success_value is None:
         raise ValueError("success_rate에는 명시적인 success_value가 필요합니다.")
-    if aggregation not in {"success_rate"} and success_value is not None:
+    if aggregation != "success_rate" and success_value is not None:
         raise ValueError("success_value는 success_rate에서만 지정합니다.")
 
     filtered = filter_frame(source, condition_objects) if condition_objects else source.copy()
+    filtered, normalized_derived_bins = _apply_derived_bins(filtered, raw_derived_bins)
     if filtered.empty:
         raise ValueError("조건 적용 후 피벗할 행이 없습니다.")
     for column in axes:
@@ -198,6 +268,7 @@ def pivot_dataset(
         "value_column": value_column,
         "success_value": success_value,
         "conditions": [asdict(condition) for condition in condition_objects],
+        "derived_bins": normalized_derived_bins,
         "margins": bool(margins),
         "margins_name": margins_name,
         "sort": sort,

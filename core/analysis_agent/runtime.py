@@ -51,7 +51,8 @@ class GraphAnalysisRuntime:
         def blocked(**kwargs):raise PermissionError('실 DB 실행은 아직 연결되지 않았습니다.')
         self.context=AnalysisToolContext(self.datasets,self.artifacts,[],blocked,
             max_join_rows=self.policy.max_join_rows,
-            max_join_expansion_ratio=self.policy.max_join_expansion_ratio)
+            max_join_expansion_ratio=self.policy.max_join_expansion_ratio,
+            selected_dataset_id=self.db.selected_dataset_id())
         self._refresh_reference_context()
         catalog=next(t.run for t in build_analysis_tools(self.context) if t.name=='list_analysis_context')
         @dynamic_prompt
@@ -59,6 +60,14 @@ class GraphAnalysisRuntime:
             self._refresh_reference_context()
             instructions=ANALYSIS_INSTRUCTIONS.replace('propose_databricks_query','query_databricks')
             rendered=instructions+'\n현재 분석 환경:\n'+json.dumps(catalog(),ensure_ascii=False,default=str)
+            selected=self.datasets.metadata.get(self.context.selected_dataset_id)
+            if selected is not None:
+                rendered += ('\n사용자가 선택한 분석 기준 데이터: '
+                             + json.dumps({'dataset_id':selected.id,'root_id':selected.root_id,
+                                'role':selected.role,'source':selected.source,
+                                'snapshot':selected.snapshot,'coverage':selected.coverage},
+                                ensure_ascii=False)
+                             + '\n후속 요청에 이 기준을 사용하되, 명시한 다른 출처·범위와 충돌하면 선택을 추측하지 마세요.')
             active_request = latest_user_request(request.state['messages']) or latest_user_request(self.transcript.messages())
             if active_request is not None:
                 rendered += ('\n현재 사용자 요청 원문(JSON 문자열): '+json.dumps(str(active_request.content),ensure_ascii=False)
@@ -183,11 +192,16 @@ class GraphAnalysisRuntime:
         self._refresh_reference_context()
         state=self.agent.get_state(self.config)
         pending=self._pending()
+        selected=self.datasets.metadata.get(self.context.selected_dataset_id)
         return {'runtime_version':self.version,
                 'state':'awaiting_approval' if pending else 'incomplete' if state.next else 'idle',
                 'message_count':len(self.events()),
                 'model_message_count':len(state.values.get('messages',[])),
                 'dataset_ids':list(self.datasets.metadata),'chart_ids':list(self.artifacts),
+                'selected_dataset':({'id':selected.id,'root_id':selected.root_id,
+                    'role':selected.role,'source':selected.source,
+                    'snapshot':selected.snapshot,'coverage':selected.coverage}
+                    if selected else None),
                 'requests':pending,'uncertain_executions':self.ledger.uncertain(),
                 'recovery':state.values.get('recovery',{}),
                 'operational_policy':self.policy.public()}
@@ -203,6 +217,7 @@ class GraphAnalysisRuntime:
             process_peak_rss_bytes=process_peak_rss_bytes())
         try:
             result={}
+            completed_load_id=''
             if self.on_progress:self.on_progress('요청과 보유 데이터를 확인하고 있습니다.')
             for update in self.agent.stream(value,self.config,stream_mode='values'):
                 result=update
@@ -214,11 +229,24 @@ class GraphAnalysisRuntime:
                         self.on_progress(tool_progress(last))
                     elif isinstance(last,AIMessage) and last.tool_calls:
                         self.on_progress('필요한 분석 도구를 실행하고 있습니다.')
+                if messages and isinstance(messages[-1],ToolMessage) and messages[-1].name=='query_databricks':
+                    try:
+                        observation=json.loads(messages[-1].content)
+                    except (ValueError,TypeError):
+                        observation={}
+                    if observation.get('status')=='ready':
+                        completed_load_id=observation.get('dataset',{}).get('id','')
             if result.get('__interrupt__'):
                 self.diagnostics.emit('run_paused', run_id=run_id, reason='approval')
                 return {'status':'awaiting_approval','requests':self._pending()}
             messages=self.agent.get_state(self.config).values.get('messages',[])
             outcome=messages[-1].additional_kwargs.get('analysis_status','answered') if messages else 'answered'
+            if outcome=='answered' and completed_load_id in self.datasets.metadata:
+                loaded=self.datasets.metadata[completed_load_id]
+                # A remote statistic is evidence for this answer, not a new
+                # row-level EDA baseline. Keep the user's selected raw branch.
+                if loaded.role=='root' and loaded.grain=='raw':
+                    self._select_dataset_unlocked(completed_load_id)
             elapsed=round(time.monotonic()-started,3)
             self.diagnostics.emit('run_completed', run_id=run_id, status=outcome,
                 elapsed_seconds=elapsed, process_peak_rss_bytes=process_peak_rss_bytes(),
@@ -307,7 +335,25 @@ class GraphAnalysisRuntime:
             if self.agent.get_state(self.config).next:
                 finished=self._invoke(None)
                 if finished['status']!='answered':raise RuntimeError('차트 선택 완료 처리에 실패했습니다.')
+            self._select_dataset_unlocked(card.dataset_id)
             return card.id
+
+    def _select_dataset_unlocked(self,dataset_id):
+        info=self.datasets.metadata[dataset_id]
+        self.db.select_dataset(dataset_id)
+        self.context.selected_dataset_id=dataset_id
+        self.diagnostics.emit('dataset_selected', dataset_id=dataset_id,
+                              root_id=info.root_id, role=info.role, source=info.source)
+        return info
+
+    def select_dataset(self,dataset_id):
+        with self._exclusive():
+            if self.agent.get_state(self.config).next:
+                raise ValueError('미완료 작업을 먼저 처리해주세요.')
+            info=self._select_dataset_unlocked(dataset_id)
+            return {'status':'ready',
+                    'text':f'{info.rows:,}행의 저장된 데이터를 분석 기준으로 선택했습니다.',
+                    'dataset_id':dataset_id,'root_id':info.root_id}
 
     def _respond_locked(self,request_id,approved):
         from uuid import uuid4

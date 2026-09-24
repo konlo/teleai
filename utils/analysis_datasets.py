@@ -6,7 +6,7 @@ actually answer. Unsupported predicate implication requires a source query.
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from typing import Any
+from typing import Any, Mapping
 from uuid import uuid4
 
 import pandas as pd
@@ -73,6 +73,8 @@ class DatasetInfo:
     query: str = ""
     parent_id: str = ""
     parent_ids: tuple[str, ...] = ()
+    role: str = "unknown"  # legacy assets remain unknown; new ready assets are classified
+    root_id: str = ""
 
 
 @dataclass(frozen=True)
@@ -90,6 +92,75 @@ class AnalysisNeed:
 class ReuseDecision:
     action: str
     reason: str
+
+
+@dataclass(frozen=True)
+class ReuseSelection:
+    dataset_id: str
+    decision: ReuseDecision
+    origin: str  # selected, ancestor, registry, or unavailable
+
+
+def select_reusable_dataset(
+    metadata: Mapping[str, DatasetInfo], selected_id: str, need: AnalysisNeed,
+) -> ReuseSelection:
+    """Find a sufficient local asset using metadata only, before proposing a reload.
+
+    An explicit request for the selected result is never widened. Ancestors are
+    preferred by lineage distance; unrelated assets require the same explicit
+    snapshot and must have exactly one sufficient candidate.
+    """
+    selected = metadata[selected_id]
+    initial = assess_reuse(selected, need)
+    if initial.action != "query_source" or need.current_result_only:
+        return ReuseSelection(selected_id, initial, "selected")
+
+    visited = {selected_id}
+    frontier = list(dict.fromkeys((*selected.parent_ids,
+                                    *((selected.parent_id,) if selected.parent_id else ()))))
+    while frontier:
+        candidates = []
+        following = []
+        for asset_id in frontier:
+            if asset_id in visited:
+                continue
+            visited.add(asset_id)
+            info = metadata.get(asset_id)
+            if info is None:
+                continue
+            # A lineage edge alone is not evidence that a different snapshot
+            # or source can answer this request.
+            if info.source == selected.source and info.snapshot == selected.snapshot:
+                decision = assess_reuse(info, need)
+                if decision.action != "query_source":
+                    candidates.append((asset_id, decision))
+            following.extend(info.parent_ids or
+                             ((info.parent_id,) if info.parent_id else ()))
+        if len(candidates) == 1:
+            asset_id, decision = candidates[0]
+            return ReuseSelection(asset_id, decision, "ancestor")
+        if len(candidates) > 1:
+            return ReuseSelection(selected_id, ReuseDecision(
+                "query_source", "동일 단계의 부모 데이터가 여러 개라 범위를 확정할 수 없습니다."),
+                "unavailable")
+        frontier = list(dict.fromkeys(following))
+
+    # Assets without lineage can be considered only when a nonempty snapshot
+    # explicitly proves that they belong to the selected source version.
+    if selected.snapshot:
+        candidates = [(asset_id, decision)
+                      for asset_id, info in metadata.items()
+                      if asset_id not in visited and info.source == selected.source
+                      and info.snapshot == selected.snapshot
+                      if (decision := assess_reuse(info, need)).action != "query_source"]
+        if len(candidates) == 1:
+            asset_id, decision = candidates[0]
+            return ReuseSelection(asset_id, decision, "registry")
+        if len(candidates) > 1:
+            return ReuseSelection(selected_id, ReuseDecision(
+                "query_source", "동일 버전의 사용 가능한 데이터가 여러 개라 범위를 확정할 수 없습니다."),
+                "unavailable")
+    return ReuseSelection(selected_id, initial, "unavailable")
 
 
 def assess_reuse(info: DatasetInfo, need: AnalysisNeed) -> ReuseDecision:
@@ -156,7 +227,26 @@ class DatasetStore:
         coverage = provenance.get("coverage", "unknown")
         if coverage not in {"complete", "unknown", "sampled", "truncated"}:
             raise ValueError("지원하지 않는 coverage입니다.")
-        info = DatasetInfo(str(uuid4()), source, tuple(frame.columns), len(frame), **provenance)
+        asset_id = str(uuid4())
+        parent_id = provenance.get('parent_id', '')
+        parent_ids = tuple(provenance.get('parent_ids', ()))
+        role = provenance.pop('role', None)
+        if role is None:
+            role = ('derived' if parent_id or parent_ids else
+                    'root' if provenance.get('grain', 'raw') == 'raw' else 'aggregate')
+        if role not in {'root', 'derived', 'aggregate', 'unknown'}:
+            raise ValueError('준비되지 않은 데이터 역할은 ready 자산으로 발행할 수 없습니다.')
+        root_id = provenance.pop('root_id', '')
+        if role == 'root':
+            if parent_id or parent_ids or root_id:
+                raise ValueError('보호 원본은 다른 데이터의 파생 결과일 수 없습니다.')
+            root_id = asset_id
+        elif role == 'derived' and not root_id:
+            parents = parent_ids or ((parent_id,) if parent_id else ())
+            if len(parents) == 1 and parents[0] in self.metadata:
+                root_id = self.metadata[parents[0]].root_id
+        info = DatasetInfo(asset_id, source, tuple(frame.columns), len(frame),
+                           **provenance, role=role, root_id=root_id)
         self.frames[info.id] = frame
         self.metadata[info.id] = info
         return info

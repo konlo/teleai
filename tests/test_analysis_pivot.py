@@ -15,6 +15,26 @@ from utils.analysis_datasets import DatasetStore
 
 
 class AnalysisPivotTests(unittest.TestCase):
+    def test_multiple_aggregation_plan_preserves_list_and_completes(self):
+        from tests.test_data_preservation_acceptance import load_fixture
+        spec, frame = load_fixture()
+        measure, row_axis, column_axis = (spec['roles'][key] for key in ('measure', 'group', 'key'))
+        with tempfile.TemporaryDirectory() as root:
+            runtime = GraphAnalysisRuntime(root, 'owner', 'multi-pivot', ForbiddenModel())
+            parent = runtime.datasets.register(frame, source=spec['source'],
+                coverage='complete', predicate_known=True, snapshot=spec['snapshot'])
+            runtime.context.reference_context[:] = [fixture_reference_context(spec['source'], frame)]
+            try:
+                result = runtime.submit(
+                    f'{row_axis}를 행 축, {column_axis}를 열 축으로 평균 {measure}와 합계 {measure} 피벗 테이블을 만들어줘')
+                self.assertEqual(result['status'], 'answered', result)
+                recovery = runtime.inspect()['recovery']
+                self.assertEqual(set(recovery['pivot_aggregation']), {'mean', 'sum'})
+                self.assertEqual(recovery['pivot_evidence']['pivot_result']['parent_dataset_id'], parent.id)
+                self.assertEqual(recovery['model_calls'], 0)
+            finally:
+                runtime.close()
+
     def setUp(self):
         self.store = DatasetStore()
         self.frame = pd.DataFrame({
@@ -86,6 +106,35 @@ class AnalysisPivotTests(unittest.TestCase):
             margins=True, margins_name="total", sort="calendar_month")
         actual = self.store.frames[result["dataset"]["id"]]
         self.assertEqual(actual["period"].tolist(), ["jan", "feb", "mar", "total"])
+
+    def test_binned_axis_and_multiple_aggregations_match_pandas(self):
+        frame = pd.DataFrame({
+            "age_value": [19, 20, 29, 30, 39, 40, 49, 50, 65],
+            "channel": ["a", "a", "b", "a", "b", "a", "b", "a", "b"],
+            "measure": [1.0, 2.0, 3.0, 4.0, 5.0, 6.0, np.nan, 8.0, 9.0],
+        })
+        info = self.store.register(
+            frame.copy(), source="fixture.binned_matrix", coverage="complete",
+            predicate_known=True, snapshot="fixture:v1")
+        result = self.tools["pivot_dataset"](
+            info.id, ["age_value_group"], ["channel"], ["count", "mean"],
+            value_column="measure", derived_bins=[{
+                "source_column": "age_value", "output_column": "age_value_group",
+                "cut_points": [30, 40, 50],
+                "labels": ["20s or younger", "30s", "40s", "50s or older"],
+            }])
+        actual = self.store.frames[result["dataset"]["id"]]
+        expected_source = frame.assign(age_value_group=pd.cut(
+            frame["age_value"], bins=[-np.inf, 30, 40, 50, np.inf],
+            labels=["20s or younger", "30s", "40s", "50s or older"], right=False))
+        expected = expected_source.dropna(subset=["age_value_group", "channel", "measure"]).pivot_table(
+            index=["age_value_group"], columns=["channel"], values="measure",
+            aggfunc=["count", "mean"], observed=True).reset_index()
+        expected.columns = [" | ".join(str(part) for part in item if str(part) not in {"", "None"})
+                            for item in expected.columns.to_flat_index()]
+        pd.testing.assert_frame_equal(actual, expected)
+        self.assertEqual(result["pivot_result"]["aggregation"], ["count", "mean"])
+        self.assertEqual(result["pivot_result"]["derived_bins"][0]["source_column"], "age_value")
 
     def test_invalid_schema_grain_and_parameters_fail_closed(self):
         structured = {tool.name: tool for tool in local_tools(

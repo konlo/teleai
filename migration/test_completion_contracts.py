@@ -64,6 +64,23 @@ class CompletionTests(unittest.TestCase):
             self.assertTrue(r.inspect()['recovery']['evidence_ids'])
             r.close()
 
+    def test_structured_aggregate_counts_as_verified_calculation(self):
+        with tempfile.TemporaryDirectory() as root:
+            model = ScriptModel(calls=[{'name':'aggregate_dataset', 'args':{
+                'dataset_id':'$dataset', 'aggregation':'mean', 'value_column':COLUMN}}])
+            runtime = GraphAnalysisRuntime(root, 'owner', 'aggregate-completion', model)
+            frame = pd.DataFrame(FIXTURE['rows'])
+            model.dataset_id = runtime.datasets.register(frame, source=SOURCE,
+                coverage='complete', predicate_known=True).id
+            result = runtime.submit(f'{COLUMN} 평균을 계산해줘')
+            self.assertEqual(result['status'], 'answered', result)
+            self.assertIn(str(frame[COLUMN].mean()), result['text'])
+            self.assertNotIn('999', result['text'])
+            evidence = runtime.inspect()['recovery']['evidence_ids']
+            self.assertEqual(len(evidence), 1)
+            self.assertEqual(runtime.datasets.metadata[evidence[0]].parent_id, model.dataset_id)
+            runtime.close()
+
     def test_metadata_and_previous_turn_result_are_not_new_calculation(self):
         with tempfile.TemporaryDirectory() as root:
             model = ScriptModel(calls=[{'name': 'inspect_table_context', 'args': {'table': SOURCE}}])
@@ -130,6 +147,39 @@ class CompletionTests(unittest.TestCase):
             self.assertEqual(state['model_calls'], 0)
             self.assertEqual(state['artifact_ids'], [card.id])
             self.assertTrue(any('이미지를 생성했습니다' in str(m.content) for m in r.events()))
+            r.close()
+
+    def test_histogram_ambiguous_roots_require_explicit_dataset_selection(self):
+        with tempfile.TemporaryDirectory() as root:
+            remote = []
+            model = ScriptModel(calls=[
+                {'name': 'prepare_histogram', 'args': {'source': SOURCE, 'column': COLUMN}},
+                {'name': 'prepare_histogram', 'args': {'source': SOURCE, 'column': COLUMN,
+                                                      'dataset_id': '$dataset'}},
+            ])
+            r = GraphAnalysisRuntime(root, 'owner', 'ambiguous-chart', model,
+                connection_identity='test', remote_factory=lambda _: lambda request: remote.append(request))
+            frame = pd.DataFrame(FIXTURE['rows'])
+            earlier = r.datasets.register(frame.copy(), source=SOURCE,
+                snapshot='v1', coverage='complete', predicate_known=True)
+            later = r.datasets.register(frame.assign(**{COLUMN: frame[COLUMN] + 100}),
+                source=SOURCE, snapshot='v2', coverage='complete', predicate_known=True)
+            chart_tools = {item.name: item.run for item in build_analysis_tools(r.context)}
+            prior_card = chart_tools['prepare_histogram'](SOURCE, COLUMN, dataset_id=earlier.id)
+            selected_card = chart_tools['prepare_histogram'](SOURCE, COLUMN, dataset_id=later.id)
+            self.assertNotEqual(prior_card['cards'][0]['id'], selected_card['cards'][0]['id'])
+            model.dataset_id = later.id
+            result = r.submit(f'{COLUMN} histogram을 보여줘')
+            self.assertEqual(result['status'], 'answered', result)
+            observations = [json.loads(message.content) for message in r.events()
+                if isinstance(message, ToolMessage) and message.name == 'prepare_histogram']
+            self.assertEqual(observations[0]['status'], 'needs_context')
+            self.assertEqual(observations[1]['status'], 'ready')
+            self.assertEqual(observations[1]['cards'][0]['id'], selected_card['cards'][0]['id'])
+            self.assertEqual(r.datasets.metadata[observations[1]['loaded_dataset']].parent_id, later.id)
+            self.assertNotEqual(r.datasets.metadata[observations[1]['loaded_dataset']].parent_id, earlier.id)
+            self.assertEqual(remote, [])
+            self.assertEqual(r.inspect()['requests'], [])
             r.close()
 
     def test_model_time_budget_is_persistent_not_reset_by_approval(self):
@@ -358,8 +408,8 @@ class CompletionTests(unittest.TestCase):
             r.close()
 
     def test_wrong_remote_scope_never_creates_approval_before_corrected_query(self):
-        wrong = "SELECT COUNT(*) FROM fixture.synthetic_events WHERE period='2026-07'"
-        correct = "SELECT COUNT(*) FROM fixture.synthetic_events WHERE period='2026-08'"
+        wrong = f"SELECT COUNT(*) FROM {SOURCE} WHERE period='2026-07'"
+        correct = f"SELECT COUNT(*) FROM {SOURCE} WHERE period='2026-08'"
         with tempfile.TemporaryDirectory() as root:
             executions = []
             model = ScriptModel(calls=[
@@ -400,7 +450,7 @@ class CompletionTests(unittest.TestCase):
             r.close()
 
     def test_request_scope_survives_restart_while_waiting_for_approval(self):
-        query = "SELECT COUNT(*) FROM fixture.synthetic_events WHERE period='2026-08'"
+        query = f"SELECT COUNT(*) FROM {SOURCE} WHERE period='2026-08'"
         with tempfile.TemporaryDirectory() as root:
             executions = []
             model = ScriptModel(calls=[{'name':'query_databricks', 'args':{

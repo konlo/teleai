@@ -55,7 +55,11 @@ class DataContractTests(unittest.TestCase):
             requested_conditions=requested)
         self.assertEqual(result['status'], 'ready')
         self.assertEqual(result['preview'][0]['result'], self.frame.loc[self.frame[COLUMN] >= 20, COLUMN].mean())
-        self.assertEqual(self.tools['local_analysis_sql'](derived.id, f'SELECT AVG({COLUMN}) FROM data')['status'], 'needs_data')
+        widened = self.tools['local_analysis_sql'](derived.id, f'SELECT AVG({COLUMN}) FROM data')
+        self.assertEqual(widened['status'], 'ready')
+        self.assertEqual(widened['selected_dataset_id'], info.id)
+        self.assertEqual(widened['selection_origin'], 'ancestor')
+        self.assertEqual(next(iter(widened['preview'][0].values())), self.frame[COLUMN].mean())
 
     def test_unknown_or_scope_is_not_reinterpreted_as_and(self):
         info = self.raw(self.frame[self.frame[COLUMN] >= 10], conditions=(Condition(COLUMN, 'ge', 10),))

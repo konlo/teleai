@@ -2,11 +2,14 @@
 
 ## Current Status
 - **Last Updated**: 2026-09-24
-- **Status**: In Progress — 배포 preflight까지 검증한 1인용 제한 출시 후보
-- **Summary**: 공통 tool 결과 계약과 bounded profile·chart·join·통계·이상치·cohort·시계열·count/rate·winsorization·피벗을 production graph에 연결했다. application 167/167, migration 126/126, actual-agent evaluation harness 45/45, Level 3 17/17, 전체 참고 runner 217/217 PASS다. 실제 agent 독립 채점은 87/200이며 최신 화면의 후속 피벗은 0.053초, 모델·원격 0회로 완료됐다.
-- **Next Session Focus**: 배포 대상·실제 호스트 gate·smoke/rollback → 남은 113문항 oracle와 구간화·다중 지표 소계, 범용 다중 패널, 결과 내보내기.
+- **Status**: In Progress — T05~T07 부분 구현, 개발 화면 검증 완료, 운영 출시 NO-GO
+- **Summary**: 원본/분기 재사용과 영속 선택, 승인 SQL 출처 결합·결과 후보 검증, SQL 집계와 EDA 기준 분리, bounded UI 미리보기, 구조화 집계 완료 근거를 보강했다. 최종 application 201/201, migration 128/128, Level 3 17/17, 참고 전체 runner 217/217 PASS. localhost 재시작 후 실제 histogram PNG와 이전 대화 복원을 확인했다.
+- **Next Session Focus**: [출시 판정](docs/release_readiness_2026-09-24.md)의 실제 Databricks 승인 여정, 디스크 staging/부분 scan, 실제 모델 반복/held-out 평가, 배포 대상·영속 볼륨·접근제어를 해결한다.
+- **Current qualification**: 실제 모델 PRES_02 수정 후 2턴 PASS이나 첫 평균 55.274초; PRES_03은 timeout과 60.569초 PASS가 모두 기록됐다. 전체 agent 자연어 성공률은 아직 없고 기존 oracle 87/200은 coverage, 113개 미채점이다. DeepEval/Spider 공식 점수·새 Databricks 조회·운영 배포 검증은 없다.
 
 ## Next Action Items
+- [ ] D07/D08의 전체 로딩 의미 검증·디스크 staging/부분 scan·나머지 차트/계획 경로의 registry 재사용을 P0로 마무리한다. 출처/결과 구조 검증과 active 원본 선택은 이번에 부분 적용했다. T06/T07 및 J21~J24: docs/data_loading_and_preservation_contract_2026-09-24.md.
+- [ ] 코딩 전에 T00~T02 baseline·요구/평가 매핑·독립 acceptance를 확정한다. 상세: docs/data_agent_requirements_and_evaluation_2026-09-24.md.
 - [x] 제품 승인 카드에서 사용자가 승인한 실제 Databricks 조회 → 저장 → 분석 → 후속 질문을 검증했다.
 - [ ] 남은 113문항의 독립 oracle과 고급 분석 도구 범위를 우선순위별로 확대한다.
 - [ ] 로컬 단일·동시 용량 gate와 RSS 기준은 완료했다. 실제 배포 호스트와 Ollama 동시 추론으로 기준을 보정한다.
@@ -465,6 +468,12 @@ Task definitions and acceptance conditions: docs/agent_remaining_tasks_2026-09-1
 ---
 
 ## Daily Wrap-ups
+
+### 2026-09-24 Daily Summary
+- **Work completed**: 피벗·소계 WIP 회귀와 평가/보존 계약을 정리하고, SQL·필터·히스토그램의 부모/registry 재사용과 복수 root 오선택 차단을 연결했다. active dataset 영속 상태·원본 계보·승인 SQL 실제 출처 검증·원격 결과 컬럼/배치 한도·SQL 집계와 raw 기준 분리·작은 UI 미리보기·`aggregate_dataset` 완료 근거를 구현했다.
+- **Evidence**: migration 128/128, application 201/201, Level 3 17/17, 참고 runner 217/217, compileall·diff check PASS. 실제 모델 PRES_02는 수정 후 평균→원본 histogram 2/2 PASS(추가 원격 0), PRES_03은 timeout과 60.569초 PASS 모두 기록. localhost 프로세스 재시작 뒤 합성 원본 7행의 PNG와 이전 4턴 대화를 실제 화면에서 확인했다. [출시 판정](docs/release_readiness_2026-09-24.md).
+- **Major issues**: 실제 모델 지연/편차, 전체 SQL 의미 LoadPlan과 디스크 staging/부분 scan 부재, private-single-user preflight NOT READY(영속 볼륨·접근제어), 운영 DB/DeepEval/Spider 미검증. Streamlit hot reload의 이전 세션 객체가 새 화면과 충돌했으며 프로세스 재시작으로 복구했다.
+- **Next action items**: 사용자 승인형 Databricks J22~J24 실검증, 디스크 staging/부분 scan·실제 호스트 부하, 반복/held-out 실제 모델 평가, 외부 평가/113문항 oracle, PR 리뷰/병합·배포 smoke/rollback. 출시는 차단 상태다.
 
 ### 2026-09-23 Daily Summary
 - **Work completed**: Added table-neutral `prepare_time_series`, bounded cohort aggregation/comparison, grouped count/rate charts and original-preserving `winsorize_numeric`. They preserve source, snapshot, digest, denominator, quantile boundary and restart contracts.
@@ -1384,3 +1393,94 @@ Task definitions and acceptance conditions: docs/agent_remaining_tasks_2026-09-1
 - **Regression** [Agent: Codex]: 실제 화면과 같은 2-turn 회귀를 추가해 전체 4개 segment-period 셀이 나오고 모델 호출 0회·원격 실행 0회임을 검증했다. application 167/167, migration 126/126, Level 3 17/17, 전체 runner 217/217, pivot 직접 테스트 6/6, 독립 pivot 평가 14/14 PASS.
 - **Live validation** [Agent: Codex]: 최신 `1286e29` 서버에서 같은 기존 대화와 동일한 후속 피벗 요청을 다시 실행했다. `pivot_dataset` 1회로 7행 전체의 `segment × period` 평균 표 2행×3열을 0.053초에 생성했고 모델 호출 0회·원격 실행 0회였다. 기존 결과와 대화 이력도 보존됐다.
 - **Remote gate** [Agent: Codex]: PR #68 GitHub Actions run `35931785519`가 commit `1286e29`의 migration, application, agentic recovery, 전체 reference suite와 compile 단계를 모두 통과했다.
+
+## [2026-09-24 08:53:08 KST] [Agent: Codex] User Request: 계속 진행
+- **Action Plan**: 남은 피벗·소계 5문항(`L2_026`, `L2_030`, `L2_032`, `L2_033`, `L2_035`)을 원문·reference 기준으로 분해하고 table-neutral bounded 도구, production recovery, 독립 oracle과 전체 회귀로 구현한다.
+- **Safety**: 로컬 fixture와 이미 로딩된 DataFrame만 사용한다. Databricks 조회와 stale schema refresh는 실행하지 않는다.
+
+## [2026-09-24 09:13:38 KST] [Agent: Codex] User Request: 일을 끝까지 좀 마무리 해줘
+- **Action Plan**: 남은 5개 피벗·소계 시나리오를 구현·평가하고 전체 회귀 게이트, 실제 앱 재시작 및 UI 검증, 문서와 원격 브랜치 반영까지 완료한다.
+- **Safety**: 현재 로딩된 로컬 fixture와 DataFrame만 사용하며 Databricks 원격 재조회는 실행하지 않는다.
+
+## [2026-09-24 09:15:26 KST] [Agent: Codex] User Request: 문제점을 모두 도출한 뒤 한 번에 해결하는 방식으로 전환
+- **Decision**: 개별 평가 문항별 수정에서 전체 요구·실행 단계별 gap analysis와 공통 원인 단위 개선으로 작업 방식을 전환한다.
+- **Action Plan**: 200개 요구의 지원/미지원 기능을 분류하고, agent loop의 의도·범위·계획·도구·검증·복구 단계별 결함과 우선순위를 만든 뒤 capability 단위로 구현·통합 검증한다.
+- **Safety**: 로컬 코드와 fixture만 분석하며 Databricks 원격 조회는 실행하지 않는다.
+
+## [2026-09-24T09:20:55+09:00] [Agent: Codex] User Request: 전체 구조·대용량 분석/시각화·로딩/재사용 요구사항과 DeepEval + Spider 2.0 평가안을 코딩 전에 정리
+- **Action Plan**: 현재 구현·미완료 diff를 분리해 점검하고 공식 평가 자료와 결합한 요구사항, 완료 기준, 전체 작업 목록을 문서화한다. 이번 요청에서는 구현 코드를 변경하지 않는다.
+- **Decision**: 87/200은 독립 oracle coverage이며 agent 완성도나 전체 성공률이 아니다. 나머지 113문항은 미채점으로 기록한다.
+
+- **Action** [Agent: Codex]: 운영 v1 진입점, agent loop, scope/recovery, dataset reuse, 승인형 executor, BLOB/Parquet cache, DuckDB 경로, chart sampling, 기존 성능 보고·CI를 읽기 전용 점검했다.
+- **Artifact Update**: docs/data_agent_requirements_and_evaluation_2026-09-24.md 작성. 26개 요구사항, 12개 대표 여정, 14개 전환 작업 및 DeepEval/Spider/수치/차트/성능 평가 분리를 정리했다.
+- **Outcome**: reference AST 전수 분류로 미채점 113문항의 8개 기능군을 확인했다. 기존 focused test 이후 recovery 미완료 및 회귀 위험을 별도 기록했다. 이번 요청에서는 제품 코드 변경·재시작·DB 조회·benchmark 실행을 하지 않았다.
+
+## [2026-09-24 09:31:02] [Agent: /root] User Request: Claude Code 수준으로 필요한 것을 스스로 찾아 해결하는 agent 기능을 목표로 요구사항 강화
+- **Action** [Agent: /root]: 기존 요구사항과 릴리스 기준을 검토하고 자율 탐색·계획·실행·검증·재계획의 관찰 가능한 수용 기준을 설계에 반영한다. 이번 요청은 직전의 코딩 전 요구사항 검토 단계에 대한 목표 구체화로 처리한다.
+- **Artifact Update**: 요구사항 문서 §3.1~3.2에 Claude Code식 정보 탐색→실행→검증→재계획 목표와 자율성 검증을 추가했다. A08 동적 도구/스킬 탐색, A09 격리 분석 코드 실행을 신설하고 T01/T05/T09/T11/T12에 연결했다.
+- **Decision**: 원격 승인 경계를 유지하면서 로컬 탐색·도구 조합·실패 수정은 자율 수행한다. 동일 오류 반복이나 정규식 fast path 통과만으로 agent 자율성을 입증하지 않는다.
+- **Outcome**: 공식 Claude Code 문서의 공개 loop/skills 구조를 참고했다. 제품 코드 수정·평가 실행·동급 성능 입증은 이번 작업 범위가 아니며 기존 미완료 코드 diff는 보존했다.
+
+## [2026-09-24 09:49:48 KST] [Agent: /root] User Request: EDA 연속 탐색·다양한 시각화 요구사항 보강
+- **Action** [Agent: /root]: 프로젝트 관리·로깅 스킬과 릴리스 기준을 적용한다. 직전 요구사항 설계에 자동 EDA 계획, 이미지 추천, 발견 기반 후속 탐색, 상태·재사용·완료 계약 및 평가 여정을 보강한다. 제품 구현 전 설계 단계이며 기존 미완료 구현 diff는 보존한다.
+- **Artifact Update**: `docs/eda_exploration_contract_2026-09-24.md` 신설. 탐색 관점·발견별 다음 행동·실제 이미지 카드·분기/비교/복원·공유 집계·탐색 예산·허위 발견 방지·평가 계약을 정리했다.
+- **Artifact Update**: 전체 요구사항에 V05~V08/J13~J16과 §3.3을 추가하고 T01/T05/T10/T11/T13 및 남은 작업 목록에 연결했다.
+- **Decision**: 기존 데이터로 가능한 EDA는 자율 수행하되 새로운 원격 SQL은 기존 승인 대상이다. 이상치 자동 제거·표본의 전체 통계 둔갑·그림 없는 완료를 금지한다. 초기 이미지/후속 탐색 개수는 조정 가능한 설계 제안이며 제품 SLO가 아니다.
+- **Validation**: 문서 ID·상호 링크·작업 매핑 및 `git diff --check`를 확인한다. 문서 변경이므로 제품 테스트/실제 모델 평가/원격 조회는 실행하지 않는다.
+- **Outcome**: 문서 검증 PASS — 요구사항 32개/여정 16개/작업 14개의 ID 중복 없음, 로컬 문서 링크 존재, diff whitespace 정상. EDA 구현·평가 결과는 아직 없으며 이번에는 설계만 보강했다.
+
+## [2026-09-24 09:55:51 KST] [Agent: /root] User Request: 전체 설계 재리뷰 및 누락 확인
+- **Action** [Agent: /root]: 요구사항·EDA·릴리스 기준을 교차 검토한다. 상태 전이, 데이터 일관성, 실행/모델 자원, 복구 계약, 평가 선행 조건을 중심으로 누락과 충돌을 찾아 설계 문서에 반영한다. 제품 코드는 변경하지 않는다.
+- **Findings**: 설계 공백 8건 — 실행 revision/늦은 결과, 다중 조회 snapshot 일관성, 의미 타입·집계 병합, 공통 Observation/복구 책임, context·전역 자원, 산출물 발행/만료, EDA 완료/예산, 실제 모델 검증 시점. 제품 버그 재현 건수와 구분한다.
+- **Artifact Update**: `docs/design_review_2026-09-24.md`에 근거·영향·상세 계약·시험·담당 Task를 기록했다. 전체 요구사항 §3.4/J17~J20 및 EDA·남은 작업 목록을 동기화했다.
+- **Decision**: 새로운 기능 목록 확대보다 기존 32개 요구의 실행 계약을 구체화한다. T02/T05에서 공통 도구 결과·상태/완료·최소 복구와 실제 모델 기준선을 먼저 확인하고 T11/T12는 전체 통합 평가로 진행한다.
+- **Validation/Outcome**: `git diff --check` PASS. 기존 요구 32개 유지, 사용자 여정 20개/작업 14개/리뷰 8건의 ID 중복 없음, 수정 문서의 로컬 링크 확인. 설계 보강 완료이며 제품 코드·DB·실행 환경은 변경하지 않았다. 실제 모델/회귀/성능 평가는 미실행. 출시 capability 목록·모델 기준선·source 일관성 지원·운영 자원/보존·격리 backend 결정은 남아 있다.
+
+## [2026-09-24 10:01:11 KST] [Agent: /root] User Request: 오해석·잘못된 대용량 로딩 방지, 로딩 원본 보존, EDA 지속 재사용, SQL 집계/원본 분석의 적절한 선택을 계획에 반영
+- **Action** [Agent: /root]: 데이터 수명·재사용 설계와 현재 DatasetStore/영속 저장 계약을 확인한다. 로딩 전 의미 검증, 후보 적재 후 검증/선택, 보호 원본과 파생 계보, 로컬/원격/혼합 실행 의사결정 및 회귀 여정을 설계한다. 이번 요청은 계획 보강이며 제품 코드는 변경하지 않는다.
+- **Artifact Update**: `docs/data_loading_and_preservation_contract_2026-09-24.md`에 LoadPlan 사전 의미 대조→승인→후보 적재→검증→발행/선택, 보호 raw·파생 계보·registry 재사용·SQL 집계/raw/hybrid 선택·공간 부족 보존 정책을 기록했다.
+- **Artifact Update**: 전체 요구 D07/D08, 여정 J21~J24, T05~T13 매핑을 추가하고 EDA/재리뷰/남은 작업/릴리스 차단 조건을 동기화했다. T07의 원본 보존·후보 적재는 P0로 우선한다.
+- **Decision**: 현재 파생 데이터가 부족하다는 판정은 재조회 확정이 아니다. 보유 원본/부모/집계/파일 metadata부터 탐색한다. SQL 통계 결과·새 snapshot은 기존 raw를 덮어쓰지 않는다. 공간 부족 시 보호 원본 삭제 대신 새 적재를 제한한다.
+- **Validation/Outcome**: 문서 검증 PASS — 요구 34개/여정 24개/작업 14개 ID 중복 없음, 변경 문서 링크 정상, `git diff --check` 통과. 제품 코드·DB·실행 환경은 변경하지 않았으며 실제 데이터 손실 재현/실제 모델/성능 평가는 미실행이다. 이번 결과는 계획·릴리스 기준 보강이다.
+
+## [2026-09-24 10:07:27 KST] [Agent: /root] User Request: 구현 및 실제 검증 전에 추가로 필요한 준비 확인
+- **Action** [Agent: /root]: 추가 기능 설계보다 구현 착수 조건을 점검한다. 출시 범위·명세/정답 fixture·보존/실행 계약·미완료 diff 기준선·평가 환경의 준비 상태를 확인한다.
+- **Outcome**: 설계 확대보다 착수 준비가 필요하다. 현재 T00 정리 미실행, T01 매핑 초안, T02 평가 계약/기준선 예정이며 미완료 제품 diff가 남아 있다. 준비는 ① 코드 기준선 보존 ② 초기 지원 범위 고정 ③ 요구→실행 계약→독립 정답/실패 fixture 매핑 ④ LoadPlan/상태/원본 보존 schema 구체화 ⑤ 평가/운영 환경·예산 확인 ⑥ migration/rollback 복구 기준으로 정리했다. 첫 구현은 데이터 보존·불필요 재조회 방지의 종단 여정으로 제한하고 관련 실제 모델 검증을 조기에 수행한다. 이번에는 준비 상태 점검/로그만 수행했다.
+
+## [2026-09-24 10:08:55 KST] [Agent: /root] User Request: 구현 착수 준비 T00~T02 진행
+- **Action** [Agent: /root]: 미완료 diff를 보존하고 HEAD 기준선과 작업본을 구분한다. 출시 1차 범위·34개 요구/24개 여정/200문항 매핑 및 원본 보존 핵심 fixture/독립 oracle·실행 평가를 준비한다. 운영 DB 조회/앱 재시작 없이 로컬 자료로 시작한다.
+- **Baseline**: `.telly_runtime/baselines/20260924-100921`에 당시 13파일·working.patch·SHA/hash·HEAD 추출본을 보존. HEAD 126/167 PASS, 작업본 application 171개 실행에서 피벗 subtest 포함 10개 실패 보고. 단일 값 집계 valid_spec 및 list membership 조건만 최소 수정하고 production 다중 집계 회귀를 추가했다.
+- **Artifacts**: 34요구/24여정/200문항 `agent_readiness_manifest.json`, 실행 JSON schema/examples, 합성 보존 fixture, 원본 보존 acceptance 3개·준비 계약/평가기 검사 8개, 로컬 모델 다중 턴 평가기, `docs/implementation_readiness_2026-09-24.md` 및 평가 증거 JSON/PNG.
+- **Validation**: 최종 application 183/183, migration 126/126, Level 3 17/17, 전체 참고 runner 217/217, compile PASS. 잘못된 interpreter 해석으로 한 차례 import 오류가 발생했으나 별도 기록하고 v1 venv 경로로 재실행해 통과했다.
+- **Actual model**: localhost gemma4:e4b/합성 데이터. 기본 60초 read timeout에서 PRES_01 4turn PASS(모델 1회, 필터 단계 42.288초), PRES_02 평균 117.15초 ReadTimeout(2회 시도), PRES_03 60.041초 ReadTimeout. PRES_03 진단 포함 재실행 73.028초 PASS. 초기 30초 설정 실패도 보존. 모든 실행에서 원본 보존·원격 실행 0; 실패는 분석 성공으로 합산하지 않았다. 단회/일부 병렬 회귀 부하로 성능 SLO 증거가 아니다.
+- **Outcome**: 첫 구현 묶음을 시작할 기준과 실행 가능한 부분 acceptance 확보. T00 완료, T01 기능군 매핑 완료이나 문항별 의미/113 oracle 남음, T02 핵심 계약/부분 모델 기준선 확보이나 전체 여정과 DeepEval/Spider/운영 UI/DB 검증 남음. 운영 원본 보호 metadata/LoadPlan 계약은 아직 runtime에 연결하지 않았다. 앱 재시작·DB 조회·commit/push는 수행하지 않았다.
+
+## [2026-09-24 10:32:18 KST] [Agent: /root] User Request: 계속해서 진행 해줘
+- **Action** [Agent: /root]: T05/T06의 보존된 로컬 데이터 재사용을 구현한다. 현재 결과가 요청 범위를 충족하지 않으면 원격 재조회 전에 부모·원본 registry의 메타데이터를 안전하게 탐색하고, local SQL/필터 도구에 적용한 후 회귀 테스트한다.
+- **Safety**: 기존 미완료 변경과 원본을 보존한다. Databricks 원격 조회·앱 재시작은 수행하지 않는다.
+- **Implementation** [Agent: /root]: `select_reusable_dataset`을 추가해 현재 결과→가까운 부모→동일 source·명시 snapshot의 유일 registry 후보 순으로 검사한다. `current_result_only`는 확장하지 않고, 여러 부모/후보·다른 snapshot·불완전 범위는 실패로 남긴다. `use_dataset`·`local_analysis_sql`의 실제 계산 부모 ID, 선택 이유와 요청 ID를 관찰 결과에 기록한다. 잘못된 SQL 컬럼은 재조회 필요 대신 수정 가능한 SQL 오류로 돌리고 SELECT 별칭 참조를 원본 컬럼으로 오해하지 않게 했다.
+- **Regression** [Agent: /root]: 필터 해제·집계에서 raw 복귀·현재 결과 한정·registry 모호성·snapshot 불일치·불완전 부모·재시작 후 원본 사용의 7개 새 테스트와 기존 범위 계약을 검증했다. 원본 불변·원격 제안 0회를 확인했다.
+- **Validation**: 최종 v1-venv migration 126/126, application 190/190, Level 3 17/17, 전체 참고 runner 217/217, compileall·`git diff --check` PASS. 처음 `.venv`로 실행한 suite는 LangChain 버전 불일치 import 오류였고, 정확한 v1-venv에서 재실행했다. 수정 도중 migration의 잘못된 컬럼 오류 분류 회귀 1건을 발견하고 수정한 뒤 최종 통과했다.
+- **Artifact Update**: `docs/implementation_readiness_2026-09-24.md`에 T05/T06 부분 구현과 검증 범위·남은 결함을 갱신했다.
+- **Remaining**: source 이름만 받는 `prepare_histogram` 등 차트 경로에 명시적 root/branch 선택을 연결하고, LoadPlan 후보 staging/검증/발행·원본 보호 역할·대용량 scan 및 실제 모델/Databricks 승인 여정을 검증해야 한다. 이번 통과는 출시 승인이나 전체 자연어 agent 성공률이 아니다.
+
+## [2026-09-24 11:39:42 KST] [Agent: /root] User Request: 계속 진행해줘
+- **Action** [Agent: /root]: T05/T06의 차트 경로를 이어서 점검한다. `prepare_histogram`이 여러 로컬 root/branch/snapshot 중 잘못된 대상을 재사용하는지 확인하고, 명시적 선택·모호성 처리·원격 승인 경계를 회귀와 함께 보강한다.
+- **Safety**: 기존 WIP를 보존한다. Databricks 실제 조회와 앱 재시작은 수행하지 않는다.
+- **Implementation** [Agent: /root]: `prepare_histogram`의 선택 `dataset_id`를 도구 schema에 추가하고, 복수 독립 원본에서는 ID 없이 최신 자산을 임의 선택하지 않게 했다. 명시한 분기의 원본/직접 계산 빈도만 재사용한다. `current_result_only`의 `where_sql`을 실제 로컬 필터에 적용하고 유효 histogram 입력이 부족하면 성공을 주장하지 않는다. recovery의 자동 PNG 재사용도 독립 root가 둘 이상이면 생략한다.
+- **Regression** [Agent: /root]: 임의 schema의 두 snapshot과 서로 다른 값·기존 이미지, 선택 ID로 원본 전환, 필터된 현재 결과, 원본 복귀, source 불일치, 최신 데이터 계획을 새 도구 테스트에 추가했다. production graph에서는 두 기존 PNG가 있어도 모델이 선택 ID를 지정하기 전까지 자동 캐시가 하나를 임의 노출하지 않고, 명시 ID 후 올바른 PNG로 답하며 원격 실행·승인 0회임을 확인했다.
+- **Validation**: v1-venv migration 127/127, application 192/192, Level 3 17/17, 전체 참고 runner 217/217, compileall·`git diff --check` PASS. 필터 후 값이 1건인 histogram을 처음에는 `ready`로 기대한 테스트 오류를 확인했고, 정확한 `no_valid_chart` 계약과 필터된 dataset lineage를 검증하도록 바로잡았다.
+- **Artifact Update**: `docs/implementation_readiness_2026-09-24.md`의 T05/T06 부분 구현과 남은 영속 선택 상태/LoadPlan 범위를 갱신했다.
+- **Remaining**: 직접 `show_chart`·다른 도구 경로의 선택 상태 통합, 로딩 후보 검증/발행, 실제 모델의 자연어 “그중/원본으로” 참조·대용량/Databricks 여정 검증이 필요하다. 이번 테스트는 출시 판정이 아니다.
+
+## [2026-09-24 11:55:31 KST] [Agent: /root] User Request: 모든것을 다 해줘 이제
+- **Action** [Agent: /root]: 남은 T05~T13과 출시 차단 조건을 하나의 실행 범위로 진행한다. 우선 상태·로딩/발행 경계·원본 보존을 구현하고, 자연어/대용량/승인 여정과 독립 평가를 검증한다. 검증된 완료와 미검증 차단 항목을 분리해 보고한다.
+- **Safety**: 현재 미완료 변경은 보존하고, Databricks 새 원격 SQL은 사용자별 승인 경계를 유지한다.
+- **Implementation** [Agent: /root, 12:14 KST]: 승인 SQL의 실제 출처와 제시 source를 AST로 대조하고, 결과 컬럼/행 구조를 검증한 후 영속 자산으로 발행한다. 짧은 fetch batch를 이어 읽어 조기 complete 오판을 막는다. 원본/파생/집계 역할·root ID와 대화별 선택 기준을 영속화하고, SQL 집계는 기존 EDA 원본 선택을 덮어쓰지 않는다.
+- **UI/대용량**: 결과 목록 미리보기가 전체 Parquet DataFrame을 역직렬화하던 경로를 작은 저장 미리보기로 교체했다. 이전 자산은 미리보기를 생략하며 전체 복원을 유발하지 않는다.
+- **Actual-model finding**: PRES_02의 첫 평균 요청에서 모델이 `aggregate_dataset`을 성공시키고 수치 자산을 저장했지만 완료 판정이 도구 근거를 인정하지 않아 4회 모델 호출/126.538초 후 exhausted. 원본은 보존되고 승인·원격 실행은 0회였다. `aggregate_dataset`을 공통 계산 증거 검증에 연결하고 production graph 회귀를 추가했다. 동일 실제 모델 재검증 진행 중.
+- **Regression so far**: 기존 migration fixture의 선언 source와 SQL 테이블이 달랐던 2건을 같은 fixture source로 바로잡았다. migration 127/127, 선택·UI·보존 집중 6/6, 구조화 집계 완료 판정 + UI 2/2 통과. 전체 최종 gate와 실제 모델 결과는 별도 기록한다.
+- **Final local gate** [12:23 KST]: application 201/201, migration 128/128, Level 3 17/17, 참고 전체 runner 217/217, compileall·`git diff --check` PASS. 원격 배치의 컬럼 수·프레임 크기 초과 후보는 ready 발행 전 거절하는 회귀를 추가했다.
+- **Actual model rerun**: 수정 후 PRES_02 평균→원본 histogram 2/2 PASS, 첫 요청 55.274초, 모델 1회, 추가 원격/승인 0회. PRES_03은 이번 한 번 ReadTimeout, 다음 번 60.569초 PASS라 지연·편차가 남는다. 실패와 성공을 모두 docs/evaluation/preparation_2026-09-24에 보존했다.
+- **Live UI**: localhost:8502의 기존 프로세스에서 hot reload된 UI와 이전 세션 객체가 섞여 AttributeError를 확인했다. 프로세스 재시작 후 합성 7행 데이터 선택·실제 histogram PNG를 브라우저에서 확인했고 기존 대화 4턴 결과가 복원됐다. 운영 DB 실행은 0회.
+- **Release gate**: local-desktop preflight READY(프로젝트 내부 저장소 경고). private-single-user preflight NOT READY(영속 볼륨/접근제어 미설정). 운영 출시 판정은 [NO-GO](docs/release_readiness_2026-09-24.md); DeepEval/Spider 공식 점수와 이번 변경 후 Databricks 실여정은 없음.
