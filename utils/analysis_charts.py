@@ -248,6 +248,8 @@ def render_chart_spec(store: DatasetStore, dataset_id: str, *, kind: str, x: str
     source = project_dataset(store, dataset_id, requested)
     if source.empty:
         raise ValueError("빈 데이터로 차트를 만들 수 없습니다.")
+    if kind == "boxplot" and (info.grain != "raw" or info.aggregation):
+        raise ValueError("박스플롯은 원본 행의 분포에서 만듭니다. 집계 결과의 값만으로는 원본 분포를 복원할 수 없습니다.")
     if aggregation != "none" and (info.grain != "raw" or info.aggregation):
         raise ValueError("이미 집계된 결과를 다시 집계하지 않습니다.")
     if kind != "bar" and orientation != "vertical":
@@ -336,13 +338,15 @@ def render_chart_spec(store: DatasetStore, dataset_id: str, *, kind: str, x: str
             reason = f"{len(groups)}개 그룹의 중앙값과 사분위 범위를 비교합니다. 바깥 점이 반드시 오류인 것은 아닙니다."
         else:
             values = numeric(source[x], x).dropna()
-            if len(values) < 5:
-                raise ValueError("박스플롯에는 유효한 수치가 5개 이상 필요합니다.")
+            if len(values) < 2:
+                raise ValueError("박스플롯에는 유효한 수치가 2개 이상 필요합니다.")
             plotted = values.to_frame(name=x)
             ax.boxplot(values, orientation="horizontal")
             ax.set(xlabel=x_label or x, ylabel=y_label)
             default_title = f"{x} 중앙값과 퍼짐"
             reason = "중앙값과 사분위 범위를 표시합니다. 바깥 점이 반드시 오류인 것은 아닙니다."
+            if len(values) < 5:
+                reason += f" 유효값 {len(values)}개라 사분위수 추정이 불안정할 수 있습니다."
     elif kind == "bar":
         if category:
             raise ValueError("막대 차트의 범주는 x로 지정하세요.")

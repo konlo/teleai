@@ -127,9 +127,15 @@ for message in runtime.events():
             content=message.content
             if isinstance(content,str) and content.startswith('선택한 차트:'):content=content.split(', dataset_id=')[0]
             st.markdown(display_analysis_text(content,runtime.datasets.metadata))
-    if isinstance(message,ToolMessage) and message.name in {'recommend_chart_images','render_histogram','prepare_histogram','show_chart'}:
-        data=json.loads(message.content)
-        cards=[runtime.artifacts[c['id']] for c in data.get('cards',[]) if c['id'] in runtime.artifacts]
+    if isinstance(message,ToolMessage):
+        try:
+            data=json.loads(message.content)
+        except (TypeError,ValueError):
+            data={}
+        references=data.get('cards',[]) if isinstance(data,dict) else []
+        cards=[runtime.artifacts[card_id] for item in references
+               if isinstance(item,dict) and isinstance(card_id:=item.get('id'),str)
+               and card_id in runtime.artifacts]
         if cards:
             with st.chat_message('assistant'):
                 st.write('이렇게 살펴볼 수 있어요')

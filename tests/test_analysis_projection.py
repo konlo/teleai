@@ -40,6 +40,25 @@ class ProjectionTests(unittest.TestCase):
             finally:
                 runtime.close()
 
+    def test_agent_boxplot_uses_file_backed_column_without_full_decode(self):
+        with tempfile.TemporaryDirectory() as root:
+            runtime = GraphAnalysisRuntime(root, "owner", "projected-boxplot", ForbiddenModel())
+            info = runtime.datasets.register_batches(
+                [pd.DataFrame({"signal": [float(n) for n in range(300)],
+                               "unused": ["wide"] * 300})],
+                columns=["signal", "unused"], source="arbitrary.runtime_source",
+                max_rows=500, coverage="complete", predicate_known=True)
+            try:
+                with patch.object(FrameCache, "__getitem__", side_effect=AssertionError("full decode")):
+                    outcome = runtime.submit("signal 박스플롯을 보여줘")
+                self.assertEqual(outcome["status"], "answered", outcome)
+                card = runtime.artifacts[runtime.inspect()["chart_ids"][0]]
+                self.assertEqual(card.dataset_id, info.id)
+                self.assertEqual(card.kind, "boxplot")
+                self.assertEqual(runtime.inspect()["recovery"]["model_calls"], 0)
+            finally:
+                runtime.close()
+
     def test_file_backed_charts_aggregate_and_statistics_read_only_needed_columns(self):
         with tempfile.TemporaryDirectory() as root:
             db = AssetDB(root, "owner", "projected-analysis")

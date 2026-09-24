@@ -10,6 +10,23 @@ from streamlit.testing.v1 import AppTest
 
 
 class SelectionUiTests(unittest.TestCase):
+    def test_explicit_boxplot_tool_result_shows_actual_image_in_chat(self):
+        with tempfile.TemporaryDirectory() as directory, patch.dict(
+                os.environ, {'TELLY_V1_STORAGE': directory}):
+            app = AppTest.from_file(str(Path(__file__).resolve().parents[1] /
+                                         'ui' / 'analysis_page.py'), default_timeout=30).run()
+            next(button for button in app.button if button.label == '예제 데이터로 시작').click().run()
+            app.chat_input[0].set_value('value의 boxplot을 보여줘').run()
+            self.assertFalse(app.exception)
+            self.assertEqual(len(app.image), 1,
+                             'A completed chart response must render a visible image')
+            runtime = app.session_state['v1_runtime']
+            card = runtime.artifacts[runtime.inspect()['chart_ids'][0]]
+            self.assertEqual(card.kind, 'boxplot')
+            self.assertTrue(card.image.startswith(b'\x89PNG\r\n\x1a\n'))
+            self.assertEqual(runtime.inspect()['recovery']['model_calls'], 0)
+            runtime.close()
+
     def test_example_then_switch_active_dataset_without_remote_query(self):
         with tempfile.TemporaryDirectory() as directory, patch.dict(
                 os.environ, {'TELLY_V1_STORAGE':directory}):

@@ -12,6 +12,7 @@ from langchain_core.messages import AIMessage, ToolMessage, SystemMessage, Remov
 from core.analysis_agent.failure_messages import remote_failure_message
 from core.analysis_agent.memory import latest_user_request
 from core.analysis_agent.intent_scope import resolve_request_scope, scope_matches, measure_scope_matches
+from utils.analysis_datasets import project_dataset
 from utils.analysis_pivot import MONTH_ORDER
 
 
@@ -25,6 +26,19 @@ def _dtype_family(value):
     if re.search(r'(?:object|string|category|categorical|varchar|char|text|enum)', dtype):
         return 'categorical'
     return 'other'
+
+
+def _chart_kind(text):
+    """Recognize chart names even when an English name takes a Korean particle."""
+    patterns = (
+        ('histogram', r'히스토그램|(?<![A-Za-z0-9_])histogram(?![A-Za-z0-9_])'),
+        ('scatter', r'산점도|산포도|(?<![A-Za-z0-9_])scatter(?:\s*plot)?(?![A-Za-z0-9_])'),
+        ('boxplot', r'박스\s*플롯|상자\s*수염|상자\s*그림|(?<![A-Za-z0-9_])box\s*plot(?![A-Za-z0-9_])'),
+        ('bar', r'막대|바\s*차트|(?<![A-Za-z0-9_])bar(?:\s*chart)?(?![A-Za-z0-9_])'),
+        ('line', r'선\s*(?:그래프|차트)|꺾은선|(?:누적|성장).{0,40}곡선|'
+                 r'(?<![A-Za-z0-9_])line(?:\s*chart)?(?![A-Za-z0-9_])|(?<![A-Za-z0-9_])curve(?![A-Za-z0-9_])'),
+    )
+    return next((kind for kind, pattern in patterns if re.search(pattern, text, re.I)), None)
 
 
 def _strip_outlier_method_scope(scope, column):
@@ -75,6 +89,12 @@ class RecoveryMiddleware(AgentMiddleware):
         current = deepcopy(state.get('recovery') or {})
         request_kind = human.additional_kwargs.get('request_kind') if human else None
         text = str(human.content) if human else ''
+        if (human and current.get('request_id') == human.id
+                and current.get('status') == 'working' and not current.get('kind')):
+            recognized = _chart_kind(text)
+            if recognized:
+                current['kind'] = recognized
+                current['chart'] = True
         current_loaded_reference = bool(human and re.search(
             r'(?:현재|지금|이|그)\s*(?:로딩된|보유한|저장된)\b|현재\s*결과|보유\s*데이터', text))
         # Controller-authored table previews are data-loading requests.  They
@@ -95,12 +115,7 @@ class RecoveryMiddleware(AgentMiddleware):
             # Pivot margin labels such as "전체총합계" describe presentation,
             # not an additional SUM measure alongside the requested row count.
             objective_text = re.sub(r'전체\s*총합계|총합계', '총계', objective_text)
-            if re.search(r'히스토그램|\bhistogram', text, re.I): kind = 'histogram'
-            elif re.search(r'산점도|산포도|\bscatter(?:\s*plot)?\b', text, re.I): kind = 'scatter'
-            elif re.search(r'박스\s*플롯|상자\s*수염|상자\s*그림|\bbox\s*plot\b|\bboxplot\b', text, re.I): kind = 'boxplot'
-            elif re.search(r'막대|바\s*차트|\bbar(?:\s*chart)?\b', text, re.I): kind = 'bar'
-            elif re.search(r'선\s*(?:그래프|차트)|꺾은선|(?:누적|성장).{0,40}곡선|\bline(?:\s*chart)?\b|\bcurve\b', text, re.I): kind = 'line'
-            else: kind = None
+            kind = _chart_kind(text)
             chart = bool(kind or re.search(r'차트|시각화|그래프|\bchart|\bplot', text, re.I))
             pivot_requested = bool(not chart and re.search(
                 r'피벗(?:\s*테이블)?|\bpivot(?:\s*table)?\b|교차\s*(?:빈도)?표', text, re.I))
@@ -2236,7 +2251,7 @@ class RecoveryMiddleware(AgentMiddleware):
                     or (info.coverage == 'complete' and info.predicate_known
                         and self._fresh_for_request(info, current)))]
             if len(candidates) == 1:
-                frame = self.context.datasets.frames[candidates[0].id]
+                frame = project_dataset(self.context.datasets, candidates[0].id, columns)
                 from pandas.api.types import is_datetime64_any_dtype, is_numeric_dtype
                 arguments = None
                 if current['kind'] == 'boxplot' and len(columns) == 1 and is_numeric_dtype(frame[columns[0]]):

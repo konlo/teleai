@@ -5,10 +5,11 @@ from uuid import uuid4
 
 import pandas as pd
 from langchain_core.language_models.chat_models import BaseChatModel
-from langchain_core.messages import AIMessage
+from langchain_core.messages import AIMessage, HumanMessage
 from langchain_core.outputs import ChatGeneration, ChatResult
 
 from core.analysis_agent.runtime import GraphAnalysisRuntime
+from core.analysis_agent.recovery import RecoveryMiddleware
 from core.analysis_agent.tools import local_tools
 from core.analysis_runtime_tools import build_analysis_tools
 from core.analysis_tool_contract import AnalysisToolContext
@@ -94,6 +95,51 @@ class ChartSpecTests(unittest.TestCase):
             with self.subTest(kind=kind):
                 result = self.tools["render_chart_spec"](self.info.id, kind, **arguments)
                 self.assert_png(result, kind)
+
+    def test_small_valid_boxplot_renders_with_sample_caution(self):
+        short = self.store.register(pd.DataFrame({"measurement": [1., 2., 3., 4.]}),
+            source="arbitrary.small_result", coverage="complete", predicate_known=True)
+        result = self.tools["render_chart_spec"](short.id, "boxplot", x="measurement")
+        card = self.assert_png(result, "boxplot")
+        self.assertIn("유효값 4개", card.reason)
+        too_short = self.store.register(pd.DataFrame({"measurement": [1.]}),
+            source="arbitrary.too_small", coverage="complete", predicate_known=True)
+        with self.assertRaises(ValueError):
+            self.tools["render_chart_spec"](too_short.id, "boxplot", x="measurement")
+        aggregate = self.store.register(pd.DataFrame({"measurement": [1., 2., 3., 4.]}),
+            source="arbitrary.frequency_result", coverage="complete", predicate_known=True,
+            grain="aggregate", aggregation="count by measurement")
+        with self.assertRaisesRegex(ValueError, "원본 행"):
+            self.tools["render_chart_spec"](aggregate.id, "boxplot", x="measurement")
+
+    def test_english_boxplot_followup_returns_to_raw_rows_without_model(self):
+        with tempfile.TemporaryDirectory() as root:
+            runtime = GraphAnalysisRuntime(root, "owner", "english-boxplot-followup", NoModelCall())
+            source = runtime.datasets.register(pd.DataFrame({
+                "period": ["2026-08"] * 4 + ["2026-07"] * 3,
+                "value": [1, 2, 3, 4, 5, 6, 7],
+            }), source="arbitrary.events", coverage="complete", predicate_known=True)
+            try:
+                self.assertEqual(runtime.submit("현재 로딩된 원본의 value histogram을 보여줘")["status"],
+                                 "answered")
+                self.assertEqual(runtime.submit("period가 2026-08인 데이터의 value histogram을 보여줘")["status"],
+                                 "answered")
+                result = runtime.submit("value의 boxplot을 보여줘")
+                self.assertEqual(result["status"], "answered", result)
+                card = runtime.artifacts[runtime.inspect()["chart_ids"][-1]]
+                self.assertEqual(card.kind, "boxplot")
+                self.assertEqual(card.dataset_id, source.id)
+                self.assertEqual(runtime.inspect()["recovery"]["model_calls"], 0)
+            finally:
+                runtime.close()
+
+    def test_incomplete_legacy_chart_request_is_reclassified_on_resume(self):
+        message = HumanMessage(content="value의 boxplot을 보여줘", id="boxplot-request")
+        recovery = RecoveryMiddleware({}, None)
+        current, _ = recovery._state({"messages": [message], "recovery": {
+            "request_id": message.id, "status": "working", "kind": None, "chart": False}})
+        self.assertEqual(current["kind"], "boxplot")
+        self.assertTrue(current["chart"])
 
     def test_bar_aggregation_top_n_labels_and_digest_are_deterministic(self):
         arguments = dict(kind="bar", x="segment", y="value", aggregation="mean",
