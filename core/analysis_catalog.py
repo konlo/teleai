@@ -107,8 +107,8 @@ def resolve_table_context(reference_context, datasets, table):
         saved_columns = {column.get('name'):column for column in (saved or {}).get('columns', [])
                          if isinstance(column, dict) and column.get('name')}
         try:
-            frame = datasets.frames[latest.id]
-            actual_dtypes = {str(name):str(dtype) for name, dtype in frame.dtypes.items()}
+            actual_dtypes = (datasets.inspect(latest.id)['dtypes'] if hasattr(datasets, 'inspect') else
+                             {str(name):str(dtype) for name, dtype in datasets.frames[latest.id].dtypes.items()})
         except (KeyError, OSError, ValueError, TypeError):
             actual_dtypes = {}
         columns = []

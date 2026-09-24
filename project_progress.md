@@ -1532,3 +1532,10 @@ Task definitions and acceptance conditions: docs/agent_remaining_tasks_2026-09-1
 - **Regression**: 변경 후 application 222/222, migration 128/128, 참고 runner 217/217(그중 Level 3 17/17), compileall·`git diff --check` PASS. 이 수치를 실제 자연어 성공률로 간주하지 않는다.
 - **Outcome**: 메타데이터 추정은 peak 메모리의 강제 상한이 아니고, 아직 다른 전체 복원 호출·동시 세션·실제 모델 대안 선택이 미검증이다. 실제 Databricks를 새로 조회하지 않았다. 운영 출시 NO-GO를 유지하고 [출시 판정](docs/release_readiness_2026-09-24.md)과 [남은 작업](docs/agent_remaining_tasks_2026-09-13.md)을 갱신했다.
 - **Remote/UI gate** [16:23 KST]: 구현 commit `b0b56ed`를 draft PR #68에 push하고 PR 설명을 갱신했다. [GitHub Actions run 35969152630](https://github.com/konlo/teleai/actions/runs/35969152630) deterministic-validation PASS. 새 Streamlit 프로세스로 localhost:8502를 재시작하고 health `ok`를 확인했다. 브라우저 자연어 대화와 실제 Databricks 조회는 이번 단계에서 재검증하지 않았다.
+
+## [2026-09-24 17:09:13 KST] [Agent: /root] User Request: 다음일 진행해줘
+- **Action** [Agent: /root]: 전체 프레임 읽기의 남은 호출 경로와 한도 초과 후 agent 복구를 점검한다. 구조화 거절이 불필요한 원격 재조회나 잘못된 완료 응답으로 연결되지 않도록 재현·수정·회귀한다. 정확한 SQL별 승인 없이는 Databricks를 새로 조회하지 않는다.
+- **Findings/Implementation** [Agent: /root]: 스키마 dtype 확인, 답변 15행 미리보기, 파생 결과 증거 해시 재검증이 전체 프레임을 열던 경로를 발견했다. Parquet schema, 제한 배치 앞 15행, 256행 배치 해시로 바꿨다. legacy SQLite BLOB도 전체 DataFrame 복원 없이 schema/미리보기/해시 확인을 처리한다. 다른 전체 복원 경로와 동시 메모리 예산은 남는다.
+- **Agent journey**: 테스트 모델이 큰 wildcard SQL의 `full_frame_budget` 거절을 받고 명시 컬럼 로컬 SQL로 수정해 2행 결과를 만들었으며 원본·선택을 보존했다. 모의 원격 connector를 연결해도 승인 요청·실행 0회였다. 이는 graph/tool 복구 계약 검증이지 실제 모델 성공률이 아니다.
+- **Actual model**: 로컬 `gemma4:e4b` 단회는 합성 300행×32열의 `event_key` 앞 두 값을 `inspect_dataset` 미리보기로 정확히 0, 1이라고 답했다. 87.781초, 원본·선택 불변, 원격 connector 없음. 큰 읽기 거절은 만나지 않았으므로 실제 모델의 거절 후 복구는 미검증이다. [근거](docs/evaluation/preparation_2026-09-24/live_full_read_preview_2026-09-24.json).
+- **Regression**: 최종 application 225/225, migration 128/128, 참고/agentic runner 217/217(그중 Level 3 17/17), compileall·diff check PASS. 이후 모의 원격 connector 경계 test 변경의 집중 회귀 5/5 PASS.

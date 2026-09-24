@@ -65,3 +65,11 @@
 - 변경 후 로컬 application 222/222, migration 128/128, 전체 참고 runner 217/217(그중 Level 3 17/17), compileall·`git diff --check` PASS. 참고 runner는 실제 자연어 agent 성공률이 아니다.
 - 구현 commit `b0b56ed`의 [GitHub Actions deterministic-validation](https://github.com/konlo/teleai/actions/runs/35969152630) PASS. localhost:8502 프로세스를 새 코드로 재시작하고 health 응답 `ok`를 확인했다. 브라우저 대화 재검증과 운영 연결 검증은 이 단계에 포함되지 않았다.
 - 이 검사는 일부 전체 복원 도구의 사전 경계다. 모든 `FrameCache` 호출을 중앙에서 차단하는 강제 한도는 아니고, 메타데이터 추정과 실제 pandas/DuckDB peak가 다를 수 있다. 다른 전체 복원 경로의 인벤토리, 전역 자원 예산과 동시 요청 부하 검증은 계속 남는다. 운영 출시 NO-GO 판정은 유지한다.
+
+## 17:20 KST metadata·답변·근거 읽기 보강
+
+- 승인된 `SELECT *` 관측의 스키마 확인은 데이터 전체 대신 Parquet schema에서 dtype을 얻는다. 영속 결과를 답변에 붙일 때는 앞 15행만 제한된 배치로 읽고, 피벗·집계·cohort 결과의 증거 해시는 256행 배치로 재계산한다. 이전에는 각 경로가 저장된 DataFrame 전체를 복원했다. 원본·파생·집계 역할과 선택 상태는 바꾸지 않았다.
+- 파일 기반 300행×32열에서 전체 `FrameCache.__getitem__`을 금지한 채 스키마·15행 답변 미리보기를 확인했다. 파일 기반과 이전 SQLite BLOB 자산의 2,500행 숫자·문자열·결측 데이터에서 배치 해시와 기존 전체 프레임 해시가 일치했다. 테스트 모델의 실제 graph 여정에서는 과대한 wildcard 조회 거절→명시 컬럼 로컬 조회→정확한 2행 응답으로 복구했고 원본/선택은 유지됐다. 모의 원격 connector를 연결해도 승인 요청·실행은 0회였다. 이 테스트 모델 결과는 실제 모델 능력의 증거가 아니다.
+- [실제 로컬 모델 단회](evaluation/preparation_2026-09-24/live_full_read_preview_2026-09-24.json)는 보유된 합성 데이터에서 `event_key` 앞 두 값을 요청하자 `inspect_dataset` 미리보기로 0, 1을 정확히 답했다. 87.781초가 걸렸고 원본·선택은 불변이었다. 이 실행은 큰 읽기 거절을 만나지 않았으므로 실제 모델의 거절 후 대안 선택 성공률로 계산하지 않는다. 지연도 출시 위험이다.
+- 이 변경은 확인된 schema/답변/근거 읽기 경로를 줄였지만 중앙 전체 읽기 강제 한도와 모든 호출의 동시 메모리 한도를 구현하지 않았다. 실제 운영 조회·다양한 데이터형·동시 부하·반복 모델 성공률 검증 전에는 운영 NO-GO다.
+- 최종 로컬 gate: application 225/225, migration 128/128, 참고/agentic runner 217/217(그중 Level 3 17/17), compileall·diff check PASS. 모의 원격 connector 연결 경계 변경 후 관련 집중 회귀 5/5 PASS.

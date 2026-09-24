@@ -12,7 +12,7 @@ from langchain_core.messages import AIMessage, ToolMessage, SystemMessage, Remov
 from core.analysis_agent.failure_messages import remote_failure_message
 from core.analysis_agent.memory import latest_user_request
 from core.analysis_agent.intent_scope import resolve_request_scope, scope_matches, measure_scope_matches
-from utils.analysis_datasets import project_dataset
+from utils.analysis_datasets import preview_dataset, project_dataset, stored_dataset_digest
 from utils.analysis_pivot import MONTH_ORDER
 
 
@@ -978,7 +978,6 @@ class RecoveryMiddleware(AgentMiddleware):
                 parent = self.context.datasets.metadata.get(parent_id) if self.context else None
                 child = self.context.datasets.metadata.get(child_id) if self.context else None
                 result = observation.get('time_series_result', {})
-                from utils.analysis_timeseries import dataset_digest
                 valid = (
                     parent is not None and child is not None
                     and result.get('kind') == 'time_series_preparation'
@@ -990,7 +989,7 @@ class RecoveryMiddleware(AgentMiddleware):
                     and result.get('aggregation') == arguments.get('aggregation') == current.get('time_series_aggregation')
                     and result.get('gap_policy') == arguments.get('gap_policy') == current.get('time_series_gap_policy')
                     and result.get('output_rows') == child.rows
-                    and result.get('data_sha256') == dataset_digest(self.context.datasets.frames[child_id])
+                    and result.get('data_sha256') == stored_dataset_digest(self.context.datasets, child_id)
                     and self._source_matches(parent, current)
                     and self._fresh_for_request(parent, current)
                     and (current.get('current_result_only')
@@ -1046,8 +1045,7 @@ class RecoveryMiddleware(AgentMiddleware):
                 parent = self.context.datasets.metadata.get(parent_id) if self.context else None
                 child = self.context.datasets.metadata.get(child_id) if self.context else None
                 result = observation.get('pivot_result', {})
-                from utils.analysis_pivot import dataset_digest
-                actual_digest = (dataset_digest(self.context.datasets.frames[child_id])
+                actual_digest = (stored_dataset_digest(self.context.datasets, child_id)
                                  if child is not None else None)
                 valid = (
                     current.get('pivot_requested')
@@ -1114,8 +1112,7 @@ class RecoveryMiddleware(AgentMiddleware):
                         else result.get('sample', {}).get('valid_rows', 0)
                              - result.get('counts', {}).get('selected', 0))
                     digest = summary.get('data_sha256', '')
-                    from utils.analysis_outliers import dataset_digest
-                    actual_digest = (dataset_digest(self.context.datasets.frames[child_id])
+                    actual_digest = (stored_dataset_digest(self.context.datasets, child_id)
                                      if child is not None else None)
                     valid = (common_valid and current.get('outlier_followup')
                         and child is not None and child.parent_id == parent_id
@@ -1141,8 +1138,7 @@ class RecoveryMiddleware(AgentMiddleware):
                 parent = self.context.datasets.metadata.get(parent_id) if self.context else None
                 child = self.context.datasets.metadata.get(child_id) if self.context else None
                 result = observation.get('aggregation_result', {})
-                from utils.analysis_aggregate import dataset_digest
-                actual_digest = (dataset_digest(self.context.datasets.frames[child_id])
+                actual_digest = (stored_dataset_digest(self.context.datasets, child_id)
                                  if child is not None else None)
                 common_valid = (
                     parent_id == current.get('outlier_dataset')
@@ -1190,8 +1186,7 @@ class RecoveryMiddleware(AgentMiddleware):
                 cohort = self.context.datasets.metadata.get(cohort_id) if self.context else None
                 result_info = self.context.datasets.metadata.get(result_id) if self.context else None
                 result = observation.get('comparison_result', {})
-                from utils.analysis_compare import dataset_digest
-                actual_digest = (dataset_digest(self.context.datasets.frames[result_id])
+                actual_digest = (stored_dataset_digest(self.context.datasets, result_id)
                                  if result_info is not None else None)
                 valid = (
                     baseline is not None and cohort is not None and result_info is not None
@@ -1675,7 +1670,8 @@ class RecoveryMiddleware(AgentMiddleware):
             evidence = current['pivot_evidence']
             result = evidence['pivot_result']
             dataset_id = evidence['dataset']['id']
-            frame = self.context.datasets.frames[dataset_id]
+            preview = preview_dataset(self.context.datasets, dataset_id)
+            result_rows = self.context.datasets.metadata[dataset_id].rows
             line = (
                 f"{', '.join(result['index_columns'])} 행 축과 "
                 f"{', '.join(result['column_columns'])} 열 축으로 "
@@ -1686,10 +1682,10 @@ class RecoveryMiddleware(AgentMiddleware):
             )
             if result.get('margins'):
                 line += f" 행·열 총계는 {result['margins_name']}으로 표시했습니다."
-            line += ('\n```csv\n' + frame.head(15).to_csv(index=False).strip()
+            line += ('\n```csv\n' + preview.to_csv(index=False).strip()
                      + '\n```\n분석 범위: ' + str(evidence.get('scope', '')))
-            if len(frame) > 15:
-                line += f"\n총 {len(frame):,}행 중 앞 15행입니다. 전체 결과는 저장된 데이터에서 확인할 수 있습니다."
+            if result_rows > 15:
+                line += f"\n총 {result_rows:,}행 중 앞 15행입니다. 전체 결과는 저장된 데이터에서 확인할 수 있습니다."
             parts.append(line)
         if current.get('outlier_evidence'):
             evidence = current['outlier_evidence']
@@ -1720,7 +1716,7 @@ class RecoveryMiddleware(AgentMiddleware):
                 + (f" by {result['group_column']}" if result.get('group_column') else "")
                 + f" · 완전한 관측값 {result['complete_rows']:,}행 · 제외 {result['dropped_rows']:,}행\n"
                 + '```csv\n'
-                + self.context.datasets.frames[evidence['dataset']['id']].head(15).to_csv(index=False).strip()
+                + preview_dataset(self.context.datasets, evidence['dataset']['id']).to_csv(index=False).strip()
                 + '\n```\n분석 범위: ' + str(evidence.get('scope', ''))
             )
         comparison = current.get('outlier_aggregate_evidence', {}).get('comparison')
@@ -1732,7 +1728,7 @@ class RecoveryMiddleware(AgentMiddleware):
                 + f" by {result['group_column']} · 기준 {result['baseline_complete_rows']:,}행 · "
                 + f"cohort {result['cohort_complete_rows']:,}행\n"
                 + '```csv\n'
-                + self.context.datasets.frames[comparison['dataset']['id']].head(15).to_csv(index=False).strip()
+                + preview_dataset(self.context.datasets, comparison['dataset']['id']).to_csv(index=False).strip()
                 + '\n```\n분석 범위: ' + str(comparison.get('scope', ''))
             )
         for card_id in current.get('artifact_ids', []):
@@ -1740,7 +1736,7 @@ class RecoveryMiddleware(AgentMiddleware):
             parts.append(f'{card.title} 이미지를 생성했습니다.\n분석 범위: {card.scope}')
         if current.get('calculation') and current.get('evidence_ids'):
             info = self.context.datasets.metadata[current['evidence_ids'][-1]]
-            frame = self.context.datasets.frames[info.id]
+            preview = preview_dataset(self.context.datasets, info.id)
             scope = '요청 조건에 포함된 보유 데이터 전체' if info.coverage == 'complete' else '현재 보유한 일부 데이터'
             parts.append(f'보유 데이터로 계산한 결과입니다. 출처: {info.source}\n분석 범위: {scope}')
             requested_conditions=current.get('scope',{}).get('conditions',[])
@@ -1752,15 +1748,15 @@ class RecoveryMiddleware(AgentMiddleware):
                 rendered=' AND '.join(item for item in (conjunction, '('+disjunction+')' if disjunction else '') if item)
                 parts.append('적용 조건: '+rendered)
             # Never publish unchecked numbers from the model as computed results.
-            if frame.shape == (1, 1):
+            if info.rows == 1 and len(info.columns) == 1:
                 labels = {'AVG':'평균', 'MEDIAN':'중앙값', 'SUM':'합계', 'COUNT':'건수', 'MIN':'최솟값', 'MAX':'최댓값', 'CORR':'피어슨 상관계수',
                           'RATIO':'비율(%)'}
                 operations = current.get('operations', [])
-                label = labels.get(operations[0], frame.columns[0]) if len(operations) == 1 else frame.columns[0]
-                parts.append(f'{label}: {frame.iloc[0, 0]}')
+                label = labels.get(operations[0], preview.columns[0]) if len(operations) == 1 else preview.columns[0]
+                parts.append(f'{label}: {preview.iloc[0, 0]}')
             else:
-                parts.append('```csv\n' + frame.head(15).to_csv(index=False).strip() + '\n```')
-            if len(frame) > 15: parts.append(f'총 {len(frame)}행 중 앞 15행입니다. 전체 결과는 저장된 데이터에서 확인할 수 있습니다.')
+                parts.append('```csv\n' + preview.to_csv(index=False).strip() + '\n```')
+            if info.rows > 15: parts.append(f'총 {info.rows}행 중 앞 15행입니다. 전체 결과는 저장된 데이터에서 확인할 수 있습니다.')
         return '\n\n'.join(parts)
 
     def _limit_reason(self, current):

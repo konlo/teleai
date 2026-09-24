@@ -92,6 +92,25 @@ def project_dataset(store, dataset_id: str, columns) -> pd.DataFrame:
     return store.frames[dataset_id].loc[:, selected]
 
 
+def preview_dataset(store, dataset_id: str, *, limit=15) -> pd.DataFrame:
+    """Read a bounded prefix for display without materializing file-backed data."""
+    if limit < 1:
+        raise ValueError('미리보기 행 수는 1 이상이어야 합니다.')
+    info = store.metadata[dataset_id]
+    if hasattr(store.frames, 'head'):
+        return store.frames.head(dataset_id, info.columns, expected_rows=info.rows, limit=limit)
+    return store.frames[dataset_id].head(limit)
+
+
+def stored_dataset_digest(store, dataset_id: str) -> str:
+    """Recompute a persisted result's evidence hash without a full decode."""
+    info = store.metadata[dataset_id]
+    if hasattr(store.frames, 'digest'):
+        return store.frames.digest(dataset_id, info.columns, expected_rows=info.rows)
+    from utils.analysis_pivot import dataset_digest
+    return dataset_digest(store.frames[dataset_id])
+
+
 def sample_dataset(store, dataset_id: str, columns, *, limit=20_000) -> pd.DataFrame:
     """Sample declared columns without fully decoding a file-backed asset."""
     selected = list(columns)

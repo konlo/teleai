@@ -162,6 +162,47 @@ class FrameCache(Mapping):
             return pd.read_parquet(BytesIO(payload), columns=list(columns))
         return pd.read_parquet(path, columns=list(columns))
 
+    def head(self, key, columns, *, expected_rows, limit=15):
+        """Decode at most one bounded Parquet batch for answer previews."""
+        if limit < 1:
+            raise ValueError('미리보기 행 수는 1 이상이어야 합니다.')
+        path = self.db.dataset_file(key)
+        if path is None:
+            _, payload = self.db.get(key, 'dataset')
+            source = BytesIO(payload)
+        else:
+            source = path
+        parquet = pq.ParquetFile(source)
+        if parquet.metadata.num_rows != expected_rows:
+            raise ValueError('저장된 데이터의 행 수가 메타데이터와 다릅니다.')
+        batch = next(parquet.iter_batches(batch_size=min(limit, 256), columns=list(columns)), None)
+        if batch is None:
+            return pd.DataFrame(columns=list(columns))
+        return batch.to_pandas().head(limit).reset_index(drop=True)
+
+    def digest(self, key, columns, *, expected_rows):
+        """Verify saved evidence in bounded batches without loading its full frame."""
+        if not columns:
+            raise ValueError('검증할 데이터 컬럼이 없습니다.')
+        path = self.db.dataset_file(key)
+        if path is None:
+            _, payload = self.db.get(key, 'dataset')
+            source = BytesIO(payload)
+        else:
+            source = path
+        parquet = pq.ParquetFile(source)
+        if parquet.metadata.num_rows != expected_rows:
+            raise ValueError('저장된 데이터의 행 수가 메타데이터와 다릅니다.')
+        digest = sha256(json.dumps(list(columns), ensure_ascii=False).encode())
+        observed = 0
+        for batch in parquet.iter_batches(batch_size=256, columns=list(columns)):
+            frame = batch.to_pandas().reset_index(drop=True)
+            digest.update(pd.util.hash_pandas_object(frame, index=False).values.tobytes())
+            observed += len(frame)
+        if observed != expected_rows:
+            raise ValueError('저장된 데이터의 행 수가 메타데이터와 다릅니다.')
+        return digest.hexdigest()
+
     def estimate_full_decode_bytes(self, key, expected_rows, columns):
         """Conservative preflight from Parquet metadata without decoding rows."""
         path = self.db.dataset_file(key)
@@ -256,17 +297,18 @@ class PersistentDatasets(DatasetStore):
         info = self.metadata[dataset_id]
         path = self.db.dataset_file(dataset_id)
         if path is None:
-            frame = self.frames[dataset_id]
-            dtypes = frame.dtypes.astype(str).to_dict()
+            _, payload = self.db.get(dataset_id, 'dataset')
+            source = BytesIO(payload)
         else:
-            schema = pq.ParquetFile(path).schema_arrow
-            dtypes = {}
-            for field in schema:
-                if field.name in info.columns:
-                    try:
-                        dtypes[field.name] = str(pd.Series(dtype=field.type.to_pandas_dtype()).dtype)
-                    except (TypeError, NotImplementedError):
-                        dtypes[field.name] = str(field.type)
+            source = path
+        schema = pq.ParquetFile(source).schema_arrow
+        dtypes = {}
+        for field in schema:
+            if field.name in info.columns:
+                try:
+                    dtypes[field.name] = str(pd.Series(dtype=field.type.to_pandas_dtype()).dtype)
+                except (TypeError, NotImplementedError):
+                    dtypes[field.name] = str(field.type)
         return {'dataset': asdict(info), 'dtypes': dtypes,
                 'preview': self.db.dataset_preview(dataset_id) or []}
 
