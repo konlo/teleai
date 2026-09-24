@@ -10,6 +10,22 @@ from streamlit.testing.v1 import AppTest
 
 
 class SelectionUiTests(unittest.TestCase):
+    def test_selected_column_prefix_renders_grounded_preview_without_model(self):
+        with tempfile.TemporaryDirectory() as directory, patch.dict(
+                os.environ, {'TELLY_V1_STORAGE': directory}):
+            app = AppTest.from_file(str(Path(__file__).resolve().parents[1] /
+                                         'ui' / 'analysis_page.py'), default_timeout=20).run()
+            next(button for button in app.button if button.label == '예제 데이터로 시작').click().run()
+            runtime = app.session_state['v1_runtime']
+            selected_before = runtime.db.selected_dataset_id()
+            app.chat_input[0].set_value('value 컬럼의 앞 두 행만 보여줘. 보유 데이터만 사용해줘.').run()
+            self.assertFalse(app.exception)
+            self.assertEqual(runtime.inspect()['recovery']['model_calls'], 0)
+            self.assertIn('앞 2개 값', app.session_state['v1_runtime'].events()[-1].content)
+            self.assertEqual(runtime.db.selected_dataset_id(), selected_before)
+            self.assertEqual(runtime.inspect()['requests'], [])
+            runtime.close()
+
     def test_explicit_boxplot_tool_result_shows_actual_image_in_chat(self):
         with tempfile.TemporaryDirectory() as directory, patch.dict(
                 os.environ, {'TELLY_V1_STORAGE': directory}):

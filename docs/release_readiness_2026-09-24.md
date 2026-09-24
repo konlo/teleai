@@ -73,3 +73,9 @@
 - [실제 로컬 모델 단회](evaluation/preparation_2026-09-24/live_full_read_preview_2026-09-24.json)는 보유된 합성 데이터에서 `event_key` 앞 두 값을 요청하자 `inspect_dataset` 미리보기로 0, 1을 정확히 답했다. 87.781초가 걸렸고 원본·선택은 불변이었다. 이 실행은 큰 읽기 거절을 만나지 않았으므로 실제 모델의 거절 후 대안 선택 성공률로 계산하지 않는다. 지연도 출시 위험이다.
 - 이 변경은 확인된 schema/답변/근거 읽기 경로를 줄였지만 중앙 전체 읽기 강제 한도와 모든 호출의 동시 메모리 한도를 구현하지 않았다. 실제 운영 조회·다양한 데이터형·동시 부하·반복 모델 성공률 검증 전에는 운영 NO-GO다.
 - 최종 로컬 gate: application 225/225, migration 128/128, 참고/agentic runner 217/217(그중 Level 3 17/17), compileall·diff check PASS. 모의 원격 connector 연결 경계 변경 후 관련 집중 회귀 5/5 PASS.
+
+## 20:10 KST 선택 원본의 빠른 로컬 경로
+
+- 선택한 원본의 단일 컬럼 앞 1~5행 요청은 저장된 `inspect_dataset` 미리보기에서 값·출처·선택 ID를 검증해 답한다. 정렬·필터·상위값·6행 이상 요청에는 적용하지 않는다. 합성 300행×32열의 앞 2행은 0/1로 일치했고 0.091초, 모델·원격 호출 0회, 원본 파일·선택 불변이었다. 이전 같은 합성 질문은 실제 모델 경유 87.781초였다. [새 경로 근거](evaluation/preparation_2026-09-24/go_local_fast_paths_2026-09-24.json).
+- **명시적으로 선택한** 완전한 raw 원본의 단일 수치 집계는 출처·스키마·dtype·범위를 검증한 뒤 로컬 SQL로 실행한다. 선택이 없는 평가기의 모델 도구 오류 주입은 그대로 관찰된다. 합성 PRES_02 평균→원본 histogram은 2/2 PASS, 첫 턴 0.101초, 모델·추가 원격 0회, 원본 불변이었다. 이는 결정적 경로의 개선이며 모델의 자율 복구 성공률 증거가 아니다.
+- 현재 코드의 application 229/229, migration 128/128, Level 3 17/17 PASS. 전체 참고 runner와 CI 결과는 별도로 확인한다. `local-desktop` preflight READY(영속 저장소 경고), `private-single-user` NOT READY(영속 볼륨·외부 접근제어 미설정). 실제 Databricks 승인→조회와 배포 호스트 검증이 없어 **운영 출시 NO-GO**를 유지한다.

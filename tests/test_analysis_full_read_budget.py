@@ -11,7 +11,7 @@ from langchain_core.outputs import ChatGeneration, ChatResult
 from uuid import uuid4
 
 from core.analysis_agent.assets import AssetDB, FrameCache, PersistentDatasets
-from core.analysis_agent.recovery import RecoveryMiddleware
+from core.analysis_agent.recovery import RecoveryMiddleware, _bounded_preview_count
 from core.analysis_agent.runtime import GraphAnalysisRuntime
 from core.analysis_agent.policy import RuntimePolicy
 from core.analysis_catalog import resolve_table_context
@@ -60,6 +60,44 @@ class AdaptiveBudgetModel(BaseChatModel):
 
 
 class FullReadBudgetTests(unittest.TestCase):
+    def test_selected_column_prefix_uses_saved_preview_without_model_or_remote(self):
+        with tempfile.TemporaryDirectory() as root:
+            model = AdaptiveBudgetModel()
+            remote_calls = []
+            def remote_factory(_datasets):
+                def execute(envelope):
+                    remote_calls.append(envelope)
+                    raise AssertionError("unexpected remote query")
+                return execute
+            runtime = GraphAnalysisRuntime(root, "owner", "prefix-preview", model,
+                policy=RuntimePolicy(max_full_read_bytes=5_000),
+                connection_identity="synthetic-connector", remote_factory=remote_factory)
+            frame = pd.DataFrame({"event_key": range(300),
+                                  **{f"field_{n}": [n] * 300 for n in range(31)}})
+            info = runtime.datasets.register_batches([frame], columns=list(frame.columns),
+                source="fixture.events", max_rows=500, coverage="complete",
+                predicate_known=True)
+            runtime.db.select_dataset(info.id)
+            runtime.context.selected_dataset_id = info.id
+            model.dataset_id = info.id
+            original = runtime.db.dataset_file(info.id).read_bytes()
+            result = runtime.submit(
+                "보유된 fixture.events 데이터에서 event_key 컬럼의 앞 두 행만 보여줘. 추가 원격 조회 없이 진행해줘.")
+            self.assertEqual(result["status"], "answered", result)
+            self.assertIn("1. 0", result["text"])
+            self.assertIn("2. 1", result["text"])
+            self.assertEqual(model.calls, 0)
+            self.assertEqual(remote_calls, [])
+            self.assertEqual(runtime.inspect()["requests"], [])
+            self.assertEqual(runtime.db.selected_dataset_id(), info.id)
+            self.assertEqual(runtime.db.dataset_file(info.id).read_bytes(), original)
+            runtime.close()
+
+    def test_sorted_or_large_preview_is_not_treated_as_saved_prefix(self):
+        self.assertEqual(_bounded_preview_count("event_key 상위 두 값을 보여줘"), 0)
+        self.assertEqual(_bounded_preview_count("event_key의 앞 20행을 보여줘"), 0)
+        self.assertEqual(_bounded_preview_count("event_key의 앞 두 행을 보여줘"), 2)
+
     def test_agent_can_recover_with_narrow_local_query_without_remote_reload(self):
         with tempfile.TemporaryDirectory() as root:
             model = AdaptiveBudgetModel()
@@ -82,7 +120,7 @@ class FullReadBudgetTests(unittest.TestCase):
             model.dataset_id = info.id
             original = runtime.db.dataset_file(info.id).read_bytes()
             result = runtime.submit(
-                "현재 보유 데이터에서 event_key의 앞 두 값을 보여줘. 추가 원격 조회 없이 진행해줘.")
+                "현재 보유 데이터의 event_key 값을 확인해줘. 추가 원격 조회 없이 진행해줘.")
             observations = [json.loads(message.content)
                 for message in runtime.agent.get_state(runtime.config).values["messages"]
                 if isinstance(message, ToolMessage)]

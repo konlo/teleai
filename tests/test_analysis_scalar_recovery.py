@@ -13,6 +13,31 @@ FIXTURE = json.loads(Path("tests/fixtures/analysis_acceptance.json").read_text()
 
 
 class ScalarRecoveryTests(unittest.TestCase):
+    def test_unqualified_single_scalar_reuses_unique_complete_raw_dataset(self):
+        frame = pd.DataFrame({"segment_code": ["X", "Y", "X"],
+                              "measure_847": [4, 10, 16]})
+        with tempfile.TemporaryDirectory() as root:
+            runtime = GraphAnalysisRuntime(root, "owner", "single-scalar", ForbiddenModel())
+            raw = runtime.datasets.register(
+                frame, source="arbitrary.new_schema", coverage="complete",
+                predicate_known=True)
+            other = runtime.datasets.register(
+                pd.DataFrame({"measure_847": [100, 200]}),
+                source="arbitrary.other_schema", coverage="complete",
+                predicate_known=True)
+            runtime.select_dataset(raw.id)
+
+            outcome = runtime.submit("measure_847 평균을 계산해줘.")
+            self.assertEqual(outcome["status"], "answered", outcome)
+            state = runtime.inspect()["recovery"]
+            result = runtime.datasets.frames[state["evidence_ids"][-1]]
+            self.assertEqual(float(result.iloc[0, 0]), 10.0)
+            self.assertEqual(state["model_calls"], 0)
+            self.assertEqual(runtime.context.selected_dataset_id, raw.id)
+            pd.testing.assert_frame_equal(runtime.datasets.frames[raw.id], frame)
+            self.assertEqual(runtime.datasets.frames[other.id]["measure_847"].tolist(), [100, 200])
+            runtime.close()
+
     def test_loaded_dataframe_scalar_followups_never_need_the_model(self):
         with tempfile.TemporaryDirectory() as root:
             runtime = GraphAnalysisRuntime(root, "owner", "scalar-followups", ForbiddenModel())

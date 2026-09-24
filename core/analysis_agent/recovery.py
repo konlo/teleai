@@ -50,6 +50,20 @@ def _chart_kind(text):
     return None
 
 
+def _bounded_preview_count(text):
+    """Recognize only a literal prefix request covered by the saved preview."""
+    if re.search(r'정렬|높은|낮은|최신|오래된|상위|하위|조건|필터|\b(?:sort|order|top|bottom|where)\b', text, re.I):
+        return 0
+    match = re.search(
+        r'(?:앞|처음|첫)\s*(\d+|한|두|세|네|다섯)\s*(?:개|건|행|줄|값|records?|rows?)', text, re.I)
+    if not match:
+        return 0
+    number = {'한': 1, '두': 2, '세': 3, '네': 4, '다섯': 5}.get(match.group(1))
+    if number is None:
+        number = int(match.group(1))
+    return number if 1 <= number <= 5 else 0
+
+
 def _strip_outlier_method_scope(scope, column):
     """Do not mistake an outlier method token for a literal row filter."""
     if not column:
@@ -481,6 +495,10 @@ class RecoveryMiddleware(AgentMiddleware):
                     not re.search(r'고유|결측|중복|누락|빈도|\bnull\b|\bdistinct\b|\bmissing\b|\bunique\b', text, re.I) and
                     re.search(r'목록|개수|구조|이름|어떤|몇|전체|\blist\b|\bschema\b', text, re.I)):
                 metadata_kind, calculation, operations = 'columns', False, []
+            preview_limit = (_bounded_preview_count(text) if not (
+                chart or join_requested or calculation or metadata_kind or profile_kind
+                or statistical_kind or pivot_requested or winsor_spec or outlier_spec
+                or operations or data_load or fresh_source_required) else 0)
             current = dict(request_id=human.id, attempts=0, chart=chart, kind=kind,
                 join=join_requested, join_how=join_how,
                 statistical_kind=statistical_kind,
@@ -507,7 +525,8 @@ class RecoveryMiddleware(AgentMiddleware):
                 group_summary_requested=False,group_summary_columns=[],
                 group_summary_metrics=[],group_summary_conditions=[],
                 calculation=calculation, operations=operations, metadata_kind=metadata_kind,
-                profile_kind=profile_kind, chart_spec_requested=chart_spec_requested,
+                profile_kind=profile_kind, preview_limit=preview_limit,
+                chart_spec_requested=chart_spec_requested,
                 count_rate_layout=count_rate_layout,
                 chart_cumulative=chart_cumulative,
                 time_series_frequency=time_series_frequency,
@@ -766,7 +785,7 @@ class RecoveryMiddleware(AgentMiddleware):
                     outlier_group_column=None,outlier_metric_column=None,
                     outlier_metric_aggregation=None,outlier_aggregate_mode=None,
                     outlier_aggregate_requested=False,outlier_top_n=0,
-                    calculation=False,operations=[],metadata_kind=None,profile_kind=None,
+                    calculation=False,operations=[],metadata_kind=None,profile_kind=None,preview_limit=0,
                     chart_spec_requested=False,chart_cumulative=False,whole_row_count=False,current_result_only=False,fresh_source_required=False,
                     count_rate_layout=None,
                     time_series_frequency=None,time_series_aggregation=None,
@@ -808,6 +827,10 @@ class RecoveryMiddleware(AgentMiddleware):
                 if current['chart'] and not kind: current['kind'] = previous.get('kind')
                 if current['chart'] and re.search(r'제목|축|라벨|정렬|상위|top|bin|구간|가로|세로|바꿔|수정', text, re.I):
                     current['chart_spec_requested'] = True
+            if current.get('chart') or current.get('calculation'):
+                # An elliptical follow-up can inherit a previous operation.
+                # Its prefix wording must not replace that operation's proof.
+                current['preview_limit'] = 0
         upgraded_current_result = bool(human and current.get('request_id') == human.id
             and current_loaded_reference and not current.get('current_result_only'))
         if upgraded_current_result:
@@ -831,7 +854,7 @@ class RecoveryMiddleware(AgentMiddleware):
                 outlier_group_column=None,outlier_metric_column=None,
                 outlier_metric_aggregation=None,outlier_aggregate_mode=None,
                 outlier_aggregate_requested=False,outlier_top_n=0,calculation=False,
-                operations=[],metadata_kind=None,profile_kind=None,chart_spec_requested=False,chart_cumulative=False,whole_row_count=False,
+                operations=[],metadata_kind=None,profile_kind=None,preview_limit=0,chart_spec_requested=False,chart_cumulative=False,whole_row_count=False,
                 current_result_only=False,fresh_source_required=False)
             current['count_rate_layout'] = None
             current['scope']={'conditions':[],'any_conditions':[],
@@ -846,6 +869,7 @@ class RecoveryMiddleware(AgentMiddleware):
         for key, default in [('processed', []), ('sent_calls', []), ('failed_signatures', {}),
                 ('evidence_ids', []), ('artifact_ids', []), ('failed', {}), ('attempts', 0),
                 ('model_calls', 0), ('model_seconds', 0.0), ('columns', []),
+                ('preview_limit', 0), ('preview_evidence', None),
                 ('outlier_aggregate_evidence', {}), ('count_rate_evidence', None),
                 ('count_rate_layout', None), ('count_rate_group_column', None),
                 ('winsor_evidence', None), ('winsor_spec', None), ('winsor_column', None),
@@ -894,6 +918,28 @@ class RecoveryMiddleware(AgentMiddleware):
                 current['failed_signatures'][signature] = current['failed_signatures'].get(signature, 0) + 1
             else:
                 current['failed'].pop(name, None)
+                if (name == 'inspect_dataset' and current.get('preview_limit')
+                        and self.context and not current.get('preview_evidence')):
+                    dataset_id = arguments.get('dataset_id')
+                    info = self.context.datasets.metadata.get(dataset_id)
+                    columns = current.get('required_columns', [])
+                    preview = observation.get('preview')
+                    requested = current['preview_limit']
+                    if (info is not None and dataset_id == self.context.selected_dataset_id
+                            and observation.get('dataset', {}).get('id') == dataset_id
+                            and len(columns) == 1 and columns[0] in info.columns
+                            and self._source_matches(info, current)
+                            and isinstance(preview, list)
+                            and len(preview) >= min(info.rows, requested)
+                            and all(isinstance(row, dict) and columns[0] in row
+                                    for row in preview[:min(info.rows, requested)])):
+                        current['preview_evidence'] = {
+                            'dataset_id': dataset_id, 'source': info.source,
+                            'column': columns[0], 'requested_rows': requested,
+                            'total_rows': info.rows,
+                            'values': [row[columns[0]] for row in preview[:requested]],
+                        }
+                        current['evidence_ids'] = [dataset_id]
                 if name == 'inspect_table_context' and not current.get('chart') and not current.get('calculation'):
                     current['failed'].pop('inspect_dataset', None)
                     context = observation.get('table_context', {})
@@ -1516,6 +1562,7 @@ class RecoveryMiddleware(AgentMiddleware):
 
     def _complete(self, current):
         if current.get('data_load'): return bool(current.get('load_evidence_id'))
+        if current.get('preview_limit'): return bool(current.get('preview_evidence'))
         if current.get('pivot_requested') and not current.get('pivot_evidence'): return False
         if current.get('count_rate_layout') and not current.get('count_rate_evidence'): return False
         if current.get('join') and not current.get('join_evidence'): return False
@@ -1540,6 +1587,15 @@ class RecoveryMiddleware(AgentMiddleware):
 
     def _answer(self, current):
         parts = []
+        if current.get('preview_evidence'):
+            evidence = current['preview_evidence']
+            values = evidence['values']
+            parts.append(
+                f"보유된 {evidence['source']} 데이터의 `{evidence['column']}` 앞 "
+                f"{len(values)}개 값입니다 (전체 {evidence['total_rows']:,}행 중 저장된 미리보기).\n"
+                + ('\n'.join(f'{index}. {value}' for index, value in enumerate(values, 1))
+                   if values else '보유 데이터에 행이 없습니다.')
+                + '\n문자열 값은 미리보기 저장 시 표시 길이가 제한될 수 있습니다.')
         if current.get('data_load') and current.get('load_evidence_id') and self.context:
             info=self.context.datasets.metadata[current['load_evidence_id']]
             parts.append(f'승인한 조회로 {info.source} 데이터 {info.rows:,}행, {len(info.columns):,}열을 불러와 저장했습니다. '
@@ -1801,6 +1857,22 @@ class RecoveryMiddleware(AgentMiddleware):
         return {'recovery': current, 'messages': [message]}
 
     def _next_local(self, current, calls):
+        if (self.context and current.get('preview_limit') and not current.get('preview_evidence')
+                and not any(current.get(key) for key in (
+                    'chart', 'calculation', 'join', 'metadata_kind', 'profile_kind',
+                    'data_load', 'fresh_source_required'))):
+            scope = current.get('scope', {})
+            columns = current.get('required_columns', [])
+            dataset_id = self.context.selected_dataset_id
+            info = self.context.datasets.metadata.get(dataset_id)
+            if (info is not None and len(columns) == 1 and columns[0] in info.columns
+                    and self._source_matches(info, current)
+                    and not any(scope.get(key) for key in (
+                        'conditions', 'any_conditions', 'measure_conditions', 'ratio', 'unresolved'))):
+                arguments = {'dataset_id': dataset_id}
+                if not any(call.get('name') == 'inspect_dataset'
+                           and call.get('args') == arguments for call in calls.values()):
+                    return {'name': 'inspect_dataset', 'args': arguments}
         if (self.context and current.get('pivot_requested')
                 and not current.get('pivot_evidence')
                 and not current.get('fresh_source_required')):
@@ -2509,7 +2581,12 @@ class RecoveryMiddleware(AgentMiddleware):
                     return {'name':'local_analysis_sql', 'args':arguments}
         aggregate_operations = current.get('operations', [])
         supported_aggregates = {'AVG', 'MEDIAN', 'SUM', 'MIN', 'MAX'}
-        deterministic_scalar = bool(current.get('current_result_only') or (
+        selected_scalar = bool(
+            len(aggregate_operations) == 1 and not current.get('current_result_only')
+            and not current.get('fresh_source_required')
+            and not self._has_scope(current) and self.context
+            and self.context.selected_dataset_id)
+        deterministic_scalar = bool(current.get('current_result_only') or selected_scalar or (
             len(aggregate_operations) > 1 and not self._has_scope(current)))
         if (self.context and current.get('calculation') and deterministic_scalar
                 and len(aggregate_operations) >= 1
@@ -2532,6 +2609,7 @@ class RecoveryMiddleware(AgentMiddleware):
             candidates = [info for info in self.context.datasets.metadata.values()
                 if info.grain == 'raw' and (current.get('current_result_only') or info.predicate_known)
                 and needed_columns.issubset(info.columns) and self._source_matches(info, current)
+                and (not selected_scalar or info.id == self.context.selected_dataset_id)
                 and (current.get('current_result_only')
                     or (info.coverage == 'complete' and self._fresh_for_request(info, current)))]
             from pandas.api.types import is_numeric_dtype
@@ -2663,7 +2741,8 @@ class RecoveryMiddleware(AgentMiddleware):
                 or current.get('pivot_requested')
                 or current.get('winsor_spec') or current.get('outlier_spec')
                 or current.get('chart') or current.get('calculation')
-                or current.get('metadata_kind') or current.get('profile_kind')) and self._complete(current):
+                or current.get('metadata_kind') or current.get('profile_kind')
+                or current.get('preview_limit')) and self._complete(current):
             return {**self._finish(current), 'jump_to': 'end'}
         reason = self._limit_reason(current)
         if reason: return {**self._finish(current, reason=reason), 'jump_to': 'end'}

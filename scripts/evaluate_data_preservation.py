@@ -97,6 +97,8 @@ def run_case(spec, case, model, counter=None, artifact_dir=None):
         runtime = create()
         info = runtime.datasets.register(frame, source=spec['source'], coverage='complete',
                                         predicate_known=True, snapshot=spec['snapshot'])
+        # Mirror the UI's active raw selection; unselected roots remain ambiguous.
+        runtime.select_dataset(info.id)
         original_metadata = asdict(info)
         try:
             for index, turn in enumerate(case['turns']):

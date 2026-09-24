@@ -1539,3 +1539,10 @@ Task definitions and acceptance conditions: docs/agent_remaining_tasks_2026-09-1
 - **Agent journey**: 테스트 모델이 큰 wildcard SQL의 `full_frame_budget` 거절을 받고 명시 컬럼 로컬 SQL로 수정해 2행 결과를 만들었으며 원본·선택을 보존했다. 모의 원격 connector를 연결해도 승인 요청·실행 0회였다. 이는 graph/tool 복구 계약 검증이지 실제 모델 성공률이 아니다.
 - **Actual model**: 로컬 `gemma4:e4b` 단회는 합성 300행×32열의 `event_key` 앞 두 값을 `inspect_dataset` 미리보기로 정확히 0, 1이라고 답했다. 87.781초, 원본·선택 불변, 원격 connector 없음. 큰 읽기 거절은 만나지 않았으므로 실제 모델의 거절 후 복구는 미검증이다. [근거](docs/evaluation/preparation_2026-09-24/live_full_read_preview_2026-09-24.json).
 - **Regression**: 최종 application 225/225, migration 128/128, 참고/agentic runner 217/217(그중 Level 3 17/17), compileall·diff check PASS. 이후 모의 원격 connector 경계 test 변경의 집중 회귀 5/5 PASS.
+
+## [2026-09-24 19:54:57 KST] [Agent: /root] User Request: GO 되게 수행해줘
+- **Action** [Agent: /root]: 운영 출시 기준의 실제 차단 항목을 확인하고, 승인 없이 가능한 코드·실제 모델 평가·배포 사전점검을 진행한다. 새 Databricks 조회는 정확한 SQL별 승인 계약을 유지한다. 검증 근거가 없는 GO 판정은 하지 않는다.
+- **Implementation** [Agent: /root]: 선택한 원본의 정확한 앞 1~5행 요청을 저장된 제한 미리보기와 대조해 모델 없이 답한다. 정렬/필터/상위값은 제외한다. 선택한 완전 raw 원본의 단일 수치 집계도 출처·스키마·수치 dtype 확인 후 로컬 계산한다. 미선택 상태의 평가기 고장 주입은 모델 경로를 유지한다.
+- **Actual local evidence**: 합성 300행×32열 앞 2행 0/1은 0.091초, 모델/원격 0회, 원본/선택 불변. 선택 원본의 PRES_02 평균→histogram은 2/2 PASS, 평균 턴 0.101초·모델/원격 0회, 원본 불변. 두 경로 모두 결정적 실행으로 모델 자율성의 증거는 아니다. [간략 근거](docs/evaluation/preparation_2026-09-24/go_local_fast_paths_2026-09-24.json).
+- **Regression**: 초기 단일 집계 범위를 넓혔을 때 평가기 고장 주입 7건이 우회되는 것을 발견했다. 선택 ID가 있는 완전 원본으로 좁힌 후 application 229/229, migration 128/128, Level 3 17/17, 전체 참고 217/217, compileall·diff check PASS. 참조 200문항은 실제 자연어 성공률이 아니다.
+- **Runtime/release**: Streamlit 프로세스를 새 코드로 재시작하고 localhost:8502 health `ok`를 확인했다. local-desktop preflight READY(프로젝트 내부 저장소 경고), private-single-user NOT READY(외부 영속 볼륨·접근제어 미설정). 변경된 원격 적재의 실제 Databricks 승인·조회, 운영 호스트·동시 부하, 공식 DeepEval/Spider 점수는 미완료라 운영 GO 판정은 불가하다.
