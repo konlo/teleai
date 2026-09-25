@@ -1013,7 +1013,7 @@ class RecoveryMiddleware(AgentMiddleware):
                                     'schema_changed':observation.get('schema_changed', False)}
                             elif (kind in {'dtypes', 'numeric_columns', 'categorical_columns'}
                                   and observation.get('authority') == 'approved_select_star_result'
-                                  and '데이터 타입은 확인되지 않았' in observation.get('scope', '')):
+                                  and '타입은 확인되지 않았' in observation.get('scope', '')):
                                 current['schema_probe_dtype_unknown'] = True
             if name == 'prepare_histogram' and observation.get('histogram_plan'):
                 plan = observation['histogram_plan']

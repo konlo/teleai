@@ -127,9 +127,13 @@ def resolve_table_context(reference_context, datasets, table):
             column = dict(saved_columns.get(name, {'name':name, 'dtype':''}))
             column['name'] = name
             # Never carry an old dtype across an approved schema observation.
-            # An empty pandas/Parquet frame reports object even when the SQL
-            # column is numeric. LIMIT 0 proves names, not these dtypes.
-            column['dtype'] = '' if schema_only else actual_dtypes.get(name, '')
+            # An empty pandas/Parquet frame may report a generic object dtype
+            # even when the SQL column is numeric. Preserve only explicit type
+            # evidence supplied by the result schema.
+            observed_dtype = str(actual_dtypes.get(name, '') or '')
+            column['dtype'] = ('' if schema_only and observed_dtype.casefold()
+                               in {'', 'object', 'unknown', 'null', 'none'}
+                               else observed_dtype)
             columns.append(column)
         current = {**(saved or {}), 'table':latest.source, 'columns':columns,
                    'training_status':'runtime_schema', 'freshness':'current_loaded_schema',
@@ -137,7 +141,7 @@ def resolve_table_context(reference_context, datasets, table):
                    'schema_fingerprint':schema_fingerprint(columns),
                    'dataset_id':latest.id}
         previous = (saved or {}).get('schema_fingerprint') or schema_fingerprint((saved or {}).get('columns', []))
-        if schema_only:
+        if schema_only and any(not column['dtype'] for column in columns):
             old_names = [str(column.get('name', '')).casefold()
                          for column in (saved or {}).get('columns', [])]
             new_names = [str(name).casefold() for name in latest.columns]
@@ -147,7 +151,9 @@ def resolve_table_context(reference_context, datasets, table):
         return {'status':'ready', 'table_context':current,
                 'schema_changed':schema_changed,
                 'authority':'approved_select_star_result',
-                'scope':('승인된 0행 조회의 실제 컬럼명입니다. 데이터 타입은 확인되지 않았습니다.'
+                'scope':('승인된 0행 조회의 실제 컬럼명입니다. 일부 데이터 타입은 확인되지 않았습니다.'
+                         if schema_only and any(not column['dtype'] for column in columns) else
+                         '승인된 0행 결과 스키마의 실제 컬럼명과 데이터 타입입니다.'
                          if schema_only else
                          '승인 후 로딩된 SELECT * 결과의 실제 컬럼입니다. 해당 결과의 생성 시점 스키마를 나타냅니다.')}
     if saved is None:
