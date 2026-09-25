@@ -137,9 +137,21 @@ def resolve_request_scope(text, context, previous=None):
     for name, metadata in grounding.items():
         aliases = sorted({name, *metadata['aliases']}, key=len, reverse=True)
         names = '(?:' + '|'.join(re.escape(alias) for alias in aliases) + ')'
-        column_pattern = (r'(?<![A-Za-z_])[`\'\"]?' + names
+        column_pattern = (r'(?<![A-Za-z_.])[`\'\"]?' + names
                           + r'[`\'\"]?(?![A-Za-z0-9_])\)?(?:이|가|은|는|을|를)?')
         if any(_mentioned(text, alias) for alias in aliases): mentioned_columns.append(name)
+        # A user may explicitly qualify a column in a multi-table request.
+        # Preserve that role instead of merging two equalities on the same
+        # base column into an IN predicate. The qualifier must be supplied by
+        # the user; it is never invented from a model-generated SQL alias.
+        qualified_pattern = (r'(?<![A-Za-z0-9_])([A-Za-z_][A-Za-z0-9_]*)\s*\.\s*'
+                             + names + r'\s*(>=|<=|!=|<>|==|=|>|<)\s*(' + _LITERAL + r')(?!\s*\.)')
+        for match in re.finditer(qualified_pattern, text, re.I):
+            qualified = match[1] + '.' + name
+            found.append({'column': qualified, 'op': _OPS[match[2]],
+                          'value': _literal(match[3])})
+            mentioned_columns.append(qualified)
+            spans.append(match.span())
         for alias in aliases:
             decade = re.fullmatch(r'(\d{1,3})대', alias)
             if decade and _mentioned(text, alias):
@@ -297,7 +309,10 @@ def resolve_request_scope(text, context, previous=None):
         marker=re.compile(r'\bOR\b|또는|혹은|아니면|이나|거나|중\s*하나라도',re.I)
         positioned=[]
         for item in candidates:
-            matches=[match for name in {item['column'],*grounding[item['column']]['aliases']}
+            base=item['column'].rsplit('.',1)[-1]
+            names=({item['column']} if '.' in item['column'] else
+                   {base,*grounding[base]['aliases']})
+            matches=[match for name in names
                      for match in re.finditer(re.escape(name),text,re.I)]
             if matches:
                 match=min(matches,key=lambda value:value.start())
@@ -310,6 +325,18 @@ def resolve_request_scope(text, context, previous=None):
             unique=[item for item in unique if item not in any_conditions]
         else:
             unresolved.append('unsupported_disjunction')
+    # A joined SQL proposal may be checked only when the user explicitly
+    # supplied the join edges. A model-chosen relationship is not independent
+    # evidence of the user's intended population.
+    join_edges=[list(edge) for edge in previous.get('join_edges', [])] if inherited else []
+    edge_pattern = (r'(?<![A-Za-z0-9_])([A-Za-z_][A-Za-z0-9_]*)\.([A-Za-z_][A-Za-z0-9_]*)'
+                    r'\s*=\s*([A-Za-z_][A-Za-z0-9_]*)\.([A-Za-z_][A-Za-z0-9_]*)')
+    for match in re.finditer(edge_pattern, text):
+        if match[2] not in grounding or match[4] not in grounding or match[1] == match[3]:
+            unresolved.append('ungrounded_join_edge')
+            continue
+        join_edges.append(sorted([match[1]+'.'+match[2], match[3]+'.'+match[4]]))
+    join_edges=list({tuple(edge):edge for edge in join_edges}.values())
     for column in {item['column'] for item in unique}:
         equality = {json.dumps(item['value'], sort_keys=True) for item in unique if item['column'] == column and item['op'] == 'eq'}
         if len(equality) > 1: unresolved.append('conflicting_equalities')
@@ -350,12 +377,13 @@ def resolve_request_scope(text, context, previous=None):
             else:
                 unresolved.append('ungrounded_ratio_numerator')
     return {'conditions':unique, 'any_conditions':any_conditions,
+            'join_edges':join_edges,
             'measure_conditions':measure_conditions,
             'ratio':ratio, 'unresolved':sorted(set(unresolved)),
             'columns':sorted(set(mentioned_columns))}
 
 
-def scope_matches(executed, requested, *, histogram_column=None):
+def scope_matches(executed, requested, *, histogram_column=None, dialect='databricks'):
     """Require the exact supported Boolean population, including inherited filters.
 
     ``executed`` may be a DatasetInfo, a SQL query, or a sequence of Conditions
@@ -374,28 +402,98 @@ def scope_matches(executed, requested, *, histogram_column=None):
         if node.is_string: return node.this
         return float(node.this) if any(c in node.this.lower() for c in ('.','e')) else int(node.this)
 
-    def formula(node):
+    def column_name(node, joined):
+        if not isinstance(node, exp.Column): raise ValueError('unsupported column')
+        if joined:
+            if not node.table: raise ValueError('ambiguous joined column')
+            return node.table + '.' + node.name
+        return node.name
+
+    def formula(node, joined=False):
         """Return a bounded disjunctive-normal-form list of conjunctions."""
-        if isinstance(node, exp.Paren): return formula(node.this)
-        if isinstance(node, exp.Or): return formula(node.this)+formula(node.expression)
+        if isinstance(node, exp.Paren): return formula(node.this, joined)
+        if isinstance(node, exp.Or): return formula(node.this, joined)+formula(node.expression, joined)
         if isinstance(node, exp.And):
-            left,right=formula(node.this),formula(node.expression)
+            left,right=formula(node.this, joined),formula(node.expression, joined)
             if len(left)*len(right)>16: raise ValueError('boolean formula too large')
             return [a+b for a in left for b in right]
         ops={exp.EQ:'eq',exp.NEQ:'ne',exp.GT:'gt',exp.GTE:'ge',exp.LT:'lt',exp.LTE:'le'}
         if type(node) in ops and isinstance(node.this,exp.Column):
-            return [[Condition(node.this.name,ops[type(node)],literal(node.expression))]]
+            return [[Condition(column_name(node.this, joined),ops[type(node)],literal(node.expression))]]
         if isinstance(node,exp.In) and isinstance(node.this,exp.Column) and not node.args.get('query'):
-            return [[Condition(node.this.name,'in',[literal(item) for item in node.expressions])]]
+            return [[Condition(column_name(node.this, joined),'in',
+                               [literal(item) for item in node.expressions])]]
         if isinstance(node,exp.Between) and isinstance(node.this,exp.Column):
-            return [[Condition(node.this.name,'ge',literal(node.args['low'])),
-                     Condition(node.this.name,'le',literal(node.args['high']))]]
+            name=column_name(node.this, joined)
+            return [[Condition(name,'ge',literal(node.args['low'])),
+                     Condition(name,'le',literal(node.args['high']))]]
         raise ValueError('unsupported predicate')
+
+    def join_sources(tree):
+        """Accept only flat inner equijoins with qualified, distinct aliases."""
+        source=tree.args.get('from_')
+        joins=tree.args.get('joins') or []
+        if (not isinstance(tree, exp.Select) or not joins or tree.args.get('with_')
+                or len(list(tree.find_all(exp.Select))) != 1
+                or source is None or not isinstance(source.this, exp.Table)):
+            raise ValueError('unsupported joined query')
+        aliases={source.this.alias_or_name}
+        edges=[]
+        for join in joins:
+            if (not isinstance(join.this, exp.Table) or join.args.get('side')
+                    or str(join.args.get('kind') or '').upper() not in {'', 'INNER'}):
+                raise ValueError('unsupported join kind')
+            alias=join.this.alias_or_name
+            if not alias or alias in aliases: raise ValueError('duplicate join alias')
+            predicate=join.args.get('on')
+            if (not isinstance(predicate, exp.EQ)
+                    or not isinstance(predicate.this, exp.Column)
+                    or not isinstance(predicate.expression, exp.Column)):
+                raise ValueError('unsupported join condition')
+            left,right=predicate.this,predicate.expression
+            if (not left.table or not right.table or left.table == right.table
+                    or {left.table,right.table} - (aliases | {alias})
+                    or alias not in {left.table,right.table}):
+                raise ValueError('unbound join condition')
+            edges.append(sorted([left.table+'.'+left.name, right.table+'.'+right.name]))
+            aliases.add(alias)
+        return edges, aliases
+
+    def base_population_select(tree):
+        """Follow a linear, filter-free CTE chain to its raw source SELECT."""
+        with_clause = tree.args.get('with_')
+        if with_clause is None:
+            return tree
+        definitions = {cte.alias.casefold(): cte.this
+                       for cte in with_clause.expressions if cte.alias}
+        if len(definitions) != len(with_clause.expressions):
+            raise ValueError('ambiguous CTE names')
+        current, seen = tree, set()
+        while True:
+            if not isinstance(current, exp.Select):
+                raise ValueError('unsupported CTE query')
+            source = current.args.get('from_')
+            table = source.this if source else None
+            name = table.name.casefold() if isinstance(table, exp.Table) else ''
+            if name not in definitions:
+                break
+            if (name in seen or current.args.get('where') or current.args.get('joins')
+                    or current.args.get('having') or current.args.get('qualify')
+                    or current.args.get('group')):
+                raise ValueError('filtered or branching CTE chain')
+            seen.add(name)
+            current = definitions[name]
+        if seen != set(definitions):
+            raise ValueError('unused or branching CTE')
+        return current
 
     def sql_conditions(query, dialect):
         tree = sqlglot.parse_one(query, read=dialect)
-        if single_table(tree) is None or tree.args.get('having') or tree.args.get('qualify'):
+        tree = base_population_select(tree)
+        if tree.args.get('having') or tree.args.get('qualify'):
             raise ValueError('unsupported query scope')
+        joined = single_table(tree) is None
+        edges, aliases = join_sources(tree) if joined else ([], set())
         if histogram_column and tree.args.get('where'):
             # Only a top-level AND leaf on the charted value may be omitted.
             # Never simplify OR, nested queries, or another column's null filter.
@@ -417,22 +515,35 @@ def scope_matches(executed, requested, *, histogram_column=None):
             predicate = without_chart_null(tree.args['where'].this)
             tree.set('where', exp.Where(this=predicate) if predicate is not None else None)
         where=tree.args.get('where')
-        return formula(where.this) if where else [[]]
+        if joined and where and any(column.table and column.table not in aliases
+                                for column in where.find_all(exp.Column)):
+            raise ValueError('unbound filter alias')
+        return (formula(where.this, joined) if where else [[]], edges)
 
     try:
         if isinstance(executed, str):
-            condition_sets=sql_conditions(executed, 'databricks')
+            condition_sets, join_edges=sql_conditions(executed, dialect)
         elif hasattr(executed, 'conditions'):
             stored=list(executed.conditions)
             if executed.query:
-                condition_sets=[stored+items for items in sql_conditions(
-                    executed.query, 'duckdb' if executed.parent_id else 'databricks')]
+                parsed, join_edges=sql_conditions(
+                    executed.query, 'duckdb' if executed.parent_id else 'databricks')
+                condition_sets=[stored+items for items in parsed]
             elif not executed.predicate_known:
                 return False
             else:
                 condition_sets=[stored]
+                join_edges=[]
         else:
             condition_sets=[list(executed)]
+            join_edges=[]
+
+        expected_edges=requested.get('join_edges', [])
+        if joined := bool(join_edges):
+            if not expected_edges or sorted(join_edges) != sorted(expected_edges):
+                return False
+        elif expected_edges:
+            return False
 
         def canonical(values):
             result = set()
@@ -452,7 +563,7 @@ def scope_matches(executed, requested, *, histogram_column=None):
         return False
 
 
-def measure_scope_matches(query, requested):
+def measure_scope_matches(query, requested, *, dialect='duckdb'):
     """Verify numerator predicates used inside a ratio calculation.
 
     Population predicates may also appear in SQL WHERE, so remove their exact
@@ -472,7 +583,7 @@ def measure_scope_matches(query, requested):
         return float(node.this) if any(c in node.this.lower() for c in ('.', 'e')) else int(node.this)
 
     try:
-        tree = sqlglot.parse_one(query, read='duckdb')
+        tree = sqlglot.parse_one(query, read=dialect)
         ops = {exp.EQ:'eq', exp.NEQ:'ne', exp.GT:'gt', exp.GTE:'ge', exp.LT:'lt', exp.LTE:'le'}
         found = []
         for node in tree.walk():

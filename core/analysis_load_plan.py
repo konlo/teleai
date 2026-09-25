@@ -28,18 +28,27 @@ def _compatible(declared: str, actual: str) -> bool:
                 and observed[-len(wanted):] == wanted)
 
 
-def source_plan(source: str, query: str) -> SourcePlan:
+def _actual_tables(tree) -> tuple[str, ...]:
+    cte_names = {cte.alias.casefold() for cte in tree.find_all(exp.CTE) if cte.alias}
+    return tuple(dict.fromkeys(
+        table_identity(table) for table in tree.find_all(exp.Table)
+        if not (not table.db and not table.catalog and table.name.casefold() in cte_names)))
+
+
+def query_sources(query: str, *, dialect='databricks') -> tuple[str, ...]:
+    """Report physical SQL sources without trusting a model-supplied label."""
+    return _actual_tables(validate_query(query, dialect=dialect))
+
+
+def source_plan(source: str, query: str, *, dialect='databricks') -> SourcePlan:
     """Reject misleading source labels before a query can enter approval.
 
     A short name may bind one fully qualified table, but multi-table queries
     must enumerate every source using `` | ``. No table/column names are fixed
     in code; the query AST supplies the actual source list.
     """
-    tree = validate_query(query)
-    cte_names = {cte.alias.casefold() for cte in tree.find_all(exp.CTE) if cte.alias}
-    actual = tuple(dict.fromkeys(
-        table_identity(table) for table in tree.find_all(exp.Table)
-        if not (not table.db and not table.catalog and table.name.casefold() in cte_names)))
+    tree = validate_query(query, dialect=dialect)
+    actual = _actual_tables(tree)
     declared = tuple(part.strip() for part in source.split('|') if part.strip())
     if not declared:
         raise ValueError('조회 출처를 명시해야 합니다.')

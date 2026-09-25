@@ -1681,3 +1681,11 @@ Task definitions and acceptance conditions: docs/agent_remaining_tasks_2026-09-1
 - **Finding** [Agent: /root]: `resolve_request_scope()`는 역할이 다른 동일 컬럼의 OR를 표현하지 못하고, `scope_matches()`는 `single_table(tree)`가 없는 조인/CTE SQL을 거절한다. Spider adapter는 SQLite 과제를 Databricks 도구로 제안하게 하고 과제 문서를 사용자 질문에 이어 붙인다. 따라서 OR만 허용하거나 모델만 바꾸는 수정은 충분하지 않다.
 - **Artifact Update** [Agent: /root]: `docs/evaluation/2026-09-25_agent_sql_recovery_plan.md`에 평가 방언/문서 경계, alias-aware 범위 계약, 승인 전 검증과 제한된 복구, 모델 독립 평가, 출시 재판정 조건을 순서대로 기록했다. GO 판정 문서에서 해당 설계를 연결했다.
 - **Outcome** [Agent: /root]: 이번 요청은 설계안과 합격 기준 작성까지 완료. 실행 코드·실제 모델 성능은 바꾸지 않았고 출시 판정은 NO-GO다. Databricks SQL 실행 0회.
+
+## [2026-09-25 23:05:53 KST] [Agent: /root] User Request: 앞서 설계한 LLM·agent 복합 실패 해결안을 실제로 구현해 달라
+- **Action** [Agent: /root]: Spider 평가 경계, 조인/OR 범위 계약, 승인 전 SQL 검증·복구를 구현하고 독립·종단 회귀와 실제 모델 재평가를 수행한다. 승인 없는 Databricks 조회는 실행하지 않는다.
+- **Implementation in progress** [Agent: /root]: Spider 공개 SQLite 참고 문서를 사용자 질문과 분리하고 방언을 명시했다. 공개 DB의 JSONB/POINT 컬럼에 한해 2개 이하의 짧은 인코딩 예시를 동적으로 읽어 모델 문맥에 제공한다. 승인 전 source/SQL·현재 스키마 컬럼·공개 SQLite 실행 가능성을 검사하고, 오류 코드/방언을 모델에 돌려줘 제한적으로 재작성하도록 했다. 동일 실패 SQL은 즉시 중단한다. 명시적으로 역할이 지정된 조인 OR는 허용하되 잘못된 AND·역할·조인 필터는 거절한다.
+- **Verification in progress** [Agent: /root]: 새 경계 테스트 10/10 통과, 이전 코드 시작점의 앱 전체 unittest 263/263 통과. 새 코드로 실제 모델 Spider `local009`를 재실행 중이며 아직 SQL 제안 성공을 주장하지 않는다. 원격 Databricks SQL 0회.
+- **Implementation outcome** [23:47 KST, Agent: /root]: 공개 Spider 평가에서 문서/질문과 SQLite/Databricks 방언을 분리했다. 현재 스키마·실제 SQL 출처·공개 SQLite 읽기 전용 실행을 승인 전에 확인하며, 거절 오류를 제한된 복구 루프에 돌려주고 동일 제안 반복을 중단한다. 명시적 조인 관계와 역할별 OR를 검증하고 틀린 AND·역할·조인 조건을 차단한다. 독립 관계 근거가 없는 자연어 조인은 추측하지 않고 멈춘다.
+- **Verification outcome** [23:47 KST, Agent: /root]: 앱 unittest 267/267, migration 133/133, 전체 참조·Level 3 runner 217/217, compileall·diff check 통과. Gemma/Qwen 실제 `local009` 재평가에서는 유효 SQL 제안 0건; 최신 Qwen 축약 실행은 105.351초·모델 5회·SQLite 구문 오류 초안 1개. 원격 Databricks 실행 0회, 공식 EX 미산출. 출시 NO-GO 유지. 설계·판정 문서에 구현 범위와 잔여 차단 요인을 반영했다.
+- **Local runtime** [23:49 KST, Agent: /root]: 8502 Streamlit 프로세스를 검증된 코드로 재시작했다. 새 PID 15054, `/_stcore/health`의 `ok`/HTTP 200 확인. 새 실제 웹 질문이나 Databricks SQL을 실행했다는 의미는 아니다.

@@ -1,5 +1,6 @@
 """Checkpointed completion evidence and bounded, approval-safe recovery."""
 from copy import deepcopy
+from hashlib import sha256
 import json
 import re
 import time
@@ -139,12 +140,15 @@ class RecoveryMiddleware(AgentMiddleware):
 
     def __init__(self, artifacts, diagnostics, max_attempts=2, context=None,
                  transcript=None, max_model_calls=10, max_tool_calls=12,
-                 max_model_seconds=180, remote_available=False):
+                 max_model_seconds=180, remote_available=False, sql_dialect='databricks',
+                 proposal_validator=None):
         self.artifacts, self.diagnostics = artifacts, diagnostics
         self.max_attempts, self.context, self.transcript = max_attempts, context, transcript
         self.max_model_calls, self.max_tool_calls = max_model_calls, max_tool_calls
         self.max_model_seconds = max_model_seconds
         self.remote_available = remote_available
+        self.sql_dialect = sql_dialect
+        self.proposal_validator = proposal_validator
 
     def _state(self, state):
         messages = state.get('messages', [])
@@ -1383,11 +1387,14 @@ class RecoveryMiddleware(AgentMiddleware):
     @staticmethod
     def _has_scope(current):
         scope = current.get('scope', {})
-        return bool(scope.get('conditions') or scope.get('any_conditions') or scope.get('unresolved'))
+        return bool(scope.get('conditions') or scope.get('any_conditions')
+                    or scope.get('join_edges') or scope.get('unresolved'))
 
-    def _scope_valid(self, executed, current, histogram_column=None, *, record_error=True):
+    def _scope_valid(self, executed, current, histogram_column=None, *, record_error=True,
+                     dialect=None):
         if not self._has_scope(current): return True
-        if scope_matches(executed, current['scope'], histogram_column=histogram_column): return True
+        if scope_matches(executed, current['scope'], histogram_column=histogram_column,
+                         dialect=dialect or self.sql_dialect): return True
         if record_error:
             self._record_scope_error(current)
         return False
@@ -1908,6 +1915,11 @@ class RecoveryMiddleware(AgentMiddleware):
             current['status'] = 'blocked'
             text = ('0행 스키마 조회로 현재 컬럼명은 확인했지만 데이터 타입은 확인되지 않았습니다. '
                     '타입 확인용 조회가 필요하며 승인 없이 추가 조회하지 않았습니다. 기존 데이터는 보존했습니다.')
+        if not success and reason == 'proposal_validation_failed':
+            current['status'] = 'blocked'
+            text = ('생성된 SQL이 승인 전 문법·출처·실행 가능성 검사에 반복해서 실패했습니다 '
+                    f"({current.get('proposal_error', 'validation_error')}). "
+                    '조회는 제안하거나 실행하지 않았고 기존 데이터는 보존했습니다.')
         if not success and current.get('metadata_kind') and current.get('remote_rejected'):
             text = ('현재 항목 확인을 위한 0행 스키마 조회가 취소되었습니다. '
                     '오래된 스냅샷을 현재 컬럼으로 안내하지 않았으며 기존 데이터는 보존했습니다.')
@@ -1915,7 +1927,17 @@ class RecoveryMiddleware(AgentMiddleware):
             if current.get('scope', {}).get('unresolved'):
                 current['status'] = 'blocked'
                 current['stop_reason'] = 'request_scope_unresolved'
-                text = '요청한 기간·조건을 저장된 컬럼 정보와 확정적으로 연결하지 못했습니다. 사용할 날짜 컬럼과 조건을 컬럼명·값으로 명시해주세요. 분석을 완료한 것으로 처리하지 않았으며 기존 데이터는 보존했습니다.'
+                if 'unsupported_disjunction' in current['scope']['unresolved']:
+                    text = ('요청의 또는(OR) 조건을 현재 스키마의 각 컬럼·역할에 확정적으로 연결하지 못했습니다. '
+                            '관련 테이블의 조인 관계와 조건 컬럼을 확인해야 합니다. 조회는 제안하거나 실행하지 않았고 기존 데이터는 보존했습니다.')
+                else:
+                    text = ('요청한 기간·조건을 저장된 컬럼 정보와 확정적으로 연결하지 못했습니다. '
+                            '사용할 컬럼과 조건값을 확인해야 합니다. 분석을 완료한 것으로 처리하지 않았으며 기존 데이터는 보존했습니다.')
+            elif current.get('scope_error') == 'unverified_join_relationship':
+                current['status'] = 'blocked'
+                current['stop_reason'] = 'unverified_join_relationship'
+                text = ('조인 관계를 현재 요청 또는 확인된 테이블 관계 정보에서 검증할 수 없습니다. '
+                        '원격 조회를 승인 단계로 넘기지 않았으며 기존 데이터는 보존했습니다.')
             else:
                 current['stop_reason'] = 'request_scope_mismatch'
                 text = '생성된 분석의 기간·필터가 요청 조건과 일치하지 않아 결과를 채택하지 않았습니다. 조건을 유지한 복구가 실행 한도 안에 완료되지 않았습니다. 기존 데이터는 보존했습니다.'
@@ -2966,16 +2988,133 @@ class RecoveryMiddleware(AgentMiddleware):
             '필터 불일치 결과는 완료 증거가 아닙니다.')
 
     def _reject_scope_call(self, current, last):
+        signatures = current.setdefault('rejected_scope_signatures', [])
+        signature = sha256(json.dumps([(call.get('name'), call.get('args'))
+            for call in last.tool_calls], sort_keys=True, ensure_ascii=False,
+            default=str).encode()).hexdigest()
+        if signature in signatures:
+            self.diagnostics.emit('scope_proposal_repeated', request_id=current.get('request_id'),
+                                  signature=signature[:12])
+            return self._finish(current, last, 'request_scope_mismatch')
+        signatures.append(signature)
         if current['attempts'] >= self.max_attempts:
             return self._finish(current, last, 'request_scope_mismatch')
         current['attempts'] += 1
         # Remove the entire unexecuted batch before HITL sees it. It creates
         # neither an approval card nor a fabricated tool result.
+        feedback = {'error_code':current.get('scope_error') or 'request_scope_mismatch',
+                    'unresolved':current.get('scope', {}).get('unresolved', []),
+                    'required_columns':current.get('scope', {}).get('columns', []),
+                    'sql_dialect':self.sql_dialect,
+                    'rejected_calls':[{'tool':call.get('name'),
+                                       'query':str((call.get('args') or {}).get('query', ''))[:4000]}
+                                      for call in last.tool_calls],
+                    'action':'Inspect current table relationships and rewrite the proposal. '
+                             'Preserve all requested filters and OR roles; do not repeat the same call.'}
         return {'recovery':current, 'messages':[RemoveMessage(id=last.id),
-            SystemMessage(content='도구 호출의 기간·필터가 요청 조건과 달라 실행 또는 원격 조회 승인 요청 전에 거절되었습니다. '
+            SystemMessage(content='승인 전 범위 검증이 도구 호출을 거절했습니다. '
+                + json.dumps(feedback, ensure_ascii=False) + '\n'
                 + self._scope_instruction(current), additional_kwargs={'lc_source':'recovery_scope'})], 'jump_to':'model'}
 
+    def _proposal_preflight_error(self, call):
+        if call.get('name') != 'query_databricks': return None
+        from core.analysis_load_plan import query_sources, source_plan
+        from core.analysis_agent.sql_preflight import known_column_error
+        from sqlglot.errors import SqlglotError
+        arguments = call.get('args') or {}
+        try:
+            source_plan(arguments.get('source', ''), arguments.get('query', ''),
+                        dialect=self.sql_dialect)
+        except (ValueError, TypeError, KeyError, SqlglotError) as exc:
+            feedback = {'error_code':'invalid_source_or_sql', 'message':str(exc)[:300]}
+            try:
+                sources = query_sources(arguments.get('query', ''), dialect=self.sql_dialect)
+            except (ValueError, TypeError, SqlglotError):
+                sources = ()
+            if sources:
+                feedback['expected_source'] = ' | '.join(sources)
+            return feedback
+        effective_contexts = []
+        if self.context:
+            from core.analysis_catalog import resolve_table_context
+            from sqlglot import exp, parse_one
+            from utils.analysis_provenance import single_table
+            tree = parse_one(arguments['query'], read=self.sql_dialect)
+            limit = tree.args.get('limit') if isinstance(tree, exp.Select) else None
+            schema_probe = bool(single_table(tree) is not None
+                and limit and isinstance(limit.expression, exp.Literal)
+                and limit.expression.is_int and int(limit.expression.this) == 0
+                and any(isinstance(node, exp.Star) for item in tree.expressions
+                        for node in item.walk())
+                and tree.args.get('where') is None)
+            for source in query_sources(arguments['query'], dialect=self.sql_dialect):
+                observed = resolve_table_context(
+                    self.context.reference_context, self.context.datasets, source)
+                if observed.get('status') == 'needs_refresh' and not schema_probe:
+                    return {'error_code':'schema_stale',
+                            'message':'The saved table schema is stale; inspect and request the proposed zero-row schema refresh before using its columns.',
+                            'source':source,
+                            'refresh_query':observed.get('refresh_query', '')}
+                if observed.get('status') == 'ready' and observed.get('table_context'):
+                    effective_contexts.append(observed['table_context'])
+        try:
+            schema_error = known_column_error(arguments['query'],
+                effective_contexts,
+                dialect=self.sql_dialect)
+        except (ValueError, TypeError, KeyError, SqlglotError) as exc:
+            return {'error_code':'invalid_source_or_sql', 'message':str(exc)[:300]}
+        if schema_error:
+            return schema_error
+        if self.proposal_validator is not None:
+            try:
+                result = self.proposal_validator(arguments['query'])
+            except Exception as exc:
+                return {'error_code':'proposal_validation_error',
+                        'message':type(exc).__name__}
+            if result.get('status') != 'executable':
+                return {'error_code':result.get('status', 'proposal_validation_error'),
+                        'message':str(result.get('error', 'SQL validation failed'))[:300]}
+        return None
+
+    def _reject_preflight_call(self, current, last, error):
+        signatures = current.setdefault('rejected_preflight_signatures', [])
+        signature = sha256(json.dumps([(call.get('name'), call.get('args'))
+            for call in last.tool_calls], sort_keys=True, ensure_ascii=False,
+            default=str).encode()).hexdigest()
+        if signature in signatures or current['attempts'] >= self.max_attempts:
+            current['proposal_error'] = error['error_code']
+            return self._finish(current, last, 'proposal_validation_failed')
+        signatures.append(signature)
+        current['attempts'] += 1
+        self.diagnostics.emit('proposal_preflight_rejected',
+            request_id=current.get('request_id'), error_code=error['error_code'],
+            signature=signature[:12])
+        feedback = {**error, 'sql_dialect':self.sql_dialect,
+                    'rejected_calls':[{'tool':call.get('name'),
+                                       'source':str((call.get('args') or {}).get('source', ''))[:300],
+                                       'query':str((call.get('args') or {}).get('query', ''))[:4000]}
+                                      for call in last.tool_calls],
+                    'action':'Rewrite the SELECT using the current schema and target SQL dialect. '
+                             'Keep the original filters and do not repeat the same proposal.'}
+        return {'recovery':current, 'messages':[RemoveMessage(id=last.id),
+            SystemMessage(content='승인 전 읽기 전용 SQL 검사 실패: '
+                + json.dumps(feedback, ensure_ascii=False),
+                additional_kwargs={'lc_source':'proposal_preflight'})], 'jump_to':'model'}
+
     def _proposed_scope_valid(self, call, current):
+        if call.get('name') == 'query_databricks':
+            from sqlglot import parse_one, exp
+            from sqlglot.errors import SqlglotError
+            try:
+                joined = parse_one(call.get('args', {}).get('query', ''),
+                                   read=self.sql_dialect).find(exp.Join) is not None
+            except (TypeError, ValueError, SqlglotError):
+                joined = False  # The SQL preflight reports malformed SQL first.
+            scope = current.get('scope', {})
+            if joined and not scope.get('join_edges'):
+                current['scope_error'] = ('request_scope_unresolved' if scope.get('unresolved')
+                                          else 'unverified_join_relationship')
+                return False
         if not self._has_scope(current): return True
         arguments = call.get('args', {})
         if call.get('name') == 'local_analysis_sql':
@@ -2986,8 +3125,8 @@ class RecoveryMiddleware(AgentMiddleware):
             # contract; when omitted, the SQL WHERE clause is the contract.
             requested = arguments.get('requested_conditions')
             executed = requested if requested is not None else arguments.get('query', '')
-            return self._scope_valid(executed, current) and measure_scope_matches(
-                arguments.get('query', ''), current.get('scope', {}))
+            return self._scope_valid(executed, current, dialect='duckdb') and measure_scope_matches(
+                arguments.get('query', ''), current.get('scope', {}), dialect='duckdb')
         if call.get('name') == 'prepare_histogram':
             if current.get('fresh_source_required') and not arguments.get('fresh_source_required'):
                 return False
@@ -3076,7 +3215,7 @@ class RecoveryMiddleware(AgentMiddleware):
                 column = columns[0] if columns else None
             except (TypeError, ValueError, sqlglot.errors.SqlglotError): pass
         return (self._scope_valid(query, current, column)
-                and measure_scope_matches(query, current.get('scope', {})))
+                and measure_scope_matches(query, current.get('scope', {}), dialect=self.sql_dialect))
 
     def _fresh_for_request(self, info, current):
         if not current.get('fresh_source_required'):
@@ -3136,6 +3275,10 @@ class RecoveryMiddleware(AgentMiddleware):
             return self._finish(current, last, reason)
         if last.tool_calls and remote_block and any(c['name'] == 'query_databricks' for c in last.tool_calls):
             return self._finish(current, last, 'remote_blocked')
+        for call in last.tool_calls:
+            error = self._proposal_preflight_error(call)
+            if error:
+                return self._reject_preflight_call(current, last, error)
         if any(not self._proposed_scope_valid(call, current) for call in last.tool_calls):
             return self._reject_scope_call(current, last)
         if current.get('plan') and not remote_block:

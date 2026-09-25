@@ -20,6 +20,24 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 
 
+SQLITE_PROPOSAL_INSTRUCTIONS = """You are evaluating a public SQLite SQL task.
+Use the runtime table context to inspect the current schema. The task document is
+reference data, separate from the user's question. Propose one read-only SQLite
+SELECT through query_databricks; that legacy tool name only stages a proposal
+behind approval in this evaluation and does not execute Databricks SQL.
+The source argument must list each physical SQL table, separated by ` | `;
+exclude CTE names and never put the tool name in source.
+Use only columns, data types and functions supported by the observed SQLite
+schema. Do not claim a computed answer before the query has been evaluated.
+SQLite does not supply Databricks spatial functions by default. Check the
+bounded type examples: a POINT stored as `(longitude,latitude)` text needs
+numeric extraction from that text, and a JSON object needs its observed key.
+Keep every filter, OR condition, join role and requested unit from the question.
+If the schema is insufficient, inspect it; if the request cannot be grounded,
+report the missing information instead of inventing results.
+"""
+
+
 def task_manifest(spider_root: Path) -> dict:
     path = spider_root / "spider2-lite" / "spider2-lite.jsonl"
     return {item["instance_id"]: item for line in path.read_text().splitlines()
@@ -34,7 +52,7 @@ def database_path(spider_root: Path, task: dict) -> Path:
 
 
 def schema_context(path: Path) -> list[dict]:
-    """Read the live public SQLite schema without looking at benchmark gold."""
+    """Read public SQLite schema and bounded complex-type encodings, never gold."""
     contexts = []
     stamp = datetime.now(timezone.utc).isoformat()
     with sqlite3.connect(f"file:{path.resolve()}?mode=ro", uri=True) as db:
@@ -43,11 +61,22 @@ def schema_context(path: Path) -> list[dict]:
             "AND name NOT LIKE 'sqlite_%' ORDER BY name")]
         for name in names:
             escaped = name.replace('"', '""')
-            columns = [{"name": row[1], "dtype": row[2] or "unknown"}
-                       for row in db.execute(f'PRAGMA table_info("{escaped}")')]
+            columns = []
+            for row in db.execute(f'PRAGMA table_info("{escaped}")'):
+                column = {"name": row[1], "dtype": row[2] or "unknown"}
+                # Public benchmark types such as JSONB and POINT do not tell
+                # the model how SQLite actually encodes a value. Inspect two
+                # bounded, non-null column values, never entire source rows.
+                if any(label in str(row[2]).casefold() for label in ('json', 'point')):
+                    quoted = str(row[1]).replace('"', '""')
+                    values = db.execute(
+                        f'SELECT "{quoted}" FROM "{escaped}" '
+                        f'WHERE "{quoted}" IS NOT NULL LIMIT 2').fetchall()
+                    column['top_values'] = [str(value[0])[:160] for value in values]
+                columns.append(column)
             contexts.append({"table": name, "training_status": "runtime_schema",
                              "observed_at": stamp, "columns": columns,
-                             "source": "read-only public Spider2 SQLite schema"})
+                             "source": "read-only public Spider2 SQLite schema and bounded type examples"})
     return contexts
 
 
@@ -64,6 +93,37 @@ def task_document(spider_root: Path, task: dict) -> str:
     return path.read_text()
 
 
+def check_sqlite_candidate(path: Path, query: str, *, timeout_seconds=5.0) -> dict:
+    """Execute only a public, read-only benchmark SELECT with a VM time bound.
+
+    SQLite EXPLAIN alone does not detect missing runtime functions such as ST_Y.
+    This probe is diagnostic; official Spider EX remains the correctness scorer.
+    """
+    from core.analysis_sql import validate_query
+    try:
+        validate_query(query, dialect="sqlite")
+    except Exception as exc:
+        return {"status": "sql_runtime_error", "error_type": type(exc).__name__,
+                "error": str(exc)[:300]}
+    started = time.monotonic()
+    try:
+        with sqlite3.connect(f"file:{path.resolve()}?mode=ro", uri=True) as db:
+            db.execute("PRAGMA query_only=ON")
+            db.set_progress_handler(
+                lambda: int(time.monotonic() - started >= timeout_seconds), 1000)
+            db.execute(query).fetchone()
+    except sqlite3.Error as exc:
+        message = str(exc)
+        status = ("sql_timeout" if "interrupted" in message.lower()
+                  and time.monotonic()-started >= timeout_seconds else
+                  "dialect_error" if "no such function" in message.lower() else
+                  "sql_runtime_error")
+        return {"status": status, "error_type": type(exc).__name__,
+                "error": message[:300],
+                "elapsed_seconds": round(time.monotonic()-started, 3)}
+    return {"status": "executable", "elapsed_seconds": round(time.monotonic()-started, 3)}
+
+
 def evaluate_task(spider_root: Path, task: dict, model, predictions: Path,
                   *, benchmark_instruction=False) -> dict:
     from core.analysis_agent.runtime import GraphAnalysisRuntime
@@ -71,7 +131,7 @@ def evaluate_task(spider_root: Path, task: dict, model, predictions: Path,
 
     case_id = task["instance_id"]
     base = {"id": case_id, "db": task["db"], "benchmark": "Spider2-Lite SQLite",
-            "mode": "TeleAI SQL proposal; no automatic approval or SQL execution",
+            "mode": "TeleAI SQL proposal; no automatic approval or remote SQL execution; read-only public SQLite probe",
             "prompt_mode": "sql_instructed" if benchmark_instruction else "original_question"}
     try:
         path = database_path(spider_root, task)
@@ -93,20 +153,18 @@ def evaluate_task(spider_root: Path, task: dict, model, predictions: Path,
             runtime = GraphAnalysisRuntime(temp, "evaluation", case_id, model,
                 connection_identity="public-spider2-sqlite-proposal-only",
                 remote_factory=forbidden_remote,
-                reference_context_loader=lambda: contexts)
+                reference_context_loader=lambda: contexts,
+                reference_document=supplied_document, sql_dialect="sqlite",
+                proposal_validator=lambda query: check_sqlite_candidate(path, query),
+                tool_allowlist=({'inspect_table_context', 'query_databricks'}
+                                if benchmark_instruction else None),
+                agent_instructions=(SQLITE_PROPOSAL_INSTRUCTIONS
+                                    if benchmark_instruction else None))
         except Exception as exc:
             return {**base, "status": "FAIL", "error_type": type(exc).__name__,
                     "stage": "runtime_setup", "remote_executions": 0}
         try:
-            prompt = task["question"]
-            if benchmark_instruction:
-                prompt = ("For this public SQLite benchmark, use the available schema "
-                          "to propose a read-only SQL query through the approval-gated "
-                          "query tool. Do not claim the answer before execution. "
-                          "Question: " + prompt)
-            if supplied_document:
-                prompt += "\n\nTask-supplied reference document:\n" + supplied_document
-            outcome = runtime.submit(prompt)
+            outcome = runtime.submit(task["question"])
             requests = outcome.get("requests") or []
             events = runtime.events()
             calls = [call["name"] for message in events
@@ -122,10 +180,16 @@ def evaluate_task(spider_root: Path, task: dict, model, predictions: Path,
                     if candidate.startswith("```sql") and candidate.endswith("```"):
                         candidate = candidate[6:-3].strip()
                     try:
-                        validate_query(candidate)
+                        validate_query(candidate, dialect="sqlite")
                     except Exception:
                         pass
                     else:
+                        probe = check_sqlite_candidate(path, candidate)
+                        if probe["status"] != "executable":
+                            return {**base, "status": "SQL_INVALID", "probe": probe,
+                                    "agent_status": outcome["status"],
+                                    "remote_executions": 0,
+                                    "elapsed_seconds": round(time.monotonic()-started, 3)}
                         predictions.mkdir(parents=True, exist_ok=True)
                         path = predictions / f"{case_id}.sql"
                         path.write_text(candidate + "\n")
@@ -140,6 +204,8 @@ def evaluate_task(spider_root: Path, task: dict, model, predictions: Path,
                 drafts = [call.get("args", {}) for message in events
                           if isinstance(message, AIMessage) for call in message.tool_calls
                           if call.get("name") == "query_databricks"]
+                draft_probe = (check_sqlite_candidate(path, drafts[-1]["query"])
+                               if drafts and isinstance(drafts[-1].get("query"), str) else None)
                 observations = []
                 for message in events:
                     if not isinstance(message, ToolMessage):
@@ -151,21 +217,43 @@ def evaluate_task(spider_root: Path, task: dict, model, predictions: Path,
                     observations.append({"tool": message.name,
                                          "status": result.get("status"),
                                          "error_code": result.get("error_code")})
+                failure_causes = []
+                if draft_probe and draft_probe['status'] != 'executable':
+                    failure_causes.append(draft_probe['status'])
+                if recovery.get('scope_error'):
+                    failure_causes.append(recovery['scope_error'])
+                if recovery.get('proposal_error'):
+                    failure_causes.append(recovery['proposal_error'])
+                if outcome.get('error_type'):
+                    error_type = str(outcome['error_type'])
+                    failure_causes.append('model_timeout' if 'Timeout' in error_type
+                                          else error_type)
+                if not failure_causes:
+                    failure_causes.append('model_no_output' if not drafts else 'agent_incomplete')
                 return {**base, "status": "NO_SQL_PROPOSAL", "agent_status": outcome.get("status"),
                         "tools": calls, "model_calls": recovery.get("model_calls"),
                         "recovery_attempts": recovery.get("attempts"),
                         "sql_drafts": drafts, "observations": observations,
+                        "draft_probe": draft_probe,
+                        "failure_causes": list(dict.fromkeys(failure_causes)),
                         "remote_executions": 0,
                         "error_type": outcome.get("error_type"),
                         "elapsed_seconds": round(time.monotonic()-started, 3)}
             request = requests[0]
             sql = request["query"].strip()
             from core.analysis_load_plan import source_plan
-            source_plan(request["source"], sql)
+            source_plan(request["source"], sql, dialect="sqlite")
+            probe = check_sqlite_candidate(path, sql)
+            if probe["status"] != "executable":
+                return {**base, "status": "SQL_INVALID", "probe": probe,
+                        "agent_status": outcome["status"], "tools": calls,
+                        "remote_executions": 0,
+                        "elapsed_seconds": round(time.monotonic()-started, 3)}
             predictions.mkdir(parents=True, exist_ok=True)
             (predictions / f"{case_id}.sql").write_text(sql + "\n")
             return {**base, "status": "SQL_PROPOSED", "agent_status": outcome["status"],
                     "prediction": str((predictions / f"{case_id}.sql").resolve()),
+                    "probe": probe,
                     "tools": calls, "schema_tables": len(contexts),
                     "elapsed_seconds": round(time.monotonic()-started, 3),
                     "remote_executions": 0}
