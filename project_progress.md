@@ -2,15 +2,15 @@
 
 ## Current Status
 - **Last Updated**: 2026-09-25
-- **Status**: In Progress — 로컬 단일 사용자 범위 검증, 제한 출시 판정 보류
-- **Summary**: 보호 원본과 승인형 적재, 파일 staging/부분 읽기, 분석 완료 근거·도구 선택을 보강했다. 최신 application 237/237, migration 133/133, 참고/agentic runner 217/217 PASS. 실제 `gemma4:e4b`의 미선택 원본 평균은 도구 집중 전 0/3, 후 3/3 PASS였고, 다른 네 참고 여정과 임의 schema 합성 검사는 결정적 로컬 경로로 PASS했다. 한 질문의 3회 성공만으로 운영 신뢰도를 판정하지 않는다.
-- **Next Session Focus**: [출시 판정](docs/release_readiness_2026-09-24.md)에 따라 사용자가 이미 수행한 `LIMIT 10` 조회의 실행 위치/결과를 확인하고 현재 agent의 승인·후보 발행·후속 분석과 연결되는지 검증한다. 실제 모델 held-out 반복/복구, 동시 메모리 한도와 DeepEval/Spider 공식 평가도 남아 있다. 별도 서버 배포는 이번 범위에서 제외한다.
-- **Current qualification**: 사용자가 `LIMIT 10` 조회 완료를 알려 왔으나 현재 v1 승인 장부에는 같은 SQL의 실행 기록이 없다. 중복 조회하지 않는다. 기존 oracle 87/200은 coverage이며 113개 미채점이다. DeepEval/Spider 공식 점수는 없다. Draft PR #68은 미병합이다.
+- **Status**: In Progress — 로컬 단일 사용자 범위에서도 정식 출시 NO-GO
+- **Summary**: 새 Databricks 토큰으로 인증 API HTTP 200, 실제 웹에서 승인형 10,000행 표본 1회 적재·EDA·재시작·원본 보존을 확인했다. 이번 앱 249/249, migration 133/133, fault-injection 17/17, 대표 실제 런타임 fixture 10/10은 통과했다. 그러나 답변 충실도 `L2_036` GEval 0.5, Spider 공개 SQLite `local009` SQL 제안 실패(237.844초), 실패 턴 재개 한계가 남아 있다. [현 버전 판정](docs/evaluation/2026-09-25_go_decision.md)을 따른다.
+- **Next Session Focus**: SQL 제안·도구 재계획과 필수 답변 필드 검증, 실패 턴 재개를 한 묶음으로 개선한 뒤 고정/held-out 실제 모델 평가와 웹 대화에서 재판정한다. 별도 서버 배포는 사용자 지시에 따라 이번 범위에서 제외한다.
+- **Current qualification**: 기존 oracle 87/200은 coverage이며 113개 미채점이다. DeepEval 도구 이름 10/10은 모델 자율성 점수가 아니며 Spider 공식 EX는 SQL 미제안으로 산출하지 못했다. Draft PR #68은 미병합이다. 승인 없는 신규 Databricks 조회는 실행하지 않는다.
 
 ## Next Action Items
-- [ ] 사용자가 이미 수행한 정확한 `SELECT * FROM workspace.default.bank_loan LIMIT 10`의 실행 위치와 결과를 확인한다. 현재 agent의 승인·후보 발행·후속 로컬 분석 근거로 연결되는지 판정하며 조회를 중복 실행하지 않는다.
-- [ ] 현재 PC의 로컬 단일 사용자 범위에서 저장소 보존·재시작·실제 화면 여정을 재검증한다. 별도 1인용 Linux 호스트 배포는 이번 범위에서 제외한다.
-- [ ] 모델 직접 실행의 다양한 held-out/복구 여정과 지연을 측정하고, 65~78초가 걸린 범주·수치 질문의 도구 선택/계획 경로를 개선한다. 113개 미채점 oracle과 DeepEval/Spider 공식 평가를 별도 완성한다.
+- [x] 사용자의 `LIMIT 10`은 Databricks 화면에서 직접 실행한 것으로 확인했다. 챗봇 승인·저장 검증과 구분했다. 이후 별도의 제품 승인형 `LIMIT 10000` 조회를 1회 완료했다.
+- [x] 현재 PC의 로컬 단일 사용자 범위에서 저장소 보존·재시작·실제 화면 여정을 검증했다. 별도 1인용 Linux 호스트 배포는 이번 범위에서 제외한다.
+- [ ] 모델 직접 실행의 다양한 held-out/복구 여정과 지연을 개선한다. Spider SQL 제안 실패와 답변 필수 필드 누락, 실패 턴 재개를 우선 해결한다. 113개 미채점 oracle과 DeepEval/Spider 확대 평가도 남아 있다.
 - [ ] D07/D08의 전체 로딩 의미 검증·나머지 차트/SQL/통계의 부분 scan·registry 재사용을 P0로 마무리한다. 원격 파일 staging, 출처/결과 구조 검증과 active 원본 선택은 부분 적용했다. T06/T07 및 J21~J24: docs/data_loading_and_preservation_contract_2026-09-24.md.
 - [ ] 코딩 전에 T00~T02 baseline·요구/평가 매핑·독립 acceptance를 확정한다. 상세: docs/data_agent_requirements_and_evaluation_2026-09-24.md.
 - [x] 제품 승인 카드에서 사용자가 승인한 실제 Databricks 조회 → 저장 → 분석 → 후속 질문을 검증했다.
@@ -1654,3 +1654,10 @@ Task definitions and acceptance conditions: docs/agent_remaining_tasks_2026-09-1
 - **Regression found/fix** [Agent: /root]: 재시작 후 `현재 로딩된 10,000행 표본의 age 중앙값` 질문은 원본과 4,442행 파생 표본을 구별하지 못해 모델 경로로 진입했다. 모델 3회 시도와 요약을 거쳐 267.204초에 `ReadTimeout`으로 실패했다. 원격 조회 오류는 아니다. `core/analysis_agent/recovery.py`의 단일 수치 로컬 후보에 명시된 표본 행 수 필터를 추가했다. 임의 스키마·원본/파생 표본 회귀를 `tests/test_analysis_scalar_recovery.py`에 추가했다. 집중 4/4, 분석 테스트 187/187 및 diff check 통과. 실제 미완료 턴 재개 검증 진행 중.
 - **Post-fix web replay** [21:01 KST, Agent: /root]: 이전 실패 턴의 `미완료 분석 재개`는 이전 모델 반복 한도를 이어받아 `exhausted`로 끝났다. 같은 대화에서 동일한 중앙값 질문을 새 턴으로 다시 제출하자 웹 화면에 `중앙값: 39.0`이 표시됐다. 런타임 로그는 `local_analysis_sql` 1회, 모델 0회, 0.283초 완료를 기록했다. 승인 장부는 여전히 `completed` 1건뿐이며 원본 10,000행 Parquet SHA256 `7c4a1c20588261932629087d091d43e1ad2d80f4e36cb3d1acb20eb8462fe10d`가 유지됐다.
 - **Final checks** [Agent: /root]: 앱 전체 unittest 249/249, migration 133/133, 분석 테스트 187/187 및 diff check 통과. localhost:8502 웹 앱은 수정된 코드로 실행 중이다. 이번 실측은 한 테이블의 최대 10,000행 표본과 이어지는 EDA에 한정된다. 전체 테이블 통계·다른 스키마·Spider 공식 EX·운영 호스트 판정까지 검증한 것은 아니다.
+
+## [2026-09-25 21:08:41 KST] [Agent: /root] User Request: 필요한 테스트를 진행하여 현 상태가 GO 가능한지 확인해 달라
+- **Action** [Agent: /root]: 사용자 지시에 따라 별도 서버는 범위에서 제외하고 로컬 단일 사용자 출시 기준을 적용한다. 기존 실측 Databricks 로딩·후속 EDA 증거, 자동 계약/여정 검사, 실제 모델 평가, 실패 복구와 승인 장부를 재점검하여 GO/NO-GO를 판정한다. 새 원격 조회는 별도 승인 없이 실행하지 않는다.
+- **Environment/connection** [Agent: /root]: local-desktop preflight `ready=true`(영속 저장소 경로 경고 1개), Databricks `Me` HTTP 200, Streamlit health `ok`. 실제 웹 대화의 저장 원본 10,000행 및 승인 장부 `completed` 1건을 재확인했다. 신규 SQL 0회.
+- **Contracts and storage** [Agent: /root]: 현재 버전 앱 unittest 249/249, migration 133/133, agentic fault-injection 17/17 통과. 실제 모델 옵션의 preservation 7턴도 원본 불변·oracle 일치·원격 0회로 통과했지만 각 턴 모델 호출은 0회였다. 합성 750,000행·5열 저장/재열기·캐시 격리·중단 복구 통과. 운영 스키마와 out-of-core 분석의 성능 주장은 하지 않는다.
+- **Actual model/DeepEval** [Agent: /root]: 고정 대표 fixture 10/10 독립 oracle PASS. 9문항은 모델 0회, `L1_016` 한 문항만 모델 1회·34.099초. DeepEval 도구 이름 10/10이나 최종 답변 2문항 판정은 `L1_016` 1.0, `L2_036` 0.5다. 후자는 요청한 Q1=98, Q3=1824, IQR=1726을 최종 답변에 적지 않았다.
+- **Spider/decision** [Agent: /root]: 현재 코드의 공개 Spider2-Lite SQLite `local009`는 schema·공식 참고 문서 제공 후 모델 2회, 237.844초에 `exhausted`/SQL 제안 없음. 두 번째 `local221`은 첫 실패 확인 후 중단했으며 이번 실행 결과로 채점하지 않았다. 이전 고정 5개 0/5 제안과 일치한다. 공식 EX는 제출 SQL 부재로 미산출. 사용자 목표인 자율 분석 agent의 정식 출시는 **NO-GO**. 판정과 재검증 조건은 `docs/evaluation/2026-09-25_go_decision.md`에 기록했다.
