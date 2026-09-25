@@ -1675,3 +1675,9 @@ Task definitions and acceptance conditions: docs/agent_remaining_tasks_2026-09-1
 - **Independent checks** [Agent: /root]: 기록된 Gemma SQL과 단순한 OR SELECT를 동일한 `unsupported_disjunction` 범위 계약에 넣으면 모두 `scope_matches=False`; 모델 없이도 agent 범위 검증이 차단함을 확인했다. Gemma SQL을 공개 Spider SQLite 파일에서 읽기 전용 실행하면 `OperationalError: no such function: ST_Y`로 즉시 실패했다. 실제 재생은 모델 4회·복구 1회·249.231초 뒤 blocked, SQL 실행 0회다.
 - **Decision** [Agent: /root]: LLM의 응답 지연/방언 부정확성, agent의 OR 범위 해석/복구 결함, SQLite 과제를 Databricks 도구로 평가하는 adapter 방언 불일치가 복합 원인이다. 원인 비율이나 전체 성공률은 추정하지 않는다. 출시 NO-GO 유지.
 - **Artifact Update** [Agent: /root]: `docs/evaluation/2026-09-25_go_decision.md`에 독립 검사와 원인별 재검증 순서를 기록했다. 신규 Databricks SQL은 실행하지 않았다.
+
+## [2026-09-25 23:02:20 KST] [Agent: /root] User Request: LLM·agent 복합 실패를 어떻게 해결하면 좋을지 제안해 달라
+- **Action** [Agent: /root]: 실제 코드의 의도 범위 표현·SQL 검증·복구 루프 및 Spider 어댑터 경계를 다시 읽고, 안전장치를 유지하는 구조적 해결 순서와 독립 합격 기준을 설계한다.
+- **Finding** [Agent: /root]: `resolve_request_scope()`는 역할이 다른 동일 컬럼의 OR를 표현하지 못하고, `scope_matches()`는 `single_table(tree)`가 없는 조인/CTE SQL을 거절한다. Spider adapter는 SQLite 과제를 Databricks 도구로 제안하게 하고 과제 문서를 사용자 질문에 이어 붙인다. 따라서 OR만 허용하거나 모델만 바꾸는 수정은 충분하지 않다.
+- **Artifact Update** [Agent: /root]: `docs/evaluation/2026-09-25_agent_sql_recovery_plan.md`에 평가 방언/문서 경계, alias-aware 범위 계약, 승인 전 검증과 제한된 복구, 모델 독립 평가, 출시 재판정 조건을 순서대로 기록했다. GO 판정 문서에서 해당 설계를 연결했다.
+- **Outcome** [Agent: /root]: 이번 요청은 설계안과 합격 기준 작성까지 완료. 실행 코드·실제 모델 성능은 바꾸지 않았고 출시 판정은 NO-GO다. Databricks SQL 실행 0회.
