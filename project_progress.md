@@ -1,11 +1,11 @@
 # Project Progress Log
 
 ## Current Status
-- **Last Updated**: 2026-09-25
+- **Last Updated**: 2026-09-26
 - **Status**: In Progress — 로컬 단일 사용자 범위에서도 정식 출시 NO-GO
-- **Summary**: 새 Databricks 토큰으로 인증 API HTTP 200, 실제 웹에서 승인형 10,000행 표본 1회 적재·EDA·재시작·원본 보존을 확인했다. 앱 254/254, migration 133/133, fault-injection 17/17이 통과했다. `L2_036` 답변 GEval은 0.5→1.0으로 개선했고 새 웹 IQR 질문은 모델 0회·0.222초에 독립 계산값과 일치했다. 모델 노드 체크포인트 복구 회귀도 통과했으나 기존 웹 실패 턴의 재개는 실패했다. Spider SQL 제안과 대규모 전체 분석은 미검증이므로 [현 버전 판정](docs/evaluation/2026-09-25_go_decision.md)은 NO-GO다.
-- **Next Session Focus**: 복수 컬럼 OR 조건을 사용자 발화와 SQL AST 양쪽에서 검증 가능하게 표현하고, 실행 시점 스키마 타입·SQL 방언에 맞는 계획/검사/수정 루프를 구축한다. 그 뒤 공식 Spider SQL 실행 정답률과 held-out 웹 여정으로 판정한다. 실패 체크포인트의 실제 UI 재개, 대규모 out-of-core/DB 집계·전송/RSS 실측도 남아 있다. 별도 서버 배포는 사용자 지시에 따라 이번 범위에서 제외한다.
-- **Current qualification**: 기존 oracle 87/200은 coverage이며 113개 미채점이다. DeepEval 도구 이름 10/10은 모델 자율성 점수가 아니며 Spider 공식 EX는 SQL 미제안으로 산출하지 못했다. Draft PR #68은 미병합이다. 승인 없는 신규 Databricks 조회는 실행하지 않는다.
+- **Summary**: 공통 완료 계약 15개, 복합 요청·원본/부분 데이터 구별·도구 인자 오류 피드백·잘못된 수치 채택 차단을 구현했다. 실제 웹의 평균+히스토그램 ReadTimeout 요청을 동일 체크포인트에서 재개해 평균 40.931·10,000행 차트를 표시했다. 원본 SHA256과 승인 1건은 그대로다. 최신 Qwen+production graph 전체 87문항은 78 PASS/9 미완료/0 오답(89.7%)이며 113개는 미채점이다. 앱 284/284, migration 133/133, reference/Level3 217/217 통과. 상세: [완료 계약 검증](docs/evaluation/2026-09-26_completion_gate.md).
+- **Next Session Focus**: 최신 실제 모델 미완료 9문항의 공통 원인인 의도·컬럼·값 의미 연결, 안전한 확인 질문 이후 후속 완료를 개선한다. 공식 Spider의 SQL 방언/조인/기준일, 최종 빌드 신규 승인 적재와 대규모 전송/RSS 실측도 남아 있다. 별도 서버 배포는 제외한다.
+- **Current qualification**: 동일 87문항의 수정 전 82 PASS/4 미완료/1 오답을 최신 점수로 사용하지 않는다. 스키마 의미 미확정 시 확인 질문으로 바뀐 건은 성공으로 계산하지 않는다. 이번 점수는 공식 Spider EX나 DeepEval 점수가 아니다. Draft PR #68은 미병합이며 승인 없는 신규 Databricks SQL 조회는 실행하지 않았다.
 
 ## Next Action Items
 - [x] 사용자의 `LIMIT 10`은 Databricks 화면에서 직접 실행한 것으로 확인했다. 챗봇 승인·저장 검증과 구분했다. 이후 별도의 제품 승인형 `LIMIT 10000` 조회를 1회 완료했다.
@@ -1709,3 +1709,13 @@ Task definitions and acceptance conditions: docs/agent_remaining_tasks_2026-09-1
 - **Finding** [Agent: /root]: 설계 리뷰 R04는 공통 Observation·최종 완료 validator와 모든 기능의 동일 인터페이스를 요구하지만 실제 `RecoveryMiddleware`는 약 3,462행의 기능별 조건문이다. 이전 커밋에서 `group_summary_requested`·`group_summary_evidence` 필드는 설정돼도 dispatcher·observation 채택·완료·답변에는 전혀 사용되지 않았다. 당시 그룹 요약 테스트 3개는 계산 도구만 직접 검사했고 실제 graph 여정은 없었다. 2026-09-24의 `PRES_02`도 ready 집계 결과를 완료 판정이 놓쳐 exhausted가 된 동일 유형이었다. 이전에 국소 수정하고 공통 등록/완료 계약으로 일반화하지 못한 것이 반복 원인이다.
 - **Artifact Update** [Agent: /root]: `docs/evaluation/2026-09-26_go_recheck.md`에 설계→구현→검증 단절의 사후 분석과 공통 기능 등록·실제 graph/모델 게이트를 재발 방지 우선순위로 기록했다.
 - **Outcome** [Agent: /root]: LangChain graph loop의 존재만으로 자율 복구가 보장되지 않는다. 모델의 잘못된 도구·SQL 선택과 agent의 미완료 복구는 별도 결함이며, 반복 한도는 증상이다. 이번 질문은 원인 진단이며 새 코드·원격 데이터 조회는 수행하지 않았다. 공통 기능 계약 개편은 미완료로 남긴다.
+
+## [2026-09-26 07:45:56 KST] [Agent: /root] User Request: GO 할 수 있도록 공통 구조 보강과 검증을 계속 진행해 달라
+- **Action** [Agent: /root]: 완료 의무·검증 근거·사용자 산출물의 공통 계약을 실행 경로에 연결하고 누락/오류/후속 요청 회귀 및 실제 모델 검증을 수행한다. 기존 Databricks 재조회 승인과 원본 보존 계약을 유지한다.
+
+- **Implementation** [Agent: /root]: 15개 공통 완료 계약과 결과 renderer를 분리하고 복합 요청 조기 완료·비검증 모델 문장 fallback을 차단했다. 정확한 보유 원본 선택, 모델 노드에서 로컬 차트 재개, JSON Schema 도구 인자 오류의 구체적 피드백을 구현했다.
+- **Actual web recovery** [Agent: /root]: 실제 age 평균+히스토그램 복합 요청의 ReadTimeout 체크포인트를 재시작 후 UI 버튼으로 재개했다. 평균 40.931·10,000행 히스토그램, 7.755초·새 모델 호출 0회, 승인 장부 1건 유지·원본 SHA256 불변을 확인했다.
+- **Evaluation** [Agent: /root]: Qwen provider 전체 87개 독립 oracle 문항 첫 실행은 82 PASS/4 NOT_COMPLETE/1 FAIL. 이전 결과 조건을 다른 컬럼으로 바꾸는 오답을 발견해 미확정 분석 대상의 수치 채택을 차단했다. 최종 수정본 전체 87개 재평가 진행 중이며 성공률을 확정하지 않는다. 실제 모델 잘못된 ID 복구는 2회 추론·3.504초·정답9.0·원본 불변으로 통과했다.
+- **Artifact Update**: docs/evaluation/2026-09-26_completion_gate.md에 수정 범위·실패 재현·실 웹 복구·실제 모델 평가와 남은 GO 게이트를 기록했다.
+
+- **Final evaluation** [Agent: /root]: 전체 87개 재실행 78 PASS/9 NOT_COMPLETE/0 FAIL. 합격이 아닌 확인 질문을 통과로 처리하지 않는다. 최종 앱 284/284, migration 133/133, reference/Level3 217/217과 compile·diff·pip 검사 통과. 정식 GO는 보류하며 docs/evaluation/2026-09-26_completion_scores.json에 전체 분모·문항별 결과·지연·모델 호출 수를 보존했다.

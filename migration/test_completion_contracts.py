@@ -45,7 +45,8 @@ class CompletionTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as root:
             r = GraphAnalysisRuntime(root, 'owner', 'fake-number', ScriptModel())
             result = r.submit('보유 데이터의 평균을 계산해줘')
-            self.assertEqual(result['status'], 'exhausted')
+            self.assertEqual(result['status'], 'blocked')
+            self.assertEqual(r.inspect()['recovery']['stop_reason'], 'analysis_target_unresolved')
             self.assertNotIn('999', result['text'])
             self.assertEqual(r.inspect()['recovery']['attempts'], 2)
             r.close()

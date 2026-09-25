@@ -3,7 +3,7 @@
 No Databricks executor is connected or approved. Fixtures are preloaded in a fresh
 temporary scope per question. This measures local analysis, not live DB access,
 browser rendering, conversation continuity, or final-prose factual consistency.
-Only --live-local-model makes model calls; --list/--all without it reports coverage.
+Only --live-local-model or --live-model makes model calls; otherwise report coverage.
 """
 from __future__ import annotations
 
@@ -1408,7 +1408,8 @@ def preserve_runtime_metadata(runtime, spec, artifact_dir=None):
         handler.flush()
     fields = {"time", "event", "run_id", "error_id", "stage", "error_type", "http_status",
               "frames", "tool", "status", "elapsed_seconds", "span_id", "characters", "limit",
-              "attempts", "operation", "missing_chart"}
+              "attempts", "operation", "missing_chart", "required_capabilities",
+              "missing_capabilities", "capability"}
     diagnostics = []
     for line in runtime.diagnostics.path.read_text().splitlines():
         try:
@@ -1581,11 +1582,19 @@ def main(argv=None):
     choice.add_argument("--id", action="append", help="Reference ID; may be repeated")
     choice.add_argument("--all", action="store_true", help="Include all references; unsupported cases remain UNGRADED")
     parser.add_argument("--list", action="store_true", help="List support status without model calls")
-    parser.add_argument("--live-local-model", action="store_true", help="Run actual configured localhost ChatOllama")
+    live = parser.add_mutually_exclusive_group()
+    live.add_argument("--live-local-model", action="store_true", help="Run actual configured localhost ChatOllama (legacy flag)")
+    live.add_argument("--live-model", action="store_true", help="Run actual configured model on synthetic fixtures")
+    parser.add_argument("--provider", choices=("ollama", "databricks"), default="ollama",
+                        help="Databricks serving is metered; SQL execution remains disconnected")
     parser.add_argument("--include-final-output", action="store_true",
                         help="Include fixture-only assistant text for local judge evaluation; output may contain fixture rows")
     parser.add_argument("--output", type=Path, default=ROOT / "docs/actual_agent_evaluation.json")
     args = parser.parse_args(argv)
+    if args.live_local_model and args.provider != "ollama":
+        parser.error("--live-local-model requires --provider ollama")
+    live_run = args.live_local_model or args.live_model
+    mode = "live-local-model" if args.provider == "ollama" else "live-databricks-model"
     specs, grading = load_specs(), load_grading()
     selected = specs if args.all or args.list else [spec for spec in specs if spec["id"] in (args.id or grading)]
     unknown = set(args.id or ()) - {spec["id"] for spec in specs}
@@ -1595,23 +1604,24 @@ def main(argv=None):
         for spec in selected:
             print(f"{spec['id']}\t{grading.get(spec['id'], {}).get('kind', 'UNGRADED')}\t{spec['prompt']}")
         return 0
-    if not args.live_local_model:
+    if not live_run:
         results = [{"id": spec["id"], "status": "NOT_RUN" if spec["id"] in grading else "UNGRADED"}
                    for spec in selected]
         report = build_report(results, specs, grading, "coverage-only")
     else:
         from dotenv import load_dotenv
-        from langchain_ollama import ChatOllama
+        from core.analysis_agent.model_provider import build_analysis_chat_model
+        from core.analysis_agent.policy import RuntimePolicy
         load_dotenv(ROOT / ".env")
         endpoint = os.getenv("OLLAMA_BASE_URL", "http://localhost:11434")
-        if urlparse(endpoint).hostname not in {"localhost", "127.0.0.1", "::1"}:
+        if args.provider == "ollama" and urlparse(endpoint).hostname not in {"localhost", "127.0.0.1", "::1"}:
             parser.error("Live fixture evaluation permits only a localhost Ollama endpoint")
         # Fixture data and model reasoning must not be shipped to a tracing backend.
         os.environ["LANGSMITH_TRACING"] = "false"
         os.environ["LANGCHAIN_TRACING_V2"] = "false"
-        model_name = os.getenv("OLLAMA_MODEL", "gemma4:e4b")
-        model = ChatOllama(model=model_name, base_url=endpoint, reasoning=True,
-            temperature=0, num_ctx=16384, num_predict=4096, client_kwargs={"timeout": 60})
+        model_name = (os.getenv("OLLAMA_MODEL", "gemma4:e4b") if args.provider == "ollama"
+                      else os.getenv("TELLY_DATABRICKS_MODEL", "databricks-qwen3-next-80b-a3b-instruct"))
+        model = build_analysis_chat_model(RuntimePolicy(model_timeout_seconds=60), provider=args.provider)
         results, frames = [], load_frames()
         for spec in selected:
             try:
@@ -1625,14 +1635,14 @@ def main(argv=None):
             print(json.dumps({k: result[k] for k in ("id", "status", "elapsed_seconds") if k in result}), flush=True)
             # Keep partial failures visible if a later model request is interrupted.
             args.output.parent.mkdir(parents=True, exist_ok=True)
-            args.output.write_text(json.dumps(build_report(results, specs, grading, "live-local-model", model_name),
+            args.output.write_text(json.dumps(build_report(results, specs, grading, mode, model_name),
                                              ensure_ascii=False, indent=2) + "\n")
-        report = build_report(results, specs, grading, "live-local-model", model_name)
+        report = build_report(results, specs, grading, mode, model_name)
     args.output.parent.mkdir(parents=True, exist_ok=True)
     args.output.write_text(json.dumps(report, ensure_ascii=False, indent=2) + "\n")
     print(json.dumps(report["coverage"], ensure_ascii=False))
     print(f"Report: {args.output}")
-    if not args.live_local_model:
+    if not live_run:
         return 0
     return evaluation_exit_status(results)
 

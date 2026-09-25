@@ -11,6 +11,8 @@ from langchain.agents.middleware import AgentMiddleware, AgentState, hook_config
 from langchain_core.messages import AIMessage, ToolMessage, SystemMessage, RemoveMessage
 
 from core.analysis_agent.failure_messages import remote_failure_message
+from core.analysis_agent.completion import (active_contracts, completion_ready,
+    missing_contracts, recovery_instruction, render_completion, CompletionOutputError)
 from core.analysis_agent.memory import latest_user_request
 from core.analysis_agent.intent_scope import resolve_request_scope, scope_matches, measure_scope_matches
 from utils.analysis_datasets import preview_dataset, project_dataset, stored_dataset_digest
@@ -604,7 +606,8 @@ class RecoveryMiddleware(AgentMiddleware):
                 expected_load_source=human.additional_kwargs.get('source','') if data_load else '',
                 expected_load_query=human.additional_kwargs.get('query','') if data_load else '',
                 whole_row_count=bool(re.search(
-                    r'전체\s*(?:행|레코드|데이터)(?:의)?\s*(?:수|개수)|총\s*(?:데이터\s*)?(?:행|레코드)\s*(?:수|개수)', text)),
+                    r'전체\s*(?:행|레코드|데이터)(?:의)?\s*(?:수|개수)|총\s*(?:데이터\s*)?(?:행|레코드)\s*(?:수|개수)', text) or re.fullmatch(
+                    r'(?:전체\s*)?(?:개수|건수|행\s*수)\s*(?:계산|알려줘|세어줘)?[.!?]?', text.strip())),
                 current_result_only=bool(current_loaded_reference or re.search(
                     r'(?:현재|보유|지금|이|그)\s*(?:로딩된\s*)?(?:[\d,]+\s*행\s*)?(?:결과|표본|샘플|데이터)|'
                     r'(?<!독립)(?<!대응)표본(?!\s*(?:평균|분산|크기|수))|샘플|일부\s*데이터', text)),
@@ -1607,6 +1610,32 @@ class RecoveryMiddleware(AgentMiddleware):
         except (ValueError, TypeError, sqlglot.errors.SqlglotError):
             return source
 
+    def _requested_dataset_candidates(self, candidates, current):
+        """Resolve explicit retained sample identity before treating copies as ambiguous."""
+        if not current.get('current_result_only'):
+            return candidates
+        rows = current.get('requested_result_rows')
+        if rows is not None:
+            def matches_loaded_size(info):
+                if info.rows == rows:
+                    return True
+                # A LIMIT is an upper bound: the approved root may legitimately
+                # contain fewer rows. A derived subset cannot inherit this identity.
+                if info.parent_id or info.parent_ids or not info.query or info.rows > rows:
+                    return False
+                try:
+                    import sqlglot
+                    tree = sqlglot.parse_one(info.query, read=self.sql_dialect)
+                    limit = tree.args.get('limit')
+                    return limit is not None and int(limit.expression.name) == rows
+                except (ValueError, TypeError, AttributeError, sqlglot.errors.SqlglotError):
+                    return False
+            candidates = [info for info in candidates if matches_loaded_size(info)]
+        selected = self.context.selected_dataset_id if self.context else None
+        if selected and any(info.id == selected for info in candidates):
+            return [info for info in candidates if info.id == selected]
+        return candidates
+
     def _valid_card(self, card, current, dataset_id):
         if not card.image.startswith(b'\x89PNG\r\n\x1a\n'): return False
         if card.dataset_id != dataset_id: return False
@@ -1627,6 +1656,8 @@ class RecoveryMiddleware(AgentMiddleware):
         if self.context:
             info = self.context.datasets.metadata.get(card.dataset_id)
             if info is None or not self._source_matches(info, current): return False
+            if (not self._has_scope(current)
+                    and not self._requested_dataset_candidates([info], current)): return False
             if not self._fresh_for_request(info, current): return False
             value_column = card.columns[0] if card.kind == 'histogram' and len(card.columns) == 1 else None
             if card.kind == 'boxplot' and len(card.columns) == 2:
@@ -1667,6 +1698,11 @@ class RecoveryMiddleware(AgentMiddleware):
         return True
 
     def _valid_calculation(self, dataset_id, arguments, current):
+        # A model-selected column is not independent evidence of intent. An
+        # unbound qualified count must not become a count of some other outcome.
+        if (not current.get('required_columns') and not current.get('whole_row_count')
+                and not current.get('outlier_followup')):
+            return False
         if not self.context or dataset_id not in self.context.datasets.metadata: return False
         info = self.context.datasets.metadata[dataset_id]
         if not self._source_matches(info, current): return False
@@ -1693,6 +1729,7 @@ class RecoveryMiddleware(AgentMiddleware):
             columns = {c.name for c in tree.find_all(exp.Column)}
             condition_columns = {condition.column for condition in info.conditions}
             lineage_columns = set(info.columns)
+            parent_dtypes = {}
             if self.context:
                 pending = list(getattr(info, 'parent_ids', ()) or (() if not info.parent_id else (info.parent_id,)))
                 visited = set()
@@ -1704,10 +1741,25 @@ class RecoveryMiddleware(AgentMiddleware):
                     parent = self.context.datasets.metadata.get(parent_id)
                     if parent is None:
                         continue
-                    lineage_columns.update(parent.columns)
+                    if hasattr(self.context.datasets, 'inspect'):
+                        parent_dtypes.update(self.context.datasets.inspect(parent_id).get('dtypes', {}))
+                    # Merely existing in the original schema does not prove
+                    # this column participated in the executed calculation.
+                    lineage_columns.update(condition.column for condition in parent.conditions)
+                    if parent.query:
+                        parent_tree = sqlglot.parse_one(parent.query,
+                            read='duckdb' if parent.parent_id else 'databricks')
+                        lineage_columns.update(c.name for c in parent_tree.find_all(exp.Column))
                     pending.extend(getattr(parent, 'parent_ids', ()) or
                                    (() if not parent.parent_id else (parent.parent_id,)))
-            if not set(current.get('required_columns', [])).issubset(columns | lineage_columns | condition_columns): return False
+            required = set(current.get('required_columns', []))
+            if requested_operations and requested_operations.issubset({'AVG', 'MEDIAN', 'SUM', 'MIN', 'MAX'}):
+                # A compound human label can also mention a categorical field
+                # (e.g. an identifier modifying a numeric charge). Known text
+                # fields cannot be the measure of a numeric scalar operation.
+                required = {name for name in required
+                            if _dtype_family(parent_dtypes.get(name)) != 'categorical'}
+            if not required.issubset(columns | lineage_columns | condition_columns): return False
             if current.get('calculation') and not operations and not tree.find(exp.Div): return False
         except (ValueError, TypeError):
             return False
@@ -1716,279 +1768,10 @@ class RecoveryMiddleware(AgentMiddleware):
         return True
 
     def _complete(self, current):
-        if current.get('data_load'): return bool(current.get('load_evidence_id'))
-        if current.get('preview_limit'): return bool(current.get('preview_evidence'))
-        if current.get('pivot_requested') and not current.get('pivot_evidence'): return False
-        if current.get('group_summary_requested') and not current.get('group_summary_evidence'): return False
-        if current.get('count_rate_layout') and not current.get('count_rate_evidence'): return False
-        if current.get('join') and not current.get('join_evidence'): return False
-        if current.get('time_series_frequency') and not current.get('time_series_evidence'): return False
-        if current.get('statistical_kind') and not current.get('statistical_evidence'): return False
-        if current.get('winsor_spec') and not current.get('winsor_evidence'): return False
-        if current.get('outlier_spec') and not current.get('outlier_evidence'): return False
-        if current.get('outlier_aggregate_requested'):
-            evidence = current.get('outlier_aggregate_evidence', {})
-            required_key = ('comparison' if current.get('outlier_aggregate_mode') == 'grouped_comparison'
-                            else 'grouped')
-            if required_key not in evidence: return False
-            if (current.get('outlier_aggregate_mode') == 'top_frequency'
-                    and current.get('outlier_metric_aggregation') and 'overall' not in evidence):
-                return False
-        if current.get('metadata_kind') and not current.get('metadata_evidence'): return False
-        if current.get('profile_kind') and not current.get('profile_evidence'): return False
-        if current.get('chart') and not current['artifact_ids']: return False
-        if current.get('calculation') and not current['evidence_ids']: return False
-        if current.get('chart') or current.get('calculation') or current.get('group_summary_requested'): return True
-        return not current['failed']
+        return completion_ready(current)
 
     def _answer(self, current):
-        parts = []
-        if current.get('preview_evidence'):
-            evidence = current['preview_evidence']
-            values = evidence['values']
-            parts.append(
-                f"보유된 {evidence['source']} 데이터의 `{evidence['column']}` 앞 "
-                f"{len(values)}개 값입니다 (전체 {evidence['total_rows']:,}행 중 저장된 미리보기).\n"
-                + ('\n'.join(f'{index}. {value}' for index, value in enumerate(values, 1))
-                   if values else '보유 데이터에 행이 없습니다.')
-                + '\n문자열 값은 미리보기 저장 시 표시 길이가 제한될 수 있습니다.')
-        if current.get('data_load') and current.get('load_evidence_id') and self.context:
-            info=self.context.datasets.metadata[current['load_evidence_id']]
-            parts.append(f'승인한 조회로 {info.source} 데이터 {info.rows:,}행, {len(info.columns):,}열을 불러와 저장했습니다. '
-                '이 결과는 구조와 예시 확인용 범위이며 전체 통계로 간주하지 않습니다.\n'
-                +'컬럼: '+', '.join(info.columns))
-        if current.get('metadata_evidence'):
-            metadata = current['metadata_evidence']
-            origin = ('승인 후 로딩된 실제 결과' if metadata.get('authority') == 'approved_select_star_result'
-                      else '확인된 스키마 스냅샷')
-            changed = ' 이전 스냅샷과 컬럼 구성이 달라 새 스키마를 사용했습니다.' if metadata.get('schema_changed') else ''
-            kind = metadata.get('kind', 'columns')
-            if kind == 'dtypes':
-                parts.append(f"{origin} 기준으로 {metadata['table']}의 컬럼별 데이터 타입입니다.{changed}\n"
-                             + '\n'.join(f"{column['name']}: {column['dtype']}" for column in metadata['schema']))
-            elif kind in {'numeric_columns', 'categorical_columns'}:
-                label = '수치형' if kind == 'numeric_columns' else '문자열/범주형'
-                selected = metadata.get('selected_columns', [])
-                parts.append(f"{origin} 기준으로 {metadata['table']}의 {label} 컬럼은 {len(selected)}개입니다.{changed}\n"
-                             + (', '.join(selected) if selected else '해당 컬럼이 없습니다.'))
-            else:
-                parts.append(f"{origin} 기준으로 {metadata['table']}에는 컬럼이 {len(metadata['columns'])}개 있습니다.{changed}\n"
-                             + ', '.join(metadata['columns']))
-        if current.get('profile_evidence'):
-            evidence = current['profile_evidence']
-            profile = evidence['profile']
-            kind = current.get('profile_kind')
-            columns = profile.get('columns', [])
-            parts.append(f"보유 데이터 프로파일 결과입니다. 출처: {profile.get('source')}\n분석 범위: {evidence.get('scope')}")
-            if kind == 'missing':
-                parts.append('\n'.join(
-                    f"{column['name']}: 결측 {column['null_count']:,}건 ({column['null_ratio_pct']}%)"
-                    for column in columns))
-            elif kind == 'distinct':
-                parts.append('\n'.join(
-                    f"{column['name']}: 고유값 {column['distinct_count']:,}개"
-                    for column in columns))
-            else:
-                lines = [f"행 {profile.get('rows', 0):,}개, 컬럼 {profile.get('column_count', 0):,}개"]
-                for column in columns:
-                    summary = column.get('numeric_summary')
-                    if summary:
-                        lines.append(
-                            f"{column['name']}: 평균 {summary['mean']}, 중앙값 {summary['median']}, "
-                            f"최솟값 {summary['min']}, 최댓값 {summary['max']}, 결측 {column['null_count']:,}건")
-                    else:
-                        lines.append(
-                            f"{column['name']}: 고유값 {column['distinct_count']:,}개, 결측 {column['null_count']:,}건")
-                parts.append('\n'.join(lines))
-            if profile.get('column_page', {}).get('has_more'):
-                parts.append('컬럼이 많아 이번 응답에는 일부 컬럼만 포함했습니다.')
-        if current.get('join_evidence') and self.context:
-            evidence = current['join_evidence']
-            summary = evidence['summary']
-            info = self.context.datasets.metadata[evidence['dataset_id']]
-            parts.append(
-                f"보유 dataset 두 개를 {summary['how']} join해 {info.rows:,}행, {len(info.columns):,}열의 결과를 저장했습니다.\n"
-                f"cardinality: {summary['relationship']}; key 일치 {summary['matched_distinct_keys']:,}개; "
-                f"미일치 왼쪽 {summary['unmatched_left_rows']:,}행, 오른쪽 {summary['unmatched_right_rows']:,}행; "
-                f"NULL key 왼쪽 {summary['left_null_key_rows']:,}행, 오른쪽 {summary['right_null_key_rows']:,}행.\n"
-                f"분석 범위: {evidence.get('scope')}"
-            )
-        if current.get('time_series_evidence'):
-            evidence = current['time_series_evidence']
-            result = evidence['time_series_result']
-            line = (
-                f"{result['time_column']}을 {result['frequency']} 단위로 준비했습니다. "
-                f"{result['aggregation']} 집계 {result['output_rows']:,}행, "
-                f"timezone {result['timezone']}입니다.\n"
-                f"사용 {result['complete_rows']:,}행, 제외 {result['dropped_rows']:,}행, "
-                f"중복 시각 관측 {result['duplicate_time_rows']:,}행, "
-                f"추가한 빈 구간 {result['gap_rows_added']:,}행(gap policy: {result['gap_policy']})."
-            )
-            if result.get('group_column'):
-                line += f"\n{result['group_column']} 기준 {result['group_count']:,}개 series를 분리했습니다."
-            line += f"\n기간: {result['start']} ~ {result['end']}.\n분석 범위: {evidence.get('scope')}"
-            parts.append(line)
-        if current.get('statistical_evidence'):
-            evidence = current['statistical_evidence']
-            result = evidence['test_result']
-            sample = result['sample']
-            line = (
-                f"{result['method']} 결과입니다. 사용 {sample['complete_rows']:,}행, "
-                f"결측 제외 {sample['dropped_rows']:,}행."
-            )
-            if result.get('statistic') is not None:
-                line += f"\n통계량: {result['statistic']}; 자유도: {result.get('degrees_of_freedom')}; p-value: {result.get('p_value')}."
-                line += (f" alpha={result['alpha']} 기준으로 귀무가설을 기각합니다."
-                         if result.get('significant') else
-                         f" alpha={result['alpha']} 기준으로 귀무가설을 기각할 근거가 부족합니다.")
-            if result.get('estimate'):
-                line += f"\n추정값({result['estimate']['name']}): {result['estimate']['value']}."
-            if result.get('effect_size'):
-                effect = result['effect_size']
-                line += f"\n효과크기({effect['name']}): {effect.get('value')}."
-            if result.get('confidence_intervals'):
-                intervals = result['confidence_intervals']
-                first = intervals[0]
-                line += (f"\n{first.get('level', 1-result['alpha']):.1%} 신뢰구간"
-                         f"({first['parameter']}): [{first['lower']}, {first['upper']}].")
-                if len(intervals) > 1:
-                    line += f" 추가 신뢰구간 {len(intervals)-1}개는 구조화 결과에 보존했습니다."
-            if result.get('warnings'):
-                line += "\n주의: " + " ".join(result['warnings'])
-            if result.get('kind') == 'paired_t':
-                line += "\n행 단위 쌍이 동일 관측 단위인지 데이터만으로 검증할 수 없습니다."
-            else:
-                line += "\n관측치 독립성은 데이터만으로 검증할 수 없습니다."
-            line += f"\n분석 범위: {evidence.get('scope')}"
-            parts.append(line)
-        if current.get('winsor_evidence'):
-            evidence = current['winsor_evidence']
-            result = evidence['winsorization_result']
-            sample = result['sample']
-            clipped = result['clipped_counts']
-            line = (
-                f"{result['column']}에 하위 {result['parameters']['lower_quantile']:.2%}, "
-                f"상위 {1-result['parameters']['upper_quantile']:.2%} 윈저화를 적용해 비교했습니다. "
-                f"유효값 {sample['valid_rows']:,}개, 결측 제외 {sample['missing_rows']:,}개.\n"
-                f"경계: {result['thresholds']['lower']} ~ {result['thresholds']['upper']}; "
-                f"하한 clip {clipped['lower']:,}개, 상한 clip {clipped['upper']:,}개.\n"
-                f"원본 평균 {result['original']['mean']}, 보정 평균 {result['winsorized']['mean']}, "
-                f"평균 변화 {result['mean_change']}.\n분석 범위: {evidence.get('scope')}"
-            )
-            if result.get('warnings'):
-                line += "\n주의: " + " ".join(result['warnings'])
-            parts.append(line)
-        if current.get('pivot_evidence') and self.context:
-            evidence = current['pivot_evidence']
-            result = evidence['pivot_result']
-            dataset_id = evidence['dataset']['id']
-            preview = preview_dataset(self.context.datasets, dataset_id)
-            result_rows = self.context.datasets.metadata[dataset_id].rows
-            line = (
-                f"{', '.join(result['index_columns'])} 행 축과 "
-                f"{', '.join(result['column_columns'])} 열 축으로 "
-                f"{result['aggregation']} 피벗 표를 만들었습니다. "
-                f"조건 적용 {result['filtered_rows']:,}행, 완전한 관측값 "
-                f"{result['complete_rows']:,}행, 결과 {result['output_rows']:,}행 × "
-                f"{result['output_columns']:,}열입니다."
-            )
-            if result.get('margins'):
-                line += f" 행·열 총계는 {result['margins_name']}으로 표시했습니다."
-            line += ('\n```csv\n' + preview.to_csv(index=False).strip()
-                     + '\n```\n분석 범위: ' + str(evidence.get('scope', '')))
-            if result_rows > 15:
-                line += f"\n총 {result_rows:,}행 중 앞 15행입니다. 전체 결과는 저장된 데이터에서 확인할 수 있습니다."
-            parts.append(line)
-        if current.get('group_summary_evidence') and self.context:
-            evidence = current['group_summary_evidence']
-            result = evidence['group_summary_result']
-            dataset_id = evidence['dataset']['id']
-            preview = preview_dataset(self.context.datasets, dataset_id)
-            line = (
-                f"{', '.join(result['group_columns'])}별 {len(result['metrics'])}개 지표를 계산했습니다. "
-                f"원본 {result['source_rows']:,}행, 조건 적용 {result['filtered_rows']:,}행, "
-                f"그룹 키 결측 제외 {result['group_input_rows']:,}행, "
-                f"결과 {result['output_rows']:,}행입니다.\n"
-                + '```csv\n' + preview.to_csv(index=False).strip() + '\n```'
-                + '\n분석 범위: ' + str(evidence.get('scope', '')))
-            if result['output_rows'] > 15:
-                line += f"\n총 {result['output_rows']:,}행 중 앞 15행입니다. 전체 결과는 저장된 데이터에서 확인할 수 있습니다."
-            parts.append(line)
-        if current.get('outlier_evidence'):
-            evidence = current['outlier_evidence']
-            result = evidence['outlier_result']
-            sample, counts = result['sample'], result['counts']
-            thresholds, distribution = result['thresholds'], result['distribution']
-            line = (
-                f"{result['column']}에 {result['method']} {result['tail']} 기준을 적용했습니다. "
-                f"유효값 {sample['valid_rows']:,}개, 결측 제외 {sample['missing_rows']:,}개.\n"
-                f"하한 {thresholds['lower']}, 상한 {thresholds['upper']}; "
-                f"선택된 이상치 {counts['selected']:,}개 ({counts['selected_percent']:.2f}%).\n"
-                f"전체 유효값 범위: {distribution['minimum']} ~ {distribution['maximum']}; "
-                f"하한 미만 {counts['lower']:,}개, 상한 초과 {counts['upper']:,}개."
-            )
-            if result['method'] == 'iqr':
-                parameters = result['parameters']
-                line += (f"\nQ1: {parameters['q1']}; Q3: {parameters['q3']}; "
-                         f"IQR(Q3 − Q1): {parameters['iqr']}.")
-            if result.get('warnings'):
-                line += "\n주의: " + " ".join(result['warnings'])
-            line += f"\n분석 범위: {evidence.get('scope')}"
-            parts.append(line)
-        for evidence_key in ('overall', 'grouped'):
-            evidence = current.get('outlier_aggregate_evidence', {}).get(evidence_key)
-            if not evidence:
-                continue
-            result = evidence['aggregation_result']
-            label = 'cohort 전체 집계' if evidence_key == 'overall' else 'cohort 그룹 집계'
-            parts.append(
-                f"{label}: {result['aggregation']}"
-                + (f"({result['value_column']})" if result.get('value_column') else "(*)")
-                + (f" by {result['group_column']}" if result.get('group_column') else "")
-                + f" · 완전한 관측값 {result['complete_rows']:,}행 · 제외 {result['dropped_rows']:,}행\n"
-                + '```csv\n'
-                + preview_dataset(self.context.datasets, evidence['dataset']['id']).to_csv(index=False).strip()
-                + '\n```\n분석 범위: ' + str(evidence.get('scope', ''))
-            )
-        comparison = current.get('outlier_aggregate_evidence', {}).get('comparison')
-        if comparison:
-            result = comparison['comparison_result']
-            parts.append(
-                f"원본 전체와 cohort의 그룹 집계 비교: {result['aggregation']}"
-                + (f"({result['value_column']})" if result.get('value_column') else "(*)")
-                + f" by {result['group_column']} · 기준 {result['baseline_complete_rows']:,}행 · "
-                + f"cohort {result['cohort_complete_rows']:,}행\n"
-                + '```csv\n'
-                + preview_dataset(self.context.datasets, comparison['dataset']['id']).to_csv(index=False).strip()
-                + '\n```\n분석 범위: ' + str(comparison.get('scope', ''))
-            )
-        for card_id in current.get('artifact_ids', []):
-            card = self.artifacts[card_id]
-            parts.append(f'{card.title} 이미지를 생성했습니다.\n분석 범위: {card.scope}')
-        if current.get('calculation') and current.get('evidence_ids'):
-            info = self.context.datasets.metadata[current['evidence_ids'][-1]]
-            preview = preview_dataset(self.context.datasets, info.id)
-            scope = '요청 조건에 포함된 보유 데이터 전체' if info.coverage == 'complete' else '현재 보유한 일부 데이터'
-            parts.append(f'보유 데이터로 계산한 결과입니다. 출처: {info.source}\n분석 범위: {scope}')
-            requested_conditions=current.get('scope',{}).get('conditions',[])
-            any_conditions=current.get('scope',{}).get('any_conditions',[])
-            if requested_conditions or any_conditions:
-                ops = {'eq':'=', 'ne':'≠', 'gt':'>', 'ge':'≥', 'lt':'<', 'le':'≤', 'in':'포함'}
-                conjunction=' AND '.join(f"{c['column']} {ops[c['op']]} {c['value']}" for c in requested_conditions)
-                disjunction=' OR '.join(f"{c['column']} {ops[c['op']]} {c['value']}" for c in any_conditions)
-                rendered=' AND '.join(item for item in (conjunction, '('+disjunction+')' if disjunction else '') if item)
-                parts.append('적용 조건: '+rendered)
-            # Never publish unchecked numbers from the model as computed results.
-            if info.rows == 1 and len(info.columns) == 1:
-                labels = {'AVG':'평균', 'MEDIAN':'중앙값', 'SUM':'합계', 'COUNT':'건수', 'MIN':'최솟값', 'MAX':'최댓값', 'CORR':'피어슨 상관계수',
-                          'RATIO':'비율(%)'}
-                operations = current.get('operations', [])
-                label = labels.get(operations[0], preview.columns[0]) if len(operations) == 1 else preview.columns[0]
-                parts.append(f'{label}: {preview.iloc[0, 0]}')
-            else:
-                parts.append('```csv\n' + preview.to_csv(index=False).strip() + '\n```')
-            if info.rows > 15: parts.append(f'총 {info.rows}행 중 앞 15행입니다. 전체 결과는 저장된 데이터에서 확인할 수 있습니다.')
-        return '\n\n'.join(parts)
+        return render_completion(self, current)
 
     def _limit_reason(self, current):
         if current['model_calls'] >= self.max_model_calls: return 'model_call_budget'
@@ -1998,11 +1781,23 @@ class RecoveryMiddleware(AgentMiddleware):
         return None
 
     def _finish(self, current, last=None, reason=None):
+        # Every exit path must enforce the same conjunction of obligations.
+        if reason is None and not self._complete(current):
+            reason = 'missing_evidence'
+        rendered = ''
+        if reason is None:
+            try:
+                rendered = self._answer(current)
+            except CompletionOutputError as error:
+                reason = 'completion_output_missing'
+                self.diagnostics.emit('completion_output_failed',
+                    request_id=current.get('request_id'), capability=error.capability,
+                    error_type=error.error_type)
         success = reason is None
         remote_block = current.get('remote_rejected') or any(o.get('status') == 'unavailable' for o in current['failed'].values())
         current['status'] = 'complete' if success else ('blocked' if remote_block else 'exhausted')
         current['stop_reason'] = reason
-        text = self._answer(current) if success else remote_failure_message(current['failed'].values(), current.get('remote_rejected', False))
+        text = rendered if success else remote_failure_message(current['failed'].values(), current.get('remote_rejected', False))
         if not success and not remote_block and reason not in {'missing_evidence', 'unresolved_failure'}:
             text = '반복 실행 한도에 도달해 분석을 중단했습니다. 검증된 완료 결과가 없으며 기존 데이터는 보존했습니다.'
         if not success and current.get('metadata_kind') and reason == 'schema_refresh_unavailable':
@@ -2046,12 +1841,26 @@ class RecoveryMiddleware(AgentMiddleware):
             current['stop_reason'] = 'full_frame_budget'
             text = (budget_failure.get('scope', '전체 데이터 복원 한도를 넘었습니다.') + ' '
                     + budget_failure.get('user_action', '필요한 컬럼과 조건을 명시해주세요.'))
+        if (not success and current.get('calculation') and not current.get('required_columns')
+                and not current.get('whole_row_count') and not current.get('outlier_followup')
+                and not remote_block):
+            current['status'] = 'blocked'
+            current['stop_reason'] = 'analysis_target_unresolved'
+            text = ('요청의 분석 대상·조건을 현재 스키마의 컬럼에 확정적으로 연결하지 못했습니다. '
+                    '어떤 컬럼과 조건값을 기준으로 계산할까요? 추측한 수치는 결과로 채택하지 않았으며 기존 데이터는 보존했습니다.')
+        if reason == 'completion_output_missing':
+            text = '검증된 결과를 표시하는 데 실패했습니다. 완료로 처리하지 않았으며 기존 데이터는 보존했습니다.'
+        # Free-form text is allowed only for requests with no analytical obligation.
+        if success and not active_contracts(current) and last:
+            text = text or last.content
         kwargs = {'analysis_status': 'answered' if success else current['status']}
-        message = (last.model_copy(update={'content': text or last.content, 'tool_calls': [],
+        message = (last.model_copy(update={'content': text, 'tool_calls': [],
                    'additional_kwargs': {**last.additional_kwargs, **kwargs}}) if last else
                    AIMessage(content=text, additional_kwargs=kwargs))
         self.diagnostics.emit('completion_checked', request_id=current.get('request_id'),
             status=current['status'], reason=reason, attempts=current['attempts'],
+            required_capabilities=[c.name for c in active_contracts(current)],
+            missing_capabilities=[c.name for c in missing_contracts(current)],
             model_calls=current['model_calls'], tool_calls=len(current['sent_calls']),
             model_seconds=round(current['model_seconds'], 3),
             dataset_ids=current['evidence_ids'], artifact_ids=current['artifact_ids'])
@@ -2599,7 +2408,8 @@ class RecoveryMiddleware(AgentMiddleware):
                                     and c.get('args') == arguments for c in calls.values())):
                     return {'name':'render_count_rate_chart', 'args':arguments}
         if (self.context and current.get('chart') and not current.get('time_series_frequency')
-                and current.get('kind') in {'bar', 'line', 'scatter', 'boxplot'}
+                and current.get('kind') in {'bar', 'line', 'scatter', 'boxplot', 'histogram'}
+                and (current.get('kind') != 'histogram' or current.get('current_result_only'))
                 and not current.get('count_rate_layout')
                 and not current.get('fresh_source_required') and not current.get('artifact_ids')):
             columns = current.get('required_columns', [])
@@ -2609,11 +2419,16 @@ class RecoveryMiddleware(AgentMiddleware):
                 and (current.get('current_result_only')
                     or (info.coverage == 'complete' and info.predicate_known
                         and self._fresh_for_request(info, current)))]
+            candidates = self._requested_dataset_candidates(candidates, current)
             if len(candidates) == 1:
                 frame = project_dataset(self.context.datasets, candidates[0].id, columns)
                 from pandas.api.types import is_datetime64_any_dtype, is_numeric_dtype
                 arguments = None
-                if current['kind'] == 'boxplot' and len(columns) == 1 and is_numeric_dtype(frame[columns[0]]):
+                if (current['kind'] == 'histogram' and len(columns) == 1
+                        and is_numeric_dtype(frame[columns[0]]) and not self._has_scope(current)
+                        and not current.get('chart_spec_requested')):
+                    arguments = {'dataset_id':candidates[0].id,'kind':'histogram','x':columns[0]}
+                elif current['kind'] == 'boxplot' and len(columns) == 1 and is_numeric_dtype(frame[columns[0]]):
                     arguments = {'dataset_id':candidates[0].id,'kind':'boxplot','x':columns[0]}
                 elif current['kind'] == 'boxplot' and len(columns) == 2:
                     numeric_columns = [column for column in columns if is_numeric_dtype(frame[column])]
@@ -2985,6 +2800,13 @@ class RecoveryMiddleware(AgentMiddleware):
             if self._valid_card(card, deepcopy(current), card.dataset_id):
                 valid.append(card)
         if valid:
+            if self.context and not self._has_scope(current):
+                eligible = self._requested_dataset_candidates(
+                    [self.context.datasets.metadata[card.dataset_id] for card in valid], current)
+                ids = {info.id for info in eligible}
+                valid = [card for card in valid if card.dataset_id in ids]
+            if not valid:
+                return None
             if self.context and len(valid) > 1:
                 metadata = self.context.datasets.metadata
                 def root_id(asset_id):
@@ -3042,7 +2864,7 @@ class RecoveryMiddleware(AgentMiddleware):
                 or (last is not None and last.tool_calls)):
             return None
         proposed = self._next_local(current, calls)
-        if (not proposed or proposed['name'] not in {'local_analysis_sql', 'detect_outliers', 'summarize_groups'}
+        if (not proposed or proposed['name'] not in {'local_analysis_sql', 'detect_outliers', 'summarize_groups', 'render_chart_spec'}
                 or not self._proposed_scope_valid(proposed, current)):
             return None
         self.diagnostics.emit('budget_local_rescue', request_id=current.get('request_id'),
@@ -3064,7 +2886,7 @@ class RecoveryMiddleware(AgentMiddleware):
                 or self._complete(current)):
             return None
         proposed = self._next_local(current, calls)
-        if (not proposed or proposed['name'] not in {'local_analysis_sql', 'detect_outliers', 'summarize_groups'}
+        if (not proposed or proposed['name'] not in {'local_analysis_sql', 'detect_outliers', 'summarize_groups', 'render_chart_spec'}
                 or not self._proposed_scope_valid(proposed, current)):
             return None
         self.diagnostics.emit('checkpoint_local_rescue', request_id=current.get('request_id'),
@@ -3087,14 +2909,7 @@ class RecoveryMiddleware(AgentMiddleware):
         if (current.get('metadata_kind') and not self.remote_available
                 and current.get('failed', {}).get('inspect_table_context', {}).get('status') == 'needs_refresh'):
             return {**self._finish(current, reason='schema_refresh_unavailable'), 'jump_to':'end'}
-        if (current.get('data_load') or current.get('plan') or current.get('join')
-                or current.get('time_series_frequency') or current.get('statistical_kind')
-                or current.get('pivot_requested')
-                or current.get('group_summary_requested')
-                or current.get('winsor_spec') or current.get('outlier_spec')
-                or current.get('chart') or current.get('calculation')
-                or current.get('metadata_kind') or current.get('profile_kind')
-                or current.get('preview_limit')) and self._complete(current):
+        if (active_contracts(current) or current.get('plan')) and self._complete(current):
             return {**self._finish(current), 'jump_to': 'end'}
         reason = self._limit_reason(current)
         if reason:
@@ -3436,27 +3251,10 @@ class RecoveryMiddleware(AgentMiddleware):
         if remote_block or current['attempts'] >= self.max_attempts:
             return self._finish(current, last, 'missing_evidence')
         current['attempts'] += 1
-        self.diagnostics.emit('recovery_replan', request_id=current.get('request_id'), attempts=current['attempts'],
-            missing_chart=bool(current.get('chart') and not current['artifact_ids']),
-            missing_calculation=bool(current.get('calculation') and not current['evidence_ids']),
-            missing_join=bool(current.get('join') and not current.get('join_evidence')),
-            missing_time_series=bool(current.get('time_series_frequency') and not current.get('time_series_evidence')),
-            missing_statistical_test=bool(current.get('statistical_kind') and not current.get('statistical_evidence')),
-            missing_pivot=bool(current.get('pivot_requested') and not current.get('pivot_evidence')),
-            missing_winsorization=bool(current.get('winsor_spec') and not current.get('winsor_evidence')),
-            missing_outlier_detection=bool(current.get('outlier_spec') and not current.get('outlier_evidence')))
-        instruction = ('이전 응답은 완료 증거가 없어 채택되지 않았습니다. 원래 사용자 요청을 계속 수행하세요. '
-            '수치/통계는 local_analysis_sql의 실제 계산 결과가 필요하고 결측·고유값·기초 통계는 profile_dataset의 구조화 결과가 필요합니다. 테이블 설명이나 미리보기는 계산 증거가 아닙니다. '
-            '두 로딩 dataset의 결합은 join_datasets로 cardinality와 lineage를 확인해야 합니다. many-to-many 차단을 우회하지 말고 먼저 한쪽 grain을 명확히 하세요. '
-            '시간 재집계는 prepare_time_series로 datetime 파싱·timezone·중복 시각·gap·빈도·lineage를 확인한 뒤 파생 dataset을 render_chart_spec으로 그리세요. '
-            '가설 검정과 평균 신뢰구간은 statistical_test의 구조화 결과가 완료 증거입니다. 표본 수·결측·가정·효과크기·신뢰구간을 확인하세요. '
-            '피벗과 교차표는 pivot_dataset의 구조화 결과로 실제 행·열 축, 집계, 조건, 총계와 출력 한도를 확인하세요. '
-            '윈저화는 winsorize_numeric의 구조화 결과로 경계·clip 건수·원본/보정 평균을 확인하세요. 원본 dataset을 변경하지 마세요. '
-            '이상치 기준과 건수는 detect_outliers의 구조화 결과가 완료 증거입니다. IQR·Z-score·MAD·분위수 기준, tail, 결측과 coverage를 확인하세요. '
-            '요청한 출처, 컬럼, 집계와 필터를 유지하세요. 지정 차트와 수정은 render_chart_spec을 사용하고, 그룹별 전체 건수와 명시된 성공값 비율의 이중축·2열 패널은 render_count_rate_chart를 사용하세요. 원격 데이터가 필요한 히스토그램은 prepare_histogram(source, column, where_sql)을 사용하세요. '
-            '이 도구는 먼저 재사용 가능한 보유 데이터를 찾고, 부족한 경우에만 승인형 로딩과 렌더링 계획을 만듭니다. '
-            'query_databricks 호출이 승인 카드를 생성하며 실제 조회는 사용자 승인을 기다립니다. '
-            '동일한 실패 호출을 반복하거나 증거 없이 완료했다고 말하지 마세요.')
+        self.diagnostics.emit('recovery_replan', request_id=current.get('request_id'),
+            attempts=current['attempts'],
+            missing_capabilities=[contract.name for contract in missing_contracts(current)])
+        instruction = recovery_instruction(current)
         if self._has_scope(current): instruction += '\n' + self._scope_instruction(current)
         return {'recovery': current, 'messages': [RemoveMessage(id=last.id),
             SystemMessage(content=instruction, additional_kwargs={'lc_source': 'recovery', 'invalidated_message_id': last.id})], 'jump_to': 'model'}

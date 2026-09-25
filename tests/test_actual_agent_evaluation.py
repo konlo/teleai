@@ -73,7 +73,8 @@ class ActualAgentEvaluationTests(unittest.TestCase):
         wrong = self.evaluate("L1_016", EvaluationModel(calls=[{"name": "aggregate_dataset", "args": {
             "dataset_id": "$fixture", "aggregation": "mean", "value_column": "age"}}],
             answer="예금 잔고 평균을 계산했습니다."))
-        self.assertEqual(wrong["status"], "FAIL", wrong)
+        self.assertEqual(wrong["status"], "NOT_COMPLETE", wrong)
+        self.assertNotEqual(wrong["agent_status"], "answered")
 
     def test_profile_cases_use_structured_local_evidence(self):
         for case in ("L1_006", "L1_008", "L1_009"):

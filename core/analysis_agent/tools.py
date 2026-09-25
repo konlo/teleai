@@ -6,13 +6,38 @@ from core.analysis_runtime_tools import build_analysis_tools
 from core.analysis_tool_contract import normalize_tool_result
 from utils.analysis_datasets import InvalidConditionValue
 import time
+from jsonschema import Draft202012Validator
+from itertools import islice
 
 
 def local_tools(context, diagnostics=None):
     def bind(definition):
+        validator = Draft202012Validator(definition.parameters)
+
         def execute(**arguments):
             started = time.monotonic()
             if diagnostics: diagnostics.emit('tool_started', tool=definition.name)
+            # Provider tool schemas are hints, not an execution boundary. Return
+            # actionable constraints without echoing arbitrary input or rows.
+            errors = list(islice(validator.iter_errors(arguments), 4))
+            if errors:
+                issues = [{'path': list(error.absolute_path), 'rule': error.validator,
+                           'expected': error.validator_value}
+                          for error in errors
+                          if error.validator in {'enum', 'type', 'required', 'minimum', 'maximum',
+                              'exclusiveMinimum', 'exclusiveMaximum', 'minItems', 'maxItems',
+                              'minLength', 'maxLength', 'additionalProperties', 'uniqueItems'}]
+                if not issues:
+                    issues = [{'path': list(error.absolute_path), 'rule': error.validator}
+                              for error in errors]
+                if diagnostics:
+                    diagnostics.emit('tool_rejected', tool=definition.name,
+                                     reason='invalid_tool_arguments', fields=[x['path'] for x in issues])
+                return normalize_tool_result({
+                    'status': 'error', 'error_code': 'invalid_tool_arguments', 'retryable': False,
+                    'validation_issues': issues,
+                    'user_action': '표시된 인자 경로의 자료형·허용값·범위를 수정해 다시 계획하세요. 생략 가능한 인자는 기본값을 사용할 수 있습니다.',
+                    'message': '도구 인자가 선언된 schema와 다릅니다. 실행 전에 중단했으며 데이터는 변경하지 않았습니다.'})
             dataset_ids = {key: arguments.get(key) for key in (
                 'dataset_id', 'left_dataset_id', 'right_dataset_id',
                 'baseline_dataset_id', 'cohort_dataset_id') if arguments.get(key) is not None}
