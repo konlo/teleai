@@ -740,8 +740,9 @@ class RecoveryMiddleware(AgentMiddleware):
                 else:
                     current['pivot_requested'] = False
             if (not current.get('pivot_requested') and not chart and not outlier_spec
-                    and len(operations) >= 2):
+                    and operations):
                 group_candidates = []
+                explicit_group_values = {}
                 for name in mentioned_columns:
                     terms = [name, *column_aliases.get(name, ())]
                     if any(re.search(
@@ -749,15 +750,44 @@ class RecoveryMiddleware(AgentMiddleware):
                             + r'(?:\))?\s*(?:군|그룹)?별(?![A-Za-z0-9_])', text, re.I)
                             for term in terms):
                         group_candidates.append(name)
+                    if not self.context or name in group_candidates:
+                        continue
+                    selected_id = self.context.selected_dataset_id
+                    selected = self.context.datasets.metadata.get(selected_id)
+                    if selected is None or selected.grain != 'raw' or name not in selected.columns:
+                        continue
+                    # Inspect only the grouping column; a protected remote
+                    # result may be much wider than the requested comparison.
+                    series = project_dataset(self.context.datasets, selected_id, [name])[name]
+                    for term in terms:
+                        match = re.search(
+                            r'(?<![A-Za-z0-9_가-힣])' + re.escape(term)
+                            + r'\s+([^\s,]+)와\s+([^\s,]+)의.{0,50}(?:비교|대조)', text, re.I)
+                        if not match:
+                            continue
+                        values = [match.group(1), match.group(2)]
+                        if (values[0] != values[1] and all(series.eq(value).any() for value in values)):
+                            group_candidates.append(name)
+                            explicit_group_values[name] = values
+                            break
                 if len(group_candidates) == 1:
                     group_column = group_candidates[0]
+                    if group_column in explicit_group_values:
+                        current['scope']['conditions'] = [
+                            item for item in current['scope'].get('conditions', [])
+                            if item.get('column') != group_column]
+                        current['scope']['conditions'].append({
+                            'column': group_column, 'op': 'in',
+                            'value': explicit_group_values[group_column]})
                     metric_candidates = [column for column in mentioned_columns
                                          if column != group_column]
                     from pandas.api.types import is_bool_dtype, is_numeric_dtype
                     numeric_metrics = []
                     for column in metric_candidates:
-                        observed = [frame[column] for frame in self.context.datasets.frames.values()
-                                    if column in frame.columns]
+                        observed = [project_dataset(self.context.datasets, info.id, [column])[column]
+                                    for info in self.context.datasets.metadata.values()
+                                    if info.grain == 'raw' and column in info.columns
+                                    and self._source_matches(info, current)]
                         if observed and all(is_numeric_dtype(series) and not is_bool_dtype(series)
                                             for series in observed):
                             numeric_metrics.append(column)
@@ -1193,6 +1223,37 @@ class RecoveryMiddleware(AgentMiddleware):
                 if valid:
                     current['pivot_evidence'] = observation
                     current['failed'].pop(name, None)
+            if name == 'summarize_groups' and observation.get('status') == 'ready':
+                parent_id = arguments.get('dataset_id')
+                child_id = observation.get('dataset', {}).get('id')
+                parent = self.context.datasets.metadata.get(parent_id) if self.context else None
+                child = self.context.datasets.metadata.get(child_id) if self.context else None
+                result = observation.get('group_summary_result', {})
+                valid = (
+                    current.get('group_summary_requested')
+                    and parent is not None and child is not None
+                    and result.get('kind') == 'dataset_group_summary'
+                    and result.get('parent_dataset_id') == parent_id
+                    and child.parent_id == parent_id and child.source == parent.source
+                    and child.snapshot == parent.snapshot and child.grain == 'aggregate'
+                    and child.coverage == parent.coverage
+                    and result.get('group_columns') == current.get('group_summary_columns')
+                    and result.get('metrics') == self._group_metrics(current.get('group_summary_metrics'))
+                    and result.get('conditions') == current.get('group_summary_conditions')
+                    and result.get('sort') == arguments.get('sort', 'group_ascending')
+                    and result.get('output_rows') == child.rows
+                    and result.get('output_columns') == len(child.columns)
+                    and result.get('data_sha256') == stored_dataset_digest(self.context.datasets, child_id)
+                    and isinstance(observation.get('preview'), list)
+                    and not observation.get('rows')
+                    and self._source_matches(parent, current)
+                    and self._fresh_for_request(parent, current)
+                    and (current.get('current_result_only')
+                         or (parent.coverage == 'complete' and parent.predicate_known))
+                    and self._group_scope_valid(parent, arguments, current))
+                if valid:
+                    current['group_summary_evidence'] = observation
+                    current['failed'].pop(name, None)
             if name in {'detect_outliers', 'select_outlier_rows'} and observation.get('status') == 'ready':
                 parent_id = arguments.get('dataset_id')
                 parent = self.context.datasets.metadata.get(parent_id) if self.context and parent_id else None
@@ -1398,6 +1459,27 @@ class RecoveryMiddleware(AgentMiddleware):
         if record_error:
             self._record_scope_error(current)
         return False
+
+    @staticmethod
+    def _group_metrics(metrics):
+        if not isinstance(metrics, list):
+            return None
+        return [{key: metric.get(key, default) for key, default in (
+            ('name', None), ('aggregation', None), ('value_column', ''),
+            ('condition', None), ('empty_value', None))}
+            for metric in metrics if isinstance(metric, dict)]
+
+    def _group_scope_valid(self, info, arguments, current):
+        if (not current.get('group_summary_requested')
+                or arguments.get('group_columns') != current.get('group_summary_columns')
+                or self._group_metrics(arguments.get('metrics')) !=
+                   self._group_metrics(current.get('group_summary_metrics'))
+                or arguments.get('conditions', []) != current.get('group_summary_conditions')):
+            return False
+        conditions = [*info.conditions, *arguments.get('conditions', [])]
+        if self._has_scope(current):
+            return self._scope_valid(conditions, current)
+        return not conditions
 
     def _record_scope_error(self, current):
         current['scope_error'] = 'request_scope_unresolved' if current['scope'].get('unresolved') else 'request_scope_mismatch'
@@ -1637,6 +1719,7 @@ class RecoveryMiddleware(AgentMiddleware):
         if current.get('data_load'): return bool(current.get('load_evidence_id'))
         if current.get('preview_limit'): return bool(current.get('preview_evidence'))
         if current.get('pivot_requested') and not current.get('pivot_evidence'): return False
+        if current.get('group_summary_requested') and not current.get('group_summary_evidence'): return False
         if current.get('count_rate_layout') and not current.get('count_rate_evidence'): return False
         if current.get('join') and not current.get('join_evidence'): return False
         if current.get('time_series_frequency') and not current.get('time_series_evidence'): return False
@@ -1655,7 +1738,7 @@ class RecoveryMiddleware(AgentMiddleware):
         if current.get('profile_kind') and not current.get('profile_evidence'): return False
         if current.get('chart') and not current['artifact_ids']: return False
         if current.get('calculation') and not current['evidence_ids']: return False
-        if current.get('chart') or current.get('calculation'): return True
+        if current.get('chart') or current.get('calculation') or current.get('group_summary_requested'): return True
         return not current['failed']
 
     def _answer(self, current):
@@ -1816,6 +1899,21 @@ class RecoveryMiddleware(AgentMiddleware):
             if result_rows > 15:
                 line += f"\n총 {result_rows:,}행 중 앞 15행입니다. 전체 결과는 저장된 데이터에서 확인할 수 있습니다."
             parts.append(line)
+        if current.get('group_summary_evidence') and self.context:
+            evidence = current['group_summary_evidence']
+            result = evidence['group_summary_result']
+            dataset_id = evidence['dataset']['id']
+            preview = preview_dataset(self.context.datasets, dataset_id)
+            line = (
+                f"{', '.join(result['group_columns'])}별 {len(result['metrics'])}개 지표를 계산했습니다. "
+                f"원본 {result['source_rows']:,}행, 조건 적용 {result['filtered_rows']:,}행, "
+                f"그룹 키 결측 제외 {result['group_input_rows']:,}행, "
+                f"결과 {result['output_rows']:,}행입니다.\n"
+                + '```csv\n' + preview.to_csv(index=False).strip() + '\n```'
+                + '\n분석 범위: ' + str(evidence.get('scope', '')))
+            if result['output_rows'] > 15:
+                line += f"\n총 {result['output_rows']:,}행 중 앞 15행입니다. 전체 결과는 저장된 데이터에서 확인할 수 있습니다."
+            parts.append(line)
         if current.get('outlier_evidence'):
             evidence = current['outlier_evidence']
             result = evidence['outlier_result']
@@ -1960,6 +2058,41 @@ class RecoveryMiddleware(AgentMiddleware):
         return {'recovery': current, 'messages': [message]}
 
     def _next_local(self, current, calls):
+        if (self.context and current.get('group_summary_requested')
+                and not current.get('group_summary_evidence')
+                and not current.get('fresh_source_required')):
+            columns = set(current.get('group_summary_columns', []))
+            for metric in current.get('group_summary_metrics', []):
+                if metric.get('value_column'):
+                    columns.add(metric['value_column'])
+                if metric.get('condition'):
+                    columns.add(metric['condition']['column'])
+            columns.update(item['column'] for item in current.get('group_summary_conditions', []))
+            candidates = [info for info in self.context.datasets.metadata.values()
+                if info.grain == 'raw' and not info.aggregation
+                and columns.issubset(info.columns)
+                and self._source_matches(info, current)
+                and self._fresh_for_request(info, current)
+                and (current.get('current_result_only')
+                    or (info.coverage == 'complete' and info.predicate_known))]
+            requested_rows = current.get('requested_result_rows')
+            if requested_rows is not None:
+                candidates = [info for info in candidates if info.rows == requested_rows]
+            selected_id = self.context.selected_dataset_id
+            selected = next((info for info in candidates if info.id == selected_id), None)
+            if selected is not None:
+                candidates = [selected]
+            if len(candidates) == 1:
+                arguments = {
+                    'dataset_id': candidates[0].id,
+                    'group_columns': current['group_summary_columns'],
+                    'metrics': current['group_summary_metrics'],
+                    'conditions': current.get('group_summary_conditions', []),
+                }
+                if (self._group_scope_valid(candidates[0], arguments, current)
+                        and not any(c.get('name') == 'summarize_groups'
+                                    and c.get('args') == arguments for c in calls.values())):
+                    return {'name': 'summarize_groups', 'args': arguments}
         if (self.context and current.get('preview_limit') and not current.get('preview_evidence')
                 and not any(current.get(key) for key in (
                     'chart', 'calculation', 'join', 'metadata_kind', 'profile_kind',
@@ -2909,7 +3042,7 @@ class RecoveryMiddleware(AgentMiddleware):
                 or (last is not None and last.tool_calls)):
             return None
         proposed = self._next_local(current, calls)
-        if (not proposed or proposed['name'] not in {'local_analysis_sql', 'detect_outliers'}
+        if (not proposed or proposed['name'] not in {'local_analysis_sql', 'detect_outliers', 'summarize_groups'}
                 or not self._proposed_scope_valid(proposed, current)):
             return None
         self.diagnostics.emit('budget_local_rescue', request_id=current.get('request_id'),
@@ -2931,7 +3064,7 @@ class RecoveryMiddleware(AgentMiddleware):
                 or self._complete(current)):
             return None
         proposed = self._next_local(current, calls)
-        if (not proposed or proposed['name'] not in {'local_analysis_sql', 'detect_outliers'}
+        if (not proposed or proposed['name'] not in {'local_analysis_sql', 'detect_outliers', 'summarize_groups'}
                 or not self._proposed_scope_valid(proposed, current)):
             return None
         self.diagnostics.emit('checkpoint_local_rescue', request_id=current.get('request_id'),
@@ -2957,6 +3090,7 @@ class RecoveryMiddleware(AgentMiddleware):
         if (current.get('data_load') or current.get('plan') or current.get('join')
                 or current.get('time_series_frequency') or current.get('statistical_kind')
                 or current.get('pivot_requested')
+                or current.get('group_summary_requested')
                 or current.get('winsor_spec') or current.get('outlier_spec')
                 or current.get('chart') or current.get('calculation')
                 or current.get('metadata_kind') or current.get('profile_kind')
@@ -3102,6 +3236,9 @@ class RecoveryMiddleware(AgentMiddleware):
                 additional_kwargs={'lc_source':'proposal_preflight'})], 'jump_to':'model'}
 
     def _proposed_scope_valid(self, call, current):
+        if call.get('name') == 'summarize_groups' and self.context:
+            info = self.context.datasets.metadata.get(call.get('args', {}).get('dataset_id'))
+            return True if info is None else self._group_scope_valid(info, call.get('args', {}), current)
         if call.get('name') == 'query_databricks':
             from sqlglot import parse_one, exp
             from sqlglot.errors import SqlglotError

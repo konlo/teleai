@@ -11,11 +11,11 @@ import pandas as pd
 import streamlit as st
 from dotenv import load_dotenv
 from ui.analysis_text import display_analysis_text
-from langchain_ollama import ChatOllama
 from langchain_core.messages import HumanMessage, AIMessage, ToolMessage
 from core.analysis_agent.runtime import GraphAnalysisRuntime
 from core.analysis_agent.databricks import ConnectionConfig, make_executor
 from core.analysis_agent.policy import RuntimePolicy
+from core.analysis_agent.model_provider import build_analysis_chat_model
 
 load_dotenv(ROOT/'.env')
 st.set_page_config(page_title='Telly · 분석',page_icon='📊',layout='wide')
@@ -35,14 +35,21 @@ with sqlite3.connect(root/'conversations.sqlite') as db:
     db.execute('INSERT OR IGNORE INTO conversations VALUES (?,?)',(cid,'분석 '+cid[:8]))
     conversations=db.execute('SELECT id,title FROM conversations ORDER BY rowid DESC').fetchall()
 st.query_params['conversation']=cid
-if st.session_state.get('v1_runtime_id')!=cid:
+with st.sidebar:
+    provider_label = st.selectbox('분석 모델',
+        ['로컬 Ollama', 'Databricks 모델 · 토큰 사용량 과금'],
+        key='v1_model_provider')
+provider = 'databricks' if provider_label.startswith('Databricks') else 'ollama'
+runtime_id = (cid, provider)
+if st.session_state.get('v1_runtime_id')!=runtime_id:
     previous=st.session_state.pop('v1_runtime',None)
     if previous:previous.close()
     policy=RuntimePolicy.from_env()
-    model=ChatOllama(model=os.getenv('OLLAMA_MODEL','gemma4:e4b'),
-        base_url=os.getenv('OLLAMA_BASE_URL','http://localhost:11434'),reasoning=True,
-        temperature=0,num_ctx=16384,num_predict=4096,
-        client_kwargs={'timeout':policy.model_timeout_seconds})
+    try:
+        model=build_analysis_chat_model(policy,provider=provider)
+    except ValueError as exc:
+        st.error(str(exc))
+        st.stop()
     config=ConnectionConfig.from_env()
     from core.analysis_catalog import load_saved_reference_context
     context_loader=lambda:load_saved_reference_context(ROOT/'.telly_table_context')
@@ -51,7 +58,7 @@ if st.session_state.get('v1_runtime_id')!=cid:
         remote_factory=lambda d:make_executor(config,d,max_rows=policy.max_remote_rows),
         reference_context_loader=context_loader,policy=policy)
     st.session_state.v1_runtime=runtime
-    st.session_state.v1_runtime_id=cid
+    st.session_state.v1_runtime_id=runtime_id
 runtime=st.session_state.v1_runtime
 BUSY_NOTICE='현재 분석이 이미 실행 중입니다. 완료될 때까지 잠시 기다려주세요.'
 

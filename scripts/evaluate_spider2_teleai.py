@@ -269,7 +269,9 @@ def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--spider-root", required=True, type=Path)
     parser.add_argument("--id", required=True, action="append")
-    parser.add_argument("--model", default=os.getenv("OLLAMA_MODEL", "gemma4:e4b"))
+    parser.add_argument("--provider", choices=("ollama", "databricks"), default="ollama")
+    parser.add_argument("--model", default=None,
+                        help="Model or serving endpoint name; defaults to the selected provider's configured model")
     parser.add_argument("--model-timeout-seconds", type=float, default=60.0,
                         help="Per-model HTTP timeout; 60 matches the current product setting")
     parser.add_argument("--benchmark-instruction", action="store_true",
@@ -278,7 +280,10 @@ def main() -> int:
     args = parser.parse_args()
     if args.model_timeout_seconds <= 0:
         parser.error("--model-timeout-seconds must be positive")
-    from langchain_ollama import ChatOllama
+    from core.analysis_agent.model_provider import build_analysis_chat_model
+    from core.analysis_agent.policy import RuntimePolicy
+    from dotenv import load_dotenv
+    load_dotenv(ROOT / '.env')
     manifest = task_manifest(args.spider_root)
     unknown = set(args.id) - manifest.keys()
     if unknown:
@@ -286,17 +291,24 @@ def main() -> int:
     args.output_dir.mkdir(parents=True, exist_ok=True)
     os.environ["LANGSMITH_TRACING"] = "false"
     os.environ["LANGCHAIN_TRACING_V2"] = "false"
-    model = ChatOllama(model=args.model,
-        base_url=os.getenv("OLLAMA_BASE_URL", "http://localhost:11434"),
-        reasoning=True, temperature=0, num_ctx=16384, num_predict=4096,
-        client_kwargs={"timeout": args.model_timeout_seconds})
+    model_config = dict(os.environ)
+    if args.model:
+        model_config['OLLAMA_MODEL' if args.provider == 'ollama'
+                     else 'TELLY_DATABRICKS_MODEL'] = args.model
+    model = build_analysis_chat_model(
+        RuntimePolicy(model_timeout_seconds=args.model_timeout_seconds),
+        provider=args.provider, environ=model_config)
+    selected_model = (model_config.get('OLLAMA_MODEL', 'gemma4:e4b')
+                      if args.provider == 'ollama' else
+                      model_config.get('TELLY_DATABRICKS_MODEL', 'databricks-qwen3-next-80b-a3b-instruct'))
     results = []
     for case_id in args.id:
         result = evaluate_task(args.spider_root, manifest[case_id], model,
                                args.output_dir / "predictions",
                                benchmark_instruction=args.benchmark_instruction)
         results.append(result)
-        (args.output_dir / "proposals.json").write_text(json.dumps({"model": args.model,
+        (args.output_dir / "proposals.json").write_text(json.dumps({"provider":args.provider,
+            "model": selected_model,
             "model_timeout_seconds": args.model_timeout_seconds,
             "results": results}, indent=2, ensure_ascii=False) + "\n")
         print(json.dumps({"id": case_id, "status": result["status"],

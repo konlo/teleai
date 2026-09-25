@@ -3,14 +3,84 @@ import unittest
 
 import numpy as np
 import pandas as pd
+import tempfile
 
+from core.analysis_agent.runtime import GraphAnalysisRuntime
 from core.analysis_agent.tools import local_tools
 from core.analysis_runtime_tools import build_analysis_tools
 from core.analysis_tool_contract import AnalysisToolContext
 from utils.analysis_datasets import DatasetStore
+from utils.analysis_datasets import stored_dataset_digest
+from scripts.evaluate_analysis_agent import fixture_reference_context
+from scripts.evaluate_analysis_statistics import ForbiddenModel
 
 
 class AnalysisGroupSummaryTests(unittest.TestCase):
+    def test_explicit_group_summary_completes_without_model_or_remote_reload(self):
+        frame = pd.DataFrame({
+            'segment': ['A', 'A', 'B', 'B'],
+            'value': [2.0, 4.0, 10.0, 20.0],
+        })
+        with tempfile.TemporaryDirectory() as root:
+            runtime = GraphAnalysisRuntime(root, 'owner', 'group-summary', ForbiddenModel())
+            parent = runtime.datasets.register(frame.copy(), source='synthetic.events',
+                coverage='complete', predicate_known=True, snapshot='fixture:v1')
+            runtime.context.reference_context[:] = [fixture_reference_context(parent.source, frame)]
+            digest = stored_dataset_digest(runtime.datasets, parent.id)
+            try:
+                result = runtime.submit('각 segment별 value 평균과 건수를 계산해서 비교해줘')
+                self.assertEqual(result['status'], 'answered', result)
+                recovery = runtime.inspect()['recovery']
+                self.assertEqual(recovery['model_calls'], 0)
+                evidence = recovery['group_summary_evidence']
+                self.assertEqual(evidence['group_summary_result']['parent_dataset_id'], parent.id)
+                self.assertIn('mean_value', result['text'])
+                self.assertIn('count', result['text'])
+                child = runtime.datasets.frames[evidence['dataset']['id']]
+                self.assertEqual(child['mean_value'].tolist(), [3.0, 15.0])
+                self.assertEqual(child['count'].tolist(), [2, 2])
+                self.assertEqual(stored_dataset_digest(runtime.datasets, parent.id), digest)
+                self.assertIsNone(runtime.remote_execute)
+                wrong = {
+                    'group_columns': ['segment'],
+                    'metrics': [{'name': 'mean_value', 'aggregation': 'mean',
+                                 'value_column': 'value'},
+                                {'name': 'count', 'aggregation': 'count',
+                                 'value_column': 'value'}],
+                    'conditions': [],
+                }
+                self.assertFalse(runtime.recovery._group_scope_valid(
+                    parent, wrong, recovery))
+            finally:
+                runtime.close()
+
+    def test_named_group_comparison_filters_only_requested_observed_values(self):
+        frame = pd.DataFrame({
+            'cohort': ['A', 'A', 'B', 'B', 'C'],
+            'measure': [2.0, 4.0, 10.0, 20.0, 1000.0],
+        })
+        with tempfile.TemporaryDirectory() as root:
+            runtime = GraphAnalysisRuntime(root, 'owner', 'named-groups', ForbiddenModel())
+            parent = runtime.datasets.register(frame.copy(), source='fixture.dynamic_table',
+                coverage='complete', predicate_known=True, snapshot='fixture:v1')
+            runtime.context.reference_context[:] = [fixture_reference_context(parent.source, frame)]
+            runtime.select_dataset(parent.id)
+            try:
+                result = runtime.submit('cohort A와 B의 measure 평균을 비교하고 결과를 표로 보여줘')
+                self.assertEqual(result['status'], 'answered', result)
+                recovery = runtime.inspect()['recovery']
+                self.assertEqual(recovery['model_calls'], 0)
+                evidence = recovery['group_summary_evidence']
+                self.assertEqual(evidence['group_summary_result']['conditions'], [
+                    {'column': 'cohort', 'op': 'in', 'value': ['A', 'B']}])
+                child = runtime.datasets.frames[evidence['dataset']['id']]
+                self.assertEqual(child['cohort'].tolist(), ['A', 'B'])
+                self.assertEqual(child['mean_measure'].tolist(), [3.0, 15.0])
+                self.assertEqual(runtime.datasets.frames[parent.id]['measure'].tolist(),
+                                 frame['measure'].tolist())
+            finally:
+                runtime.close()
+
     def setUp(self):
         self.store = DatasetStore()
         self.frame = pd.DataFrame({
