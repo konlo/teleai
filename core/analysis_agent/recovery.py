@@ -2867,6 +2867,13 @@ class RecoveryMiddleware(AgentMiddleware):
         current, calls = self._state(state)
         if current.get('schema_probe_dtype_unknown'):
             return {**self._finish(current, reason='schema_probe_dtype_unknown'), 'jump_to':'end'}
+        # A failed approved query cannot be repaired by another model turn when
+        # the request needs that remote result to identify the current schema
+        # or to publish a new dataset. Do not burn the turn budget or suggest
+        # an unapproved retry after an OpenSession failure.
+        if ((current.get('metadata_kind') or current.get('data_load'))
+                and current.get('failed', {}).get('query_databricks', {}).get('status') == 'unavailable'):
+            return {**self._finish(current, reason='remote_blocked'), 'jump_to':'end'}
         if current.get('metadata_kind') and current.get('remote_rejected'):
             return {**self._finish(current, reason='remote_blocked'), 'jump_to':'end'}
         if (current.get('metadata_kind') and not self.remote_available

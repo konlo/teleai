@@ -1629,3 +1629,9 @@ Task definitions and acceptance conditions: docs/agent_remaining_tasks_2026-09-1
 - **Web finding/fix** [Agent: /root]: 보존된 10,000행 원본으로 `balance` 히스토그램은 실제 이미지로 출력되었지만 `0부터 5000까지` 후속 요청에 이전 전체 범위 이미지가 캐시 재사용되는 결함을 발견했다. 요청 범위 해석, 히스토그램 동일 컬럼 필터, Databricks→DuckDB 조건식 변환을 고쳤다. 웹에서 동일 후속 질문을 다시 실행해 0~5000 축의 새 이미지와 8,212 유효 행/중앙값 714를 확인했다. 원본 10,000행은 유지됐고 독립 데이터 계산도 8,212/714와 일치했다. 추가 원격 승인 요청은 없었다.
 - **Web finding/fix** [Agent: /root]: 동일 범위의 건수 질문은 긴 대화 요약 및 모델 `ReadTimeout`으로 약 107초 후 실패했다. 현재 로딩된 원본에 대한 명시적 조건 건수를 모델 없이 안전한 로컬 SQL로 처리하도록 고쳤다. 새 웹 요청에서 `balance ≥ 0 AND balance ≤ 5000` 건수 8,212가 0.295초에 출력되고 원격 요청은 늘지 않았다. 이전 실패 턴의 재개는 완료하지 못했으므로 미완료 체크포인트 복구는 별도 제한으로 남긴다.
 - **Verification** [Agent: /root]: 앱 전체 unittest 247/247, migration 133/133, 집중 회귀 10/10, compileall 및 diff check 통과. 웹 health `ok`. 실제 Databricks 승인·응답 경로는 사용자 응답 대기 중이므로 통과로 계산하지 않는다.
+
+## [2026-09-25 15:11:59 KST] [Agent: /root] User Request: 실제 Databricks에서 데이터를 로딩하면서 챗봇을 검증해 달라
+- **Action** [Agent: /root]: 정확한 원격 조회·승인 상태와 연결 구성을 확인하고, 실제 웹 승인→적재→분석→후속 분석의 증거를 수집한다. 기존 원본 보존과 원격 조회 횟수를 검증한다.
+- **Live finding** [Agent: /root]: 기존 웹 대화의 정확한 `SELECT * FROM `workspace`.`default`.`bank_loan` LIMIT 0` 승인 카드로 조회를 시작했다. Databricks OpenSession에서 HTTP 403 `QueryNotSubmitted`가 발생했다. 장부는 `failed` 1건, 생성된 데이터셋 0건, SQL 제출 0건이다. 별도 인증 API도 `Invalid access token`을 반환하고 Chrome Databricks 세션도 만료됐다. 원인은 현재 로컬 토큰의 무효화이며 실제 데이터 적재는 수행되지 않았다.
+- **Artifact Update** [Agent: /root]: 명확한 원격 인증 실패 후 schema/data-load 요청이 모델을 재호출해 약 104초 지연된 결함을 수정했다. 이제 즉시 차단 응답으로 끝내며, 스키마 질문에 잘못 붙던 '히스토그램은 아직' 문구를 일반적인 결과 미생성 안내로 바꿨다. 403·모델 재호출 0회 회귀를 추가했다.
+- **Verification** [Agent: /root]: 집중 회귀 11/11, 앱 unittest 248/248, migration 133/133, diff check 통과. 실제 적재·시각화 여정은 유효한 인증 갱신 전에는 검증할 수 없다.

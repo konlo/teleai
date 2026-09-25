@@ -11,6 +11,7 @@ from langchain_core.messages import AIMessage
 from langchain_core.outputs import ChatGeneration, ChatResult
 
 from core.analysis_agent.runtime import GraphAnalysisRuntime
+from core.analysis_agent.approvals import QueryNotSubmitted
 from core.analysis_catalog import compact_catalog, resolve_table_context
 
 
@@ -57,6 +58,30 @@ class CatalogThenForbidden(InspectOnce):
 
 
 class SchemaRefreshRecoveryTests(unittest.TestCase):
+    def test_forbidden_schema_probe_stops_without_model_retry(self):
+        stale = {"table": TARGET, "observed_at": "2025-01-01T00:00:00Z",
+                 "columns": [{"name": "old_field", "dtype": "int64"}]}
+
+        def forbidden(_envelope):
+            raise QueryNotSubmitted(403)
+
+        with tempfile.TemporaryDirectory() as root:
+            model = InspectOnce()
+            runtime = GraphAnalysisRuntime(root, "owner", "schema-forbidden", model,
+                connection_identity="test-connection",
+                remote_factory=lambda _datasets: forbidden,
+                reference_context_loader=lambda: [stale])
+            proposal = runtime.submit("events의 어떤 항목들을 볼 수 있지?")
+            self.assertEqual(proposal["status"], "awaiting_approval", proposal)
+            result = runtime.respond(proposal["requests"][0]["id"], approved=True)
+            self.assertEqual(result["status"], "blocked", result)
+            self.assertIn("HTTP 403", result["text"])
+            self.assertIn("SQL은 제출되지", result["text"])
+            self.assertNotIn("히스토그램", result["text"])
+            self.assertEqual(model.calls, 0)
+            self.assertEqual(runtime.inspect()["dataset_ids"], [])
+            runtime.close()
+
     def test_elliptical_followup_uses_prior_table_label_without_another_model_call(self):
         stale = {"table": TARGET, "observed_at": "2025-01-01T00:00:00Z",
                  "columns": [{"name": "old_field", "dtype": "int64"}]}
