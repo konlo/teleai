@@ -2,14 +2,14 @@
 
 ## Current Status
 - **Last Updated**: 2026-09-25
-- **Status**: In Progress — localhost 개발 범위 검증, 운영 출시 NO-GO
+- **Status**: In Progress — 로컬 단일 사용자 범위 검증, 제한 출시 판정 보류
 - **Summary**: 보호 원본과 승인형 적재, 파일 staging/부분 읽기, 분석 완료 근거·도구 선택을 보강했다. 최신 application 237/237, migration 133/133, 참고/agentic runner 217/217 PASS. 실제 `gemma4:e4b`의 미선택 원본 평균은 도구 집중 전 0/3, 후 3/3 PASS였고, 다른 네 참고 여정과 임의 schema 합성 검사는 결정적 로컬 경로로 PASS했다. 한 질문의 3회 성공만으로 운영 신뢰도를 판정하지 않는다.
-- **Next Session Focus**: [출시 판정](docs/release_readiness_2026-09-24.md)에 따라 별도 1인용 Linux 호스트의 영속 볼륨·SSH 접근제어/외부 차단·preflight/smoke/rollback과, 정확한 SQL별 승인 후 Databricks J22~J24 실여정을 확인한다. 실제 모델 held-out 반복/복구, 동시 메모리 한도와 DeepEval/Spider 공식 평가도 남아 있다.
-- **Current qualification**: 배포 호스트 정보와 새 SQL 승인이 없어 실제 운영 조회·호스트 검증은 0회다. 기존 oracle 87/200은 coverage이며 113개 미채점이다. DeepEval/Spider 공식 점수는 없다. Draft PR #68은 미병합이다.
+- **Next Session Focus**: [출시 판정](docs/release_readiness_2026-09-24.md)에 따라 사용자가 이미 수행한 `LIMIT 10` 조회의 실행 위치/결과를 확인하고 현재 agent의 승인·후보 발행·후속 분석과 연결되는지 검증한다. 실제 모델 held-out 반복/복구, 동시 메모리 한도와 DeepEval/Spider 공식 평가도 남아 있다. 별도 서버 배포는 이번 범위에서 제외한다.
+- **Current qualification**: 사용자가 `LIMIT 10` 조회 완료를 알려 왔으나 현재 v1 승인 장부에는 같은 SQL의 실행 기록이 없다. 중복 조회하지 않는다. 기존 oracle 87/200은 coverage이며 113개 미채점이다. DeepEval/Spider 공식 점수는 없다. Draft PR #68은 미병합이다.
 
 ## Next Action Items
-- [ ] 별도 1인용 Linux 호스트의 주소·SSH 계정 범위·영속 볼륨 경로를 확정하고 그 호스트에서 preflight, 외부 직접 접속 차단, 재부팅 보존, smoke, rollback을 실측한다.
-- [ ] 정확한 `SELECT * FROM workspace.default.bank_loan LIMIT 10` 1회에 대한 사용자 승인 후 Databricks J22~J24를 실제 연결에서 확인한다. 이후 조회는 각각 별도 승인한다.
+- [ ] 사용자가 이미 수행한 정확한 `SELECT * FROM workspace.default.bank_loan LIMIT 10`의 실행 위치와 결과를 확인한다. 현재 agent의 승인·후보 발행·후속 로컬 분석 근거로 연결되는지 판정하며 조회를 중복 실행하지 않는다.
+- [ ] 현재 PC의 로컬 단일 사용자 범위에서 저장소 보존·재시작·실제 화면 여정을 재검증한다. 별도 1인용 Linux 호스트 배포는 이번 범위에서 제외한다.
 - [ ] 모델 직접 실행의 다양한 held-out/복구 여정과 지연을 측정하고, 65~78초가 걸린 범주·수치 질문의 도구 선택/계획 경로를 개선한다. 113개 미채점 oracle과 DeepEval/Spider 공식 평가를 별도 완성한다.
 - [ ] D07/D08의 전체 로딩 의미 검증·나머지 차트/SQL/통계의 부분 scan·registry 재사용을 P0로 마무리한다. 원격 파일 staging, 출처/결과 구조 검증과 active 원본 선택은 부분 적용했다. T06/T07 및 J21~J24: docs/data_loading_and_preservation_contract_2026-09-24.md.
 - [ ] 코딩 전에 T00~T02 baseline·요구/평가 매핑·독립 acceptance를 확정한다. 상세: docs/data_agent_requirements_and_evaluation_2026-09-24.md.
@@ -461,7 +461,7 @@
 - [ ] R08: Bounded join, grouped boxplots, structured statistics, outlier/cohort analysis, ordered lines, datetime time-series, grouped count/rate panels and winsorization are complete; implement general multi-panel dashboards and pivot/subtotal analysis as prioritized.
 - [x] R09: Approved live Databricks load/reuse validated and release candidate tag fixed.
 - [x] R10: Remove production dependencies on fixed table/schema facts and validate schema drift and freshness behavior.
-- [ ] R11: Deployment contract and preflight are ready; review draft PR #68, merge, choose the target, and verify smoke/rollback there.
+- [ ] R11: 현재 PC의 로컬 단일 사용자 범위에서 draft PR #68을 검토하고 사용자 여정·재시작·원본 보존을 확인한다. 별도 호스트 smoke/rollback은 이번 범위 밖이다.
 - [ ] R12: Refresh four stale production TableContext schemas only through per-query user approval.
 - [x] R13: Repair the Level 2 reference environment and replace Level 3 placeholders with 17 production contracts.
 - [x] R14 P0/P1 core: Standardize tool outputs, add dataset profiling and approval-gated source discovery, and implement bounded chart specification, multi-dataset join, structured statistical tests, and direct outlier detection.
@@ -475,8 +475,9 @@ Task definitions and acceptance conditions: docs/agent_remaining_tasks_2026-09-1
 ### 2026-09-25 Daily Summary
 - **Work completed**: 로컬 필터 파생의 전체 읽기 예산 누락을 막고, 파일 기반 자산의 표본 용량 측정·원본 해시 검사를 추가했다. 단순 단일 수치 요청의 모델 도구 메뉴를 근거가 명확할 때만 좁혔다. 임의 테이블 평가기가 고정 fixture 변수 때문에 정확한 계산을 허위 실패 처리하던 문제를 고쳤다. Linux 1인용 배포 준비안과 운영 preflight를 다시 점검했다.
 - **Evidence**: 실제 `gemma4:e4b` L1_016은 변경 전 0/3에서 후 3/3 PASS, `qwen3:8b`도 후 3/3 PASS였다. 대표 11개 합성 여정 11/11 독립 채점 PASS. 전체 200문항 탐색은 25개에서 중단했고 그 전 채점 가능 19/19 PASS·미채점 6, 모델 호출 6개 중 4개가 65~78초였다. 합성 10,000행×16열 용량 gate PASS(peak RSS 384,516,096 bytes, 원본 해시 불변). application 237/237, migration 133/133, 참고/agentic 217/217, CI run 36040985241 PASS.
-- **Major issues**: 실제 모델 지연과 일반화 성공률 미측정, 남은 113개 독립 oracle/DeepEval/Spider, 중앙 동시 자원 경계가 남았다. 별도 호스트와 SQL별 승인이 없어 실제 배포·Databricks 여정은 수행할 수 없었다. 현재 private-host preflight는 영속 저장소·접근제어 때문에 NOT READY다.
-- **Next action items**: 위 Next Action Items의 호스트·SQL 승인 여정을 실행하고, 실제 모델 지연과 다양성 평가를 완료한 뒤 PR #68 리뷰/병합·운영 판정을 재검토한다. 현 판정은 NO-GO다.
+- **Major issues**: 실제 모델 지연과 일반화 성공률 미측정, 남은 113개 독립 oracle/DeepEval/Spider, 중앙 동시 자원 경계가 남았다. 당시 별도 호스트와 SQL별 승인이 없어 실제 배포·Databricks agent 여정은 수행하지 않았다. 이후 사용자가 별도 호스트를 범위 밖으로 정하고 Databricks 화면에서 `LIMIT 10`을 직접 실행했다고 확인했다.
+- **Next action items**: 위 Next Action Items에 따라 로컬 사용자 여정·원본 보존·모델 지연을 재평가하고, 사용자가 직접 수행한 SQL을 챗봇 승인/저장 성공과 구분한다. PR #68 리뷰/병합과 로컬 제한 출시 판정은 검증 근거가 갖춰진 뒤 재검토한다.
+- **09:20 범위 정정**: 사용자가 별도 서버 운영을 이번 범위에서 제외하고 `LIMIT 10`은 Databricks 화면에서 직접 실행했다고 확인했다. 따라서 호스트 구축과 같은 SQL 재실행을 후속 요구에서 제거했다. 챗봇 승인/저장/후속 분석 검증은 별개로 남으며 로컬 단일 사용자 제한 출시 판정은 보류한다.
 
 ### 2026-09-24 Daily Summary
 - **Work completed**: 피벗·소계 WIP 회귀와 평가/보존 계약을 정리하고, SQL·필터·히스토그램의 부모/registry 재사용과 복수 root 오선택 차단을 연결했다. active dataset 영속 상태·원본 계보·승인 SQL 실제 출처 검증·원격 결과 컬럼/배치 한도·SQL 집계와 raw 기준 분리·작은 UI 미리보기·`aggregate_dataset` 완료 근거를 구현했다. 이후 원격 배치의 파일 staging과 검증 후 발행, 파일 기반 검사·지정 컬럼 프로파일, 실패/용량 초과 시 원본 보존을 추가했다.
@@ -1587,3 +1588,10 @@ Task definitions and acceptance conditions: docs/agent_remaining_tasks_2026-09-1
 - **Final local validation** [2026-09-25 03:23 KST, Agent: /root]: application 237/237, migration 133/133, 참고/agentic runner 217/217, compileall PASS. 운영 GO로 판정하지 않는다.
 - **PR/CI** [2026-09-25 03:25 KST, Agent: /root]: 임의 테이블 평가 보강·추가 검증 근거 commit `b75aacd`를 draft PR #68에 push하고 설명을 갱신했다. [GitHub Actions run 36040985241](https://github.com/konlo/teleai/actions/runs/36040985241)의 migration/application/agentic/reference/compile 전 단계 PASS. 작업 트리는 clean이며 병합·운영 배포는 하지 않았다.
 - **Graph journey matrix** [2026-09-25, Agent: /root]: 대표 11개 합성 여정 11/11 독립 채점 PASS(모델 직접 호출 1개, 나머지 결정적 경로). 전체 200문항 실제 graph 탐색은 25문항에서 수동 중단했다. 그때까지 채점 가능 19/19 PASS, 미채점 6개, 모델 호출 6개 중 4개가 65~78초였다. 남은 문항 성공률로 외삽하지 않고 `docs/evaluation/preparation_2026-09-24/repeat_go_2026-09-24/journey_matrix_summary.json`에 부분 실행임을 명시했다. 모델 도구 선택 지연과 113개 미채점 기준은 운영 차단 항목이다.
+
+## [2026-09-25 09:17:35 KST] [Agent: /root] User Request: 별도 서버 운영은 이번 범위에서 제외하고 `SELECT * FROM workspace.default.bank_loan LIMIT 10`은 이미 수행했다
+- **Action** [Agent: /root]: 별도 서버 배포 요구를 현 릴리스 범위에서 제외한다. 해당 SQL은 중복 실행하지 않고 기존 결과·승인·후속 분석 근거를 확인한 뒤 로컬 단일 사용자 범위의 출시 판정을 갱신한다.
+- **Clarification** [Agent: /root]: 사용자는 해당 SQL을 챗봇이 아닌 Databricks 화면에서 직접 실행했다. 직접 실행 결과를 현 agent의 승인·후보 발행·원본 보존 성공으로 계산하지 않는다.
+- **Evidence** [Agent: /root]: v1 승인 장부 31개에서 정확한 `LIMIT 10` 요청/완료 기록은 없었다. 과거 `LIMIT 10000` 승인 적재(10,000행)는 별개로 보존되어 있다. 현재 PC의 `local-desktop` preflight READY(프로젝트 내부 저장소 경고)와 localhost:8502 health `ok`를 확인했다. 원격 SQL은 다시 실행하지 않았다.
+- **UI** [Agent: /root]: 로컬 챗봇 화면을 최신 코드로 다시 읽었고 합성 원본 7행·필터 결과 4행, 두 histogram 및 boxplot 이미지와 대화가 보존됨을 확인했다. 승인 요청 장부 총수는 전후 10개로 동일했다. 실제 Databricks 조회를 화면에서 새로 요청하지 않았다.
+- **Artifact update** [Agent: /root]: 출시 판정과 남은 작업 문서에서 별도 호스트 항목을 이번 범위 밖으로 옮기고 직접 SQL 실행과 챗봇 내부 여정을 구분했다.
