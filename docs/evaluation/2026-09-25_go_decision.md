@@ -10,6 +10,7 @@
 - 동일한 웹 질문을 새 턴으로 다시 제출하자 `detect_outliers` 1회, 모델 0회, 0.222초에 완료됐다. Q1=33, Q3=48, IQR=15, 상한 70.5, 상한 초과 68행으로 독립 Parquet 계산과 일치했다. 승인 장부는 기존 완료 조회 1건 그대로이고 원본 Parquet SHA256도 유지됐다.
 - 앱 unittest 254/254, migration 133/133, 복구 fault-injection 17/17을 통과했다. 모델 노드 체크포인트 회귀는 모델 예산 소진 상태에서 실행됐고, 전체 모집단 요청을 표본으로 오인하지 않는 반례를 포함한다. 실제 UI의 과거 오류와 같은 진입점을 합성한 검사이며, 새로운 실제 웹 실패를 일으켜 재개 성공을 확인한 검사는 아니다.
 - Spider `local009`를 다른 로컬 모델 `qwen3:8b`로도 시험했다. 전체 agent 문맥에서는 첫 응답이 60초에 `ReadTimeout`이고 SQL 제안이 없었다. 같은 모델이 짧은 확인 요청에는 3.434초에 응답했으나, 스키마·문서만 넣은 단독 SQL 요청은 31.826초에 **SQLite와 맞지 않는 SQL**을 생성했다. 따라서 지연과 SQL 정확성이 모두 미해결이다. 단독 생성 결과는 TeleAI agent 점수나 공식 Spider EX에 포함하지 않는다.
+- SQL 단계의 지침과 도구 목록을 일시적으로 줄여 Gemma `local009`를 두 번 재평가했다(182.052초, 249.231초). 두 번 모두 SQL 제안 성공 0건이었다. 두 번째 실행의 공개 SQL 초안은 `flights`·`airports_data` 조인과 Haversine 계산을 시도했지만, `departure OR destination` 요청은 현재 범위 분석에서 `unsupported_disjunction`으로 남아 승인 제안 전에 차단됐다. 초안의 좌표/JSON 함수도 공개 SQLite 스키마에 맞지 않아 공식 정답으로 채점할 수 없다. 따라서 축소 지침·도구 변경은 제품 코드에서 되돌렸다. 평가 어댑터에는 공개 벤치마크의 거절된 SQL 초안과 구조화 도구 오류를 저장하는 진단만 유지했다.
 
 ## 이번 버전의 확인 결과
 
@@ -24,11 +25,11 @@
 | Spider 2.0 Lite | 이번 실행 `local009` **SQL 제안 없음**, 237.844초 후 `exhausted` | 공개 SQLite의 SQL 제안 과제 1개. 다음 `local221` 실행 중 중단했으므로 이번 결과로 채점하지 않음. 이전 고정 5개도 0/5 제안; 제출 SQL이 없어 공식 EX 미산출 |
 | 합성 대용량 저장 | 750,000행·5열 저장/재열기, 캐시 격리, 중단 후 복구와 원본 불변 통과 | 실제 운영 스키마·폭·Databricks 전송·out-of-core 분석·다중 사용자 용량은 검증하지 않음 |
 
-테스트는 현재 브랜치 `codex/agentic-analysis-rc-2026-09-14`의 커밋 `95bfc80`에서 실행했다. 상세한 이번 실행 자료는 `/tmp/teleai_go_actual_agent_20260925.json`, `/tmp/teleai_go_deepeval_20260925.json`, `/tmp/teleai_go_spider_20260925/proposals.json`, `/tmp/teleai_go_recovery_20260925.json`, `/tmp/teleai_go_preservation_20260925.json`, `/tmp/teleai_go_large_data_20260925.json`에 있다. `/tmp` 자료는 임시 로컬 증거이며 Git에 포함하지 않는다. 이전 고정 표본과 평가 해석은 [DeepEval·Spider 보고서](2026-09-25_deepeval_spider2.md)에 기록했다.
+위 표의 최초 재판정은 브랜치 `codex/agentic-analysis-rc-2026-09-14`의 커밋 `95bfc80`에서 실행했다. 후속 로컬 복구 수정은 커밋 `ad1cdf3`이며 [GitHub Actions 검증](https://github.com/konlo/teleai/actions/runs/36140493848)이 통과했다. 상세한 최초 실행 자료는 `/tmp/teleai_go_actual_agent_20260925.json`, `/tmp/teleai_go_deepeval_20260925.json`, `/tmp/teleai_go_spider_20260925/proposals.json`, `/tmp/teleai_go_recovery_20260925.json`, `/tmp/teleai_go_preservation_20260925.json`, `/tmp/teleai_go_large_data_20260925.json`에 있다. 후속 진단은 `/tmp/teleai_go_spider_focus_diagnostic_20260925/proposals.json`에 있다. `/tmp` 자료는 임시 로컬 증거이며 Git에 포함하지 않는다. 이전 고정 표본과 평가 해석은 [DeepEval·Spider 보고서](2026-09-25_deepeval_spider2.md)에 기록했다.
 
 ## 출시 차단 이유와 재판정 조건
 
-1. **새로운 분석 과제의 자율 해결 실패.** 동적으로 읽은 Spider SQLite 스키마와 과제 참고 문서가 있어도 SQL 계획을 제안하지 못했다. 모델 호출과 재계획의 시간·도구 관찰을 개선하고, 결과를 보지 않은 공개 held-out 문제에서 SQL 제안→공식 evaluator 실행→정답을 확인해야 한다. 점수 분모와 지연 기준을 출시 범위에 맞게 먼저 고정한다.
+1. **새로운 분석 과제의 자율 해결 실패.** 동적으로 읽은 Spider SQLite 스키마와 과제 참고 문서가 있어도 SQL 계획을 승인 단계까지 제안하지 못했다. `local009`에서는 출발지 또는 도착지라는 OR 범위를 보수적으로 검증할 수 없고, 모델 초안도 SQLite 스키마와 맞지 않았다. 스키마 타입/함수 확인과 복수 컬럼 OR의 검증 가능한 표현을 구현한 뒤, 결과를 보지 않은 공개 held-out 문제에서 SQL 제안→공식 evaluator 실행→정답을 확인해야 한다. 점수 분모와 지연 기준을 출시 범위에 맞게 먼저 고정한다.
 2. **요청한 수치의 최종 답변 검증 범위.** `L2_036`의 누락은 수정되어 재평가를 통과했다. 다른 지표·복합 요청에서도 요구된 산출물과 최종 표현이 일치하는지 held-out 평가가 남았다.
 3. **실패 턴의 실제 웹 재개 검증.** 예산 소진 및 모델 노드 체크포인트의 정확한 로컬 계산 회귀는 통과했다. 그러나 이번 실제 웹 IQR 실패를 수정 전 재개했을 때는 `exhausted`로 확정됐고, 수정 후에는 같은 질문을 새 턴으로 실행해 성공을 확인했다. 향후 실제 웹에서 발생한 새 미완료 체크포인트가 재입력 없이 복구되는지 검증해야 한다.
 4. **대규모 전체 분석 범위 미검증.** 실제 웹은 10,000행 제한 표본, 합성 저장 시험은 75만 행·5열이다. 전체 테이블을 다루는 streaming/부분 scan, Databricks 집계 선택, scan·전송·RSS·시간 예산은 이 결과로 보증할 수 없다. 지원 범위를 표본 기반 EDA로 축소하거나 별도 대규모 실행 경로와 실측 합격 기준을 마련해야 한다.

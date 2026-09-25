@@ -67,7 +67,7 @@ def task_document(spider_root: Path, task: dict) -> str:
 def evaluate_task(spider_root: Path, task: dict, model, predictions: Path,
                   *, benchmark_instruction=False) -> dict:
     from core.analysis_agent.runtime import GraphAnalysisRuntime
-    from langchain_core.messages import AIMessage
+    from langchain_core.messages import AIMessage, ToolMessage
 
     case_id = task["instance_id"]
     base = {"id": case_id, "db": task["db"], "benchmark": "Spider2-Lite SQLite",
@@ -108,7 +108,8 @@ def evaluate_task(spider_root: Path, task: dict, model, predictions: Path,
                 prompt += "\n\nTask-supplied reference document:\n" + supplied_document
             outcome = runtime.submit(prompt)
             requests = outcome.get("requests") or []
-            calls = [call["name"] for message in runtime.events()
+            events = runtime.events()
+            calls = [call["name"] for message in events
                      if isinstance(message, AIMessage) for call in message.tool_calls]
             if remote_calls:
                 return {**base, "status": "FAIL", "reason": "Unapproved SQL execution attempted",
@@ -133,9 +134,28 @@ def evaluate_task(spider_root: Path, task: dict, model, predictions: Path,
                                 "tools": calls, "model_calls": recovery.get("model_calls"),
                                 "elapsed_seconds": round(time.monotonic()-started, 3),
                                 "remote_executions": 0}
+                # The public benchmark contains no private user data. Keep
+                # rejected SQL proposals and structured tool errors so a
+                # missing proposal can be diagnosed without a model replay.
+                drafts = [call.get("args", {}) for message in events
+                          if isinstance(message, AIMessage) for call in message.tool_calls
+                          if call.get("name") == "query_databricks"]
+                observations = []
+                for message in events:
+                    if not isinstance(message, ToolMessage):
+                        continue
+                    try:
+                        result = json.loads(message.content)
+                    except (ValueError, TypeError):
+                        result = {}
+                    observations.append({"tool": message.name,
+                                         "status": result.get("status"),
+                                         "error_code": result.get("error_code")})
                 return {**base, "status": "NO_SQL_PROPOSAL", "agent_status": outcome.get("status"),
                         "tools": calls, "model_calls": recovery.get("model_calls"),
                         "recovery_attempts": recovery.get("attempts"),
+                        "sql_drafts": drafts, "observations": observations,
+                        "remote_executions": 0,
                         "error_type": outcome.get("error_type"),
                         "elapsed_seconds": round(time.monotonic()-started, 3)}
             request = requests[0]

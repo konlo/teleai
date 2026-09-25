@@ -4,7 +4,7 @@
 - **Last Updated**: 2026-09-25
 - **Status**: In Progress — 로컬 단일 사용자 범위에서도 정식 출시 NO-GO
 - **Summary**: 새 Databricks 토큰으로 인증 API HTTP 200, 실제 웹에서 승인형 10,000행 표본 1회 적재·EDA·재시작·원본 보존을 확인했다. 앱 254/254, migration 133/133, fault-injection 17/17이 통과했다. `L2_036` 답변 GEval은 0.5→1.0으로 개선했고 새 웹 IQR 질문은 모델 0회·0.222초에 독립 계산값과 일치했다. 모델 노드 체크포인트 복구 회귀도 통과했으나 기존 웹 실패 턴의 재개는 실패했다. Spider SQL 제안과 대규모 전체 분석은 미검증이므로 [현 버전 판정](docs/evaluation/2026-09-25_go_decision.md)은 NO-GO다.
-- **Next Session Focus**: SQL 계획을 작은 도구·문맥으로 분리하되 공식 Spider SQL 제안·실행 정답률과 실제 웹 여정으로 검증한다. 실패 체크포인트의 실제 UI 재개, 대규모 out-of-core/DB 집계·전송/RSS 실측도 남아 있다. 별도 서버 배포는 사용자 지시에 따라 이번 범위에서 제외한다.
+- **Next Session Focus**: 복수 컬럼 OR 조건을 사용자 발화와 SQL AST 양쪽에서 검증 가능하게 표현하고, 실행 시점 스키마 타입·SQL 방언에 맞는 계획/검사/수정 루프를 구축한다. 그 뒤 공식 Spider SQL 실행 정답률과 held-out 웹 여정으로 판정한다. 실패 체크포인트의 실제 UI 재개, 대규모 out-of-core/DB 집계·전송/RSS 실측도 남아 있다. 별도 서버 배포는 사용자 지시에 따라 이번 범위에서 제외한다.
 - **Current qualification**: 기존 oracle 87/200은 coverage이며 113개 미채점이다. DeepEval 도구 이름 10/10은 모델 자율성 점수가 아니며 Spider 공식 EX는 SQL 미제안으로 산출하지 못했다. Draft PR #68은 미병합이다. 승인 없는 신규 Databricks 조회는 실행하지 않는다.
 
 ## Next Action Items
@@ -1668,4 +1668,5 @@ Task definitions and acceptance conditions: docs/agent_remaining_tasks_2026-09-1
 - **Evaluation** [Agent: /root]: `L2_036` 실제 런타임 oracle PASS, DeepEval 최종 답변 1.0(수정 전 0.5), 모델 호출 0회. 앱 unittest 254/254, migration 133/133, 복구 fault-injection 17/17 통과. Spider `local009`의 Qwen3 agent 실행은 첫 응답 60초 `ReadTimeout`으로 SQL 제안이 없었고, 짧은 별도 프롬프트는 31.826초 만에 SQLite와 맞지 않는 SQL을 생성했다. SQL 일반화 차단 요인은 남는다.
 - **Web regression** [Agent: /root]: 기존 Databricks 승인 적재 10,000행 대화에서 `age IQR(Q3-Q1)`을 새로 실행했을 때 의도 인식·원본/파생 선택 실패로 모델 82.278초+요약 60.395초+재호출 타임아웃을 거쳐 203.023초에 `ReadTimeout`; 즉시 재개도 70.361초 후 `exhausted`였다. 한국어 조사 결합 `IQR과`, 숫자로 끝나는 임의 컬럼명의 잘못된 IQR 배수 파싱, 명시적 행 수로 원본 후보 선택, 모델 노드 체크포인트의 안전한 로컬 재개 경로를 수정했다. 동일 웹 질문을 새 턴으로 재생하면 Q1=33·Q3=48·IQR=15·상한=70.5·초과=68행으로 독립 계산과 같고 0.222초/모델 0회/원격 0회에 끝났다. 승인 장부 완료 1건과 원본 SHA256은 변하지 않았다. 이미 실패한 기존 턴 자체의 재개 성공은 주장하지 않는다.
 - **Final local gate** [Agent: /root]: 마지막 runtime 변경 이후 앱 unittest 254/254, migration 133/133, 복구 fault-injection 17/17, compileall, diff check를 통과했다. localhost:8502를 최종 코드로 재시작하고 health `ok`를 확인했다. 공식 Spider EX, 실제 전체 테이블 성능, 새로운 실제 웹 실패의 재개 성공은 여전히 미검증이다.
+- **Remote gate/SQL investigation** [Agent: /root]: commit `ad1cdf3`을 PR #68 브랜치에 push했고 GitHub Actions deterministic-validation run `36140493848`이 PASS했다. SQL 단계 지침·도구를 일시적으로 축소한 Gemma Spider `local009` 재평가도 182.052초와 249.231초에 모두 SQL 제안 0건이었다. 두 번째 실행은 두 스키마 검사 후 `query_databricks` 초안을 만들었지만 `departure OR destination`이 `unsupported_disjunction`으로 남아 보수적 범위 검증에서 차단됐고, 초안의 좌표/JSON 함수도 SQLite에 맞지 않았다. 정확성 개선이 없으므로 축소 지침·도구 제품 변경은 되돌렸다. 공개 벤치마크의 SQL 초안과 도구 오류 코드만 평가 결과에 남기도록 진단을 보강했다. 정식 출시 판정은 NO-GO를 유지한다.
 - **Artifact Update** [Agent: /root]: `docs/evaluation/2026-09-25_go_decision.md`에 후속 검증과 제한을 기록하고 README의 오래된 인증 403 설명을 실제 승인형 10,000행 적재 사실로 교체했다. 신규 Databricks SQL은 실행하지 않았다.
