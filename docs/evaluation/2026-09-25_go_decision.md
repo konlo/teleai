@@ -14,6 +14,19 @@
 
 ## 이번 버전의 확인 결과
 
+### Spider `local009` 실패의 원인 분리 (22:49 KST)
+
+**LLM과 agent 양쪽에 독립적인 실패 요인이 있다.** 한쪽만 바꿔서는 이 문항의 성공을 보장할 수 없다. 이 판단은 공개 Spider2-Lite SQLite의 `local009` 한 문항에 대한 진단이며, 전체 평가 점수나 실제 Databricks 운영 성공률의 원인 비중으로 일반화하지 않는다.
+
+| 분리 검사 | 관측 | 귀속 |
+|---|---|---|
+| 실제 모델+agent 재생 | Gemma가 `inspect_table_context` 2회 뒤 `query_databricks` SQL 초안을 작성했으나, 4회 모델 호출·복구 1회·249.231초 뒤 `blocked`; 승인 제안·SQL 실행 0회 | SQL 초안 생성까지는 했지만 agent의 범위 검증과 이후 복구가 완료하지 못함 |
+| 모델 없이 범위 검증 | 요청 범위가 `unsupported_disjunction`으로 남았다. 기록된 SQL 초안과 단순한 `departure_airport='ABA' OR arrival_airport='ABA'` SELECT 모두 `scope_matches=False` | agent의 OR 조건 해석/검증이 독립 차단 요인. 잘못된 범위의 실행 차단 자체는 올바른 안전 동작 |
+| agent 없이 SQL 실행 가능성 | 기록된 모델 SQL을 공개 SQLite 파일에서 읽기 전용 실행하면 즉시 `OperationalError: no such function: ST_Y` | 모델이 SQLite 스키마/방언에 맞지 않는 초안을 생성. 차단을 해제해도 이 초안은 실패 |
+| 모델 교체 단서 | Qwen3:8b의 전체 agent 첫 응답은 60.14초 `ReadTimeout`; 짧은 확인 요청은 3.434초, 축약 SQL 요청도 31.826초에 SQLite와 맞지 않는 SQL 생성 | 모델 응답 지연·SQL 정확성 문제도 독립적으로 존재. 단회 교체로 개선 입증 불가 |
+
+평가 어댑터는 SQLite 과제를 제품의 Databricks 승인 도구에 매핑한다. 이 때문에 SQL 방언 오류를 모델 단독의 보편적 성능 문제로 단정할 수 없고, 제품의 실제 Databricks 정확도를 Spider SQL 제안 실패와 동일시할 수도 없다. 다음 검증은 (1) 모델 없이 정답 범위의 OR 질의를 agent 계약에 통과시키되 무승인 실행은 계속 차단, (2) 동일 스키마·SQLite 방언을 명시한 모델 단독 초안을 읽기 전용 DB에서 검증, (3) 결합 후 공식 EX·복구·지연을 재측정하는 순서로 한다. OR를 일괄 허용하거나 검증기를 우회하는 것은 수정안이 아니다.
+
 | 검사 | 결과 | 적용 범위 |
 |---|---|---|
 | 로컬 배포 preflight | `ready=true`; 영속 볼륨 경로 경고 1개 | loopback 단일 사용자. 설정 검사이며 SQL 실행 검사는 아님 |
