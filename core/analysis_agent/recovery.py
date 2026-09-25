@@ -154,6 +154,14 @@ class RecoveryMiddleware(AgentMiddleware):
         current = deepcopy(state.get('recovery') or {})
         request_kind = human.additional_kwargs.get('request_kind') if human else None
         text = str(human.content) if human else ''
+        if human and current.get('request_id') == human.id and 'requested_result_rows' not in current:
+            # A paused checkpoint created before this field existed can still
+            # resume safely against the exact saved user request.
+            rows = re.search(r'(?<!\d)([\d,]+)\s*행\s*(?:표본|샘플|데이터|결과)', text)
+            current['requested_result_rows'] = int(rows[1].replace(',', '')) if rows else None
+            if current.get('calculation') and re.search(r'이상.{0,24}이하', text):
+                current['scope'] = resolve_request_scope(
+                    text, self.context, current.get('previous_scope'))
         if (human and current.get('request_id') == human.id
                 and current.get('status') == 'working' and not current.get('kind')):
             recognized = _chart_kind(text)
@@ -550,6 +558,10 @@ class RecoveryMiddleware(AgentMiddleware):
                 chart or join_requested or calculation or metadata_kind or profile_kind
                 or statistical_kind or pivot_requested or winsor_spec or outlier_spec
                 or operations or data_load or fresh_source_required) else 0)
+            result_rows_match = re.search(
+                r'(?<!\d)([\d,]+)\s*행\s*(?:표본|샘플|데이터|결과)', text)
+            requested_result_rows = (int(result_rows_match[1].replace(',', ''))
+                                     if result_rows_match else None)
             current = dict(request_id=human.id, attempts=0, chart=chart, kind=kind,
                 join=join_requested, join_how=join_how,
                 statistical_kind=statistical_kind,
@@ -592,6 +604,7 @@ class RecoveryMiddleware(AgentMiddleware):
                 current_result_only=bool(current_loaded_reference or re.search(
                     r'(?:현재|보유|지금|이|그)\s*(?:로딩된\s*)?(?:[\d,]+\s*행\s*)?(?:결과|표본|샘플|데이터)|'
                     r'(?<!독립)(?<!대응)표본(?!\s*(?:평균|분산|크기|수))|샘플|일부\s*데이터', text)),
+                requested_result_rows=requested_result_rows,
                 fresh_source_required=fresh_source_required,
                 request_started_at=time.time(),
                 required_columns=mentioned_columns,
@@ -2534,6 +2547,9 @@ class RecoveryMiddleware(AgentMiddleware):
             filter_columns = {item.get('column') for item in conditions}
             measures = [name for name in current.get('required_columns', [])
                         if name not in filter_columns]
+            if not measures and len(current.get('required_columns', [])) == 1:
+                # A range may constrain the histogram's own x column.
+                measures = list(current['required_columns'])
             supported_scope = (not scoped.get('unresolved')
                 and not scoped.get('any_conditions')
                 and not scoped.get('measure_conditions')
@@ -2567,7 +2583,7 @@ class RecoveryMiddleware(AgentMiddleware):
                 and not scope.get('unresolved')
                 and set(scope.get('columns', [])).issubset(
                     {item['column'] for item in (scope.get('conditions', [])+scope.get('any_conditions', []))})
-                and not current.get('current_result_only') and not current.get('evidence_ids')):
+                and not current.get('evidence_ids')):
             # A grounded filtered row count has one deterministic local plan.
             # This supplies a reliable fallback when a language model explains
             # the schema but fails to call the calculation tool. Stay
@@ -2575,10 +2591,17 @@ class RecoveryMiddleware(AgentMiddleware):
             # can satisfy every requested predicate.
             predicate_columns = {item['column'] for item in (
                 scope.get('conditions', [])+scope.get('any_conditions', []))}
+            current_result_only = current.get('current_result_only')
+            requested_rows = current.get('requested_result_rows')
+            selected_id = self.context.selected_dataset_id
             candidates = [info for info in self.context.datasets.metadata.values()
-                if info.coverage == 'complete' and info.grain == 'raw' and info.predicate_known
+                if info.grain == 'raw'
+                and (current_result_only or (info.coverage == 'complete' and info.predicate_known))
                 and predicate_columns.issubset(info.columns) and self._source_matches(info, current)
-                and self._fresh_for_request(info, current)]
+                and (current_result_only or self._fresh_for_request(info, current))
+                and (not current_result_only or requested_rows is None or info.rows == requested_rows)
+                and (not current_result_only or requested_rows is not None
+                     or not selected_id or info.id == selected_id)]
             # A model may first materialize the exact requested subset with
             # use_dataset. In that case both the source frame and its filtered
             # child are reusable candidates. Prefer the one whose persisted
@@ -2589,7 +2612,18 @@ class RecoveryMiddleware(AgentMiddleware):
                 candidates = exact
             if len(candidates) == 1:
                 any_conditions=scope.get('any_conditions', [])
-                if any_conditions:
+                if current_result_only:
+                    pieces=[]
+                    if scope.get('conditions'):
+                        pieces.append(self._where_sql(scope['conditions']))
+                    if any_conditions:
+                        pieces.append('(' + ' OR '.join(
+                            self._where_sql([item]) for item in any_conditions) + ')')
+                    arguments={'dataset_id':candidates[0].id,
+                        'query':'SELECT COUNT(*) AS count FROM data'
+                                + (' WHERE ' + ' AND '.join(pieces) if pieces else ''),
+                        'current_result_only':True}
+                elif any_conditions:
                     pieces=[]
                     if scope.get('conditions'): pieces.append(self._where_sql(scope['conditions']))
                     pieces.append('('+ ' OR '.join(self._where_sql([item]) for item in any_conditions)+')')

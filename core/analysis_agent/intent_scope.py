@@ -18,6 +18,7 @@ _ISO = re.compile(r'(?<![A-Za-z0-9_-])(\d{4}-\d{2}(?:-\d{2})?)(?![A-Za-z0-9_-])'
 _REFERENCE = re.compile(r'그중|같은|아까|앞선|이어서|말고|대신|바꿔')
 _PREVIOUS_MONTH = re.compile(r'이전\s*달|지난\s*달|전월')
 _LITERAL = r'''(?:'(?:[^']|'')*'|"(?:[^"]|"")*"|\d{4}-\d{2}(?:-\d{2})?|[+-]?\d{1,3}(?:,\d{3})+(?:\.\d+)?|[+-]?\d+(?:\.\d+)?|true\b|false\b|[A-Za-z_][A-Za-z0-9_-]*)'''
+_NUMBER = r'[+-]?(?:\d{1,3}(?:,\d{3})+|\d+)(?:\.\d+)?'
 _OPS = {'=':'eq', '==':'eq', '!=':'ne', '<>':'ne', '>':'gt', '>=':'ge', '<':'lt', '<=':'le'}
 
 
@@ -132,6 +133,7 @@ def resolve_request_scope(text, context, previous=None):
     inherited_ratio = dict(previous.get('ratio', {})) if inherited and previous.get('ratio') else None
     if inherited: unresolved.extend(previous.get('unresolved', []))
     found, spans, mentioned_columns = [], [], []
+    numeric_ranges = 0
     for name, metadata in grounding.items():
         aliases = sorted({name, *metadata['aliases']}, key=len, reverse=True)
         names = '(?:' + '|'.join(re.escape(alias) for alias in aliases) + ')'
@@ -146,6 +148,36 @@ def resolve_request_scope(text, context, previous=None):
                               {'column':name, 'op':'le', 'value':start + 9}])
         for match in re.finditer(column_pattern + r'\s*(>=|<=|!=|<>|==|=|>|<)\s*(' + _LITERAL + ')', text, re.I):
             found.append({'column':name, 'op':_OPS[match[1]], 'value':_literal(match[2])})
+            spans.append(match.span())
+        # Bind a bounded numeric interval to the explicitly named column.
+        # In a chart follow-up this changes the population, so a cached chart
+        # of the unfiltered source cannot satisfy the request.
+        range_prefix = column_pattern + r'[^0-9+\-\n]{0,32}(' + _NUMBER + r')\s*'
+        intervals = (
+            range_prefix + r'부터\s*(' + _NUMBER + r')\s*까지',
+            range_prefix + r'[~∼–—]\s*(' + _NUMBER + r')\s*(?:범위|구간)',
+        )
+        for interval in intervals:
+            for match in re.finditer(interval, text, re.I):
+                lower, upper = _literal(match[1]), _literal(match[2])
+                if lower > upper:
+                    unresolved.append('invalid_range_bounds')
+                    continue
+                found.extend([{'column':name, 'op':'ge', 'value':lower},
+                              {'column':name, 'op':'le', 'value':upper}])
+                spans.append(match.span())
+                numeric_ranges += 1
+        paired_bounds = (column_pattern + r'\s*(' + _NUMBER
+                         + r')\s*(이상|초과)\s*(' + _NUMBER + r')\s*(이하|미만)')
+        for match in re.finditer(paired_bounds, text, re.I):
+            lower, upper = _literal(match[1]), _literal(match[3])
+            if lower > upper:
+                unresolved.append('invalid_range_bounds')
+                continue
+            found.extend([{'column':name, 'op':'ge' if match[2] == '이상' else 'gt',
+                           'value':lower},
+                          {'column':name, 'op':'le' if match[4] == '이하' else 'lt',
+                           'value':upper}])
             spans.append(match.span())
         for match in re.finditer(column_pattern + r'\s*(' + _LITERAL
                                  + r')\s*(?:[A-Za-z가-힣%]+(?:을|를)?\s*)?(이상|이하|초과|미만|넘는|넘은)', text, re.I):
@@ -236,7 +268,7 @@ def resolve_request_scope(text, context, previous=None):
 
     disjunction = bool(re.search(r'\bOR\b|또는|혹은|아니면|이나|거나|중\s*하나라도', text, re.I))
     if found or _ISO.search(text):
-        if re.search(r'부터.*까지|\bbetween\b', text, re.I):
+        if re.search(r'부터.*까지|\bbetween\b', text, re.I) and not numeric_ranges:
             unresolved.append('unsupported_range_syntax')
     changed = {item['column'] for item in found}
     conditions = [item for item in conditions if item['column'] not in changed] + found

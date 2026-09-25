@@ -267,7 +267,7 @@ class GraphAnalysisRuntime:
                 # row-level EDA baseline. Keep the user's selected raw branch.
                 # A zero-row schema probe is metadata, not a new EDA baseline.
                 if (loaded.role=='root' and loaded.grain=='raw'
-                        and not self._is_schema_probe(loaded.query)):
+                        and not self.is_schema_probe(loaded.query)):
                     self._select_dataset_unlocked(completed_load_id)
             elapsed=round(time.monotonic()-started,3)
             self.diagnostics.emit('run_completed', run_id=run_id, status=outcome,
@@ -291,7 +291,7 @@ class GraphAnalysisRuntime:
                     'elapsed_seconds':elapsed}
 
     @staticmethod
-    def _is_schema_probe(query):
+    def is_schema_probe(query):
         from sqlglot import exp, parse_one
         from sqlglot.errors import SqlglotError
         try:

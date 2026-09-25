@@ -166,17 +166,20 @@ if state.get('recovery',{}).get('status')=='blocked':
         st.error(remote_failure_message(failures))
 for pending in state['requests']:
     with st.container(border=True):
-        st.subheader('추가 데이터를 불러올까요?')
+        schema_probe=runtime.is_schema_probe(pending['query'])
+        st.subheader('현재 컬럼을 확인할까요?' if schema_probe else '추가 데이터를 불러올까요?')
         from core.analysis_load_plan import source_plan
         plan=source_plan(pending['source'],pending['query'])
         st.write(pending['reason'])
         st.caption('대상: '+(', '.join(plan.actual_tables) if plan.actual_tables else pending['source'])
-                   +' · 결과 유형: '+('집계' if plan.grain=='aggregate' else '행 데이터')
+                   +' · 결과 유형: '+('컬럼 정보(0행)' if schema_probe else
+                                  '집계' if plan.grain=='aggregate' else '행 데이터')
                    +' · SQL 행 제한: '+('있음' if plan.bounded_result else '없음'))
         st.code(pending['query'],language='sql')
         st.caption('이 조회에만 승인이 적용됩니다. 기존 결과는 유지됩니다.')
         yes,no=st.columns(2)
-        if yes.button('불러오고 계속',key='yes-'+pending['id'],disabled=pending['status']!='proposed'):
+        if yes.button('컬럼 확인하고 계속' if schema_probe else '불러오고 계속',
+                      key='yes-'+pending['id'],disabled=pending['status']!='proposed'):
             action(lambda:runtime.respond(pending['id'],approved=True));st.rerun()
         if no.button('조회 취소',key='no-'+pending['id'],disabled=pending['status'] not in {'proposed','invalidated'}):
             action(lambda:runtime.cancel(pending['id']));st.rerun()

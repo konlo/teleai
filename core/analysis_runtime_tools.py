@@ -564,8 +564,9 @@ def build_analysis_tools(context: AnalysisToolContext) -> list[ToolDefinition]:
                     continue
                 chart_info = info
                 if where_sql.strip():
+                    local_where = scope_tree.args['where'].this.sql(dialect='duckdb')
                     filtered = analyze_local(info.id,
-                        'SELECT * FROM data WHERE ' + where_sql,
+                        'SELECT * FROM data WHERE ' + local_where,
                         current_result_only=True)
                     if filtered['status'] != 'ready':
                         return filtered
