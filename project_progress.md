@@ -1595,3 +1595,7 @@ Task definitions and acceptance conditions: docs/agent_remaining_tasks_2026-09-1
 - **Evidence** [Agent: /root]: v1 승인 장부 31개에서 정확한 `LIMIT 10` 요청/완료 기록은 없었다. 과거 `LIMIT 10000` 승인 적재(10,000행)는 별개로 보존되어 있다. 현재 PC의 `local-desktop` preflight READY(프로젝트 내부 저장소 경고)와 localhost:8502 health `ok`를 확인했다. 원격 SQL은 다시 실행하지 않았다.
 - **UI** [Agent: /root]: 로컬 챗봇 화면을 최신 코드로 다시 읽었고 합성 원본 7행·필터 결과 4행, 두 histogram 및 boxplot 이미지와 대화가 보존됨을 확인했다. 승인 요청 장부 총수는 전후 10개로 동일했다. 실제 Databricks 조회를 화면에서 새로 요청하지 않았다.
 - **Artifact update** [Agent: /root]: 출시 판정과 남은 작업 문서에서 별도 호스트 항목을 이번 범위 밖으로 옮기고 직접 SQL 실행과 챗봇 내부 여정을 구분했다.
+
+## [2026-09-25 09:26:47 KST] [Agent: /root] User Request: 챗봇을 실행해서 직접 사용해 보고 싶다
+- **Action** [Agent: /root]: 최신 코드의 localhost Streamlit 프로세스·health·화면을 확인하고 사용자가 바로 조작할 수 있게 연다. 새 Databricks SQL은 실행하지 않는다.
+- **Outcome** [Agent: /root]: PID 56520이 `127.0.0.1:8502`에서 실행 중이고 health는 `ok`다. 새 대화 `192a14cd-84ba-45de-86f9-fc718a1ac7b4`와 기존 `bank_loan` 대화 `612c8013-36e5-4be5-ac25-3f5092ebba75`를 각각 브라우저 탭으로 열어 사용자가 직접 시험할 수 있도록 유지했다. 기존 대화에는 저장된 10,000행 표본, 후속 분석 결과, histogram 이미지와 질문 입력창이 표시된다. 이는 전체 모집단이 아닌 기존 승인 적재 표본이다. 이번에는 Databricks 조회를 실행하지 않았다.
