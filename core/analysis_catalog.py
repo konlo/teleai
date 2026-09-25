@@ -73,6 +73,16 @@ def _is_full_schema_observation(info):
                for node in expression.walk())
 
 
+def _is_zero_row_schema_probe(query):
+    try:
+        tree = parse_one(query, read='databricks')
+    except (TypeError, ValueError, SqlglotError):
+        return False
+    limit = tree.args.get('limit') if isinstance(tree, exp.Select) else None
+    return bool(limit and isinstance(limit.expression, exp.Literal)
+                and limit.expression.is_int and int(limit.expression.this) == 0)
+
+
 def _quoted_table(table):
     parts = [part.strip('` ') for part in str(table).split('.') if part.strip('` ')]
     if not 1 <= len(parts) <= 3:
@@ -104,6 +114,7 @@ def resolve_table_context(reference_context, datasets, table):
                     if _source_key(info.source) == wanted and _is_full_schema_observation(info)]
     if observations:
         latest = observations[-1]
+        schema_only = _is_zero_row_schema_probe(latest.query)
         saved_columns = {column.get('name'):column for column in (saved or {}).get('columns', [])
                          if isinstance(column, dict) and column.get('name')}
         try:
@@ -116,7 +127,9 @@ def resolve_table_context(reference_context, datasets, table):
             column = dict(saved_columns.get(name, {'name':name, 'dtype':''}))
             column['name'] = name
             # Never carry an old dtype across an approved schema observation.
-            column['dtype'] = actual_dtypes.get(name, '')
+            # An empty pandas/Parquet frame reports object even when the SQL
+            # column is numeric. LIMIT 0 proves names, not these dtypes.
+            column['dtype'] = '' if schema_only else actual_dtypes.get(name, '')
             columns.append(column)
         current = {**(saved or {}), 'table':latest.source, 'columns':columns,
                    'training_status':'runtime_schema', 'freshness':'current_loaded_schema',
@@ -124,10 +137,19 @@ def resolve_table_context(reference_context, datasets, table):
                    'schema_fingerprint':schema_fingerprint(columns),
                    'dataset_id':latest.id}
         previous = (saved or {}).get('schema_fingerprint') or schema_fingerprint((saved or {}).get('columns', []))
+        if schema_only:
+            old_names = [str(column.get('name', '')).casefold()
+                         for column in (saved or {}).get('columns', [])]
+            new_names = [str(name).casefold() for name in latest.columns]
+            schema_changed = bool(saved and old_names != new_names)
+        else:
+            schema_changed = bool(saved and previous != current['schema_fingerprint'])
         return {'status':'ready', 'table_context':current,
-                'schema_changed':bool(saved and previous != current['schema_fingerprint']),
+                'schema_changed':schema_changed,
                 'authority':'approved_select_star_result',
-                'scope':'승인 후 로딩된 SELECT * 결과의 실제 컬럼입니다. 해당 결과의 생성 시점 스키마를 나타냅니다.'}
+                'scope':('승인된 0행 조회의 실제 컬럼명입니다. 데이터 타입은 확인되지 않았습니다.'
+                         if schema_only else
+                         '승인 후 로딩된 SELECT * 결과의 실제 컬럼입니다. 해당 결과의 생성 시점 스키마를 나타냅니다.')}
     if saved is None:
         return {'status':'needs_context',
                 'message':'저장되거나 승인 후 확인된 테이블 정보가 없습니다. 정확한 테이블명을 확인한 뒤 스키마 조회 승인을 받아야 합니다.'}
@@ -180,7 +202,10 @@ def load_saved_reference_context(storage_dir):
 def compact_catalog(catalog):
     return {**catalog, 'available_tables': [
         {'table': item.get('table'), 'training_status': item.get('training_status'),
-         'column_count': len(item.get('columns', [])),
+         # A stale snapshot can identify a candidate table, but its old column
+         # count must not be presented as the current database schema.
+         'column_count': (len(item.get('columns', []))
+                          if table_context_freshness(item) == 'fresh' else None),
          'freshness': enrich_reference_context(item).get('freshness'),
          'observed_at': _observed_at(item),
          'schema_fingerprint': item.get('schema_fingerprint') or schema_fingerprint(item.get('columns', []))}

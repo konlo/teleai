@@ -64,6 +64,47 @@ def _bounded_preview_count(text):
     return number if 1 <= number <= 5 else 0
 
 
+def _source_from_prior_table_list(text, messages, human_id, sources):
+    """Resolve an elliptical follow-up only from one explicit prior table label.
+
+    The previous assistant's prose is not schema evidence. It can identify a
+    table for a visible approval proposal, but the live schema still has to be
+    inspected and refreshed under the normal approval contract.
+    """
+    generic = {'관련', '데이터', '데이타', '자료', '테이블', '항목', '항목들',
+               '컬럼', '필드', '분석', '어떤', '보고', '싶은데', '있지', '있습니다'}
+    requested = set(re.findall(r'[가-힣]{2,}', text)) - generic
+    if len(requested) < 2:
+        return None
+    before = []
+    for message in messages:
+        if message.id == human_id:
+            break
+        before.append(message)
+    for message in reversed(before[-12:]):
+        if not isinstance(message, AIMessage) or not isinstance(message.content, str):
+            continue
+        lines = message.content.replace('\\_', '_').splitlines()
+        matches = set()
+        for line in lines[:30]:
+            normalized = re.sub(r'[*`]', '', line)
+            present = [source for source in sources if source and re.search(
+                r'(?<![A-Za-z0-9_])' + re.escape(source.rsplit('.', 1)[-1])
+                + r'(?![A-Za-z0-9_])', normalized, re.I)]
+            if len(present) != 1:
+                continue
+            short = present[0].rsplit('.', 1)[-1]
+            description = re.split(re.escape(short), normalized, maxsplit=1, flags=re.I)[-1]
+            described = set(re.findall(r'[가-힣]{2,}', description)) - generic
+            if len(requested & described) >= 2:
+                matches.add(present[0])
+        if len(matches) == 1:
+            return next(iter(matches))
+        if len(matches) > 1:
+            return None
+    return None
+
+
 def _strip_outlier_method_scope(scope, column):
     """Do not mistake an outlier method token for a literal row filter."""
     if not column:
@@ -98,11 +139,12 @@ class RecoveryMiddleware(AgentMiddleware):
 
     def __init__(self, artifacts, diagnostics, max_attempts=2, context=None,
                  transcript=None, max_model_calls=10, max_tool_calls=12,
-                 max_model_seconds=180):
+                 max_model_seconds=180, remote_available=False):
         self.artifacts, self.diagnostics = artifacts, diagnostics
         self.max_attempts, self.context, self.transcript = max_attempts, context, transcript
         self.max_model_calls, self.max_tool_calls = max_model_calls, max_tool_calls
         self.max_model_seconds = max_model_seconds
+        self.remote_available = remote_available
 
     def _state(self, state):
         messages = state.get('messages', [])
@@ -480,7 +522,7 @@ class RecoveryMiddleware(AgentMiddleware):
                 # numerator and percentage evidence for this compound request.
                 calculation = False
             metadata_kind = None
-            column_words = bool(re.search(r'컬럼|필드|\bcolumns?\b|\bfields?\b', text, re.I))
+            column_words = bool(re.search(r'컬럼|필드|항목|\bcolumns?\b|\bfields?\b', text, re.I))
             if (not chart and not join_requested and not operations and column_words and
                     re.search(r'데이터\s*타입|자료형|\bdtypes?\b|\bdata\s*types?\b', text, re.I)):
                 metadata_kind, calculation = 'dtypes', False
@@ -495,6 +537,15 @@ class RecoveryMiddleware(AgentMiddleware):
                     not re.search(r'고유|결측|중복|누락|빈도|\bnull\b|\bdistinct\b|\bmissing\b|\bunique\b', text, re.I) and
                     re.search(r'목록|개수|구조|이름|어떤|몇|전체|\blist\b|\bschema\b', text, re.I)):
                 metadata_kind, calculation, operations = 'columns', False, []
+            required_sources = sorted(
+                (s for s in sources if mentioned(s) or mentioned(s.split('.')[-1])),
+                key=lambda source: min(
+                    (position for position in (text.find(source), text.find(source.split('.')[-1])) if position >= 0),
+                    default=len(text)))
+            if metadata_kind and not required_sources:
+                inferred = _source_from_prior_table_list(text, messages, human.id, sources)
+                if inferred:
+                    required_sources = [inferred]
             preview_limit = (_bounded_preview_count(text) if not (
                 chart or join_requested or calculation or metadata_kind or profile_kind
                 or statistical_kind or pivot_requested or winsor_spec or outlier_spec
@@ -545,11 +596,7 @@ class RecoveryMiddleware(AgentMiddleware):
                 request_started_at=time.time(),
                 required_columns=mentioned_columns,
                 explicit_columns=explicit_columns,
-                required_sources=sorted(
-                    (s for s in sources if mentioned(s) or mentioned(s.split('.')[-1])),
-                    key=lambda source: min(
-                        (position for position in (text.find(source), text.find(source.split('.')[-1])) if position >= 0),
-                        default=len(text))),
+                required_sources=required_sources,
                 columns=[], failed={}, status='working')
             current['previous_scope'] = previous.get('scope', {})
             current['scope'] = resolve_request_scope(text, self.context, current['previous_scope'])
@@ -914,6 +961,8 @@ class RecoveryMiddleware(AgentMiddleware):
             failed = observation.get('status') in {'error', 'rejected', 'needs_data', 'needs_context', 'needs_refresh', 'unavailable', 'no_valid_chart'}
             if failed:
                 current['failed'][name or message.tool_call_id] = observation
+                if name == 'query_databricks' and observation.get('status') == 'rejected':
+                    current['remote_rejected'] = True
                 signature = self._signature(call or {'name': name, 'args': {}})
                 current['failed_signatures'][signature] = current['failed_signatures'].get(signature, 0) + 1
             else:
@@ -962,6 +1011,10 @@ class RecoveryMiddleware(AgentMiddleware):
                                     'authority':observation.get('authority'),
                                     'scope':observation.get('scope'),
                                     'schema_changed':observation.get('schema_changed', False)}
+                            elif (kind in {'dtypes', 'numeric_columns', 'categorical_columns'}
+                                  and observation.get('authority') == 'approved_select_star_result'
+                                  and '데이터 타입은 확인되지 않았' in observation.get('scope', '')):
+                                current['schema_probe_dtype_unknown'] = True
             if name == 'prepare_histogram' and observation.get('histogram_plan'):
                 plan = observation['histogram_plan']
                 if not self._scope_valid(plan.get('query', ''), current, plan.get('value_column')):
@@ -1830,6 +1883,17 @@ class RecoveryMiddleware(AgentMiddleware):
         text = self._answer(current) if success else remote_failure_message(current['failed'].values(), current.get('remote_rejected', False))
         if not success and not remote_block and reason not in {'missing_evidence', 'unresolved_failure'}:
             text = '반복 실행 한도에 도달해 분석을 중단했습니다. 검증된 완료 결과가 없으며 기존 데이터는 보존했습니다.'
+        if not success and current.get('metadata_kind') and reason == 'schema_refresh_unavailable':
+            current['status'] = 'blocked'
+            text = ('저장된 테이블 스키마가 오래되어 현재 항목을 확인할 수 없습니다. '
+                    '스키마 조회 연결을 확인한 뒤 0행 조회 승인을 요청해주세요. 기존 데이터는 보존했습니다.')
+        if not success and reason == 'schema_probe_dtype_unknown':
+            current['status'] = 'blocked'
+            text = ('0행 스키마 조회로 현재 컬럼명은 확인했지만 데이터 타입은 확인되지 않았습니다. '
+                    '타입 확인용 조회가 필요하며 승인 없이 추가 조회하지 않았습니다. 기존 데이터는 보존했습니다.')
+        if not success and current.get('metadata_kind') and current.get('remote_rejected'):
+            text = ('현재 항목 확인을 위한 0행 스키마 조회가 취소되었습니다. '
+                    '오래된 스냅샷을 현재 컬럼으로 안내하지 않았으며 기존 데이터는 보존했습니다.')
         if not success and not remote_block and current.get('scope_error'):
             if current.get('scope', {}).get('unresolved'):
                 current['status'] = 'blocked'
@@ -2244,6 +2308,37 @@ class RecoveryMiddleware(AgentMiddleware):
                     return {'name':'profile_dataset', 'args':arguments}
         if (self.context and current.get('metadata_kind') in {'columns', 'dtypes', 'numeric_columns', 'categorical_columns'}
                 and not current.get('metadata_evidence')):
+            stale = current.get('failed', {}).get('inspect_table_context', {})
+            if stale.get('status') == 'needs_refresh':
+                from core.analysis_catalog import resolve_table_context
+                from core.analysis_load_plan import source_plan
+                source = stale.get('table_context', {}).get('table', '')
+                inspected = {self._source_key(call.get('args', {}).get('table', ''))
+                             for call in calls.values() if call.get('name') == 'inspect_table_context'}
+                expected = {self._source_key(item) for item in current.get('required_sources', [])}
+                if (source and inspected == {self._source_key(source)}
+                        and (not expected or self._source_key(source) in expected)):
+                    inspection = resolve_table_context(
+                        self.context.reference_context, self.context.datasets, source)
+                    if inspection.get('status') == 'ready':
+                        # An approved LIMIT 0 observation now exists. Recheck
+                        # the live schema instead of reusing the stale result.
+                        if sum(call.get('name') == 'inspect_table_context'
+                               for call in calls.values()) == 1:
+                            return {'name':'inspect_table_context', 'args':{'table':source}}
+                    elif inspection.get('status') == 'needs_refresh' and self.remote_available:
+                        query = inspection.get('refresh_query', '')
+                        if (query and query == stale.get('refresh_query')
+                                and not any(call.get('name') == 'query_databricks'
+                                            for call in calls.values())):
+                            try:
+                                source_plan(source, query)
+                            except ValueError:
+                                pass
+                            else:
+                                return {'name':'query_databricks', 'args':{
+                                    'source':source, 'query':query,
+                                    'reason':'현재 컬럼 확인을 위한 0행 스키마 조회입니다. 데이터 행은 가져오지 않습니다.'}}
             # A schema request has one safe local action when its source is
             # unambiguous. The inspection tool applies freshness/schema-drift
             # policy and can return needs_refresh; it never queries Databricks.
@@ -2266,7 +2361,7 @@ class RecoveryMiddleware(AgentMiddleware):
                 from core.analysis_catalog import resolve_table_context
                 inspection = resolve_table_context(
                     self.context.reference_context, self.context.datasets, candidates[0])
-                if (inspection.get('status') == 'ready'
+                if (inspection.get('status') in {'ready', 'needs_refresh'}
                         and not any(c.get('name') == 'inspect_table_context' and c.get('args') == arguments
                                     for c in calls.values())):
                     return {'name':'inspect_table_context', 'args':arguments}
@@ -2736,6 +2831,13 @@ class RecoveryMiddleware(AgentMiddleware):
 
     def before_step(self, state):
         current, calls = self._state(state)
+        if current.get('schema_probe_dtype_unknown'):
+            return {**self._finish(current, reason='schema_probe_dtype_unknown'), 'jump_to':'end'}
+        if current.get('metadata_kind') and current.get('remote_rejected'):
+            return {**self._finish(current, reason='remote_blocked'), 'jump_to':'end'}
+        if (current.get('metadata_kind') and not self.remote_available
+                and current.get('failed', {}).get('inspect_table_context', {}).get('status') == 'needs_refresh'):
+            return {**self._finish(current, reason='schema_refresh_unavailable'), 'jump_to':'end'}
         if (current.get('data_load') or current.get('plan') or current.get('join')
                 or current.get('time_series_frequency') or current.get('statistical_kind')
                 or current.get('pivot_requested')

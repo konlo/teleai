@@ -11,7 +11,7 @@ from core.analysis_agent.recovery import RecoveryMiddleware, RecoveryPlanningMid
 from langchain.agents import create_agent
 from langchain.agents.middleware import dynamic_prompt, HumanInTheLoopMiddleware
 from langchain.tools import tool, ToolRuntime
-from langgraph.types import Command
+from langgraph.types import Command, interrupt
 from core.analysis_agent.approvals import ApprovalLedger
 from core.analysis_agent.memory import Transcript, memory_middleware, CompactDiscoveryMiddleware, latest_user_request, QueuedRequestMiddleware, ModelTimingMiddleware
 from langchain_core.messages import HumanMessage, AIMessage, SystemMessage, ToolMessage
@@ -83,7 +83,8 @@ class GraphAnalysisRuntime:
             return rendered
         registered=local_tools(self.context, self.diagnostics)
         recovery=RecoveryMiddleware(self.artifacts,self.diagnostics,context=self.context,
-            transcript=self.transcript,max_model_seconds=self.policy.turn_slo_seconds)
+            transcript=self.transcript,max_model_seconds=self.policy.turn_slo_seconds,
+            remote_available=self.remote_execute is not None)
         self.recovery=recovery
         middleware=[QueuedRequestMiddleware(),RecoveryPlanningMiddleware(recovery),CompactDiscoveryMiddleware(),
                     FocusedScalarToolsMiddleware(self.context,self.diagnostics),
@@ -95,6 +96,22 @@ class GraphAnalysisRuntime:
             def query_databricks(source: str, query: str, reason: str, runtime: ToolRuntime) -> dict:
                 """추가 원격 데이터 조회. 정확한 SQL을 제시하고 매번 사용자 승인 후 실행합니다."""
                 envelope=self.ledger.envelope(source,query,reason,self.connection_identity)
+                # A controller-authored tool call can enter the tools node
+                # without passing HumanInTheLoopMiddleware.after_model. Enforce
+                # the same durable approval at the execution boundary too.
+                try:
+                    recorded=self.ledger.get(runtime.tool_call_id)
+                except KeyError:
+                    recorded=self.ledger.propose(runtime.tool_call_id,envelope)
+                if self.ledger.fingerprint({key:recorded[key] for key in envelope}) != self.ledger.fingerprint(envelope):
+                    raise PermissionError('조회 내용 또는 연결이 변경되었습니다. 재승인이 필요합니다.')
+                if recorded['status']=='proposed':
+                    interrupt({'kind':'databricks_approval_required',
+                               'tool_call_id':runtime.tool_call_id})
+                    recorded=self.ledger.get(runtime.tool_call_id)
+                if recorded['status']=='rejected':
+                    return normalize_tool_result({'status':'rejected',
+                        'message':'사용자가 조회를 거절했습니다. 원격 조회는 실행하지 않았습니다.'})
                 try:
                     return normalize_tool_result(
                         self.ledger.execute(runtime.tool_call_id,envelope,self.remote_execute))
@@ -248,7 +265,9 @@ class GraphAnalysisRuntime:
                 loaded=self.datasets.metadata[completed_load_id]
                 # A remote statistic is evidence for this answer, not a new
                 # row-level EDA baseline. Keep the user's selected raw branch.
-                if loaded.role=='root' and loaded.grain=='raw':
+                # A zero-row schema probe is metadata, not a new EDA baseline.
+                if (loaded.role=='root' and loaded.grain=='raw'
+                        and not self._is_schema_probe(loaded.query)):
                     self._select_dataset_unlocked(completed_load_id)
             elapsed=round(time.monotonic()-started,3)
             self.diagnostics.emit('run_completed', run_id=run_id, status=outcome,
@@ -270,6 +289,20 @@ class GraphAnalysisRuntime:
             return {'error_id':error_id, 'status':'incomplete','error_type':type(exc).__name__,
                     'text':f'분석 중 오류가 발생했습니다 ({type(exc).__name__}, 오류 ID: {error_id}). 기존 결과는 보존했습니다. 미완료 분석 재개로 다시 시도할 수 있습니다.',
                     'elapsed_seconds':elapsed}
+
+    @staticmethod
+    def _is_schema_probe(query):
+        from sqlglot import exp, parse_one
+        from sqlglot.errors import SqlglotError
+        try:
+            tree = parse_one(query, read='databricks')
+            limit = tree.args.get('limit') if isinstance(tree, exp.Select) else None
+            return bool(limit and isinstance(limit.expression, exp.Literal)
+                        and limit.expression.is_int and int(limit.expression.this) == 0
+                        and any(isinstance(node, exp.Star) for expression in tree.expressions
+                                for node in expression.walk()))
+        except (TypeError, ValueError, AttributeError, SqlglotError):
+            return False
 
     def submit(self,text,model=None):
         if not text.strip():raise ValueError('요청을 입력해주세요.')
