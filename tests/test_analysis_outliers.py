@@ -4,6 +4,7 @@ import unittest
 
 import numpy as np
 import pandas as pd
+from langchain_core.messages import HumanMessage
 
 from core.analysis_agent.runtime import GraphAnalysisRuntime
 from core.analysis_agent.tools import local_tools
@@ -143,8 +144,70 @@ class AnalysisOutlierTests(unittest.TestCase):
                         self.assertEqual(
                             recovery["outlier_evidence"]["outlier_result"]["thresholds"]["upper"],
                             self.frame["value"].dropna().quantile(0.9))
+                    if method == "iqr":
+                        parameters = recovery["outlier_evidence"]["outlier_result"]["parameters"]
+                        for label, key in (("Q1", "q1"), ("Q3", "q3"), ("IQR", "iqr")):
+                            self.assertIn(label, outcome["text"])
+                            self.assertIn(str(parameters[key]), outcome["text"])
+                    else:
+                        self.assertNotIn("IQR(Q3", outcome["text"])
                 finally:
                     runtime.close()
+
+    def test_explicit_loaded_row_count_selects_root_over_derived_raw_result(self):
+        original = pd.DataFrame({"measure_847": [1, 2, 3, 4, 5, 6, 7, 100]})
+        with tempfile.TemporaryDirectory() as root:
+            runtime = GraphAnalysisRuntime(root, "owner", "iqr-root-selection", ForbiddenModel())
+            source = runtime.datasets.register(
+                original, source="arbitrary.runtime_table",
+                coverage="unknown", predicate_known=True)
+            runtime.datasets.register(
+                original.iloc[:4].copy(), source="arbitrary.runtime_table",
+                coverage="unknown", predicate_known=True, parent_id=source.id)
+            runtime.select_dataset(source.id)
+            try:
+                outcome = runtime.submit(
+                    "현재 로딩된 8행 표본의 measure_847 IQR과 상한 이상치 기준선, 상한을 넘는 행 수를 알려줘. 보유 데이터만 사용해.")
+                self.assertEqual(outcome["status"], "answered", outcome)
+                recovery = runtime.inspect()["recovery"]
+                self.assertEqual(recovery["model_calls"], 0)
+                self.assertEqual(recovery["outlier_evidence"]["dataset_id"], source.id)
+                self.assertIn("Q1:", outcome["text"])
+                self.assertEqual(runtime.context.selected_dataset_id, source.id)
+                pd.testing.assert_frame_equal(runtime.datasets.frames[source.id], original)
+                self.assertFalse(runtime.inspect()["requests"])
+            finally:
+                runtime.close()
+
+    def test_model_node_checkpoint_resumes_iqr_without_model_or_remote(self):
+        original = pd.DataFrame({"measure_847": [1, 2, 3, 4, 5, 6, 7, 100]})
+        with tempfile.TemporaryDirectory() as root:
+            runtime = GraphAnalysisRuntime(root, "owner", "iqr-model-checkpoint", ForbiddenModel())
+            source = runtime.datasets.register(
+                original, source="arbitrary.runtime_table",
+                coverage="unknown", predicate_known=True)
+            runtime.datasets.register(
+                original.iloc[:4].copy(), source="arbitrary.runtime_table",
+                coverage="unknown", predicate_known=True, parent_id=source.id)
+            runtime.select_dataset(source.id)
+            human = HumanMessage(
+                content="현재 로딩된 8행 표본의 measure_847 IQR과 상한 이상치 기준선, 상한을 넘는 행 수를 알려줘. 보유 데이터만 사용해.",
+                id="saved-iqr-request")
+            recovery, _ = runtime.recovery._state({"messages": [human]})
+            recovery.update(status="working", model_calls=10, model_seconds=181.0)
+            runtime.agent.update_state(runtime.config, {
+                "messages": [human], "recovery": recovery},
+                as_node="ObservedSummarizationMiddleware.before_model")
+            self.assertEqual(runtime.agent.get_state(runtime.config).next, ("model",))
+            try:
+                outcome = runtime.resume()
+                self.assertEqual(outcome["status"], "answered", outcome)
+                self.assertEqual(runtime.inspect()["recovery"]["outlier_evidence"]["dataset_id"], source.id)
+                self.assertIn("IQR(Q3", outcome["text"])
+                self.assertFalse(runtime.inspect()["requests"])
+                pd.testing.assert_frame_equal(runtime.datasets.frames[source.id], original)
+            finally:
+                runtime.close()
 
     def test_structured_evidence_survives_restart(self):
         with tempfile.TemporaryDirectory() as root:

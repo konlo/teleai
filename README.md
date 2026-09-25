@@ -38,4 +38,4 @@ python3 scripts/run_telly.py
 
 주요 구현: `core/analysis_agent/`, 화면: `ui/analysis_page.py`.
 
-[작업 현황](docs/agent_validation_tasks.md)과 [검증 보고서](docs/t07_t08_validation.md)를 참고하세요. 현재 Databricks 설정은 OpenSession HTTP 403으로 실제 조회 성공을 검증하지 못했습니다. 로컬 모델의 다중 턴·요약 후 계산은 통과했지만 응답 지연과 대용량 실행 메모리는 추가 개선 대상입니다.
+[작업 현황](docs/agent_validation_tasks.md)과 [검증 보고서](docs/t07_t08_validation.md)를 참고하세요. 현재 로컬 환경에서는 승인된 Databricks 10,000행 표본 적재와 후속 EDA를 실측했습니다. 전체 테이블 분석, Spider SQL 일반화 및 대용량 실행 성능은 검증되지 않았으므로 [최신 GO 판정](docs/evaluation/2026-09-25_go_decision.md)을 함께 확인하세요.

@@ -338,7 +338,15 @@ class GraphAnalysisRuntime:
         with self._exclusive():
             if self._pending():raise ValueError('대기 중인 조회는 먼저 승인 또는 거절해주세요.')
             if self.ledger.uncertain():raise PermissionError('원격 제출 상태가 불명확합니다. 자동 재개할 수 없습니다.')
-            if not self.agent.get_state(self.config).next:raise ValueError('재개할 작업이 없습니다.')
+            checkpoint=self.agent.get_state(self.config)
+            if not checkpoint.next:raise ValueError('재개할 작업이 없습니다.')
+            if checkpoint.next == ('model',):
+                local=self.recovery.resume_local_call(checkpoint.values)
+                if local is not None:
+                    # The normal model node already timed out. Advance only a
+                    # validated local tool call to the tools node, even when
+                    # the persisted model budget has been exhausted.
+                    self.agent.update_state(self.config,local,as_node='RecoveryMiddleware.after_model')
             return self._invoke(None)
 
     def recommend_charts(self,dataset_id):

@@ -3,14 +3,14 @@
 ## Current Status
 - **Last Updated**: 2026-09-25
 - **Status**: In Progress — 로컬 단일 사용자 범위에서도 정식 출시 NO-GO
-- **Summary**: 새 Databricks 토큰으로 인증 API HTTP 200, 실제 웹에서 승인형 10,000행 표본 1회 적재·EDA·재시작·원본 보존을 확인했다. 이번 앱 249/249, migration 133/133, fault-injection 17/17, 대표 실제 런타임 fixture 10/10은 통과했다. 그러나 답변 충실도 `L2_036` GEval 0.5, Spider 공개 SQLite `local009` SQL 제안 실패(237.844초), 실패 턴 재개 한계가 남아 있다. [현 버전 판정](docs/evaluation/2026-09-25_go_decision.md)을 따른다.
-- **Next Session Focus**: SQL 제안·도구 재계획과 필수 답변 필드 검증, 실패 턴 재개를 한 묶음으로 개선한 뒤 고정/held-out 실제 모델 평가와 웹 대화에서 재판정한다. 별도 서버 배포는 사용자 지시에 따라 이번 범위에서 제외한다.
+- **Summary**: 새 Databricks 토큰으로 인증 API HTTP 200, 실제 웹에서 승인형 10,000행 표본 1회 적재·EDA·재시작·원본 보존을 확인했다. 앱 254/254, migration 133/133, fault-injection 17/17이 통과했다. `L2_036` 답변 GEval은 0.5→1.0으로 개선했고 새 웹 IQR 질문은 모델 0회·0.222초에 독립 계산값과 일치했다. 모델 노드 체크포인트 복구 회귀도 통과했으나 기존 웹 실패 턴의 재개는 실패했다. Spider SQL 제안과 대규모 전체 분석은 미검증이므로 [현 버전 판정](docs/evaluation/2026-09-25_go_decision.md)은 NO-GO다.
+- **Next Session Focus**: SQL 계획을 작은 도구·문맥으로 분리하되 공식 Spider SQL 제안·실행 정답률과 실제 웹 여정으로 검증한다. 실패 체크포인트의 실제 UI 재개, 대규모 out-of-core/DB 집계·전송/RSS 실측도 남아 있다. 별도 서버 배포는 사용자 지시에 따라 이번 범위에서 제외한다.
 - **Current qualification**: 기존 oracle 87/200은 coverage이며 113개 미채점이다. DeepEval 도구 이름 10/10은 모델 자율성 점수가 아니며 Spider 공식 EX는 SQL 미제안으로 산출하지 못했다. Draft PR #68은 미병합이다. 승인 없는 신규 Databricks 조회는 실행하지 않는다.
 
 ## Next Action Items
 - [x] 사용자의 `LIMIT 10`은 Databricks 화면에서 직접 실행한 것으로 확인했다. 챗봇 승인·저장 검증과 구분했다. 이후 별도의 제품 승인형 `LIMIT 10000` 조회를 1회 완료했다.
 - [x] 현재 PC의 로컬 단일 사용자 범위에서 저장소 보존·재시작·실제 화면 여정을 검증했다. 별도 1인용 Linux 호스트 배포는 이번 범위에서 제외한다.
-- [ ] 모델 직접 실행의 다양한 held-out/복구 여정과 지연을 개선한다. Spider SQL 제안 실패와 답변 필수 필드 누락, 실패 턴 재개를 우선 해결한다. 113개 미채점 oracle과 DeepEval/Spider 확대 평가도 남아 있다.
+- [ ] 모델 직접 실행의 다양한 held-out/복구 여정과 지연을 개선한다. 한 IQR 답변의 필수 필드와 정확한 로컬 표본의 예산 소진 후 재개는 수정했다. Spider SQL 제안 실패, 실제 UI 재개, 113개 미채점 oracle과 DeepEval/Spider 확대 평가는 남아 있다.
 - [ ] D07/D08의 전체 로딩 의미 검증·나머지 차트/SQL/통계의 부분 scan·registry 재사용을 P0로 마무리한다. 원격 파일 staging, 출처/결과 구조 검증과 active 원본 선택은 부분 적용했다. T06/T07 및 J21~J24: docs/data_loading_and_preservation_contract_2026-09-24.md.
 - [ ] 코딩 전에 T00~T02 baseline·요구/평가 매핑·독립 acceptance를 확정한다. 상세: docs/data_agent_requirements_and_evaluation_2026-09-24.md.
 - [x] 제품 승인 카드에서 사용자가 승인한 실제 Databricks 조회 → 저장 → 분석 → 후속 질문을 검증했다.
@@ -1661,3 +1661,11 @@ Task definitions and acceptance conditions: docs/agent_remaining_tasks_2026-09-1
 - **Contracts and storage** [Agent: /root]: 현재 버전 앱 unittest 249/249, migration 133/133, agentic fault-injection 17/17 통과. 실제 모델 옵션의 preservation 7턴도 원본 불변·oracle 일치·원격 0회로 통과했지만 각 턴 모델 호출은 0회였다. 합성 750,000행·5열 저장/재열기·캐시 격리·중단 복구 통과. 운영 스키마와 out-of-core 분석의 성능 주장은 하지 않는다.
 - **Actual model/DeepEval** [Agent: /root]: 고정 대표 fixture 10/10 독립 oracle PASS. 9문항은 모델 0회, `L1_016` 한 문항만 모델 1회·34.099초. DeepEval 도구 이름 10/10이나 최종 답변 2문항 판정은 `L1_016` 1.0, `L2_036` 0.5다. 후자는 요청한 Q1=98, Q3=1824, IQR=1726을 최종 답변에 적지 않았다.
 - **Spider/decision** [Agent: /root]: 현재 코드의 공개 Spider2-Lite SQLite `local009`는 schema·공식 참고 문서 제공 후 모델 2회, 237.844초에 `exhausted`/SQL 제안 없음. 두 번째 `local221`은 첫 실패 확인 후 중단했으며 이번 실행 결과로 채점하지 않았다. 이전 고정 5개 0/5 제안과 일치한다. 공식 EX는 제출 SQL 부재로 미산출. 사용자 목표인 자율 분석 agent의 정식 출시는 **NO-GO**. 판정과 재검증 조건은 `docs/evaluation/2026-09-25_go_decision.md`에 기록했다.
+
+## [2026-09-25 21:36:35 KST] [Agent: /root] User Request: GO를 위해 남은 문제 해결과 검증을 계속 진행해 달라
+- **Action** [Agent: /root]: NO-GO 원인인 SQL 제안 실패, 답변 필수 수치 누락, 실패한 턴의 재개 한계를 공통 계약 관점에서 진단·수정하고, 승인 없는 Databricks 재조회 없이 고정/held-out 평가와 웹 재검증을 수행한다.
+- **Fix** [Agent: /root]: IQR 이상치 답변에 구조화 도구 결과의 Q1·Q3·IQR을 포함했다. 모델 예산을 소진한 체크포인트라도 정확한 로딩 표본·컬럼이 검증되고 로컬 도구 예산이 남으면 원격 조회 없이 `local_analysis_sql`로 재개한다. 전체 모집단 요청을 불완전 표본으로 대체하지 않는 반례도 추가했다.
+- **Evaluation** [Agent: /root]: `L2_036` 실제 런타임 oracle PASS, DeepEval 최종 답변 1.0(수정 전 0.5), 모델 호출 0회. 앱 unittest 254/254, migration 133/133, 복구 fault-injection 17/17 통과. Spider `local009`의 Qwen3 agent 실행은 첫 응답 60초 `ReadTimeout`으로 SQL 제안이 없었고, 짧은 별도 프롬프트는 31.826초 만에 SQLite와 맞지 않는 SQL을 생성했다. SQL 일반화 차단 요인은 남는다.
+- **Web regression** [Agent: /root]: 기존 Databricks 승인 적재 10,000행 대화에서 `age IQR(Q3-Q1)`을 새로 실행했을 때 의도 인식·원본/파생 선택 실패로 모델 82.278초+요약 60.395초+재호출 타임아웃을 거쳐 203.023초에 `ReadTimeout`; 즉시 재개도 70.361초 후 `exhausted`였다. 한국어 조사 결합 `IQR과`, 숫자로 끝나는 임의 컬럼명의 잘못된 IQR 배수 파싱, 명시적 행 수로 원본 후보 선택, 모델 노드 체크포인트의 안전한 로컬 재개 경로를 수정했다. 동일 웹 질문을 새 턴으로 재생하면 Q1=33·Q3=48·IQR=15·상한=70.5·초과=68행으로 독립 계산과 같고 0.222초/모델 0회/원격 0회에 끝났다. 승인 장부 완료 1건과 원본 SHA256은 변하지 않았다. 이미 실패한 기존 턴 자체의 재개 성공은 주장하지 않는다.
+- **Final local gate** [Agent: /root]: 마지막 runtime 변경 이후 앱 unittest 254/254, migration 133/133, 복구 fault-injection 17/17, compileall, diff check를 통과했다. localhost:8502를 최종 코드로 재시작하고 health `ok`를 확인했다. 공식 Spider EX, 실제 전체 테이블 성능, 새로운 실제 웹 실패의 재개 성공은 여전히 미검증이다.
+- **Artifact Update** [Agent: /root]: `docs/evaluation/2026-09-25_go_decision.md`에 후속 검증과 제한을 기록하고 README의 오래된 인증 403 설명을 실제 승인형 10,000행 적재 사실로 교체했다. 신규 Databricks SQL은 실행하지 않았다.

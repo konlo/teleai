@@ -4,6 +4,7 @@ import tempfile
 import unittest
 
 import pandas as pd
+from langchain_core.messages import AIMessage, HumanMessage
 
 from core.analysis_agent.runtime import GraphAnalysisRuntime
 from scripts.evaluate_analysis_statistics import ForbiddenModel
@@ -13,6 +14,82 @@ FIXTURE = json.loads(Path("tests/fixtures/analysis_acceptance.json").read_text()
 
 
 class ScalarRecoveryTests(unittest.TestCase):
+    def test_model_node_checkpoint_does_not_answer_full_population_from_sample(self):
+        with tempfile.TemporaryDirectory() as root:
+            runtime = GraphAnalysisRuntime(root, "owner", "model-node-full-population", ForbiddenModel())
+            source = runtime.datasets.register(
+                pd.DataFrame({"measure_847": [2, 4, 6]}),
+                source="arbitrary.runtime_table", coverage="unknown", predicate_known=True)
+            runtime.select_dataset(source.id)
+            human = HumanMessage(
+                content="전체 원본 테이블의 measure_847 중앙값을 알려줘.",
+                id="saved-model-node-full-population")
+            recovery, _ = runtime.recovery._state({"messages": [human]})
+            recovery.update(status="working", model_calls=1)
+            runtime.agent.update_state(runtime.config, {
+                "messages": [human], "recovery": recovery},
+                as_node="ObservedSummarizationMiddleware.before_model")
+            self.assertEqual(runtime.agent.get_state(runtime.config).next, ("model",))
+            try:
+                outcome = runtime.resume()
+                self.assertEqual(outcome["status"], "incomplete", outcome)
+                self.assertEqual(runtime.context.selected_dataset_id, source.id)
+                self.assertFalse(runtime.inspect()["requests"])
+            finally:
+                runtime.close()
+
+    def test_exhausted_checkpoint_cannot_promote_sample_to_full_population(self):
+        with tempfile.TemporaryDirectory() as root:
+            runtime = GraphAnalysisRuntime(root, "owner", "resume-full-population", ForbiddenModel())
+            source = runtime.datasets.register(
+                pd.DataFrame({"measure_847": [2, 4, 6]}),
+                source="arbitrary.runtime_table", coverage="unknown", predicate_known=True)
+            runtime.select_dataset(source.id)
+            human = HumanMessage(
+                content="전체 원본 테이블의 measure_847 중앙값을 알려줘.",
+                id="saved-full-population-request")
+            recovery, _ = runtime.recovery._state({"messages": [human]})
+            recovery.update(status="working", model_calls=10, model_seconds=181.0)
+            runtime.agent.update_state(runtime.config, {
+                "messages": [human, AIMessage(content="Unverified prior answer")],
+                "recovery": recovery}, as_node="model")
+
+            outcome = runtime.resume()
+            self.assertEqual(outcome["status"], "exhausted", outcome)
+            self.assertEqual(runtime.context.selected_dataset_id, source.id)
+            self.assertFalse(runtime.inspect()["requests"])
+            self.assertEqual(len(runtime.datasets.metadata), 1)
+            runtime.close()
+
+    def test_exhausted_checkpoint_resumes_exact_loaded_sample_locally(self):
+        original = pd.DataFrame({"measure_847": [2, 4, 6, 8, 10, 12]})
+        with tempfile.TemporaryDirectory() as root:
+            runtime = GraphAnalysisRuntime(root, "owner", "resume-sample", ForbiddenModel())
+            source = runtime.datasets.register(
+                original, source="arbitrary.runtime_table",
+                coverage="unknown", predicate_known=True)
+            runtime.datasets.register(
+                original.iloc[:3].copy(), source="arbitrary.runtime_table",
+                coverage="unknown", predicate_known=True, parent_id=source.id)
+            runtime.select_dataset(source.id)
+            human = HumanMessage(
+                content="현재 로딩된 6행 표본의 measure_847 중앙값을 알려줘.",
+                id="saved-request")
+            recovery, _ = runtime.recovery._state({"messages": [human]})
+            recovery.update(status="working", model_calls=10, model_seconds=181.0)
+            runtime.agent.update_state(runtime.config, {
+                "messages": [human, AIMessage(content="Unverified prior answer")],
+                "recovery": recovery}, as_node="model")
+
+            outcome = runtime.resume()
+            self.assertEqual(outcome["status"], "answered", outcome)
+            result = runtime.datasets.frames[runtime.inspect()["recovery"]["evidence_ids"][-1]]
+            self.assertEqual(float(result.iloc[0, 0]), 7.0)
+            self.assertEqual(runtime.context.selected_dataset_id, source.id)
+            pd.testing.assert_frame_equal(runtime.datasets.frames[source.id], original)
+            self.assertFalse(runtime.inspect()["requests"])
+            runtime.close()
+
     def test_explicit_loaded_sample_size_selects_original_after_derived_result(self):
         original = pd.DataFrame({"measure_847": [2, 4, 6, 8, 10, 12]})
         with tempfile.TemporaryDirectory() as root:

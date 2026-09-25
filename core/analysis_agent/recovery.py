@@ -265,9 +265,9 @@ class RecoveryMiddleware(AgentMiddleware):
                     winsor_spec = {'lower_quantile':fraction, 'upper_quantile':1-fraction}
             outlier_spec = None
             if not chart and not winsor_spec:
-                if re.search(r'\bIQR\b|사분위\s*범위', text, re.I) and re.search(
+                if re.search(r'(?<![A-Za-z0-9_])IQR(?![A-Za-z0-9_])|사분위\s*범위', text, re.I) and re.search(
                         r'이상치|극단치|상한|하한|fence|기준선', text, re.I):
-                    match = re.search(r'(\d+(?:\.\d+)?)\s*\*?\s*IQR', text, re.I)
+                    match = re.search(r'(?<![A-Za-z0-9_])(\d+(?:\.\d+)?)\s*\*?\s*IQR(?![A-Za-z0-9_])', text, re.I)
                     outlier_spec = {'method':'iqr', 'threshold':float(match.group(1)) if match else 1.5}
                 elif re.search(r'Z[\s-]*Score|Z\s*점수|시그마|sigma', text, re.I) and re.search(
                         r'이상치|극단치|초과|범위|점검', text, re.I):
@@ -1822,6 +1822,10 @@ class RecoveryMiddleware(AgentMiddleware):
                 f"전체 유효값 범위: {distribution['minimum']} ~ {distribution['maximum']}; "
                 f"하한 미만 {counts['lower']:,}개, 상한 초과 {counts['upper']:,}개."
             )
+            if result['method'] == 'iqr':
+                parameters = result['parameters']
+                line += (f"\nQ1: {parameters['q1']}; Q3: {parameters['q3']}; "
+                         f"IQR(Q3 − Q1): {parameters['iqr']}.")
             if result.get('warnings'):
                 line += "\n주의: " + " ".join(result['warnings'])
             line += f"\n분석 범위: {evidence.get('scope')}"
@@ -2136,7 +2140,10 @@ class RecoveryMiddleware(AgentMiddleware):
                 and self._source_matches(info, current)
                 and self._fresh_for_request(info, current)
                 and (current.get('current_result_only')
-                    or (info.coverage == 'complete' and info.predicate_known))]
+                    or (info.coverage == 'complete' and info.predicate_known))
+                and (not current.get('current_result_only')
+                     or current.get('requested_result_rows') is None
+                     or info.rows == current['requested_result_rows'])]
             if len(candidates) == 1:
                 info = candidates[0]
                 frame = project_dataset(self.context.datasets, info.id, [column])
@@ -2866,6 +2873,49 @@ class RecoveryMiddleware(AgentMiddleware):
         message = last.model_copy(update={'content': '', 'tool_calls': [call]}) if last else AIMessage(content='', tool_calls=[call])
         return {'recovery': current, 'messages': [message]}
 
+    def _budget_local_rescue(self, current, calls, *, last=None):
+        """Finish a grounded local calculation after the model budget is spent.
+
+        A checkpoint can resume after a slow model call. Never reset the budget
+        or propose another remote query; only a grounded local calculation
+        may run when there is still a tool-call slot.
+        """
+        if (self._limit_reason(current) not in {'model_call_budget', 'model_time_budget'}
+                or len(current['sent_calls']) >= self.max_tool_calls
+                or current.get('remote_rejected')
+                or any(o.get('status') == 'unavailable' for o in current['failed'].values())
+                or (last is not None and last.tool_calls)):
+            return None
+        proposed = self._next_local(current, calls)
+        if (not proposed or proposed['name'] not in {'local_analysis_sql', 'detect_outliers'}
+                or not self._proposed_scope_valid(proposed, current)):
+            return None
+        self.diagnostics.emit('budget_local_rescue', request_id=current.get('request_id'),
+                              tool=proposed['name'])
+        return self._dispatch(current, proposed, last)
+
+    def resume_local_call(self, state):
+        """Skip a timed-out model node only for a verified local calculation.
+
+        A graph checkpoint can point directly at ``model``, so its earlier
+        before-model middleware will not run again on resume. The runtime can
+        replace that pending model step with this narrow local tool call.
+        """
+        current, calls = self._state(state)
+        if (current.get('status') != 'working'
+                or len(current['sent_calls']) >= self.max_tool_calls
+                or current.get('remote_rejected')
+                or any(o.get('status') == 'unavailable' for o in current['failed'].values())
+                or self._complete(current)):
+            return None
+        proposed = self._next_local(current, calls)
+        if (not proposed or proposed['name'] not in {'local_analysis_sql', 'detect_outliers'}
+                or not self._proposed_scope_valid(proposed, current)):
+            return None
+        self.diagnostics.emit('checkpoint_local_rescue', request_id=current.get('request_id'),
+                              tool=proposed['name'])
+        return self._dispatch(current, proposed)
+
     def before_step(self, state):
         current, calls = self._state(state)
         if current.get('schema_probe_dtype_unknown'):
@@ -2891,7 +2941,10 @@ class RecoveryMiddleware(AgentMiddleware):
                 or current.get('preview_limit')) and self._complete(current):
             return {**self._finish(current), 'jump_to': 'end'}
         reason = self._limit_reason(current)
-        if reason: return {**self._finish(current, reason=reason), 'jump_to': 'end'}
+        if reason:
+            rescued = self._budget_local_rescue(current, calls)
+            if rescued: return {**rescued, 'jump_to': 'tools'}
+            return {**self._finish(current, reason=reason), 'jump_to': 'end'}
         cached = self._cached_chart_call(current)
         if cached: return {**self._dispatch(current, cached), 'jump_to':'tools'}
         proposed = self._next_local(current, calls)
@@ -3077,7 +3130,10 @@ class RecoveryMiddleware(AgentMiddleware):
         if self._complete(current) and (current.get('plan') or not last.tool_calls):
             return self._finish(current, last)
         reason = self._limit_reason(current)
-        if reason: return self._finish(current, last, reason)
+        if reason:
+            rescued = self._budget_local_rescue(current, calls, last=last)
+            if rescued: return rescued
+            return self._finish(current, last, reason)
         if last.tool_calls and remote_block and any(c['name'] == 'query_databricks' for c in last.tool_calls):
             return self._finish(current, last, 'remote_blocked')
         if any(not self._proposed_scope_valid(call, current) for call in last.tool_calls):
