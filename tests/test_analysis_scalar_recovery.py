@@ -13,6 +13,29 @@ FIXTURE = json.loads(Path("tests/fixtures/analysis_acceptance.json").read_text()
 
 
 class ScalarRecoveryTests(unittest.TestCase):
+    def test_explicit_loaded_sample_size_selects_original_after_derived_result(self):
+        original = pd.DataFrame({"measure_847": [2, 4, 6, 8, 10, 12]})
+        with tempfile.TemporaryDirectory() as root:
+            runtime = GraphAnalysisRuntime(root, "owner", "sample-median", ForbiddenModel())
+            source = runtime.datasets.register(
+                original, source="arbitrary.runtime_table",
+                coverage="unknown", predicate_known=True)
+            runtime.datasets.register(
+                original.iloc[:3].copy(), source="arbitrary.runtime_table",
+                coverage="unknown", predicate_known=True, parent_id=source.id)
+            runtime.select_dataset(source.id)
+
+            outcome = runtime.submit(
+                "현재 로딩된 6행 표본의 measure_847 중앙값을 알려줘.")
+            self.assertEqual(outcome["status"], "answered", outcome)
+            state = runtime.inspect()["recovery"]
+            result = runtime.datasets.frames[state["evidence_ids"][-1]]
+            self.assertEqual(float(result.iloc[0, 0]), 7.0)
+            self.assertEqual(state["model_calls"], 0)
+            self.assertEqual(runtime.context.selected_dataset_id, source.id)
+            pd.testing.assert_frame_equal(runtime.datasets.frames[source.id], original)
+            runtime.close()
+
     def test_unqualified_single_scalar_reuses_unique_complete_raw_dataset(self):
         frame = pd.DataFrame({"segment_code": ["X", "Y", "X"],
                               "measure_847": [4, 10, 16]})

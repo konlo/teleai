@@ -1635,3 +1635,22 @@ Task definitions and acceptance conditions: docs/agent_remaining_tasks_2026-09-1
 - **Live finding** [Agent: /root]: 기존 웹 대화의 정확한 `SELECT * FROM `workspace`.`default`.`bank_loan` LIMIT 0` 승인 카드로 조회를 시작했다. Databricks OpenSession에서 HTTP 403 `QueryNotSubmitted`가 발생했다. 장부는 `failed` 1건, 생성된 데이터셋 0건, SQL 제출 0건이다. 별도 인증 API도 `Invalid access token`을 반환하고 Chrome Databricks 세션도 만료됐다. 원인은 현재 로컬 토큰의 무효화이며 실제 데이터 적재는 수행되지 않았다.
 - **Artifact Update** [Agent: /root]: 명확한 원격 인증 실패 후 schema/data-load 요청이 모델을 재호출해 약 104초 지연된 결함을 수정했다. 이제 즉시 차단 응답으로 끝내며, 스키마 질문에 잘못 붙던 '히스토그램은 아직' 문구를 일반적인 결과 미생성 안내로 바꿨다. 403·모델 재호출 0회 회귀를 추가했다.
 - **Verification** [Agent: /root]: 집중 회귀 11/11, 앱 unittest 248/248, migration 133/133, diff check 통과. 실제 적재·시각화 여정은 유효한 인증 갱신 전에는 검증할 수 없다.
+
+## [2026-09-25 15:55:28 KST] [Agent: /root] User Request: Databricks에 접속할 수 있다
+- **Action** [Agent: /root]: Chrome 로그인 상태와 챗봇 로컬 인증 설정을 각각 확인하고, 가능한 경우 실제 승인형 데이터 적재 검증을 재개한다.
+- **Finding** [Agent: /root]: 현재 Chrome Databricks 탭은 로그인 화면이며 Google 계정 선택 단계다. 로컬 `.env` 토큰으로 인증 API를 재확인했지만 여전히 HTTP 403 `Invalid access token`이다. 브라우저 로그인 가능성과 챗봇 API 인증은 별개임을 확인했다.
+- **Next** [Agent: /root]: 표시된 Google 계정으로 로그인하면 계정 이메일이 Databricks에 전달되므로 구체적인 계정 선택 확인을 요청했다. 그 뒤에도 새 유효 토큰의 로컬 적용 전에는 agent 원격 적재를 재시도하지 않는다.
+
+## [2026-09-25 20:40:40 KST] [Agent: /root] User Request: 현재 Databricks 로그인 및 접속 상태를 직접 확인하고 필요한 정보를 조사해 달라
+- **Action** [Agent: /root]: 브라우저의 실제 로그인 화면과 챗봇 API 인증을 읽기 전용으로 각각 확인한다. 새 SQL이나 데이터 재적재는 실행하지 않는다.
+- **Outcome** [Agent: /root]: 오래된 Google 계정 선택 탭과 별개로, 새 Chrome Databricks 워크스페이스 탭에서 `Welcome to Databricks`, 사용자 계정 메뉴, `Welcome back` 알림을 확인했다. 따라서 브라우저 로그인은 성공했다. `.env` 워크스페이스 호스트는 이 탭과 일치하고 HTTP Path는 SQL Warehouse 형식이다. 하지만 로컬 챗봇 토큰을 인증 API로 재검증하면 여전히 HTTP 403 `Invalid access token`이다. 웹 로그인은 앱 API 인증을 갱신하지 않는다.
+- **Constraint** [Agent: /root]: Databricks 콘솔이 자동 브라우저 조작을 지원하지 않는다는 명시적 알림을 표시했다. 그 화면에서 토큰·Warehouse 설정을 더 자동 조작하지 않았다. 유효한 API 인증이 확보될 때까지 SQL을 재제출하지 않는다.
+
+## [2026-09-25 20:49:47 KST] [Agent: /root] User Request: Databricks API 토큰을 발급받아 로컬 설정을 업데이트했다
+- **Action** [Agent: /root]: 토큰 값을 노출하지 않고 인증 API 상태를 확인한다. 유효하면 챗봇을 새 연결로 재시작한 뒤 실제 웹에서 승인형 조회·적재·후속 분석을 검증한다.
+- **Live connection** [Agent: /root]: 새 토큰으로 Databricks `Me` 및 SQL Warehouse 상태 API가 HTTP 200을 반환했다. 토큰 값은 출력·기록·커밋하지 않았다. Streamlit을 재시작해 로컬 챗봇에 새 인증을 적용했다.
+- **Approved load** [Agent: /root]: 새 웹 대화 `b6f376d1-9398-4d31-8581-f744db786861`에서 `workspace.default.bank_loan`의 정확한 `SELECT * ... LIMIT 10000` 승인 카드를 보고 `불러오고 계속`을 눌렀다. 실제 Databricks 조회가 완료돼 10,000행·18열 표본을 원본으로 저장했다. 이는 테이블 전체가 아닌 제한된 표본이다. 장부에 완료 원격 조회 1건만 기록됐다.
+- **Live EDA** [Agent: /root]: 같은 웹 대화에서 `age` 히스토그램 이미지(유효값 10,000, 중앙값 39), 30~40 범위 재시각화 이미지(4,442행, 중앙값 34), 해당 범위 행 수 4,442를 확인했다. 독립 Parquet 계산이 값과 일치했고 원본 파일 SHA256은 후속 분석 전후 동일했다. 선택 데이터셋은 원본 10,000행으로 유지됐다. 앱 재시작 뒤 원본·파생 결과·차트도 복구됐다. 후속 질문에서는 원격 조회를 재실행하지 않았다.
+- **Regression found/fix** [Agent: /root]: 재시작 후 `현재 로딩된 10,000행 표본의 age 중앙값` 질문은 원본과 4,442행 파생 표본을 구별하지 못해 모델 경로로 진입했다. 모델 3회 시도와 요약을 거쳐 267.204초에 `ReadTimeout`으로 실패했다. 원격 조회 오류는 아니다. `core/analysis_agent/recovery.py`의 단일 수치 로컬 후보에 명시된 표본 행 수 필터를 추가했다. 임의 스키마·원본/파생 표본 회귀를 `tests/test_analysis_scalar_recovery.py`에 추가했다. 집중 4/4, 분석 테스트 187/187 및 diff check 통과. 실제 미완료 턴 재개 검증 진행 중.
+- **Post-fix web replay** [21:01 KST, Agent: /root]: 이전 실패 턴의 `미완료 분석 재개`는 이전 모델 반복 한도를 이어받아 `exhausted`로 끝났다. 같은 대화에서 동일한 중앙값 질문을 새 턴으로 다시 제출하자 웹 화면에 `중앙값: 39.0`이 표시됐다. 런타임 로그는 `local_analysis_sql` 1회, 모델 0회, 0.283초 완료를 기록했다. 승인 장부는 여전히 `completed` 1건뿐이며 원본 10,000행 Parquet SHA256 `7c4a1c20588261932629087d091d43e1ad2d80f4e36cb3d1acb20eb8462fe10d`가 유지됐다.
+- **Final checks** [Agent: /root]: 앱 전체 unittest 249/249, migration 133/133, 분석 테스트 187/187 및 diff check 통과. localhost:8502 웹 앱은 수정된 코드로 실행 중이다. 이번 실측은 한 테이블의 최대 10,000행 표본과 이어지는 EDA에 한정된다. 전체 테이블 통계·다른 스키마·Spider 공식 EX·운영 호스트 판정까지 검증한 것은 아니다.

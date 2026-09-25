@@ -2739,6 +2739,9 @@ class RecoveryMiddleware(AgentMiddleware):
                 if info.grain == 'raw' and (current.get('current_result_only') or info.predicate_known)
                 and needed_columns.issubset(info.columns) and self._source_matches(info, current)
                 and (not selected_scalar or info.id == self.context.selected_dataset_id)
+                and (not current.get('current_result_only')
+                     or current.get('requested_result_rows') is None
+                     or info.rows == current['requested_result_rows'])
                 and (current.get('current_result_only')
                     or (info.coverage == 'complete' and self._fresh_for_request(info, current)))]
             from pandas.api.types import is_numeric_dtype
