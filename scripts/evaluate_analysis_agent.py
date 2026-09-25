@@ -1448,7 +1448,8 @@ def preserve_runtime_metadata(runtime, spec, artifact_dir=None):
     return metadata
 
 
-def evaluate_case(spec, grading, model, *, frames=None, artifact_dir=None):
+def evaluate_case(spec, grading, model, *, frames=None, artifact_dir=None,
+                  include_final_output=False):
     from core.analysis_agent.runtime import GraphAnalysisRuntime
     from langchain_core.messages import AIMessage, ToolMessage
     base = {"id": spec["id"], "prompt": spec["prompt"], "target_table": spec["target_table"],
@@ -1524,6 +1525,8 @@ def evaluate_case(spec, grading, model, *, frames=None, artifact_dir=None):
                     "observations": observations, "remote_executions": 0,
                     "forbidden_executor_invocations": len(remote_attempts),
                     "error_type": outcome.get("error_type"), "error_id": outcome.get("error_id")}
+            if include_final_output:
+                record["final_output"] = str(outcome.get("text", ""))[:8000]
         except Exception as exc:
             record = {**base, "status": "FAIL", "reason": "Evaluation exception",
                       "error_type": type(exc).__name__,
@@ -1579,6 +1582,8 @@ def main(argv=None):
     choice.add_argument("--all", action="store_true", help="Include all references; unsupported cases remain UNGRADED")
     parser.add_argument("--list", action="store_true", help="List support status without model calls")
     parser.add_argument("--live-local-model", action="store_true", help="Run actual configured localhost ChatOllama")
+    parser.add_argument("--include-final-output", action="store_true",
+                        help="Include fixture-only assistant text for local judge evaluation; output may contain fixture rows")
     parser.add_argument("--output", type=Path, default=ROOT / "docs/actual_agent_evaluation.json")
     args = parser.parse_args(argv)
     specs, grading = load_specs(), load_grading()
@@ -1611,7 +1616,8 @@ def main(argv=None):
         for spec in selected:
             try:
                 result = evaluate_case(spec, grading.get(spec["id"]), model, frames=frames,
-                                       artifact_dir=args.output.parent / "actual_agent_eval_artifacts")
+                                       artifact_dir=args.output.parent / "actual_agent_eval_artifacts",
+                                       include_final_output=args.include_final_output)
             except Exception as exc:
                 result = {"id": spec["id"], "status": "FAIL", "reason": "Evaluation exception",
                           "error_type": type(exc).__name__}
