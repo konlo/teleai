@@ -47,3 +47,7 @@ Spider는 기존과 같은 `local221`, `local009`, `local210`, `local358`, `loca
 - `2026-09-26_relationship_spider.json`: 중간/최종 두 track의 고정 5문항 공식 채점, 제안 SQL, 실패 원인.
 - `tests/test_analysis_relationships.py`: 실제 PRAGMA, metadata 승인/거절·재시작, 부정확 JOIN 차단, SQL 집계 완료 및 raw 저장 미완료 구분.
 - `tests/test_analysis_tool_focus.py`: 미로딩/로딩/모호/복합/연결 없음의 도구 메뉴 경계.
+
+## 원격 검증
+
+코드와 평가 commit `49b7a6e312f538e1ca9161f988fa9dde4c6cf799`를 push했고 [GitHub Actions 36238260204](https://github.com/konlo/teleai/actions/runs/36238260204)의 migration/application/agentic/reference/compile 단계가 모두 성공했다(2분 12초). [PR #68](https://github.com/konlo/teleai/pull/68)은 draft·미병합 상태다. 실제 모델/warehouse/복잡 SQL의 미완료는 이 CI 성공과 별개다.

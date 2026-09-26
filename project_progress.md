@@ -1781,3 +1781,5 @@ Task definitions and acceptance conditions: docs/agent_remaining_tasks_2026-09-1
 - DB 관계를 발견하고 SQL을 요청 의도·실제 schema와 검증한 뒤 승인형 집계로 완료하는 경로를 추가했다. 원본 저장 요청을 집계만으로 완료하지 않으며, 원본 선택·재시작·복합 키·모호한 관계·잘못된 조건을 자동 검사한다.
 - 앱 320·migration 133·reference/Level3 217 PASS, 고정 평가 97 PASS/103 UNGRADED. 웹 후속 max 86·0.458초·원본과 승인 장부 보존을 확인했다.
 - 실제 합성 조인 성공은 확보했으나 API 제한과 실행 예산 실패도 재현됐다. Spider 0/5, 103 oracle, 운영 metadata/대규모 신규 적재 검증, 복잡한 SQL 역할/범위 해석과 격리 실행이 남아 범용 NO-GO를 유지한다.
+
+- **Remote Gate** [Agent: Codex]: 코드·평가 commit `49b7a6e312f538e1ca9161f988fa9dde4c6cf799`를 push하고 원격 SHA 일치를 확인했다. GitHub Actions [36238260204](https://github.com/konlo/teleai/actions/runs/36238260204)의 전체 deterministic-validation이 2분 12초에 성공했다. PR #68 설명을 최신 근거와 한계로 갱신했고 draft·미병합 상태를 유지한다.
