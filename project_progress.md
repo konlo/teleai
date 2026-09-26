@@ -1742,3 +1742,9 @@ Task definitions and acceptance conditions: docs/agent_remaining_tasks_2026-09-1
 - **Action**: description 보존·bounded 의미 해석·정의/기간/차원 검증·조건부 빈도·명시적 quoted equality를 일괄 수정했다. 첫 실모델의 두 해석이 함께 duration을 잘못 선택한 오답을 검사와 회귀로 보강했다.
 - **Outcome**: 최종 enriched 평가 87 PASS/113 UNGRADED, 모델 사용 6문항. aliases-only 기존 5건은 확인 요청 유지. 앱 299, migration 133, runner 217 통과. 실제 웹 10,000행 재사용의 technician/housing 집계 898/931, 0.348초, raw hash·승인 1건 불변.
 - **Artifacts**: docs/evaluation/2026-09-26_semantic_batch.md, semantic_batch_scores.json, agent tool contract matrix 갱신. 운영 metadata 제공·113 oracle·공식 평가·대규모 신규 로딩 검증은 남았다.
+- **Remote Gate**: 코드·평가 commit `05607ee`를 PR #68에 push했고 GitHub Actions [36212580000](https://github.com/konlo/teleai/actions/runs/36212580000)의 전체 release gate가 성공했다. PR은 draft·미병합 상태다.
+
+## Daily Wrap-ups — 2026-09-26 (일괄 수정 완료)
+- 외부 설명 기반 의미 해석, 기간·측정 차원 검증, 명시적 조건 및 범주별 집계를 한 묶음으로 수정했다. 설명 제공 평가 87/87 PASS, 미채점 113건 유지; 설명 없는 대조군은 확인 요청한다.
+- 앱 299·migration 133·reference/Level3 217 검사와 원격 CI 통과. 실제 웹 결과 898/931, 원본·승인 보존 확인. 8502 앱은 최신 코드로 실행 중이다.
+- 다음 작업은 운영용 의미 metadata 제공, held-out 및 113 oracle 확대, 공식 Spider/DeepEval와 대규모 신규 적재 검증이다. 범용 GO를 선언하지 않는다.

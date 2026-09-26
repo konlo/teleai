@@ -27,3 +27,5 @@
 4. 최종 빌드의 신규 승인 로딩·대규모 전송/RSS 검증은 남아 있다. 보유 표본 재사용은 전체 적재 성능의 증거가 아니다. 별도 서버 배포는 범위에서 제외한다.
 
 [사전 acceptance](2026-09-26_semantic_batch_plan.md), [문항별 결과](2026-09-26_semantic_batch_scores.json).
+
+코드 commit `05607ee`의 [원격 release gate](https://github.com/konlo/teleai/actions/runs/36212580000)도 성공했다. PR #68은 draft 상태다.
