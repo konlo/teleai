@@ -48,3 +48,7 @@ DeepEval 첫 실행은 내부 JSON을 참조 답으로 주어 judge가 JSON 출�
 - `2026-09-26_autonomy_spider.json`: 동일 5문항의 두 SQL 제안 track과 공식 채점.
 - `2026-09-26_autonomy_deepeval.json`: 실제 trace에 대한 judge 점수와 이유, 해석 한계.
 - `2026-09-26_autonomy_large.json`, `2026-09-26_autonomy_web.json`: 용량·실 웹·승인/원본 검증.
+
+## 원격 검증
+
+코드·평가 commit `c110984658c815a8a47803940666428a10773f5f`를 push했고 [GitHub Actions 36216644618](https://github.com/konlo/teleai/actions/runs/36216644618)의 migration/application/agentic/reference/compile 단계가 모두 성공했다. [PR #68](https://github.com/konlo/teleai/pull/68)은 draft·미병합 상태다. CI 성공은 위의 미완료 기능이나 외부 데이터 검증을 대신하지 않는다.
