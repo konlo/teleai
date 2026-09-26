@@ -23,6 +23,8 @@
 |---|---|---|---|---|---|---|
 | `list_analysis_context` | 완료 | 부분 | 해당 없음 | 완료 | 완료 | 공통 envelope 적용 |
 | `read_analysis_skill` | 완료 | 완료 | 해당 없음 | 부분 | 완료 | 임의 경로·크기·manifest 차단 유지 |
+| `search_analysis_tools` | 완료 | 완료 | 실제 등록 allowlist 밖 도구 비노출; 실행하지 않음 | 부분 | 완료 | 최대 3개 실제 schema·version·권한·관련 skill 발견, 원격 권한 확대 없음 |
+| `inspect_column_definitions` | 완료 | 완료 | 정확한 metadata SQL은 기존 승인 gateway 필수; 거절 시 0회 실행 | 완료 | 완료 | 저장된 fresh 컬럼 comment 재사용, source·query·dtype·페이지 한도 확인, raw 선택 유지; 실 Databricks 실행 미검증 |
 | `inspect_table_context` | 완료 | 완료 | stale이면 조회하지 않고 refresh SQL만 반환 | 완료 | 완료 | 실제 승인 schema 우선 |
 | `resolve_analysis_intent` | 완료 | 완료 | SQL·원본 전송 없음 | 완료 | 요청별 1회·모델 2회 한도 | 외부 description과 실제 schema 기반 COUNT/AVG 의미 연결; 해석 합의는 계산 완료 근거가 아님 |
 | `inspect_dataset` | 완료 | 완료 | 해당 없음 | 완료 | 완료 | 로딩 ID만 허용 |

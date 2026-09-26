@@ -112,4 +112,5 @@ def recovery_instruction(current):
             '이미 검증된 결과와 원본을 보존하고 미완료 작업만 복구하세요. '
             '컬럼이나 관계 정보가 부족하면 inspect_table_context 또는 inspect_dataset으로 확인하세요. '
             '원격 데이터가 필요한 경우 query_databricks로 정확한 SQL 승인을 요청하고 사용자 승인을 기다리세요. '
+            '대체 도구나 올바른 인자 schema가 필요하면 search_analysis_tools로 기능 또는 도구명을 검색하세요. '
             '같은 실패 호출을 반복하거나 검증되지 않은 수치·차트를 완료했다고 말하지 마세요.')

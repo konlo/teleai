@@ -16,6 +16,16 @@ def semantic_metadata(context, dataset_id):
         return None
     tables = [item for item in context.reference_context
               if _source_key(item.get('table', '')) == _source_key(info.source)]
+    from core.analysis_metadata_discovery import stored_column_definitions, compatible_storage_type
+    approved = stored_column_definitions(context.datasets, info.source)
+    if approved:
+        actual = context.datasets.inspect(dataset_id).get('dtypes', {})
+        # SQL and Parquet type spellings differ. Adapt only an explicit safe
+        # storage mapping; never override an incompatible runtime column.
+        approved['columns'] = [{**column, 'dtype':actual[column['name']]}
+            for column in approved['columns']
+            if column['name'] in actual and compatible_storage_type(column['dtype'],actual[column['name']])]
+        tables = [approved]
     if len(tables) != 1 or table_context_freshness(tables[0]) == 'stale':
         return None
     dtypes = context.datasets.inspect(dataset_id).get('dtypes', {})

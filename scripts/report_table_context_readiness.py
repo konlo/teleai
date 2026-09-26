@@ -27,6 +27,7 @@ def build_report(storage_dir: Path) -> dict:
             'freshness': item.get('freshness'),
             'schema_fingerprint': item.get('schema_fingerprint'),
             'column_count': len(columns),
+            'columns_with_descriptions': sum(bool(column.get('description')) for column in columns),
             'columns_with_aliases': sum(bool(column.get('aliases')) for column in columns),
             'alias_count': sum(len(column.get('aliases', [])) for column in columns),
             'runtime_resolution': resolution.get('status'),

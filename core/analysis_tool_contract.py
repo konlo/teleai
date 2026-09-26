@@ -96,3 +96,4 @@ class AnalysisToolContext:
     max_join_expansion_ratio: float = 5.0
     selected_dataset_id: str = ""
     semantic_resolver: object = None
+    allowed_tool_names: frozenset | None = None

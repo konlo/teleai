@@ -27,7 +27,31 @@ EXPECTED_SINGLE_TOOL = {
 JUDGE_CASES = {"L1_001", "L1_016", "L1_017", "L1_036", "L2_005", "L2_036", "L2_051"}
 
 
+def real_records(source):
+    """Accept measured graph reports, retaining synthetic-fault qualifications."""
+    if source.get('mode') in {'live-local-model', 'live-databricks-model'}:
+        return source['results']
+    if source.get('mode') != 'real-model synthetic journeys; deterministic rescue disabled':
+        raise ValueError('Only real-model graph reports are accepted')
+    records=[]
+    for case in source['results']:
+        if not case.get('live_calls'):
+            continue
+        for number, turn in enumerate(case.get('turns', []), 1):
+            records.append({'id':case['id']+(':'+str(number) if number>1 else ''),
+                'prompt':turn['prompt'], 'status':turn['status'],
+                'final_output':turn.get('final_output',''),
+                'runtime_metadata':{'recovery_model_calls':turn['model_calls']},
+                'tool_calls':[{'tool':name} for name in turn['tools']],
+                'reference_facts':('The requested calculation equals '+str(turn['expected'])+'. '
+                    + ('A chart was independently verified as generated. ' if turn['chart_count'] else '')
+                    + 'Answer in ordinary prose; no JSON or particular output format is required.')})
+    return records
+
+
 def expected_answer(record: dict) -> str:
+    if record.get('reference_facts'):
+        return record['reference_facts']
     evidence = record.get("evidence") or {}
     if "expected" in evidence:
         return json.dumps(evidence["expected"], ensure_ascii=False, default=str)
@@ -58,13 +82,15 @@ def main() -> int:
         from deepeval.test_case import LLMTestCaseParams as Params
 
     source = json.loads(args.report.read_text())
-    if source.get("mode") != "live-local-model":
-        parser.error("Only real local-model fixture reports are accepted")
+    try:
+        records = real_records(source)
+    except ValueError as exc:
+        parser.error(str(exc))
     judge_model = OpenAIModel(
         model=args.judge_model,
         base_url="http://localhost:11434/v1", api_key="ollama")
     results = []
-    for record in source["results"]:
+    for record in records:
         case_id = record["id"]
         tool_calls = record.get("tool_calls", [])
         entry = {"id": case_id, "product_oracle_status": record["status"],
@@ -93,6 +119,7 @@ def main() -> int:
                 evaluation_steps=[
                     "Identify the user's requested calculation or schema fact and its scope.",
                     "Compare the final answer with the reference facts, allowing only harmless rounding or equivalent notation.",
+                    "Reference facts may be serialized as JSON, but this is not an output-format requirement. Do not invent formatting requirements or require internal test fields in the user's answer.",
                     "Penalize missing results, technical-error messages, unsupported claims, and false statements of completion.",
                 ],
                 evaluation_params=[Params.INPUT, Params.ACTUAL_OUTPUT, Params.EXPECTED_OUTPUT],
@@ -107,6 +134,9 @@ def main() -> int:
         args.output.parent.mkdir(parents=True, exist_ok=True)
         args.output.write_text(json.dumps({"generated_at": datetime.now(timezone.utc).isoformat(),
             "source_report": str(args.report.resolve()), "judge_model": args.judge_model,
+            "source_mode":source['mode'],
+            "limitations":["LLM judge scores supplement independent numeric/scope/artifact contracts.",
+                           "Tool correctness covers only the explicitly configured legacy cases, not general autonomy."],
             "results": results}, ensure_ascii=False, indent=2) + "\n")
         print(json.dumps({"id": case_id, "tool": entry.get("tool_correctness"),
                           "judge": entry.get("judge_score"),

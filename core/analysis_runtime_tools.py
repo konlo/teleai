@@ -41,6 +41,11 @@ def build_analysis_tools(context: AnalysisToolContext) -> list[ToolDefinition]:
     datasets = context.datasets
     registry = AnalysisSkillRegistry()
 
+    def search_analysis_tools(query, limit=3):
+        from core.analysis_tool_discovery import discover_tools
+        return discover_tools(definitions, registry.list(), query, limit=limit,
+                              allowed_names=context.allowed_tool_names)
+
     def catalog():
         return compact_catalog({"datasets": [dict(display_name=f"결과 {index}", **asdict(info)) for index,info in enumerate(datasets.metadata.values(),1)],
                 "skills": registry.list(), "available_tables": context.reference_context})
@@ -48,6 +53,10 @@ def build_analysis_tools(context: AnalysisToolContext) -> list[ToolDefinition]:
 
     def inspect_table_context(table):
         return resolve_table_context(context.reference_context, datasets, table)
+
+    def inspect_column_definitions(table):
+        from core.analysis_metadata_discovery import inspect_column_definitions as inspect
+        return inspect(context, table)
 
     def resolve_analysis_intent(dataset_id):
         if context.semantic_resolver is None:
@@ -650,7 +659,13 @@ def build_analysis_tools(context: AnalysisToolContext) -> list[ToolDefinition]:
             COMMON_TOOL_RESULT_SCHEMA)
 
     string = {"type": "string"}
-    return [
+    definitions = [
+        tool("inspect_column_definitions", "업무 의미가 부족하면 확인된 catalog.schema.table의 저장된 컬럼 설명을 읽습니다. 없으면 Unity Catalog information_schema.columns의 정확한 조회 계획만 반환합니다. metadata_plan을 query_databricks로 제안하고 사용자 승인을 기다리세요. 원본 행은 로딩하지 않습니다.",
+             {"table":string}, ["table"], inspect_column_definitions),
+        tool("search_analysis_tools", "필요한 기능·도구명·오류와 관련된 등록 도구의 실제 입력/출력 schema와 제약·권한·관련 스킬을 검색합니다. 대체 경로 탐색용이며 데이터 조회나 실행은 하지 않습니다.",
+             {"query": {"type":"string", "minLength":1, "maxLength":400},
+              "limit": {"type":"integer", "minimum":1, "maximum":3}},
+             ["query"], search_analysis_tools),
         tool("resolve_analysis_intent", "분석 대상이 불명확할 때 저장된 외부 컬럼 설명으로 의미를 독립적으로 확인합니다. 모델 호출을 사용하며 실제 데이터 조회/계산은 하지 않습니다. 정의가 없거나 충돌하면 확인 질문이 필요합니다.",
              {"dataset_id": string}, ["dataset_id"], resolve_analysis_intent),
         tool("list_analysis_context", "현재 보유 데이터와 읽을 수 있는 분석 스킬 목록. 원격 조회 없음.", {}, [], catalog),
@@ -836,6 +851,7 @@ def build_analysis_tools(context: AnalysisToolContext) -> list[ToolDefinition]:
                   "properties":{"column":string,"op":{"type":"string","enum":["eq","ne","gt","ge","lt","le","in"]},"value":{}},
                   "required":["column","op","value"],"additionalProperties":False}}}, ["dataset_id", "query"], analyze_local),
     ]
+    return definitions
 
 
 def build_runtime_tools(session, datasets: DatasetStore) -> list[ToolDefinition]:

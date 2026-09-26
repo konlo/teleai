@@ -10,6 +10,7 @@ SCALAR_OPERATIONS = frozenset({"AVG", "SUM", "MEDIAN", "MIN", "MAX"})
 SCALAR_TOOLS = frozenset({
     "list_analysis_context", "inspect_table_context", "inspect_dataset",
     "profile_dataset", "use_dataset", "aggregate_dataset", "local_analysis_sql",
+    "search_analysis_tools", "read_analysis_skill",
 })
 
 

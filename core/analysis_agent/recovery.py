@@ -10,13 +10,28 @@ from uuid import uuid4
 from langchain.agents.middleware import AgentMiddleware, AgentState, hook_config
 from langchain_core.messages import AIMessage, ToolMessage, SystemMessage, RemoveMessage
 
-from core.analysis_agent.failure_messages import remote_failure_message
+from core.analysis_agent.failure_messages import remote_failure_message, remote_blocked
 from core.analysis_agent.completion import (active_contracts, completion_ready,
     missing_contracts, recovery_instruction, render_completion, CompletionOutputError)
 from core.analysis_agent.memory import latest_user_request
 from core.analysis_agent.intent_scope import resolve_request_scope, scope_matches, measure_scope_matches
 from utils.analysis_datasets import preview_dataset, project_dataset, stored_dataset_digest
 from utils.analysis_pivot import MONTH_ORDER
+
+
+def _named_measures(text, columns, aliases=None):
+    """A predicate column may also be an explicitly requested numeric measure."""
+    operation = r'(?:평균|중앙값|합계|총합|최솟값|최댓값|최소값|최대값|mean\b|average\b|avg\b|median\b|sum\b|min\b|max\b)'
+    aliases = aliases or {}
+    result = []
+    for column in columns:
+        for term in (column, *aliases.get(column, ())):
+            name = r'(?<![A-Za-z0-9_])' + re.escape(term) + r'(?![A-Za-z0-9_])'
+            if (re.search(name + r'\)?(?:의)?\s*' + operation, text, re.I)
+                    or re.search(operation + r'\s*(?:of\s+|\(\s*)' + name, text, re.I)):
+                result.append(column)
+                break
+    return result
 
 
 def _dtype_family(value):
@@ -934,8 +949,12 @@ class RecoveryMiddleware(AgentMiddleware):
                     predicate_columns = {item['column'] for item in (
                         current['scope'].get('conditions', [])
                         + current['scope'].get('any_conditions', []))}
-                    measures = [column for column in current['required_columns']
-                                if column not in predicate_columns]
+                    # A column can be BOTH a population predicate and the
+                    # explicitly requested measure: "그중 reading 평균" after
+                    # a reading threshold must not lose the named measure.
+                    explicit_measures = _named_measures(text, current['required_columns'], column_aliases)
+                    measures = explicit_measures or [column for column in current['required_columns']
+                                                     if column not in predicate_columns]
                     if not measures:
                         previous_predicates = {item['column'] for item in (
                             previous.get('scope', {}).get('conditions', [])
@@ -953,6 +972,8 @@ class RecoveryMiddleware(AgentMiddleware):
                 # An elliptical follow-up can inherit a previous operation.
                 # Its prefix wording must not replace that operation's proof.
                 current['preview_limit'] = 0
+            current['named_measure_columns'] = _named_measures(
+                text, current['required_columns'], column_aliases)
         upgraded_current_result = bool(human and current.get('request_id') == human.id
             and current_loaded_reference and not current.get('current_result_only'))
         if upgraded_current_result:
@@ -1033,6 +1054,8 @@ class RecoveryMiddleware(AgentMiddleware):
                 continue
             if message.tool_call_id not in current['processed']:
                 current['processed'].append(message.tool_call_id)
+            if name == 'inspect_column_definitions' and observation.get('metadata_plan'):
+                current['metadata_query_plan'] = observation['metadata_plan']
             if name == 'resolve_analysis_intent':
                 current['model_calls'] += observation.get('semantic_model_calls', 0)
                 current['model_seconds'] += observation.get('semantic_model_seconds', 0)
@@ -1843,10 +1866,10 @@ class RecoveryMiddleware(AgentMiddleware):
                     request_id=current.get('request_id'), capability=error.capability,
                     error_type=error.error_type)
         success = reason is None
-        remote_block = current.get('remote_rejected') or any(o.get('status') == 'unavailable' for o in current['failed'].values())
+        remote_block = remote_blocked(current)
         current['status'] = 'complete' if success else ('blocked' if remote_block else 'exhausted')
         current['stop_reason'] = reason
-        text = rendered if success else remote_failure_message(current['failed'].values(), current.get('remote_rejected', False))
+        text = rendered if success else remote_failure_message([current['failed'].get('query_databricks', {})], current.get('remote_rejected', False))
         if not success and not remote_block and reason not in {'missing_evidence', 'unresolved_failure'}:
             text = '반복 실행 한도에 도달해 분석을 중단했습니다. 검증된 완료 결과가 없으며 기존 데이터는 보존했습니다.'
         if not success and current.get('metadata_kind') and reason == 'schema_refresh_unavailable':
@@ -2790,8 +2813,11 @@ class RecoveryMiddleware(AgentMiddleware):
             # merely to compute a basic filtered scalar.
             predicate_columns = {item['column'] for item in (
                 scope.get('conditions', []) + scope.get('any_conditions', []))}
-            columns = [column for column in current.get('required_columns', [])
-                       if column not in predicate_columns]
+            columns = current.get('named_measure_columns') or _named_measures(
+                current.get('request_text', ''), current.get('required_columns', []))
+            if not columns:
+                columns = [column for column in current.get('required_columns', [])
+                           if column not in predicate_columns]
             if not columns:
                 columns = [column for column in scope.get('columns', [])
                            if column not in predicate_columns]
@@ -2953,7 +2979,7 @@ class RecoveryMiddleware(AgentMiddleware):
         if (self._limit_reason(current) not in {'model_call_budget', 'model_time_budget'}
                 or len(current['sent_calls']) >= self.max_tool_calls
                 or current.get('remote_rejected')
-                or any(o.get('status') == 'unavailable' for o in current['failed'].values())
+                or remote_blocked(current)
                 or (last is not None and last.tool_calls)):
             return None
         proposed = self._next_local(current, calls)
@@ -2975,7 +3001,7 @@ class RecoveryMiddleware(AgentMiddleware):
         if (current.get('status') != 'working'
                 or len(current['sent_calls']) >= self.max_tool_calls
                 or current.get('remote_rejected')
-                or any(o.get('status') == 'unavailable' for o in current['failed'].values())
+                or remote_blocked(current)
                 or self._complete(current)):
             return None
         proposed = self._next_local(current, calls)
@@ -3147,6 +3173,13 @@ class RecoveryMiddleware(AgentMiddleware):
                 additional_kwargs={'lc_source':'proposal_preflight'})], 'jump_to':'model'}
 
     def _proposed_scope_valid(self, call, current):
+        if call.get('name') == 'query_databricks' and current.get('metadata_query_plan'):
+            plan = current['metadata_query_plan']
+            args = call.get('args', {})
+            if args.get('source') == plan['source'] and args.get('query') == plan['query']:
+                # Only the exact tool-produced metadata SELECT is exempt from
+                # business-row predicates; execution still requires approval.
+                return True
         if call.get('name') == 'summarize_groups' and self.context:
             info = self.context.datasets.metadata.get(call.get('args', {}).get('dataset_id'))
             return True if info is None else self._group_scope_valid(info, call.get('args', {}), current)
@@ -3313,7 +3346,7 @@ class RecoveryMiddleware(AgentMiddleware):
                                            for key in ('method', 'tail', 'threshold',
                                                        'lower_quantile', 'upper_quantile')}
                 current['outlier_column'] = call.get('args', {}).get('column')
-        remote_block = current.get('remote_rejected') or any(o.get('status') == 'unavailable' for o in current['failed'].values())
+        remote_block = remote_blocked(current)
         if self._complete(current) and (current.get('plan') or not last.tool_calls):
             return self._finish(current, last)
         reason = self._limit_reason(current)

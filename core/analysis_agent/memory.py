@@ -1,5 +1,6 @@
 """Compact model context while preserving the full user-visible transcript."""
 import json
+import time
 from typing import NotRequired
 from langchain.agents.middleware import SummarizationMiddleware, AgentMiddleware, AgentState
 from langchain_core.messages import ToolMessage
@@ -48,17 +49,34 @@ class QueuedRequestMiddleware(AgentMiddleware):
 
 
 class ObservedSummarizationMiddleware(SummarizationMiddleware):
-    def __init__(self, *args, diagnostics=None, **kwargs):
+    def __init__(self, *args, diagnostics=None, max_model_calls=10, **kwargs):
         super().__init__(*args, **kwargs)
         self.diagnostics = diagnostics
+        self.max_model_calls = max_model_calls
 
     def before_model(self, state, runtime):
+        recovery = state.get('recovery')
+        # Reserve the remaining call for analysis. Summary generation uses the
+        # same model and must not escape the persisted per-turn call budget.
+        if recovery and recovery.get('model_calls', 0) >= self.max_model_calls - 1:
+            return None
+        started = time.monotonic()
         if self.diagnostics is None:
-            return super().before_model(state, runtime)
-        with self.diagnostics.span('summarization', message_count=len(state['messages'])) as details:
             result = super().before_model(state, runtime)
-            details['summarized'] = bool(result)
-            return result
+        else:
+            with self.diagnostics.span('summarization', message_count=len(state['messages'])) as details:
+                result = super().before_model(state, runtime)
+                details['summarized'] = bool(result)
+        if result and recovery is not None:
+            updated = dict(recovery)
+            updated['model_calls'] = updated.get('model_calls', 0) + 1
+            updated['summary_model_calls'] = updated.get('summary_model_calls', 0) + 1
+            # model_started_at includes this middleware; after_model accounts
+            # for its elapsed time together with the analysis invocation.
+            if not updated.get('model_started_at'):
+                updated['model_seconds'] = updated.get('model_seconds', 0) + time.monotonic() - started
+            result = {**result, 'recovery': updated}
+        return result
 
 
 class ModelTimingMiddleware(AgentMiddleware):

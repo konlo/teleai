@@ -122,7 +122,8 @@ class DatasetTests(unittest.TestCase):
 class SkillTests(unittest.TestCase):
     def test_discovery_and_on_demand_content(self):
         registry = AnalysisSkillRegistry()
-        self.assertEqual(len(registry.list()), 4)
+        self.assertEqual(len(registry.list()), 5)
+        self.assertIn('search_analysis_tools', registry.read('autonomous-recovery')['body'])
         self.assertTrue(all("body" not in entry for entry in registry.list()))
         self.assertIn("Databricks", registry.read("dataframe-reuse")["body"])
 

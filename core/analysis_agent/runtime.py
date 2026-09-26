@@ -138,6 +138,7 @@ class GraphAnalysisRuntime:
                 registered.append(query_databricks)
                 middleware.append(HumanInTheLoopMiddleware(interrupt_on={
                     'query_databricks':{'allowed_decisions':['approve','reject']}}))
+        self.context.allowed_tool_names = frozenset(entry.name for entry in registered)
         middleware.append(recovery)
         self.agent=create_agent(model,tools=registered,checkpointer=self.saver,middleware=middleware)
         self._reconcile_completed_controller_load()
@@ -278,8 +279,11 @@ class GraphAnalysisRuntime:
                 # A remote statistic is evidence for this answer, not a new
                 # row-level EDA baseline. Keep the user's selected raw branch.
                 # A zero-row schema probe is metadata, not a new EDA baseline.
+                from core.analysis_catalog import _source_key
+                source_parts = _source_key(loaded.source).split('.')
+                metadata_source = len(source_parts) == 3 and source_parts[-2] == 'information_schema'
                 if (loaded.role=='root' and loaded.grain=='raw'
-                        and not self.is_schema_probe(loaded.query)):
+                        and not self.is_schema_probe(loaded.query) and not metadata_source):
                     self._select_dataset_unlocked(completed_load_id)
             elapsed=round(time.monotonic()-started,3)
             self.diagnostics.emit('run_completed', run_id=run_id, status=outcome,

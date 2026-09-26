@@ -3,18 +3,18 @@
 ## Current Status
 - **Last Updated**: 2026-09-26
 - **Status**: In Progress — 로컬 단일 사용자 범위에서도 정식 출시 NO-GO
-- **Summary**: 외부 컬럼 설명 기반 의미 해석·조건부 집계를 공통 경로로 일괄 보강했다. 설명 제공 조건의 실제 Qwen graph 평가 87/87 PASS, 113문항 미채점. 실제 모델 호출 6문항이며 설명 없는 기존 미완료 5건은 확인 요청을 유지한다. 앱 299/299, migration 133/133, reference/Level3 217/217 통과. 실제 웹 조건부 집계 0.348초, 원본·승인 보존. [검증 기록](docs/evaluation/2026-09-26_semantic_batch.md).
-- **Next Session Focus**: 운영 description 제공 경로, 113문항 독립 oracle·held-out 복구 평가, 공식 Spider/DeepEval gate, 최종 빌드 신규 승인 적재·대규모 전송/RSS 실측. 별도 서버 배포는 제외한다.
-- **Current qualification**: 87/87은 외부 설명을 보강한 지원 부분집합 점수이며 이전 82/87과 입력 조건이 다르다. 공식 Spider EX/DeepEval 점수가 아니다. Draft PR #68 미병합, 범용 출시 NO-GO. 신규 Databricks SQL은 실행하지 않았다.
+- **Summary**: 도구 검색·복구 skill, 승인형 컬럼 설명 발견, metadata/raw 선택 분리, 필터와 측정값이 같은 후속 계산, 요약 호출 예산을 일괄 보강했다. 최종 설명 제공 fixture 평가 97 PASS/103 UNGRADED(앞선 96 PASS/1 미완료도 보존), 실제 모델 5여정·6턴 PASS. 앱 309·migration 133·reference 217 PASS. 실제 웹 평균 timeout을 수정 후 동일 체크포인트에서 0.134초에 복구, 후속 중앙값 0.324초. [검증 기록](docs/evaluation/2026-09-26_autonomy_results.md).
+- **Next Session Focus**: 운영 metadata 조회 승인·업무 설명, 실제 FK/관계 탐색과 SQL 의도/역할 계약, 미채점 103 oracle 및 judge calibration, 최종 빌드의 승인형 신규 적재·대규모 원격 전송/RSS, 격리 코드 실행. 별도 서버 배포 제외.
+- **Current qualification**: 지원 부분집합 97/97 중 6문항이 모델을 호출했다. 공식 Spider 고정 5문항 0/5, DeepEval 보조 judge 평균 0.7667이나 서식 편향으로 release 판정 불가. 100만 행 로컬 저장·복원 검증은 원격 적재 증거가 아니다. 신규 Databricks SQL 0회, draft PR #68 미병합.
 
 ## Next Action Items
 - [x] 사용자의 `LIMIT 10`은 Databricks 화면에서 직접 실행한 것으로 확인했다. 챗봇 승인·저장 검증과 구분했다. 이후 별도의 제품 승인형 `LIMIT 10000` 조회를 1회 완료했다.
 - [x] 현재 PC의 로컬 단일 사용자 범위에서 저장소 보존·재시작·실제 화면 여정을 검증했다. 별도 1인용 Linux 호스트 배포는 이번 범위에서 제외한다.
-- [ ] 모델 직접 실행의 다양한 held-out/복구 여정과 지연을 개선한다. 한 IQR 답변의 필수 필드와 정확한 로컬 표본의 예산 소진 후 재개는 수정했다. Spider SQL 제안 실패, 실제 UI 재개, 113개 미채점 oracle과 DeepEval/Spider 확대 평가는 남아 있다.
+- [ ] 모델 직접 실행의 다양한 held-out/복구 여정과 지연을 개선한다. 한 IQR 답변의 필수 필드와 정확한 로컬 표본의 예산 소진 후 재개는 수정했다. Spider SQL 제안 실패, 실제 UI 재개, 103개 미채점 oracle과 DeepEval/Spider 확대 평가는 남아 있다.
 - [ ] D07/D08의 전체 로딩 의미 검증·나머지 차트/SQL/통계의 부분 scan·registry 재사용을 P0로 마무리한다. 원격 파일 staging, 출처/결과 구조 검증과 active 원본 선택은 부분 적용했다. T06/T07 및 J21~J24: docs/data_loading_and_preservation_contract_2026-09-24.md.
 - [ ] 코딩 전에 T00~T02 baseline·요구/평가 매핑·독립 acceptance를 확정한다. 상세: docs/data_agent_requirements_and_evaluation_2026-09-24.md.
 - [x] 제품 승인 카드에서 사용자가 승인한 실제 Databricks 조회 → 저장 → 분석 → 후속 질문을 검증했다.
-- [ ] 남은 113문항의 독립 oracle과 고급 분석 도구 범위를 우선순위별로 확대한다.
+- [ ] 남은 103문항의 독립 oracle과 고급 분석 도구 범위를 우선순위별로 확대한다.
 - [ ] 로컬 단일·동시 용량 gate와 RSS 기준은 완료했다. 실제 배포 호스트와 Ollama 동시 추론으로 기준을 보정한다.
 - [x] 현재 변경을 `agentic-analysis-rc4-2026-09-15` release candidate로 커밋·push하고 원격 release gate 성공 후 tag로 고정했다.
 - [x] 컬럼 metadata 복구를 `agentic-analysis-rc5-2026-09-15`로 고정했다. GitHub Actions run `34978831986`이 성공했다.
@@ -35,7 +35,6 @@
 - [x] 숫자축 빈도 선과 영문 월의 calendar 정렬·누적 곡선을 실제 PNG·plot data digest로 검증했다.
 - [x] `render_count_rate_chart`로 그룹별 전체 건수와 명시적 성공률을 dual-axis/split-panel PNG, 분모·성공수·digest와 함께 검증했다.
 - [x] `pivot_dataset`으로 13개 원문 질문과 임의 schema, 후속 대화의 축 전환을 값·lineage·digest·재시작·모델/원격 0회 계약으로 검증했다.
-
 
 ---
 
@@ -1748,3 +1747,17 @@ Task definitions and acceptance conditions: docs/agent_remaining_tasks_2026-09-1
 - 외부 설명 기반 의미 해석, 기간·측정 차원 검증, 명시적 조건 및 범주별 집계를 한 묶음으로 수정했다. 설명 제공 평가 87/87 PASS, 미채점 113건 유지; 설명 없는 대조군은 확인 요청한다.
 - 앱 299·migration 133·reference/Level3 217 검사와 원격 CI 통과. 실제 웹 결과 898/931, 원본·승인 보존 확인. 8502 앱은 최신 코드로 실행 중이다.
 - 다음 작업은 운영용 의미 metadata 제공, held-out 및 113 oracle 확대, 공식 Spider/DeepEval와 대규모 신규 적재 검증이다. 범용 GO를 선언하지 않는다.
+
+## [2026-09-26 12:27:53 KST] [Agent: Codex] User Request: 멈추지 말고 끝까지 자율적으로 문제를 해결하는 agent 구현
+- **Action**: 기존 project manager/logger 기준을 이어 적용하며 metadata 발견·다단계 도구 복구·평가 공백을 확인하고 공통 구조의 구현과 검증을 계속한다. 신규 SQL 승인은 기존 계약을 유지한다.
+
+## [2026-09-26 13:02:06 KST] [Agent: Codex] 자율 탐색·복구 일괄 검증
+- **Action**: 실제 tool schema 검색·등록 allowlist, 자율 복구 skill, 저장 metadata 발견과 정확한 SQL 승인, metadata/raw 분리, 동일 컬럼의 조건·측정값 구분, 요약 모델 호출 예산을 구현했다.
+- **Outcome**: 앱 309/309, migration 133/133, reference/Level3 217/217 PASS. 실제 Qwen 모델 5여정 6턴 PASS(결정적 계획 꺼짐), 최종 지원 oracle 97/97 PASS/103 미채점. 이전 96/97의 미완료도 기록했다.
+- **Actual Web**: 로컬 모델이 긴 대화 요약 후 평균 요청에서 ReadTimeout. 원인을 추가 수정하고 같은 체크포인트 재개 0.134초로 평균 64.97553516819572, 후속 중앙값 62를 0.324초·모델 0회로 검증했다. age >= 60 조건·원본 SHA256·completed 승인 1건 불변.
+- **Limitations**: Spider 고정 5문항 두 track 모두 0/5. DeepEval 6턴 평균 0.7667은 서식 편향이 있어 보조값이며 출시 근거가 아니다. 100만 행 local store/cold read/crash recovery PASS; 원격 전송은 미검증. 운영 metadata 신규 SELECT는 승인 대기이며 미실행.
+- **Artifacts**: docs/evaluation/2026-09-26_autonomy_results.md 및 autonomy_scores/live/spider/deepeval/large/web JSON, tool contract matrix 갱신.
+
+## Daily Wrap-ups — 2026-09-26 (자율 복구 보강)
+- 모델이 도구를 찾고 대체 계산을 선택하는 실제 실행 증거를 추가했다. 웹에서 추가 발견한 후속 평균 timeout도 원인 수정·재개까지 검증했다.
+- 일반 agent 동등 성능이나 범용 GO는 선언하지 않는다. 남은 작업은 운영 의미 metadata, 복잡한 SQL 관계/범위 계약, 103 oracle·judge calibration, 대규모 원격 적재, 격리 코드 실행이다.

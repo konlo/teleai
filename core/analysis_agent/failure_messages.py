@@ -1,4 +1,9 @@
 """User-visible causes derived from structured observations, never model guesses."""
+def remote_blocked(current):
+    return bool(current.get('remote_rejected') or
+                current.get('failed', {}).get('query_databricks', {}).get('status') == 'unavailable')
+
+
 def remote_failure_message(observations, rejected=False):
     failures=[o for o in observations if o.get('status')=='unavailable']
     if failures:
