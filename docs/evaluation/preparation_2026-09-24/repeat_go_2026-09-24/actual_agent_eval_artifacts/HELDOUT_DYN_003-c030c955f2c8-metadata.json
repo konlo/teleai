@@ -1,0 +1,155 @@
+{
+  "case_id": "HELDOUT_DYN_003",
+  "run_id": "c030c955f2c8403fae84bb8ced08eb7f",
+  "state": "idle",
+  "message_count": 4,
+  "pending_requests": 0,
+  "recovery_status": "complete",
+  "recovery_attempts": 0,
+  "recovery_model_calls": 0,
+  "reference_context": [
+    {
+      "table": "synthetic_metrics",
+      "training_status": "fixture_profile",
+      "columns": [
+        {
+          "name": "metric_x",
+          "dtype": "float64",
+          "distinct_count": 96,
+          "null_count": 0,
+          "top_values": [],
+          "aliases": []
+        },
+        {
+          "name": "segment_label",
+          "dtype": "object",
+          "distinct_count": 3,
+          "null_count": 0,
+          "top_values": [
+            {
+              "value": "s0",
+              "count": 32
+            },
+            {
+              "value": "s1",
+              "count": 32
+            },
+            {
+              "value": "s2",
+              "count": 32
+            }
+          ],
+          "aliases": []
+        },
+        {
+          "name": "counter",
+          "dtype": "int64",
+          "distinct_count": 96,
+          "null_count": 0,
+          "top_values": [],
+          "aliases": []
+        }
+      ],
+      "alias_source": null,
+      "source": "local test_set fixture; not a live Databricks table"
+    }
+  ],
+  "datasets": [
+    {
+      "id": "2f91c28e-72a3-4d9a-8302-0ca5f6070bc7",
+      "source": "synthetic_metrics",
+      "columns": [
+        "metric_x",
+        "segment_label",
+        "counter"
+      ],
+      "rows": 96,
+      "coverage": "complete",
+      "conditions": [],
+      "predicate_known": true,
+      "grain": "raw",
+      "aggregation": "",
+      "snapshot": "fixture:f3a6ba74deeae1886315bd49b87b1b6a73854809444175754d174aab3c111edb",
+      "query": "",
+      "parent_id": "",
+      "parent_ids": [],
+      "role": "root",
+      "root_id": "2f91c28e-72a3-4d9a-8302-0ca5f6070bc7"
+    },
+    {
+      "id": "f4a344a3-9379-43a0-9759-85d036998239",
+      "source": "synthetic_metrics",
+      "columns": [
+        "average"
+      ],
+      "rows": 1,
+      "coverage": "complete",
+      "conditions": [],
+      "predicate_known": false,
+      "grain": "aggregate",
+      "aggregation": "SELECT AVG(\"metric_x\") AS average FROM data",
+      "snapshot": "fixture:f3a6ba74deeae1886315bd49b87b1b6a73854809444175754d174aab3c111edb",
+      "query": "SELECT AVG(\"metric_x\") AS average FROM data",
+      "parent_id": "2f91c28e-72a3-4d9a-8302-0ca5f6070bc7",
+      "parent_ids": [],
+      "role": "derived",
+      "root_id": "2f91c28e-72a3-4d9a-8302-0ca5f6070bc7"
+    }
+  ],
+  "charts": [],
+  "diagnostics": [
+    {
+      "time": "2026-09-24T18:21:42.786490+00:00",
+      "event": "run_started",
+      "run_id": "c030c955f2c8403fae84bb8ced08eb7f",
+      "operation": "submit"
+    },
+    {
+      "time": "2026-09-24T18:21:42.884153+00:00",
+      "event": "recovery_transition",
+      "run_id": "c030c955f2c8403fae84bb8ced08eb7f",
+      "tool": "local_analysis_sql"
+    },
+    {
+      "time": "2026-09-24T18:21:42.885353+00:00",
+      "event": "tool_started",
+      "run_id": "c030c955f2c8403fae84bb8ced08eb7f",
+      "tool": "local_analysis_sql"
+    },
+    {
+      "time": "2026-09-24T18:21:42.904197+00:00",
+      "event": "tool_completed",
+      "run_id": "c030c955f2c8403fae84bb8ced08eb7f",
+      "tool": "local_analysis_sql",
+      "status": "ready",
+      "elapsed_seconds": 0.019
+    },
+    {
+      "time": "2026-09-24T18:21:42.905822+00:00",
+      "event": "calculation_evidence",
+      "run_id": "c030c955f2c8403fae84bb8ced08eb7f"
+    },
+    {
+      "time": "2026-09-24T18:21:42.906285+00:00",
+      "event": "completion_checked",
+      "run_id": "c030c955f2c8403fae84bb8ced08eb7f",
+      "status": "complete",
+      "attempts": 0
+    },
+    {
+      "time": "2026-09-24T18:21:42.907385+00:00",
+      "event": "run_completed",
+      "run_id": "c030c955f2c8403fae84bb8ced08eb7f",
+      "status": "answered",
+      "elapsed_seconds": 0.121
+    },
+    {
+      "time": "2026-09-24T18:21:42.907420+00:00",
+      "event": "turn_slo",
+      "run_id": "c030c955f2c8403fae84bb8ced08eb7f",
+      "elapsed_seconds": 0.121,
+      "limit": 180.0,
+      "status": "ok"
+    }
+  ]
+}

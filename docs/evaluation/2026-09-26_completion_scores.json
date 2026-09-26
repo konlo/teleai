@@ -1,0 +1,2174 @@
+{
+  "scope": "local single-user; synthetic/reference fixtures; no Databricks SQL executor",
+  "provider": "databricks",
+  "model": "databricks-qwen3-next-80b-a3b-instruct",
+  "reference_cases": 200,
+  "graded_cases": 87,
+  "ungraded_cases": 113,
+  "runs": {
+    "before_additional_guards": {
+      "full_report_sha256": "2447dbbdbf095b7d4edfa39b5ed55ee86ce766c8153e4851a26bcbcf12fe1d46",
+      "statuses": {
+        "PASS": 82,
+        "NOT_COMPLETE": 4,
+        "FAIL": 1
+      },
+      "p50_seconds": 0.104,
+      "p95_seconds": 10.611,
+      "model_invoked_cases": 13,
+      "results": [
+        {
+          "id": "L1_001",
+          "prompt": "bank_loan 테이블에 어떤 컬럼들이 있는지 전체 목록과 총 컬럼 개수를 알려줘.",
+          "status": "PASS",
+          "reason": "Inspected table context metadata matches the reference",
+          "elapsed_seconds": 0.237,
+          "tools": {
+            "inspect_table_context": 1
+          },
+          "remote_executions": 0,
+          "model_calls": 0
+        },
+        {
+          "id": "L1_002",
+          "prompt": "bank_loan 테이블의 각 컬럼별 데이터 타입(dtype)을 정리해서 표로 보여줘.",
+          "status": "PASS",
+          "reason": "Inspected table context metadata matches the reference",
+          "elapsed_seconds": 0.031,
+          "tools": {
+            "inspect_table_context": 1
+          },
+          "remote_executions": 0,
+          "model_calls": 0
+        },
+        {
+          "id": "L1_003",
+          "prompt": "bank_loan 테이블에서 수치형(numeric) 컬럼들만 골라서 목록을 보여줘.",
+          "status": "PASS",
+          "reason": "Inspected table context metadata matches the reference",
+          "elapsed_seconds": 0.03,
+          "tools": {
+            "inspect_table_context": 1
+          },
+          "remote_executions": 0,
+          "model_calls": 0
+        },
+        {
+          "id": "L1_004",
+          "prompt": "bank_loan 테이블에서 문자열/범주형(categorical) 컬럼들만 골라서 보여줘.",
+          "status": "PASS",
+          "reason": "Inspected table context metadata matches the reference",
+          "elapsed_seconds": 0.03,
+          "tools": {
+            "inspect_table_context": 1
+          },
+          "remote_executions": 0,
+          "model_calls": 0
+        },
+        {
+          "id": "L1_005",
+          "prompt": "bank_loan 테이블의 전체 행 수(총 레코드 수)를 알려줘.",
+          "status": "PASS",
+          "reason": "Compared final structured calculation with independent reference",
+          "elapsed_seconds": 0.104,
+          "tools": {
+            "local_analysis_sql": 1
+          },
+          "remote_executions": 0,
+          "model_calls": 0
+        },
+        {
+          "id": "L1_006",
+          "prompt": "bank_loan 테이블에 결측치(Null/NaN)가 존재하는 컬럼이 있는지 확인하고 결측치 개수를 세어줘.",
+          "status": "PASS",
+          "reason": "Structured dataset profile matches the independent reference",
+          "elapsed_seconds": 0.039,
+          "tools": {
+            "profile_dataset": 1
+          },
+          "remote_executions": 0,
+          "model_calls": 0
+        },
+        {
+          "id": "L1_007",
+          "prompt": "titanic 테이블의 컬럼 이름과 각각의 데이터 타입을 확인해줘.",
+          "status": "PASS",
+          "reason": "Inspected table context metadata matches the reference",
+          "elapsed_seconds": 0.102,
+          "tools": {
+            "inspect_table_context": 1
+          },
+          "remote_executions": 0,
+          "model_calls": 0
+        },
+        {
+          "id": "L1_008",
+          "prompt": "titanic 테이블에서 결측치(Null)가 존재하는 컬럼과 그 결측 개수를 보여줘.",
+          "status": "PASS",
+          "reason": "Structured dataset profile matches the independent reference",
+          "elapsed_seconds": 0.034,
+          "tools": {
+            "profile_dataset": 1
+          },
+          "remote_executions": 0,
+          "model_calls": 0
+        },
+        {
+          "id": "L1_009",
+          "prompt": "bank_loan 테이블의 범주형 컬럼들이 각각 몇 개의 고유값(distinct count)을 가지는지 보여줘.",
+          "status": "PASS",
+          "reason": "Structured dataset profile matches the independent reference",
+          "elapsed_seconds": 0.152,
+          "tools": {
+            "profile_dataset": 1,
+            "inspect_table_context": 1
+          },
+          "remote_executions": 0,
+          "model_calls": 0
+        },
+        {
+          "id": "L1_016",
+          "prompt": "고객들의 평균 '예금 잔고'가 얼마인지 알려줘.",
+          "status": "PASS",
+          "reason": "Compared final structured calculation with independent reference",
+          "elapsed_seconds": 3.735,
+          "tools": {
+            "aggregate_dataset": 1
+          },
+          "remote_executions": 0,
+          "model_calls": 1
+        },
+        {
+          "id": "L1_017",
+          "prompt": "고객들의 평균 '나이'와 최고령 고객의 '나이'를 알려줘.",
+          "status": "PASS",
+          "reason": "Compared final structured calculation with independent reference",
+          "elapsed_seconds": 0.07,
+          "tools": {
+            "local_analysis_sql": 1
+          },
+          "remote_executions": 0,
+          "model_calls": 0
+        },
+        {
+          "id": "L1_018",
+          "prompt": "고객들 중 '집 대출'을 가지고 있는 사람이 몇 명인지 세어줘.",
+          "status": "PASS",
+          "reason": "Compared final structured calculation with independent reference",
+          "elapsed_seconds": 0.065,
+          "tools": {
+            "local_analysis_sql": 1
+          },
+          "remote_executions": 0,
+          "model_calls": 0
+        },
+        {
+          "id": "L1_019",
+          "prompt": "고객 중 '신용 대출'을 받은 사람의 인원수를 확인해줘.",
+          "status": "PASS",
+          "reason": "Compared final structured calculation with independent reference",
+          "elapsed_seconds": 0.059,
+          "tools": {
+            "local_analysis_sql": 1
+          },
+          "remote_executions": 0,
+          "model_calls": 0
+        },
+        {
+          "id": "L1_020",
+          "prompt": "마케팅 전화 '상담 시간'의 평균 초(sec)를 계산해줘.",
+          "status": "PASS",
+          "reason": "Compared final structured calculation with independent reference",
+          "elapsed_seconds": 2.414,
+          "tools": {
+            "aggregate_dataset": 1
+          },
+          "remote_executions": 0,
+          "model_calls": 1
+        },
+        {
+          "id": "L1_021",
+          "prompt": "고객들의 '혼인 상태' 종류별로 몇 명씩 있는지 세어줘.",
+          "status": "NOT_COMPLETE",
+          "reason": "Agent stopped or awaits approval; no implicit approval",
+          "elapsed_seconds": 15.989,
+          "tools": {
+            "profile_dataset": 1,
+            "aggregate_dataset": 2,
+            "inspect_dataset": 1
+          },
+          "remote_executions": 0,
+          "model_calls": 6
+        },
+        {
+          "id": "L1_022",
+          "prompt": "고객들의 '최종 학력'별 인원수를 보여줘.",
+          "status": "PASS",
+          "reason": "Compared final structured calculation with independent reference",
+          "elapsed_seconds": 2.938,
+          "tools": {
+            "aggregate_dataset": 1
+          },
+          "remote_executions": 0,
+          "model_calls": 1
+        },
+        {
+          "id": "L1_023",
+          "prompt": "마케팅을 통해 실제로 예금에 '가입한 사람'이 총 몇 명이야?",
+          "status": "PASS",
+          "reason": "Compared final structured calculation with independent reference",
+          "elapsed_seconds": 0.249,
+          "tools": {
+            "local_analysis_sql": 1
+          },
+          "remote_executions": 0,
+          "model_calls": 0
+        },
+        {
+          "id": "L1_024",
+          "prompt": "타이타닉에서 '살아남은 사람'이 전체 중 몇 명이야?",
+          "status": "NOT_COMPLETE",
+          "reason": "Agent stopped or awaits approval; no implicit approval",
+          "elapsed_seconds": 11.329,
+          "tools": {
+            "aggregate_dataset": 1,
+            "inspect_dataset": 1
+          },
+          "remote_executions": 0,
+          "model_calls": 5
+        },
+        {
+          "id": "L1_025",
+          "prompt": "타이타닉 승객들이 낸 평균 '티켓 요금'이 얼마인지 알려줘.",
+          "status": "PASS",
+          "reason": "Compared final structured calculation with independent reference",
+          "elapsed_seconds": 2.666,
+          "tools": {
+            "aggregate_dataset": 1
+          },
+          "remote_executions": 0,
+          "model_calls": 1
+        },
+        {
+          "id": "L1_026",
+          "prompt": "타이타닉 승객 중 '1등실 탑승객'이 몇 명인지 세어줘.",
+          "status": "PASS",
+          "reason": "Compared final structured calculation with independent reference",
+          "elapsed_seconds": 2.524,
+          "tools": {
+            "local_analysis_sql": 1
+          },
+          "remote_executions": 0,
+          "model_calls": 1
+        },
+        {
+          "id": "L1_027",
+          "prompt": "고객들 중 신용불량으로 '파산/연체 이력'이 있는 사람이 몇 명이야?",
+          "status": "PASS",
+          "reason": "Compared final structured calculation with independent reference",
+          "elapsed_seconds": 0.19,
+          "tools": {
+            "local_analysis_sql": 1
+          },
+          "remote_executions": 0,
+          "model_calls": 0
+        },
+        {
+          "id": "L1_028",
+          "prompt": "이번 마케팅 행사에서 고객들에게 전화를 건 '통화 횟수'의 평균을 구해줘.",
+          "status": "PASS",
+          "reason": "Compared final structured calculation with independent reference",
+          "elapsed_seconds": 8.797,
+          "tools": {
+            "profile_dataset": 1,
+            "aggregate_dataset": 1
+          },
+          "remote_executions": 0,
+          "model_calls": 4
+        },
+        {
+          "id": "L1_029",
+          "prompt": "고객들의 주요 '접속 통신 수단' 종류별 빈도를 보여줘.",
+          "status": "NOT_COMPLETE",
+          "reason": "Agent stopped or awaits approval; no implicit approval",
+          "elapsed_seconds": 45.344,
+          "tools": {
+            "profile_dataset": 1,
+            "render_chart_spec": 1,
+            "show_chart": 1
+          },
+          "remote_executions": 0,
+          "model_calls": 6
+        },
+        {
+          "id": "L1_030",
+          "prompt": "이전 마케팅에서 '성공' 판정을 받은 사람이 몇 명인지 알려줘.",
+          "status": "FAIL",
+          "reason": "Compared final structured calculation with independent reference",
+          "elapsed_seconds": 6.602,
+          "tools": {
+            "aggregate_dataset": 1,
+            "inspect_dataset": 1,
+            "local_analysis_sql": 1
+          },
+          "remote_executions": 0,
+          "model_calls": 3
+        },
+        {
+          "id": "L1_032",
+          "prompt": "계좌 잔액이 0원 미만인 마이너스 잔액 고객들의 인원수를 세어줘.",
+          "status": "PASS",
+          "reason": "Compared final structured calculation with independent reference",
+          "elapsed_seconds": 0.063,
+          "tools": {
+            "local_analysis_sql": 1
+          },
+          "remote_executions": 0,
+          "model_calls": 0
+        },
+        {
+          "id": "L1_033",
+          "prompt": "직업(job)이 'technician'인 고객들의 주택 대출(housing) 보유 현황을 세어줘.",
+          "status": "PASS",
+          "reason": "Compared final structured calculation with independent reference",
+          "elapsed_seconds": 4.689,
+          "tools": {
+            "local_analysis_sql": 1
+          },
+          "remote_executions": 0,
+          "model_calls": 2
+        },
+        {
+          "id": "L1_036",
+          "prompt": "상담 시간(duration)이 500초를 초과한 고객들의 예금 가입(y='yes') 비율을 구해줘.",
+          "status": "PASS",
+          "reason": "Compared final structured calculation with independent reference",
+          "elapsed_seconds": 0.075,
+          "tools": {
+            "local_analysis_sql": 1
+          },
+          "remote_executions": 0,
+          "model_calls": 0
+        },
+        {
+          "id": "L1_037",
+          "prompt": "주택 대출(housing)과 개인 대출(loan)을 둘 다 안 받은 무대출 고객들의 인원수를 세어줘.",
+          "status": "PASS",
+          "reason": "Compared final structured calculation with independent reference",
+          "elapsed_seconds": 0.185,
+          "tools": {
+            "local_analysis_sql": 1
+          },
+          "remote_executions": 0,
+          "model_calls": 0
+        },
+        {
+          "id": "L1_038",
+          "prompt": "타이타닉 승객 중 여성(female) 승객들의 생존율(%)을 계산해줘.",
+          "status": "PASS",
+          "reason": "Compared final structured calculation with independent reference",
+          "elapsed_seconds": 0.138,
+          "tools": {
+            "local_analysis_sql": 1
+          },
+          "remote_executions": 0,
+          "model_calls": 0
+        },
+        {
+          "id": "L1_039",
+          "prompt": "타이타닉 승객 중 남성(male) 승객들의 생존율(%)을 계산해줘.",
+          "status": "PASS",
+          "reason": "Compared final structured calculation with independent reference",
+          "elapsed_seconds": 0.057,
+          "tools": {
+            "local_analysis_sql": 1
+          },
+          "remote_executions": 0,
+          "model_calls": 0
+        },
+        {
+          "id": "L1_043",
+          "prompt": "이전 캠페인에서 접촉한 적이 없는(pdays == -1) 신규 대상 고객 수를 알려줘.",
+          "status": "PASS",
+          "reason": "Compared final structured calculation with independent reference",
+          "elapsed_seconds": 0.177,
+          "tools": {
+            "local_analysis_sql": 1
+          },
+          "remote_executions": 0,
+          "model_calls": 0
+        },
+        {
+          "id": "L1_044",
+          "prompt": "이번 마케팅에서 1회만 접촉(campaign == 1)한 고객들의 인원수를 구해줘.",
+          "status": "PASS",
+          "reason": "Compared final structured calculation with independent reference",
+          "elapsed_seconds": 0.062,
+          "tools": {
+            "local_analysis_sql": 1
+          },
+          "remote_executions": 0,
+          "model_calls": 0
+        },
+        {
+          "id": "L1_045",
+          "prompt": "타이타닉에서 요금(Fare)을 100달러 이상 낸 고액 승객들의 생존율을 구해줘.",
+          "status": "PASS",
+          "reason": "Compared final structured calculation with independent reference",
+          "elapsed_seconds": 0.135,
+          "tools": {
+            "local_analysis_sql": 1
+          },
+          "remote_executions": 0,
+          "model_calls": 0
+        },
+        {
+          "id": "L1_046",
+          "prompt": "타이타닉 승객 중 10세 미만 어린이(Age < 10)의 생존율을 구해줘.",
+          "status": "PASS",
+          "reason": "Compared final structured calculation with independent reference",
+          "elapsed_seconds": 0.058,
+          "tools": {
+            "local_analysis_sql": 1
+          },
+          "remote_executions": 0,
+          "model_calls": 0
+        },
+        {
+          "id": "L1_047",
+          "prompt": "연령이 60세 이상인 시니어 고객들의 직업 분포를 표로 보여줘.",
+          "status": "NOT_COMPLETE",
+          "reason": "Agent stopped or awaits approval; no implicit approval",
+          "elapsed_seconds": 10.611,
+          "tools": {
+            "use_dataset": 1,
+            "pivot_dataset": 2,
+            "inspect_dataset": 1
+          },
+          "remote_executions": 0,
+          "model_calls": 5
+        },
+        {
+          "id": "L1_062",
+          "prompt": "직업(job)과 혼인상태(marital)에 따른 고객 수를 피벗 테이블(pivot table)로 만들어줘.",
+          "status": "PASS",
+          "reason": "Pivot values, axes, aggregation and lineage match the reference",
+          "elapsed_seconds": 0.046,
+          "tools": {
+            "pivot_dataset": 1
+          },
+          "remote_executions": 0,
+          "model_calls": 0
+        },
+        {
+          "id": "L1_063",
+          "prompt": "교육수준(education)과 주택대출(housing) 여부별 평균 잔액 피벗 테이블을 만들어줘.",
+          "status": "PASS",
+          "reason": "Pivot values, axes, aggregation and lineage match the reference",
+          "elapsed_seconds": 0.047,
+          "tools": {
+            "pivot_dataset": 1
+          },
+          "remote_executions": 0,
+          "model_calls": 0
+        },
+        {
+          "id": "L1_064",
+          "prompt": "타이타닉 승객 등급(Pclass)과 성별(Sex)에 따른 생존율 피벗 테이블을 백분율로 출력해줘.",
+          "status": "PASS",
+          "reason": "Pivot values, axes, aggregation and lineage match the reference",
+          "elapsed_seconds": 0.116,
+          "tools": {
+            "pivot_dataset": 1
+          },
+          "remote_executions": 0,
+          "model_calls": 0
+        },
+        {
+          "id": "L1_076",
+          "prompt": "고객들의 연령(age) 분포를 확인하기 위해 히스토그램을 그려줘.",
+          "status": "PASS",
+          "reason": "Real PNG and plotted weighted distribution match the reference",
+          "elapsed_seconds": 0.273,
+          "tools": {
+            "render_chart_spec": 1
+          },
+          "remote_executions": 0,
+          "model_calls": 0
+        },
+        {
+          "id": "L1_077",
+          "prompt": "고객 계좌 잔액(balance)의 분포를 박스플롯(Boxplot)으로 그려줘.",
+          "status": "PASS",
+          "reason": "Real PNG and declarative chart data match the independent reference",
+          "elapsed_seconds": 0.06,
+          "tools": {
+            "render_chart_spec": 1
+          },
+          "remote_executions": 0,
+          "model_calls": 0
+        },
+        {
+          "id": "L1_078",
+          "prompt": "직업(job)별 고객 수를 막대 차트(Bar Chart)로 시각화해줘.",
+          "status": "PASS",
+          "reason": "Real PNG and declarative chart data match the independent reference",
+          "elapsed_seconds": 0.079,
+          "tools": {
+            "render_chart_spec": 1
+          },
+          "remote_executions": 0,
+          "model_calls": 0
+        },
+        {
+          "id": "L1_083",
+          "prompt": "통화 상담 시간(duration)의 분포를 히스토그램으로 시각화해줘.",
+          "status": "PASS",
+          "reason": "Real PNG and plotted weighted distribution match the reference",
+          "elapsed_seconds": 0.069,
+          "tools": {
+            "render_chart_spec": 1
+          },
+          "remote_executions": 0,
+          "model_calls": 0
+        },
+        {
+          "id": "L1_086",
+          "prompt": "나이(age)와 잔액(balance) 간의 관계를 확인하기 위해 산점도(Scatter Plot)를 그려줘.",
+          "status": "PASS",
+          "reason": "Real PNG and declarative chart data match the independent reference",
+          "elapsed_seconds": 0.064,
+          "tools": {
+            "render_chart_spec": 1
+          },
+          "remote_executions": 0,
+          "model_calls": 0
+        },
+        {
+          "id": "L1_093",
+          "prompt": "타이타닉 승객 나이(Age)의 분포를 히스토그램으로 그려줘.",
+          "status": "PASS",
+          "reason": "Real PNG and plotted weighted distribution match the reference",
+          "elapsed_seconds": 0.142,
+          "tools": {
+            "render_chart_spec": 1
+          },
+          "remote_executions": 0,
+          "model_calls": 0
+        },
+        {
+          "id": "L1_098",
+          "prompt": "접촉일(day, 1~31일)별 접촉 건수를 꺾은선 그래프(Line Plot)로 시각화해줘.",
+          "status": "PASS",
+          "reason": "Real PNG and declarative chart data match the independent reference",
+          "elapsed_seconds": 0.181,
+          "tools": {
+            "render_chart_spec": 1
+          },
+          "remote_executions": 0,
+          "model_calls": 0
+        },
+        {
+          "id": "L2_005",
+          "prompt": "'최종 학력'이 'tertiary'이고 미혼('single')인 20대(20~29세) 고객 중 실제로 예금에 '가입한 사람'들의 수를 계산해줘.",
+          "status": "PASS",
+          "reason": "Compared final structured calculation with independent reference",
+          "elapsed_seconds": 0.075,
+          "tools": {
+            "local_analysis_sql": 1
+          },
+          "remote_executions": 0,
+          "model_calls": 0
+        },
+        {
+          "id": "L2_010",
+          "prompt": "'연체/신용불량 이력'(default='yes')이 있으면서 '집 대출'이나 '신용 대출' 중 하나라도 있는 고위험 다중 채무 고객 수를 알려줘.",
+          "status": "PASS",
+          "reason": "Compared final structured calculation with independent reference",
+          "elapsed_seconds": 0.08,
+          "tools": {
+            "local_analysis_sql": 1
+          },
+          "remote_executions": 0,
+          "model_calls": 0
+        },
+        {
+          "id": "L2_012",
+          "prompt": "'통장 잔고'가 10,000달러를 넘는 부유층 고객 중 '나이'가 40대인 고객들의 주택 대출 보유율을 알려줘.",
+          "status": "PASS",
+          "reason": "Compared final structured calculation with independent reference",
+          "elapsed_seconds": 13.213,
+          "tools": {
+            "use_dataset": 1,
+            "summarize_groups": 1,
+            "inspect_dataset": 1,
+            "local_analysis_sql": 2
+          },
+          "remote_executions": 0,
+          "model_calls": 5
+        },
+        {
+          "id": "L2_017",
+          "prompt": "봄 시즌인 3, 4, 5월('mar', 'apr', 'may')에 전화를 건 고객들 중 '예금 가입'에 성공한 고객 비율을 계산해줘.",
+          "status": "PASS",
+          "reason": "Compared final structured calculation with independent reference",
+          "elapsed_seconds": 0.165,
+          "tools": {
+            "local_analysis_sql": 1
+          },
+          "remote_executions": 0,
+          "model_calls": 0
+        },
+        {
+          "id": "L2_020",
+          "prompt": "'혼인 상태'가 '이혼'(divorced)이고 '신용 대출'이 있는 고객 중 '가입에 성공'(y='yes')한 사람의 인원수를 구해줘.",
+          "status": "PASS",
+          "reason": "Compared final structured calculation with independent reference",
+          "elapsed_seconds": 0.072,
+          "tools": {
+            "local_analysis_sql": 1
+          },
+          "remote_executions": 0,
+          "model_calls": 0
+        },
+        {
+          "id": "L2_021",
+          "prompt": "직업(job)과 혼인상태(marital)별 고객 수 피벗 테이블을 생성하고, 행과 열의 전체 총합계(margins=True)를 표기해줘.",
+          "status": "PASS",
+          "reason": "Pivot values, axes, aggregation and lineage match the reference",
+          "elapsed_seconds": 0.056,
+          "tools": {
+            "pivot_dataset": 1
+          },
+          "remote_executions": 0,
+          "model_calls": 0
+        },
+        {
+          "id": "L2_022",
+          "prompt": "교육수준(education)과 주택대출(housing)별 평균 잔액 피벗 테이블을 만들고, 전체 평균 총계(margins=True)를 포함해 소수점 둘째 자리까지 출력해줘.",
+          "status": "PASS",
+          "reason": "Pivot values, axes, aggregation and lineage match the reference",
+          "elapsed_seconds": 0.044,
+          "tools": {
+            "pivot_dataset": 1
+          },
+          "remote_executions": 0,
+          "model_calls": 0
+        },
+        {
+          "id": "L2_023",
+          "prompt": "타이타닉 승객 등급(Pclass)과 성별(Sex)별 생존율 피벗 테이블을 margins=True 총 생존율과 함께 백분율(%)로 표기해줘.",
+          "status": "PASS",
+          "reason": "Pivot values, axes, aggregation and lineage match the reference",
+          "elapsed_seconds": 0.11,
+          "tools": {
+            "pivot_dataset": 1
+          },
+          "remote_executions": 0,
+          "model_calls": 0
+        },
+        {
+          "id": "L2_024",
+          "prompt": "직업(job)별로 주택 대출과 개인 대출의 교차 보유 고객 수 피벗 테이블(행: job, 열: [housing, loan])을 만들어줘.",
+          "status": "PASS",
+          "reason": "Pivot values, axes, aggregation and lineage match the reference",
+          "elapsed_seconds": 0.134,
+          "tools": {
+            "pivot_dataset": 1
+          },
+          "remote_executions": 0,
+          "model_calls": 0
+        },
+        {
+          "id": "L2_025",
+          "prompt": "월(month)과 통신 수단(contact)에 따른 마케팅 예금 가입 성공 건수(y='yes') 피벗 테이블을 출력해줘.",
+          "status": "PASS",
+          "reason": "Pivot values, axes, aggregation and lineage match the reference",
+          "elapsed_seconds": 0.061,
+          "tools": {
+            "pivot_dataset": 1
+          },
+          "remote_executions": 0,
+          "model_calls": 0
+        },
+        {
+          "id": "L2_027",
+          "prompt": "직업(job)과 정기예금 가입 여부(y)별 평균 통화 상담 시간(duration) 피벗 테이블을 margins=True와 함께 구해줘.",
+          "status": "PASS",
+          "reason": "Pivot values, axes, aggregation and lineage match the reference",
+          "elapsed_seconds": 0.041,
+          "tools": {
+            "pivot_dataset": 1
+          },
+          "remote_executions": 0,
+          "model_calls": 0
+        },
+        {
+          "id": "L2_028",
+          "prompt": "타이타닉 승객 등급(Pclass)과 탑승지(Embarked)별 평균 운임 요금(Fare) 피벗 테이블을 소수점 둘째 자리까지 출력해줘.",
+          "status": "PASS",
+          "reason": "Pivot values, axes, aggregation and lineage match the reference",
+          "elapsed_seconds": 0.101,
+          "tools": {
+            "pivot_dataset": 1
+          },
+          "remote_executions": 0,
+          "model_calls": 0
+        },
+        {
+          "id": "L2_029",
+          "prompt": "교육 수준(education)과 혼인 상태(marital)별 정기예금 가입 성공률(%) 교차표를 백분율로 산출해줘.",
+          "status": "PASS",
+          "reason": "Pivot values, axes, aggregation and lineage match the reference",
+          "elapsed_seconds": 0.141,
+          "tools": {
+            "pivot_dataset": 1
+          },
+          "remote_executions": 0,
+          "model_calls": 0
+        },
+        {
+          "id": "L2_031",
+          "prompt": "월(month)과 주택대출(housing) 여부별 고객 수 피벗 테이블을 만들고 월 순서대로 정렬해줘.",
+          "status": "PASS",
+          "reason": "Pivot values, axes, aggregation and lineage match the reference",
+          "elapsed_seconds": 0.06,
+          "tools": {
+            "pivot_dataset": 1
+          },
+          "remote_executions": 0,
+          "model_calls": 0
+        },
+        {
+          "id": "L2_034",
+          "prompt": "이전 마케팅 결과(poutcome)와 이번 가입 결과(y) 간의 교차 빈도표를 작성하고 전체 대비 백분율(normalize=True)을 구해줘.",
+          "status": "PASS",
+          "reason": "Pivot values, axes, aggregation and lineage match the reference",
+          "elapsed_seconds": 0.142,
+          "tools": {
+            "pivot_dataset": 1
+          },
+          "remote_executions": 0,
+          "model_calls": 0
+        },
+        {
+          "id": "L2_036",
+          "prompt": "계좌 잔액(balance)의 IQR(Q3 - Q1)을 계산하고 상한 이상치 기준선(Q3 + 1.5*IQR)을 넘는 이상치 고객 수를 출력해줘.",
+          "status": "PASS",
+          "reason": "Structured outlier evidence matches the independent reference",
+          "elapsed_seconds": 0.054,
+          "tools": {
+            "detect_outliers": 1
+          },
+          "remote_executions": 0,
+          "model_calls": 0
+        },
+        {
+          "id": "L2_037",
+          "prompt": "잔액(balance)의 IQR 상한 이상치 고객들의 평균 연령과 주요 직업 TOP 3를 출력해줘.",
+          "status": "PASS",
+          "reason": "Lineage-safe outlier cohort aggregates match the independent reference",
+          "elapsed_seconds": 0.152,
+          "tools": {
+            "select_outlier_rows": 1,
+            "aggregate_dataset": 2
+          },
+          "remote_executions": 0,
+          "model_calls": 0
+        },
+        {
+          "id": "L2_038",
+          "prompt": "잔액 이상치 고객(상한 1.5*IQR 초과)을 제외한 일반 고객들의 직업별 평균 잔액을 계산하고 이상치 포함 전/후 평균을 비교해줘.",
+          "status": "PASS",
+          "reason": "Lineage-safe parent-versus-cohort comparison matches the independent reference",
+          "elapsed_seconds": 0.063,
+          "tools": {
+            "select_outlier_rows": 1,
+            "compare_group_aggregates": 1
+          },
+          "remote_executions": 0,
+          "model_calls": 0
+        },
+        {
+          "id": "L2_039",
+          "prompt": "통화 상담 시간(duration)의 Z-Score가 3을 초과하는 극단치 통화 건수와 최장 통화 시간을 구해줘.",
+          "status": "PASS",
+          "reason": "Structured outlier evidence matches the independent reference",
+          "elapsed_seconds": 0.033,
+          "tools": {
+            "detect_outliers": 1
+          },
+          "remote_executions": 0,
+          "model_calls": 0
+        },
+        {
+          "id": "L2_040",
+          "prompt": "타이타닉 요금(Fare)에서 IQR 기준 상한 이상치(Q3 + 1.5*IQR)를 초과하는 고액 요금 승객 수와 이들의 생존율을 구해줘.",
+          "status": "PASS",
+          "reason": "Lineage-safe outlier cohort and follow-up metrics match the independent reference",
+          "elapsed_seconds": 0.124,
+          "tools": {
+            "select_outlier_rows": 1,
+            "local_analysis_sql": 1
+          },
+          "remote_executions": 0,
+          "model_calls": 0
+        },
+        {
+          "id": "L2_042",
+          "prompt": "직업(job)별 잔액(balance)의 이상치 분포를 한눈에 비교할 수 있도록 박스플롯(Boxplot)을 그려줘.",
+          "status": "PASS",
+          "reason": "Real PNG and declarative chart data match the independent reference",
+          "elapsed_seconds": 0.198,
+          "tools": {
+            "render_chart_spec": 1
+          },
+          "remote_executions": 0,
+          "model_calls": 0
+        },
+        {
+          "id": "L2_045",
+          "prompt": "타이타닉 승객 등급(Pclass)별 요금(Fare)의 이상치 유무를 비교하는 박스플롯을 그려줘.",
+          "status": "PASS",
+          "reason": "Real PNG and declarative chart data match the independent reference",
+          "elapsed_seconds": 0.129,
+          "tools": {
+            "render_chart_spec": 1
+          },
+          "remote_executions": 0,
+          "model_calls": 0
+        },
+        {
+          "id": "L2_046",
+          "prompt": "캠페인 접촉 횟수(campaign)가 10회를 초과하는 이상 과다 접촉 고객들의 인원수와 이들의 가입률을 구해줘.",
+          "status": "PASS",
+          "reason": "Compared final structured calculation with independent reference",
+          "elapsed_seconds": 0.188,
+          "tools": {
+            "local_analysis_sql": 1
+          },
+          "remote_executions": 0,
+          "model_calls": 0
+        },
+        {
+          "id": "L2_048",
+          "prompt": "나이(age) 데이터에서 정상 범위를 벗어난 이상치가 있는지 최솟값, 최댓값 및 3-시그마 범위를 점검해줘.",
+          "status": "PASS",
+          "reason": "Structured outlier evidence matches the independent reference",
+          "elapsed_seconds": 0.219,
+          "tools": {
+            "detect_outliers": 1
+          },
+          "remote_executions": 0,
+          "model_calls": 0
+        },
+        {
+          "id": "L2_050",
+          "prompt": "예금 가입 성공(y='yes') 고객과 실패(y='no') 고객의 상담 시간(duration) 이상치를 비교하는 박스플롯을 그려줘.",
+          "status": "PASS",
+          "reason": "Real PNG and declarative chart data match the independent reference",
+          "elapsed_seconds": 0.066,
+          "tools": {
+            "render_chart_spec": 1
+          },
+          "remote_executions": 0,
+          "model_calls": 0
+        },
+        {
+          "id": "L2_051",
+          "prompt": "정기예금 가입자(y='yes')와 미가입자(y='no') 간의 계좌 잔액(balance) 차이에 대해 독립표본 t-검정(Two-Sample t-test)을 수행하고 p-value를 확인해줘.",
+          "status": "PASS",
+          "reason": "Structured statistical evidence matches the independent reference",
+          "elapsed_seconds": 0.038,
+          "tools": {
+            "statistical_test": 1
+          },
+          "remote_executions": 0,
+          "model_calls": 0
+        },
+        {
+          "id": "L2_052",
+          "prompt": "정기예금 가입자(y='yes')와 미가입자(y='no') 간의 통화 상담 시간(duration) 차이에 대해 독립표본 t-검정을 수행해줘.",
+          "status": "PASS",
+          "reason": "Structured statistical evidence matches the independent reference",
+          "elapsed_seconds": 0.038,
+          "tools": {
+            "statistical_test": 1
+          },
+          "remote_executions": 0,
+          "model_calls": 0
+        },
+        {
+          "id": "L2_053",
+          "prompt": "주택 대출(housing) 여부와 정기예금 가입(y) 간의 독립성 검정을 위해 카이제곱 검정(Chi-Square Test)을 수행해줘.",
+          "status": "PASS",
+          "reason": "Structured statistical evidence matches the independent reference",
+          "elapsed_seconds": 0.033,
+          "tools": {
+            "statistical_test": 1
+          },
+          "remote_executions": 0,
+          "model_calls": 0
+        },
+        {
+          "id": "L2_054",
+          "prompt": "타이타닉 승객 등급(Pclass)과 생존 여부(Survived) 간의 카이제곱 독립성 검정을 수행해줘.",
+          "status": "PASS",
+          "reason": "Structured statistical evidence matches the independent reference",
+          "elapsed_seconds": 0.101,
+          "tools": {
+            "statistical_test": 1
+          },
+          "remote_executions": 0,
+          "model_calls": 0
+        },
+        {
+          "id": "L2_055",
+          "prompt": "교육 수준(education) 그룹 간 고객 잔액(balance)의 차이가 유의미한지 일원분산분석(One-way ANOVA)을 수행해줘.",
+          "status": "PASS",
+          "reason": "Structured statistical evidence matches the independent reference",
+          "elapsed_seconds": 0.145,
+          "tools": {
+            "statistical_test": 1
+          },
+          "remote_executions": 0,
+          "model_calls": 0
+        },
+        {
+          "id": "L2_056",
+          "prompt": "혼인 상태(marital) 그룹 간 고객 연령(age)의 차이에 대해 일원분산분석(One-way ANOVA)을 수행해줘.",
+          "status": "PASS",
+          "reason": "Structured statistical evidence matches the independent reference",
+          "elapsed_seconds": 0.038,
+          "tools": {
+            "statistical_test": 1
+          },
+          "remote_executions": 0,
+          "model_calls": 0
+        },
+        {
+          "id": "L2_057",
+          "prompt": "잔액(balance) 데이터의 비정규성을 감안하여, 가입 여부(y)별 잔액 차이에 대해 비모수 검정인 맨-휘트니 U 검정(Mann-Whitney U Test)을 수행해줘.",
+          "status": "PASS",
+          "reason": "Structured statistical evidence matches the independent reference",
+          "elapsed_seconds": 0.036,
+          "tools": {
+            "statistical_test": 1
+          },
+          "remote_executions": 0,
+          "model_calls": 0
+        },
+        {
+          "id": "L2_058",
+          "prompt": "타이타닉 생존자(1)와 사망자(0) 간의 지불 요금(Fare) 차이에 대해 독립표본 t-검정을 수행해줘.",
+          "status": "PASS",
+          "reason": "Structured statistical evidence matches the independent reference",
+          "elapsed_seconds": 0.102,
+          "tools": {
+            "statistical_test": 1
+          },
+          "remote_executions": 0,
+          "model_calls": 0
+        },
+        {
+          "id": "L2_059",
+          "prompt": "전체 고객 잔액(balance)의 모평균에 대한 95% 신뢰구간(Confidence Interval)을 계산해줘.",
+          "status": "PASS",
+          "reason": "Structured statistical evidence matches the independent reference",
+          "elapsed_seconds": 0.143,
+          "tools": {
+            "statistical_test": 1
+          },
+          "remote_executions": 0,
+          "model_calls": 0
+        },
+        {
+          "id": "L2_060",
+          "prompt": "신용불량(default) 여부와 개인 대출(loan) 보유 여부 간의 카이제곱 검정을 수행해줘.",
+          "status": "PASS",
+          "reason": "Structured statistical evidence matches the independent reference",
+          "elapsed_seconds": 0.042,
+          "tools": {
+            "statistical_test": 1
+          },
+          "remote_executions": 0,
+          "model_calls": 0
+        },
+        {
+          "id": "L2_061",
+          "prompt": "월(month)별 총 접촉 건수(막대)와 예금 가입 전환율(꺾은선)을 하나의 차트에 이중 축(Dual Y-axis)으로 시각화해줘.",
+          "status": "PASS",
+          "reason": "Count/rate chart PNG and numerator/denominator evidence match the reference",
+          "elapsed_seconds": 0.104,
+          "tools": {
+            "render_count_rate_chart": 1
+          },
+          "remote_executions": 0,
+          "model_calls": 0
+        },
+        {
+          "id": "L2_064",
+          "prompt": "직업별 고객 수(막대)와 예금 가입 성공률(선)을 이중 축 그래프로 시각화해줘.",
+          "status": "PASS",
+          "reason": "Count/rate chart PNG and numerator/denominator evidence match the reference",
+          "elapsed_seconds": 0.203,
+          "tools": {
+            "render_count_rate_chart": 1
+          },
+          "remote_executions": 0,
+          "model_calls": 0
+        },
+        {
+          "id": "L2_065",
+          "prompt": "타이타닉 승객 등급(Pclass)별 탑승객 수(막대)와 생존율(선)을 이중 축 그래프로 표현해줘.",
+          "status": "PASS",
+          "reason": "Count/rate chart PNG and numerator/denominator evidence match the reference",
+          "elapsed_seconds": 0.152,
+          "tools": {
+            "render_count_rate_chart": 1
+          },
+          "remote_executions": 0,
+          "model_calls": 0
+        },
+        {
+          "id": "L2_066",
+          "prompt": "마케팅 접촉일(day)별 고객 수(막대)와 가입 성공률(선)의 일별 이중 축 추이를 시각화해줘.",
+          "status": "PASS",
+          "reason": "Count/rate chart PNG and numerator/denominator evidence match the reference",
+          "elapsed_seconds": 0.241,
+          "tools": {
+            "render_count_rate_chart": 1
+          },
+          "remote_executions": 0,
+          "model_calls": 0
+        },
+        {
+          "id": "L2_068",
+          "prompt": "월별 총 접촉 건수의 누적합(Cumulative Sum) 곡선을 시각화해줘.",
+          "status": "PASS",
+          "reason": "Real PNG and declarative chart data match the independent reference",
+          "elapsed_seconds": 0.072,
+          "tools": {
+            "render_chart_spec": 1
+          },
+          "remote_executions": 0,
+          "model_calls": 0
+        },
+        {
+          "id": "L2_089",
+          "prompt": "월별(month) 접촉 고객 수와 예금 가입 전환율을 2열 서브플롯(막대 차트 & 선 그래프)으로 비교 시각화해줘.",
+          "status": "PASS",
+          "reason": "Count/rate chart PNG and numerator/denominator evidence match the reference",
+          "elapsed_seconds": 0.188,
+          "tools": {
+            "render_count_rate_chart": 1
+          },
+          "remote_executions": 0,
+          "model_calls": 0
+        },
+        {
+          "id": "L2_096",
+          "prompt": "계좌 잔액(balance)의 극단치 왜곡을 방지하기 위해 상하위 1% 윈저화(Winsorization/Clipping)를 적용하고, 원본 평균과 보정 평균을 비교해줘.",
+          "status": "PASS",
+          "reason": "Winsorization boundaries and before/after statistics match the reference",
+          "elapsed_seconds": 0.067,
+          "tools": {
+            "winsorize_numeric": 1
+          },
+          "remote_executions": 0,
+          "model_calls": 0
+        }
+      ]
+    },
+    "after_guards": {
+      "full_report_sha256": "0f8b61cdeac6ff12a373bcc69539f6636f710ae9e84d23a1dbc735453bdacac9",
+      "statuses": {
+        "PASS": 78,
+        "NOT_COMPLETE": 9
+      },
+      "p50_seconds": 0.106,
+      "p95_seconds": 9.554,
+      "model_invoked_cases": 14,
+      "results": [
+        {
+          "id": "L1_001",
+          "prompt": "bank_loan 테이블에 어떤 컬럼들이 있는지 전체 목록과 총 컬럼 개수를 알려줘.",
+          "status": "PASS",
+          "reason": "Inspected table context metadata matches the reference",
+          "elapsed_seconds": 0.17,
+          "tools": {
+            "inspect_table_context": 1
+          },
+          "remote_executions": 0,
+          "model_calls": 0
+        },
+        {
+          "id": "L1_002",
+          "prompt": "bank_loan 테이블의 각 컬럼별 데이터 타입(dtype)을 정리해서 표로 보여줘.",
+          "status": "PASS",
+          "reason": "Inspected table context metadata matches the reference",
+          "elapsed_seconds": 0.031,
+          "tools": {
+            "inspect_table_context": 1
+          },
+          "remote_executions": 0,
+          "model_calls": 0
+        },
+        {
+          "id": "L1_003",
+          "prompt": "bank_loan 테이블에서 수치형(numeric) 컬럼들만 골라서 목록을 보여줘.",
+          "status": "PASS",
+          "reason": "Inspected table context metadata matches the reference",
+          "elapsed_seconds": 0.031,
+          "tools": {
+            "inspect_table_context": 1
+          },
+          "remote_executions": 0,
+          "model_calls": 0
+        },
+        {
+          "id": "L1_004",
+          "prompt": "bank_loan 테이블에서 문자열/범주형(categorical) 컬럼들만 골라서 보여줘.",
+          "status": "PASS",
+          "reason": "Inspected table context metadata matches the reference",
+          "elapsed_seconds": 0.031,
+          "tools": {
+            "inspect_table_context": 1
+          },
+          "remote_executions": 0,
+          "model_calls": 0
+        },
+        {
+          "id": "L1_005",
+          "prompt": "bank_loan 테이블의 전체 행 수(총 레코드 수)를 알려줘.",
+          "status": "PASS",
+          "reason": "Compared final structured calculation with independent reference",
+          "elapsed_seconds": 0.105,
+          "tools": {
+            "local_analysis_sql": 1
+          },
+          "remote_executions": 0,
+          "model_calls": 0
+        },
+        {
+          "id": "L1_006",
+          "prompt": "bank_loan 테이블에 결측치(Null/NaN)가 존재하는 컬럼이 있는지 확인하고 결측치 개수를 세어줘.",
+          "status": "PASS",
+          "reason": "Structured dataset profile matches the independent reference",
+          "elapsed_seconds": 0.039,
+          "tools": {
+            "profile_dataset": 1
+          },
+          "remote_executions": 0,
+          "model_calls": 0
+        },
+        {
+          "id": "L1_007",
+          "prompt": "titanic 테이블의 컬럼 이름과 각각의 데이터 타입을 확인해줘.",
+          "status": "PASS",
+          "reason": "Inspected table context metadata matches the reference",
+          "elapsed_seconds": 0.101,
+          "tools": {
+            "inspect_table_context": 1
+          },
+          "remote_executions": 0,
+          "model_calls": 0
+        },
+        {
+          "id": "L1_008",
+          "prompt": "titanic 테이블에서 결측치(Null)가 존재하는 컬럼과 그 결측 개수를 보여줘.",
+          "status": "PASS",
+          "reason": "Structured dataset profile matches the independent reference",
+          "elapsed_seconds": 0.035,
+          "tools": {
+            "profile_dataset": 1
+          },
+          "remote_executions": 0,
+          "model_calls": 0
+        },
+        {
+          "id": "L1_009",
+          "prompt": "bank_loan 테이블의 범주형 컬럼들이 각각 몇 개의 고유값(distinct count)을 가지는지 보여줘.",
+          "status": "PASS",
+          "reason": "Structured dataset profile matches the independent reference",
+          "elapsed_seconds": 0.151,
+          "tools": {
+            "profile_dataset": 1,
+            "inspect_table_context": 1
+          },
+          "remote_executions": 0,
+          "model_calls": 0
+        },
+        {
+          "id": "L1_016",
+          "prompt": "고객들의 평균 '예금 잔고'가 얼마인지 알려줘.",
+          "status": "PASS",
+          "reason": "Compared final structured calculation with independent reference",
+          "elapsed_seconds": 3.727,
+          "tools": {
+            "aggregate_dataset": 1
+          },
+          "remote_executions": 0,
+          "model_calls": 1
+        },
+        {
+          "id": "L1_017",
+          "prompt": "고객들의 평균 '나이'와 최고령 고객의 '나이'를 알려줘.",
+          "status": "PASS",
+          "reason": "Compared final structured calculation with independent reference",
+          "elapsed_seconds": 0.073,
+          "tools": {
+            "local_analysis_sql": 1
+          },
+          "remote_executions": 0,
+          "model_calls": 0
+        },
+        {
+          "id": "L1_018",
+          "prompt": "고객들 중 '집 대출'을 가지고 있는 사람이 몇 명인지 세어줘.",
+          "status": "PASS",
+          "reason": "Compared final structured calculation with independent reference",
+          "elapsed_seconds": 0.067,
+          "tools": {
+            "local_analysis_sql": 1
+          },
+          "remote_executions": 0,
+          "model_calls": 0
+        },
+        {
+          "id": "L1_019",
+          "prompt": "고객 중 '신용 대출'을 받은 사람의 인원수를 확인해줘.",
+          "status": "PASS",
+          "reason": "Compared final structured calculation with independent reference",
+          "elapsed_seconds": 0.063,
+          "tools": {
+            "local_analysis_sql": 1
+          },
+          "remote_executions": 0,
+          "model_calls": 0
+        },
+        {
+          "id": "L1_020",
+          "prompt": "마케팅 전화 '상담 시간'의 평균 초(sec)를 계산해줘.",
+          "status": "PASS",
+          "reason": "Compared final structured calculation with independent reference",
+          "elapsed_seconds": 7.525,
+          "tools": {
+            "profile_dataset": 1,
+            "aggregate_dataset": 1
+          },
+          "remote_executions": 0,
+          "model_calls": 4
+        },
+        {
+          "id": "L1_021",
+          "prompt": "고객들의 '혼인 상태' 종류별로 몇 명씩 있는지 세어줘.",
+          "status": "PASS",
+          "reason": "Compared final structured calculation with independent reference",
+          "elapsed_seconds": 2.051,
+          "tools": {
+            "aggregate_dataset": 1
+          },
+          "remote_executions": 0,
+          "model_calls": 1
+        },
+        {
+          "id": "L1_022",
+          "prompt": "고객들의 '최종 학력'별 인원수를 보여줘.",
+          "status": "PASS",
+          "reason": "Compared final structured calculation with independent reference",
+          "elapsed_seconds": 6.052,
+          "tools": {
+            "profile_dataset": 1,
+            "aggregate_dataset": 1
+          },
+          "remote_executions": 0,
+          "model_calls": 3
+        },
+        {
+          "id": "L1_023",
+          "prompt": "마케팅을 통해 실제로 예금에 '가입한 사람'이 총 몇 명이야?",
+          "status": "NOT_COMPLETE",
+          "reason": "Agent stopped or awaits approval; no implicit approval",
+          "elapsed_seconds": 9.028,
+          "tools": {
+            "local_analysis_sql": 1,
+            "inspect_dataset": 1
+          },
+          "remote_executions": 0,
+          "model_calls": 4
+        },
+        {
+          "id": "L1_024",
+          "prompt": "타이타닉에서 '살아남은 사람'이 전체 중 몇 명이야?",
+          "status": "NOT_COMPLETE",
+          "reason": "Agent stopped or awaits approval; no implicit approval",
+          "elapsed_seconds": 9.554,
+          "tools": {
+            "profile_dataset": 1
+          },
+          "remote_executions": 0,
+          "model_calls": 4
+        },
+        {
+          "id": "L1_025",
+          "prompt": "타이타닉 승객들이 낸 평균 '티켓 요금'이 얼마인지 알려줘.",
+          "status": "NOT_COMPLETE",
+          "reason": "Agent stopped or awaits approval; no implicit approval",
+          "elapsed_seconds": 8.091,
+          "tools": {
+            "profile_dataset": 1
+          },
+          "remote_executions": 0,
+          "model_calls": 4
+        },
+        {
+          "id": "L1_026",
+          "prompt": "타이타닉 승객 중 '1등실 탑승객'이 몇 명인지 세어줘.",
+          "status": "NOT_COMPLETE",
+          "reason": "Agent stopped or awaits approval; no implicit approval",
+          "elapsed_seconds": 8.173,
+          "tools": {
+            "local_analysis_sql": 1,
+            "inspect_dataset": 1
+          },
+          "remote_executions": 0,
+          "model_calls": 5
+        },
+        {
+          "id": "L1_027",
+          "prompt": "고객들 중 신용불량으로 '파산/연체 이력'이 있는 사람이 몇 명이야?",
+          "status": "PASS",
+          "reason": "Compared final structured calculation with independent reference",
+          "elapsed_seconds": 0.171,
+          "tools": {
+            "local_analysis_sql": 1
+          },
+          "remote_executions": 0,
+          "model_calls": 0
+        },
+        {
+          "id": "L1_028",
+          "prompt": "이번 마케팅 행사에서 고객들에게 전화를 건 '통화 횟수'의 평균을 구해줘.",
+          "status": "NOT_COMPLETE",
+          "reason": "Agent stopped or awaits approval; no implicit approval",
+          "elapsed_seconds": 10.425,
+          "tools": {
+            "profile_dataset": 1,
+            "aggregate_dataset": 1
+          },
+          "remote_executions": 0,
+          "model_calls": 5
+        },
+        {
+          "id": "L1_029",
+          "prompt": "고객들의 주요 '접속 통신 수단' 종류별 빈도를 보여줘.",
+          "status": "NOT_COMPLETE",
+          "reason": "Agent stopped or awaits approval; no implicit approval",
+          "elapsed_seconds": 47.955,
+          "tools": {
+            "profile_dataset": 1,
+            "render_chart_spec": 1,
+            "show_chart": 1
+          },
+          "remote_executions": 0,
+          "model_calls": 6
+        },
+        {
+          "id": "L1_030",
+          "prompt": "이전 마케팅에서 '성공' 판정을 받은 사람이 몇 명인지 알려줘.",
+          "status": "NOT_COMPLETE",
+          "reason": "Agent stopped or awaits approval; no implicit approval",
+          "elapsed_seconds": 17.238,
+          "tools": {
+            "profile_dataset": 1,
+            "aggregate_dataset": 2
+          },
+          "remote_executions": 0,
+          "model_calls": 6
+        },
+        {
+          "id": "L1_032",
+          "prompt": "계좌 잔액이 0원 미만인 마이너스 잔액 고객들의 인원수를 세어줘.",
+          "status": "PASS",
+          "reason": "Compared final structured calculation with independent reference",
+          "elapsed_seconds": 0.062,
+          "tools": {
+            "local_analysis_sql": 1
+          },
+          "remote_executions": 0,
+          "model_calls": 0
+        },
+        {
+          "id": "L1_033",
+          "prompt": "직업(job)이 'technician'인 고객들의 주택 대출(housing) 보유 현황을 세어줘.",
+          "status": "PASS",
+          "reason": "Compared final structured calculation with independent reference",
+          "elapsed_seconds": 5.279,
+          "tools": {
+            "local_analysis_sql": 1
+          },
+          "remote_executions": 0,
+          "model_calls": 2
+        },
+        {
+          "id": "L1_036",
+          "prompt": "상담 시간(duration)이 500초를 초과한 고객들의 예금 가입(y='yes') 비율을 구해줘.",
+          "status": "PASS",
+          "reason": "Compared final structured calculation with independent reference",
+          "elapsed_seconds": 0.074,
+          "tools": {
+            "local_analysis_sql": 1
+          },
+          "remote_executions": 0,
+          "model_calls": 0
+        },
+        {
+          "id": "L1_037",
+          "prompt": "주택 대출(housing)과 개인 대출(loan)을 둘 다 안 받은 무대출 고객들의 인원수를 세어줘.",
+          "status": "PASS",
+          "reason": "Compared final structured calculation with independent reference",
+          "elapsed_seconds": 0.183,
+          "tools": {
+            "local_analysis_sql": 1
+          },
+          "remote_executions": 0,
+          "model_calls": 0
+        },
+        {
+          "id": "L1_038",
+          "prompt": "타이타닉 승객 중 여성(female) 승객들의 생존율(%)을 계산해줘.",
+          "status": "PASS",
+          "reason": "Compared final structured calculation with independent reference",
+          "elapsed_seconds": 0.135,
+          "tools": {
+            "local_analysis_sql": 1
+          },
+          "remote_executions": 0,
+          "model_calls": 0
+        },
+        {
+          "id": "L1_039",
+          "prompt": "타이타닉 승객 중 남성(male) 승객들의 생존율(%)을 계산해줘.",
+          "status": "PASS",
+          "reason": "Compared final structured calculation with independent reference",
+          "elapsed_seconds": 0.057,
+          "tools": {
+            "local_analysis_sql": 1
+          },
+          "remote_executions": 0,
+          "model_calls": 0
+        },
+        {
+          "id": "L1_043",
+          "prompt": "이전 캠페인에서 접촉한 적이 없는(pdays == -1) 신규 대상 고객 수를 알려줘.",
+          "status": "PASS",
+          "reason": "Compared final structured calculation with independent reference",
+          "elapsed_seconds": 0.176,
+          "tools": {
+            "local_analysis_sql": 1
+          },
+          "remote_executions": 0,
+          "model_calls": 0
+        },
+        {
+          "id": "L1_044",
+          "prompt": "이번 마케팅에서 1회만 접촉(campaign == 1)한 고객들의 인원수를 구해줘.",
+          "status": "PASS",
+          "reason": "Compared final structured calculation with independent reference",
+          "elapsed_seconds": 0.063,
+          "tools": {
+            "local_analysis_sql": 1
+          },
+          "remote_executions": 0,
+          "model_calls": 0
+        },
+        {
+          "id": "L1_045",
+          "prompt": "타이타닉에서 요금(Fare)을 100달러 이상 낸 고액 승객들의 생존율을 구해줘.",
+          "status": "PASS",
+          "reason": "Compared final structured calculation with independent reference",
+          "elapsed_seconds": 0.133,
+          "tools": {
+            "local_analysis_sql": 1
+          },
+          "remote_executions": 0,
+          "model_calls": 0
+        },
+        {
+          "id": "L1_046",
+          "prompt": "타이타닉 승객 중 10세 미만 어린이(Age < 10)의 생존율을 구해줘.",
+          "status": "PASS",
+          "reason": "Compared final structured calculation with independent reference",
+          "elapsed_seconds": 0.125,
+          "tools": {
+            "local_analysis_sql": 1
+          },
+          "remote_executions": 0,
+          "model_calls": 0
+        },
+        {
+          "id": "L1_047",
+          "prompt": "연령이 60세 이상인 시니어 고객들의 직업 분포를 표로 보여줘.",
+          "status": "NOT_COMPLETE",
+          "reason": "Agent stopped or awaits approval; no implicit approval",
+          "elapsed_seconds": 9.474,
+          "tools": {
+            "use_dataset": 1,
+            "pivot_dataset": 1,
+            "inspect_dataset": 1
+          },
+          "remote_executions": 0,
+          "model_calls": 4
+        },
+        {
+          "id": "L1_062",
+          "prompt": "직업(job)과 혼인상태(marital)에 따른 고객 수를 피벗 테이블(pivot table)로 만들어줘.",
+          "status": "PASS",
+          "reason": "Pivot values, axes, aggregation and lineage match the reference",
+          "elapsed_seconds": 0.043,
+          "tools": {
+            "pivot_dataset": 1
+          },
+          "remote_executions": 0,
+          "model_calls": 0
+        },
+        {
+          "id": "L1_063",
+          "prompt": "교육수준(education)과 주택대출(housing) 여부별 평균 잔액 피벗 테이블을 만들어줘.",
+          "status": "PASS",
+          "reason": "Pivot values, axes, aggregation and lineage match the reference",
+          "elapsed_seconds": 0.037,
+          "tools": {
+            "pivot_dataset": 1
+          },
+          "remote_executions": 0,
+          "model_calls": 0
+        },
+        {
+          "id": "L1_064",
+          "prompt": "타이타닉 승객 등급(Pclass)과 성별(Sex)에 따른 생존율 피벗 테이블을 백분율로 출력해줘.",
+          "status": "PASS",
+          "reason": "Pivot values, axes, aggregation and lineage match the reference",
+          "elapsed_seconds": 0.108,
+          "tools": {
+            "pivot_dataset": 1
+          },
+          "remote_executions": 0,
+          "model_calls": 0
+        },
+        {
+          "id": "L1_076",
+          "prompt": "고객들의 연령(age) 분포를 확인하기 위해 히스토그램을 그려줘.",
+          "status": "PASS",
+          "reason": "Real PNG and plotted weighted distribution match the reference",
+          "elapsed_seconds": 0.182,
+          "tools": {
+            "prepare_histogram": 1
+          },
+          "remote_executions": 0,
+          "model_calls": 0
+        },
+        {
+          "id": "L1_077",
+          "prompt": "고객 계좌 잔액(balance)의 분포를 박스플롯(Boxplot)으로 그려줘.",
+          "status": "PASS",
+          "reason": "Real PNG and declarative chart data match the independent reference",
+          "elapsed_seconds": 0.056,
+          "tools": {
+            "render_chart_spec": 1
+          },
+          "remote_executions": 0,
+          "model_calls": 0
+        },
+        {
+          "id": "L1_078",
+          "prompt": "직업(job)별 고객 수를 막대 차트(Bar Chart)로 시각화해줘.",
+          "status": "PASS",
+          "reason": "Real PNG and declarative chart data match the independent reference",
+          "elapsed_seconds": 0.073,
+          "tools": {
+            "render_chart_spec": 1
+          },
+          "remote_executions": 0,
+          "model_calls": 0
+        },
+        {
+          "id": "L1_083",
+          "prompt": "통화 상담 시간(duration)의 분포를 히스토그램으로 시각화해줘.",
+          "status": "PASS",
+          "reason": "Real PNG and plotted weighted distribution match the reference",
+          "elapsed_seconds": 0.071,
+          "tools": {
+            "prepare_histogram": 1
+          },
+          "remote_executions": 0,
+          "model_calls": 0
+        },
+        {
+          "id": "L1_086",
+          "prompt": "나이(age)와 잔액(balance) 간의 관계를 확인하기 위해 산점도(Scatter Plot)를 그려줘.",
+          "status": "PASS",
+          "reason": "Real PNG and declarative chart data match the independent reference",
+          "elapsed_seconds": 0.064,
+          "tools": {
+            "render_chart_spec": 1
+          },
+          "remote_executions": 0,
+          "model_calls": 0
+        },
+        {
+          "id": "L1_093",
+          "prompt": "타이타닉 승객 나이(Age)의 분포를 히스토그램으로 그려줘.",
+          "status": "PASS",
+          "reason": "Real PNG and plotted weighted distribution match the reference",
+          "elapsed_seconds": 0.146,
+          "tools": {
+            "prepare_histogram": 1
+          },
+          "remote_executions": 0,
+          "model_calls": 0
+        },
+        {
+          "id": "L1_098",
+          "prompt": "접촉일(day, 1~31일)별 접촉 건수를 꺾은선 그래프(Line Plot)로 시각화해줘.",
+          "status": "PASS",
+          "reason": "Real PNG and declarative chart data match the independent reference",
+          "elapsed_seconds": 0.18,
+          "tools": {
+            "render_chart_spec": 1
+          },
+          "remote_executions": 0,
+          "model_calls": 0
+        },
+        {
+          "id": "L2_005",
+          "prompt": "'최종 학력'이 'tertiary'이고 미혼('single')인 20대(20~29세) 고객 중 실제로 예금에 '가입한 사람'들의 수를 계산해줘.",
+          "status": "PASS",
+          "reason": "Compared final structured calculation with independent reference",
+          "elapsed_seconds": 0.076,
+          "tools": {
+            "local_analysis_sql": 1
+          },
+          "remote_executions": 0,
+          "model_calls": 0
+        },
+        {
+          "id": "L2_010",
+          "prompt": "'연체/신용불량 이력'(default='yes')이 있으면서 '집 대출'이나 '신용 대출' 중 하나라도 있는 고위험 다중 채무 고객 수를 알려줘.",
+          "status": "PASS",
+          "reason": "Compared final structured calculation with independent reference",
+          "elapsed_seconds": 0.077,
+          "tools": {
+            "local_analysis_sql": 1
+          },
+          "remote_executions": 0,
+          "model_calls": 0
+        },
+        {
+          "id": "L2_012",
+          "prompt": "'통장 잔고'가 10,000달러를 넘는 부유층 고객 중 '나이'가 40대인 고객들의 주택 대출 보유율을 알려줘.",
+          "status": "NOT_COMPLETE",
+          "reason": "Agent stopped or awaits approval; no implicit approval",
+          "elapsed_seconds": 16.442,
+          "tools": {
+            "use_dataset": 1,
+            "summarize_groups": 1,
+            "inspect_dataset": 1
+          },
+          "remote_executions": 0,
+          "model_calls": 4
+        },
+        {
+          "id": "L2_017",
+          "prompt": "봄 시즌인 3, 4, 5월('mar', 'apr', 'may')에 전화를 건 고객들 중 '예금 가입'에 성공한 고객 비율을 계산해줘.",
+          "status": "PASS",
+          "reason": "Compared final structured calculation with independent reference",
+          "elapsed_seconds": 0.178,
+          "tools": {
+            "local_analysis_sql": 1
+          },
+          "remote_executions": 0,
+          "model_calls": 0
+        },
+        {
+          "id": "L2_020",
+          "prompt": "'혼인 상태'가 '이혼'(divorced)이고 '신용 대출'이 있는 고객 중 '가입에 성공'(y='yes')한 사람의 인원수를 구해줘.",
+          "status": "PASS",
+          "reason": "Compared final structured calculation with independent reference",
+          "elapsed_seconds": 0.071,
+          "tools": {
+            "local_analysis_sql": 1
+          },
+          "remote_executions": 0,
+          "model_calls": 0
+        },
+        {
+          "id": "L2_021",
+          "prompt": "직업(job)과 혼인상태(marital)별 고객 수 피벗 테이블을 생성하고, 행과 열의 전체 총합계(margins=True)를 표기해줘.",
+          "status": "PASS",
+          "reason": "Pivot values, axes, aggregation and lineage match the reference",
+          "elapsed_seconds": 0.047,
+          "tools": {
+            "pivot_dataset": 1
+          },
+          "remote_executions": 0,
+          "model_calls": 0
+        },
+        {
+          "id": "L2_022",
+          "prompt": "교육수준(education)과 주택대출(housing)별 평균 잔액 피벗 테이블을 만들고, 전체 평균 총계(margins=True)를 포함해 소수점 둘째 자리까지 출력해줘.",
+          "status": "PASS",
+          "reason": "Pivot values, axes, aggregation and lineage match the reference",
+          "elapsed_seconds": 0.04,
+          "tools": {
+            "pivot_dataset": 1
+          },
+          "remote_executions": 0,
+          "model_calls": 0
+        },
+        {
+          "id": "L2_023",
+          "prompt": "타이타닉 승객 등급(Pclass)과 성별(Sex)별 생존율 피벗 테이블을 margins=True 총 생존율과 함께 백분율(%)로 표기해줘.",
+          "status": "PASS",
+          "reason": "Pivot values, axes, aggregation and lineage match the reference",
+          "elapsed_seconds": 0.108,
+          "tools": {
+            "pivot_dataset": 1
+          },
+          "remote_executions": 0,
+          "model_calls": 0
+        },
+        {
+          "id": "L2_024",
+          "prompt": "직업(job)별로 주택 대출과 개인 대출의 교차 보유 고객 수 피벗 테이블(행: job, 열: [housing, loan])을 만들어줘.",
+          "status": "PASS",
+          "reason": "Pivot values, axes, aggregation and lineage match the reference",
+          "elapsed_seconds": 0.147,
+          "tools": {
+            "pivot_dataset": 1
+          },
+          "remote_executions": 0,
+          "model_calls": 0
+        },
+        {
+          "id": "L2_025",
+          "prompt": "월(month)과 통신 수단(contact)에 따른 마케팅 예금 가입 성공 건수(y='yes') 피벗 테이블을 출력해줘.",
+          "status": "PASS",
+          "reason": "Pivot values, axes, aggregation and lineage match the reference",
+          "elapsed_seconds": 0.051,
+          "tools": {
+            "pivot_dataset": 1
+          },
+          "remote_executions": 0,
+          "model_calls": 0
+        },
+        {
+          "id": "L2_027",
+          "prompt": "직업(job)과 정기예금 가입 여부(y)별 평균 통화 상담 시간(duration) 피벗 테이블을 margins=True와 함께 구해줘.",
+          "status": "PASS",
+          "reason": "Pivot values, axes, aggregation and lineage match the reference",
+          "elapsed_seconds": 0.039,
+          "tools": {
+            "pivot_dataset": 1
+          },
+          "remote_executions": 0,
+          "model_calls": 0
+        },
+        {
+          "id": "L2_028",
+          "prompt": "타이타닉 승객 등급(Pclass)과 탑승지(Embarked)별 평균 운임 요금(Fare) 피벗 테이블을 소수점 둘째 자리까지 출력해줘.",
+          "status": "PASS",
+          "reason": "Pivot values, axes, aggregation and lineage match the reference",
+          "elapsed_seconds": 0.101,
+          "tools": {
+            "pivot_dataset": 1
+          },
+          "remote_executions": 0,
+          "model_calls": 0
+        },
+        {
+          "id": "L2_029",
+          "prompt": "교육 수준(education)과 혼인 상태(marital)별 정기예금 가입 성공률(%) 교차표를 백분율로 산출해줘.",
+          "status": "PASS",
+          "reason": "Pivot values, axes, aggregation and lineage match the reference",
+          "elapsed_seconds": 0.144,
+          "tools": {
+            "pivot_dataset": 1
+          },
+          "remote_executions": 0,
+          "model_calls": 0
+        },
+        {
+          "id": "L2_031",
+          "prompt": "월(month)과 주택대출(housing) 여부별 고객 수 피벗 테이블을 만들고 월 순서대로 정렬해줘.",
+          "status": "PASS",
+          "reason": "Pivot values, axes, aggregation and lineage match the reference",
+          "elapsed_seconds": 0.057,
+          "tools": {
+            "pivot_dataset": 1
+          },
+          "remote_executions": 0,
+          "model_calls": 0
+        },
+        {
+          "id": "L2_034",
+          "prompt": "이전 마케팅 결과(poutcome)와 이번 가입 결과(y) 간의 교차 빈도표를 작성하고 전체 대비 백분율(normalize=True)을 구해줘.",
+          "status": "PASS",
+          "reason": "Pivot values, axes, aggregation and lineage match the reference",
+          "elapsed_seconds": 0.144,
+          "tools": {
+            "pivot_dataset": 1
+          },
+          "remote_executions": 0,
+          "model_calls": 0
+        },
+        {
+          "id": "L2_036",
+          "prompt": "계좌 잔액(balance)의 IQR(Q3 - Q1)을 계산하고 상한 이상치 기준선(Q3 + 1.5*IQR)을 넘는 이상치 고객 수를 출력해줘.",
+          "status": "PASS",
+          "reason": "Structured outlier evidence matches the independent reference",
+          "elapsed_seconds": 0.049,
+          "tools": {
+            "detect_outliers": 1
+          },
+          "remote_executions": 0,
+          "model_calls": 0
+        },
+        {
+          "id": "L2_037",
+          "prompt": "잔액(balance)의 IQR 상한 이상치 고객들의 평균 연령과 주요 직업 TOP 3를 출력해줘.",
+          "status": "PASS",
+          "reason": "Lineage-safe outlier cohort aggregates match the independent reference",
+          "elapsed_seconds": 0.157,
+          "tools": {
+            "select_outlier_rows": 1,
+            "aggregate_dataset": 2
+          },
+          "remote_executions": 0,
+          "model_calls": 0
+        },
+        {
+          "id": "L2_038",
+          "prompt": "잔액 이상치 고객(상한 1.5*IQR 초과)을 제외한 일반 고객들의 직업별 평균 잔액을 계산하고 이상치 포함 전/후 평균을 비교해줘.",
+          "status": "PASS",
+          "reason": "Lineage-safe parent-versus-cohort comparison matches the independent reference",
+          "elapsed_seconds": 0.064,
+          "tools": {
+            "select_outlier_rows": 1,
+            "compare_group_aggregates": 1
+          },
+          "remote_executions": 0,
+          "model_calls": 0
+        },
+        {
+          "id": "L2_039",
+          "prompt": "통화 상담 시간(duration)의 Z-Score가 3을 초과하는 극단치 통화 건수와 최장 통화 시간을 구해줘.",
+          "status": "PASS",
+          "reason": "Structured outlier evidence matches the independent reference",
+          "elapsed_seconds": 0.031,
+          "tools": {
+            "detect_outliers": 1
+          },
+          "remote_executions": 0,
+          "model_calls": 0
+        },
+        {
+          "id": "L2_040",
+          "prompt": "타이타닉 요금(Fare)에서 IQR 기준 상한 이상치(Q3 + 1.5*IQR)를 초과하는 고액 요금 승객 수와 이들의 생존율을 구해줘.",
+          "status": "PASS",
+          "reason": "Lineage-safe outlier cohort and follow-up metrics match the independent reference",
+          "elapsed_seconds": 0.13,
+          "tools": {
+            "select_outlier_rows": 1,
+            "local_analysis_sql": 1
+          },
+          "remote_executions": 0,
+          "model_calls": 0
+        },
+        {
+          "id": "L2_042",
+          "prompt": "직업(job)별 잔액(balance)의 이상치 분포를 한눈에 비교할 수 있도록 박스플롯(Boxplot)을 그려줘.",
+          "status": "PASS",
+          "reason": "Real PNG and declarative chart data match the independent reference",
+          "elapsed_seconds": 0.199,
+          "tools": {
+            "render_chart_spec": 1
+          },
+          "remote_executions": 0,
+          "model_calls": 0
+        },
+        {
+          "id": "L2_045",
+          "prompt": "타이타닉 승객 등급(Pclass)별 요금(Fare)의 이상치 유무를 비교하는 박스플롯을 그려줘.",
+          "status": "PASS",
+          "reason": "Real PNG and declarative chart data match the independent reference",
+          "elapsed_seconds": 0.131,
+          "tools": {
+            "render_chart_spec": 1
+          },
+          "remote_executions": 0,
+          "model_calls": 0
+        },
+        {
+          "id": "L2_046",
+          "prompt": "캠페인 접촉 횟수(campaign)가 10회를 초과하는 이상 과다 접촉 고객들의 인원수와 이들의 가입률을 구해줘.",
+          "status": "PASS",
+          "reason": "Compared final structured calculation with independent reference",
+          "elapsed_seconds": 0.196,
+          "tools": {
+            "local_analysis_sql": 1
+          },
+          "remote_executions": 0,
+          "model_calls": 0
+        },
+        {
+          "id": "L2_048",
+          "prompt": "나이(age) 데이터에서 정상 범위를 벗어난 이상치가 있는지 최솟값, 최댓값 및 3-시그마 범위를 점검해줘.",
+          "status": "PASS",
+          "reason": "Structured outlier evidence matches the independent reference",
+          "elapsed_seconds": 0.065,
+          "tools": {
+            "detect_outliers": 1
+          },
+          "remote_executions": 0,
+          "model_calls": 0
+        },
+        {
+          "id": "L2_050",
+          "prompt": "예금 가입 성공(y='yes') 고객과 실패(y='no') 고객의 상담 시간(duration) 이상치를 비교하는 박스플롯을 그려줘.",
+          "status": "PASS",
+          "reason": "Real PNG and declarative chart data match the independent reference",
+          "elapsed_seconds": 0.156,
+          "tools": {
+            "render_chart_spec": 1
+          },
+          "remote_executions": 0,
+          "model_calls": 0
+        },
+        {
+          "id": "L2_051",
+          "prompt": "정기예금 가입자(y='yes')와 미가입자(y='no') 간의 계좌 잔액(balance) 차이에 대해 독립표본 t-검정(Two-Sample t-test)을 수행하고 p-value를 확인해줘.",
+          "status": "PASS",
+          "reason": "Structured statistical evidence matches the independent reference",
+          "elapsed_seconds": 0.038,
+          "tools": {
+            "statistical_test": 1
+          },
+          "remote_executions": 0,
+          "model_calls": 0
+        },
+        {
+          "id": "L2_052",
+          "prompt": "정기예금 가입자(y='yes')와 미가입자(y='no') 간의 통화 상담 시간(duration) 차이에 대해 독립표본 t-검정을 수행해줘.",
+          "status": "PASS",
+          "reason": "Structured statistical evidence matches the independent reference",
+          "elapsed_seconds": 0.038,
+          "tools": {
+            "statistical_test": 1
+          },
+          "remote_executions": 0,
+          "model_calls": 0
+        },
+        {
+          "id": "L2_053",
+          "prompt": "주택 대출(housing) 여부와 정기예금 가입(y) 간의 독립성 검정을 위해 카이제곱 검정(Chi-Square Test)을 수행해줘.",
+          "status": "PASS",
+          "reason": "Structured statistical evidence matches the independent reference",
+          "elapsed_seconds": 0.033,
+          "tools": {
+            "statistical_test": 1
+          },
+          "remote_executions": 0,
+          "model_calls": 0
+        },
+        {
+          "id": "L2_054",
+          "prompt": "타이타닉 승객 등급(Pclass)과 생존 여부(Survived) 간의 카이제곱 독립성 검정을 수행해줘.",
+          "status": "PASS",
+          "reason": "Structured statistical evidence matches the independent reference",
+          "elapsed_seconds": 0.105,
+          "tools": {
+            "statistical_test": 1
+          },
+          "remote_executions": 0,
+          "model_calls": 0
+        },
+        {
+          "id": "L2_055",
+          "prompt": "교육 수준(education) 그룹 간 고객 잔액(balance)의 차이가 유의미한지 일원분산분석(One-way ANOVA)을 수행해줘.",
+          "status": "PASS",
+          "reason": "Structured statistical evidence matches the independent reference",
+          "elapsed_seconds": 0.152,
+          "tools": {
+            "statistical_test": 1
+          },
+          "remote_executions": 0,
+          "model_calls": 0
+        },
+        {
+          "id": "L2_056",
+          "prompt": "혼인 상태(marital) 그룹 간 고객 연령(age)의 차이에 대해 일원분산분석(One-way ANOVA)을 수행해줘.",
+          "status": "PASS",
+          "reason": "Structured statistical evidence matches the independent reference",
+          "elapsed_seconds": 0.038,
+          "tools": {
+            "statistical_test": 1
+          },
+          "remote_executions": 0,
+          "model_calls": 0
+        },
+        {
+          "id": "L2_057",
+          "prompt": "잔액(balance) 데이터의 비정규성을 감안하여, 가입 여부(y)별 잔액 차이에 대해 비모수 검정인 맨-휘트니 U 검정(Mann-Whitney U Test)을 수행해줘.",
+          "status": "PASS",
+          "reason": "Structured statistical evidence matches the independent reference",
+          "elapsed_seconds": 0.034,
+          "tools": {
+            "statistical_test": 1
+          },
+          "remote_executions": 0,
+          "model_calls": 0
+        },
+        {
+          "id": "L2_058",
+          "prompt": "타이타닉 생존자(1)와 사망자(0) 간의 지불 요금(Fare) 차이에 대해 독립표본 t-검정을 수행해줘.",
+          "status": "PASS",
+          "reason": "Structured statistical evidence matches the independent reference",
+          "elapsed_seconds": 0.106,
+          "tools": {
+            "statistical_test": 1
+          },
+          "remote_executions": 0,
+          "model_calls": 0
+        },
+        {
+          "id": "L2_059",
+          "prompt": "전체 고객 잔액(balance)의 모평균에 대한 95% 신뢰구간(Confidence Interval)을 계산해줘.",
+          "status": "PASS",
+          "reason": "Structured statistical evidence matches the independent reference",
+          "elapsed_seconds": 0.147,
+          "tools": {
+            "statistical_test": 1
+          },
+          "remote_executions": 0,
+          "model_calls": 0
+        },
+        {
+          "id": "L2_060",
+          "prompt": "신용불량(default) 여부와 개인 대출(loan) 보유 여부 간의 카이제곱 검정을 수행해줘.",
+          "status": "PASS",
+          "reason": "Structured statistical evidence matches the independent reference",
+          "elapsed_seconds": 0.039,
+          "tools": {
+            "statistical_test": 1
+          },
+          "remote_executions": 0,
+          "model_calls": 0
+        },
+        {
+          "id": "L2_061",
+          "prompt": "월(month)별 총 접촉 건수(막대)와 예금 가입 전환율(꺾은선)을 하나의 차트에 이중 축(Dual Y-axis)으로 시각화해줘.",
+          "status": "PASS",
+          "reason": "Count/rate chart PNG and numerator/denominator evidence match the reference",
+          "elapsed_seconds": 0.104,
+          "tools": {
+            "render_count_rate_chart": 1
+          },
+          "remote_executions": 0,
+          "model_calls": 0
+        },
+        {
+          "id": "L2_064",
+          "prompt": "직업별 고객 수(막대)와 예금 가입 성공률(선)을 이중 축 그래프로 시각화해줘.",
+          "status": "PASS",
+          "reason": "Count/rate chart PNG and numerator/denominator evidence match the reference",
+          "elapsed_seconds": 0.206,
+          "tools": {
+            "render_count_rate_chart": 1
+          },
+          "remote_executions": 0,
+          "model_calls": 0
+        },
+        {
+          "id": "L2_065",
+          "prompt": "타이타닉 승객 등급(Pclass)별 탑승객 수(막대)와 생존율(선)을 이중 축 그래프로 표현해줘.",
+          "status": "PASS",
+          "reason": "Count/rate chart PNG and numerator/denominator evidence match the reference",
+          "elapsed_seconds": 0.151,
+          "tools": {
+            "render_count_rate_chart": 1
+          },
+          "remote_executions": 0,
+          "model_calls": 0
+        },
+        {
+          "id": "L2_066",
+          "prompt": "마케팅 접촉일(day)별 고객 수(막대)와 가입 성공률(선)의 일별 이중 축 추이를 시각화해줘.",
+          "status": "PASS",
+          "reason": "Count/rate chart PNG and numerator/denominator evidence match the reference",
+          "elapsed_seconds": 0.244,
+          "tools": {
+            "render_count_rate_chart": 1
+          },
+          "remote_executions": 0,
+          "model_calls": 0
+        },
+        {
+          "id": "L2_068",
+          "prompt": "월별 총 접촉 건수의 누적합(Cumulative Sum) 곡선을 시각화해줘.",
+          "status": "PASS",
+          "reason": "Real PNG and declarative chart data match the independent reference",
+          "elapsed_seconds": 0.075,
+          "tools": {
+            "render_chart_spec": 1
+          },
+          "remote_executions": 0,
+          "model_calls": 0
+        },
+        {
+          "id": "L2_089",
+          "prompt": "월별(month) 접촉 고객 수와 예금 가입 전환율을 2열 서브플롯(막대 차트 & 선 그래프)으로 비교 시각화해줘.",
+          "status": "PASS",
+          "reason": "Count/rate chart PNG and numerator/denominator evidence match the reference",
+          "elapsed_seconds": 0.197,
+          "tools": {
+            "render_count_rate_chart": 1
+          },
+          "remote_executions": 0,
+          "model_calls": 0
+        },
+        {
+          "id": "L2_096",
+          "prompt": "계좌 잔액(balance)의 극단치 왜곡을 방지하기 위해 상하위 1% 윈저화(Winsorization/Clipping)를 적용하고, 원본 평균과 보정 평균을 비교해줘.",
+          "status": "PASS",
+          "reason": "Winsorization boundaries and before/after statistics match the reference",
+          "elapsed_seconds": 0.067,
+          "tools": {
+            "winsorize_numeric": 1
+          },
+          "remote_executions": 0,
+          "model_calls": 0
+        }
+      ]
+    }
+  },
+  "single_fault_repair": {
+    "type": "one injected invalid ID followed by actual Qwen model; deterministic local rescue disabled",
+    "status": "answered",
+    "text": "보유 데이터로 계산한 결과입니다. 출처: fixture.observations\n분석 범위: 요청 조건에 포함된 보유 데이터 전체\n\n평균: 9.0",
+    "elapsed_seconds": 3.504,
+    "model_calls": 3,
+    "tracker": {
+      "injected": true,
+      "live_calls": 2
+    },
+    "raw_unchanged": true,
+    "stop_reason": null,
+    "expected_mean": 9.0,
+    "evidence_ids": [
+      "13abd49a-8c9b-414d-b216-f1bab6d49103"
+    ],
+    "passed": true
+  }
+}

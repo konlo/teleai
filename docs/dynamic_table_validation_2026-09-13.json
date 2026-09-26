@@ -1,0 +1,469 @@
+{
+  "contexts": [
+    {
+      "table": "workspace.default.bank_loan",
+      "freshness": "stale",
+      "observed_at": "2026-04-25T14:10:31Z",
+      "schema_fingerprint": "85c8ac06ba9b44a5a3dd0fce60615149f025c0a4418d7cf48174777db8ca1f93"
+    },
+    {
+      "table": "workspace.default.stormtrooper",
+      "freshness": "stale",
+      "observed_at": "2026-04-27T13:04:44Z",
+      "schema_fingerprint": "171fda61f2e223df99e1c47b53b7e7cae0dc78ec3042471cabc27937f1c103b0"
+    },
+    {
+      "table": "workspace.default.titanic",
+      "freshness": "stale",
+      "observed_at": "2026-04-26T12:42:42Z",
+      "schema_fingerprint": "75770e20b90bbaf412d5674bf684ba789b87329d3511b503f1b3f5ccef6d4caa"
+    },
+    {
+      "table": "workspace.default.ncr_ride",
+      "freshness": "stale",
+      "observed_at": "2026-04-27T12:34:12Z",
+      "schema_fingerprint": "62b2640f8deebb5e869d35c114890b6acdf6a188ffcf3d1530343a0a4c534696"
+    }
+  ],
+  "bank_loan_without_live_schema": {
+    "status": "needs_refresh",
+    "table_context": {
+      "table": "workspace.default.bank_loan",
+      "training_status": "trained",
+      "trained_at": "2026-04-25T14:10:31Z",
+      "observed_at": "2026-04-25T14:10:31Z",
+      "columns": [
+        {
+          "name": "id",
+          "dtype": "int64",
+          "aliases": [],
+          "top_values": [
+            {
+              "value": "3",
+              "count": 1
+            },
+            {
+              "value": "1",
+              "count": 1
+            },
+            {
+              "value": "0",
+              "count": 1
+            },
+            {
+              "value": "2",
+              "count": 1
+            },
+            {
+              "value": "4",
+              "count": 1
+            }
+          ]
+        },
+        {
+          "name": "age",
+          "dtype": "int64",
+          "aliases": [],
+          "top_values": [
+            {
+              "value": "32",
+              "count": 37235
+            },
+            {
+              "value": "33",
+              "count": 34511
+            },
+            {
+              "value": "31",
+              "count": 34301
+            },
+            {
+              "value": "34",
+              "count": 34131
+            },
+            {
+              "value": "35",
+              "count": 33057
+            }
+          ]
+        },
+        {
+          "name": "job",
+          "dtype": "object",
+          "aliases": [],
+          "top_values": [
+            {
+              "value": "management",
+              "count": 175541
+            },
+            {
+              "value": "blue-collar",
+              "count": 170498
+            },
+            {
+              "value": "technician",
+              "count": 138107
+            },
+            {
+              "value": "admin.",
+              "count": 81492
+            },
+            {
+              "value": "services",
+              "count": 64209
+            }
+          ]
+        },
+        {
+          "name": "marital",
+          "dtype": "object",
+          "aliases": [],
+          "top_values": [
+            {
+              "value": "married",
+              "count": 480759
+            },
+            {
+              "value": "single",
+              "count": 194834
+            },
+            {
+              "value": "divorced",
+              "count": 74407
+            }
+          ]
+        },
+        {
+          "name": "education",
+          "dtype": "object",
+          "aliases": [],
+          "top_values": [
+            {
+              "value": "secondary",
+              "count": 401683
+            },
+            {
+              "value": "tertiary",
+              "count": 227508
+            },
+            {
+              "value": "primary",
+              "count": 99510
+            },
+            {
+              "value": "unknown",
+              "count": 21299
+            }
+          ]
+        },
+        {
+          "name": "default",
+          "dtype": "object",
+          "aliases": [],
+          "top_values": [
+            {
+              "value": "no",
+              "count": 737151
+            },
+            {
+              "value": "yes",
+              "count": 12849
+            }
+          ]
+        },
+        {
+          "name": "balance",
+          "dtype": "int64",
+          "aliases": [],
+          "top_values": [
+            {
+              "value": "0",
+              "count": 93159
+            },
+            {
+              "value": "5",
+              "count": 4174
+            },
+            {
+              "value": "4",
+              "count": 3741
+            },
+            {
+              "value": "-1",
+              "count": 3573
+            },
+            {
+              "value": "3",
+              "count": 3429
+            }
+          ]
+        },
+        {
+          "name": "housing",
+          "dtype": "object",
+          "aliases": [],
+          "top_values": [
+            {
+              "value": "yes",
+              "count": 411288
+            },
+            {
+              "value": "no",
+              "count": 338712
+            }
+          ]
+        },
+        {
+          "name": "loan",
+          "dtype": "object",
+          "aliases": [],
+          "top_values": [
+            {
+              "value": "no",
+              "count": 645023
+            },
+            {
+              "value": "yes",
+              "count": 104977
+            }
+          ]
+        },
+        {
+          "name": "contact",
+          "dtype": "object",
+          "aliases": [],
+          "top_values": [
+            {
+              "value": "cellular",
+              "count": 486655
+            },
+            {
+              "value": "unknown",
+              "count": 231627
+            },
+            {
+              "value": "telephone",
+              "count": 31718
+            }
+          ]
+        },
+        {
+          "name": "day",
+          "dtype": "int64",
+          "aliases": [],
+          "top_values": [
+            {
+              "value": "20",
+              "count": 51431
+            },
+            {
+              "value": "18",
+              "count": 41352
+            },
+            {
+              "value": "21",
+              "count": 36395
+            },
+            {
+              "value": "28",
+              "count": 33479
+            },
+            {
+              "value": "17",
+              "count": 33428
+            }
+          ]
+        },
+        {
+          "name": "month",
+          "dtype": "object",
+          "aliases": [],
+          "top_values": [
+            {
+              "value": "may",
+              "count": 228411
+            },
+            {
+              "value": "aug",
+              "count": 128859
+            },
+            {
+              "value": "jul",
+              "count": 110647
+            },
+            {
+              "value": "jun",
+              "count": 93670
+            },
+            {
+              "value": "nov",
+              "count": 66062
+            }
+          ]
+        },
+        {
+          "name": "duration",
+          "dtype": "int64",
+          "aliases": [],
+          "top_values": [
+            {
+              "value": "124",
+              "count": 8599
+            },
+            {
+              "value": "114",
+              "count": 7485
+            },
+            {
+              "value": "121",
+              "count": 7307
+            },
+            {
+              "value": "112",
+              "count": 7250
+            },
+            {
+              "value": "111",
+              "count": 6834
+            }
+          ]
+        },
+        {
+          "name": "campaign",
+          "dtype": "int64",
+          "aliases": [],
+          "top_values": [
+            {
+              "value": "1",
+              "count": 304481
+            },
+            {
+              "value": "2",
+              "count": 209834
+            },
+            {
+              "value": "3",
+              "count": 88683
+            },
+            {
+              "value": "4",
+              "count": 60974
+            },
+            {
+              "value": "5",
+              "count": 25648
+            }
+          ]
+        },
+        {
+          "name": "pdays",
+          "dtype": "int64",
+          "aliases": [],
+          "top_values": [
+            {
+              "value": "-1",
+              "count": 672434
+            },
+            {
+              "value": "182",
+              "count": 2515
+            },
+            {
+              "value": "92",
+              "count": 2275
+            },
+            {
+              "value": "183",
+              "count": 2074
+            },
+            {
+              "value": "181",
+              "count": 1698
+            }
+          ]
+        },
+        {
+          "name": "previous",
+          "dtype": "int64",
+          "aliases": [],
+          "top_values": [
+            {
+              "value": "0",
+              "count": 672431
+            },
+            {
+              "value": "1",
+              "count": 28342
+            },
+            {
+              "value": "2",
+              "count": 20468
+            },
+            {
+              "value": "3",
+              "count": 10326
+            },
+            {
+              "value": "4",
+              "count": 6239
+            }
+          ]
+        },
+        {
+          "name": "poutcome",
+          "dtype": "object",
+          "aliases": [],
+          "top_values": [
+            {
+              "value": "unknown",
+              "count": 672450
+            },
+            {
+              "value": "failure",
+              "count": 45115
+            },
+            {
+              "value": "success",
+              "count": 17691
+            },
+            {
+              "value": "other",
+              "count": 14744
+            }
+          ]
+        },
+        {
+          "name": "y",
+          "dtype": "int64",
+          "aliases": [],
+          "top_values": [
+            {
+              "value": "0",
+              "count": 659512
+            },
+            {
+              "value": "1",
+              "count": 90488
+            }
+          ]
+        }
+      ],
+      "freshness": "stale",
+      "schema_fingerprint": "85c8ac06ba9b44a5a3dd0fce60615149f025c0a4418d7cf48174777db8ca1f93"
+    },
+    "refresh_query": "SELECT * FROM `workspace`.`default`.`bank_loan` LIMIT 0",
+    "message": "저장된 스키마 스냅샷이 오래되어 현재 컬럼이라고 보장할 수 없습니다. 이 목록으로 새 분석 SQL을 만들지 말고 스키마 조회 승인을 받아 갱신하세요.",
+    "scope": "과거 스키마 스냅샷이며 현재 테이블 구조를 보장하지 않습니다."
+  },
+  "policy": {
+    "stale_context_execution_allowed": false,
+    "remote_execution_before_approval": false,
+    "approved_select_star_precedence": true,
+    "latest_source_reuses_cache": false
+  },
+  "regression": {
+    "migration_passed": 98,
+    "tests_passed": 73,
+    "total_passed": 171
+  }
+}

@@ -6,7 +6,7 @@ actually answer. Unsupported predicate implication requires a source query.
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from typing import Any
+from typing import Any, Mapping
 from uuid import uuid4
 
 import pandas as pd
@@ -72,6 +72,76 @@ class DatasetInfo:
     snapshot: str = ""
     query: str = ""
     parent_id: str = ""
+    parent_ids: tuple[str, ...] = ()
+    role: str = "unknown"  # legacy assets remain unknown; new ready assets are classified
+    root_id: str = ""
+
+
+def project_dataset(store, dataset_id: str, columns) -> pd.DataFrame:
+    """Load only declared columns when the persistent store supports projection."""
+    selected = list(columns)
+    info = store.metadata[dataset_id]
+    if len(selected) != len(set(selected)) or not set(selected).issubset(info.columns):
+        raise ValueError("분석 컬럼은 현재 dataset의 중복 없는 실제 컬럼이어야 합니다.")
+    if not selected:
+        # pandas/pyarrow return zero rows for a zero-column Parquet projection.
+        # The immutable asset metadata is the row-count authority here.
+        return pd.DataFrame(index=range(info.rows))
+    if hasattr(store.frames, "project"):
+        return store.frames.project(dataset_id, selected)
+    return store.frames[dataset_id].loc[:, selected]
+
+
+def preview_dataset(store, dataset_id: str, *, limit=15) -> pd.DataFrame:
+    """Read a bounded prefix for display without materializing file-backed data."""
+    if limit < 1:
+        raise ValueError('미리보기 행 수는 1 이상이어야 합니다.')
+    info = store.metadata[dataset_id]
+    if hasattr(store.frames, 'head'):
+        return store.frames.head(dataset_id, info.columns, expected_rows=info.rows, limit=limit)
+    return store.frames[dataset_id].head(limit)
+
+
+def stored_dataset_digest(store, dataset_id: str) -> str:
+    """Recompute a persisted result's evidence hash without a full decode."""
+    info = store.metadata[dataset_id]
+    if hasattr(store.frames, 'digest'):
+        return store.frames.digest(dataset_id, info.columns, expected_rows=info.rows)
+    from utils.analysis_pivot import dataset_digest
+    return dataset_digest(store.frames[dataset_id])
+
+
+def sample_dataset(store, dataset_id: str, columns, *, limit=20_000) -> pd.DataFrame:
+    """Sample declared columns without fully decoding a file-backed asset."""
+    selected = list(columns)
+    info = store.metadata[dataset_id]
+    if len(selected) != len(set(selected)) or not set(selected).issubset(info.columns):
+        raise ValueError("분석 컬럼은 현재 dataset의 중복 없는 실제 컬럼이어야 합니다.")
+    if hasattr(store.frames, "sample"):
+        return store.frames.sample(dataset_id, selected, rows=info.rows, limit=limit)
+    frame = project_dataset(store, dataset_id, selected)
+    return frame.sample(n=limit, random_state=42) if len(frame) > limit else frame
+
+
+def full_read_preflight(store, dataset_ids, *, output_rows=0, output_columns=0):
+    """Reject an oversized whole-frame operation before decoding source rows."""
+    budget = getattr(store, 'max_full_read_bytes', None)
+    if budget is None or not hasattr(store.frames, 'estimate_full_decode_bytes'):
+        return None
+    estimates = []
+    for dataset_id in dict.fromkeys(dataset_ids):
+        info = store.metadata[dataset_id]
+        estimates.append(store.frames.estimate_full_decode_bytes(
+            dataset_id, info.rows, len(info.columns)))
+    estimated = sum(estimates) + output_rows * output_columns * 16
+    if estimated <= budget:
+        return None
+    return {
+        'status': 'rejected', 'error_code': 'full_frame_budget', 'retryable': False,
+        'user_action': '필요한 컬럼과 조건을 명시하거나, 조인 전 각 데이터를 집계해 규모를 줄여주세요.',
+        'scope': '원본 전체 복원 전 메모리 예산 검사에서 중단했습니다. 기존 데이터와 분석 기준은 보존됩니다.',
+        'estimated_bytes': estimated, 'budget_bytes': budget,
+    }
 
 
 @dataclass(frozen=True)
@@ -89,6 +159,75 @@ class AnalysisNeed:
 class ReuseDecision:
     action: str
     reason: str
+
+
+@dataclass(frozen=True)
+class ReuseSelection:
+    dataset_id: str
+    decision: ReuseDecision
+    origin: str  # selected, ancestor, registry, or unavailable
+
+
+def select_reusable_dataset(
+    metadata: Mapping[str, DatasetInfo], selected_id: str, need: AnalysisNeed,
+) -> ReuseSelection:
+    """Find a sufficient local asset using metadata only, before proposing a reload.
+
+    An explicit request for the selected result is never widened. Ancestors are
+    preferred by lineage distance; unrelated assets require the same explicit
+    snapshot and must have exactly one sufficient candidate.
+    """
+    selected = metadata[selected_id]
+    initial = assess_reuse(selected, need)
+    if initial.action != "query_source" or need.current_result_only:
+        return ReuseSelection(selected_id, initial, "selected")
+
+    visited = {selected_id}
+    frontier = list(dict.fromkeys((*selected.parent_ids,
+                                    *((selected.parent_id,) if selected.parent_id else ()))))
+    while frontier:
+        candidates = []
+        following = []
+        for asset_id in frontier:
+            if asset_id in visited:
+                continue
+            visited.add(asset_id)
+            info = metadata.get(asset_id)
+            if info is None:
+                continue
+            # A lineage edge alone is not evidence that a different snapshot
+            # or source can answer this request.
+            if info.source == selected.source and info.snapshot == selected.snapshot:
+                decision = assess_reuse(info, need)
+                if decision.action != "query_source":
+                    candidates.append((asset_id, decision))
+            following.extend(info.parent_ids or
+                             ((info.parent_id,) if info.parent_id else ()))
+        if len(candidates) == 1:
+            asset_id, decision = candidates[0]
+            return ReuseSelection(asset_id, decision, "ancestor")
+        if len(candidates) > 1:
+            return ReuseSelection(selected_id, ReuseDecision(
+                "query_source", "동일 단계의 부모 데이터가 여러 개라 범위를 확정할 수 없습니다."),
+                "unavailable")
+        frontier = list(dict.fromkeys(following))
+
+    # Assets without lineage can be considered only when a nonempty snapshot
+    # explicitly proves that they belong to the selected source version.
+    if selected.snapshot:
+        candidates = [(asset_id, decision)
+                      for asset_id, info in metadata.items()
+                      if asset_id not in visited and info.source == selected.source
+                      and info.snapshot == selected.snapshot
+                      if (decision := assess_reuse(info, need)).action != "query_source"]
+        if len(candidates) == 1:
+            asset_id, decision = candidates[0]
+            return ReuseSelection(asset_id, decision, "registry")
+        if len(candidates) > 1:
+            return ReuseSelection(selected_id, ReuseDecision(
+                "query_source", "동일 버전의 사용 가능한 데이터가 여러 개라 범위를 확정할 수 없습니다."),
+                "unavailable")
+    return ReuseSelection(selected_id, initial, "unavailable")
 
 
 def assess_reuse(info: DatasetInfo, need: AnalysisNeed) -> ReuseDecision:
@@ -118,11 +257,23 @@ def assess_reuse(info: DatasetInfo, need: AnalysisNeed) -> ReuseDecision:
     return ReuseDecision("reuse", "현재 결과를 그대로 사용할 수 있습니다.")
 
 
+class InvalidConditionValue(ValueError):
+    """A type mismatch must not silently become a zero-row population."""
+    def __init__(self, column, dtype, examples):
+        super().__init__('Filter literal type is incompatible with observed column type')
+        self.column, self.dtype, self.examples = column, str(dtype), examples
+
+
 def filter_frame(frame: pd.DataFrame, conditions: tuple[Condition, ...]) -> pd.DataFrame:
     mask = pd.Series(True, index=frame.index)
     for condition in conditions:
         series = frame[condition.column]
         value = condition.value
+        observed = series.head(256).dropna().tolist()
+        requested = list(value) if condition.op == 'in' else [value]
+        if observed and all(isinstance(item, str) for item in observed) and any(not isinstance(item, str) for item in requested):
+            examples = list(dict.fromkeys(item for item in observed if len(item) <= 128))[:10]
+            raise InvalidConditionValue(condition.column, series.dtype, examples)
         ops = {"eq": series.eq, "ne": series.ne, "gt": series.gt,
                "ge": series.ge, "lt": series.lt, "le": series.le,
                "in": series.isin}
@@ -143,7 +294,26 @@ class DatasetStore:
         coverage = provenance.get("coverage", "unknown")
         if coverage not in {"complete", "unknown", "sampled", "truncated"}:
             raise ValueError("지원하지 않는 coverage입니다.")
-        info = DatasetInfo(str(uuid4()), source, tuple(frame.columns), len(frame), **provenance)
+        asset_id = str(uuid4())
+        parent_id = provenance.get('parent_id', '')
+        parent_ids = tuple(provenance.get('parent_ids', ()))
+        role = provenance.pop('role', None)
+        if role is None:
+            role = ('derived' if parent_id or parent_ids else
+                    'root' if provenance.get('grain', 'raw') == 'raw' else 'aggregate')
+        if role not in {'root', 'derived', 'aggregate', 'unknown'}:
+            raise ValueError('준비되지 않은 데이터 역할은 ready 자산으로 발행할 수 없습니다.')
+        root_id = provenance.pop('root_id', '')
+        if role == 'root':
+            if parent_id or parent_ids or root_id:
+                raise ValueError('보호 원본은 다른 데이터의 파생 결과일 수 없습니다.')
+            root_id = asset_id
+        elif role == 'derived' and not root_id:
+            parents = parent_ids or ((parent_id,) if parent_id else ())
+            if len(parents) == 1 and parents[0] in self.metadata:
+                root_id = self.metadata[parents[0]].root_id
+        info = DatasetInfo(asset_id, source, tuple(frame.columns), len(frame),
+                           **provenance, role=role, root_id=root_id)
         self.frames[info.id] = frame
         self.metadata[info.id] = info
         return info

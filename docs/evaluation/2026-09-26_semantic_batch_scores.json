@@ -1,0 +1,2710 @@
+{
+  "generated_at": "2026-09-26T02:40:43.332403+00:00",
+  "mode": "live-databricks-model",
+  "runtime": "core.analysis_agent.runtime.GraphAnalysisRuntime",
+  "model": "databricks-qwen3-next-80b-a3b-instruct",
+  "data_scope": "preloaded complete local test_set fixtures in temporary per-case scope",
+  "coverage": {
+    "total_reference_cases": 200,
+    "supported_oracles": 87,
+    "selected": 200,
+    "statuses": {
+      "PASS": 87,
+      "UNGRADED": 113
+    },
+    "all_selected_passed": false,
+    "ungraded_is_never_pass": true
+  },
+  "latency_seconds": {
+    "total": 44.601,
+    "max": 7.832
+  },
+  "remote_executions": 0,
+  "limitations": [
+    "Not a Databricks or browser end-to-end test",
+    "Single-turn questions; follow-up journeys require separate evaluation",
+    "Final prose is not graded; PASS establishes tool-result/artifact accuracy only",
+    "Unsupported reference cases stay UNGRADED and are excluded from success claims",
+    "Scripted-model tests validate the harness, not natural-language model quality"
+  ],
+  "semantic_context": "table_wide_readme_descriptions",
+  "results": [
+    {
+      "id": "L1_001",
+      "reference_sha256": "a282c2e5a7e5c2da355b4462adab1b4cef1f8a2d3a68a204f30753c99a7cb749",
+      "status": "PASS",
+      "reason": "Inspected table context metadata matches the reference",
+      "elapsed_seconds": 0.235,
+      "tools": {
+        "inspect_table_context": 1
+      },
+      "observations": [
+        {
+          "tool": "inspect_table_context",
+          "status": "ready",
+          "error_code": null
+        }
+      ],
+      "remote_executions": 0,
+      "error_type": null,
+      "error_id": null,
+      "model_calls": 0
+    },
+    {
+      "id": "L1_002",
+      "reference_sha256": "a215f2d47cc9a1cdb72387bab8b92b6a14aa7bf63d1d27e637206fd2180cc5fe",
+      "status": "PASS",
+      "reason": "Inspected table context metadata matches the reference",
+      "elapsed_seconds": 0.033,
+      "tools": {
+        "inspect_table_context": 1
+      },
+      "observations": [
+        {
+          "tool": "inspect_table_context",
+          "status": "ready",
+          "error_code": null
+        }
+      ],
+      "remote_executions": 0,
+      "error_type": null,
+      "error_id": null,
+      "model_calls": 0
+    },
+    {
+      "id": "L1_003",
+      "reference_sha256": "6fca99b8fb914c26667bec0c449aa6cd3789d1d759c34c57afbe487b245ddfd4",
+      "status": "PASS",
+      "reason": "Inspected table context metadata matches the reference",
+      "elapsed_seconds": 0.031,
+      "tools": {
+        "inspect_table_context": 1
+      },
+      "observations": [
+        {
+          "tool": "inspect_table_context",
+          "status": "ready",
+          "error_code": null
+        }
+      ],
+      "remote_executions": 0,
+      "error_type": null,
+      "error_id": null,
+      "model_calls": 0
+    },
+    {
+      "id": "L1_004",
+      "reference_sha256": "7d6add7d37597d178eb08fafefefd40efa96ca34431cdff6b6dcafde0d946e13",
+      "status": "PASS",
+      "reason": "Inspected table context metadata matches the reference",
+      "elapsed_seconds": 0.033,
+      "tools": {
+        "inspect_table_context": 1
+      },
+      "observations": [
+        {
+          "tool": "inspect_table_context",
+          "status": "ready",
+          "error_code": null
+        }
+      ],
+      "remote_executions": 0,
+      "error_type": null,
+      "error_id": null,
+      "model_calls": 0
+    },
+    {
+      "id": "L1_005",
+      "reference_sha256": "7cf47d2c21778c392174cf69682080cb629907e82ee3f80467b90d315eed826f",
+      "status": "PASS",
+      "reason": "Compared final structured calculation with independent reference",
+      "elapsed_seconds": 0.109,
+      "tools": {
+        "local_analysis_sql": 1
+      },
+      "observations": [
+        {
+          "tool": "local_analysis_sql",
+          "status": "ready",
+          "error_code": null
+        }
+      ],
+      "remote_executions": 0,
+      "error_type": null,
+      "error_id": null,
+      "model_calls": 0
+    },
+    {
+      "id": "L1_006",
+      "reference_sha256": "32581eee4e6ed0dd900d3fe7252d1424199d9cbad10a51592cf1bed4a6aff6f8",
+      "status": "PASS",
+      "reason": "Structured dataset profile matches the independent reference",
+      "elapsed_seconds": 0.041,
+      "tools": {
+        "profile_dataset": 1
+      },
+      "observations": [
+        {
+          "tool": "profile_dataset",
+          "status": "ready",
+          "error_code": null
+        }
+      ],
+      "remote_executions": 0,
+      "error_type": null,
+      "error_id": null,
+      "model_calls": 0
+    },
+    {
+      "id": "L1_007",
+      "reference_sha256": "03e195d7cbafe4ded9c548628947099b79760a694c61a92d45d64c90ec754b00",
+      "status": "PASS",
+      "reason": "Inspected table context metadata matches the reference",
+      "elapsed_seconds": 0.136,
+      "tools": {
+        "inspect_table_context": 1
+      },
+      "observations": [
+        {
+          "tool": "inspect_table_context",
+          "status": "ready",
+          "error_code": null
+        }
+      ],
+      "remote_executions": 0,
+      "error_type": null,
+      "error_id": null,
+      "model_calls": 0
+    },
+    {
+      "id": "L1_008",
+      "reference_sha256": "4c8854fe3a048bcb25ab071e98f3c8903803b761c2355d04d5793afa9f0197a5",
+      "status": "PASS",
+      "reason": "Structured dataset profile matches the independent reference",
+      "elapsed_seconds": 0.039,
+      "tools": {
+        "profile_dataset": 1
+      },
+      "observations": [
+        {
+          "tool": "profile_dataset",
+          "status": "ready",
+          "error_code": null
+        }
+      ],
+      "remote_executions": 0,
+      "error_type": null,
+      "error_id": null,
+      "model_calls": 0
+    },
+    {
+      "id": "L1_009",
+      "reference_sha256": "63741cbf54250290e020b17b3db8b390864c41d49e46767a5186e6ef47df94ca",
+      "status": "PASS",
+      "reason": "Structured dataset profile matches the independent reference",
+      "elapsed_seconds": 0.215,
+      "tools": {
+        "profile_dataset": 1,
+        "inspect_table_context": 1
+      },
+      "observations": [
+        {
+          "tool": "profile_dataset",
+          "status": "ready",
+          "error_code": null
+        },
+        {
+          "tool": "inspect_table_context",
+          "status": "ready",
+          "error_code": null
+        }
+      ],
+      "remote_executions": 0,
+      "error_type": null,
+      "error_id": null,
+      "model_calls": 0
+    },
+    {
+      "id": "L1_010",
+      "reference_sha256": "5a78cffd0872d8e78b53bccf12f60b423b0e18fcf8f90ed17a9279c44ec6c423",
+      "status": "UNGRADED",
+      "reason": "No explicit machine-comparable oracle; no model call",
+      "model_calls": 0
+    },
+    {
+      "id": "L1_011",
+      "reference_sha256": "2e2bb64da6a7697464de31e0336a0ee8f6cb582ff55527269239c3350a0bb1c8",
+      "status": "UNGRADED",
+      "reason": "No explicit machine-comparable oracle; no model call",
+      "model_calls": 0
+    },
+    {
+      "id": "L1_012",
+      "reference_sha256": "7757032d40db407a99e306a9e108ebf8d17d49d34df40d46c5ec7711aeeb9c03",
+      "status": "UNGRADED",
+      "reason": "No explicit machine-comparable oracle; no model call",
+      "model_calls": 0
+    },
+    {
+      "id": "L1_013",
+      "reference_sha256": "de1f177110d57861086acf58757edc7f6f16b9605a1ddffcb5efde0dd72b8930",
+      "status": "UNGRADED",
+      "reason": "No explicit machine-comparable oracle; no model call",
+      "model_calls": 0
+    },
+    {
+      "id": "L1_014",
+      "reference_sha256": "403e29c95dd535e1986731e0c1ce3e9456d73e6dacfa5db5792a7b7c09537209",
+      "status": "UNGRADED",
+      "reason": "No explicit machine-comparable oracle; no model call",
+      "model_calls": 0
+    },
+    {
+      "id": "L1_015",
+      "reference_sha256": "98f8e0bb559eb8728797682d008318142429ef218c466b0e1ca89313fa0c93a9",
+      "status": "UNGRADED",
+      "reason": "No explicit machine-comparable oracle; no model call",
+      "model_calls": 0
+    },
+    {
+      "id": "L1_016",
+      "reference_sha256": "88673f5db621595408278d2e61a9f845696a01ba68d3946ffe7bddd91ab8da06",
+      "status": "PASS",
+      "reason": "Compared final structured calculation with independent reference",
+      "elapsed_seconds": 0.071,
+      "tools": {
+        "local_analysis_sql": 1
+      },
+      "observations": [
+        {
+          "tool": "local_analysis_sql",
+          "status": "ready",
+          "error_code": null
+        }
+      ],
+      "remote_executions": 0,
+      "error_type": null,
+      "error_id": null,
+      "model_calls": 0
+    },
+    {
+      "id": "L1_017",
+      "reference_sha256": "a4b61d899861190ef02e3532e1b872ba9637630d46417b2db08719d2c3b341d5",
+      "status": "PASS",
+      "reason": "Compared final structured calculation with independent reference",
+      "elapsed_seconds": 0.075,
+      "tools": {
+        "local_analysis_sql": 1
+      },
+      "observations": [
+        {
+          "tool": "local_analysis_sql",
+          "status": "ready",
+          "error_code": null
+        }
+      ],
+      "remote_executions": 0,
+      "error_type": null,
+      "error_id": null,
+      "model_calls": 0
+    },
+    {
+      "id": "L1_018",
+      "reference_sha256": "9e6176b39002d8f0048afd86d422233da06f701d42bea7f277286e059a7cfc4d",
+      "status": "PASS",
+      "reason": "Compared final structured calculation with independent reference",
+      "elapsed_seconds": 0.07,
+      "tools": {
+        "local_analysis_sql": 1
+      },
+      "observations": [
+        {
+          "tool": "local_analysis_sql",
+          "status": "ready",
+          "error_code": null
+        }
+      ],
+      "remote_executions": 0,
+      "error_type": null,
+      "error_id": null,
+      "model_calls": 0
+    },
+    {
+      "id": "L1_019",
+      "reference_sha256": "a616af5b15b57517720684b45ba7b04e0a103a60561a8f10b2dd43d39300f065",
+      "status": "PASS",
+      "reason": "Compared final structured calculation with independent reference",
+      "elapsed_seconds": 0.07,
+      "tools": {
+        "local_analysis_sql": 1
+      },
+      "observations": [
+        {
+          "tool": "local_analysis_sql",
+          "status": "ready",
+          "error_code": null
+        }
+      ],
+      "remote_executions": 0,
+      "error_type": null,
+      "error_id": null,
+      "model_calls": 0
+    },
+    {
+      "id": "L1_020",
+      "reference_sha256": "6f349829b0463ae4ec3bc957ceed4bab167818de254430a44fdc474e93357911",
+      "status": "PASS",
+      "reason": "Compared final structured calculation with independent reference",
+      "elapsed_seconds": 0.239,
+      "tools": {
+        "local_analysis_sql": 1
+      },
+      "observations": [
+        {
+          "tool": "local_analysis_sql",
+          "status": "ready",
+          "error_code": null
+        }
+      ],
+      "remote_executions": 0,
+      "error_type": null,
+      "error_id": null,
+      "model_calls": 0
+    },
+    {
+      "id": "L1_021",
+      "reference_sha256": "b091d9391a3b0c0f14834e7e6c76c9a780cf0587424c38ca16fb8c489fd1ed2c",
+      "status": "PASS",
+      "reason": "Compared final structured calculation with independent reference",
+      "elapsed_seconds": 0.079,
+      "tools": {
+        "local_analysis_sql": 1
+      },
+      "observations": [
+        {
+          "tool": "local_analysis_sql",
+          "status": "ready",
+          "error_code": null
+        }
+      ],
+      "remote_executions": 0,
+      "error_type": null,
+      "error_id": null,
+      "model_calls": 0
+    },
+    {
+      "id": "L1_022",
+      "reference_sha256": "840aa5ec41a8b153fc16e32fb5e5c8bd1fd105046c9c7a5c90d1856a660ca801",
+      "status": "PASS",
+      "reason": "Compared final structured calculation with independent reference",
+      "elapsed_seconds": 3.815,
+      "tools": {
+        "aggregate_dataset": 1
+      },
+      "observations": [
+        {
+          "tool": "aggregate_dataset",
+          "status": "ready",
+          "error_code": null
+        }
+      ],
+      "remote_executions": 0,
+      "error_type": null,
+      "error_id": null,
+      "model_calls": 1
+    },
+    {
+      "id": "L1_023",
+      "reference_sha256": "fe74c6c82fa033ed39349c52e0879354b34c06ffcdeab55272f9abcfe3c30267",
+      "status": "PASS",
+      "reason": "Compared final structured calculation with independent reference",
+      "elapsed_seconds": 4.388,
+      "tools": {
+        "resolve_analysis_intent": 1,
+        "local_analysis_sql": 1
+      },
+      "observations": [
+        {
+          "tool": "resolve_analysis_intent",
+          "status": "ready",
+          "error_code": null
+        },
+        {
+          "tool": "local_analysis_sql",
+          "status": "ready",
+          "error_code": null
+        }
+      ],
+      "remote_executions": 0,
+      "error_type": null,
+      "error_id": null,
+      "model_calls": 2
+    },
+    {
+      "id": "L1_024",
+      "reference_sha256": "9d076b9ecb6d0a8a2d316595507cdaa57f1d61aa9218a25fa1dfeef66ddaa70b",
+      "status": "PASS",
+      "reason": "Compared final structured calculation with independent reference",
+      "elapsed_seconds": 3.983,
+      "tools": {
+        "resolve_analysis_intent": 1,
+        "local_analysis_sql": 1
+      },
+      "observations": [
+        {
+          "tool": "resolve_analysis_intent",
+          "status": "ready",
+          "error_code": null
+        },
+        {
+          "tool": "local_analysis_sql",
+          "status": "ready",
+          "error_code": null
+        }
+      ],
+      "remote_executions": 0,
+      "error_type": null,
+      "error_id": null,
+      "model_calls": 2
+    },
+    {
+      "id": "L1_025",
+      "reference_sha256": "5922a61c705a674a6abe74e6b22aaa1a4d09069fc4ad8478a9bb181764d8eb06",
+      "status": "PASS",
+      "reason": "Compared final structured calculation with independent reference",
+      "elapsed_seconds": 0.061,
+      "tools": {
+        "local_analysis_sql": 1
+      },
+      "observations": [
+        {
+          "tool": "local_analysis_sql",
+          "status": "ready",
+          "error_code": null
+        }
+      ],
+      "remote_executions": 0,
+      "error_type": null,
+      "error_id": null,
+      "model_calls": 0
+    },
+    {
+      "id": "L1_026",
+      "reference_sha256": "6c0a5ebf86a3658144d8c3e632bc0dd6dd5944f56c0aad639de006c9049e9701",
+      "status": "PASS",
+      "reason": "Compared final structured calculation with independent reference",
+      "elapsed_seconds": 4.426,
+      "tools": {
+        "resolve_analysis_intent": 1,
+        "local_analysis_sql": 1
+      },
+      "observations": [
+        {
+          "tool": "resolve_analysis_intent",
+          "status": "ready",
+          "error_code": null
+        },
+        {
+          "tool": "local_analysis_sql",
+          "status": "ready",
+          "error_code": null
+        }
+      ],
+      "remote_executions": 0,
+      "error_type": null,
+      "error_id": null,
+      "model_calls": 2
+    },
+    {
+      "id": "L1_027",
+      "reference_sha256": "1173d8269f705d08bb811527a095319f6f6c4cfec911dd18a82bed20d7aac18d",
+      "status": "PASS",
+      "reason": "Compared final structured calculation with independent reference",
+      "elapsed_seconds": 0.24,
+      "tools": {
+        "local_analysis_sql": 1
+      },
+      "observations": [
+        {
+          "tool": "local_analysis_sql",
+          "status": "ready",
+          "error_code": null
+        }
+      ],
+      "remote_executions": 0,
+      "error_type": null,
+      "error_id": null,
+      "model_calls": 0
+    },
+    {
+      "id": "L1_028",
+      "reference_sha256": "60c3229c729fc8b4d1e96db2d41c8a3444599b90c19f494d30ee705033e4ceb5",
+      "status": "PASS",
+      "reason": "Compared final structured calculation with independent reference",
+      "elapsed_seconds": 4.818,
+      "tools": {
+        "resolve_analysis_intent": 1,
+        "local_analysis_sql": 1
+      },
+      "observations": [
+        {
+          "tool": "resolve_analysis_intent",
+          "status": "ready",
+          "error_code": null
+        },
+        {
+          "tool": "local_analysis_sql",
+          "status": "ready",
+          "error_code": null
+        }
+      ],
+      "remote_executions": 0,
+      "error_type": null,
+      "error_id": null,
+      "model_calls": 2
+    },
+    {
+      "id": "L1_029",
+      "reference_sha256": "e8df0da57b804d298237f8c55766195a1d719b9814739303ec54012e4333f055",
+      "status": "PASS",
+      "reason": "Compared final structured calculation with independent reference",
+      "elapsed_seconds": 0.076,
+      "tools": {
+        "local_analysis_sql": 1
+      },
+      "observations": [
+        {
+          "tool": "local_analysis_sql",
+          "status": "ready",
+          "error_code": null
+        }
+      ],
+      "remote_executions": 0,
+      "error_type": null,
+      "error_id": null,
+      "model_calls": 0
+    },
+    {
+      "id": "L1_030",
+      "reference_sha256": "867808a6bfdacd7e8dbb43a3e510efaaea1a874e8d1eb75a6f42303e063f3a4d",
+      "status": "PASS",
+      "reason": "Compared final structured calculation with independent reference",
+      "elapsed_seconds": 4.731,
+      "tools": {
+        "resolve_analysis_intent": 1,
+        "local_analysis_sql": 1
+      },
+      "observations": [
+        {
+          "tool": "resolve_analysis_intent",
+          "status": "ready",
+          "error_code": null
+        },
+        {
+          "tool": "local_analysis_sql",
+          "status": "ready",
+          "error_code": null
+        }
+      ],
+      "remote_executions": 0,
+      "error_type": null,
+      "error_id": null,
+      "model_calls": 2
+    },
+    {
+      "id": "L1_031",
+      "reference_sha256": "740f44c6318592015a39d674a2edc3c79d9017c7f546f94326eaa3b203aacfde",
+      "status": "UNGRADED",
+      "reason": "No explicit machine-comparable oracle; no model call",
+      "model_calls": 0
+    },
+    {
+      "id": "L1_032",
+      "reference_sha256": "f4378ad90c2761927fb0c6281b19479921ae0a0dd6fec56de79b146be6770b86",
+      "status": "PASS",
+      "reason": "Compared final structured calculation with independent reference",
+      "elapsed_seconds": 0.068,
+      "tools": {
+        "local_analysis_sql": 1
+      },
+      "observations": [
+        {
+          "tool": "local_analysis_sql",
+          "status": "ready",
+          "error_code": null
+        }
+      ],
+      "remote_executions": 0,
+      "error_type": null,
+      "error_id": null,
+      "model_calls": 0
+    },
+    {
+      "id": "L1_033",
+      "reference_sha256": "af423d33eccb9322e89e017a67b55e482450323b8d614d17babda824b3c20292",
+      "status": "PASS",
+      "reason": "Compared final structured calculation with independent reference",
+      "elapsed_seconds": 0.156,
+      "tools": {
+        "local_analysis_sql": 1
+      },
+      "observations": [
+        {
+          "tool": "local_analysis_sql",
+          "status": "ready",
+          "error_code": null
+        }
+      ],
+      "remote_executions": 0,
+      "error_type": null,
+      "error_id": null,
+      "model_calls": 0
+    },
+    {
+      "id": "L1_034",
+      "reference_sha256": "f9f962696db0ae308e8a68d88340db2742877c699bca75dc179d19e3c9422739",
+      "status": "UNGRADED",
+      "reason": "No explicit machine-comparable oracle; no model call",
+      "model_calls": 0
+    },
+    {
+      "id": "L1_035",
+      "reference_sha256": "2e13050037d9d8cedfd4f29a794739dd8be8a7f45f9359866f1ebb620b7dc29f",
+      "status": "UNGRADED",
+      "reason": "No explicit machine-comparable oracle; no model call",
+      "model_calls": 0
+    },
+    {
+      "id": "L1_036",
+      "reference_sha256": "b9fa0035941fe4cb98a6014a03b0c390eacd8c6db0d0919cd44ec05c467d13c4",
+      "status": "PASS",
+      "reason": "Compared final structured calculation with independent reference",
+      "elapsed_seconds": 0.087,
+      "tools": {
+        "local_analysis_sql": 1
+      },
+      "observations": [
+        {
+          "tool": "local_analysis_sql",
+          "status": "ready",
+          "error_code": null
+        }
+      ],
+      "remote_executions": 0,
+      "error_type": null,
+      "error_id": null,
+      "model_calls": 0
+    },
+    {
+      "id": "L1_037",
+      "reference_sha256": "cfb37aedb8a744ae37c30900b83e394eb21ebfdee387e32a334e5e2fbc81b7c7",
+      "status": "PASS",
+      "reason": "Compared final structured calculation with independent reference",
+      "elapsed_seconds": 0.242,
+      "tools": {
+        "local_analysis_sql": 1
+      },
+      "observations": [
+        {
+          "tool": "local_analysis_sql",
+          "status": "ready",
+          "error_code": null
+        }
+      ],
+      "remote_executions": 0,
+      "error_type": null,
+      "error_id": null,
+      "model_calls": 0
+    },
+    {
+      "id": "L1_038",
+      "reference_sha256": "b43a8a1c5df6901644e75d4116e405b810d40a19b4de5f18804084bcf17ce77a",
+      "status": "PASS",
+      "reason": "Compared final structured calculation with independent reference",
+      "elapsed_seconds": 0.173,
+      "tools": {
+        "local_analysis_sql": 1
+      },
+      "observations": [
+        {
+          "tool": "local_analysis_sql",
+          "status": "ready",
+          "error_code": null
+        }
+      ],
+      "remote_executions": 0,
+      "error_type": null,
+      "error_id": null,
+      "model_calls": 0
+    },
+    {
+      "id": "L1_039",
+      "reference_sha256": "e9fc753a0234d1350f7682af6540c660645d7d4ed35b857c970dfcb52cb9aa6f",
+      "status": "PASS",
+      "reason": "Compared final structured calculation with independent reference",
+      "elapsed_seconds": 0.06,
+      "tools": {
+        "local_analysis_sql": 1
+      },
+      "observations": [
+        {
+          "tool": "local_analysis_sql",
+          "status": "ready",
+          "error_code": null
+        }
+      ],
+      "remote_executions": 0,
+      "error_type": null,
+      "error_id": null,
+      "model_calls": 0
+    },
+    {
+      "id": "L1_040",
+      "reference_sha256": "cf45fe77550b1ec6cf2364312453050399ec884d81342f2a0c9d2a4da53c7a66",
+      "status": "UNGRADED",
+      "reason": "No explicit machine-comparable oracle; no model call",
+      "model_calls": 0
+    },
+    {
+      "id": "L1_041",
+      "reference_sha256": "3678d9a2c913643da957748231d0ccdd36ac2cbfa889b8130d2489f9a4f76b15",
+      "status": "UNGRADED",
+      "reason": "No explicit machine-comparable oracle; no model call",
+      "model_calls": 0
+    },
+    {
+      "id": "L1_042",
+      "reference_sha256": "82b6a18838ee0ef67e8e24bcbdfbbd4d6451471011b2d7a6eeff1f689ecc7be5",
+      "status": "UNGRADED",
+      "reason": "No explicit machine-comparable oracle; no model call",
+      "model_calls": 0
+    },
+    {
+      "id": "L1_043",
+      "reference_sha256": "74f0d05a8c44086f3e7cf17d5993709ef986a09a894b4acdabb6a6d1ed879bd0",
+      "status": "PASS",
+      "reason": "Compared final structured calculation with independent reference",
+      "elapsed_seconds": 0.238,
+      "tools": {
+        "local_analysis_sql": 1
+      },
+      "observations": [
+        {
+          "tool": "local_analysis_sql",
+          "status": "ready",
+          "error_code": null
+        }
+      ],
+      "remote_executions": 0,
+      "error_type": null,
+      "error_id": null,
+      "model_calls": 0
+    },
+    {
+      "id": "L1_044",
+      "reference_sha256": "183260f71486186208595711a306ff8659b923067cbdb8d4d5fe51dfa98e8007",
+      "status": "PASS",
+      "reason": "Compared final structured calculation with independent reference",
+      "elapsed_seconds": 0.07,
+      "tools": {
+        "local_analysis_sql": 1
+      },
+      "observations": [
+        {
+          "tool": "local_analysis_sql",
+          "status": "ready",
+          "error_code": null
+        }
+      ],
+      "remote_executions": 0,
+      "error_type": null,
+      "error_id": null,
+      "model_calls": 0
+    },
+    {
+      "id": "L1_045",
+      "reference_sha256": "c451322b948f7be0d38a9c8a999ed59577c734a30e147bfd776fa49705235470",
+      "status": "PASS",
+      "reason": "Compared final structured calculation with independent reference",
+      "elapsed_seconds": 0.162,
+      "tools": {
+        "local_analysis_sql": 1
+      },
+      "observations": [
+        {
+          "tool": "local_analysis_sql",
+          "status": "ready",
+          "error_code": null
+        }
+      ],
+      "remote_executions": 0,
+      "error_type": null,
+      "error_id": null,
+      "model_calls": 0
+    },
+    {
+      "id": "L1_046",
+      "reference_sha256": "b78c783f3f625273c1605059b396cc24d2e6ac42ef1cbb764e246618a9f3bc96",
+      "status": "PASS",
+      "reason": "Compared final structured calculation with independent reference",
+      "elapsed_seconds": 0.062,
+      "tools": {
+        "local_analysis_sql": 1
+      },
+      "observations": [
+        {
+          "tool": "local_analysis_sql",
+          "status": "ready",
+          "error_code": null
+        }
+      ],
+      "remote_executions": 0,
+      "error_type": null,
+      "error_id": null,
+      "model_calls": 0
+    },
+    {
+      "id": "L1_047",
+      "reference_sha256": "cbcf3546dbaddfeac04d64b49564d578ca0d161ebe7c2974a01b84209d00ff2f",
+      "status": "PASS",
+      "reason": "Compared final structured calculation with independent reference",
+      "elapsed_seconds": 0.236,
+      "tools": {
+        "local_analysis_sql": 1
+      },
+      "observations": [
+        {
+          "tool": "local_analysis_sql",
+          "status": "ready",
+          "error_code": null
+        }
+      ],
+      "remote_executions": 0,
+      "error_type": null,
+      "error_id": null,
+      "model_calls": 0
+    },
+    {
+      "id": "L1_048",
+      "reference_sha256": "2c0fcf5e0dd5e4a93f69c93409ed1867b69b4ea7a4c60026f68cb1665c582167",
+      "status": "UNGRADED",
+      "reason": "No explicit machine-comparable oracle; no model call",
+      "model_calls": 0
+    },
+    {
+      "id": "L1_049",
+      "reference_sha256": "75665ef2177e9be82dea41160ca05f417d4f1f4580e36493894db8bdcf5a1523",
+      "status": "UNGRADED",
+      "reason": "No explicit machine-comparable oracle; no model call",
+      "model_calls": 0
+    },
+    {
+      "id": "L1_050",
+      "reference_sha256": "e6b30b27262b2507bde55d1e256139e3d6055d49ddca49a2e5387024ebc3b28b",
+      "status": "UNGRADED",
+      "reason": "No explicit machine-comparable oracle; no model call",
+      "model_calls": 0
+    },
+    {
+      "id": "L1_051",
+      "reference_sha256": "5f893ccbbdbdfc55305383304562c07d68abe9be594e4bfd409d86d66b56b23e",
+      "status": "UNGRADED",
+      "reason": "No explicit machine-comparable oracle; no model call",
+      "model_calls": 0
+    },
+    {
+      "id": "L1_052",
+      "reference_sha256": "43f77adfdd0116e250abb896b2c6e36bd7d108b1238cc62eda1a12b56acbf222",
+      "status": "UNGRADED",
+      "reason": "No explicit machine-comparable oracle; no model call",
+      "model_calls": 0
+    },
+    {
+      "id": "L1_053",
+      "reference_sha256": "ffe9fbf6e14c763fac2595f6bf57d3c695f04cfb2d95bb4c5efe8dd976b72ab8",
+      "status": "UNGRADED",
+      "reason": "No explicit machine-comparable oracle; no model call",
+      "model_calls": 0
+    },
+    {
+      "id": "L1_054",
+      "reference_sha256": "364d9737d853dded4e267bed160d9abb4f58a96379bbd624217e0fc39d200622",
+      "status": "UNGRADED",
+      "reason": "No explicit machine-comparable oracle; no model call",
+      "model_calls": 0
+    },
+    {
+      "id": "L1_055",
+      "reference_sha256": "d0b75fbb43d907cc1f885fbfe95c8af81c5f58b452394451c9e0e4982d06b109",
+      "status": "UNGRADED",
+      "reason": "No explicit machine-comparable oracle; no model call",
+      "model_calls": 0
+    },
+    {
+      "id": "L1_056",
+      "reference_sha256": "8bbc96e1187114fadfc653bf0a809fd41b36726bf922b9a297e2f86951b8b25a",
+      "status": "UNGRADED",
+      "reason": "No explicit machine-comparable oracle; no model call",
+      "model_calls": 0
+    },
+    {
+      "id": "L1_057",
+      "reference_sha256": "490ad9cd868f2adc1b3e97a5811e59bd7d66d6d5ae1e2fd7440df86b10eb1687",
+      "status": "UNGRADED",
+      "reason": "No explicit machine-comparable oracle; no model call",
+      "model_calls": 0
+    },
+    {
+      "id": "L1_058",
+      "reference_sha256": "9114d2f62049fc049ac50580454fd8978a01c322825b8f645235e371c6954719",
+      "status": "UNGRADED",
+      "reason": "No explicit machine-comparable oracle; no model call",
+      "model_calls": 0
+    },
+    {
+      "id": "L1_059",
+      "reference_sha256": "e09d443acb8074d7229bd3ccae0a20c5344dd0aab066f8f46a01a1d5e98bc7d8",
+      "status": "UNGRADED",
+      "reason": "No explicit machine-comparable oracle; no model call",
+      "model_calls": 0
+    },
+    {
+      "id": "L1_060",
+      "reference_sha256": "7b744d75f77778fc90ade617ae267bd4dd4f2ec25aebe0a008ad4583c74b607d",
+      "status": "UNGRADED",
+      "reason": "No explicit machine-comparable oracle; no model call",
+      "model_calls": 0
+    },
+    {
+      "id": "L1_061",
+      "reference_sha256": "64ca5706079cfa59f50d24507ae0818073d121696618cc499a11e6decdd0207c",
+      "status": "UNGRADED",
+      "reason": "No explicit machine-comparable oracle; no model call",
+      "model_calls": 0
+    },
+    {
+      "id": "L1_062",
+      "reference_sha256": "cc449b6192ae867cd828634792bcf0331ff0d898a31653d99d756e320143c682",
+      "status": "PASS",
+      "reason": "Pivot values, axes, aggregation and lineage match the reference",
+      "elapsed_seconds": 0.046,
+      "tools": {
+        "pivot_dataset": 1
+      },
+      "observations": [
+        {
+          "tool": "pivot_dataset",
+          "status": "ready",
+          "error_code": null
+        }
+      ],
+      "remote_executions": 0,
+      "error_type": null,
+      "error_id": null,
+      "model_calls": 0
+    },
+    {
+      "id": "L1_063",
+      "reference_sha256": "26c9832169ecf173aef481ac101b5ff5a972829843309aa5f235ab9759dbee32",
+      "status": "PASS",
+      "reason": "Pivot values, axes, aggregation and lineage match the reference",
+      "elapsed_seconds": 0.045,
+      "tools": {
+        "pivot_dataset": 1
+      },
+      "observations": [
+        {
+          "tool": "pivot_dataset",
+          "status": "ready",
+          "error_code": null
+        }
+      ],
+      "remote_executions": 0,
+      "error_type": null,
+      "error_id": null,
+      "model_calls": 0
+    },
+    {
+      "id": "L1_064",
+      "reference_sha256": "dcca6032ecf3e49ba0996c552f314ff3cb7f659f058ac507cddc0f9ce216072f",
+      "status": "PASS",
+      "reason": "Pivot values, axes, aggregation and lineage match the reference",
+      "elapsed_seconds": 0.214,
+      "tools": {
+        "pivot_dataset": 1
+      },
+      "observations": [
+        {
+          "tool": "pivot_dataset",
+          "status": "ready",
+          "error_code": null
+        }
+      ],
+      "remote_executions": 0,
+      "error_type": null,
+      "error_id": null,
+      "model_calls": 0
+    },
+    {
+      "id": "L1_065",
+      "reference_sha256": "e9b3d545c0d5a5f14f1a51fdc694db3ad38746f82c2830dcffc73b83883d0556",
+      "status": "UNGRADED",
+      "reason": "No explicit machine-comparable oracle; no model call",
+      "model_calls": 0
+    },
+    {
+      "id": "L1_066",
+      "reference_sha256": "2e4bfe74c125c0e8732e6ae748374b2800a15b708d1730ba336e0f8e7f4c5b7c",
+      "status": "UNGRADED",
+      "reason": "No explicit machine-comparable oracle; no model call",
+      "model_calls": 0
+    },
+    {
+      "id": "L1_067",
+      "reference_sha256": "ff4f74cbf4c1102ed8ee6d7a3fb15596f2d0ae3f06fd29a22f95a95ab555016c",
+      "status": "UNGRADED",
+      "reason": "No explicit machine-comparable oracle; no model call",
+      "model_calls": 0
+    },
+    {
+      "id": "L1_068",
+      "reference_sha256": "ca1726f2f5ae1ad3af57d270fee9821e98d1a13899eb35389212eaee5b6b48c3",
+      "status": "UNGRADED",
+      "reason": "No explicit machine-comparable oracle; no model call",
+      "model_calls": 0
+    },
+    {
+      "id": "L1_069",
+      "reference_sha256": "c81a9a599ddd6f77b116f6f2282b3375abfd54d7757f351c71af9dbf85f0dbbd",
+      "status": "UNGRADED",
+      "reason": "No explicit machine-comparable oracle; no model call",
+      "model_calls": 0
+    },
+    {
+      "id": "L1_070",
+      "reference_sha256": "4003529c92bd5307b2b17c461dc769975aa2564269ab0dfa4efb5fc53725c96d",
+      "status": "UNGRADED",
+      "reason": "No explicit machine-comparable oracle; no model call",
+      "model_calls": 0
+    },
+    {
+      "id": "L1_071",
+      "reference_sha256": "6a7a5d6b0df4d5cb4b3c7146506333472a3e2960bd5bb8c7f492bcb554e85827",
+      "status": "UNGRADED",
+      "reason": "No explicit machine-comparable oracle; no model call",
+      "model_calls": 0
+    },
+    {
+      "id": "L1_072",
+      "reference_sha256": "53bf6dc4175a5f46979ce7d6ad1bb89b57af4a74d7f916c88658863b8d9de1f2",
+      "status": "UNGRADED",
+      "reason": "No explicit machine-comparable oracle; no model call",
+      "model_calls": 0
+    },
+    {
+      "id": "L1_073",
+      "reference_sha256": "f3746d5eb89323ef638590b30a3f7ac37d391f6532bcc45fde38cff36fe57ce0",
+      "status": "UNGRADED",
+      "reason": "No explicit machine-comparable oracle; no model call",
+      "model_calls": 0
+    },
+    {
+      "id": "L1_074",
+      "reference_sha256": "a4366863401876ef7ad5d358bc6ed2761f6805446229c8e1f53c049514aeecb2",
+      "status": "UNGRADED",
+      "reason": "No explicit machine-comparable oracle; no model call",
+      "model_calls": 0
+    },
+    {
+      "id": "L1_075",
+      "reference_sha256": "cd39bf96e81d718b93364de7e80e477032241b50113417e1406e96b986001897",
+      "status": "UNGRADED",
+      "reason": "No explicit machine-comparable oracle; no model call",
+      "model_calls": 0
+    },
+    {
+      "id": "L1_076",
+      "reference_sha256": "2276edd3d1b98c6a7ddce3b4c76534bb7aae2371ca1e025dea2fd7a4475db6e0",
+      "status": "PASS",
+      "reason": "Real PNG and plotted weighted distribution match the reference",
+      "elapsed_seconds": 7.832,
+      "tools": {
+        "prepare_histogram": 1
+      },
+      "observations": [
+        {
+          "tool": "prepare_histogram",
+          "status": "ready",
+          "error_code": null
+        }
+      ],
+      "remote_executions": 0,
+      "error_type": null,
+      "error_id": null,
+      "model_calls": 0
+    },
+    {
+      "id": "L1_077",
+      "reference_sha256": "4ba0d761ce2a8a0dabf11fd3d75cbd133f2c4d150ad77c0134acfa391ecb43b5",
+      "status": "PASS",
+      "reason": "Real PNG and declarative chart data match the independent reference",
+      "elapsed_seconds": 0.067,
+      "tools": {
+        "render_chart_spec": 1
+      },
+      "observations": [
+        {
+          "tool": "render_chart_spec",
+          "status": "ready",
+          "error_code": null
+        }
+      ],
+      "remote_executions": 0,
+      "error_type": null,
+      "error_id": null,
+      "model_calls": 0
+    },
+    {
+      "id": "L1_078",
+      "reference_sha256": "a6d6d39a194ee80708d339b0df32aec406acbe19115a9ccdc68cbd13c49e23d2",
+      "status": "PASS",
+      "reason": "Real PNG and declarative chart data match the independent reference",
+      "elapsed_seconds": 0.074,
+      "tools": {
+        "render_chart_spec": 1
+      },
+      "observations": [
+        {
+          "tool": "render_chart_spec",
+          "status": "ready",
+          "error_code": null
+        }
+      ],
+      "remote_executions": 0,
+      "error_type": null,
+      "error_id": null,
+      "model_calls": 0
+    },
+    {
+      "id": "L1_079",
+      "reference_sha256": "5ec7637229f37940fa6b79f4c362a5f5f338c3839cca76832aa7dc214db93014",
+      "status": "UNGRADED",
+      "reason": "No explicit machine-comparable oracle; no model call",
+      "model_calls": 0
+    },
+    {
+      "id": "L1_080",
+      "reference_sha256": "b102e89aaa73a2ca9404ce16adc93b6c4f92aef91dc05f1176f60e96dd59619b",
+      "status": "UNGRADED",
+      "reason": "No explicit machine-comparable oracle; no model call",
+      "model_calls": 0
+    },
+    {
+      "id": "L1_081",
+      "reference_sha256": "74a042306a7680a324a38f7d151b249f65a69df3947a881f6caba82e5550f580",
+      "status": "UNGRADED",
+      "reason": "No explicit machine-comparable oracle; no model call",
+      "model_calls": 0
+    },
+    {
+      "id": "L1_082",
+      "reference_sha256": "a1388f9e7976c5e8ae4d7a6767c409665497b90eb83287fbf0852121b5e0d129",
+      "status": "UNGRADED",
+      "reason": "No explicit machine-comparable oracle; no model call",
+      "model_calls": 0
+    },
+    {
+      "id": "L1_083",
+      "reference_sha256": "355ae23cd6e60d38d437db1330ca97b1431ab68b6f6a0a8d5c0371c06d9ce0d7",
+      "status": "PASS",
+      "reason": "Real PNG and plotted weighted distribution match the reference",
+      "elapsed_seconds": 0.072,
+      "tools": {
+        "prepare_histogram": 1
+      },
+      "observations": [
+        {
+          "tool": "prepare_histogram",
+          "status": "ready",
+          "error_code": null
+        }
+      ],
+      "remote_executions": 0,
+      "error_type": null,
+      "error_id": null,
+      "model_calls": 0
+    },
+    {
+      "id": "L1_084",
+      "reference_sha256": "44ea14849cc40941d767fc061a7870229764652b97f8d1dd74321d2403b0de7d",
+      "status": "UNGRADED",
+      "reason": "No explicit machine-comparable oracle; no model call",
+      "model_calls": 0
+    },
+    {
+      "id": "L1_085",
+      "reference_sha256": "d5fbb42221c64eb2f36b1af9547ccce9d47951ef893b345088b058d0566ac3b8",
+      "status": "UNGRADED",
+      "reason": "No explicit machine-comparable oracle; no model call",
+      "model_calls": 0
+    },
+    {
+      "id": "L1_086",
+      "reference_sha256": "d26b300fa09f8e23032eefb1fdccdf4d70b7f7aa76a240515b6531d3e8f4b9f4",
+      "status": "PASS",
+      "reason": "Real PNG and declarative chart data match the independent reference",
+      "elapsed_seconds": 0.064,
+      "tools": {
+        "render_chart_spec": 1
+      },
+      "observations": [
+        {
+          "tool": "render_chart_spec",
+          "status": "ready",
+          "error_code": null
+        }
+      ],
+      "remote_executions": 0,
+      "error_type": null,
+      "error_id": null,
+      "model_calls": 0
+    },
+    {
+      "id": "L1_087",
+      "reference_sha256": "becbf071480c64d54de1c87f05529082675d33048ea27a647d5248e5fd44a3ee",
+      "status": "UNGRADED",
+      "reason": "No explicit machine-comparable oracle; no model call",
+      "model_calls": 0
+    },
+    {
+      "id": "L1_088",
+      "reference_sha256": "cd8054c7771ac140163278d5b602fb8691ca4f45377c4083206e20ba60a1a8c4",
+      "status": "UNGRADED",
+      "reason": "No explicit machine-comparable oracle; no model call",
+      "model_calls": 0
+    },
+    {
+      "id": "L1_089",
+      "reference_sha256": "824d076ff3020a09d5efb0cff6f49efec227cc0e2a2c32647976c5fbd8f1f776",
+      "status": "UNGRADED",
+      "reason": "No explicit machine-comparable oracle; no model call",
+      "model_calls": 0
+    },
+    {
+      "id": "L1_090",
+      "reference_sha256": "4ad74ff420e7909840b38b7057755a7fd7e8aa7ebc05a77c594f6056275c90e8",
+      "status": "UNGRADED",
+      "reason": "No explicit machine-comparable oracle; no model call",
+      "model_calls": 0
+    },
+    {
+      "id": "L1_091",
+      "reference_sha256": "122ff5dd48d1f98dc0e6bddd66c37b333ee2b2236c0d234414393756fca5cef1",
+      "status": "UNGRADED",
+      "reason": "No explicit machine-comparable oracle; no model call",
+      "model_calls": 0
+    },
+    {
+      "id": "L1_092",
+      "reference_sha256": "d1ce4abf4502b0f9798d3884f7007729a843bad7554f21e9c48639199d1d4e8c",
+      "status": "UNGRADED",
+      "reason": "No explicit machine-comparable oracle; no model call",
+      "model_calls": 0
+    },
+    {
+      "id": "L1_093",
+      "reference_sha256": "08a28d3daa69dc8bb746b0f2de87e516e82b7cbbbfff52eecd91ee6b59cd77c1",
+      "status": "PASS",
+      "reason": "Real PNG and plotted weighted distribution match the reference",
+      "elapsed_seconds": 0.174,
+      "tools": {
+        "prepare_histogram": 1
+      },
+      "observations": [
+        {
+          "tool": "prepare_histogram",
+          "status": "ready",
+          "error_code": null
+        }
+      ],
+      "remote_executions": 0,
+      "error_type": null,
+      "error_id": null,
+      "model_calls": 0
+    },
+    {
+      "id": "L1_094",
+      "reference_sha256": "0620dfe0071632604832da1432401d257bd45607413c25f8d2d795067cd1e2c9",
+      "status": "UNGRADED",
+      "reason": "No explicit machine-comparable oracle; no model call",
+      "model_calls": 0
+    },
+    {
+      "id": "L1_095",
+      "reference_sha256": "dc8e1e8df5838c4cb62a98ba5f7cc814362b2f13eafbdf8cbce47b4b9d30155d",
+      "status": "UNGRADED",
+      "reason": "No explicit machine-comparable oracle; no model call",
+      "model_calls": 0
+    },
+    {
+      "id": "L1_096",
+      "reference_sha256": "1124aeaba4d995e2c3dc8f48ed3ed3802745da1c2671bfc7ac6bf74bf1f608de",
+      "status": "UNGRADED",
+      "reason": "No explicit machine-comparable oracle; no model call",
+      "model_calls": 0
+    },
+    {
+      "id": "L1_097",
+      "reference_sha256": "07549251326d01450c2760b05cfb2d071b64cc8a4979d4721d90f6b9bf2f33f0",
+      "status": "UNGRADED",
+      "reason": "No explicit machine-comparable oracle; no model call",
+      "model_calls": 0
+    },
+    {
+      "id": "L1_098",
+      "reference_sha256": "1edf8ddea594767b186e00b8b1dd59a298fe3b16a442baa23e19405a921270e8",
+      "status": "PASS",
+      "reason": "Real PNG and declarative chart data match the independent reference",
+      "elapsed_seconds": 0.232,
+      "tools": {
+        "render_chart_spec": 1
+      },
+      "observations": [
+        {
+          "tool": "render_chart_spec",
+          "status": "ready",
+          "error_code": null
+        }
+      ],
+      "remote_executions": 0,
+      "error_type": null,
+      "error_id": null,
+      "model_calls": 0
+    },
+    {
+      "id": "L1_099",
+      "reference_sha256": "bef2348892f8fe8bc7beeab3b9de69b403501afbe8e685c2e9e56a8dd1fc1a90",
+      "status": "UNGRADED",
+      "reason": "No explicit machine-comparable oracle; no model call",
+      "model_calls": 0
+    },
+    {
+      "id": "L1_100",
+      "reference_sha256": "75c7ddb2db23d16256650dd45b8a6580d9ff706e2b971dd140fecce90892112b",
+      "status": "UNGRADED",
+      "reason": "No explicit machine-comparable oracle; no model call",
+      "model_calls": 0
+    },
+    {
+      "id": "L2_001",
+      "reference_sha256": "15056491c9922c95737cfc98e872a375ed2f3993b5d6abb1fecd3b0571c51c87",
+      "status": "UNGRADED",
+      "reason": "No explicit machine-comparable oracle; no model call",
+      "model_calls": 0
+    },
+    {
+      "id": "L2_002",
+      "reference_sha256": "c2e36b821732a443773385f6498c877ca448c92433ba2ddc2bb86857d09a7574",
+      "status": "UNGRADED",
+      "reason": "No explicit machine-comparable oracle; no model call",
+      "model_calls": 0
+    },
+    {
+      "id": "L2_003",
+      "reference_sha256": "f48244f26134e885efb3e9cc177edf79e12046bb7dce7406ad6395df514dcacc",
+      "status": "UNGRADED",
+      "reason": "No explicit machine-comparable oracle; no model call",
+      "model_calls": 0
+    },
+    {
+      "id": "L2_004",
+      "reference_sha256": "1c6b5f360cfeeb9f7d3913a7a3408e5036a8e8a9d0237073ac250eb41cc4a50f",
+      "status": "UNGRADED",
+      "reason": "No explicit machine-comparable oracle; no model call",
+      "model_calls": 0
+    },
+    {
+      "id": "L2_005",
+      "reference_sha256": "59268ad18f93ffc9de86c4cfd38e0654b48d3d975b6a97655cb95e86db08ecb6",
+      "status": "PASS",
+      "reason": "Compared final structured calculation with independent reference",
+      "elapsed_seconds": 0.087,
+      "tools": {
+        "local_analysis_sql": 1
+      },
+      "observations": [
+        {
+          "tool": "local_analysis_sql",
+          "status": "ready",
+          "error_code": null
+        }
+      ],
+      "remote_executions": 0,
+      "error_type": null,
+      "error_id": null,
+      "model_calls": 0
+    },
+    {
+      "id": "L2_006",
+      "reference_sha256": "8170a2491a7031f253648397fae58300665bf38cdbb6e01b246a1cdf950b079a",
+      "status": "UNGRADED",
+      "reason": "No explicit machine-comparable oracle; no model call",
+      "model_calls": 0
+    },
+    {
+      "id": "L2_007",
+      "reference_sha256": "6e5e611c4e850624607cefb6b6ba8b7ad921a49b79d9d3515aef96bb9d702e8e",
+      "status": "UNGRADED",
+      "reason": "No explicit machine-comparable oracle; no model call",
+      "model_calls": 0
+    },
+    {
+      "id": "L2_008",
+      "reference_sha256": "262cf9fb85b722790f1bfe42b56ffcf80ff4745b54ddc3d7a9b4efede598e4d0",
+      "status": "UNGRADED",
+      "reason": "No explicit machine-comparable oracle; no model call",
+      "model_calls": 0
+    },
+    {
+      "id": "L2_009",
+      "reference_sha256": "f47616275e3a275c7f7e3620e082ff2e1fd8a557abf46f6c126220fda3da7617",
+      "status": "UNGRADED",
+      "reason": "No explicit machine-comparable oracle; no model call",
+      "model_calls": 0
+    },
+    {
+      "id": "L2_010",
+      "reference_sha256": "819cb8f9edb6d7b2bd9bc13f587ed04bd372a07cb3c78aed9849c5c44a617f2a",
+      "status": "PASS",
+      "reason": "Compared final structured calculation with independent reference",
+      "elapsed_seconds": 0.249,
+      "tools": {
+        "local_analysis_sql": 1
+      },
+      "observations": [
+        {
+          "tool": "local_analysis_sql",
+          "status": "ready",
+          "error_code": null
+        }
+      ],
+      "remote_executions": 0,
+      "error_type": null,
+      "error_id": null,
+      "model_calls": 0
+    },
+    {
+      "id": "L2_011",
+      "reference_sha256": "8e01069ec97e367b931bd741a1d61e089cf7f681c005ac9b5c0494dd3849a7ae",
+      "status": "UNGRADED",
+      "reason": "No explicit machine-comparable oracle; no model call",
+      "model_calls": 0
+    },
+    {
+      "id": "L2_012",
+      "reference_sha256": "a750941ca8708adda34138757b4c6e09acbf402d9f69b609f1545c66331e03fc",
+      "status": "PASS",
+      "reason": "Compared final structured calculation with independent reference",
+      "elapsed_seconds": 0.091,
+      "tools": {
+        "local_analysis_sql": 1
+      },
+      "observations": [
+        {
+          "tool": "local_analysis_sql",
+          "status": "ready",
+          "error_code": null
+        }
+      ],
+      "remote_executions": 0,
+      "error_type": null,
+      "error_id": null,
+      "model_calls": 0
+    },
+    {
+      "id": "L2_013",
+      "reference_sha256": "98f24fd11cfb86deda200574facbe8ba41ab829f03aac74760330db8779a47b3",
+      "status": "UNGRADED",
+      "reason": "No explicit machine-comparable oracle; no model call",
+      "model_calls": 0
+    },
+    {
+      "id": "L2_014",
+      "reference_sha256": "8f1e5786c6755210642cf86d0cbc53872e55792d597d0396201ea457833658a5",
+      "status": "UNGRADED",
+      "reason": "No explicit machine-comparable oracle; no model call",
+      "model_calls": 0
+    },
+    {
+      "id": "L2_015",
+      "reference_sha256": "2264f57d46b6d75a2f5ef7235a3dc3b5ed2c6657a643271d6f791ed00dfe5a47",
+      "status": "UNGRADED",
+      "reason": "No explicit machine-comparable oracle; no model call",
+      "model_calls": 0
+    },
+    {
+      "id": "L2_016",
+      "reference_sha256": "2436055e4f63ee20f0db9565dddb3ea23b5124b49404c1417d6b34f41462043d",
+      "status": "UNGRADED",
+      "reason": "No explicit machine-comparable oracle; no model call",
+      "model_calls": 0
+    },
+    {
+      "id": "L2_017",
+      "reference_sha256": "76d0fa8c3abccd8af36caad9ab1b611d67fe600b8838cbe4d521c47929604809",
+      "status": "PASS",
+      "reason": "Compared final structured calculation with independent reference",
+      "elapsed_seconds": 0.229,
+      "tools": {
+        "local_analysis_sql": 1
+      },
+      "observations": [
+        {
+          "tool": "local_analysis_sql",
+          "status": "ready",
+          "error_code": null
+        }
+      ],
+      "remote_executions": 0,
+      "error_type": null,
+      "error_id": null,
+      "model_calls": 0
+    },
+    {
+      "id": "L2_018",
+      "reference_sha256": "d238fdc52881b63a5f322fcf25cab08e59e8e85afc00ffdee2a32b713500da01",
+      "status": "UNGRADED",
+      "reason": "No explicit machine-comparable oracle; no model call",
+      "model_calls": 0
+    },
+    {
+      "id": "L2_019",
+      "reference_sha256": "7794ba17c01bac8630bcbec6127cf954978ae064a113853d8f3acc80c372a5b4",
+      "status": "UNGRADED",
+      "reason": "No explicit machine-comparable oracle; no model call",
+      "model_calls": 0
+    },
+    {
+      "id": "L2_020",
+      "reference_sha256": "0dd8d860da07ce51161cd95d84e7e8e7bc2388cb1eaf722145f0ddaca1a1689a",
+      "status": "PASS",
+      "reason": "Compared final structured calculation with independent reference",
+      "elapsed_seconds": 0.084,
+      "tools": {
+        "local_analysis_sql": 1
+      },
+      "observations": [
+        {
+          "tool": "local_analysis_sql",
+          "status": "ready",
+          "error_code": null
+        }
+      ],
+      "remote_executions": 0,
+      "error_type": null,
+      "error_id": null,
+      "model_calls": 0
+    },
+    {
+      "id": "L2_021",
+      "reference_sha256": "cd12b9e2e38248318559dbe7f797126ebd27ed0c111bfa4331a6a4e6f8e1dbae",
+      "status": "PASS",
+      "reason": "Pivot values, axes, aggregation and lineage match the reference",
+      "elapsed_seconds": 0.06,
+      "tools": {
+        "pivot_dataset": 1
+      },
+      "observations": [
+        {
+          "tool": "pivot_dataset",
+          "status": "ready",
+          "error_code": null
+        }
+      ],
+      "remote_executions": 0,
+      "error_type": null,
+      "error_id": null,
+      "model_calls": 0
+    },
+    {
+      "id": "L2_022",
+      "reference_sha256": "cb3538889644a490145f54e7da0c5f9ee7bf1c6ef281e807c782151beb18db48",
+      "status": "PASS",
+      "reason": "Pivot values, axes, aggregation and lineage match the reference",
+      "elapsed_seconds": 0.184,
+      "tools": {
+        "pivot_dataset": 1
+      },
+      "observations": [
+        {
+          "tool": "pivot_dataset",
+          "status": "ready",
+          "error_code": null
+        }
+      ],
+      "remote_executions": 0,
+      "error_type": null,
+      "error_id": null,
+      "model_calls": 0
+    },
+    {
+      "id": "L2_023",
+      "reference_sha256": "5a568dff7d5ef8959c7a33b47bf9e0e14e068fd70519a51711e8c9d4306b3a85",
+      "status": "PASS",
+      "reason": "Pivot values, axes, aggregation and lineage match the reference",
+      "elapsed_seconds": 0.14,
+      "tools": {
+        "pivot_dataset": 1
+      },
+      "observations": [
+        {
+          "tool": "pivot_dataset",
+          "status": "ready",
+          "error_code": null
+        }
+      ],
+      "remote_executions": 0,
+      "error_type": null,
+      "error_id": null,
+      "model_calls": 0
+    },
+    {
+      "id": "L2_024",
+      "reference_sha256": "b070c862067590d35e5148e955af759ce5f1fcb1390ca3a995256c216de92759",
+      "status": "PASS",
+      "reason": "Pivot values, axes, aggregation and lineage match the reference",
+      "elapsed_seconds": 0.202,
+      "tools": {
+        "pivot_dataset": 1
+      },
+      "observations": [
+        {
+          "tool": "pivot_dataset",
+          "status": "ready",
+          "error_code": null
+        }
+      ],
+      "remote_executions": 0,
+      "error_type": null,
+      "error_id": null,
+      "model_calls": 0
+    },
+    {
+      "id": "L2_025",
+      "reference_sha256": "b622868785f736821a1eca261c76022e44c292451c7511d0fd506fbc751431ca",
+      "status": "PASS",
+      "reason": "Pivot values, axes, aggregation and lineage match the reference",
+      "elapsed_seconds": 0.053,
+      "tools": {
+        "pivot_dataset": 1
+      },
+      "observations": [
+        {
+          "tool": "pivot_dataset",
+          "status": "ready",
+          "error_code": null
+        }
+      ],
+      "remote_executions": 0,
+      "error_type": null,
+      "error_id": null,
+      "model_calls": 0
+    },
+    {
+      "id": "L2_026",
+      "reference_sha256": "e2c2fb56010f7505fba78545c84865d412f5ae2ff7fabe0bb53d4de0b4b6297d",
+      "status": "UNGRADED",
+      "reason": "No explicit machine-comparable oracle; no model call",
+      "model_calls": 0
+    },
+    {
+      "id": "L2_027",
+      "reference_sha256": "2cdf1d94ab4fa3fbae137b82e0d0b5b7bd46fda4ba3ff1e8dec2661692d1e769",
+      "status": "PASS",
+      "reason": "Pivot values, axes, aggregation and lineage match the reference",
+      "elapsed_seconds": 0.042,
+      "tools": {
+        "pivot_dataset": 1
+      },
+      "observations": [
+        {
+          "tool": "pivot_dataset",
+          "status": "ready",
+          "error_code": null
+        }
+      ],
+      "remote_executions": 0,
+      "error_type": null,
+      "error_id": null,
+      "model_calls": 0
+    },
+    {
+      "id": "L2_028",
+      "reference_sha256": "3f6dff5f11ebf3eed1ffa45ce4cce35b39dce132ade0959efc39cc87d2c3a6ef",
+      "status": "PASS",
+      "reason": "Pivot values, axes, aggregation and lineage match the reference",
+      "elapsed_seconds": 0.172,
+      "tools": {
+        "pivot_dataset": 1
+      },
+      "observations": [
+        {
+          "tool": "pivot_dataset",
+          "status": "ready",
+          "error_code": null
+        }
+      ],
+      "remote_executions": 0,
+      "error_type": null,
+      "error_id": null,
+      "model_calls": 0
+    },
+    {
+      "id": "L2_029",
+      "reference_sha256": "9822d883293947e5ecf1f47cb4fe18638f1dc24b9876902d1b04c822c8d4e6e3",
+      "status": "PASS",
+      "reason": "Pivot values, axes, aggregation and lineage match the reference",
+      "elapsed_seconds": 0.228,
+      "tools": {
+        "pivot_dataset": 1
+      },
+      "observations": [
+        {
+          "tool": "pivot_dataset",
+          "status": "ready",
+          "error_code": null
+        }
+      ],
+      "remote_executions": 0,
+      "error_type": null,
+      "error_id": null,
+      "model_calls": 0
+    },
+    {
+      "id": "L2_030",
+      "reference_sha256": "76d8e00fbd12a822654d4fb048f744171f27888c1726b4e7f3723e9025b13a82",
+      "status": "UNGRADED",
+      "reason": "No explicit machine-comparable oracle; no model call",
+      "model_calls": 0
+    },
+    {
+      "id": "L2_031",
+      "reference_sha256": "413fc18722ac3726316a83f3797fffeb31a165eff3a4506d9bf7c6d4feaccfba",
+      "status": "PASS",
+      "reason": "Pivot values, axes, aggregation and lineage match the reference",
+      "elapsed_seconds": 0.07,
+      "tools": {
+        "pivot_dataset": 1
+      },
+      "observations": [
+        {
+          "tool": "pivot_dataset",
+          "status": "ready",
+          "error_code": null
+        }
+      ],
+      "remote_executions": 0,
+      "error_type": null,
+      "error_id": null,
+      "model_calls": 0
+    },
+    {
+      "id": "L2_032",
+      "reference_sha256": "465efd20d6331fbc3953eda8673be4b03c5050d1c2c58b9f8c2d59005c6256f8",
+      "status": "UNGRADED",
+      "reason": "No explicit machine-comparable oracle; no model call",
+      "model_calls": 0
+    },
+    {
+      "id": "L2_033",
+      "reference_sha256": "6f2f746103727c6f8ffc4b3b1d834a73740530caca03bc5fee9032db145f489c",
+      "status": "UNGRADED",
+      "reason": "No explicit machine-comparable oracle; no model call",
+      "model_calls": 0
+    },
+    {
+      "id": "L2_034",
+      "reference_sha256": "70791bea7aefde9487dccddddead5ec9b900965dec3614580d8fd4cb428970d5",
+      "status": "PASS",
+      "reason": "Pivot values, axes, aggregation and lineage match the reference",
+      "elapsed_seconds": 0.204,
+      "tools": {
+        "pivot_dataset": 1
+      },
+      "observations": [
+        {
+          "tool": "pivot_dataset",
+          "status": "ready",
+          "error_code": null
+        }
+      ],
+      "remote_executions": 0,
+      "error_type": null,
+      "error_id": null,
+      "model_calls": 0
+    },
+    {
+      "id": "L2_035",
+      "reference_sha256": "f71c9a8311cc8d03d59c583f18741a6e85f6304919c64a25941931c11c3bc411",
+      "status": "UNGRADED",
+      "reason": "No explicit machine-comparable oracle; no model call",
+      "model_calls": 0
+    },
+    {
+      "id": "L2_036",
+      "reference_sha256": "aec47a57bf163fb0070901aee1d6dce161ea99d055bd4fc13b5449302644e7ac",
+      "status": "PASS",
+      "reason": "Structured outlier evidence matches the independent reference",
+      "elapsed_seconds": 0.065,
+      "tools": {
+        "detect_outliers": 1
+      },
+      "observations": [
+        {
+          "tool": "detect_outliers",
+          "status": "ready",
+          "error_code": null
+        }
+      ],
+      "remote_executions": 0,
+      "error_type": null,
+      "error_id": null,
+      "model_calls": 0
+    },
+    {
+      "id": "L2_037",
+      "reference_sha256": "cd7a02932f2c3c99bd825ec25a7fe7504fad60a86ce12ac61f977a7127b40737",
+      "status": "PASS",
+      "reason": "Lineage-safe outlier cohort aggregates match the independent reference",
+      "elapsed_seconds": 0.205,
+      "tools": {
+        "select_outlier_rows": 1,
+        "aggregate_dataset": 2
+      },
+      "observations": [
+        {
+          "tool": "select_outlier_rows",
+          "status": "ready",
+          "error_code": null
+        },
+        {
+          "tool": "aggregate_dataset",
+          "status": "ready",
+          "error_code": null
+        },
+        {
+          "tool": "aggregate_dataset",
+          "status": "ready",
+          "error_code": null
+        }
+      ],
+      "remote_executions": 0,
+      "error_type": null,
+      "error_id": null,
+      "model_calls": 0
+    },
+    {
+      "id": "L2_038",
+      "reference_sha256": "2616df2da1a80fd28cd8ac61c82ee361dac78791e28fd9c83010443bcd6fb43b",
+      "status": "PASS",
+      "reason": "Lineage-safe parent-versus-cohort comparison matches the independent reference",
+      "elapsed_seconds": 0.168,
+      "tools": {
+        "select_outlier_rows": 1,
+        "compare_group_aggregates": 1
+      },
+      "observations": [
+        {
+          "tool": "select_outlier_rows",
+          "status": "ready",
+          "error_code": null
+        },
+        {
+          "tool": "compare_group_aggregates",
+          "status": "ready",
+          "error_code": null
+        }
+      ],
+      "remote_executions": 0,
+      "error_type": null,
+      "error_id": null,
+      "model_calls": 0
+    },
+    {
+      "id": "L2_039",
+      "reference_sha256": "5f38480ccd192642b97f6514f77a9d60882aa3bead404e6e378b374c879deb7c",
+      "status": "PASS",
+      "reason": "Structured outlier evidence matches the independent reference",
+      "elapsed_seconds": 0.065,
+      "tools": {
+        "detect_outliers": 1
+      },
+      "observations": [
+        {
+          "tool": "detect_outliers",
+          "status": "ready",
+          "error_code": null
+        }
+      ],
+      "remote_executions": 0,
+      "error_type": null,
+      "error_id": null,
+      "model_calls": 0
+    },
+    {
+      "id": "L2_040",
+      "reference_sha256": "6439b983d3fa742f04f0e8c15fbadd90e7432e78d3c3e7e445c08f14e73cdee0",
+      "status": "PASS",
+      "reason": "Lineage-safe outlier cohort and follow-up metrics match the independent reference",
+      "elapsed_seconds": 0.159,
+      "tools": {
+        "select_outlier_rows": 1,
+        "local_analysis_sql": 1
+      },
+      "observations": [
+        {
+          "tool": "select_outlier_rows",
+          "status": "ready",
+          "error_code": null
+        },
+        {
+          "tool": "local_analysis_sql",
+          "status": "ready",
+          "error_code": null
+        }
+      ],
+      "remote_executions": 0,
+      "error_type": null,
+      "error_id": null,
+      "model_calls": 0
+    },
+    {
+      "id": "L2_041",
+      "reference_sha256": "63ebae4995bd042e4d3eb1a3c0aeb705ecc0ff973b3d73610a80dc8e76559d51",
+      "status": "UNGRADED",
+      "reason": "No explicit machine-comparable oracle; no model call",
+      "model_calls": 0
+    },
+    {
+      "id": "L2_042",
+      "reference_sha256": "3656af17a9c5d0a53ac26ebd92d55754066fddbe4b96c4c60224208cce181651",
+      "status": "PASS",
+      "reason": "Real PNG and declarative chart data match the independent reference",
+      "elapsed_seconds": 0.243,
+      "tools": {
+        "render_chart_spec": 1
+      },
+      "observations": [
+        {
+          "tool": "render_chart_spec",
+          "status": "ready",
+          "error_code": null
+        }
+      ],
+      "remote_executions": 0,
+      "error_type": null,
+      "error_id": null,
+      "model_calls": 0
+    },
+    {
+      "id": "L2_043",
+      "reference_sha256": "c1a5c4ff199425490770f5f15b27a9cbc48b920b3ad3253f9c58fb21bb8303c7",
+      "status": "UNGRADED",
+      "reason": "No explicit machine-comparable oracle; no model call",
+      "model_calls": 0
+    },
+    {
+      "id": "L2_044",
+      "reference_sha256": "34209bcab5aa43054ab934fc6e65e8c5bca2d60b04fbf332acc58ed53266279f",
+      "status": "UNGRADED",
+      "reason": "No explicit machine-comparable oracle; no model call",
+      "model_calls": 0
+    },
+    {
+      "id": "L2_045",
+      "reference_sha256": "90107db59b0dc18d5a84dbe9b28745569e5ff43519020b0ccc353e823a3c1a4a",
+      "status": "PASS",
+      "reason": "Real PNG and declarative chart data match the independent reference",
+      "elapsed_seconds": 0.188,
+      "tools": {
+        "render_chart_spec": 1
+      },
+      "observations": [
+        {
+          "tool": "render_chart_spec",
+          "status": "ready",
+          "error_code": null
+        }
+      ],
+      "remote_executions": 0,
+      "error_type": null,
+      "error_id": null,
+      "model_calls": 0
+    },
+    {
+      "id": "L2_046",
+      "reference_sha256": "c47ccd420408b174a821cfc0fd30065157d23914d9eb23318740470e07214f85",
+      "status": "PASS",
+      "reason": "Compared final structured calculation with independent reference",
+      "elapsed_seconds": 0.283,
+      "tools": {
+        "local_analysis_sql": 1
+      },
+      "observations": [
+        {
+          "tool": "local_analysis_sql",
+          "status": "ready",
+          "error_code": null
+        }
+      ],
+      "remote_executions": 0,
+      "error_type": null,
+      "error_id": null,
+      "model_calls": 0
+    },
+    {
+      "id": "L2_047",
+      "reference_sha256": "df3b61916592856aaafd46a2000037ae3c5f5b91a1a7306b862f432c23e98ca1",
+      "status": "UNGRADED",
+      "reason": "No explicit machine-comparable oracle; no model call",
+      "model_calls": 0
+    },
+    {
+      "id": "L2_048",
+      "reference_sha256": "1f4fe1c10c132cf0f385cd2e87898a1df947834de4b8a1d482689a681fedec7b",
+      "status": "PASS",
+      "reason": "Structured outlier evidence matches the independent reference",
+      "elapsed_seconds": 0.219,
+      "tools": {
+        "detect_outliers": 1
+      },
+      "observations": [
+        {
+          "tool": "detect_outliers",
+          "status": "ready",
+          "error_code": null
+        }
+      ],
+      "remote_executions": 0,
+      "error_type": null,
+      "error_id": null,
+      "model_calls": 0
+    },
+    {
+      "id": "L2_049",
+      "reference_sha256": "a25bb3b6f7705002cef6a47c00b8f71da90067b125a739f07326334215436001",
+      "status": "UNGRADED",
+      "reason": "No explicit machine-comparable oracle; no model call",
+      "model_calls": 0
+    },
+    {
+      "id": "L2_050",
+      "reference_sha256": "1c33f947b803841829ed6d437c040980a7504a26b7c22096dc64cc41d8ea1aa7",
+      "status": "PASS",
+      "reason": "Real PNG and declarative chart data match the independent reference",
+      "elapsed_seconds": 0.071,
+      "tools": {
+        "render_chart_spec": 1
+      },
+      "observations": [
+        {
+          "tool": "render_chart_spec",
+          "status": "ready",
+          "error_code": null
+        }
+      ],
+      "remote_executions": 0,
+      "error_type": null,
+      "error_id": null,
+      "model_calls": 0
+    },
+    {
+      "id": "L2_051",
+      "reference_sha256": "599c9154e79e3a241999dffe9a81304c6b3ba3eef497df140f986020ee520098",
+      "status": "PASS",
+      "reason": "Structured statistical evidence matches the independent reference",
+      "elapsed_seconds": 0.042,
+      "tools": {
+        "statistical_test": 1
+      },
+      "observations": [
+        {
+          "tool": "statistical_test",
+          "status": "ready",
+          "error_code": null
+        }
+      ],
+      "remote_executions": 0,
+      "error_type": null,
+      "error_id": null,
+      "model_calls": 0
+    },
+    {
+      "id": "L2_052",
+      "reference_sha256": "dde9ab356f9274cee28cb34dd235c0ff16f0e46bb3ec28e11009ac669e9ad860",
+      "status": "PASS",
+      "reason": "Structured statistical evidence matches the independent reference",
+      "elapsed_seconds": 0.044,
+      "tools": {
+        "statistical_test": 1
+      },
+      "observations": [
+        {
+          "tool": "statistical_test",
+          "status": "ready",
+          "error_code": null
+        }
+      ],
+      "remote_executions": 0,
+      "error_type": null,
+      "error_id": null,
+      "model_calls": 0
+    },
+    {
+      "id": "L2_053",
+      "reference_sha256": "35f6da60ae6aff50c292aa044104a366688acb86140cadd1802fda3e6e82ac7c",
+      "status": "PASS",
+      "reason": "Structured statistical evidence matches the independent reference",
+      "elapsed_seconds": 0.036,
+      "tools": {
+        "statistical_test": 1
+      },
+      "observations": [
+        {
+          "tool": "statistical_test",
+          "status": "ready",
+          "error_code": null
+        }
+      ],
+      "remote_executions": 0,
+      "error_type": null,
+      "error_id": null,
+      "model_calls": 0
+    },
+    {
+      "id": "L2_054",
+      "reference_sha256": "2971324b202bd4b03cac466abaae39ad4c45094de28d02c67731720f5492a1d1",
+      "status": "PASS",
+      "reason": "Structured statistical evidence matches the independent reference",
+      "elapsed_seconds": 0.13,
+      "tools": {
+        "statistical_test": 1
+      },
+      "observations": [
+        {
+          "tool": "statistical_test",
+          "status": "ready",
+          "error_code": null
+        }
+      ],
+      "remote_executions": 0,
+      "error_type": null,
+      "error_id": null,
+      "model_calls": 0
+    },
+    {
+      "id": "L2_055",
+      "reference_sha256": "ddfb612c2e49167821ae051d7deff79f99f5ec640fdcbbaebc5556f177de52be",
+      "status": "PASS",
+      "reason": "Structured statistical evidence matches the independent reference",
+      "elapsed_seconds": 0.202,
+      "tools": {
+        "statistical_test": 1
+      },
+      "observations": [
+        {
+          "tool": "statistical_test",
+          "status": "ready",
+          "error_code": null
+        }
+      ],
+      "remote_executions": 0,
+      "error_type": null,
+      "error_id": null,
+      "model_calls": 0
+    },
+    {
+      "id": "L2_056",
+      "reference_sha256": "d084df14d76432aea0c7ab3246b7a9eb9f8885e280b5050b53dcc49066f1decc",
+      "status": "PASS",
+      "reason": "Structured statistical evidence matches the independent reference",
+      "elapsed_seconds": 0.047,
+      "tools": {
+        "statistical_test": 1
+      },
+      "observations": [
+        {
+          "tool": "statistical_test",
+          "status": "ready",
+          "error_code": null
+        }
+      ],
+      "remote_executions": 0,
+      "error_type": null,
+      "error_id": null,
+      "model_calls": 0
+    },
+    {
+      "id": "L2_057",
+      "reference_sha256": "12519cd7b5cfaee1001efd5a79e3b39d170cfd0dbddf0c446a7ca20707a10813",
+      "status": "PASS",
+      "reason": "Structured statistical evidence matches the independent reference",
+      "elapsed_seconds": 0.041,
+      "tools": {
+        "statistical_test": 1
+      },
+      "observations": [
+        {
+          "tool": "statistical_test",
+          "status": "ready",
+          "error_code": null
+        }
+      ],
+      "remote_executions": 0,
+      "error_type": null,
+      "error_id": null,
+      "model_calls": 0
+    },
+    {
+      "id": "L2_058",
+      "reference_sha256": "350bc6eb1990d7ee058685dfbe5a150703c92be64fbdc050ebed8f27969c0f35",
+      "status": "PASS",
+      "reason": "Structured statistical evidence matches the independent reference",
+      "elapsed_seconds": 0.131,
+      "tools": {
+        "statistical_test": 1
+      },
+      "observations": [
+        {
+          "tool": "statistical_test",
+          "status": "ready",
+          "error_code": null
+        }
+      ],
+      "remote_executions": 0,
+      "error_type": null,
+      "error_id": null,
+      "model_calls": 0
+    },
+    {
+      "id": "L2_059",
+      "reference_sha256": "4e8cad5a76823c8c9fbf58ed83f573a950f367d7ec7b7dd3422c1c083f75213a",
+      "status": "PASS",
+      "reason": "Structured statistical evidence matches the independent reference",
+      "elapsed_seconds": 0.198,
+      "tools": {
+        "statistical_test": 1
+      },
+      "observations": [
+        {
+          "tool": "statistical_test",
+          "status": "ready",
+          "error_code": null
+        }
+      ],
+      "remote_executions": 0,
+      "error_type": null,
+      "error_id": null,
+      "model_calls": 0
+    },
+    {
+      "id": "L2_060",
+      "reference_sha256": "3aaa120b44d8a825f58501d49eb596d72ff3f6bc5bfc276a09e307e0372de242",
+      "status": "PASS",
+      "reason": "Structured statistical evidence matches the independent reference",
+      "elapsed_seconds": 0.051,
+      "tools": {
+        "statistical_test": 1
+      },
+      "observations": [
+        {
+          "tool": "statistical_test",
+          "status": "ready",
+          "error_code": null
+        }
+      ],
+      "remote_executions": 0,
+      "error_type": null,
+      "error_id": null,
+      "model_calls": 0
+    },
+    {
+      "id": "L2_061",
+      "reference_sha256": "4cae6abead9293b82813f8718614fac9738de80fe0801948f818ecf11c691e60",
+      "status": "PASS",
+      "reason": "Count/rate chart PNG and numerator/denominator evidence match the reference",
+      "elapsed_seconds": 0.123,
+      "tools": {
+        "render_count_rate_chart": 1
+      },
+      "observations": [
+        {
+          "tool": "render_count_rate_chart",
+          "status": "ready",
+          "error_code": null
+        }
+      ],
+      "remote_executions": 0,
+      "error_type": null,
+      "error_id": null,
+      "model_calls": 0
+    },
+    {
+      "id": "L2_062",
+      "reference_sha256": "6feda069e4a9e2777ad1bafb6699f0500cce59391e8f54b49cc076a4fc525173",
+      "status": "UNGRADED",
+      "reason": "No explicit machine-comparable oracle; no model call",
+      "model_calls": 0
+    },
+    {
+      "id": "L2_063",
+      "reference_sha256": "3d5e21c969e899a1795d80edcc38caf3b18d39f220076cc250dc16aa3678c17d",
+      "status": "UNGRADED",
+      "reason": "No explicit machine-comparable oracle; no model call",
+      "model_calls": 0
+    },
+    {
+      "id": "L2_064",
+      "reference_sha256": "57d27d2b3dc9d27b280febec4b8f582a27b55ca261005dc57fae396bd4a2cc2b",
+      "status": "PASS",
+      "reason": "Count/rate chart PNG and numerator/denominator evidence match the reference",
+      "elapsed_seconds": 0.261,
+      "tools": {
+        "render_count_rate_chart": 1
+      },
+      "observations": [
+        {
+          "tool": "render_count_rate_chart",
+          "status": "ready",
+          "error_code": null
+        }
+      ],
+      "remote_executions": 0,
+      "error_type": null,
+      "error_id": null,
+      "model_calls": 0
+    },
+    {
+      "id": "L2_065",
+      "reference_sha256": "1951cf6c755599f602326179f167a3e88fb80ca5204729c3b83ecd6e523762e5",
+      "status": "PASS",
+      "reason": "Count/rate chart PNG and numerator/denominator evidence match the reference",
+      "elapsed_seconds": 0.264,
+      "tools": {
+        "render_count_rate_chart": 1
+      },
+      "observations": [
+        {
+          "tool": "render_count_rate_chart",
+          "status": "ready",
+          "error_code": null
+        }
+      ],
+      "remote_executions": 0,
+      "error_type": null,
+      "error_id": null,
+      "model_calls": 0
+    },
+    {
+      "id": "L2_066",
+      "reference_sha256": "9ea2fdf896548059708e05a4a7855c94f872b23aebfe718a290262bf4bf2ffc7",
+      "status": "PASS",
+      "reason": "Count/rate chart PNG and numerator/denominator evidence match the reference",
+      "elapsed_seconds": 0.307,
+      "tools": {
+        "render_count_rate_chart": 1
+      },
+      "observations": [
+        {
+          "tool": "render_count_rate_chart",
+          "status": "ready",
+          "error_code": null
+        }
+      ],
+      "remote_executions": 0,
+      "error_type": null,
+      "error_id": null,
+      "model_calls": 0
+    },
+    {
+      "id": "L2_067",
+      "reference_sha256": "8642e221026ef9489d8f0df69a7a5cca9f627e86a4c05ed64c30ee7c16a262ba",
+      "status": "UNGRADED",
+      "reason": "No explicit machine-comparable oracle; no model call",
+      "model_calls": 0
+    },
+    {
+      "id": "L2_068",
+      "reference_sha256": "b5563f8832b32b43f1cee90c6da710677b662ddc7e2e50ca5b17d285c670a846",
+      "status": "PASS",
+      "reason": "Real PNG and declarative chart data match the independent reference",
+      "elapsed_seconds": 0.254,
+      "tools": {
+        "render_chart_spec": 1
+      },
+      "observations": [
+        {
+          "tool": "render_chart_spec",
+          "status": "ready",
+          "error_code": null
+        }
+      ],
+      "remote_executions": 0,
+      "error_type": null,
+      "error_id": null,
+      "model_calls": 0
+    },
+    {
+      "id": "L2_069",
+      "reference_sha256": "ec242a2e06571459319803faefeb79e5105e7c9be2fd3eac141070a9b1ae000a",
+      "status": "UNGRADED",
+      "reason": "No explicit machine-comparable oracle; no model call",
+      "model_calls": 0
+    },
+    {
+      "id": "L2_070",
+      "reference_sha256": "99f798fdd084a79119b25d8241cfb56cdd3665f66ed2507857a139d9f429c25a",
+      "status": "UNGRADED",
+      "reason": "No explicit machine-comparable oracle; no model call",
+      "model_calls": 0
+    },
+    {
+      "id": "L2_071",
+      "reference_sha256": "bd5c02a0f5b280a7434ea92085c9192f1bb41913b2965a7ed46b78b0063e8359",
+      "status": "UNGRADED",
+      "reason": "No explicit machine-comparable oracle; no model call",
+      "model_calls": 0
+    },
+    {
+      "id": "L2_072",
+      "reference_sha256": "28e5bf007c224404231ed979917c1907543f7c6c46fedbd403d281855a607f08",
+      "status": "UNGRADED",
+      "reason": "No explicit machine-comparable oracle; no model call",
+      "model_calls": 0
+    },
+    {
+      "id": "L2_073",
+      "reference_sha256": "8fff283378f972bb3de62106cfeb5ff5782fcd6510a66064633a56d7aa844d90",
+      "status": "UNGRADED",
+      "reason": "No explicit machine-comparable oracle; no model call",
+      "model_calls": 0
+    },
+    {
+      "id": "L2_074",
+      "reference_sha256": "1d1326931e63d9bee8fad24261d014de1c46c20aaf9fb15d75c6b9aeba469b97",
+      "status": "UNGRADED",
+      "reason": "No explicit machine-comparable oracle; no model call",
+      "model_calls": 0
+    },
+    {
+      "id": "L2_075",
+      "reference_sha256": "85d48772d4414f4bbc53b6799e7674eb485edfb84b3f382f82e29cd5a030f92a",
+      "status": "UNGRADED",
+      "reason": "No explicit machine-comparable oracle; no model call",
+      "model_calls": 0
+    },
+    {
+      "id": "L2_076",
+      "reference_sha256": "1003c5e4b4313b28261ca769c4aadb0d2d48f0b29874f272d1ad8d12a3ecceff",
+      "status": "UNGRADED",
+      "reason": "No explicit machine-comparable oracle; no model call",
+      "model_calls": 0
+    },
+    {
+      "id": "L2_077",
+      "reference_sha256": "8ee890fdddbb87ce0f0ca83406d6c45df3560bd49e6a7083a7735e9cac003457",
+      "status": "UNGRADED",
+      "reason": "No explicit machine-comparable oracle; no model call",
+      "model_calls": 0
+    },
+    {
+      "id": "L2_078",
+      "reference_sha256": "e9b03903bdba9bb946fda071c99208f43fc7e54f20f126c5a1e4a813c62c4fa3",
+      "status": "UNGRADED",
+      "reason": "No explicit machine-comparable oracle; no model call",
+      "model_calls": 0
+    },
+    {
+      "id": "L2_079",
+      "reference_sha256": "a46054923029f676d186d470e5f99888d505cfdb245c922d08e3179d40ba0dd5",
+      "status": "UNGRADED",
+      "reason": "No explicit machine-comparable oracle; no model call",
+      "model_calls": 0
+    },
+    {
+      "id": "L2_080",
+      "reference_sha256": "e5c09360bc22a2e50cbdc5f3e7f8ba3716e5c23508e2e99e9e42a891d2648dc0",
+      "status": "UNGRADED",
+      "reason": "No explicit machine-comparable oracle; no model call",
+      "model_calls": 0
+    },
+    {
+      "id": "L2_081",
+      "reference_sha256": "20e758dcfdb054311b01f5026ea2b8bc158f6138f16d412c264ce4fbd4233500",
+      "status": "UNGRADED",
+      "reason": "No explicit machine-comparable oracle; no model call",
+      "model_calls": 0
+    },
+    {
+      "id": "L2_082",
+      "reference_sha256": "cd87b7a4149e5af80e4893fb551c0bad96bec7791ec35eab9bcb6fdd7b69a23f",
+      "status": "UNGRADED",
+      "reason": "No explicit machine-comparable oracle; no model call",
+      "model_calls": 0
+    },
+    {
+      "id": "L2_083",
+      "reference_sha256": "ac0af6828e19a79170b405e37478d02bf3cf01693df10e44dc60da834f565f93",
+      "status": "UNGRADED",
+      "reason": "No explicit machine-comparable oracle; no model call",
+      "model_calls": 0
+    },
+    {
+      "id": "L2_084",
+      "reference_sha256": "abf5ce50b749dc69cdf618e038dab56748db99e2f83cfd79b814cf35502ceb86",
+      "status": "UNGRADED",
+      "reason": "No explicit machine-comparable oracle; no model call",
+      "model_calls": 0
+    },
+    {
+      "id": "L2_085",
+      "reference_sha256": "0bd90c671fca5e06a493976f5321103d9ac8c2035b6b264cc6956588faf36dc1",
+      "status": "UNGRADED",
+      "reason": "No explicit machine-comparable oracle; no model call",
+      "model_calls": 0
+    },
+    {
+      "id": "L2_086",
+      "reference_sha256": "1b348ab9d102662234d1bb80eb407ac72d3f099f08d925d7f121f098a08714d1",
+      "status": "UNGRADED",
+      "reason": "No explicit machine-comparable oracle; no model call",
+      "model_calls": 0
+    },
+    {
+      "id": "L2_087",
+      "reference_sha256": "16759647dda11871706277dc8d42c2008527db370a901b491467a68a58557247",
+      "status": "UNGRADED",
+      "reason": "No explicit machine-comparable oracle; no model call",
+      "model_calls": 0
+    },
+    {
+      "id": "L2_088",
+      "reference_sha256": "e37ceea72752201d287e985438658309f9ed8139a97037e5b6f53c3b353aa08f",
+      "status": "UNGRADED",
+      "reason": "No explicit machine-comparable oracle; no model call",
+      "model_calls": 0
+    },
+    {
+      "id": "L2_089",
+      "reference_sha256": "172075235ac693e156051d7cd1dc6e5e9a7252c7643dd5b9aee0e674c8b26099",
+      "status": "PASS",
+      "reason": "Count/rate chart PNG and numerator/denominator evidence match the reference",
+      "elapsed_seconds": 0.114,
+      "tools": {
+        "render_count_rate_chart": 1
+      },
+      "observations": [
+        {
+          "tool": "render_count_rate_chart",
+          "status": "ready",
+          "error_code": null
+        }
+      ],
+      "remote_executions": 0,
+      "error_type": null,
+      "error_id": null,
+      "model_calls": 0
+    },
+    {
+      "id": "L2_090",
+      "reference_sha256": "db34851a9d528dcbb05b82c29d6961f7d12ca7e8c255bdcb970b2abddeaecd89",
+      "status": "UNGRADED",
+      "reason": "No explicit machine-comparable oracle; no model call",
+      "model_calls": 0
+    },
+    {
+      "id": "L2_091",
+      "reference_sha256": "84fc8350414089842901aaaa26e641f942a79be8c2a64a30c03ed5465bee3795",
+      "status": "UNGRADED",
+      "reason": "No explicit machine-comparable oracle; no model call",
+      "model_calls": 0
+    },
+    {
+      "id": "L2_092",
+      "reference_sha256": "17b0de4b5dc9f764075bf87f19b17cd18d8202339389075902c1b417cd620784",
+      "status": "UNGRADED",
+      "reason": "No explicit machine-comparable oracle; no model call",
+      "model_calls": 0
+    },
+    {
+      "id": "L2_093",
+      "reference_sha256": "9dee8f20396b3666e1da99b69d56f1e6a7f7642b8b99c23ecd249ed089a0e4b7",
+      "status": "UNGRADED",
+      "reason": "No explicit machine-comparable oracle; no model call",
+      "model_calls": 0
+    },
+    {
+      "id": "L2_094",
+      "reference_sha256": "7a41937d97b734ffae84ac041732e8afd2f74819de8008865e9dc1c948c15731",
+      "status": "UNGRADED",
+      "reason": "No explicit machine-comparable oracle; no model call",
+      "model_calls": 0
+    },
+    {
+      "id": "L2_095",
+      "reference_sha256": "43ac86a046da8c9683c20c18892b11243a6ceaad450a6ea739c09c4e2dd24d86",
+      "status": "UNGRADED",
+      "reason": "No explicit machine-comparable oracle; no model call",
+      "model_calls": 0
+    },
+    {
+      "id": "L2_096",
+      "reference_sha256": "86d28223557941f94920de4cfafefc0288b8d3a87aa81ae87b6cca30db624bb4",
+      "status": "PASS",
+      "reason": "Winsorization boundaries and before/after statistics match the reference",
+      "elapsed_seconds": 0.207,
+      "tools": {
+        "winsorize_numeric": 1
+      },
+      "observations": [
+        {
+          "tool": "winsorize_numeric",
+          "status": "ready",
+          "error_code": null
+        }
+      ],
+      "remote_executions": 0,
+      "error_type": null,
+      "error_id": null,
+      "model_calls": 0
+    },
+    {
+      "id": "L2_097",
+      "reference_sha256": "ab2aefa8c635ae0665083e58928ef840276cec7db1d7a67fad2194e540b867ab",
+      "status": "UNGRADED",
+      "reason": "No explicit machine-comparable oracle; no model call",
+      "model_calls": 0
+    },
+    {
+      "id": "L2_098",
+      "reference_sha256": "f4c788aff23b650453f6171648c07a748bb495e32115c6bf8268349a85fbc40a",
+      "status": "UNGRADED",
+      "reason": "No explicit machine-comparable oracle; no model call",
+      "model_calls": 0
+    },
+    {
+      "id": "L2_099",
+      "reference_sha256": "6c7e9c7a97c000d8cc57c35ec02062e3e3392d0a8fefa7c0cdef028701932e6b",
+      "status": "UNGRADED",
+      "reason": "No explicit machine-comparable oracle; no model call",
+      "model_calls": 0
+    },
+    {
+      "id": "L2_100",
+      "reference_sha256": "70a22eec75b69501192706ec57014cadf711aded9f81f853847a4f0e2b398ff4",
+      "status": "UNGRADED",
+      "reason": "No explicit machine-comparable oracle; no model call",
+      "model_calls": 0
+    }
+  ]
+}

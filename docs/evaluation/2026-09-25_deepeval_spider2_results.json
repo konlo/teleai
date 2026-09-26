@@ -1,0 +1,195 @@
+{
+  "date_kst": "2026-09-25",
+  "scope": "actual running app Python environment; local synthetic fixtures; Spider2 adapted SQL-proposal track",
+  "runtime": {
+    "model": "gemma4:e4b",
+    "langchain": "1.4.0",
+    "langgraph": "1.2.11",
+    "deepeval": "4.2.3"
+  },
+  "product_oracle": {
+    "passed": 10,
+    "tested": 10,
+    "model_called_cases": 1
+  },
+  "deepeval": {
+    "tool_name_exact_match": {
+      "passed": 10,
+      "tested": 10
+    },
+    "geval_local_qwen3_8b": {
+      "judged": 6,
+      "mean": 0.916667,
+      "passed_threshold_0_8": 5,
+      "scores": {
+        "L1_016": 1.0,
+        "L2_036": 0.5,
+        "L1_001": 1.0,
+        "L1_017": 1.0,
+        "L1_036": 1.0,
+        "L2_005": 1.0
+      },
+      "not_judged": [
+        "L2_051",
+        "L1_062",
+        "L1_076",
+        "L2_061"
+      ]
+    }
+  },
+  "spider2": {
+    "benchmark": "Spider2-Lite official SQLite, adapted proposal-only subset",
+    "selected": 5,
+    "proposed": 0,
+    "official_ex": null,
+    "official_ex_reason": "No candidate SQL was produced for official execution scorer",
+    "tasks": [
+      {
+        "id": "local221",
+        "database": "EU_soccer",
+        "status": "NO_SQL_PROPOSAL",
+        "agent_status": "exhausted",
+        "error_type": null,
+        "tools": [
+          "inspect_table_context"
+        ],
+        "elapsed_seconds": 202.493,
+        "remote_executions": 0
+      },
+      {
+        "id": "local009",
+        "database": "Airlines",
+        "status": "NO_SQL_PROPOSAL",
+        "agent_status": "incomplete",
+        "error_type": "ReadTimeout",
+        "tools": [],
+        "elapsed_seconds": 60.121,
+        "remote_executions": 0,
+        "official_document_supplied": true
+      },
+      {
+        "id": "local210",
+        "database": "delivery_center",
+        "status": "NO_SQL_PROPOSAL",
+        "agent_status": "incomplete",
+        "error_type": "ReadTimeout",
+        "tools": [],
+        "elapsed_seconds": 60.143,
+        "remote_executions": 0
+      },
+      {
+        "id": "local358",
+        "database": "log",
+        "status": "NO_SQL_PROPOSAL",
+        "agent_status": "incomplete",
+        "error_type": "ReadTimeout",
+        "tools": [],
+        "elapsed_seconds": 60.133,
+        "remote_executions": 0
+      },
+      {
+        "id": "local198",
+        "database": "chinook",
+        "status": "NO_SQL_PROPOSAL",
+        "agent_status": "incomplete",
+        "error_type": "ReadTimeout",
+        "tools": [],
+        "elapsed_seconds": 60.099,
+        "remote_executions": 0
+      }
+    ],
+    "external_document_retest": {
+      "task": "local009",
+      "document": "official haversine_formula.md",
+      "result": "NO_SQL_PROPOSAL"
+    }
+  },
+  "regression": {
+    "pytest_temp_environment_passed": 237,
+    "reference_runner_passed": 217,
+    "exact_runtime_unittest_passed": 47
+  },
+  "new_databricks_queries": 0,
+  "fixture_cases": [
+    {
+      "id": "L1_001",
+      "oracle_status": "PASS",
+      "model_calls": 0,
+      "elapsed_seconds": 0.169,
+      "deepeval_tool_name_score": 1.0,
+      "deepeval_geval_score": 1.0
+    },
+    {
+      "id": "L1_016",
+      "oracle_status": "PASS",
+      "model_calls": 1,
+      "elapsed_seconds": 47.116,
+      "deepeval_tool_name_score": 1.0,
+      "deepeval_geval_score": 1.0
+    },
+    {
+      "id": "L1_017",
+      "oracle_status": "PASS",
+      "model_calls": 0,
+      "elapsed_seconds": 0.088,
+      "deepeval_tool_name_score": 1.0,
+      "deepeval_geval_score": 1.0
+    },
+    {
+      "id": "L1_036",
+      "oracle_status": "PASS",
+      "model_calls": 0,
+      "elapsed_seconds": 0.143,
+      "deepeval_tool_name_score": 1.0,
+      "deepeval_geval_score": 1.0
+    },
+    {
+      "id": "L1_062",
+      "oracle_status": "PASS",
+      "model_calls": 0,
+      "elapsed_seconds": 0.042,
+      "deepeval_tool_name_score": 1.0,
+      "deepeval_geval_score": null
+    },
+    {
+      "id": "L1_076",
+      "oracle_status": "PASS",
+      "model_calls": 0,
+      "elapsed_seconds": 8.314,
+      "deepeval_tool_name_score": 1.0,
+      "deepeval_geval_score": null
+    },
+    {
+      "id": "L2_005",
+      "oracle_status": "PASS",
+      "model_calls": 0,
+      "elapsed_seconds": 0.063,
+      "deepeval_tool_name_score": 1.0,
+      "deepeval_geval_score": 1.0
+    },
+    {
+      "id": "L2_036",
+      "oracle_status": "PASS",
+      "model_calls": 0,
+      "elapsed_seconds": 0.034,
+      "deepeval_tool_name_score": 1.0,
+      "deepeval_geval_score": 0.5
+    },
+    {
+      "id": "L2_051",
+      "oracle_status": "PASS",
+      "model_calls": 0,
+      "elapsed_seconds": 0.041,
+      "deepeval_tool_name_score": 1.0,
+      "deepeval_geval_score": null
+    },
+    {
+      "id": "L2_061",
+      "oracle_status": "PASS",
+      "model_calls": 0,
+      "elapsed_seconds": 0.101,
+      "deepeval_tool_name_score": 1.0,
+      "deepeval_geval_score": null
+    }
+  ]
+}

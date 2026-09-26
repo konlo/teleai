@@ -1,0 +1,246 @@
+{
+  "case_id": "PRES_03-turn1",
+  "run_id": "32cedf15f4414cf6a27b73a7a7241383",
+  "state": "idle",
+  "message_count": 4,
+  "pending_requests": 0,
+  "recovery_status": "complete",
+  "recovery_attempts": 0,
+  "recovery_model_calls": 1,
+  "reference_context": [
+    {
+      "table": "fixture.sensor_readings",
+      "training_status": "fixture_profile",
+      "columns": [
+        {
+          "name": "event_key",
+          "dtype": "int64",
+          "distinct_count": 8,
+          "null_count": 0,
+          "top_values": [
+            {
+              "value": 1,
+              "count": 1
+            },
+            {
+              "value": 2,
+              "count": 1
+            },
+            {
+              "value": 3,
+              "count": 1
+            },
+            {
+              "value": 4,
+              "count": 1
+            },
+            {
+              "value": 5,
+              "count": 1
+            },
+            {
+              "value": 6,
+              "count": 1
+            },
+            {
+              "value": 7,
+              "count": 1
+            },
+            {
+              "value": 8,
+              "count": 1
+            }
+          ],
+          "aliases": []
+        },
+        {
+          "name": "reading",
+          "dtype": "float64",
+          "distinct_count": 6,
+          "null_count": 1,
+          "top_values": [
+            {
+              "value": 2.0,
+              "count": 2
+            },
+            {
+              "value": -4.0,
+              "count": 1
+            },
+            {
+              "value": 0.0,
+              "count": 1
+            },
+            {
+              "value": 8.0,
+              "count": 1
+            },
+            {
+              "value": 12.0,
+              "count": 1
+            },
+            {
+              "value": 50.0,
+              "count": 1
+            }
+          ],
+          "aliases": []
+        },
+        {
+          "name": "zone",
+          "dtype": "object",
+          "distinct_count": 2,
+          "null_count": 0,
+          "top_values": [
+            {
+              "value": "east",
+              "count": 4
+            },
+            {
+              "value": "west",
+              "count": 4
+            }
+          ],
+          "aliases": []
+        }
+      ],
+      "alias_source": null,
+      "source": "local test_set fixture; not a live Databricks table"
+    }
+  ],
+  "datasets": [
+    {
+      "id": "dbb33ae9-b424-48e4-a057-48b84bd68e28",
+      "source": "fixture.sensor_readings",
+      "columns": [
+        "event_key",
+        "reading",
+        "zone"
+      ],
+      "rows": 8,
+      "coverage": "complete",
+      "conditions": [],
+      "predicate_known": true,
+      "grain": "raw",
+      "aggregation": "",
+      "snapshot": "fixture:preservation-v1",
+      "query": "",
+      "parent_id": "",
+      "parent_ids": [],
+      "role": "root",
+      "root_id": "dbb33ae9-b424-48e4-a057-48b84bd68e28"
+    },
+    {
+      "id": "da7fca64-c075-4cbf-aa47-340266c1008e",
+      "source": "fixture.sensor_readings",
+      "columns": [
+        "reading",
+        "__frequency"
+      ],
+      "rows": 6,
+      "coverage": "complete",
+      "conditions": [],
+      "predicate_known": false,
+      "grain": "aggregate",
+      "aggregation": "SELECT \"reading\", COUNT(*) AS \"__frequency\" FROM data WHERE NOT \"reading\" IS NULL GROUP BY \"reading\"",
+      "snapshot": "fixture:preservation-v1",
+      "query": "SELECT \"reading\", COUNT(*) AS \"__frequency\" FROM data WHERE NOT \"reading\" IS NULL GROUP BY \"reading\"",
+      "parent_id": "dbb33ae9-b424-48e4-a057-48b84bd68e28",
+      "parent_ids": [],
+      "role": "derived",
+      "root_id": "dbb33ae9-b424-48e4-a057-48b84bd68e28"
+    }
+  ],
+  "charts": [
+    {
+      "id": "58b05bf1-c804-4d15-b28b-f023ea977b0e",
+      "dataset_id": "da7fca64-c075-4cbf-aa47-340266c1008e",
+      "kind": "histogram",
+      "columns": [
+        "reading"
+      ],
+      "png_sha256": "c084dfeef8490ac54e0e1730894472b2268ad106bab1e39b482894a53b6277b0",
+      "png_valid": true,
+      "path": "/Users/najongseong/git_repository/teleai/docs/evaluation/preparation_2026-09-24/preservation_artifacts/PRES_03-turn1-c084dfeef849.png"
+    }
+  ],
+  "diagnostics": [
+    {
+      "time": "2026-09-24T05:25:28.079770+00:00",
+      "event": "run_started",
+      "run_id": "32cedf15f4414cf6a27b73a7a7241383",
+      "operation": "submit"
+    },
+    {
+      "time": "2026-09-24T05:25:28.142806+00:00",
+      "event": "summarization_started",
+      "run_id": "32cedf15f4414cf6a27b73a7a7241383",
+      "span_id": "f09101b8fa46"
+    },
+    {
+      "time": "2026-09-24T05:25:28.142901+00:00",
+      "event": "summarization_finished",
+      "run_id": "32cedf15f4414cf6a27b73a7a7241383",
+      "span_id": "f09101b8fa46",
+      "status": "ok",
+      "elapsed_seconds": 0.0
+    },
+    {
+      "time": "2026-09-24T05:25:28.143265+00:00",
+      "event": "model_call_started",
+      "run_id": "32cedf15f4414cf6a27b73a7a7241383",
+      "span_id": "6ae564ee9fd2"
+    },
+    {
+      "time": "2026-09-24T05:25:28.144169+00:00",
+      "event": "context_budget",
+      "run_id": "32cedf15f4414cf6a27b73a7a7241383",
+      "characters": 6851,
+      "limit": 32000
+    },
+    {
+      "time": "2026-09-24T05:26:20.674025+00:00",
+      "event": "model_call_finished",
+      "run_id": "32cedf15f4414cf6a27b73a7a7241383",
+      "span_id": "6ae564ee9fd2",
+      "status": "ok",
+      "elapsed_seconds": 52.531
+    },
+    {
+      "time": "2026-09-24T05:26:20.689608+00:00",
+      "event": "tool_started",
+      "run_id": "32cedf15f4414cf6a27b73a7a7241383",
+      "tool": "prepare_histogram"
+    },
+    {
+      "time": "2026-09-24T05:26:29.027068+00:00",
+      "event": "tool_completed",
+      "run_id": "32cedf15f4414cf6a27b73a7a7241383",
+      "tool": "prepare_histogram",
+      "status": "ready",
+      "elapsed_seconds": 8.338
+    },
+    {
+      "time": "2026-09-24T05:26:29.029421+00:00",
+      "event": "completion_checked",
+      "run_id": "32cedf15f4414cf6a27b73a7a7241383",
+      "status": "complete",
+      "attempts": 0
+    },
+    {
+      "time": "2026-09-24T05:26:29.030534+00:00",
+      "event": "run_completed",
+      "run_id": "32cedf15f4414cf6a27b73a7a7241383",
+      "status": "answered",
+      "elapsed_seconds": 60.951
+    },
+    {
+      "time": "2026-09-24T05:26:29.030565+00:00",
+      "event": "turn_slo",
+      "run_id": "32cedf15f4414cf6a27b73a7a7241383",
+      "elapsed_seconds": 60.951,
+      "limit": 180.0,
+      "status": "ok"
+    }
+  ]
+}

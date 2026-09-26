@@ -1,0 +1,62 @@
+{
+  "date": "2026-09-24",
+  "fixture": "synthetic-only",
+  "mode": "live-local-model",
+  "model": "gemma4:e4b",
+  "selected_case_ids": [
+    "PRES_02"
+  ],
+  "case_status": "PASS",
+  "pres02_turns": [
+    {
+      "turn": 1,
+      "status": "PASS",
+      "agent_status": "answered",
+      "root_unchanged": true,
+      "oracle_pass": true,
+      "approval_requests": 0,
+      "remote_executions": 0,
+      "runtime_model_calls": 0,
+      "runtime_tool_calls": 1,
+      "elapsed_seconds": 0.101,
+      "model_attempts": 0,
+      "model_errors": 0
+    },
+    {
+      "turn": 2,
+      "status": "PASS",
+      "agent_status": "answered",
+      "root_unchanged": true,
+      "oracle_pass": true,
+      "approval_requests": 0,
+      "remote_executions": 0,
+      "runtime_model_calls": 0,
+      "runtime_tool_calls": 1,
+      "elapsed_seconds": 8.782,
+      "model_attempts": 0,
+      "model_errors": 0
+    }
+  ],
+  "prefix_preview": {
+    "mode": "live-local-model",
+    "model": "gemma4:e4b",
+    "status": "answered",
+    "text": "보유된 fixture.events 데이터의 `event_key` 앞 2개 값입니다 (전체 300행 중 저장된 미리보기).\n1. 0\n2. 1",
+    "elapsed_seconds": 0.091,
+    "model_calls": 0,
+    "tools": [
+      {
+        "tool": "inspect_dataset",
+        "status": "ready"
+      }
+    ],
+    "original_unchanged": true,
+    "selected_unchanged": true,
+    "remote_connector_configured": false
+  },
+  "limitations": [
+    "The scalar and preview paths were deterministic; zero model calls do not measure model autonomy.",
+    "No Databricks SQL or external deployment was tested.",
+    "Latency is a single local-host observation, not p95 or concurrency evidence."
+  ]
+}

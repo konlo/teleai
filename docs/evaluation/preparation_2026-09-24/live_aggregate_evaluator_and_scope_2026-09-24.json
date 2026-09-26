@@ -1,0 +1,40 @@
+{
+  "case_id": "L1_016",
+  "data_scope": "synthetic local fixture",
+  "model": "gemma4:e4b",
+  "before": {
+    "status": "FAIL",
+    "reason": "No structured calculation result; assistant prose is not evidence",
+    "elapsed_seconds": 53.842,
+    "agent_status": "answered",
+    "tools": {
+      "aggregate_dataset": 1
+    },
+    "remote_executions": 0,
+    "forbidden_executor_invocations": 0
+  },
+  "after": {
+    "status": "PASS",
+    "reason": "Compared final structured calculation with independent reference",
+    "elapsed_seconds": 49.167,
+    "agent_status": "answered",
+    "tools": {
+      "aggregate_dataset": 1
+    },
+    "remote_executions": 0,
+    "forbidden_executor_invocations": 0
+  },
+  "oracle": {
+    "expected": 2760.0675,
+    "actual": 2760.0675,
+    "counterfactual_probes": 2
+  },
+  "scope_grounding": {
+    "method": "8-column projections for <=256-row raw datasets; metadata preflight skips value scan when full-frame estimate exceeds policy",
+    "regression": "full FrameCache.__getitem__ forbidden; grounded value retained below budget and unresolved above budget"
+  },
+  "limitations": [
+    "Single actual-model question and two synthetic counterfactual probes; not a stability rate.",
+    "No Databricks SQL, production data, or deployment host used."
+  ]
+}

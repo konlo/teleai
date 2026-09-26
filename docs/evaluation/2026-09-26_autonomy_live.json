@@ -1,0 +1,176 @@
+{
+  "generated_at": "2026-09-26T03:55:11.711049+00:00",
+  "provider": "databricks",
+  "mode": "real-model synthetic journeys; deterministic rescue disabled",
+  "limitations": [
+    "Some cases inject a first faulty call; subsequent decisions use the live model.",
+    "No real remote SQL executor is connected; this does not validate loading."
+  ],
+  "results": [
+    {
+      "id": "discover_mean",
+      "status": "PASS",
+      "injected_first_call": false,
+      "live_calls": 3,
+      "turns": [
+        {
+          "prompt": "로컬 평균 집계 도구의 입력 규칙을 검색해서 확인한 뒤 reading 평균을 계산해줘.",
+          "status": "PASS",
+          "agent_status": "answered",
+          "final_output": "보유 데이터로 계산한 결과입니다. 출처: unfamiliar.observations\n분석 범위: 요청 조건에 포함된 보유 데이터 전체\n\n평균: 9.0",
+          "expected": 9.0,
+          "actual": 9.0,
+          "model_calls": 3,
+          "search_used": true,
+          "tools": [
+            "search_analysis_tools",
+            "profile_dataset",
+            "aggregate_dataset"
+          ],
+          "chart_count": 0,
+          "raw_unchanged": true,
+          "approval_requests": 0,
+          "remote_executions": 0,
+          "stop_reason": null,
+          "elapsed_seconds": 4.311
+        }
+      ]
+    },
+    {
+      "id": "repair_sql",
+      "status": "PASS",
+      "injected_first_call": true,
+      "live_calls": 2,
+      "turns": [
+        {
+          "prompt": "reading 평균을 알려줘.",
+          "status": "PASS",
+          "agent_status": "answered",
+          "final_output": "보유 데이터로 계산한 결과입니다. 출처: unfamiliar.observations\n분석 범위: 요청 조건에 포함된 보유 데이터 전체\n\n평균: 9.0",
+          "expected": 9.0,
+          "actual": 9.0,
+          "model_calls": 3,
+          "search_used": false,
+          "tools": [
+            "local_analysis_sql",
+            "inspect_dataset",
+            "local_analysis_sql"
+          ],
+          "chart_count": 0,
+          "raw_unchanged": true,
+          "approval_requests": 0,
+          "remote_executions": 0,
+          "stop_reason": null,
+          "elapsed_seconds": 2.712
+        }
+      ]
+    },
+    {
+      "id": "local_outage",
+      "status": "PASS",
+      "injected_first_call": true,
+      "live_calls": 4,
+      "turns": [
+        {
+          "prompt": "reading 평균을 알려줘.",
+          "status": "PASS",
+          "agent_status": "answered",
+          "final_output": "보유 데이터로 계산한 결과입니다. 출처: unfamiliar.observations\n분석 범위: 요청 조건에 포함된 보유 데이터 전체\n\n평균: 9.0",
+          "expected": 9.0,
+          "actual": 9.0,
+          "model_calls": 5,
+          "search_used": false,
+          "tools": [
+            "aggregate_dataset",
+            "profile_dataset",
+            "local_analysis_sql"
+          ],
+          "chart_count": 0,
+          "raw_unchanged": true,
+          "approval_requests": 0,
+          "remote_executions": 0,
+          "stop_reason": null,
+          "elapsed_seconds": 5.318
+        }
+      ]
+    },
+    {
+      "id": "compound",
+      "status": "PASS",
+      "injected_first_call": false,
+      "live_calls": 4,
+      "turns": [
+        {
+          "prompt": "reading 평균을 계산하고 reading 히스토그램도 보여줘.",
+          "status": "PASS",
+          "agent_status": "answered",
+          "final_output": "Reading 히스토그램 이미지를 생성했습니다.\n분석 범위: 보유 4행 기준 · complete · raw · 표시 데이터 4개 · 집계 none\n\n보유 데이터로 계산한 결과입니다. 출처: unfamiliar.observations\n분석 범위: 요청 조건에 포함된 보유 데이터 전체\n\n평균: 9.0",
+          "expected": 9.0,
+          "actual": 9.0,
+          "model_calls": 4,
+          "search_used": false,
+          "tools": [
+            "profile_dataset",
+            "render_chart_spec",
+            "aggregate_dataset"
+          ],
+          "chart_count": 1,
+          "raw_unchanged": true,
+          "approval_requests": 0,
+          "remote_executions": 0,
+          "stop_reason": null,
+          "elapsed_seconds": 39.176
+        }
+      ]
+    },
+    {
+      "id": "followup",
+      "status": "PASS",
+      "injected_first_call": false,
+      "live_calls": 3,
+      "turns": [
+        {
+          "prompt": "reading >= 10인 행의 건수를 알려줘.",
+          "status": "PASS",
+          "agent_status": "answered",
+          "final_output": "보유 데이터로 계산한 결과입니다. 출처: unfamiliar.observations\n분석 범위: 요청 조건에 포함된 보유 데이터 전체\n\n적용 조건: reading ≥ 10\n\n건수: 2",
+          "expected": 2.0,
+          "actual": 2.0,
+          "model_calls": 2,
+          "search_used": false,
+          "tools": [
+            "profile_dataset",
+            "local_analysis_sql"
+          ],
+          "chart_count": 0,
+          "raw_unchanged": true,
+          "approval_requests": 0,
+          "remote_executions": 0,
+          "stop_reason": null,
+          "elapsed_seconds": 3.693
+        },
+        {
+          "prompt": "그중 reading 평균을 알려줘.",
+          "status": "PASS",
+          "agent_status": "answered",
+          "final_output": "보유 데이터로 계산한 결과입니다. 출처: unfamiliar.observations\n분석 범위: 요청 조건에 포함된 보유 데이터 전체\n\n적용 조건: reading ≥ 10\n\n평균: 15.0",
+          "expected": 15.0,
+          "actual": 15.0,
+          "model_calls": 1,
+          "search_used": false,
+          "tools": [
+            "profile_dataset",
+            "local_analysis_sql",
+            "local_analysis_sql"
+          ],
+          "chart_count": 0,
+          "raw_unchanged": true,
+          "approval_requests": 0,
+          "remote_executions": 0,
+          "stop_reason": null,
+          "elapsed_seconds": 1.937
+        }
+      ]
+    }
+  ]
+}

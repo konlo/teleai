@@ -1,0 +1,1129 @@
+{
+  "description": "All development attempts, including failures; different code revisions are not a fixed-version success rate.",
+  "databricks_sql_executions": 0,
+  "results": [
+    {
+      "status": "FAIL",
+      "provider": "databricks",
+      "mode": "real model with synthetic public SQLite and explicit local-test approval",
+      "prompt": "Count records with classification='accepted' after join readings and codes. Find the table relationship in the schema first.",
+      "agent_status": "exhausted",
+      "stop_reason": "model_call_budget",
+      "expected": 3,
+      "actual": null,
+      "model_calls": 10,
+      "executions_before_approval": 0,
+      "public_sqlite_executions": 0,
+      "databricks_sql_executions": 0,
+      "queries": [],
+      "raw_preserved": true,
+      "final_output": "반복 실행 한도에 도달해 분석을 중단했습니다. 검증된 완료 결과가 없으며 기존 데이터는 보존했습니다.",
+      "tools": [
+        "inspect_table_relationships",
+        "join_datasets",
+        "inspect_table_context",
+        "plan_source_discovery",
+        "inspect_column_definitions"
+      ],
+      "elapsed_seconds": 23.446,
+      "run_label": "live",
+      "preapproval_execution_accounting": "public SQLite proposal probe ran outside executor counter; counter is not total preapproval SQL"
+    },
+    {
+      "status": "PASS",
+      "provider": "databricks",
+      "mode": "real model with synthetic public SQLite and explicit local-test approval",
+      "prompt": "Count records with classification='accepted' after join readings and codes. Find the table relationship in the schema first.",
+      "agent_status": "answered",
+      "stop_reason": null,
+      "expected": 3,
+      "actual": 3.0,
+      "model_calls": 8,
+      "executions_before_approval": 0,
+      "public_sqlite_executions": 1,
+      "databricks_sql_executions": 0,
+      "queries": [
+        "SELECT COUNT(*) AS count FROM readings INNER JOIN codes ON readings.code_ref = codes.code WHERE codes.classification = 'accepted'"
+      ],
+      "raw_preserved": true,
+      "final_output": "readings | codes를 승인된 SQL에서 조인하여 요청한 통계를 계산했습니다. 결과는 해당 조인 조건으로 결합된 행 기준입니다. 키의 실제 유일성·미일치 행 수는 별도로 측정하지 않았습니다.\n\n보유 데이터로 계산한 결과입니다. 출처: readings | codes\n분석 범위: 요청 조건에 포함된 보유 데이터 전체\n\n적용 조건: classification = accepted\n\n건수: 3",
+      "tools": [
+        "inspect_table_relationships",
+        "inspect_table_context",
+        "inspect_dataset",
+        "join_datasets",
+        "query_databricks"
+      ],
+      "tool_observations": [
+        {
+          "tool": "inspect_table_relationships",
+          "content": "{\"status\": \"ready\", \"table\": \"readings\", \"foreign_keys\": [{\"name\": \"0\", \"columns\": [\"code_ref\"], \"target_table\": \"codes\", \"target_columns\": [\"code\"]}], \"observed_at\": \"2026-09-26T06:04:22.074728+00:00\", \"version\": \"d15aedb893b05a8b36d470c07ad0321e6593630715a8f178a805bd8a5a6f731c\", \"scope\": \"DB에 선언된 관계입니다. 실제 행의 유일성·누락·업무 역할을 보증하지 않습니다.\", \"message\": \"여러 키가 같은 테이블을 가리키면 역할을 확인하세요. 새 SQL은 별도 승인이 필요합니다.\", \"evidence_ids\": [\"d15aedb893b05a8b36d470c07ad0321e6593630715a8f178a805bd8a5a6f731c\"], \"error_code\": null, \"retryable\": false, \"user_action\": \"\"}"
+        },
+        {
+          "tool": "inspect_table_context",
+          "content": "{\"status\": \"ready\", \"table_context\": {\"table\": \"codes\", \"training_status\": \"runtime_schema\", \"observed_at\": \"2026-09-26T06:04:22.074728+00:00\", \"columns\": [{\"name\": \"code\", \"dtype\": \"INTEGER\"}, {\"name\": \"classification\", \"dtype\": \"TEXT\"}], \"relationship_authority\": \"database_catalog\", \"foreign_keys\": [], \"source\": \"read-only public Spider2 SQLite schema and bounded type examples\", \"freshness\": \"fresh\", \"schema_fingerprint\": \"5433e51230ab223516bcb1bd36171e4e77e69117d107011565e31518e4706218\"}, \"schema_changed\": false, \"authority\": \"saved_snapshot\", \"scope\": \"저장된 스키마 스냅샷입니다. observed_at과 freshness를 함께 확인해야 합니다.\", \"evidence_ids\": [], \"error_code\": null, \"retryable\": false, \"user_action\": \"\"}"
+        },
+        {
+          "tool": "inspect_dataset",
+          "content": "{\"dataset\": {\"id\": \"f6cdbdbb-cf09-4af8-af5b-2a79e8c6c7cb\", \"source\": \"readings\", \"columns\": [\"code_ref\", \"measurement\"], \"rows\": 5, \"coverage\": \"complete\", \"conditions\": [], \"predicate_known\": true, \"grain\": \"raw\", \"aggregation\": \"\", \"snapshot\": \"\", \"query\": \"\", \"parent_id\": \"\", \"parent_ids\": [], \"role\": \"root\", \"root_id\": \"f6cdbdbb-cf09-4af8-af5b-2a79e8c6c7cb\"}, \"dtypes\": {\"code_ref\": \"float64\", \"measurement\": \"int64\"}, \"preview\": [{\"code_ref\": \"101.0\", \"measurement\": \"2\"}, {\"code_ref\": \"101.0\", \"measurement\": \"4\"}, {\"code_ref\": \"202.0\", \"measurement\": \"8\"}, {\"code_ref\": \"101.0\", \"measurement\": \"10\"}, {\"code_ref\": null, \"measurement\": \"9\"}], \"status\": \"ready\", \"evidence_ids\": [\"f6cdbdbb-cf09-4af8-af5b-2a79e8c6c7cb\"], \"error_code\": null, \"retryable\": false, \"user_action\": \"\", \"scope\": \"도구가 반환한 구조화 결과 범위입니다.\"}"
+        },
+        {
+          "tool": "join_datasets",
+          "content": "{\"status\": \"error\", \"error_code\": \"dataset_not_loaded\", \"retryable\": false, \"available_dataset_ids\": [\"f6cdbdbb-cf09-4af8-af5b-2a79e8c6c7cb\"], \"alternative\": \"조인할 두 dataset이 모두 로딩된 경우에만 join_datasets를 사용하세요. 필요한 테이블의 schema와 관계가 확인되어 있고 원격 조회 도구가 있으면, 통계 요청은 원본 전체 로딩 대신 DB JOIN/집계 SELECT를 query_databricks로 승인 요청할 수 있습니다. 테이블 이름을 dataset ID로 재시도하지 마세요.\", \"missing_dataset_arguments\": [\"right_dataset_id\"], \"message\": \"이 ID의 로딩된 결과가 없습니다. 테이블명과 dataset ID는 다릅니다. 테이블 컬럼/설명은 inspect_table_context로 확인하세요. 실제 행이 필요하면 승인형 조회를 제안하세요.\", \"evidence_ids\": [], \"user_action\": \"\", \"scope\": \"도구가 반환한 구조화 결과 범위입니다.\"}"
+        },
+        {
+          "tool": "query_databricks",
+          "content": "{\"status\": \"ready\", \"dataset\": {\"id\": \"3d9605c4-81be-4b90-b1ae-d588fa4f9c22\", \"source\": \"readings | codes\", \"columns\": [\"count\"], \"rows\": 1, \"coverage\": \"complete\", \"conditions\": [], \"predicate_known\": true, \"grain\": \"aggregate\", \"aggregation\": \"\", \"snapshot\": \"2026-09-26T06:04:41.114386+00:00\", \"query\": \"SELECT COUNT(*) AS count FROM readings INNER JOIN codes ON readings.code_ref = codes.code WHERE codes.classification = 'accepted'\", \"parent_id\": \"\", \"parent_ids\": [], \"role\": \"aggregate\", \"root_id\": \"\"}, \"evidence_ids\": [\"3d9605c4-81be-4b90-b1ae-d588fa4f9c22\"], \"error_code\": null, \"retryable\": false, \"user_action\": \"\", \"scope\": \"도구가 반환한 구조화 결과 범위입니다.\"}"
+        }
+      ],
+      "scope": {
+        "conditions": [
+          {
+            "column": "classification",
+            "op": "eq",
+            "value": "accepted"
+          }
+        ],
+        "any_conditions": [],
+        "join_edges": [],
+        "measure_conditions": [],
+        "ratio": null,
+        "unresolved": [],
+        "columns": [
+          "classification"
+        ]
+      },
+      "elapsed_seconds": 19.052,
+      "run_label": "live2",
+      "preapproval_execution_accounting": "public SQLite proposal probe ran outside executor counter; counter is not total preapproval SQL"
+    },
+    {
+      "status": "FAIL",
+      "provider": "databricks",
+      "mode": "real model with synthetic public SQLite and explicit local-test approval",
+      "prompt": "Count records with classification='accepted' after join readings and codes. Find the table relationship in the schema first.",
+      "agent_status": "exhausted",
+      "stop_reason": "model_call_budget",
+      "expected": 3,
+      "actual": null,
+      "model_calls": 10,
+      "executions_before_approval": 0,
+      "public_sqlite_executions": 0,
+      "databricks_sql_executions": 0,
+      "queries": [],
+      "raw_preserved": true,
+      "final_output": "반복 실행 한도에 도달해 분석을 중단했습니다. 검증된 완료 결과가 없으며 기존 데이터는 보존했습니다.",
+      "tools": [
+        "inspect_table_relationships",
+        "inspect_table_context",
+        "inspect_dataset",
+        "inspect_column_definitions",
+        "plan_source_discovery"
+      ],
+      "tool_observations": [
+        {
+          "tool": "inspect_table_relationships",
+          "content": "{\"status\": \"ready\", \"table\": \"readings\", \"foreign_keys\": [{\"name\": \"0\", \"columns\": [\"code_ref\"], \"target_table\": \"codes\", \"target_columns\": [\"code\"]}], \"observed_at\": \"2026-09-26T06:12:41.971820+00:00\", \"version\": \"d15aedb893b05a8b36d470c07ad0321e6593630715a8f178a805bd8a5a6f731c\", \"scope\": \"DB에 선언된 관계입니다. 실제 행의 유일성·누락·업무 역할을 보증하지 않습니다.\", \"message\": \"여러 키가 같은 테이블을 가리키면 역할을 확인하세요. 새 SQL은 별도 승인이 필요합니다.\", \"evidence_ids\": [\"d15aedb893b05a8b36d470c07ad0321e6593630715a8f178a805bd8a5a6f731c\"], \"error_code\": null, \"retryable\": false, \"user_action\": \"\"}"
+        },
+        {
+          "tool": "inspect_table_context",
+          "content": "{\"status\": \"ready\", \"table_context\": {\"table\": \"codes\", \"training_status\": \"runtime_schema\", \"observed_at\": \"2026-09-26T06:12:41.971820+00:00\", \"columns\": [{\"name\": \"code\", \"dtype\": \"INTEGER\"}, {\"name\": \"classification\", \"dtype\": \"TEXT\"}], \"relationship_authority\": \"database_catalog\", \"foreign_keys\": [], \"source\": \"read-only public Spider2 SQLite schema and bounded type examples\", \"freshness\": \"fresh\", \"schema_fingerprint\": \"5433e51230ab223516bcb1bd36171e4e77e69117d107011565e31518e4706218\"}, \"schema_changed\": false, \"authority\": \"saved_snapshot\", \"scope\": \"저장된 스키마 스냅샷입니다. observed_at과 freshness를 함께 확인해야 합니다.\", \"evidence_ids\": [], \"error_code\": null, \"retryable\": false, \"user_action\": \"\"}"
+        },
+        {
+          "tool": "inspect_dataset",
+          "content": "{\"dataset\": {\"id\": \"07515c64-eb4b-4c55-86f0-5a860105ab31\", \"source\": \"readings\", \"columns\": [\"code_ref\", \"measurement\"], \"rows\": 5, \"coverage\": \"complete\", \"conditions\": [], \"predicate_known\": true, \"grain\": \"raw\", \"aggregation\": \"\", \"snapshot\": \"\", \"query\": \"\", \"parent_id\": \"\", \"parent_ids\": [], \"role\": \"root\", \"root_id\": \"07515c64-eb4b-4c55-86f0-5a860105ab31\"}, \"dtypes\": {\"code_ref\": \"float64\", \"measurement\": \"int64\"}, \"preview\": [{\"code_ref\": \"101.0\", \"measurement\": \"2\"}, {\"code_ref\": \"101.0\", \"measurement\": \"4\"}, {\"code_ref\": \"202.0\", \"measurement\": \"8\"}, {\"code_ref\": \"101.0\", \"measurement\": \"10\"}, {\"code_ref\": null, \"measurement\": \"9\"}], \"status\": \"ready\", \"evidence_ids\": [\"07515c64-eb4b-4c55-86f0-5a860105ab31\"], \"error_code\": null, \"retryable\": false, \"user_action\": \"\", \"scope\": \"도구가 반환한 구조화 결과 범위입니다.\"}"
+        },
+        {
+          "tool": "inspect_column_definitions",
+          "content": "{\"status\": \"needs_context\", \"message\": \"catalog.schema.table 전체 이름이 필요합니다.\", \"evidence_ids\": [], \"error_code\": null, \"retryable\": false, \"user_action\": \"\", \"scope\": \"도구가 반환한 구조화 결과 범위입니다.\"}"
+        },
+        {
+          "tool": "plan_source_discovery",
+          "content": "{\"status\": \"needs_context\", \"message\": \"조회할 catalog를 하나로 특정해야 합니다.\", \"known_catalogs\": [], \"evidence_ids\": [], \"error_code\": null, \"retryable\": false, \"user_action\": \"\", \"scope\": \"도구가 반환한 구조화 결과 범위입니다.\"}"
+        }
+      ],
+      "scope": {
+        "conditions": [
+          {
+            "column": "classification",
+            "op": "eq",
+            "value": "accepted"
+          }
+        ],
+        "any_conditions": [],
+        "join_edges": [],
+        "measure_conditions": [],
+        "ratio": null,
+        "unresolved": [],
+        "columns": [
+          "classification"
+        ]
+      },
+      "elapsed_seconds": 23.7,
+      "run_label": "final_live",
+      "preapproval_execution_accounting": "no analysis query proposal probe; schema/fixture setup excluded"
+    },
+    {
+      "status": "FAIL",
+      "provider": "databricks",
+      "mode": "real model with synthetic public SQLite and explicit local-test approval",
+      "prompt": "Count records with classification='accepted' after join readings and codes. Find the table relationship in the schema first.",
+      "agent_status": "exhausted",
+      "stop_reason": "model_time_budget",
+      "expected": 3,
+      "actual": null,
+      "model_calls": 6,
+      "executions_before_approval": 0,
+      "public_sqlite_executions": 0,
+      "databricks_sql_executions": 0,
+      "queries": [],
+      "raw_preserved": true,
+      "final_output": "반복 실행 한도에 도달해 분석을 중단했습니다. 검증된 완료 결과가 없으며 기존 데이터는 보존했습니다.",
+      "tools": [
+        "inspect_table_relationships",
+        "inspect_table_relationships",
+        "inspect_table_context",
+        "inspect_table_context"
+      ],
+      "tool_observations": [
+        {
+          "tool": "inspect_table_relationships",
+          "content": "{\"status\": \"ready\", \"table\": \"readings\", \"foreign_keys\": [{\"name\": \"0\", \"columns\": [\"code_ref\"], \"target_table\": \"codes\", \"target_columns\": [\"code\"]}], \"observed_at\": \"2026-09-26T06:55:52.485047+00:00\", \"version\": \"d15aedb893b05a8b36d470c07ad0321e6593630715a8f178a805bd8a5a6f731c\", \"scope\": \"DB에 선언된 관계입니다. 실제 행의 유일성·누락·업무 역할을 보증하지 않습니다.\", \"message\": \"여러 키가 같은 테이블을 가리키면 역할을 확인하세요. 새 SQL은 별도 승인이 필요합니다.\", \"next_steps\": [\"사용자가 지정한 테이블·조건의 실제 컬럼을 inspect_table_context에서 확인하세요.\", \"양쪽 raw dataset이 이미 로딩되어 있으면 보유 dataset ID로 로컬 조인을 검토하세요.\", \"일부 테이블이 로딩되지 않은 통계 요청은 연결된 SQL 엔진에서 JOIN/집계 SELECT를 query_databricks로 승인 요청할 수 있습니다. 전체 raw 로딩은 필수가 아닙니다.\", \"명시된 컬럼·리터럴 조건과 최신 스키마로 의미가 확정됐으면 추가 설명이나 catalog 탐색 없이 계산 계획으로 진행하세요.\"], \"evidence_ids\": [\"d15aedb893b05a8b36d470c07ad0321e6593630715a8f178a805bd8a5a6f731c\"], \"error_code\": null, \"retryable\": false, \"user_action\": \"\"}"
+        },
+        {
+          "tool": "inspect_table_relationships",
+          "content": "{\"status\": \"ready\", \"table\": \"codes\", \"foreign_keys\": [], \"observed_at\": \"2026-09-26T06:55:52.485047+00:00\", \"version\": \"4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945\", \"scope\": \"DB에 선언된 관계입니다. 실제 행의 유일성·누락·업무 역할을 보증하지 않습니다.\", \"message\": \"여러 키가 같은 테이블을 가리키면 역할을 확인하세요. 새 SQL은 별도 승인이 필요합니다.\", \"next_steps\": [\"사용자가 지정한 테이블·조건의 실제 컬럼을 inspect_table_context에서 확인하세요.\", \"양쪽 raw dataset이 이미 로딩되어 있으면 보유 dataset ID로 로컬 조인을 검토하세요.\", \"일부 테이블이 로딩되지 않은 통계 요청은 연결된 SQL 엔진에서 JOIN/집계 SELECT를 query_databricks로 승인 요청할 수 있습니다. 전체 raw 로딩은 필수가 아닙니다.\", \"명시된 컬럼·리터럴 조건과 최신 스키마로 의미가 확정됐으면 추가 설명이나 catalog 탐색 없이 계산 계획으로 진행하세요.\"], \"evidence_ids\": [\"4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945\"], \"error_code\": null, \"retryable\": false, \"user_action\": \"\"}"
+        },
+        {
+          "tool": "inspect_table_context",
+          "content": "{\"status\": \"ready\", \"table_context\": {\"table\": \"readings\", \"training_status\": \"runtime_schema\", \"observed_at\": \"2026-09-26T06:55:52.485047+00:00\", \"columns\": [{\"name\": \"code_ref\", \"dtype\": \"INTEGER\"}, {\"name\": \"measurement\", \"dtype\": \"REAL\"}], \"relationship_authority\": \"database_catalog\", \"foreign_keys\": [{\"name\": \"0\", \"columns\": [\"code_ref\"], \"target_table\": \"codes\", \"target_columns\": [\"code\"]}], \"source\": \"read-only public Spider2 SQLite schema and bounded type examples\", \"freshness\": \"fresh\", \"schema_fingerprint\": \"436b6166d5baaae660e945aac06c20d8df96e7892964108bb185a5b99cefb7c5\"}, \"schema_changed\": false, \"authority\": \"saved_snapshot\", \"scope\": \"저장된 스키마 스냅샷입니다. observed_at과 freshness를 함께 확인해야 합니다.\", \"evidence_ids\": [], \"error_code\": null, \"retryable\": false, \"user_action\": \"\"}"
+        },
+        {
+          "tool": "inspect_table_context",
+          "content": "{\"status\": \"ready\", \"table_context\": {\"table\": \"codes\", \"training_status\": \"runtime_schema\", \"observed_at\": \"2026-09-26T06:55:52.485047+00:00\", \"columns\": [{\"name\": \"code\", \"dtype\": \"INTEGER\"}, {\"name\": \"classification\", \"dtype\": \"TEXT\"}], \"relationship_authority\": \"database_catalog\", \"foreign_keys\": [], \"source\": \"read-only public Spider2 SQLite schema and bounded type examples\", \"freshness\": \"fresh\", \"schema_fingerprint\": \"5433e51230ab223516bcb1bd36171e4e77e69117d107011565e31518e4706218\"}, \"schema_changed\": false, \"authority\": \"saved_snapshot\", \"scope\": \"저장된 스키마 스냅샷입니다. observed_at과 freshness를 함께 확인해야 합니다.\", \"evidence_ids\": [], \"error_code\": null, \"retryable\": false, \"user_action\": \"\"}"
+        }
+      ],
+      "model_actions": [
+        {
+          "calls": [
+            {
+              "name": "inspect_table_relationships",
+              "args": {
+                "table": "readings"
+              },
+              "id": "call_533043e2-23ef-4dbe-84b2-11685f79c585",
+              "type": "tool_call"
+            }
+          ],
+          "text": ""
+        },
+        {
+          "calls": [
+            {
+              "name": "inspect_table_relationships",
+              "args": {
+                "table": "codes"
+              },
+              "id": "call_da121aaf-fe79-4415-83df-2e54354ac51f",
+              "type": "tool_call"
+            }
+          ],
+          "text": ""
+        },
+        {
+          "calls": [
+            {
+              "name": "inspect_table_context",
+              "args": {
+                "table": "readings"
+              },
+              "id": "call_fb14cd60-bd83-4999-9c3b-e6732ea519cb",
+              "type": "tool_call"
+            }
+          ],
+          "text": ""
+        },
+        {
+          "calls": [
+            {
+              "name": "inspect_table_context",
+              "args": {
+                "table": "codes"
+              },
+              "id": "call_83766d5c-b6dc-429b-857f-62d9b2f33b64",
+              "type": "tool_call"
+            }
+          ],
+          "text": ""
+        },
+        {
+          "calls": [],
+          "text": "반복 실행 한도에 도달해 분석을 중단했습니다. 검증된 완료 결과가 없으며 기존 데이터는 보존했습니다."
+        }
+      ],
+      "scope": {
+        "conditions": [
+          {
+            "column": "classification",
+            "op": "eq",
+            "value": "accepted"
+          }
+        ],
+        "any_conditions": [],
+        "join_edges": [],
+        "measure_conditions": [],
+        "ratio": null,
+        "unresolved": [],
+        "columns": [
+          "classification"
+        ]
+      },
+      "elapsed_seconds": 87.581,
+      "run_label": "final2_live",
+      "preapproval_execution_accounting": "no analysis query proposal probe; schema/fixture setup excluded"
+    },
+    {
+      "status": "FAIL",
+      "provider": "databricks",
+      "mode": "real model with synthetic public SQLite and explicit local-test approval",
+      "prompt": "Count records with classification='accepted' after join readings and codes. Find the table relationship in the schema first.",
+      "agent_status": "exhausted",
+      "stop_reason": "model_time_budget",
+      "expected": 3,
+      "actual": null,
+      "model_calls": 8,
+      "executions_before_approval": 0,
+      "public_sqlite_executions": 0,
+      "databricks_sql_executions": 0,
+      "queries": [],
+      "raw_preserved": true,
+      "final_output": "반복 실행 한도에 도달해 분석을 중단했습니다. 검증된 완료 결과가 없으며 기존 데이터는 보존했습니다.",
+      "tools": [
+        "inspect_table_relationships",
+        "inspect_table_context",
+        "inspect_table_context"
+      ],
+      "tool_observations": [
+        {
+          "tool": "inspect_table_relationships",
+          "content": "{\"status\": \"ready\", \"table\": \"readings\", \"foreign_keys\": [{\"name\": \"0\", \"columns\": [\"code_ref\"], \"target_table\": \"codes\", \"target_columns\": [\"code\"]}], \"observed_at\": \"2026-09-26T07:07:41.048503+00:00\", \"version\": \"d15aedb893b05a8b36d470c07ad0321e6593630715a8f178a805bd8a5a6f731c\", \"scope\": \"DB에 선언된 관계입니다. 실제 행의 유일성·누락·업무 역할을 보증하지 않습니다.\", \"message\": \"여러 키가 같은 테이블을 가리키면 역할을 확인하세요. 새 SQL은 별도 승인이 필요합니다.\", \"next_steps\": [\"사용자가 지정한 테이블·조건의 실제 컬럼을 inspect_table_context에서 확인하세요.\", \"양쪽 raw dataset이 이미 로딩되어 있으면 보유 dataset ID로 로컬 조인을 검토하세요.\", \"일부 테이블이 로딩되지 않은 통계 요청은 연결된 SQL 엔진에서 JOIN/집계 SELECT를 query_databricks로 승인 요청할 수 있습니다. 전체 raw 로딩은 필수가 아닙니다.\", \"명시된 컬럼·리터럴 조건과 최신 스키마로 의미가 확정됐으면 추가 설명이나 catalog 탐색 없이 계산 계획으로 진행하세요.\"], \"evidence_ids\": [\"d15aedb893b05a8b36d470c07ad0321e6593630715a8f178a805bd8a5a6f731c\"], \"error_code\": null, \"retryable\": false, \"user_action\": \"\"}"
+        },
+        {
+          "tool": "inspect_table_context",
+          "content": "{\"status\": \"ready\", \"table_context\": {\"table\": \"codes\", \"training_status\": \"runtime_schema\", \"observed_at\": \"2026-09-26T07:07:41.048503+00:00\", \"columns\": [{\"name\": \"code\", \"dtype\": \"INTEGER\"}, {\"name\": \"classification\", \"dtype\": \"TEXT\"}], \"relationship_authority\": \"database_catalog\", \"foreign_keys\": [], \"source\": \"read-only public Spider2 SQLite schema and bounded type examples\", \"freshness\": \"fresh\", \"schema_fingerprint\": \"5433e51230ab223516bcb1bd36171e4e77e69117d107011565e31518e4706218\"}, \"schema_changed\": false, \"authority\": \"saved_snapshot\", \"scope\": \"저장된 스키마 스냅샷입니다. observed_at과 freshness를 함께 확인해야 합니다.\", \"evidence_ids\": [], \"error_code\": null, \"retryable\": false, \"user_action\": \"\"}"
+        },
+        {
+          "tool": "inspect_table_context",
+          "content": "{\"status\": \"ready\", \"table_context\": {\"table\": \"readings\", \"training_status\": \"runtime_schema\", \"observed_at\": \"2026-09-26T07:07:41.048503+00:00\", \"columns\": [{\"name\": \"code_ref\", \"dtype\": \"INTEGER\"}, {\"name\": \"measurement\", \"dtype\": \"REAL\"}], \"relationship_authority\": \"database_catalog\", \"foreign_keys\": [{\"name\": \"0\", \"columns\": [\"code_ref\"], \"target_table\": \"codes\", \"target_columns\": [\"code\"]}], \"source\": \"read-only public Spider2 SQLite schema and bounded type examples\", \"freshness\": \"fresh\", \"schema_fingerprint\": \"436b6166d5baaae660e945aac06c20d8df96e7892964108bb185a5b99cefb7c5\"}, \"schema_changed\": false, \"authority\": \"saved_snapshot\", \"scope\": \"저장된 스키마 스냅샷입니다. observed_at과 freshness를 함께 확인해야 합니다.\", \"evidence_ids\": [], \"error_code\": null, \"retryable\": false, \"user_action\": \"\"}"
+        }
+      ],
+      "model_actions": [
+        {
+          "calls": [
+            {
+              "name": "inspect_table_relationships",
+              "args": {
+                "table": "readings"
+              },
+              "id": "call_dabfa859-447c-4f22-a444-69c3ea13e076",
+              "type": "tool_call"
+            }
+          ],
+          "text": ""
+        },
+        {
+          "calls": [
+            {
+              "name": "inspect_table_context",
+              "args": {
+                "table": "codes"
+              },
+              "id": "call_be8eb2d0-e234-4b7b-9b5a-26f8c0ef065c",
+              "type": "tool_call"
+            }
+          ],
+          "text": ""
+        },
+        {
+          "calls": [
+            {
+              "name": "inspect_table_context",
+              "args": {
+                "table": "readings"
+              },
+              "id": "call_db731ef0-c843-4a6d-a6e5-d17d684da0ee",
+              "type": "tool_call"
+            }
+          ],
+          "text": ""
+        },
+        {
+          "calls": [
+            {
+              "name": "join_datasets",
+              "args": {
+                "left_dataset_id": "2217a12f-624b-43c6-9c4a-704b52d50d73",
+                "right_dataset_id": "2217a12f-624b-43c6-9c4a-704b52d50d73",
+                "left_key": "code_ref",
+                "right_key": "code",
+                "how": "inner"
+              },
+              "id": "call_4191ef91-8d7e-42ac-aa34-8095a527e209",
+              "type": "tool_call"
+            }
+          ],
+          "text": ""
+        },
+        {
+          "calls": [],
+          "text": "반복 실행 한도에 도달해 분석을 중단했습니다. 검증된 완료 결과가 없으며 기존 데이터는 보존했습니다."
+        }
+      ],
+      "scope": {
+        "conditions": [
+          {
+            "column": "classification",
+            "op": "eq",
+            "value": "accepted"
+          }
+        ],
+        "any_conditions": [],
+        "join_edges": [],
+        "measure_conditions": [],
+        "ratio": null,
+        "unresolved": [],
+        "columns": [
+          "classification"
+        ]
+      },
+      "elapsed_seconds": 80.771,
+      "run_label": "focused1_live",
+      "preapproval_execution_accounting": "no analysis query proposal probe; schema/fixture setup excluded"
+    },
+    {
+      "status": "FAIL",
+      "provider": "databricks",
+      "mode": "real model with synthetic public SQLite and explicit local-test approval",
+      "prompt": "Count records with classification='accepted' after join readings and codes. Find the table relationship in the schema first.",
+      "agent_status": "incomplete",
+      "stop_reason": null,
+      "expected": 3,
+      "actual": null,
+      "model_calls": 2,
+      "executions_before_approval": 0,
+      "public_sqlite_executions": 0,
+      "databricks_sql_executions": 0,
+      "queries": [],
+      "raw_preserved": true,
+      "final_output": "분석 중 오류가 발생했습니다 (RateLimitError, 오류 ID: 58f432035c31). 기존 결과는 보존했습니다. 미완료 분석 재개로 다시 시도할 수 있습니다.",
+      "tools": [
+        "inspect_table_relationships",
+        "inspect_table_context"
+      ],
+      "tool_observations": [
+        {
+          "tool": "inspect_table_relationships",
+          "content": "{\"status\": \"ready\", \"table\": \"readings\", \"foreign_keys\": [{\"name\": \"0\", \"columns\": [\"code_ref\"], \"target_table\": \"codes\", \"target_columns\": [\"code\"]}], \"observed_at\": \"2026-09-26T09:27:53.996905+00:00\", \"version\": \"d15aedb893b05a8b36d470c07ad0321e6593630715a8f178a805bd8a5a6f731c\", \"scope\": \"DB에 선언된 관계입니다. 실제 행의 유일성·누락·업무 역할을 보증하지 않습니다.\", \"message\": \"여러 키가 같은 테이블을 가리키면 역할을 확인하세요. 새 SQL은 별도 승인이 필요합니다.\", \"next_steps\": [\"사용자가 지정한 테이블·조건의 실제 컬럼을 inspect_table_context에서 확인하세요.\", \"양쪽 raw dataset이 이미 로딩되어 있으면 보유 dataset ID로 로컬 조인을 검토하세요.\", \"일부 테이블이 로딩되지 않은 통계 요청은 연결된 SQL 엔진에서 JOIN/집계 SELECT를 query_databricks로 승인 요청할 수 있습니다. 전체 raw 로딩은 필수가 아닙니다.\", \"명시된 컬럼·리터럴 조건과 최신 스키마로 의미가 확정됐으면 추가 설명이나 catalog 탐색 없이 계산 계획으로 진행하세요.\"], \"evidence_ids\": [\"d15aedb893b05a8b36d470c07ad0321e6593630715a8f178a805bd8a5a6f731c\"], \"error_code\": null, \"retryable\": false, \"user_action\": \"\"}"
+        },
+        {
+          "tool": "inspect_table_context",
+          "content": "{\"status\": \"ready\", \"table_context\": {\"table\": \"codes\", \"training_status\": \"runtime_schema\", \"observed_at\": \"2026-09-26T09:27:53.996905+00:00\", \"columns\": [{\"name\": \"code\", \"dtype\": \"INTEGER\"}, {\"name\": \"classification\", \"dtype\": \"TEXT\"}], \"relationship_authority\": \"database_catalog\", \"foreign_keys\": [], \"source\": \"read-only public Spider2 SQLite schema and bounded type examples\", \"freshness\": \"fresh\", \"schema_fingerprint\": \"5433e51230ab223516bcb1bd36171e4e77e69117d107011565e31518e4706218\"}, \"schema_changed\": false, \"authority\": \"saved_snapshot\", \"scope\": \"저장된 스키마 스냅샷입니다. observed_at과 freshness를 함께 확인해야 합니다.\", \"evidence_ids\": [], \"error_code\": null, \"retryable\": false, \"user_action\": \"\"}"
+        }
+      ],
+      "model_actions": [
+        {
+          "calls": [
+            {
+              "name": "inspect_table_relationships",
+              "args": {
+                "table": "readings"
+              },
+              "id": "call_fa0f4312-4ee9-4192-aa4e-17d2b241131e",
+              "type": "tool_call"
+            }
+          ],
+          "text": ""
+        },
+        {
+          "calls": [
+            {
+              "name": "inspect_table_context",
+              "args": {
+                "table": "codes"
+              },
+              "id": "call_be231a2f-f6bb-41c4-a629-b7840eeb2b15",
+              "type": "tool_call"
+            }
+          ],
+          "text": ""
+        }
+      ],
+      "scope": {
+        "conditions": [
+          {
+            "column": "classification",
+            "op": "eq",
+            "value": "accepted"
+          }
+        ],
+        "any_conditions": [],
+        "join_edges": [],
+        "measure_conditions": [],
+        "ratio": null,
+        "unresolved": [],
+        "columns": [
+          "classification"
+        ]
+      },
+      "intent": {
+        "join": true,
+        "calculation": true,
+        "chart": false,
+        "data_load": false,
+        "required_sources": [
+          "readings",
+          "codes"
+        ],
+        "operations": [
+          "COUNT"
+        ]
+      },
+      "focus_events": [
+        {
+          "time": "2026-09-26T09:27:54.326611+00:00",
+          "event": "model_tools_focused",
+          "run_id": "3742bd7cc26545bb90b36540fc459a0f",
+          "mode": "remote_join",
+          "tool_count": 7
+        },
+        {
+          "time": "2026-09-26T09:27:57.604724+00:00",
+          "event": "model_tools_focused",
+          "run_id": "3742bd7cc26545bb90b36540fc459a0f",
+          "mode": "remote_join",
+          "tool_count": 7
+        },
+        {
+          "time": "2026-09-26T09:27:58.716831+00:00",
+          "event": "model_tools_focused",
+          "run_id": "3742bd7cc26545bb90b36540fc459a0f",
+          "mode": "remote_join",
+          "tool_count": 7
+        }
+      ],
+      "elapsed_seconds": 4.95,
+      "run_label": "focused2_live",
+      "error_type": "RateLimitError",
+      "preapproval_execution_accounting": "no analysis query proposal probe; schema/fixture setup excluded"
+    },
+    {
+      "status": "PASS",
+      "provider": "databricks",
+      "mode": "real model with synthetic public SQLite and explicit local-test approval",
+      "prompt": "Count records with classification='accepted' after join readings and codes. Find the table relationship in the schema first.",
+      "agent_status": "answered",
+      "error_type": null,
+      "stop_reason": null,
+      "expected": 3,
+      "actual": 3.0,
+      "model_calls": 4,
+      "executions_before_approval": 0,
+      "public_sqlite_executions": 1,
+      "databricks_sql_executions": 0,
+      "queries": [
+        "SELECT COUNT(*) AS count_accepted FROM readings r JOIN codes c ON r.code_ref = c.code WHERE c.classification = 'accepted'"
+      ],
+      "raw_preserved": true,
+      "final_output": "readings | codes를 승인된 SQL에서 조인하여 요청한 통계를 계산했습니다. 결과는 해당 조인 조건으로 결합된 행 기준입니다. 키의 실제 유일성·미일치 행 수는 별도로 측정하지 않았습니다.\n\n보유 데이터로 계산한 결과입니다. 출처: readings | codes\n분석 범위: 요청 조건에 포함된 보유 데이터 전체\n\n적용 조건: classification = accepted\n\n건수: 3",
+      "tools": [
+        "inspect_table_relationships",
+        "inspect_table_context",
+        "query_databricks"
+      ],
+      "tool_observations": [
+        {
+          "tool": "inspect_table_relationships",
+          "content": "{\"status\": \"ready\", \"table\": \"readings\", \"foreign_keys\": [{\"name\": \"0\", \"columns\": [\"code_ref\"], \"target_table\": \"codes\", \"target_columns\": [\"code\"]}], \"observed_at\": \"2026-09-26T09:45:54.534612+00:00\", \"version\": \"d15aedb893b05a8b36d470c07ad0321e6593630715a8f178a805bd8a5a6f731c\", \"scope\": \"DB에 선언된 관계입니다. 실제 행의 유일성·누락·업무 역할을 보증하지 않습니다.\", \"message\": \"여러 키가 같은 테이블을 가리키면 역할을 확인하세요. 새 SQL은 별도 승인이 필요합니다.\", \"next_steps\": [\"사용자가 지정한 테이블·조건의 실제 컬럼을 inspect_table_context에서 확인하세요.\", \"양쪽 raw dataset이 이미 로딩되어 있으면 보유 dataset ID로 로컬 조인을 검토하세요.\", \"일부 테이블이 로딩되지 않은 통계 요청은 연결된 SQL 엔진에서 JOIN/집계 SELECT를 query_databricks로 승인 요청할 수 있습니다. 전체 raw 로딩은 필수가 아닙니다.\", \"명시된 컬럼·리터럴 조건과 최신 스키마로 의미가 확정됐으면 추가 설명이나 catalog 탐색 없이 계산 계획으로 진행하세요.\"], \"evidence_ids\": [\"d15aedb893b05a8b36d470c07ad0321e6593630715a8f178a805bd8a5a6f731c\"], \"error_code\": null, \"retryable\": false, \"user_action\": \"\"}"
+        },
+        {
+          "tool": "inspect_table_context",
+          "content": "{\"status\": \"ready\", \"table_context\": {\"table\": \"codes\", \"training_status\": \"runtime_schema\", \"observed_at\": \"2026-09-26T09:45:54.534612+00:00\", \"columns\": [{\"name\": \"code\", \"dtype\": \"INTEGER\"}, {\"name\": \"classification\", \"dtype\": \"TEXT\"}], \"relationship_authority\": \"database_catalog\", \"foreign_keys\": [], \"source\": \"read-only public Spider2 SQLite schema and bounded type examples\", \"freshness\": \"fresh\", \"schema_fingerprint\": \"5433e51230ab223516bcb1bd36171e4e77e69117d107011565e31518e4706218\"}, \"schema_changed\": false, \"authority\": \"saved_snapshot\", \"scope\": \"저장된 스키마 스냅샷입니다. observed_at과 freshness를 함께 확인해야 합니다.\", \"evidence_ids\": [], \"error_code\": null, \"retryable\": false, \"user_action\": \"\"}"
+        },
+        {
+          "tool": "query_databricks",
+          "content": "{\"status\": \"ready\", \"dataset\": {\"id\": \"f1344160-6d3c-4f66-b37f-d53fe10f87a9\", \"source\": \"readings | codes\", \"columns\": [\"count_accepted\"], \"rows\": 1, \"coverage\": \"complete\", \"conditions\": [], \"predicate_known\": true, \"grain\": \"aggregate\", \"aggregation\": \"\", \"snapshot\": \"2026-09-26T09:46:03.058289+00:00\", \"query\": \"SELECT COUNT(*) AS count_accepted FROM readings r JOIN codes c ON r.code_ref = c.code WHERE c.classification = 'accepted'\", \"parent_id\": \"\", \"parent_ids\": [], \"role\": \"aggregate\", \"root_id\": \"\"}, \"evidence_ids\": [\"f1344160-6d3c-4f66-b37f-d53fe10f87a9\"], \"error_code\": null, \"retryable\": false, \"user_action\": \"\", \"scope\": \"도구가 반환한 구조화 결과 범위입니다.\"}"
+        }
+      ],
+      "model_actions": [
+        {
+          "calls": [
+            {
+              "name": "inspect_table_relationships",
+              "args": {
+                "table": "readings"
+              },
+              "id": "call_a441ea1c-4359-4489-bfbc-fb568755603f",
+              "type": "tool_call"
+            }
+          ],
+          "text": ""
+        },
+        {
+          "calls": [
+            {
+              "name": "inspect_table_context",
+              "args": {
+                "table": "codes"
+              },
+              "id": "call_ed179095-af78-4ebc-a98a-d5f5556bc7b5",
+              "type": "tool_call"
+            }
+          ],
+          "text": ""
+        },
+        {
+          "calls": [
+            {
+              "name": "query_databricks",
+              "args": {
+                "source": "readings",
+                "query": "SELECT COUNT(*) AS count_accepted FROM readings r JOIN codes c ON r.code_ref = c.code WHERE c.classification = 'accepted'",
+                "reason": "readings와 codes 테이블을 code_ref = code로 조인한 후 classification = 'accepted'인 레코드 수를 집계합니다. 테이블 관계는 외래 키로 선언되었고, classification 컬럼은 codes 테이블에 존재합니다."
+              },
+              "id": "call_a82d4a73-c1ed-4ca5-85ef-184e008d5b1f",
+              "type": "tool_call"
+            }
+          ],
+          "text": ""
+        },
+        {
+          "calls": [
+            {
+              "name": "query_databricks",
+              "args": {
+                "source": "readings | codes",
+                "query": "SELECT COUNT(*) AS count_accepted FROM readings r JOIN codes c ON r.code_ref = c.code WHERE c.classification = 'accepted'",
+                "reason": "readings와 codes 테이블을 code_ref = code로 조인하고, classification이 'accepted'인 레코드 수를 집계합니다. 외래 키 관계가 명시되어 있고, classification 컬럼은 codes 테이블에 존재합니다."
+              },
+              "id": "call_d1598ccd-ee34-4048-bf2f-3c8ce34ab37e",
+              "type": "tool_call"
+            }
+          ],
+          "text": ""
+        },
+        {
+          "calls": [],
+          "text": "readings | codes를 승인된 SQL에서 조인하여 요청한 통계를 계산했습니다. 결과는 해당 조인 조건으로 결합된 행 기준입니다. 키의 실제 유일성·미일치 행 수는 별도로 측정하지 않았습니다.\n\n보유 데이터로 계산한 결과입니다. 출처: readings | codes\n분석 범위: 요청 조건에 포함된 보유 데이터 전체\n\n적용 조건: classification = accepted\n\n건수: 3"
+        }
+      ],
+      "scope": {
+        "conditions": [
+          {
+            "column": "classification",
+            "op": "eq",
+            "value": "accepted"
+          }
+        ],
+        "any_conditions": [],
+        "join_edges": [],
+        "measure_conditions": [],
+        "ratio": null,
+        "unresolved": [],
+        "columns": [
+          "classification"
+        ]
+      },
+      "intent": {
+        "join": true,
+        "calculation": true,
+        "chart": false,
+        "data_load": false,
+        "required_sources": [
+          "readings",
+          "codes"
+        ],
+        "operations": [
+          "COUNT"
+        ]
+      },
+      "focus_events": [
+        {
+          "time": "2026-09-26T09:45:55.069989+00:00",
+          "event": "model_tools_focused",
+          "run_id": "b55fc0e9711d4046aa9cc7a53c9b9731",
+          "mode": "remote_join",
+          "tool_count": 7
+        },
+        {
+          "time": "2026-09-26T09:45:57.584892+00:00",
+          "event": "model_tools_focused",
+          "run_id": "b55fc0e9711d4046aa9cc7a53c9b9731",
+          "mode": "remote_join",
+          "tool_count": 7
+        },
+        {
+          "time": "2026-09-26T09:45:58.914973+00:00",
+          "event": "model_tools_focused",
+          "run_id": "b55fc0e9711d4046aa9cc7a53c9b9731",
+          "mode": "remote_join",
+          "tool_count": 7
+        },
+        {
+          "time": "2026-09-26T09:46:01.105558+00:00",
+          "event": "model_tools_focused",
+          "run_id": "b55fc0e9711d4046aa9cc7a53c9b9731",
+          "mode": "remote_join",
+          "tool_count": 7
+        }
+      ],
+      "errors": [],
+      "elapsed_seconds": 8.55,
+      "run_label": "focused3_live",
+      "preapproval_execution_accounting": "no analysis query proposal probe; schema/fixture setup excluded"
+    },
+    {
+      "status": "PASS",
+      "provider": "databricks",
+      "mode": "real model with synthetic public SQLite and explicit local-test approval",
+      "prompt": "Count records with classification='accepted' after join readings and codes. Find the table relationship in the schema first.",
+      "agent_status": "answered",
+      "error_type": null,
+      "stop_reason": null,
+      "expected": 3,
+      "actual": 3.0,
+      "model_calls": 4,
+      "executions_before_approval": 0,
+      "public_sqlite_executions": 1,
+      "databricks_sql_executions": 0,
+      "queries": [
+        "SELECT COUNT(*) AS count FROM readings r JOIN codes c ON r.code_ref = c.code WHERE c.classification = 'accepted'"
+      ],
+      "raw_preserved": true,
+      "final_output": "readings | codes를 승인된 SQL에서 조인하여 요청한 통계를 계산했습니다. 결과는 해당 조인 조건으로 결합된 행 기준입니다. 키의 실제 유일성·미일치 행 수는 별도로 측정하지 않았습니다.\n\n보유 데이터로 계산한 결과입니다. 출처: readings | codes\n분석 범위: 요청 조건에 포함된 보유 데이터 전체\n\n적용 조건: classification = accepted\n\n건수: 3",
+      "tools": [
+        "inspect_table_relationships",
+        "inspect_table_context",
+        "query_databricks"
+      ],
+      "tool_observations": [
+        {
+          "tool": "inspect_table_relationships",
+          "content": "{\"status\": \"ready\", \"table\": \"readings\", \"foreign_keys\": [{\"name\": \"0\", \"columns\": [\"code_ref\"], \"target_table\": \"codes\", \"target_columns\": [\"code\"]}], \"observed_at\": \"2026-09-26T09:46:32.052252+00:00\", \"version\": \"d15aedb893b05a8b36d470c07ad0321e6593630715a8f178a805bd8a5a6f731c\", \"scope\": \"DB에 선언된 관계입니다. 실제 행의 유일성·누락·업무 역할을 보증하지 않습니다.\", \"message\": \"여러 키가 같은 테이블을 가리키면 역할을 확인하세요. 새 SQL은 별도 승인이 필요합니다.\", \"next_steps\": [\"사용자가 지정한 테이블·조건의 실제 컬럼을 inspect_table_context에서 확인하세요.\", \"양쪽 raw dataset이 이미 로딩되어 있으면 보유 dataset ID로 로컬 조인을 검토하세요.\", \"일부 테이블이 로딩되지 않은 통계 요청은 연결된 SQL 엔진에서 JOIN/집계 SELECT를 query_databricks로 승인 요청할 수 있습니다. 전체 raw 로딩은 필수가 아닙니다.\", \"명시된 컬럼·리터럴 조건과 최신 스키마로 의미가 확정됐으면 추가 설명이나 catalog 탐색 없이 계산 계획으로 진행하세요.\"], \"evidence_ids\": [\"d15aedb893b05a8b36d470c07ad0321e6593630715a8f178a805bd8a5a6f731c\"], \"error_code\": null, \"retryable\": false, \"user_action\": \"\"}"
+        },
+        {
+          "tool": "inspect_table_context",
+          "content": "{\"status\": \"ready\", \"table_context\": {\"table\": \"codes\", \"training_status\": \"runtime_schema\", \"observed_at\": \"2026-09-26T09:46:32.052252+00:00\", \"columns\": [{\"name\": \"code\", \"dtype\": \"INTEGER\"}, {\"name\": \"classification\", \"dtype\": \"TEXT\"}], \"relationship_authority\": \"database_catalog\", \"foreign_keys\": [], \"source\": \"read-only public Spider2 SQLite schema and bounded type examples\", \"freshness\": \"fresh\", \"schema_fingerprint\": \"5433e51230ab223516bcb1bd36171e4e77e69117d107011565e31518e4706218\"}, \"schema_changed\": false, \"authority\": \"saved_snapshot\", \"scope\": \"저장된 스키마 스냅샷입니다. observed_at과 freshness를 함께 확인해야 합니다.\", \"evidence_ids\": [], \"error_code\": null, \"retryable\": false, \"user_action\": \"\"}"
+        },
+        {
+          "tool": "query_databricks",
+          "content": "{\"status\": \"ready\", \"dataset\": {\"id\": \"8679cdf3-feef-4ca4-bf5c-e514c68cafac\", \"source\": \"readings | codes\", \"columns\": [\"count\"], \"rows\": 1, \"coverage\": \"complete\", \"conditions\": [], \"predicate_known\": true, \"grain\": \"aggregate\", \"aggregation\": \"\", \"snapshot\": \"2026-09-26T09:46:40.385337+00:00\", \"query\": \"SELECT COUNT(*) AS count FROM readings r JOIN codes c ON r.code_ref = c.code WHERE c.classification = 'accepted'\", \"parent_id\": \"\", \"parent_ids\": [], \"role\": \"aggregate\", \"root_id\": \"\"}, \"evidence_ids\": [\"8679cdf3-feef-4ca4-bf5c-e514c68cafac\"], \"error_code\": null, \"retryable\": false, \"user_action\": \"\", \"scope\": \"도구가 반환한 구조화 결과 범위입니다.\"}"
+        }
+      ],
+      "model_actions": [
+        {
+          "calls": [
+            {
+              "name": "inspect_table_relationships",
+              "args": {
+                "table": "readings"
+              },
+              "id": "call_01c0a5e1-7e8c-47d6-873b-8d962e42febb",
+              "type": "tool_call"
+            }
+          ],
+          "text": ""
+        },
+        {
+          "calls": [
+            {
+              "name": "inspect_table_context",
+              "args": {
+                "table": "codes"
+              },
+              "id": "call_287dcacc-a5b6-4d30-a666-ea62ee7b0672",
+              "type": "tool_call"
+            }
+          ],
+          "text": ""
+        },
+        {
+          "calls": [
+            {
+              "name": "query_databricks",
+              "args": {
+                "source": "readings",
+                "query": "SELECT COUNT(*) AS count FROM readings r JOIN codes c ON r.code_ref = c.code WHERE c.classification = 'accepted'",
+                "reason": "readings와 codes 테이블을 code_ref = code로 조인하고, classification이 'accepted'인 레코드 수를 집계하기 위함입니다. 테이블 관계는 외래 키로 선언되었으며, 컬럼 타입과 조건은 스키마에서 확인되었습니다."
+              },
+              "id": "call_5a6a7f35-618c-494d-836f-70ca409cda05",
+              "type": "tool_call"
+            }
+          ],
+          "text": ""
+        },
+        {
+          "calls": [
+            {
+              "name": "query_databricks",
+              "args": {
+                "source": "readings | codes",
+                "query": "SELECT COUNT(*) AS count FROM readings r JOIN codes c ON r.code_ref = c.code WHERE c.classification = 'accepted'",
+                "reason": "readings와 codes 테이블을 code_ref = code로 조인하고, classification이 'accepted'인 레코드 수를 집계합니다. 외래 키 관계가 명시되어 있고, classification 컬럼은 codes 테이블에 존재합니다."
+              },
+              "id": "call_dd14756d-8a30-43c7-8a87-4d8e207d1bf5",
+              "type": "tool_call"
+            }
+          ],
+          "text": ""
+        },
+        {
+          "calls": [],
+          "text": "readings | codes를 승인된 SQL에서 조인하여 요청한 통계를 계산했습니다. 결과는 해당 조인 조건으로 결합된 행 기준입니다. 키의 실제 유일성·미일치 행 수는 별도로 측정하지 않았습니다.\n\n보유 데이터로 계산한 결과입니다. 출처: readings | codes\n분석 범위: 요청 조건에 포함된 보유 데이터 전체\n\n적용 조건: classification = accepted\n\n건수: 3"
+        }
+      ],
+      "scope": {
+        "conditions": [
+          {
+            "column": "classification",
+            "op": "eq",
+            "value": "accepted"
+          }
+        ],
+        "any_conditions": [],
+        "join_edges": [],
+        "measure_conditions": [],
+        "ratio": null,
+        "unresolved": [],
+        "columns": [
+          "classification"
+        ]
+      },
+      "intent": {
+        "join": true,
+        "calculation": true,
+        "chart": false,
+        "data_load": false,
+        "required_sources": [
+          "readings",
+          "codes"
+        ],
+        "operations": [
+          "COUNT"
+        ]
+      },
+      "focus_events": [
+        {
+          "time": "2026-09-26T09:46:32.560088+00:00",
+          "event": "model_tools_focused",
+          "run_id": "4383a8d315944cff9dc771ca727935d8",
+          "mode": "remote_join",
+          "tool_count": 7
+        },
+        {
+          "time": "2026-09-26T09:46:34.788806+00:00",
+          "event": "model_tools_focused",
+          "run_id": "4383a8d315944cff9dc771ca727935d8",
+          "mode": "remote_join",
+          "tool_count": 7
+        },
+        {
+          "time": "2026-09-26T09:46:35.964826+00:00",
+          "event": "model_tools_focused",
+          "run_id": "4383a8d315944cff9dc771ca727935d8",
+          "mode": "remote_join",
+          "tool_count": 7
+        },
+        {
+          "time": "2026-09-26T09:46:38.217830+00:00",
+          "event": "model_tools_focused",
+          "run_id": "4383a8d315944cff9dc771ca727935d8",
+          "mode": "remote_join",
+          "tool_count": 7
+        }
+      ],
+      "errors": [],
+      "elapsed_seconds": 8.349,
+      "run_label": "focused4_live",
+      "preapproval_execution_accounting": "no analysis query proposal probe; schema/fixture setup excluded"
+    },
+    {
+      "status": "FAIL",
+      "provider": "databricks",
+      "mode": "real model with synthetic public SQLite and explicit local-test approval",
+      "prompt": "Count records with classification='accepted' after join readings and codes. Find the table relationship in the schema first.",
+      "agent_status": "incomplete",
+      "error_type": "RateLimitError",
+      "stop_reason": null,
+      "expected": 3,
+      "actual": null,
+      "model_calls": 2,
+      "executions_before_approval": 0,
+      "public_sqlite_executions": 0,
+      "databricks_sql_executions": 0,
+      "queries": [],
+      "raw_preserved": true,
+      "final_output": "분석 중 오류가 발생했습니다 (RateLimitError, 오류 ID: 086e1adf8e89). 기존 결과는 보존했습니다. 미완료 분석 재개로 다시 시도할 수 있습니다.",
+      "tools": [
+        "inspect_table_relationships",
+        "inspect_table_context"
+      ],
+      "tool_observations": [
+        {
+          "tool": "inspect_table_relationships",
+          "content": "{\"status\": \"ready\", \"table\": \"readings\", \"foreign_keys\": [{\"name\": \"0\", \"columns\": [\"code_ref\"], \"target_table\": \"codes\", \"target_columns\": [\"code\"]}], \"observed_at\": \"2026-09-26T09:47:26.034548+00:00\", \"version\": \"d15aedb893b05a8b36d470c07ad0321e6593630715a8f178a805bd8a5a6f731c\", \"scope\": \"DB에 선언된 관계입니다. 실제 행의 유일성·누락·업무 역할을 보증하지 않습니다.\", \"message\": \"여러 키가 같은 테이블을 가리키면 역할을 확인하세요. 새 SQL은 별도 승인이 필요합니다.\", \"next_steps\": [\"사용자가 지정한 테이블·조건의 실제 컬럼을 inspect_table_context에서 확인하세요.\", \"양쪽 raw dataset이 이미 로딩되어 있으면 보유 dataset ID로 로컬 조인을 검토하세요.\", \"일부 테이블이 로딩되지 않은 통계 요청은 연결된 SQL 엔진에서 JOIN/집계 SELECT를 query_databricks로 승인 요청할 수 있습니다. 전체 raw 로딩은 필수가 아닙니다.\", \"명시된 컬럼·리터럴 조건과 최신 스키마로 의미가 확정됐으면 추가 설명이나 catalog 탐색 없이 계산 계획으로 진행하세요.\"], \"evidence_ids\": [\"d15aedb893b05a8b36d470c07ad0321e6593630715a8f178a805bd8a5a6f731c\"], \"error_code\": null, \"retryable\": false, \"user_action\": \"\"}"
+        },
+        {
+          "tool": "inspect_table_context",
+          "content": "{\"status\": \"ready\", \"table_context\": {\"table\": \"codes\", \"training_status\": \"runtime_schema\", \"observed_at\": \"2026-09-26T09:47:26.034548+00:00\", \"columns\": [{\"name\": \"code\", \"dtype\": \"INTEGER\"}, {\"name\": \"classification\", \"dtype\": \"TEXT\"}], \"relationship_authority\": \"database_catalog\", \"foreign_keys\": [], \"source\": \"read-only public Spider2 SQLite schema and bounded type examples\", \"freshness\": \"fresh\", \"schema_fingerprint\": \"5433e51230ab223516bcb1bd36171e4e77e69117d107011565e31518e4706218\"}, \"schema_changed\": false, \"authority\": \"saved_snapshot\", \"scope\": \"저장된 스키마 스냅샷입니다. observed_at과 freshness를 함께 확인해야 합니다.\", \"evidence_ids\": [], \"error_code\": null, \"retryable\": false, \"user_action\": \"\"}"
+        }
+      ],
+      "model_actions": [
+        {
+          "calls": [
+            {
+              "name": "inspect_table_relationships",
+              "args": {
+                "table": "readings"
+              },
+              "id": "call_e6170ca3-1afc-46b4-97e7-d0b4fdafa198",
+              "type": "tool_call"
+            }
+          ],
+          "text": ""
+        },
+        {
+          "calls": [
+            {
+              "name": "inspect_table_context",
+              "args": {
+                "table": "codes"
+              },
+              "id": "call_cd8471c4-e037-4822-a3d1-b13024982fff",
+              "type": "tool_call"
+            }
+          ],
+          "text": ""
+        }
+      ],
+      "scope": {
+        "conditions": [
+          {
+            "column": "classification",
+            "op": "eq",
+            "value": "accepted"
+          }
+        ],
+        "any_conditions": [],
+        "join_edges": [],
+        "measure_conditions": [],
+        "ratio": null,
+        "unresolved": [],
+        "columns": [
+          "classification"
+        ]
+      },
+      "intent": {
+        "join": true,
+        "calculation": true,
+        "chart": false,
+        "data_load": false,
+        "required_sources": [
+          "readings",
+          "codes"
+        ],
+        "operations": [
+          "COUNT"
+        ]
+      },
+      "focus_events": [
+        {
+          "time": "2026-09-26T09:47:26.350891+00:00",
+          "event": "model_tools_focused",
+          "run_id": "7e8c397b915748bd97c0a7c557d9ce6f",
+          "mode": "remote_join",
+          "tool_count": 7
+        },
+        {
+          "time": "2026-09-26T09:47:28.583647+00:00",
+          "event": "model_tools_focused",
+          "run_id": "7e8c397b915748bd97c0a7c557d9ce6f",
+          "mode": "remote_join",
+          "tool_count": 7
+        },
+        {
+          "time": "2026-09-26T09:47:29.315645+00:00",
+          "event": "model_tools_focused",
+          "run_id": "7e8c397b915748bd97c0a7c557d9ce6f",
+          "mode": "remote_join",
+          "tool_count": 7
+        }
+      ],
+      "errors": [
+        {
+          "time": "2026-09-26T09:47:29.530154+00:00",
+          "event": "error",
+          "run_id": "7e8c397b915748bd97c0a7c557d9ce6f",
+          "error_id": "086e1adf8e89",
+          "stage": "agent_stream",
+          "error_type": "RateLimitError",
+          "http_status": null,
+          "frames": [
+            {
+              "file": "runtime.py",
+              "line": 257,
+              "function": "_invoke"
+            },
+            {
+              "file": "main.py",
+              "line": 2967,
+              "function": "stream"
+            },
+            {
+              "file": "_runner.py",
+              "line": 207,
+              "function": "tick"
+            },
+            {
+              "file": "_retry.py",
+              "line": 617,
+              "function": "run_with_retry"
+            },
+            {
+              "file": "_runnable.py",
+              "line": 707,
+              "function": "invoke"
+            },
+            {
+              "file": "_runnable.py",
+              "line": 447,
+              "function": "invoke"
+            },
+            {
+              "file": "factory.py",
+              "line": 1486,
+              "function": "model_node"
+            },
+            {
+              "file": "factory.py",
+              "line": 339,
+              "function": "composed"
+            },
+            {
+              "file": "tool_focus.py",
+              "line": 82,
+              "function": "wrap_model_call"
+            },
+            {
+              "file": "factory.py",
+              "line": 329,
+              "function": "inner_handler"
+            },
+            {
+              "file": "factory.py",
+              "line": 339,
+              "function": "composed"
+            },
+            {
+              "file": "memory.py",
+              "line": 88,
+              "function": "wrap_model_call"
+            },
+            {
+              "file": "factory.py",
+              "line": 329,
+              "function": "inner_handler"
+            },
+            {
+              "file": "factory.py",
+              "line": 339,
+              "function": "composed"
+            },
+            {
+              "file": "types.py",
+              "line": 1807,
+              "function": "wrapped"
+            },
+            {
+              "file": "factory.py",
+              "line": 329,
+              "function": "inner_handler"
+            },
+            {
+              "file": "tool_focus.py",
+              "line": 64,
+              "function": "wrap_model_call"
+            },
+            {
+              "file": "factory.py",
+              "line": 1454,
+              "function": "_execute_model_sync"
+            },
+            {
+              "file": "base.py",
+              "line": 6014,
+              "function": "invoke"
+            },
+            {
+              "file": "chat_models.py",
+              "line": 488,
+              "function": "invoke"
+            },
+            {
+              "file": "chat_models.py",
+              "line": 1877,
+              "function": "generate_prompt"
+            },
+            {
+              "file": "chat_models.py",
+              "line": 1684,
+              "function": "generate"
+            },
+            {
+              "file": "chat_models.py",
+              "line": 2022,
+              "function": "_generate_with_cache"
+            },
+            {
+              "file": "base.py",
+              "line": 1752,
+              "function": "_generate"
+            },
+            {
+              "file": "base.py",
+              "line": 1747,
+              "function": "_generate"
+            },
+            {
+              "file": "_legacy_response.py",
+              "line": 369,
+              "function": "wrapped"
+            },
+            {
+              "file": "_utils.py",
+              "line": 298,
+              "function": "wrapper"
+            },
+            {
+              "file": "completions.py",
+              "line": 1296,
+              "function": "create"
+            },
+            {
+              "file": "_base_client.py",
+              "line": 1375,
+              "function": "post"
+            },
+            {
+              "file": "_base_client.py",
+              "line": 1148,
+              "function": "request"
+            }
+          ]
+        }
+      ],
+      "elapsed_seconds": 3.501,
+      "run_label": "focused5_live",
+      "preapproval_execution_accounting": "no analysis query proposal probe; schema/fixture setup excluded"
+    }
+  ]
+}

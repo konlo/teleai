@@ -1,0 +1,353 @@
+{
+  "case_id": "PRES_03-turn1",
+  "run_id": "915597ea873a419184bda80079f25edf",
+  "state": "incomplete",
+  "message_count": 1,
+  "pending_requests": 0,
+  "recovery_status": "working",
+  "recovery_attempts": 0,
+  "recovery_model_calls": 0,
+  "reference_context": [
+    {
+      "table": "fixture.sensor_readings",
+      "training_status": "fixture_profile",
+      "columns": [
+        {
+          "name": "event_key",
+          "dtype": "int64",
+          "distinct_count": 8,
+          "null_count": 0,
+          "top_values": [
+            {
+              "value": 1,
+              "count": 1
+            },
+            {
+              "value": 2,
+              "count": 1
+            },
+            {
+              "value": 3,
+              "count": 1
+            },
+            {
+              "value": 4,
+              "count": 1
+            },
+            {
+              "value": 5,
+              "count": 1
+            },
+            {
+              "value": 6,
+              "count": 1
+            },
+            {
+              "value": 7,
+              "count": 1
+            },
+            {
+              "value": 8,
+              "count": 1
+            }
+          ],
+          "aliases": []
+        },
+        {
+          "name": "reading",
+          "dtype": "float64",
+          "distinct_count": 6,
+          "null_count": 1,
+          "top_values": [
+            {
+              "value": 2.0,
+              "count": 2
+            },
+            {
+              "value": -4.0,
+              "count": 1
+            },
+            {
+              "value": 0.0,
+              "count": 1
+            },
+            {
+              "value": 8.0,
+              "count": 1
+            },
+            {
+              "value": 12.0,
+              "count": 1
+            },
+            {
+              "value": 50.0,
+              "count": 1
+            }
+          ],
+          "aliases": []
+        },
+        {
+          "name": "zone",
+          "dtype": "object",
+          "distinct_count": 2,
+          "null_count": 0,
+          "top_values": [
+            {
+              "value": "east",
+              "count": 4
+            },
+            {
+              "value": "west",
+              "count": 4
+            }
+          ],
+          "aliases": []
+        }
+      ],
+      "alias_source": null,
+      "source": "local test_set fixture; not a live Databricks table"
+    }
+  ],
+  "datasets": [
+    {
+      "id": "6a6e68bc-e407-4791-9f15-dcb62867c49e",
+      "source": "fixture.sensor_readings",
+      "columns": [
+        "event_key",
+        "reading",
+        "zone"
+      ],
+      "rows": 8,
+      "coverage": "complete",
+      "conditions": [],
+      "predicate_known": true,
+      "grain": "raw",
+      "aggregation": "",
+      "snapshot": "fixture:preservation-v1",
+      "query": "",
+      "parent_id": "",
+      "parent_ids": [],
+      "role": "root",
+      "root_id": "6a6e68bc-e407-4791-9f15-dcb62867c49e"
+    }
+  ],
+  "charts": [],
+  "diagnostics": [
+    {
+      "time": "2026-09-24T05:28:01.422918+00:00",
+      "event": "run_started",
+      "run_id": "915597ea873a419184bda80079f25edf",
+      "operation": "submit"
+    },
+    {
+      "time": "2026-09-24T05:28:01.490311+00:00",
+      "event": "summarization_started",
+      "run_id": "915597ea873a419184bda80079f25edf",
+      "span_id": "bc2cbcbc248b"
+    },
+    {
+      "time": "2026-09-24T05:28:01.490413+00:00",
+      "event": "summarization_finished",
+      "run_id": "915597ea873a419184bda80079f25edf",
+      "span_id": "bc2cbcbc248b",
+      "status": "ok",
+      "elapsed_seconds": 0.0
+    },
+    {
+      "time": "2026-09-24T05:28:01.490762+00:00",
+      "event": "model_call_started",
+      "run_id": "915597ea873a419184bda80079f25edf",
+      "span_id": "a971a4d8c92c"
+    },
+    {
+      "time": "2026-09-24T05:28:01.492041+00:00",
+      "event": "context_budget",
+      "run_id": "915597ea873a419184bda80079f25edf",
+      "characters": 6851,
+      "limit": 32000
+    },
+    {
+      "time": "2026-09-24T05:29:01.499256+00:00",
+      "event": "model_call_finished",
+      "run_id": "915597ea873a419184bda80079f25edf",
+      "span_id": "a971a4d8c92c",
+      "status": "error",
+      "error_type": "ReadTimeout",
+      "elapsed_seconds": 60.009
+    },
+    {
+      "time": "2026-09-24T05:29:01.523858+00:00",
+      "event": "error",
+      "run_id": "915597ea873a419184bda80079f25edf",
+      "error_id": "688e0df84dee",
+      "stage": "agent_stream",
+      "error_type": "ReadTimeout",
+      "http_status": null,
+      "frames": [
+        {
+          "file": "runtime.py",
+          "line": 222,
+          "function": "_invoke"
+        },
+        {
+          "file": "main.py",
+          "line": 2967,
+          "function": "stream"
+        },
+        {
+          "file": "_runner.py",
+          "line": 207,
+          "function": "tick"
+        },
+        {
+          "file": "_retry.py",
+          "line": 617,
+          "function": "run_with_retry"
+        },
+        {
+          "file": "_runnable.py",
+          "line": 707,
+          "function": "invoke"
+        },
+        {
+          "file": "_runnable.py",
+          "line": 447,
+          "function": "invoke"
+        },
+        {
+          "file": "factory.py",
+          "line": 1486,
+          "function": "model_node"
+        },
+        {
+          "file": "factory.py",
+          "line": 339,
+          "function": "composed"
+        },
+        {
+          "file": "memory.py",
+          "line": 70,
+          "function": "wrap_model_call"
+        },
+        {
+          "file": "factory.py",
+          "line": 329,
+          "function": "inner_handler"
+        },
+        {
+          "file": "types.py",
+          "line": 1807,
+          "function": "wrapped"
+        },
+        {
+          "file": "factory.py",
+          "line": 1454,
+          "function": "_execute_model_sync"
+        },
+        {
+          "file": "base.py",
+          "line": 6014,
+          "function": "invoke"
+        },
+        {
+          "file": "chat_models.py",
+          "line": 488,
+          "function": "invoke"
+        },
+        {
+          "file": "chat_models.py",
+          "line": 1877,
+          "function": "generate_prompt"
+        },
+        {
+          "file": "chat_models.py",
+          "line": 1684,
+          "function": "generate"
+        },
+        {
+          "file": "chat_models.py",
+          "line": 2022,
+          "function": "_generate_with_cache"
+        },
+        {
+          "file": "chat_models.py",
+          "line": 1200,
+          "function": "_generate"
+        },
+        {
+          "file": "chat_models.py",
+          "line": 1135,
+          "function": "_chat_stream_with_aggregation"
+        },
+        {
+          "file": "chat_models.py",
+          "line": 1224,
+          "function": "_iterate_over_stream"
+        },
+        {
+          "file": "chat_models.py",
+          "line": 1122,
+          "function": "_create_chat_stream"
+        },
+        {
+          "file": "_client.py",
+          "line": 184,
+          "function": "inner"
+        },
+        {
+          "file": "contextlib.py",
+          "line": 137,
+          "function": "__enter__"
+        },
+        {
+          "file": "_client.py",
+          "line": 868,
+          "function": "stream"
+        },
+        {
+          "file": "_client.py",
+          "line": 914,
+          "function": "send"
+        },
+        {
+          "file": "_client.py",
+          "line": 942,
+          "function": "_send_handling_auth"
+        },
+        {
+          "file": "_client.py",
+          "line": 979,
+          "function": "_send_handling_redirects"
+        },
+        {
+          "file": "_client.py",
+          "line": 1014,
+          "function": "_send_single_request"
+        },
+        {
+          "file": "default.py",
+          "line": 249,
+          "function": "handle_request"
+        },
+        {
+          "file": "contextlib.py",
+          "line": 158,
+          "function": "__exit__"
+        },
+        {
+          "file": "default.py",
+          "line": 118,
+          "function": "map_httpcore_exceptions"
+        }
+      ]
+    },
+    {
+      "time": "2026-09-24T05:29:01.524177+00:00",
+      "event": "turn_slo",
+      "run_id": "915597ea873a419184bda80079f25edf",
+      "elapsed_seconds": 60.089,
+      "limit": 180.0,
+      "status": "error"
+    }
+  ]
+}

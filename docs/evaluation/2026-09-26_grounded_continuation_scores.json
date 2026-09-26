@@ -1,0 +1,1833 @@
+{
+  "generated_at": "2026-09-26T00:29:19.864640+00:00",
+  "mode": "live-databricks-model",
+  "coverage": {
+    "total_reference_cases": 200,
+    "supported_oracles": 87,
+    "selected": 200,
+    "statuses": {
+      "PASS": 82,
+      "UNGRADED": 113,
+      "NOT_COMPLETE": 5
+    },
+    "all_selected_passed": false,
+    "ungraded_is_never_pass": true
+  },
+  "model_invoked_cases": 8,
+  "latency_seconds": {
+    "total": 79.776,
+    "max": 13.739
+  },
+  "limitations": [
+    "Not a Databricks or browser end-to-end test",
+    "Single-turn questions; follow-up journeys require separate evaluation",
+    "Final prose is not graded; PASS establishes tool-result/artifact accuracy only",
+    "Unsupported reference cases stay UNGRADED and are excluded from success claims",
+    "Scripted-model tests validate the harness, not natural-language model quality"
+  ],
+  "results": [
+    {
+      "id": "L1_001",
+      "status": "PASS",
+      "prompt": "bank_loan 테이블에 어떤 컬럼들이 있는지 전체 목록과 총 컬럼 개수를 알려줘.",
+      "seconds": 0.287,
+      "model_calls": 0,
+      "tools": {
+        "inspect_table_context": 1
+      }
+    },
+    {
+      "id": "L1_002",
+      "status": "PASS",
+      "prompt": "bank_loan 테이블의 각 컬럼별 데이터 타입(dtype)을 정리해서 표로 보여줘.",
+      "seconds": 0.034,
+      "model_calls": 0,
+      "tools": {
+        "inspect_table_context": 1
+      }
+    },
+    {
+      "id": "L1_003",
+      "status": "PASS",
+      "prompt": "bank_loan 테이블에서 수치형(numeric) 컬럼들만 골라서 목록을 보여줘.",
+      "seconds": 0.033,
+      "model_calls": 0,
+      "tools": {
+        "inspect_table_context": 1
+      }
+    },
+    {
+      "id": "L1_004",
+      "status": "PASS",
+      "prompt": "bank_loan 테이블에서 문자열/범주형(categorical) 컬럼들만 골라서 보여줘.",
+      "seconds": 0.034,
+      "model_calls": 0,
+      "tools": {
+        "inspect_table_context": 1
+      }
+    },
+    {
+      "id": "L1_005",
+      "status": "PASS",
+      "prompt": "bank_loan 테이블의 전체 행 수(총 레코드 수)를 알려줘.",
+      "seconds": 0.11,
+      "model_calls": 0,
+      "tools": {
+        "local_analysis_sql": 1
+      }
+    },
+    {
+      "id": "L1_006",
+      "status": "PASS",
+      "prompt": "bank_loan 테이블에 결측치(Null/NaN)가 존재하는 컬럼이 있는지 확인하고 결측치 개수를 세어줘.",
+      "seconds": 0.041,
+      "model_calls": 0,
+      "tools": {
+        "profile_dataset": 1
+      }
+    },
+    {
+      "id": "L1_007",
+      "status": "PASS",
+      "prompt": "titanic 테이블의 컬럼 이름과 각각의 데이터 타입을 확인해줘.",
+      "seconds": 0.134,
+      "model_calls": 0,
+      "tools": {
+        "inspect_table_context": 1
+      }
+    },
+    {
+      "id": "L1_008",
+      "status": "PASS",
+      "prompt": "titanic 테이블에서 결측치(Null)가 존재하는 컬럼과 그 결측 개수를 보여줘.",
+      "seconds": 0.041,
+      "model_calls": 0,
+      "tools": {
+        "profile_dataset": 1
+      }
+    },
+    {
+      "id": "L1_009",
+      "status": "PASS",
+      "prompt": "bank_loan 테이블의 범주형 컬럼들이 각각 몇 개의 고유값(distinct count)을 가지는지 보여줘.",
+      "seconds": 0.21,
+      "model_calls": 0,
+      "tools": {
+        "profile_dataset": 1,
+        "inspect_table_context": 1
+      }
+    },
+    {
+      "id": "L1_010",
+      "status": "UNGRADED",
+      "prompt": "bank_loan 테이블에서 고객의 직업을 나타내는 job 컬럼에 어떤 값들이 있는지 고유값 목록을 출력해줘.",
+      "seconds": null,
+      "model_calls": 0,
+      "tools": {}
+    },
+    {
+      "id": "L1_011",
+      "status": "UNGRADED",
+      "prompt": "bank_loan 테이블에서 교육 수준을 나타내는 education 컬럼의 고유값들을 보여줘.",
+      "seconds": null,
+      "model_calls": 0,
+      "tools": {}
+    },
+    {
+      "id": "L1_012",
+      "status": "UNGRADED",
+      "prompt": "bank_loan 테이블에서 대출과 관련된 컬럼들이 어떤 것들이 있는지 알려줘.",
+      "seconds": null,
+      "model_calls": 0,
+      "tools": {}
+    },
+    {
+      "id": "L1_013",
+      "status": "UNGRADED",
+      "prompt": "bank_loan 테이블에서 마케팅 캠페인 결과를 나타내는 y 컬럼의 값 종류와 의미를 알려줘.",
+      "seconds": null,
+      "model_calls": 0,
+      "tools": {}
+    },
+    {
+      "id": "L1_014",
+      "status": "UNGRADED",
+      "prompt": "titanic 테이블의 탑승 등급(Pclass) 컬럼의 고유값과 탑승지(Embarked) 컬럼의 고유값을 알려줘.",
+      "seconds": null,
+      "model_calls": 0,
+      "tools": {}
+    },
+    {
+      "id": "L1_015",
+      "status": "UNGRADED",
+      "prompt": "bank_loan 테이블의 상위 3개 행을 미리보기(preview)로 보여줘.",
+      "seconds": null,
+      "model_calls": 0,
+      "tools": {}
+    },
+    {
+      "id": "L1_016",
+      "status": "PASS",
+      "prompt": "고객들의 평균 '예금 잔고'가 얼마인지 알려줘.",
+      "seconds": 0.073,
+      "model_calls": 0,
+      "tools": {
+        "local_analysis_sql": 1
+      }
+    },
+    {
+      "id": "L1_017",
+      "status": "PASS",
+      "prompt": "고객들의 평균 '나이'와 최고령 고객의 '나이'를 알려줘.",
+      "seconds": 0.075,
+      "model_calls": 0,
+      "tools": {
+        "local_analysis_sql": 1
+      }
+    },
+    {
+      "id": "L1_018",
+      "status": "PASS",
+      "prompt": "고객들 중 '집 대출'을 가지고 있는 사람이 몇 명인지 세어줘.",
+      "seconds": 0.07,
+      "model_calls": 0,
+      "tools": {
+        "local_analysis_sql": 1
+      }
+    },
+    {
+      "id": "L1_019",
+      "status": "PASS",
+      "prompt": "고객 중 '신용 대출'을 받은 사람의 인원수를 확인해줘.",
+      "seconds": 0.065,
+      "model_calls": 0,
+      "tools": {
+        "local_analysis_sql": 1
+      }
+    },
+    {
+      "id": "L1_020",
+      "status": "PASS",
+      "prompt": "마케팅 전화 '상담 시간'의 평균 초(sec)를 계산해줘.",
+      "seconds": 0.071,
+      "model_calls": 0,
+      "tools": {
+        "local_analysis_sql": 1
+      }
+    },
+    {
+      "id": "L1_021",
+      "status": "PASS",
+      "prompt": "고객들의 '혼인 상태' 종류별로 몇 명씩 있는지 세어줘.",
+      "seconds": 3.04,
+      "model_calls": 1,
+      "tools": {
+        "aggregate_dataset": 1
+      }
+    },
+    {
+      "id": "L1_022",
+      "status": "PASS",
+      "prompt": "고객들의 '최종 학력'별 인원수를 보여줘.",
+      "seconds": 2.854,
+      "model_calls": 1,
+      "tools": {
+        "aggregate_dataset": 1
+      }
+    },
+    {
+      "id": "L1_023",
+      "status": "NOT_COMPLETE",
+      "prompt": "마케팅을 통해 실제로 예금에 '가입한 사람'이 총 몇 명이야?",
+      "seconds": 8.808,
+      "model_calls": 4,
+      "tools": {
+        "local_analysis_sql": 1,
+        "inspect_dataset": 1
+      }
+    },
+    {
+      "id": "L1_024",
+      "status": "NOT_COMPLETE",
+      "prompt": "타이타닉에서 '살아남은 사람'이 전체 중 몇 명이야?",
+      "seconds": 8.647,
+      "model_calls": 4,
+      "tools": {
+        "local_analysis_sql": 1
+      }
+    },
+    {
+      "id": "L1_025",
+      "status": "PASS",
+      "prompt": "타이타닉 승객들이 낸 평균 '티켓 요금'이 얼마인지 알려줘.",
+      "seconds": 0.062,
+      "model_calls": 0,
+      "tools": {
+        "local_analysis_sql": 1
+      }
+    },
+    {
+      "id": "L1_026",
+      "status": "NOT_COMPLETE",
+      "prompt": "타이타닉 승객 중 '1등실 탑승객'이 몇 명인지 세어줘.",
+      "seconds": 8.989,
+      "model_calls": 5,
+      "tools": {
+        "use_dataset": 1,
+        "aggregate_dataset": 1
+      }
+    },
+    {
+      "id": "L1_027",
+      "status": "PASS",
+      "prompt": "고객들 중 신용불량으로 '파산/연체 이력'이 있는 사람이 몇 명이야?",
+      "seconds": 0.229,
+      "model_calls": 0,
+      "tools": {
+        "local_analysis_sql": 1
+      }
+    },
+    {
+      "id": "L1_028",
+      "status": "NOT_COMPLETE",
+      "prompt": "이번 마케팅 행사에서 고객들에게 전화를 건 '통화 횟수'의 평균을 구해줘.",
+      "seconds": 10.651,
+      "model_calls": 5,
+      "tools": {
+        "aggregate_dataset": 1,
+        "inspect_dataset": 1
+      }
+    },
+    {
+      "id": "L1_029",
+      "status": "PASS",
+      "prompt": "고객들의 주요 '접속 통신 수단' 종류별 빈도를 보여줘.",
+      "seconds": 0.073,
+      "model_calls": 0,
+      "tools": {
+        "local_analysis_sql": 1
+      }
+    },
+    {
+      "id": "L1_030",
+      "status": "NOT_COMPLETE",
+      "prompt": "이전 마케팅에서 '성공' 판정을 받은 사람이 몇 명인지 알려줘.",
+      "seconds": 13.739,
+      "model_calls": 6,
+      "tools": {
+        "profile_dataset": 1,
+        "aggregate_dataset": 1,
+        "local_analysis_sql": 1
+      }
+    },
+    {
+      "id": "L1_031",
+      "status": "UNGRADED",
+      "prompt": "나이가 30세 이상 39세 이하인 30대 고객들의 인원수와 이들의 평균 잔액을 계산해줘.",
+      "seconds": null,
+      "model_calls": 0,
+      "tools": {}
+    },
+    {
+      "id": "L1_032",
+      "status": "PASS",
+      "prompt": "계좌 잔액이 0원 미만인 마이너스 잔액 고객들의 인원수를 세어줘.",
+      "seconds": 0.063,
+      "model_calls": 0,
+      "tools": {
+        "local_analysis_sql": 1
+      }
+    },
+    {
+      "id": "L1_033",
+      "status": "PASS",
+      "prompt": "직업(job)이 'technician'인 고객들의 주택 대출(housing) 보유 현황을 세어줘.",
+      "seconds": 5.989,
+      "model_calls": 3,
+      "tools": {
+        "use_dataset": 1,
+        "aggregate_dataset": 1
+      }
+    },
+    {
+      "id": "L1_034",
+      "status": "UNGRADED",
+      "prompt": "결혼 상태가 'single'인 미혼 고객들의 평균 연령과 평균 잔액을 보여줘.",
+      "seconds": null,
+      "model_calls": 0,
+      "tools": {}
+    },
+    {
+      "id": "L1_035",
+      "status": "UNGRADED",
+      "prompt": "교육 수준이 'tertiary'(대졸 이상)인 고객들의 직업 분포를 상위 5개 출력해줘.",
+      "seconds": null,
+      "model_calls": 0,
+      "tools": {}
+    },
+    {
+      "id": "L1_036",
+      "status": "PASS",
+      "prompt": "상담 시간(duration)이 500초를 초과한 고객들의 예금 가입(y='yes') 비율을 구해줘.",
+      "seconds": 0.076,
+      "model_calls": 0,
+      "tools": {
+        "local_analysis_sql": 1
+      }
+    },
+    {
+      "id": "L1_037",
+      "status": "PASS",
+      "prompt": "주택 대출(housing)과 개인 대출(loan)을 둘 다 안 받은 무대출 고객들의 인원수를 세어줘.",
+      "seconds": 0.235,
+      "model_calls": 0,
+      "tools": {
+        "local_analysis_sql": 1
+      }
+    },
+    {
+      "id": "L1_038",
+      "status": "PASS",
+      "prompt": "타이타닉 승객 중 여성(female) 승객들의 생존율(%)을 계산해줘.",
+      "seconds": 0.168,
+      "model_calls": 0,
+      "tools": {
+        "local_analysis_sql": 1
+      }
+    },
+    {
+      "id": "L1_039",
+      "status": "PASS",
+      "prompt": "타이타닉 승객 중 남성(male) 승객들의 생존율(%)을 계산해줘.",
+      "seconds": 0.062,
+      "model_calls": 0,
+      "tools": {
+        "local_analysis_sql": 1
+      }
+    },
+    {
+      "id": "L1_040",
+      "status": "UNGRADED",
+      "prompt": "은퇴자(retired) 고객들의 평균 연령과 평균 잔액을 구해줘.",
+      "seconds": null,
+      "model_calls": 0,
+      "tools": {}
+    },
+    {
+      "id": "L1_041",
+      "status": "UNGRADED",
+      "prompt": "학생(student) 고객들의 총 인원수와 이들의 예금 가입(y='yes') 건수를 알려줘.",
+      "seconds": null,
+      "model_calls": 0,
+      "tools": {}
+    },
+    {
+      "id": "L1_042",
+      "status": "UNGRADED",
+      "prompt": "5월(may)에 접촉한 고객들의 인원수와 전체 대비 비중을 구해줘.",
+      "seconds": null,
+      "model_calls": 0,
+      "tools": {}
+    },
+    {
+      "id": "L1_043",
+      "status": "PASS",
+      "prompt": "이전 캠페인에서 접촉한 적이 없는(pdays == -1) 신규 대상 고객 수를 알려줘.",
+      "seconds": 0.232,
+      "model_calls": 0,
+      "tools": {
+        "local_analysis_sql": 1
+      }
+    },
+    {
+      "id": "L1_044",
+      "status": "PASS",
+      "prompt": "이번 마케팅에서 1회만 접촉(campaign == 1)한 고객들의 인원수를 구해줘.",
+      "seconds": 0.067,
+      "model_calls": 0,
+      "tools": {
+        "local_analysis_sql": 1
+      }
+    },
+    {
+      "id": "L1_045",
+      "status": "PASS",
+      "prompt": "타이타닉에서 요금(Fare)을 100달러 이상 낸 고액 승객들의 생존율을 구해줘.",
+      "seconds": 0.159,
+      "model_calls": 0,
+      "tools": {
+        "local_analysis_sql": 1
+      }
+    },
+    {
+      "id": "L1_046",
+      "status": "PASS",
+      "prompt": "타이타닉 승객 중 10세 미만 어린이(Age < 10)의 생존율을 구해줘.",
+      "seconds": 0.06,
+      "model_calls": 0,
+      "tools": {
+        "local_analysis_sql": 1
+      }
+    },
+    {
+      "id": "L1_047",
+      "status": "PASS",
+      "prompt": "연령이 60세 이상인 시니어 고객들의 직업 분포를 표로 보여줘.",
+      "seconds": 0.234,
+      "model_calls": 0,
+      "tools": {
+        "local_analysis_sql": 1
+      }
+    },
+    {
+      "id": "L1_048",
+      "status": "UNGRADED",
+      "prompt": "잔액이 10,000 달러 이상인 고자산 고객들의 직업 TOP 3를 출력해줘.",
+      "seconds": null,
+      "model_calls": 0,
+      "tools": {}
+    },
+    {
+      "id": "L1_049",
+      "status": "UNGRADED",
+      "prompt": "계좌 잔액 상위 5명의 고객 ID, 나이, 직업, 잔액을 표로 보여줘.",
+      "seconds": null,
+      "model_calls": 0,
+      "tools": {}
+    },
+    {
+      "id": "L1_050",
+      "status": "UNGRADED",
+      "prompt": "상담 시간(duration)이 가장 길었던 상위 5건의 통화 기록을 보여줘.",
+      "seconds": null,
+      "model_calls": 0,
+      "tools": {}
+    },
+    {
+      "id": "L1_051",
+      "status": "UNGRADED",
+      "prompt": "직업(job)별 고객 수와 평균 잔액(balance)을 계산하고 평균 잔액 내림차순으로 정렬해줘.",
+      "seconds": null,
+      "model_calls": 0,
+      "tools": {}
+    },
+    {
+      "id": "L1_052",
+      "status": "UNGRADED",
+      "prompt": "교육 수준(education)별 평균 잔액과 중앙값 잔액을 비교해줘.",
+      "seconds": null,
+      "model_calls": 0,
+      "tools": {}
+    },
+    {
+      "id": "L1_053",
+      "status": "UNGRADED",
+      "prompt": "결혼 상태(marital)별 평균 연령과 고객 수를 표로 보여줘.",
+      "seconds": null,
+      "model_calls": 0,
+      "tools": {}
+    },
+    {
+      "id": "L1_054",
+      "status": "UNGRADED",
+      "prompt": "주택 대출(housing) 보유 여부에 따른 평균 잔액 차이를 계산해줘.",
+      "seconds": null,
+      "model_calls": 0,
+      "tools": {}
+    },
+    {
+      "id": "L1_055",
+      "status": "UNGRADED",
+      "prompt": "개인 대출(loan) 보유 여부에 따른 평균 잔액 차이를 계산해줘.",
+      "seconds": null,
+      "model_calls": 0,
+      "tools": {}
+    },
+    {
+      "id": "L1_056",
+      "status": "UNGRADED",
+      "prompt": "월(month)별 고객 접촉 건수와 평균 상담 시간(duration)을 집계해줘.",
+      "seconds": null,
+      "model_calls": 0,
+      "tools": {}
+    },
+    {
+      "id": "L1_057",
+      "status": "UNGRADED",
+      "prompt": "접속 수단(contact)별 예금 가입률(y='yes' 비율)을 백분율로 계산해줘.",
+      "seconds": null,
+      "model_calls": 0,
+      "tools": {}
+    },
+    {
+      "id": "L1_058",
+      "status": "UNGRADED",
+      "prompt": "이전 마케팅 결과(poutcome)별 고객 수와 이번 예금 가입률(%)을 계산해줘.",
+      "seconds": null,
+      "model_calls": 0,
+      "tools": {}
+    },
+    {
+      "id": "L1_059",
+      "status": "UNGRADED",
+      "prompt": "타이타닉 탑승 등급(Pclass)별 승객 수와 생존율(%)을 표로 보여줘.",
+      "seconds": null,
+      "model_calls": 0,
+      "tools": {}
+    },
+    {
+      "id": "L1_060",
+      "status": "UNGRADED",
+      "prompt": "타이타닉 성별(Sex)별 승객 수와 생존율(%)을 표로 보여줘.",
+      "seconds": null,
+      "model_calls": 0,
+      "tools": {}
+    },
+    {
+      "id": "L1_061",
+      "status": "UNGRADED",
+      "prompt": "타이타닉 탑승지(Embarked)별 승객 수와 평균 요금(Fare)을 계산해줘.",
+      "seconds": null,
+      "model_calls": 0,
+      "tools": {}
+    },
+    {
+      "id": "L1_062",
+      "status": "PASS",
+      "prompt": "직업(job)과 혼인상태(marital)에 따른 고객 수를 피벗 테이블(pivot table)로 만들어줘.",
+      "seconds": 0.043,
+      "model_calls": 0,
+      "tools": {
+        "pivot_dataset": 1
+      }
+    },
+    {
+      "id": "L1_063",
+      "status": "PASS",
+      "prompt": "교육수준(education)과 주택대출(housing) 여부별 평균 잔액 피벗 테이블을 만들어줘.",
+      "seconds": 0.041,
+      "model_calls": 0,
+      "tools": {
+        "pivot_dataset": 1
+      }
+    },
+    {
+      "id": "L1_064",
+      "status": "PASS",
+      "prompt": "타이타닉 승객 등급(Pclass)과 성별(Sex)에 따른 생존율 피벗 테이블을 백분율로 출력해줘.",
+      "seconds": 0.125,
+      "model_calls": 0,
+      "tools": {
+        "pivot_dataset": 1
+      }
+    },
+    {
+      "id": "L1_065",
+      "status": "UNGRADED",
+      "prompt": "연령을 10대, 20대, 30대, 40대, 50대, 60대 이상으로 구간화하여 연령대별 고객 수를 요약해줘.",
+      "seconds": null,
+      "model_calls": 0,
+      "tools": {}
+    },
+    {
+      "id": "L1_066",
+      "status": "UNGRADED",
+      "prompt": "연령대별(20대 이하, 30대, 40대, 50대 이상) 평균 잔액을 계산해줘.",
+      "seconds": null,
+      "model_calls": 0,
+      "tools": {}
+    },
+    {
+      "id": "L1_067",
+      "status": "UNGRADED",
+      "prompt": "접촉 횟수(campaign)별 고객 수와 해당 그룹의 예금 가입 성공률(%)을 상위 5회까지 보여줘.",
+      "seconds": null,
+      "model_calls": 0,
+      "tools": {}
+    },
+    {
+      "id": "L1_068",
+      "status": "UNGRADED",
+      "prompt": "예금 가입 여부(y)별 평균 통화 상담 시간(duration)을 비교해줘.",
+      "seconds": null,
+      "model_calls": 0,
+      "tools": {}
+    },
+    {
+      "id": "L1_069",
+      "status": "UNGRADED",
+      "prompt": "직업별로 예금에 가입한 고객(y='yes')이 가장 많은 상위 3개 직업을 찾아줘.",
+      "seconds": null,
+      "model_calls": 0,
+      "tools": {}
+    },
+    {
+      "id": "L1_070",
+      "status": "UNGRADED",
+      "prompt": "신용불량(default) 여부별 고객 수와 평균 잔액을 계산해줘.",
+      "seconds": null,
+      "model_calls": 0,
+      "tools": {}
+    },
+    {
+      "id": "L1_071",
+      "status": "UNGRADED",
+      "prompt": "직업(job)별 주택 대출(housing) 보유율(%)을 계산해줘.",
+      "seconds": null,
+      "model_calls": 0,
+      "tools": {}
+    },
+    {
+      "id": "L1_072",
+      "status": "UNGRADED",
+      "prompt": "직업(job)별 개인 신용 대출(loan) 보유율(%)을 계산해줘.",
+      "seconds": null,
+      "model_calls": 0,
+      "tools": {}
+    },
+    {
+      "id": "L1_073",
+      "status": "UNGRADED",
+      "prompt": "타이타닉 형제/자매/배우자 동반자 수(SibSp)별 승객 수와 생존율을 보여줘.",
+      "seconds": null,
+      "model_calls": 0,
+      "tools": {}
+    },
+    {
+      "id": "L1_074",
+      "status": "UNGRADED",
+      "prompt": "타이타닉 부모/자녀 동반자 수(Parch)별 승객 수와 생존율을 보여줘.",
+      "seconds": null,
+      "model_calls": 0,
+      "tools": {}
+    },
+    {
+      "id": "L1_075",
+      "status": "UNGRADED",
+      "prompt": "월별로 마케팅 전화를 가장 많이 건 날짜(day) 상위 3일을 요약해줘.",
+      "seconds": null,
+      "model_calls": 0,
+      "tools": {}
+    },
+    {
+      "id": "L1_076",
+      "status": "PASS",
+      "prompt": "고객들의 연령(age) 분포를 확인하기 위해 히스토그램을 그려줘.",
+      "seconds": 7.863,
+      "model_calls": 0,
+      "tools": {
+        "prepare_histogram": 1
+      }
+    },
+    {
+      "id": "L1_077",
+      "status": "PASS",
+      "prompt": "고객 계좌 잔액(balance)의 분포를 박스플롯(Boxplot)으로 그려줘.",
+      "seconds": 0.064,
+      "model_calls": 0,
+      "tools": {
+        "render_chart_spec": 1
+      }
+    },
+    {
+      "id": "L1_078",
+      "status": "PASS",
+      "prompt": "직업(job)별 고객 수를 막대 차트(Bar Chart)로 시각화해줘.",
+      "seconds": 0.076,
+      "model_calls": 0,
+      "tools": {
+        "render_chart_spec": 1
+      }
+    },
+    {
+      "id": "L1_079",
+      "status": "UNGRADED",
+      "prompt": "혼인 상태(marital)별 고객 비중을 파이 차트(Pie Chart)로 그려줘.",
+      "seconds": null,
+      "model_calls": 0,
+      "tools": {}
+    },
+    {
+      "id": "L1_080",
+      "status": "UNGRADED",
+      "prompt": "교육 수준(education)별 고객 수를 막대 차트로 그려줘.",
+      "seconds": null,
+      "model_calls": 0,
+      "tools": {}
+    },
+    {
+      "id": "L1_081",
+      "status": "UNGRADED",
+      "prompt": "주택 대출(housing) 보유 여부('yes' vs 'no')를 막대 차트로 비교해줘.",
+      "seconds": null,
+      "model_calls": 0,
+      "tools": {}
+    },
+    {
+      "id": "L1_082",
+      "status": "UNGRADED",
+      "prompt": "개인 대출(loan) 보유 여부('yes' vs 'no')를 막대 차트로 비교해줘.",
+      "seconds": null,
+      "model_calls": 0,
+      "tools": {}
+    },
+    {
+      "id": "L1_083",
+      "status": "PASS",
+      "prompt": "통화 상담 시간(duration)의 분포를 히스토그램으로 시각화해줘.",
+      "seconds": 0.072,
+      "model_calls": 0,
+      "tools": {
+        "prepare_histogram": 1
+      }
+    },
+    {
+      "id": "L1_084",
+      "status": "UNGRADED",
+      "prompt": "접촉 월(month)별 고객 접촉 건수 추이를 막대 차트로 그려줘.",
+      "seconds": null,
+      "model_calls": 0,
+      "tools": {}
+    },
+    {
+      "id": "L1_085",
+      "status": "UNGRADED",
+      "prompt": "정기예금 가입 여부(y)별 인원수를 막대 차트로 그려줘.",
+      "seconds": null,
+      "model_calls": 0,
+      "tools": {}
+    },
+    {
+      "id": "L1_086",
+      "status": "PASS",
+      "prompt": "나이(age)와 잔액(balance) 간의 관계를 확인하기 위해 산점도(Scatter Plot)를 그려줘.",
+      "seconds": 0.065,
+      "model_calls": 0,
+      "tools": {
+        "render_chart_spec": 1
+      }
+    },
+    {
+      "id": "L1_087",
+      "status": "UNGRADED",
+      "prompt": "상담 시간(duration)과 접촉 횟수(campaign) 간의 산점도를 그려줘.",
+      "seconds": null,
+      "model_calls": 0,
+      "tools": {}
+    },
+    {
+      "id": "L1_088",
+      "status": "UNGRADED",
+      "prompt": "직업별 평균 잔액을 내림차순 정렬하여 수평 막대 차트(Horizontal Bar)로 그려줘.",
+      "seconds": null,
+      "model_calls": 0,
+      "tools": {}
+    },
+    {
+      "id": "L1_089",
+      "status": "UNGRADED",
+      "prompt": "타이타닉 승객 탑승 등급(Pclass)별 승객 수를 막대 차트로 그려줘.",
+      "seconds": null,
+      "model_calls": 0,
+      "tools": {}
+    },
+    {
+      "id": "L1_090",
+      "status": "UNGRADED",
+      "prompt": "타이타닉 승객 성별(Sex) 분포를 파이 차트로 시각화해줘.",
+      "seconds": null,
+      "model_calls": 0,
+      "tools": {}
+    },
+    {
+      "id": "L1_091",
+      "status": "UNGRADED",
+      "prompt": "타이타닉 승객 생존자(1)와 사망자(0) 수를 막대 차트로 비교해줘.",
+      "seconds": null,
+      "model_calls": 0,
+      "tools": {}
+    },
+    {
+      "id": "L1_092",
+      "status": "UNGRADED",
+      "prompt": "타이타닉 승객 요금(Fare)의 분포를 박스플롯으로 그려줘.",
+      "seconds": null,
+      "model_calls": 0,
+      "tools": {}
+    },
+    {
+      "id": "L1_093",
+      "status": "PASS",
+      "prompt": "타이타닉 승객 나이(Age)의 분포를 히스토그램으로 그려줘.",
+      "seconds": 0.172,
+      "model_calls": 0,
+      "tools": {
+        "prepare_histogram": 1
+      }
+    },
+    {
+      "id": "L1_094",
+      "status": "UNGRADED",
+      "prompt": "타이타닉 탑승지(Embarked)별 승객 수를 막대 차트로 시각화해줘.",
+      "seconds": null,
+      "model_calls": 0,
+      "tools": {}
+    },
+    {
+      "id": "L1_095",
+      "status": "UNGRADED",
+      "prompt": "교육 수준(education)별 평균 연령을 막대 차트로 보여줘.",
+      "seconds": null,
+      "model_calls": 0,
+      "tools": {}
+    },
+    {
+      "id": "L1_096",
+      "status": "UNGRADED",
+      "prompt": "통신 수단(contact)별 고객 수를 막대 차트로 보여줘.",
+      "seconds": null,
+      "model_calls": 0,
+      "tools": {}
+    },
+    {
+      "id": "L1_097",
+      "status": "UNGRADED",
+      "prompt": "이전 마케팅 결과(poutcome) 종류별 고객 수를 막대 차트로 시각화해줘.",
+      "seconds": null,
+      "model_calls": 0,
+      "tools": {}
+    },
+    {
+      "id": "L1_098",
+      "status": "PASS",
+      "prompt": "접촉일(day, 1~31일)별 접촉 건수를 꺾은선 그래프(Line Plot)로 시각화해줘.",
+      "seconds": 0.236,
+      "model_calls": 0,
+      "tools": {
+        "render_chart_spec": 1
+      }
+    },
+    {
+      "id": "L1_099",
+      "status": "UNGRADED",
+      "prompt": "타이타닉 요금(Fare)과 나이(Age) 간의 산점도를 그려줘.",
+      "seconds": null,
+      "model_calls": 0,
+      "tools": {}
+    },
+    {
+      "id": "L1_100",
+      "status": "UNGRADED",
+      "prompt": "캠페인 접촉 횟수(campaign)의 분포를 박스플롯으로 시각화해줘.",
+      "seconds": null,
+      "model_calls": 0,
+      "tools": {}
+    },
+    {
+      "id": "L2_001",
+      "status": "UNGRADED",
+      "prompt": "30대 기혼자('married') 중 '집 대출'이 있고 '예금 잔고'가 1,000달러 이상인 고객들의 인원수와 예금 가입률(y='yes' %)을 구해줘.",
+      "seconds": null,
+      "model_calls": 0,
+      "tools": {}
+    },
+    {
+      "id": "L2_002",
+      "status": "UNGRADED",
+      "prompt": "직업이 'management' 또는 'technician'이면서 '신용 대출'이 없고 '예금 잔액'이 5,000달러를 넘는 고객들의 평균 연령을 계산해줘.",
+      "seconds": null,
+      "model_calls": 0,
+      "tools": {}
+    },
+    {
+      "id": "L2_003",
+      "status": "UNGRADED",
+      "prompt": "'상담 시간'이 400초 이상이고 '통화 횟수'가 3회 이하인 고객들의 예금 가입 성공 건수와 실패 건수를 비교해줘.",
+      "seconds": null,
+      "model_calls": 0,
+      "tools": {}
+    },
+    {
+      "id": "L2_004",
+      "status": "UNGRADED",
+      "prompt": "'나이'가 50세 이상이면서 '집 대출'과 '신용 대출'이 모두 없는 고객들의 평균 '통장 잔액'을 알려줘.",
+      "seconds": null,
+      "model_calls": 0,
+      "tools": {}
+    },
+    {
+      "id": "L2_005",
+      "status": "PASS",
+      "prompt": "'최종 학력'이 'tertiary'이고 미혼('single')인 20대(20~29세) 고객 중 실제로 예금에 '가입한 사람'들의 수를 계산해줘.",
+      "seconds": 0.076,
+      "model_calls": 0,
+      "tools": {
+        "local_analysis_sql": 1
+      }
+    },
+    {
+      "id": "L2_006",
+      "status": "UNGRADED",
+      "prompt": "'마이너스 통장'(잔액 < 0) 고객 중 '신용 대출'을 보유하고 있는 고객들의 직업 분포를 상위 3개 출력해줘.",
+      "seconds": null,
+      "model_calls": 0,
+      "tools": {}
+    },
+    {
+      "id": "L2_007",
+      "status": "UNGRADED",
+      "prompt": "타이타닉에서 '1등실 또는 2등실'에 탑승한 '여성 승객'들의 생존율을 등급별로 비교해줘.",
+      "seconds": null,
+      "model_calls": 0,
+      "tools": {}
+    },
+    {
+      "id": "L2_008",
+      "status": "UNGRADED",
+      "prompt": "타이타닉에서 '3등실 승객' 중 '20세 미만 미성년자'의 생존자 수와 사망자 수를 세어줘.",
+      "seconds": null,
+      "model_calls": 0,
+      "tools": {}
+    },
+    {
+      "id": "L2_009",
+      "status": "UNGRADED",
+      "prompt": "'이전 마케팅에서 성공'(poutcome='success')했던 고객들 중 이번 캠페인에서 '가입한 사람'과 '미가입한 사람'의 평균 상담 시간을 비교해줘.",
+      "seconds": null,
+      "model_calls": 0,
+      "tools": {}
+    },
+    {
+      "id": "L2_010",
+      "status": "PASS",
+      "prompt": "'연체/신용불량 이력'(default='yes')이 있으면서 '집 대출'이나 '신용 대출' 중 하나라도 있는 고위험 다중 채무 고객 수를 알려줘.",
+      "seconds": 0.082,
+      "model_calls": 0,
+      "tools": {
+        "local_analysis_sql": 1
+      }
+    },
+    {
+      "id": "L2_011",
+      "status": "UNGRADED",
+      "prompt": "'통화 상담 시간'이 10분(600초) 이상인 장기 통화 고객들의 직업별 인원수와 예금 가입률(%)을 상위 5개 직업으로 정리해줘.",
+      "seconds": null,
+      "model_calls": 0,
+      "tools": {}
+    },
+    {
+      "id": "L2_012",
+      "status": "PASS",
+      "prompt": "'통장 잔고'가 10,000달러를 넘는 부유층 고객 중 '나이'가 40대인 고객들의 주택 대출 보유율을 알려줘.",
+      "seconds": 0.081,
+      "model_calls": 0,
+      "tools": {
+        "local_analysis_sql": 1
+      }
+    },
+    {
+      "id": "L2_013",
+      "status": "UNGRADED",
+      "prompt": "'가입 여부'(y)가 'yes'인 성공 고객들의 평균 '상담 시간'과 '평균 잔고'를 가입 실패 고객과 비교해줘.",
+      "seconds": null,
+      "model_calls": 0,
+      "tools": {}
+    },
+    {
+      "id": "L2_014",
+      "status": "UNGRADED",
+      "prompt": "타이타닉에서 가족 동반 없이 '혼자 탑승한 승객'(SibSp=0 & Parch=0)들의 생존율을 가족 동반 승객과 비교해줘.",
+      "seconds": null,
+      "model_calls": 0,
+      "tools": {}
+    },
+    {
+      "id": "L2_015",
+      "status": "UNGRADED",
+      "prompt": "'은퇴자'(retired)이면서 '예금 잔액'이 0원 이하인 위험 고객들의 인원수와 평균 연령을 알려줘.",
+      "seconds": null,
+      "model_calls": 0,
+      "tools": {}
+    },
+    {
+      "id": "L2_016",
+      "status": "UNGRADED",
+      "prompt": "'주택 자금 대출'과 '개인 신용 대출'을 모두 가지고 있는 다중 채무자들의 '최종 학력'별 인원수를 표로 보여줘.",
+      "seconds": null,
+      "model_calls": 0,
+      "tools": {}
+    },
+    {
+      "id": "L2_017",
+      "status": "PASS",
+      "prompt": "봄 시즌인 3, 4, 5월('mar', 'apr', 'may')에 전화를 건 고객들 중 '예금 가입'에 성공한 고객 비율을 계산해줘.",
+      "seconds": 0.224,
+      "model_calls": 0,
+      "tools": {
+        "local_analysis_sql": 1
+      }
+    },
+    {
+      "id": "L2_018",
+      "status": "UNGRADED",
+      "prompt": "이번 마케팅에서 5회 이상 전화를 건 '과다 접촉 고객'(campaign >= 5)의 예금 가입률을 1~2회 접촉 고객과 비교해줘.",
+      "seconds": null,
+      "model_calls": 0,
+      "tools": {}
+    },
+    {
+      "id": "L2_019",
+      "status": "UNGRADED",
+      "prompt": "타이타닉에서 '티켓 요금'이 50달러 이상이면서 '사망한 승객'들의 성별과 탑승 등급 분포를 확인해줘.",
+      "seconds": null,
+      "model_calls": 0,
+      "tools": {}
+    },
+    {
+      "id": "L2_020",
+      "status": "PASS",
+      "prompt": "'혼인 상태'가 '이혼'(divorced)이고 '신용 대출'이 있는 고객 중 '가입에 성공'(y='yes')한 사람의 인원수를 구해줘.",
+      "seconds": 0.081,
+      "model_calls": 0,
+      "tools": {
+        "local_analysis_sql": 1
+      }
+    },
+    {
+      "id": "L2_021",
+      "status": "PASS",
+      "prompt": "직업(job)과 혼인상태(marital)별 고객 수 피벗 테이블을 생성하고, 행과 열의 전체 총합계(margins=True)를 표기해줘.",
+      "seconds": 0.055,
+      "model_calls": 0,
+      "tools": {
+        "pivot_dataset": 1
+      }
+    },
+    {
+      "id": "L2_022",
+      "status": "PASS",
+      "prompt": "교육수준(education)과 주택대출(housing)별 평균 잔액 피벗 테이블을 만들고, 전체 평균 총계(margins=True)를 포함해 소수점 둘째 자리까지 출력해줘.",
+      "seconds": 0.045,
+      "model_calls": 0,
+      "tools": {
+        "pivot_dataset": 1
+      }
+    },
+    {
+      "id": "L2_023",
+      "status": "PASS",
+      "prompt": "타이타닉 승객 등급(Pclass)과 성별(Sex)별 생존율 피벗 테이블을 margins=True 총 생존율과 함께 백분율(%)로 표기해줘.",
+      "seconds": 0.131,
+      "model_calls": 0,
+      "tools": {
+        "pivot_dataset": 1
+      }
+    },
+    {
+      "id": "L2_024",
+      "status": "PASS",
+      "prompt": "직업(job)별로 주택 대출과 개인 대출의 교차 보유 고객 수 피벗 테이블(행: job, 열: [housing, loan])을 만들어줘.",
+      "seconds": 0.191,
+      "model_calls": 0,
+      "tools": {
+        "pivot_dataset": 1
+      }
+    },
+    {
+      "id": "L2_025",
+      "status": "PASS",
+      "prompt": "월(month)과 통신 수단(contact)에 따른 마케팅 예금 가입 성공 건수(y='yes') 피벗 테이블을 출력해줘.",
+      "seconds": 0.06,
+      "model_calls": 0,
+      "tools": {
+        "pivot_dataset": 1
+      }
+    },
+    {
+      "id": "L2_026",
+      "status": "UNGRADED",
+      "prompt": "연령대(20대, 30대, 40대, 50대 이상)와 주택대출(housing) 여부에 따른 평균 잔액 피벗 테이블을 생성해줘.",
+      "seconds": null,
+      "model_calls": 0,
+      "tools": {}
+    },
+    {
+      "id": "L2_027",
+      "status": "PASS",
+      "prompt": "직업(job)과 정기예금 가입 여부(y)별 평균 통화 상담 시간(duration) 피벗 테이블을 margins=True와 함께 구해줘.",
+      "seconds": 0.045,
+      "model_calls": 0,
+      "tools": {
+        "pivot_dataset": 1
+      }
+    },
+    {
+      "id": "L2_028",
+      "status": "PASS",
+      "prompt": "타이타닉 승객 등급(Pclass)과 탑승지(Embarked)별 평균 운임 요금(Fare) 피벗 테이블을 소수점 둘째 자리까지 출력해줘.",
+      "seconds": 0.123,
+      "model_calls": 0,
+      "tools": {
+        "pivot_dataset": 1
+      }
+    },
+    {
+      "id": "L2_029",
+      "status": "PASS",
+      "prompt": "교육 수준(education)과 혼인 상태(marital)별 정기예금 가입 성공률(%) 교차표를 백분율로 산출해줘.",
+      "seconds": 0.189,
+      "model_calls": 0,
+      "tools": {
+        "pivot_dataset": 1
+      }
+    },
+    {
+      "id": "L2_030",
+      "status": "UNGRADED",
+      "prompt": "직업군별로 전체 고객 중 잔액이 음수(< 0)인 고객의 비율(%)과 평균 음수 잔액을 표로 정리해줘.",
+      "seconds": null,
+      "model_calls": 0,
+      "tools": {}
+    },
+    {
+      "id": "L2_031",
+      "status": "PASS",
+      "prompt": "월(month)과 주택대출(housing) 여부별 고객 수 피벗 테이블을 만들고 월 순서대로 정렬해줘.",
+      "seconds": 0.072,
+      "model_calls": 0,
+      "tools": {
+        "pivot_dataset": 1
+      }
+    },
+    {
+      "id": "L2_032",
+      "status": "UNGRADED",
+      "prompt": "타이타닉 탑승 등급(Pclass)과 성별(Sex)별 평균 연령(Age)과 승객 수를 동시에 집계한 피벗 테이블을 출력해줘.",
+      "seconds": null,
+      "model_calls": 0,
+      "tools": {}
+    },
+    {
+      "id": "L2_033",
+      "status": "UNGRADED",
+      "prompt": "직업별로 캠페인 접촉 횟수(campaign)의 평균, 중앙값, 최댓값을 요약해줘.",
+      "seconds": null,
+      "model_calls": 0,
+      "tools": {}
+    },
+    {
+      "id": "L2_034",
+      "status": "PASS",
+      "prompt": "이전 마케팅 결과(poutcome)와 이번 가입 결과(y) 간의 교차 빈도표를 작성하고 전체 대비 백분율(normalize=True)을 구해줘.",
+      "seconds": 0.185,
+      "model_calls": 0,
+      "tools": {
+        "pivot_dataset": 1
+      }
+    },
+    {
+      "id": "L2_035",
+      "status": "UNGRADED",
+      "prompt": "직업(job)별로 잔액(balance)이 0 이상인 정상 고객들만의 평균 잔액과 고객 수를 구해줘.",
+      "seconds": null,
+      "model_calls": 0,
+      "tools": {}
+    },
+    {
+      "id": "L2_036",
+      "status": "PASS",
+      "prompt": "계좌 잔액(balance)의 IQR(Q3 - Q1)을 계산하고 상한 이상치 기준선(Q3 + 1.5*IQR)을 넘는 이상치 고객 수를 출력해줘.",
+      "seconds": 0.066,
+      "model_calls": 0,
+      "tools": {
+        "detect_outliers": 1
+      }
+    },
+    {
+      "id": "L2_037",
+      "status": "PASS",
+      "prompt": "잔액(balance)의 IQR 상한 이상치 고객들의 평균 연령과 주요 직업 TOP 3를 출력해줘.",
+      "seconds": 0.187,
+      "model_calls": 0,
+      "tools": {
+        "select_outlier_rows": 1,
+        "aggregate_dataset": 2
+      }
+    },
+    {
+      "id": "L2_038",
+      "status": "PASS",
+      "prompt": "잔액 이상치 고객(상한 1.5*IQR 초과)을 제외한 일반 고객들의 직업별 평균 잔액을 계산하고 이상치 포함 전/후 평균을 비교해줘.",
+      "seconds": 0.068,
+      "model_calls": 0,
+      "tools": {
+        "select_outlier_rows": 1,
+        "compare_group_aggregates": 1
+      }
+    },
+    {
+      "id": "L2_039",
+      "status": "PASS",
+      "prompt": "통화 상담 시간(duration)의 Z-Score가 3을 초과하는 극단치 통화 건수와 최장 통화 시간을 구해줘.",
+      "seconds": 0.035,
+      "model_calls": 0,
+      "tools": {
+        "detect_outliers": 1
+      }
+    },
+    {
+      "id": "L2_040",
+      "status": "PASS",
+      "prompt": "타이타닉 요금(Fare)에서 IQR 기준 상한 이상치(Q3 + 1.5*IQR)를 초과하는 고액 요금 승객 수와 이들의 생존율을 구해줘.",
+      "seconds": 0.153,
+      "model_calls": 0,
+      "tools": {
+        "select_outlier_rows": 1,
+        "local_analysis_sql": 1
+      }
+    },
+    {
+      "id": "L2_041",
+      "status": "UNGRADED",
+      "prompt": "잔액(balance)의 왜도(Skewness)와 첨도(Kurtosis)를 계산하고, 로그 변환(np.log1p) 적용 후 왜도 변화를 비교해줘.",
+      "seconds": null,
+      "model_calls": 0,
+      "tools": {}
+    },
+    {
+      "id": "L2_042",
+      "status": "PASS",
+      "prompt": "직업(job)별 잔액(balance)의 이상치 분포를 한눈에 비교할 수 있도록 박스플롯(Boxplot)을 그려줘.",
+      "seconds": 0.326,
+      "model_calls": 0,
+      "tools": {
+        "render_chart_spec": 1
+      }
+    },
+    {
+      "id": "L2_043",
+      "status": "UNGRADED",
+      "prompt": "잔액(balance)의 상위 1% 값으로 상한 캡핑(Winsorization)을 적용하기 전과 후의 평균 및 표준편차를 비교해줘.",
+      "seconds": null,
+      "model_calls": 0,
+      "tools": {}
+    },
+    {
+      "id": "L2_044",
+      "status": "UNGRADED",
+      "prompt": "타이타닉 요금(Fare)의 왜도를 구하고 log1p 변환 후의 왜도 개선 폭을 출력해줘.",
+      "seconds": null,
+      "model_calls": 0,
+      "tools": {}
+    },
+    {
+      "id": "L2_045",
+      "status": "PASS",
+      "prompt": "타이타닉 승객 등급(Pclass)별 요금(Fare)의 이상치 유무를 비교하는 박스플롯을 그려줘.",
+      "seconds": 0.156,
+      "model_calls": 0,
+      "tools": {
+        "render_chart_spec": 1
+      }
+    },
+    {
+      "id": "L2_046",
+      "status": "PASS",
+      "prompt": "캠페인 접촉 횟수(campaign)가 10회를 초과하는 이상 과다 접촉 고객들의 인원수와 이들의 가입률을 구해줘.",
+      "seconds": 0.246,
+      "model_calls": 0,
+      "tools": {
+        "local_analysis_sql": 1
+      }
+    },
+    {
+      "id": "L2_047",
+      "status": "UNGRADED",
+      "prompt": "상담 시간(duration)과 캠페인 접촉 횟수(campaign) 모두에서 상위 5% 이상치를 기록한 극단 피로 고객군 수를 세어줘.",
+      "seconds": null,
+      "model_calls": 0,
+      "tools": {}
+    },
+    {
+      "id": "L2_048",
+      "status": "PASS",
+      "prompt": "나이(age) 데이터에서 정상 범위를 벗어난 이상치가 있는지 최솟값, 최댓값 및 3-시그마 범위를 점검해줘.",
+      "seconds": 0.205,
+      "model_calls": 0,
+      "tools": {
+        "detect_outliers": 1
+      }
+    },
+    {
+      "id": "L2_049",
+      "status": "UNGRADED",
+      "prompt": "마이너스 잔액(< 0) 고객들의 잔액 분포 최댓값(0에 가장 가까운 값), 최솟값, 중앙값을 알려줘.",
+      "seconds": null,
+      "model_calls": 0,
+      "tools": {}
+    },
+    {
+      "id": "L2_050",
+      "status": "PASS",
+      "prompt": "예금 가입 성공(y='yes') 고객과 실패(y='no') 고객의 상담 시간(duration) 이상치를 비교하는 박스플롯을 그려줘.",
+      "seconds": 0.075,
+      "model_calls": 0,
+      "tools": {
+        "render_chart_spec": 1
+      }
+    },
+    {
+      "id": "L2_051",
+      "status": "PASS",
+      "prompt": "정기예금 가입자(y='yes')와 미가입자(y='no') 간의 계좌 잔액(balance) 차이에 대해 독립표본 t-검정(Two-Sample t-test)을 수행하고 p-value를 확인해줘.",
+      "seconds": 0.042,
+      "model_calls": 0,
+      "tools": {
+        "statistical_test": 1
+      }
+    },
+    {
+      "id": "L2_052",
+      "status": "PASS",
+      "prompt": "정기예금 가입자(y='yes')와 미가입자(y='no') 간의 통화 상담 시간(duration) 차이에 대해 독립표본 t-검정을 수행해줘.",
+      "seconds": 0.04,
+      "model_calls": 0,
+      "tools": {
+        "statistical_test": 1
+      }
+    },
+    {
+      "id": "L2_053",
+      "status": "PASS",
+      "prompt": "주택 대출(housing) 여부와 정기예금 가입(y) 간의 독립성 검정을 위해 카이제곱 검정(Chi-Square Test)을 수행해줘.",
+      "seconds": 0.04,
+      "model_calls": 0,
+      "tools": {
+        "statistical_test": 1
+      }
+    },
+    {
+      "id": "L2_054",
+      "status": "PASS",
+      "prompt": "타이타닉 승객 등급(Pclass)과 생존 여부(Survived) 간의 카이제곱 독립성 검정을 수행해줘.",
+      "seconds": 0.124,
+      "model_calls": 0,
+      "tools": {
+        "statistical_test": 1
+      }
+    },
+    {
+      "id": "L2_055",
+      "status": "PASS",
+      "prompt": "교육 수준(education) 그룹 간 고객 잔액(balance)의 차이가 유의미한지 일원분산분석(One-way ANOVA)을 수행해줘.",
+      "seconds": 0.197,
+      "model_calls": 0,
+      "tools": {
+        "statistical_test": 1
+      }
+    },
+    {
+      "id": "L2_056",
+      "status": "PASS",
+      "prompt": "혼인 상태(marital) 그룹 간 고객 연령(age)의 차이에 대해 일원분산분석(One-way ANOVA)을 수행해줘.",
+      "seconds": 0.047,
+      "model_calls": 0,
+      "tools": {
+        "statistical_test": 1
+      }
+    },
+    {
+      "id": "L2_057",
+      "status": "PASS",
+      "prompt": "잔액(balance) 데이터의 비정규성을 감안하여, 가입 여부(y)별 잔액 차이에 대해 비모수 검정인 맨-휘트니 U 검정(Mann-Whitney U Test)을 수행해줘.",
+      "seconds": 0.039,
+      "model_calls": 0,
+      "tools": {
+        "statistical_test": 1
+      }
+    },
+    {
+      "id": "L2_058",
+      "status": "PASS",
+      "prompt": "타이타닉 생존자(1)와 사망자(0) 간의 지불 요금(Fare) 차이에 대해 독립표본 t-검정을 수행해줘.",
+      "seconds": 0.128,
+      "model_calls": 0,
+      "tools": {
+        "statistical_test": 1
+      }
+    },
+    {
+      "id": "L2_059",
+      "status": "PASS",
+      "prompt": "전체 고객 잔액(balance)의 모평균에 대한 95% 신뢰구간(Confidence Interval)을 계산해줘.",
+      "seconds": 0.192,
+      "model_calls": 0,
+      "tools": {
+        "statistical_test": 1
+      }
+    },
+    {
+      "id": "L2_060",
+      "status": "PASS",
+      "prompt": "신용불량(default) 여부와 개인 대출(loan) 보유 여부 간의 카이제곱 검정을 수행해줘.",
+      "seconds": 0.05,
+      "model_calls": 0,
+      "tools": {
+        "statistical_test": 1
+      }
+    },
+    {
+      "id": "L2_061",
+      "status": "PASS",
+      "prompt": "월(month)별 총 접촉 건수(막대)와 예금 가입 전환율(꺾은선)을 하나의 차트에 이중 축(Dual Y-axis)으로 시각화해줘.",
+      "seconds": 0.105,
+      "model_calls": 0,
+      "tools": {
+        "render_count_rate_chart": 1
+      }
+    },
+    {
+      "id": "L2_062",
+      "status": "UNGRADED",
+      "prompt": "캠페인 접촉 횟수(campaign, 1~10회)별 고객 수(막대)와 가입 성공률(선)을 이중 축으로 시각화해줘.",
+      "seconds": null,
+      "model_calls": 0,
+      "tools": {}
+    },
+    {
+      "id": "L2_063",
+      "status": "UNGRADED",
+      "prompt": "상담 시간(duration)을 0~100초, 100~200초, ..., 600초 이상 구간으로 나누고 구간별 가입 성공률(%)을 막대 차트로 시각화해줘.",
+      "seconds": null,
+      "model_calls": 0,
+      "tools": {}
+    },
+    {
+      "id": "L2_064",
+      "status": "PASS",
+      "prompt": "직업별 고객 수(막대)와 예금 가입 성공률(선)을 이중 축 그래프로 시각화해줘.",
+      "seconds": 0.257,
+      "model_calls": 0,
+      "tools": {
+        "render_count_rate_chart": 1
+      }
+    },
+    {
+      "id": "L2_065",
+      "status": "PASS",
+      "prompt": "타이타닉 승객 등급(Pclass)별 탑승객 수(막대)와 생존율(선)을 이중 축 그래프로 표현해줘.",
+      "seconds": 0.179,
+      "model_calls": 0,
+      "tools": {
+        "render_count_rate_chart": 1
+      }
+    },
+    {
+      "id": "L2_066",
+      "status": "PASS",
+      "prompt": "마케팅 접촉일(day)별 고객 수(막대)와 가입 성공률(선)의 일별 이중 축 추이를 시각화해줘.",
+      "seconds": 0.3,
+      "model_calls": 0,
+      "tools": {
+        "render_count_rate_chart": 1
+      }
+    },
+    {
+      "id": "L2_067",
+      "status": "UNGRADED",
+      "prompt": "직업별 평균 잔액 집계 데이터는 히스토그램이 아닌 막대 차트로 올바르게 표현해야 하는 시각화 규칙을 준수하여 막대 차트로 그려줘.",
+      "seconds": null,
+      "model_calls": 0,
+      "tools": {}
+    },
+    {
+      "id": "L2_068",
+      "status": "PASS",
+      "prompt": "월별 총 접촉 건수의 누적합(Cumulative Sum) 곡선을 시각화해줘.",
+      "seconds": 0.08,
+      "model_calls": 0,
+      "tools": {
+        "render_chart_spec": 1
+      }
+    },
+    {
+      "id": "L2_069",
+      "status": "UNGRADED",
+      "prompt": "주택 대출(housing)과 개인 대출(loan) 4개 조합별 예금 가입률(%)을 막대 차트로 비교해줘.",
+      "seconds": null,
+      "model_calls": 0,
+      "tools": {}
+    },
+    {
+      "id": "L2_070",
+      "status": "UNGRADED",
+      "prompt": "연령대별(20대 이하, 30대, 40대, 50대 이상) 예금 가입 성공률(%)을 꺾은선 차트로 시각화해줘.",
+      "seconds": null,
+      "model_calls": 0,
+      "tools": {}
+    },
+    {
+      "id": "L2_071",
+      "status": "UNGRADED",
+      "prompt": "혼인 상태(marital)별로 주택 대출 보유율과 개인 대출 보유율을 나란히 그룹 막대 차트로 비교해줘.",
+      "seconds": null,
+      "model_calls": 0,
+      "tools": {}
+    },
+    {
+      "id": "L2_072",
+      "status": "UNGRADED",
+      "prompt": "타이타닉 승객 나이(Age)를 10세 단위로 구간화하고 각 연령 구간별 생존율(%)을 막대 차트로 그려줘.",
+      "seconds": null,
+      "model_calls": 0,
+      "tools": {}
+    },
+    {
+      "id": "L2_073",
+      "status": "UNGRADED",
+      "prompt": "이전 마케팅 결과(poutcome)별 예금 가입 성공률(%)을 수평 막대 그래프로 표현해줘.",
+      "seconds": null,
+      "model_calls": 0,
+      "tools": {}
+    },
+    {
+      "id": "L2_074",
+      "status": "UNGRADED",
+      "prompt": "상담 시간(duration)과 나이(age)의 산점도에 예금 가입 여부(y='yes' vs 'no')로 색상을 구분하여 그려줘.",
+      "seconds": null,
+      "model_calls": 0,
+      "tools": {}
+    },
+    {
+      "id": "L2_075",
+      "status": "UNGRADED",
+      "prompt": "통신 수단(contact)별 고객 수와 평균 잔액을 나란히 비교하는 막대 차트를 그려줘.",
+      "seconds": null,
+      "model_calls": 0,
+      "tools": {}
+    },
+    {
+      "id": "L2_076",
+      "status": "UNGRADED",
+      "prompt": "고객 인구통계학적 특성(나이 분포, 상위 5대 직업, 학력 분포, 결혼 여부)을 2x2 서브플롯 대시보드로 시각화해줘.",
+      "seconds": null,
+      "model_calls": 0,
+      "tools": {}
+    },
+    {
+      "id": "L2_077",
+      "status": "UNGRADED",
+      "prompt": "타이타닉 승객 생존 관련 핵심 지표(객실 등급별 생존율, 성별 생존율, 승선 항구별 탑승객 수, 생존 여부별 나이 분포)를 2x2 서브플롯 대시보드로 시각화해줘.",
+      "seconds": null,
+      "model_calls": 0,
+      "tools": {}
+    },
+    {
+      "id": "L2_078",
+      "status": "UNGRADED",
+      "prompt": "주택 대출(housing), 개인 대출(loan), 연체 여부(default), 정기예금 가입 여부(y)에 따른 고객 잔액(balance) 분포를 2x2 박스플롯 대시보드로 시각화해줘.",
+      "seconds": null,
+      "model_calls": 0,
+      "tools": {}
+    },
+    {
+      "id": "L2_079",
+      "status": "UNGRADED",
+      "prompt": "직업군(job)별 정기예금 가입(y) 비율을 100% 누적 가로 막대 차트(100% Stacked Bar Chart)로 시각화해줘.",
+      "seconds": null,
+      "model_calls": 0,
+      "tools": {}
+    },
+    {
+      "id": "L2_080",
+      "status": "UNGRADED",
+      "prompt": "객실 등급(Pclass)과 성별(Sex)의 조합별 생존율을 100% 누적 막대 차트로 시각화해줘.",
+      "seconds": null,
+      "model_calls": 0,
+      "tools": {}
+    },
+    {
+      "id": "L2_081",
+      "status": "UNGRADED",
+      "prompt": "고객 나이(age)와 계좌 잔액(balance)의 관계를 산점도로 그리고, 각 축의 상단과 우측에 히스토그램을 배치한 조인트 플롯 형태로 시각화해줘.",
+      "seconds": null,
+      "model_calls": 0,
+      "tools": {}
+    },
+    {
+      "id": "L2_082",
+      "status": "UNGRADED",
+      "prompt": "은행 데이터의 모든 수치형 컬럼(age, balance, day, duration, campaign, pdays, previous) 간 상관계수 행렬을 계산하고 수치가 표시된 히트맵(Correlation Heatmap)을 그려줘.",
+      "seconds": null,
+      "model_calls": 0,
+      "tools": {}
+    },
+    {
+      "id": "L2_083",
+      "status": "UNGRADED",
+      "prompt": "타이타닉 승객 데이터의 수치형 변수(Survived, Pclass, Age, SibSp, Parch, Fare) 간 상관계수 히트맵을 생성해줘.",
+      "seconds": null,
+      "model_calls": 0,
+      "tools": {}
+    },
+    {
+      "id": "L2_084",
+      "status": "UNGRADED",
+      "prompt": "이전 마케팅 결과(poutcome) 유형별로 상담 통화 시간(duration)의 분포를 박스플롯으로 나란히 비교해줘.",
+      "seconds": null,
+      "model_calls": 0,
+      "tools": {}
+    },
+    {
+      "id": "L2_085",
+      "status": "UNGRADED",
+      "prompt": "타이타닉 승객의 등급(Pclass)별 요금(Fare) 분포를 생존 여부(Survived)별로 비교하는 박스플롯을 그려줘.",
+      "seconds": null,
+      "model_calls": 0,
+      "tools": {}
+    },
+    {
+      "id": "L2_086",
+      "status": "UNGRADED",
+      "prompt": "고객 계좌 잔액(balance)의 로렌츠 곡선(Lorenz Curve)을 그리고 지니계수(Gini Coefficient)를 계산하여 시각화해줘.",
+      "seconds": null,
+      "model_calls": 0,
+      "tools": {}
+    },
+    {
+      "id": "L2_087",
+      "status": "UNGRADED",
+      "prompt": "X축을 고객 나이(age), Y축을 잔액(balance), 점의 크기를 상담 시간(duration), 점의 색상을 예금 가입 여부(y)로 나타낸 버블 차트(Bubble Chart)를 그려줘.",
+      "seconds": null,
+      "model_calls": 0,
+      "tools": {}
+    },
+    {
+      "id": "L2_088",
+      "status": "UNGRADED",
+      "prompt": "타이타닉 승객의 동반 가족 수(SibSp + Parch)에 따른 생존율 변화를 신뢰구간 또는 추세선과 함께 선 그래프로 시각화해줘.",
+      "seconds": null,
+      "model_calls": 0,
+      "tools": {}
+    },
+    {
+      "id": "L2_089",
+      "status": "PASS",
+      "prompt": "월별(month) 접촉 고객 수와 예금 가입 전환율을 2열 서브플롯(막대 차트 & 선 그래프)으로 비교 시각화해줘.",
+      "seconds": 0.28,
+      "model_calls": 0,
+      "tools": {
+        "render_count_rate_chart": 1
+      }
+    },
+    {
+      "id": "L2_090",
+      "status": "UNGRADED",
+      "prompt": "타이타닉 승객의 객실 번호(Cabin)의 첫 글자에서 덱(Deck)을 추출하고, 덱별 승객 수와 생존율을 수평 막대 차트로 나란히 비교해줘.",
+      "seconds": null,
+      "model_calls": 0,
+      "tools": {}
+    },
+    {
+      "id": "L2_091",
+      "status": "UNGRADED",
+      "prompt": "고객 데이터에서 '연봉(salary)' 또는 '소득(income)' 컬럼이 있는지 확인하고, 없을 경우 가장 유사한 금융 컬럼을 찾아 안내해줘.",
+      "seconds": null,
+      "model_calls": 0,
+      "tools": {}
+    },
+    {
+      "id": "L2_092",
+      "status": "UNGRADED",
+      "prompt": "나이가 120세 초과인 고객을 필터링했을 때, 결과 데이터프레임이 빈 경우 ZeroDivisionError나 크래시 없이 안전하게 처리해줘.",
+      "seconds": null,
+      "model_calls": 0,
+      "tools": {}
+    },
+    {
+      "id": "L2_093",
+      "status": "UNGRADED",
+      "prompt": "타이타닉 요금(Fare)이 0원이거나 결측된 승객을 식별하고, 0으로 나누기(ZeroDivisionError) 오류 없이 승객당 요금 배분 안전 검증을 수행해줘.",
+      "seconds": null,
+      "model_calls": 0,
+      "tools": {}
+    },
+    {
+      "id": "L2_094",
+      "status": "UNGRADED",
+      "prompt": "타이타닉 원본 데이터프레임을 훼손(mutation)하지 않고, 나이(Age) 결측치를 Pclass와 Sex별 중앙값으로 대체하는 안전한 전처리 파이프라인을 작성해줘.",
+      "seconds": null,
+      "model_calls": 0,
+      "tools": {}
+    },
+    {
+      "id": "L2_095",
+      "status": "UNGRADED",
+      "prompt": "은행 데이터(bank_loan)와 타이타닉(titanic) 데이터의 스키마를 비교하여 공통 컬럼이 있는지 확인하고 교차 분석 가능 여부를 진단해줘.",
+      "seconds": null,
+      "model_calls": 0,
+      "tools": {}
+    },
+    {
+      "id": "L2_096",
+      "status": "PASS",
+      "prompt": "계좌 잔액(balance)의 극단치 왜곡을 방지하기 위해 상하위 1% 윈저화(Winsorization/Clipping)를 적용하고, 원본 평균과 보정 평균을 비교해줘.",
+      "seconds": 0.047,
+      "model_calls": 0,
+      "tools": {
+        "winsorize_numeric": 1
+      }
+    },
+    {
+      "id": "L2_097",
+      "status": "UNGRADED",
+      "prompt": "목표 변수 'y'(yes/no)를 이진 변수(1/0)로 변환할 때, 알 수 없는 결측값이나 제3의 범주가 들어와도 에러 없이 처리하는 방어적 매핑 코드를 작성해줘.",
+      "seconds": null,
+      "model_calls": 0,
+      "tools": {}
+    },
+    {
+      "id": "L2_098",
+      "status": "UNGRADED",
+      "prompt": "직업(job)과 교육(education)의 소수 그룹에서 표본 수가 1개 이하이거나 분산이 0인 경우 발생할 수 있는 표준편차(std) 결측치를 0으로 안전하게 보정해줘.",
+      "seconds": null,
+      "model_calls": 0,
+      "tools": {}
+    },
+    {
+      "id": "L2_099",
+      "status": "UNGRADED",
+      "prompt": "존재하지 않는 가상의 테이블 'workspace.default.credit_card'에 대한 쿼리 요청이 들어왔을 때, 시스템 등록 테이블 목록을 확인하고 적절한 예외 메시지를 반환해줘.",
+      "seconds": null,
+      "model_calls": 0,
+      "tools": {}
+    },
+    {
+      "id": "L2_100",
+      "status": "UNGRADED",
+      "prompt": "입력 데이터에 결측치, 음수 잔액, 비정상치가 혼재되어 있을 때 4단계 검증(스키마 확인 -> 결측치 감지 -> 음수 플래그 -> 요약 통계 산출)을 수행하는 안전한 파이프라인을 실행해줘.",
+      "seconds": null,
+      "model_calls": 0,
+      "tools": {}
+    }
+  ],
+  "repair": {
+    "type": "one injected invalid ID followed by actual model; deterministic local rescue disabled",
+    "provider": "databricks",
+    "status": "answered",
+    "text": "보유 데이터로 계산한 결과입니다. 출처: fixture.observations\n분석 범위: 요청 조건에 포함된 보유 데이터 전체\n\n평균: 9.0",
+    "elapsed_seconds": 3.465,
+    "model_calls": 3,
+    "tracker": {
+      "injected": true,
+      "live_calls": 2
+    },
+    "raw_unchanged": true,
+    "stop_reason": null,
+    "expected_mean": 9.0,
+    "evidence_ids": [
+      "d66cf66f-b03c-45e4-b3de-c199715d9193"
+    ],
+    "passed": true
+  }
+}

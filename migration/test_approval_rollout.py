@@ -6,6 +6,8 @@ import sys
 import tempfile
 import unittest
 from unittest.mock import patch
+from dataclasses import asdict
+import pandas as pd
 from langchain_core.messages import AIMessage
 from langchain_core.outputs import ChatResult,ChatGeneration
 from migration.approval_ledger import ApprovalLedger
@@ -17,6 +19,11 @@ class StatusModel(QuietModel):
     def _generate(self,messages,**kwargs):
         text='{"action":"status"}' if messages[0].content.startswith('사용자 메시지가 오직') else '상태 확인'
         return ChatResult(generations=[ChatGeneration(message=AIMessage(content=text))])
+
+
+class NoUnexpectedModelCall(QuietModel):
+    def _generate(self,messages,**kwargs):
+        raise AssertionError('controller-authored data load must finish from tool evidence')
 
 
 class LedgerTests(unittest.TestCase):
@@ -77,8 +84,17 @@ l.execute('one',json.loads(sys.argv[2]),lambda e:os._exit(23))
 
 class GraphApprovalTests(unittest.TestCase):
     def runtime(self,root,model,calls,connection='conn'):
+        def factory(datasets):
+            def execute(envelope):
+                calls.append(envelope)
+                frame=pd.DataFrame([{'value':1}])
+                info=datasets.register(frame,source=envelope['source'],query=envelope['query'],
+                    coverage='unknown',predicate_known=False)
+                return {'status':'ready','dataset':asdict(info),
+                    'preview':frame.to_dict(orient='records')}
+            return execute
         return GraphAnalysisRuntime(root,'owner','thread',model,connection_identity=connection,
-            remote_factory=lambda d:lambda e:calls.append(e) or {'status':'ready','value':1})
+            remote_factory=factory)
 
     def test_reopen_status_question_approve_and_duplicate(self):
         with tempfile.TemporaryDirectory() as root:
@@ -92,12 +108,76 @@ class GraphApprovalTests(unittest.TestCase):
             with self.assertRaises(PermissionError):r.respond(pending['id'],approved=True)
             self.assertEqual(len(calls),1);r.close()
 
+    def test_controller_table_preview_finishes_from_loaded_dataset_without_model(self):
+        with tempfile.TemporaryDirectory() as root:
+            calls=[]
+            def factory(datasets):
+                def execute(envelope):
+                    calls.append(envelope)
+                    frame=pd.DataFrame([{'age':42,'job':'technician'}])
+                    info=datasets.register(frame,source=envelope['source'],query=envelope['query'],
+                        coverage='unknown',predicate_known=False)
+                    return {'status':'ready','dataset':asdict(info),
+                        'preview':frame.to_dict(orient='records')}
+                return execute
+            r=GraphAnalysisRuntime(root,'owner','preview',NoUnexpectedModelCall(),
+                connection_identity='conn',remote_factory=factory)
+            proposed=r.propose_table('catalog.schema.events')
+            pending=proposed['requests'][0]
+
+            result=r.respond(pending['id'],approved=True)
+
+            self.assertEqual(result['status'],'answered',result)
+            self.assertEqual(len(calls),1)
+            self.assertIn('1행, 2열',result['text'])
+            self.assertIn('전체 통계로 간주하지 않습니다',result['text'])
+            state=r.inspect()['recovery']
+            self.assertTrue(state['data_load'])
+            self.assertFalse(state['calculation'])
+            self.assertTrue(state['load_evidence_id'])
+            # The injected controller proposal crosses after-model once, but
+            # NoUnexpectedModelCall proves no LLM generation ran.
+            self.assertEqual(state['model_calls'],1)
+            r.close()
+
+    def test_current_loaded_numbered_sample_histogram_stays_local(self):
+        with tempfile.TemporaryDirectory() as root:
+            r=GraphAnalysisRuntime(root,'owner','sample-chart',NoUnexpectedModelCall())
+            r.datasets.register(pd.DataFrame([{'age':20},{'age':30},{'age':30}]),
+                source='catalog.schema.events',query='SELECT * FROM catalog.schema.events LIMIT 10000',
+                coverage='unknown',predicate_known=False)
+
+            result=r.submit('현재 로딩된 10,000행 표본의 age 히스토그램을 보여줘')
+
+            self.assertEqual(result['status'],'answered',result)
+            state=r.inspect()['recovery']
+            self.assertTrue(state['current_result_only'])
+            self.assertTrue(state['artifact_ids'])
+            self.assertEqual(state['model_calls'],0)
+            self.assertEqual(r.inspect()['requests'],[])
+            r.close()
+
+    def test_complete_local_histogram_bypasses_model_and_remote(self):
+        with tempfile.TemporaryDirectory() as root:
+            r=GraphAnalysisRuntime(root,'owner','complete-chart',NoUnexpectedModelCall())
+            r.datasets.register(pd.DataFrame([{'age':20},{'age':30},{'age':30}]),
+                source='catalog.schema.events',coverage='complete',predicate_known=True)
+
+            result=r.submit('catalog.schema.events의 age histogram을 보여줘')
+
+            self.assertEqual(result['status'],'answered',result)
+            state=r.inspect()['recovery']
+            self.assertEqual(state['model_calls'],0)
+            self.assertTrue(state['artifact_ids'])
+            self.assertEqual(r.inspect()['requests'],[])
+            r.close()
+
     def test_explicit_chat_approval_and_rejection(self):
         for text,count in [('승인해줘',1),('취소해줘',0)]:
             with tempfile.TemporaryDirectory() as root:
                 calls=[];r=self.runtime(root,QuietModel(),calls)
                 r.propose_query('fixture','SELECT 1','test')
-                self.assertEqual(r.submit(text)['status'],'answered')
+                self.assertEqual(r.submit(text)['status'],'answered' if count else 'blocked')
                 self.assertEqual(len(calls),count);r.close()
 
     def test_changed_request_invalidates_old_approval(self):

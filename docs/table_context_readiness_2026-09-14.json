@@ -1,0 +1,66 @@
+{
+  "generated_at": "2026-09-14T03:34:20.192969+00:00",
+  "storage_dir": "/Users/najongseong/git_repository/teleai/.telly_table_context",
+  "tables": [
+    {
+      "table": "workspace.default.bank_loan",
+      "training_status": "trained",
+      "observed_at": "2026-04-25T14:10:31Z",
+      "freshness": "stale",
+      "schema_fingerprint": "85c8ac06ba9b44a5a3dd0fce60615149f025c0a4418d7cf48174777db8ca1f93",
+      "column_count": 18,
+      "columns_with_aliases": 18,
+      "alias_count": 50,
+      "runtime_resolution": "needs_refresh",
+      "refresh_query": "SELECT * FROM `workspace`.`default`.`bank_loan` LIMIT 0"
+    },
+    {
+      "table": "workspace.default.stormtrooper",
+      "training_status": "trained",
+      "observed_at": "2026-04-27T13:04:44Z",
+      "freshness": "stale",
+      "schema_fingerprint": "171fda61f2e223df99e1c47b53b7e7cae0dc78ec3042471cabc27937f1c103b0",
+      "column_count": 13,
+      "columns_with_aliases": 7,
+      "alias_count": 14,
+      "runtime_resolution": "needs_refresh",
+      "refresh_query": "SELECT * FROM `workspace`.`default`.`stormtrooper` LIMIT 0"
+    },
+    {
+      "table": "workspace.default.titanic",
+      "training_status": "trained",
+      "observed_at": "2026-04-26T12:42:42Z",
+      "freshness": "stale",
+      "schema_fingerprint": "75770e20b90bbaf412d5674bf684ba789b87329d3511b503f1b3f5ccef6d4caa",
+      "column_count": 12,
+      "columns_with_aliases": 12,
+      "alias_count": 26,
+      "runtime_resolution": "needs_refresh",
+      "refresh_query": "SELECT * FROM `workspace`.`default`.`titanic` LIMIT 0"
+    },
+    {
+      "table": "workspace.default.ncr_ride",
+      "training_status": "trained",
+      "observed_at": "2026-04-27T12:34:12Z",
+      "freshness": "stale",
+      "schema_fingerprint": "62b2640f8deebb5e869d35c114890b6acdf6a188ffcf3d1530343a0a4c534696",
+      "column_count": 21,
+      "columns_with_aliases": 19,
+      "alias_count": 38,
+      "runtime_resolution": "needs_refresh",
+      "refresh_query": "SELECT * FROM `workspace`.`default`.`ncr_ride` LIMIT 0"
+    }
+  ],
+  "summary": {
+    "table_count": 4,
+    "fresh_tables": 0,
+    "stale_tables": 4,
+    "tables_needing_refresh": 4
+  },
+  "safety": {
+    "databricks_calls": 0,
+    "raw_rows_read": false,
+    "credentials_read": false,
+    "refresh_queries_executed": 0
+  }
+}

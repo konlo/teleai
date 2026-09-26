@@ -1,0 +1,442 @@
+{
+  "case_id": "L1_017",
+  "run_id": "65b014cb584542fcae4202b4fa8c1481",
+  "state": "idle",
+  "message_count": 4,
+  "pending_requests": 0,
+  "recovery_status": "complete",
+  "recovery_attempts": 0,
+  "recovery_model_calls": 0,
+  "reference_context": [
+    {
+      "table": "bank_loan",
+      "training_status": "fixture_profile",
+      "columns": [
+        {
+          "name": "id",
+          "dtype": "int64",
+          "distinct_count": 2000,
+          "null_count": 0,
+          "top_values": [],
+          "aliases": [
+            "아이디"
+          ]
+        },
+        {
+          "name": "age",
+          "dtype": "int64",
+          "distinct_count": 57,
+          "null_count": 0,
+          "top_values": [],
+          "aliases": [
+            "나이",
+            "연령",
+            "20대",
+            "30대",
+            "40대",
+            "50대"
+          ]
+        },
+        {
+          "name": "job",
+          "dtype": "object",
+          "distinct_count": 12,
+          "null_count": 0,
+          "top_values": [],
+          "aliases": [
+            "직업",
+            "직종",
+            "일"
+          ]
+        },
+        {
+          "name": "marital",
+          "dtype": "object",
+          "distinct_count": 3,
+          "null_count": 0,
+          "top_values": [
+            {
+              "value": "married",
+              "count": 1207
+            },
+            {
+              "value": "single",
+              "count": 547
+            },
+            {
+              "value": "divorced",
+              "count": 246
+            }
+          ],
+          "aliases": [
+            "결혼",
+            "혼인",
+            "혼인 상태",
+            "기혼",
+            "미혼",
+            "이혼",
+            "배우자"
+          ]
+        },
+        {
+          "name": "education",
+          "dtype": "object",
+          "distinct_count": 4,
+          "null_count": 0,
+          "top_values": [
+            {
+              "value": "secondary",
+              "count": 1075
+            },
+            {
+              "value": "tertiary",
+              "count": 571
+            },
+            {
+              "value": "primary",
+              "count": 291
+            },
+            {
+              "value": "unknown",
+              "count": 63
+            }
+          ],
+          "aliases": [
+            "학력",
+            "교육",
+            "학교"
+          ]
+        },
+        {
+          "name": "default",
+          "dtype": "object",
+          "distinct_count": 2,
+          "null_count": 0,
+          "top_values": [
+            {
+              "value": "no",
+              "count": 1970
+            },
+            {
+              "value": "yes",
+              "count": 30
+            }
+          ],
+          "aliases": [
+            "연체",
+            "불이행",
+            "디폴트"
+          ]
+        },
+        {
+          "name": "balance",
+          "dtype": "int64",
+          "distinct_count": 1565,
+          "null_count": 0,
+          "top_values": [],
+          "aliases": [
+            "잔액",
+            "잔고",
+            "예금액",
+            "통장 잔액"
+          ]
+        },
+        {
+          "name": "housing",
+          "dtype": "object",
+          "distinct_count": 2,
+          "null_count": 0,
+          "top_values": [
+            {
+              "value": "yes",
+              "count": 1055
+            },
+            {
+              "value": "no",
+              "count": 945
+            }
+          ],
+          "aliases": [
+            "주택 대출",
+            "집 대출",
+            "부동산 대출"
+          ]
+        },
+        {
+          "name": "loan",
+          "dtype": "object",
+          "distinct_count": 2,
+          "null_count": 0,
+          "top_values": [
+            {
+              "value": "no",
+              "count": 1652
+            },
+            {
+              "value": "yes",
+              "count": 348
+            }
+          ],
+          "aliases": [
+            "개인 대출",
+            "신용 대출"
+          ]
+        },
+        {
+          "name": "contact",
+          "dtype": "object",
+          "distinct_count": 3,
+          "null_count": 0,
+          "top_values": [
+            {
+              "value": "cellular",
+              "count": 1232
+            },
+            {
+              "value": "unknown",
+              "count": 636
+            },
+            {
+              "value": "telephone",
+              "count": 132
+            }
+          ],
+          "aliases": [
+            "연락 방법",
+            "통신 수단"
+          ]
+        },
+        {
+          "name": "day",
+          "dtype": "int64",
+          "distinct_count": 31,
+          "null_count": 0,
+          "top_values": [],
+          "aliases": [
+            "접촉 날짜"
+          ]
+        },
+        {
+          "name": "month",
+          "dtype": "object",
+          "distinct_count": 12,
+          "null_count": 0,
+          "top_values": [],
+          "aliases": [
+            "월",
+            "달"
+          ]
+        },
+        {
+          "name": "duration",
+          "dtype": "int64",
+          "distinct_count": 692,
+          "null_count": 0,
+          "top_values": [],
+          "aliases": [
+            "상담 시간",
+            "통화 시간",
+            "상담 길이"
+          ]
+        },
+        {
+          "name": "campaign",
+          "dtype": "int64",
+          "distinct_count": 13,
+          "null_count": 0,
+          "top_values": [],
+          "aliases": [
+            "접촉 횟수",
+            "캠페인 횟수"
+          ]
+        },
+        {
+          "name": "pdays",
+          "dtype": "int64",
+          "distinct_count": 326,
+          "null_count": 0,
+          "top_values": [],
+          "aliases": [
+            "경과일"
+          ]
+        },
+        {
+          "name": "previous",
+          "dtype": "int64",
+          "distinct_count": 13,
+          "null_count": 0,
+          "top_values": [],
+          "aliases": [
+            "이전 접촉 횟수"
+          ]
+        },
+        {
+          "name": "poutcome",
+          "dtype": "object",
+          "distinct_count": 4,
+          "null_count": 0,
+          "top_values": [
+            {
+              "value": "unknown",
+              "count": 1596
+            },
+            {
+              "value": "failure",
+              "count": 241
+            },
+            {
+              "value": "other",
+              "count": 109
+            },
+            {
+              "value": "success",
+              "count": 54
+            }
+          ],
+          "aliases": [
+            "이전 결과",
+            "이전 마케팅 결과"
+          ]
+        },
+        {
+          "name": "y",
+          "dtype": "object",
+          "distinct_count": 2,
+          "null_count": 0,
+          "top_values": [
+            {
+              "value": "no",
+              "count": 1730
+            },
+            {
+              "value": "yes",
+              "count": 270
+            }
+          ],
+          "aliases": [
+            "가입",
+            "가입 여부",
+            "정기예금",
+            "예금 가입"
+          ]
+        }
+      ],
+      "alias_source": "test_set/README.md > 데이터 스키마 > workspace.default.bank_loan; complete table-level aliases, not question-specific synonym_mapping",
+      "source": "local test_set fixture; not a live Databricks table"
+    }
+  ],
+  "datasets": [
+    {
+      "id": "5bd82699-831f-4e5b-8d46-5bb2e8577a58",
+      "source": "bank_loan",
+      "columns": [
+        "id",
+        "age",
+        "job",
+        "marital",
+        "education",
+        "default",
+        "balance",
+        "housing",
+        "loan",
+        "contact",
+        "day",
+        "month",
+        "duration",
+        "campaign",
+        "pdays",
+        "previous",
+        "poutcome",
+        "y"
+      ],
+      "rows": 2000,
+      "coverage": "complete",
+      "conditions": [],
+      "predicate_known": true,
+      "grain": "raw",
+      "aggregation": "",
+      "snapshot": "fixture:6fd6aefae0385fe96f9884c3154048e19641fc9ae55f872378551b8c1e268c25",
+      "query": "",
+      "parent_id": "",
+      "parent_ids": [],
+      "role": "root",
+      "root_id": "5bd82699-831f-4e5b-8d46-5bb2e8577a58"
+    },
+    {
+      "id": "20270a8f-4b88-4a86-a01e-b62496c7a042",
+      "source": "bank_loan",
+      "columns": [
+        "average",
+        "maximum"
+      ],
+      "rows": 1,
+      "coverage": "complete",
+      "conditions": [],
+      "predicate_known": false,
+      "grain": "aggregate",
+      "aggregation": "SELECT AVG(\"age\") AS average, MAX(\"age\") AS maximum FROM data",
+      "snapshot": "fixture:6fd6aefae0385fe96f9884c3154048e19641fc9ae55f872378551b8c1e268c25",
+      "query": "SELECT AVG(\"age\") AS average, MAX(\"age\") AS maximum FROM data",
+      "parent_id": "5bd82699-831f-4e5b-8d46-5bb2e8577a58",
+      "parent_ids": [],
+      "role": "derived",
+      "root_id": "5bd82699-831f-4e5b-8d46-5bb2e8577a58"
+    }
+  ],
+  "charts": [],
+  "diagnostics": [
+    {
+      "time": "2026-09-24T17:08:39.254563+00:00",
+      "event": "run_started",
+      "run_id": "65b014cb584542fcae4202b4fa8c1481",
+      "operation": "submit"
+    },
+    {
+      "time": "2026-09-24T17:08:39.310126+00:00",
+      "event": "recovery_transition",
+      "run_id": "65b014cb584542fcae4202b4fa8c1481",
+      "tool": "local_analysis_sql"
+    },
+    {
+      "time": "2026-09-24T17:08:39.311185+00:00",
+      "event": "tool_started",
+      "run_id": "65b014cb584542fcae4202b4fa8c1481",
+      "tool": "local_analysis_sql"
+    },
+    {
+      "time": "2026-09-24T17:08:39.340262+00:00",
+      "event": "tool_completed",
+      "run_id": "65b014cb584542fcae4202b4fa8c1481",
+      "tool": "local_analysis_sql",
+      "status": "ready",
+      "elapsed_seconds": 0.029
+    },
+    {
+      "time": "2026-09-24T17:08:39.341536+00:00",
+      "event": "calculation_evidence",
+      "run_id": "65b014cb584542fcae4202b4fa8c1481"
+    },
+    {
+      "time": "2026-09-24T17:08:39.342680+00:00",
+      "event": "completion_checked",
+      "run_id": "65b014cb584542fcae4202b4fa8c1481",
+      "status": "complete",
+      "attempts": 0
+    },
+    {
+      "time": "2026-09-24T17:08:39.343836+00:00",
+      "event": "run_completed",
+      "run_id": "65b014cb584542fcae4202b4fa8c1481",
+      "status": "answered",
+      "elapsed_seconds": 0.089
+    },
+    {
+      "time": "2026-09-24T17:08:39.343862+00:00",
+      "event": "turn_slo",
+      "run_id": "65b014cb584542fcae4202b4fa8c1481",
+      "elapsed_seconds": 0.089,
+      "limit": 180.0,
+      "status": "ok"
+    }
+  ]
+}
