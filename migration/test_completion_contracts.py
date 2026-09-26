@@ -3,6 +3,7 @@ import json
 from pathlib import Path
 import tempfile
 import unittest
+from unittest.mock import patch
 from uuid import uuid4
 
 import pandas as pd
@@ -194,7 +195,9 @@ class CompletionTests(unittest.TestCase):
             self.assertEqual(result['recovery']['stop_reason'], 'model_time_budget')
             r.close()
 
-    def test_bad_sql_observation_allows_corrected_sql_without_restart(self):
+    # Exercise the injected model path even when a valid deterministic plan exists.
+    @patch("core.analysis_agent.recovery.RecoveryMiddleware._next_local", return_value=None)
+    def test_bad_sql_observation_allows_corrected_sql_without_restart(self, _planner):
         with tempfile.TemporaryDirectory() as root:
             model = ScriptModel(calls=[
                 {'name': 'local_analysis_sql', 'args': {'dataset_id': '$dataset', 'query': 'SELECT AVG(missing_column) FROM data'}},
@@ -210,7 +213,9 @@ class CompletionTests(unittest.TestCase):
             self.assertEqual(model.position, 2)
             r.close()
 
-    def test_new_turn_does_not_reuse_previous_numeric_evidence(self):
+    # Exercise the injected model path even when a valid deterministic plan exists.
+    @patch("core.analysis_agent.recovery.RecoveryMiddleware._next_local", return_value=None)
+    def test_new_turn_does_not_reuse_previous_numeric_evidence(self, _planner):
         with tempfile.TemporaryDirectory() as root:
             model = ScriptModel(calls=[{'name': 'local_analysis_sql', 'args': {
                 'dataset_id': '$dataset', 'query': f'SELECT AVG({COLUMN}) AS result FROM data'}}])
@@ -359,7 +364,9 @@ class CompletionTests(unittest.TestCase):
             self.assertEqual(model.position, 2)
             r.close()
 
-    def test_wrong_month_result_is_rejected_then_correct_scope_completes(self):
+    # Exercise the injected model path even when a valid deterministic plan exists.
+    @patch("core.analysis_agent.recovery.RecoveryMiddleware._next_local", return_value=None)
+    def test_wrong_month_result_is_rejected_then_correct_scope_completes(self, _planner):
         wrong = FIXTURE['turns'][0]['sql'].replace('2026-08', '2026-07')
         correct = FIXTURE['turns'][0]['sql']
         with tempfile.TemporaryDirectory() as root:
@@ -386,7 +393,9 @@ class CompletionTests(unittest.TestCase):
                 for event in (json.loads(line) for line in r.diagnostics.path.read_text().splitlines())))
             r.close()
 
-    def test_followup_cannot_silently_drop_inherited_month(self):
+    # Exercise the injected model path even when a valid deterministic plan exists.
+    @patch("core.analysis_agent.recovery.RecoveryMiddleware._next_local", return_value=None)
+    def test_followup_cannot_silently_drop_inherited_month(self, _planner):
         first, followup = FIXTURE['turns'][:2]
         missing_month = followup['sql'].replace("period = '2026-08' AND ", '')
         with tempfile.TemporaryDirectory() as root:

@@ -187,6 +187,13 @@ class RecoveryMiddleware(AgentMiddleware):
         data_load = request_kind == 'remote_load' or legacy_load
         if human and current.get('request_id') != human.id:
             previous = current
+            from core.analysis_agent.clarification import continue_analysis
+            continued = continue_analysis(text, previous, self.context)
+            if continued:
+                text = continued
+                current_loaded_reference = bool(previous.get('current_result_only'))
+                self.diagnostics.emit('analysis_clarification_bound',
+                    request_id=human.id, previous_request_id=previous.get('request_id'))
             fresh_source_required = bool(re.search(
                 r'최신|새로\s*(?:갱신|업데이트|변경)된|현재\s*(?:원본|테이블|DB|데이터베이스)|'
                 r'지금\s*(?:원본|테이블|DB|데이터베이스)|오늘\s*기준|방금\s*갱신', text, re.I)) and not current_loaded_reference
@@ -568,7 +575,7 @@ class RecoveryMiddleware(AgentMiddleware):
                 r'(?<!\d)([\d,]+)\s*행\s*(?:표본|샘플|데이터|결과)', text)
             requested_result_rows = (int(result_rows_match[1].replace(',', ''))
                                      if result_rows_match else None)
-            current = dict(request_id=human.id, attempts=0, chart=chart, kind=kind,
+            current = dict(request_id=human.id, request_text=text, attempts=0, chart=chart, kind=kind,
                 join=join_requested, join_how=join_how,
                 statistical_kind=statistical_kind,
                 pivot_requested=pivot_requested and bool(pivot_aggregation),
@@ -594,6 +601,7 @@ class RecoveryMiddleware(AgentMiddleware):
                 group_summary_requested=False,group_summary_columns=[],
                 group_summary_metrics=[],group_summary_conditions=[],
                 calculation=calculation, operations=operations, metadata_kind=metadata_kind,
+                scalar_grouping=bool(re.search(r'별|\bgroup\s+by\b|\bby\b', text, re.I)),
                 profile_kind=profile_kind, preview_limit=preview_limit,
                 chart_spec_requested=chart_spec_requested,
                 count_rate_layout=count_rate_layout,
@@ -849,6 +857,19 @@ class RecoveryMiddleware(AgentMiddleware):
                                 [] if conditional else list(current['scope'].get('conditions', [])))
                             calculation, operations = False, []
                             current['calculation'], current['operations'] = False, []
+            # A frequency table has one grouping axis and a row-count metric.
+            # Bind the axis to the request/schema, never to a model's choice.
+            if (not any(current.get(key) for key in (
+                    'chart', 'pivot_requested', 'group_summary_requested',
+                    'profile_kind', 'outlier_spec', 'statistical_kind'))
+                    and set(operations) <= {'COUNT'}
+                    and re.search(r'빈도|분포.*표|frequency', text, re.I)):
+                scoped = current['scope']
+                predicates = {item['column'] for item in scoped.get('conditions', [])}
+                axes = [name for name in mentioned_columns if name not in predicates]
+                if (len(axes) == 1 and not any(scoped.get(key) for key in (
+                        'unresolved', 'any_conditions', 'ratio', 'measure_conditions'))):
+                    current.update(frequency_column=axes[0], calculation=True, operations=['COUNT'])
             # Prefer an explicitly named canonical grouping column over an
             # incidental alias match. For example, a short alias such as
             # "일" must not make ``job`` compete with an explicit ``day`` in
@@ -1723,6 +1744,12 @@ class RecoveryMiddleware(AgentMiddleware):
             operations = {node.sql_name() for node in tree.find_all(exp.AggFunc)}
             requested_operations = set(current.get('operations', []))
             if not (requested_operations - {'RATIO'}).issubset(operations): return False
+            if current.get('frequency_column'):
+                group = tree.args.get('group')
+                if (group is None or len(group.expressions) != 1
+                        or not isinstance(group.expressions[0], exp.Column)
+                        or group.expressions[0].name != current['frequency_column']):
+                    return False
             ratio = current.get('scope', {}).get('ratio') or {}
             if ('RATIO' in requested_operations and not tree.find(exp.Div)
                     and ratio.get('aggregation') != 'mean_zero_one'): return False
@@ -1846,8 +1873,14 @@ class RecoveryMiddleware(AgentMiddleware):
                 and not remote_block):
             current['status'] = 'blocked'
             current['stop_reason'] = 'analysis_target_unresolved'
+            current['pending_clarification'] = {
+                'request_text': current.get('request_text', ''),
+                'selected_dataset_id': self.context.selected_dataset_id if self.context else None,
+            }
             text = ('요청의 분석 대상·조건을 현재 스키마의 컬럼에 확정적으로 연결하지 못했습니다. '
-                    '어떤 컬럼과 조건값을 기준으로 계산할까요? 추측한 수치는 결과로 채택하지 않았으며 기존 데이터는 보존했습니다.')
+                    '어떤 컬럼과 조건값을 기준으로 계산할까요? '
+                    '건수는 `컬럼 = \'조건값\'`, 평균 등은 컬럼명으로 답하면 원래 요청을 이어갑니다. '
+                    '추측한 수치는 결과로 채택하지 않았으며 기존 데이터는 보존했습니다.')
         if reason == 'completion_output_missing':
             text = '검증된 결과를 표시하는 데 실패했습니다. 완료로 처리하지 않았으며 기존 데이터는 보존했습니다.'
         # Free-form text is allowed only for requests with no analytical obligation.
@@ -1867,6 +1900,26 @@ class RecoveryMiddleware(AgentMiddleware):
         return {'recovery': current, 'messages': [message]}
 
     def _next_local(self, current, calls):
+        if (self.context and current.get('frequency_column') and not current.get('evidence_ids')
+                and not current.get('fresh_source_required')):
+            scope = current.get('scope', {})
+            column = current['frequency_column']
+            needed = {column, *(item['column'] for item in scope.get('conditions', []))}
+            candidates = [info for info in self.context.datasets.metadata.values()
+                if info.grain == 'raw' and not info.aggregation and needed.issubset(info.columns)
+                and self._source_matches(info, current) and self._fresh_for_request(info, current)
+                and (current.get('current_result_only') or
+                     (info.coverage == 'complete' and info.predicate_known))]
+            candidates = self._requested_dataset_candidates(candidates, current)
+            if len(candidates) == 1:
+                quoted = '"' + column.replace('"', '""') + '"'
+                args = {'dataset_id': candidates[0].id,
+                    'query': f'SELECT {quoted}, COUNT(*) AS count FROM data GROUP BY {quoted} ORDER BY {quoted}',
+                    'requested_conditions': deepcopy(scope.get('conditions', []))}
+                if current.get('current_result_only'):
+                    args['current_result_only'] = True
+                if not any(c.get('name') == 'local_analysis_sql' and c.get('args') == args for c in calls.values()):
+                    return {'name': 'local_analysis_sql', 'args': args}
         if (self.context and current.get('group_summary_requested')
                 and not current.get('group_summary_evidence')
                 and not current.get('fresh_source_required')):
@@ -2692,8 +2745,7 @@ class RecoveryMiddleware(AgentMiddleware):
             and not current.get('fresh_source_required')
             and not self._has_scope(current) and self.context
             and self.context.selected_dataset_id)
-        deterministic_scalar = bool(current.get('current_result_only') or selected_scalar or (
-            len(aggregate_operations) > 1 and not self._has_scope(current)))
+        deterministic_scalar = not (current.get('fresh_source_required') or current.get('scalar_grouping'))
         if (self.context and current.get('calculation') and deterministic_scalar
                 and len(aggregate_operations) >= 1
                 and set(aggregate_operations).issubset(supported_aggregates)
@@ -2709,9 +2761,9 @@ class RecoveryMiddleware(AgentMiddleware):
             if not columns:
                 columns = [column for column in scope.get('columns', [])
                            if column not in predicate_columns]
-            if len(columns) != 1:
+            if not columns:
                 return None
-            needed_columns = predicate_columns | {columns[0]}
+            needed_columns = predicate_columns | set(columns)
             candidates = [info for info in self.context.datasets.metadata.values()
                 if info.grain == 'raw' and (current.get('current_result_only') or info.predicate_known)
                 and needed_columns.issubset(info.columns) and self._source_matches(info, current)
@@ -2721,17 +2773,24 @@ class RecoveryMiddleware(AgentMiddleware):
                      or info.rows == current['requested_result_rows'])
                 and (current.get('current_result_only')
                     or (info.coverage == 'complete' and self._fresh_for_request(info, current)))]
-            from pandas.api.types import is_numeric_dtype
             numeric_candidates = []
+            numeric_columns = {}
             for info in candidates:
                 try:
-                    if is_numeric_dtype(project_dataset(
-                            self.context.datasets, info.id, [columns[0]])[columns[0]]):
+                    # Inspect persisted types before reading values. A compound
+                    # label may mention an identifier as well as its measure.
+                    # Two numeric measures remain ambiguous and require input.
+                    dtypes = self.context.datasets.inspect(info.id).get('dtypes', {})
+                    measures = [name for name in columns if _dtype_family(dtypes.get(name)) == 'numeric']
+                    if (len(measures) == 1
+                            and all(_dtype_family(dtypes.get(name)) in {'numeric', 'categorical'} for name in columns)):
                         numeric_candidates.append(info)
+                        numeric_columns[info.id] = measures[0]
                 except (KeyError, OSError, ValueError, TypeError):
                     continue
+            numeric_candidates = self._requested_dataset_candidates(numeric_candidates, current)
             if len(numeric_candidates) == 1:
-                quoted = '"' + columns[0].replace('"', '""') + '"'
+                quoted = '"' + numeric_columns[numeric_candidates[0].id].replace('"', '""') + '"'
                 aliases = {'AVG':'average', 'MEDIAN':'median', 'SUM':'sum',
                            'MIN':'minimum', 'MAX':'maximum'}
                 projections = [f'{operation}({quoted}) AS {aliases[operation]}'

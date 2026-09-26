@@ -25,7 +25,13 @@ _OPS = {'=':'eq', '==':'eq', '!=':'ne', '<>':'ne', '>':'gt', '>=':'ge', '<':'lt'
 def _mentioned(text, name):
     # A Korean unit alias such as "월" may directly follow a digit ("5월").
     # Latin identifier prefixes remain excluded.
-    return bool(name and re.search(r'(?<![A-Za-z_])' + re.escape(name) + r'(?![A-Za-z0-9_])', text, re.I))
+    if not name:
+        return False
+    # Korean aliases may carry particles, but must not match the beginning of
+    # an unrelated word (e.g. a time-unit alias inside a currency word).
+    suffix = (r'(?=(?:이나|이거나|거나|은|는|이|가|을|를|의|과|와|별|간|에서|으로|에|도)?(?:[^가-힣A-Za-z_]|$))'
+              if re.search(r'[가-힣]$', name) else r'(?![A-Za-z0-9_])')
+    return bool(re.search(r'(?<![A-Za-z_가-힣])' + re.escape(name) + suffix, text, re.I))
 
 
 def _scalar(value):

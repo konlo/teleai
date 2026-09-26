@@ -3,9 +3,9 @@
 ## Current Status
 - **Last Updated**: 2026-09-26
 - **Status**: In Progress — 로컬 단일 사용자 범위에서도 정식 출시 NO-GO
-- **Summary**: 공통 완료 계약 15개, 복합 요청·원본/부분 데이터 구별·도구 인자 오류 피드백·잘못된 수치 채택 차단을 구현했다. 실제 웹의 평균+히스토그램 ReadTimeout 요청을 동일 체크포인트에서 재개해 평균 40.931·10,000행 차트를 표시했다. 원본 SHA256과 승인 1건은 그대로다. 최신 Qwen+production graph 전체 87문항은 78 PASS/9 미완료/0 오답(89.7%)이며 113개는 미채점이다. 앱 284/284, migration 133/133, reference/Level3 217/217 통과. 상세: [완료 계약 검증](docs/evaluation/2026-09-26_completion_gate.md).
-- **Next Session Focus**: 최신 실제 모델 미완료 9문항의 공통 원인인 의도·컬럼·값 의미 연결, 안전한 확인 질문 이후 후속 완료를 개선한다. 공식 Spider의 SQL 방언/조인/기준일, 최종 빌드 신규 승인 적재와 대규모 전송/RSS 실측도 남아 있다. 별도 서버 배포는 제외한다.
-- **Current qualification**: 동일 87문항의 수정 전 82 PASS/4 미완료/1 오답을 최신 점수로 사용하지 않는다. 스키마 의미 미확정 시 확인 질문으로 바뀐 건은 성공으로 계산하지 않는다. 이번 점수는 공식 Spider EX나 DeepEval 점수가 아니다. Draft PR #68은 미병합이며 승인 없는 신규 Databricks SQL 조회는 실행하지 않았다.
+- **Summary**: 의미가 확인된 평균·빈도·조건부 분포표·조건부 비율의 로컬 실행을 보강했다. 한국어 별칭이 다른 단어 일부와 충돌하는 문제를 수정하고, 확인 질문에 컬럼/조건을 답하면 원래 분석을 재시작 후에도 이어가도록 했다. 최신 Qwen 연결 graph 평가 82 PASS/5 미완료/0 오답(채점 가능한 87문항 중 94.3%), 113문항 미채점. 앱 290/290, migration 133/133, reference/Level3 217/217 통과. 실제 웹의 표본 조건부 분포표 0.339초·모델/원격 조회 0회, 원본 SHA256·승인 1건 보존. [검증 기록](docs/evaluation/2026-09-26_grounded_continuation.md).
+- **Next Session Focus**: 미완료 5문항의 자연어와 외부 의미 메타데이터 연결, 113문항의 독립 oracle 확대, 공식 Spider의 SQL 방언/조인/기준일, 최종 빌드 신규 승인 적재·대규모 전송/RSS 실측을 진행한다. 별도 서버 배포는 제외한다.
+- **Current qualification**: 최신 82 PASS/5 미완료/0 오답과 예전 82 PASS/4 미완료/1 오답은 다른 결과다. 스키마 의미 미확정 시 확인 질문으로 바뀐 건은 성공으로 계산하지 않는다. 이번 점수는 공식 Spider EX나 DeepEval 점수가 아니다. Draft PR #68은 미병합이며 승인 없는 신규 Databricks SQL 조회는 실행하지 않았다.
 
 ## Next Action Items
 - [x] 사용자의 `LIMIT 10`은 Databricks 화면에서 직접 실행한 것으로 확인했다. 챗봇 승인·저장 검증과 구분했다. 이후 별도의 제품 승인형 `LIMIT 10000` 조회를 1회 완료했다.
@@ -1719,3 +1719,18 @@ Task definitions and acceptance conditions: docs/agent_remaining_tasks_2026-09-1
 - **Artifact Update**: docs/evaluation/2026-09-26_completion_gate.md에 수정 범위·실패 재현·실 웹 복구·실제 모델 평가와 남은 GO 게이트를 기록했다.
 
 - **Final evaluation** [Agent: /root]: 전체 87개 재실행 78 PASS/9 NOT_COMPLETE/0 FAIL. 합격이 아닌 확인 질문을 통과로 처리하지 않는다. 최종 앱 284/284, migration 133/133, reference/Level3 217/217과 compile·diff·pip 검사 통과. 정식 GO는 보류하며 docs/evaluation/2026-09-26_completion_scores.json에 전체 분모·문항별 결과·지연·모델 호출 수를 보존했다.
+
+## [2026-09-26 08:25:52 KST] [Agent: /root] User Request: 남은 작업을 계속 진행해 달라
+- **Action**: 실제 평가의 9개 미완료를 공통 원인별로 검토하고, 로컬 통계·조건별 집계의 계획/완료 연결과 회귀 검증을 보강한다. 원본 보존 및 Databricks 새 조회 승인 계약을 유지한다.
+
+- **User Request** [2026-09-26 09:23:20 KST]: 401 오류 관련 재발급 필요 여부를 확인하고 가능하면 대신 처리해 달라. 토큰 원문은 출력하지 않고 현재 인증 상태부터 확인한다.
+
+- **Implementation outcome**: 스키마/조건이 확정된 수치 평균과 분포표를 로컬 SQL에 연결했다. 수치 측정값 선택은 저장된 dtype을 사용해 계획 단계의 불필요한 전체 컬럼 읽기를 제거했다. 한국어 별칭 경계와 OR 조사 인식을 함께 검증했다. 분석 대상 미확정 시 요청과 선택 데이터 ID를 체크포인트에 남기고 명시적 컬럼/조건 답변으로 재개한다. 일반 신규 질문·승인 문구·미확인 컬럼·선택 데이터 변경은 재개 답변으로 간주하지 않는다.
+- **Validation outcome**: 최종 앱 290/290, migration 133/133, reference/Level3 217/217, compileall·diff check 통과. 자동 로컬 계획이 새로 추가돼 기존 모델 오류 주입을 우회하는 테스트들은 해당 테스트에서만 계획기를 비활성화하여 오류/복구 경로를 실제로 검증하도록 했다. 기존 실패 거부 assertion은 유지했다.
+- **Actual model outcome**: 고정 87문항 최종 재평가 82 PASS/5 NOT_COMPLETE/0 FAIL; 나머지 113 UNGRADED. 실제 모델을 호출한 문항은 8개이며 나머지는 로컬 결정 경로다. 잘못된 ID 주입 이후 실제 Qwen 2회 호출로 평균 9.0을 복구(3.465초, 원본 불변)했다. 전체 자연어 자율성이 완성됐다는 뜻은 아니다.
+- **Actual web outcome**: 기존 승인 10,000행에서 age ≥ 60인 job 분포표를 실제 UI로 실행했다. 11범주·총 327명, 원본 Parquet 독립 계산과 일치, 0.339초·모델 0회·새 원격 조회 0회. 원본 SHA256은 7c4a1c20588261932629087d091d43e1ad2d80f4e36cb3d1acb20eb8462fe10d로 유지됐고 승인 장부는 completed 1건뿐이다. Streamlit 최종 코드 실행 PID 28265, health ok.
+- **401 investigation**: 현재 .env Databricks 토큰으로 인증 API HTTP 200, 실제 모델 serving 호출 성공. 최근 확인 화면에는 401이 없고 구조화 인증 실패 로그는 이전 403 1건이다. 새 토큰 발급·교체는 하지 않았다. 사용자가 본 401의 발생 화면은 아직 확인되지 않았으므로 그 오류의 원인이 해결됐다고 주장하지 않는다.
+
+## Daily Wrap-ups — 2026-09-26 (추가)
+- 의미가 확인된 4개 실패 유형의 자동 실행과 확인 답변 후 분석 연속성을 보강했다. 실제 평가 78/87에서 82/87로 개선됐고 오답 차단을 유지했다.
+- 자동 검사·실제 Qwen 복구·기존 Databricks 표본의 웹 여정을 검증했다. 정식 자율 agent 출시는 NO-GO 유지; 잔여 항목은 Current Status 및 검증 기록에 정리했다.

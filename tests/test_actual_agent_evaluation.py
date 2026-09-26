@@ -1,6 +1,8 @@
 """Harness contracts using the production graph, real DuckDB and real PNGs.
 
 Scripted models below are not natural-language model acceptance evidence.
+Fault-injection tests disable deterministic planning so the injected tool result
+is actually exercised rather than bypassed by a correct local plan.
 """
 import json
 from pathlib import Path
@@ -62,7 +64,8 @@ class ActualAgentEvaluationTests(unittest.TestCase):
         self.assertEqual(result["tools"]["local_analysis_sql"], 1)
         self.assertEqual(result["remote_executions"], 0)
 
-    def test_structured_aggregate_is_graded_with_lineage_and_counterfactuals(self):
+    @patch("core.analysis_agent.recovery.RecoveryMiddleware._next_local", return_value=None)
+    def test_structured_aggregate_is_graded_with_lineage_and_counterfactuals(self, _planner):
         result = self.evaluate("L1_016", EvaluationModel(calls=[{"name": "aggregate_dataset", "args": {
             "dataset_id": "$fixture", "aggregation": "mean", "value_column": "balance"}}]))
         self.assertEqual(result["status"], "PASS", result)
@@ -94,19 +97,22 @@ class ActualAgentEvaluationTests(unittest.TestCase):
                 self.assertEqual(result["evidence"]["charts"][0]["kind"], kind)
                 self.assertEqual(result["remote_executions"], 0)
 
-    def test_wrong_scalar_tool_result_fails_even_with_correct_sounding_prose(self):
+    @patch("core.analysis_agent.recovery.RecoveryMiddleware._next_local", return_value=None)
+    def test_wrong_scalar_tool_result_fails_even_with_correct_sounding_prose(self, _planner):
         result = self.evaluate("L1_016", EvaluationModel(calls=[{"name": "local_analysis_sql", "args": {
             "dataset_id": "$fixture", "query": "SELECT AVG(balance) + 999 AS average FROM data"}}],
             answer="정확한 평균 잔액을 계산했습니다."))
         self.assertEqual(result["status"], "FAIL", result)
 
-    def test_literal_equal_to_reference_is_not_computation_evidence(self):
+    @patch("core.analysis_agent.recovery.RecoveryMiddleware._next_local", return_value=None)
+    def test_literal_equal_to_reference_is_not_computation_evidence(self, _planner):
         expected = float(self.frames["bank_loan"]["balance"].mean())
         result = self.evaluate("L1_016", EvaluationModel(calls=[{"name": "local_analysis_sql", "args": {
             "dataset_id": "$fixture", "query": f"SELECT {expected!r} AS average FROM data LIMIT 1"}}]))
         self.assertIn(result["status"], {"FAIL", "NOT_COMPLETE"}, result)
 
-    def test_constant_hidden_behind_aggregate_fails_counterfactual_replay(self):
+    @patch("core.analysis_agent.recovery.RecoveryMiddleware._next_local", return_value=None)
+    def test_constant_hidden_behind_aggregate_fails_counterfactual_replay(self, _planner):
         expected = float(self.frames["bank_loan"]["balance"].mean())
         result = self.evaluate("L1_016", EvaluationModel(calls=[{"name": "local_analysis_sql", "args": {
             "dataset_id": "$fixture", "query": f"SELECT AVG(balance) * 0 + {expected!r} AS average FROM data"}}]))
@@ -114,11 +120,13 @@ class ActualAgentEvaluationTests(unittest.TestCase):
         if result["agent_status"] in {"answered", "complete"}:
             self.assertIn("counterfactual", result["reason"])
 
-    def test_unexecuted_answer_is_never_pass(self):
+    @patch("core.analysis_agent.recovery.RecoveryMiddleware._next_local", return_value=None)
+    def test_unexecuted_answer_is_never_pass(self, _planner):
         result = self.evaluate("L1_016", EvaluationModel(answer="평균은 999입니다."))
         self.assertIn(result["status"], {"FAIL", "NOT_COMPLETE"}, result)
 
-    def test_reference_category_counts_match_alias_and_order_independently(self):
+    @patch("core.analysis_agent.recovery.RecoveryMiddleware._next_local", return_value=None)
+    def test_reference_category_counts_match_alias_and_order_independently(self, _planner):
         result = self.evaluate("L1_029", EvaluationModel(calls=[{"name": "local_analysis_sql", "args": {
             "dataset_id": "$fixture", "query": "SELECT COUNT(*) AS n, contact AS category FROM data GROUP BY contact ORDER BY contact DESC"}}]))
         self.assertEqual(result["status"], "PASS", result)
@@ -343,7 +351,8 @@ class ActualAgentEvaluationTests(unittest.TestCase):
                         "dataset_id": "$fixture", "query": query}}], answer="여성 승객의 생존율을 정확히 계산했습니다."))
                 self.assertIn(result["status"], {"FAIL", "NOT_COMPLETE"}, result)
 
-    def test_new_group_distribution_checks_subset_and_each_category(self):
+    @patch("core.analysis_agent.recovery.RecoveryMiddleware._next_local", return_value=None)
+    def test_new_group_distribution_checks_subset_and_each_category(self, _planner):
         result = self.evaluate("L1_047", EvaluationModel(calls=[{"name": "local_analysis_sql", "args": {
             "dataset_id": "$fixture", "query": "SELECT job AS category, COUNT(*) AS n FROM data WHERE age >= 60 GROUP BY job"}}]))
         self.assertEqual(result["status"], "PASS", result)
@@ -439,7 +448,8 @@ class ActualAgentEvaluationTests(unittest.TestCase):
             self.assertNotIn(marker, json.dumps(result))
             self.assertTrue(json.loads(metadata_text)["diagnostics"])
 
-    def test_databricks_proposal_stays_unapproved_and_not_complete(self):
+    @patch("core.analysis_agent.recovery.RecoveryMiddleware._next_local", return_value=None)
+    def test_databricks_proposal_stays_unapproved_and_not_complete(self, _planner):
         result = self.evaluate("L1_016", EvaluationModel(calls=[{"name": "query_databricks", "args": {
             "source": "bank_loan", "query": "SELECT AVG(balance) FROM bank_loan", "reason": "평균 계산"}}]))
         self.assertEqual(result["status"], "NOT_COMPLETE", result)
