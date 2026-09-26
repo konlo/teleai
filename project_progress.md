@@ -3,9 +3,9 @@
 ## Current Status
 - **Last Updated**: 2026-09-26
 - **Status**: In Progress — 로컬 단일 사용자 범위에서도 정식 출시 NO-GO
-- **Summary**: 의미가 확인된 평균·빈도·조건부 분포표·조건부 비율의 로컬 실행을 보강했다. 한국어 별칭이 다른 단어 일부와 충돌하는 문제를 수정하고, 확인 질문에 컬럼/조건을 답하면 원래 분석을 재시작 후에도 이어가도록 했다. 최신 Qwen 연결 graph 평가 82 PASS/5 미완료/0 오답(채점 가능한 87문항 중 94.3%), 113문항 미채점. 앱 290/290, migration 133/133, reference/Level3 217/217 통과. 실제 웹의 표본 조건부 분포표 0.339초·모델/원격 조회 0회, 원본 SHA256·승인 1건 보존. [검증 기록](docs/evaluation/2026-09-26_grounded_continuation.md).
-- **Next Session Focus**: 미완료 5문항의 자연어와 외부 의미 메타데이터 연결, 113문항의 독립 oracle 확대, 공식 Spider의 SQL 방언/조인/기준일, 최종 빌드 신규 승인 적재·대규모 전송/RSS 실측을 진행한다. 별도 서버 배포는 제외한다.
-- **Current qualification**: 최신 82 PASS/5 미완료/0 오답과 예전 82 PASS/4 미완료/1 오답은 다른 결과다. 스키마 의미 미확정 시 확인 질문으로 바뀐 건은 성공으로 계산하지 않는다. 이번 점수는 공식 Spider EX나 DeepEval 점수가 아니다. Draft PR #68은 미병합이며 승인 없는 신규 Databricks SQL 조회는 실행하지 않았다.
+- **Summary**: 외부 컬럼 설명 기반 의미 해석·조건부 집계를 공통 경로로 일괄 보강했다. 설명 제공 조건의 실제 Qwen graph 평가 87/87 PASS, 113문항 미채점. 실제 모델 호출 6문항이며 설명 없는 기존 미완료 5건은 확인 요청을 유지한다. 앱 299/299, migration 133/133, reference/Level3 217/217 통과. 실제 웹 조건부 집계 0.348초, 원본·승인 보존. [검증 기록](docs/evaluation/2026-09-26_semantic_batch.md).
+- **Next Session Focus**: 운영 description 제공 경로, 113문항 독립 oracle·held-out 복구 평가, 공식 Spider/DeepEval gate, 최종 빌드 신규 승인 적재·대규모 전송/RSS 실측. 별도 서버 배포는 제외한다.
+- **Current qualification**: 87/87은 외부 설명을 보강한 지원 부분집합 점수이며 이전 82/87과 입력 조건이 다르다. 공식 Spider EX/DeepEval 점수가 아니다. Draft PR #68 미병합, 범용 출시 NO-GO. 신규 Databricks SQL은 실행하지 않았다.
 
 ## Next Action Items
 - [x] 사용자의 `LIMIT 10`은 Databricks 화면에서 직접 실행한 것으로 확인했다. 챗봇 승인·저장 검증과 구분했다. 이후 별도의 제품 승인형 `LIMIT 10000` 조회를 1회 완료했다.
@@ -1734,3 +1734,11 @@ Task definitions and acceptance conditions: docs/agent_remaining_tasks_2026-09-1
 ## Daily Wrap-ups — 2026-09-26 (추가)
 - 의미가 확인된 4개 실패 유형의 자동 실행과 확인 답변 후 분석 연속성을 보강했다. 실제 평가 78/87에서 82/87로 개선됐고 오답 차단을 유지했다.
 - 자동 검사·실제 Qwen 복구·기존 Databricks 표본의 웹 여정을 검증했다. 정식 자율 agent 출시는 NO-GO 유지; 잔여 항목은 Current Status 및 검증 기록에 정리했다.
+
+## [2026-09-26 11:21:10 KST] [Agent: /root] User Request: 미완료 작업을 공통 원인별로 묶어 한 번에 수정하고 검증해 달라
+- **Action**: 남은 의미 해석 실패의 요구·입력 근거·검증 계약을 먼저 정리하고 외부 의미 메타데이터 조회 및 실행 연결을 함께 구현한다. 기존 평가 질문·정답은 변경하지 않으며 새 원격 SQL은 승인 없이 실행하지 않는다.
+
+## [2026-09-26 11:42:45 KST] [Agent: Codex] Batch completion evidence
+- **Action**: description 보존·bounded 의미 해석·정의/기간/차원 검증·조건부 빈도·명시적 quoted equality를 일괄 수정했다. 첫 실모델의 두 해석이 함께 duration을 잘못 선택한 오답을 검사와 회귀로 보강했다.
+- **Outcome**: 최종 enriched 평가 87 PASS/113 UNGRADED, 모델 사용 6문항. aliases-only 기존 5건은 확인 요청 유지. 앱 299, migration 133, runner 217 통과. 실제 웹 10,000행 재사용의 technician/housing 집계 898/931, 0.348초, raw hash·승인 1건 불변.
+- **Artifacts**: docs/evaluation/2026-09-26_semantic_batch.md, semantic_batch_scores.json, agent tool contract matrix 갱신. 운영 metadata 제공·113 oracle·공식 평가·대규모 신규 로딩 검증은 남았다.

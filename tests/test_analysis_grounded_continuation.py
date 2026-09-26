@@ -15,6 +15,26 @@ from utils.analysis_datasets import stored_dataset_digest
 
 
 class GroundedContinuationTests(unittest.TestCase):
+    def test_explicit_quoted_filter_does_not_require_profile_value_membership(self):
+        frame = pd.DataFrame({'segment':['s'+str(i % 30) for i in range(300)],
+                              'flag':['x','y','z'] * 100})
+        with tempfile.TemporaryDirectory() as root:
+            runtime = GraphAnalysisRuntime(root, 'owner', 'quoted', ForbiddenModel())
+            try:
+                raw = runtime.datasets.register(frame, source='custom.entries',
+                    coverage='complete', predicate_known=True)
+                digest = stored_dataset_digest(runtime.datasets, raw.id)
+                for literal in ('s1', 'not_observed'):
+                    result = runtime.submit(f"구분(segment)이 '{literal}'인 고객의 flag 현황을 세어줘")
+                    self.assertEqual(result['status'], 'answered', result)
+                    state = runtime.inspect()['recovery']
+                    actual = runtime.datasets.frames[state['evidence_ids'][-1]]
+                    self.assertEqual(int(actual['count'].sum()), 10 if literal == 's1' else 0)
+                    self.assertEqual(state['model_calls'], 0)
+                self.assertEqual(stored_dataset_digest(runtime.datasets, raw.id), digest)
+            finally:
+                runtime.close()
+
     def test_alias_boundaries_keep_particles_but_not_currency_words(self):
         self.assertFalse(_mentioned('10,000달러를 넘는 값', '달'))
         for text, name in [('이전 달 중앙값', '달'), ('5월의 평균', '월'), ('나이가 40대', '나이'),
@@ -75,6 +95,12 @@ class GroundedContinuationTests(unittest.TestCase):
                 self.assertEqual(actual['count'].tolist(), [2,1,1])
                 self.assertTrue(pd.isna(actual['class_key'].iloc[-1]))
                 self.assertEqual(stored_dataset_digest(runtime.datasets, raw.id), digest)
+                self.assertEqual(state['model_calls'], 0)
+                result = runtime.submit('class_key 종류별로 몇 명씩 있는지 세어줘')
+                self.assertEqual(result['status'], 'answered', result)
+                state = runtime.inspect()['recovery']
+                actual = runtime.datasets.frames[state['evidence_ids'][-1]]
+                self.assertEqual(actual['count'].tolist(), [3,1,1])
                 self.assertEqual(state['model_calls'], 0)
             finally:
                 runtime.close()

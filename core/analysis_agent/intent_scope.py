@@ -167,6 +167,13 @@ def resolve_request_scope(text, context, previous=None):
         for match in re.finditer(column_pattern + r'\s*(>=|<=|!=|<>|==|=|>|<)\s*(' + _LITERAL + ')', text, re.I):
             found.append({'column':name, 'op':_OPS[match[1]], 'value':_literal(match[2])})
             spans.append(match.span())
+        # Explicit quoted equality does not depend on a capped value profile.
+        # The column is grounded; an absent literal legitimately yields zero
+        # rows. Require the equality particle to avoid interpreting labels.
+        for match in re.finditer(column_pattern
+                + r'''\s+('(?:[^']|'')*'|"(?:[^"]|"")*")\s*(?:인|이고|이며)(?=\s|$)''', text, re.I):
+            found.append({'column':name, 'op':'eq', 'value':_literal(match[1])})
+            spans.append(match.span())
         # Bind a bounded numeric interval to the explicitly named column.
         # In a chart follow-up this changes the population, so a cached chart
         # of the unfiltered source cannot satisfy the request.

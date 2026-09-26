@@ -49,6 +49,11 @@ def build_analysis_tools(context: AnalysisToolContext) -> list[ToolDefinition]:
     def inspect_table_context(table):
         return resolve_table_context(context.reference_context, datasets, table)
 
+    def resolve_analysis_intent(dataset_id):
+        if context.semantic_resolver is None:
+            return {'status':'needs_context', 'message':'의미 해석 서비스가 연결되지 않았습니다.'}
+        return context.semantic_resolver.resolve(dataset_id)
+
     def inspect_dataset(dataset_id):
         if hasattr(datasets, 'inspect'):
             return datasets.inspect(dataset_id)
@@ -646,6 +651,8 @@ def build_analysis_tools(context: AnalysisToolContext) -> list[ToolDefinition]:
 
     string = {"type": "string"}
     return [
+        tool("resolve_analysis_intent", "분석 대상이 불명확할 때 저장된 외부 컬럼 설명으로 의미를 독립적으로 확인합니다. 모델 호출을 사용하며 실제 데이터 조회/계산은 하지 않습니다. 정의가 없거나 충돌하면 확인 질문이 필요합니다.",
+             {"dataset_id": string}, ["dataset_id"], resolve_analysis_intent),
         tool("list_analysis_context", "현재 보유 데이터와 읽을 수 있는 분석 스킬 목록. 원격 조회 없음.", {}, [], catalog),
         tool("read_analysis_skill", "등록된 분석 스킬을 필요할 때 읽습니다.", {"name": string}, ["name"], registry.read),
         tool("inspect_table_context", "테이블의 저장된 스키마 스냅샷과 승인 후 로딩된 실제 스키마를 비교합니다. stale 또는 needs_refresh이면 그 컬럼으로 새 SQL을 만들지 말고 반환된 SELECT * LIMIT 0 조회를 사용자에게 승인 요청하세요. 이 도구 자체는 원격 조회하지 않습니다. table은 available_tables의 정확한 테이블명입니다.",

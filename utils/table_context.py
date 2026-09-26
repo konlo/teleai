@@ -32,6 +32,7 @@ class ColumnContext:
     min_value: Optional[str] = None
     max_value: Optional[str] = None
     aliases: list[str] = field(default_factory=list)
+    description: str = ""
 
 
 @dataclass(frozen=True)
@@ -164,6 +165,7 @@ def coerce_column_context(value: Any) -> ColumnContext:
             min_value=value.get("min_value"),
             max_value=value.get("max_value"),
             aliases=[str(item) for item in value.get("aliases", [])],
+            description=str(value.get("description", "") or "")[:800],
         )
     return ColumnContext(name=str(value))
 
@@ -385,6 +387,7 @@ def apply_table_context_overrides(
                 min_value=column.min_value,
                 max_value=column.max_value,
                 aliases=_dedupe_strings([*manual_aliases, *column.aliases]),
+                description=column.description,
             )
         )
     return TableContext(

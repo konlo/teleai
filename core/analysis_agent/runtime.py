@@ -59,6 +59,8 @@ class GraphAnalysisRuntime:
             max_join_expansion_ratio=self.policy.max_join_expansion_ratio,
             selected_dataset_id=self.db.selected_dataset_id())
         self._refresh_reference_context()
+        from core.analysis_agent.semantic import SemanticResolver
+        self.context.semantic_resolver = SemanticResolver(self.context, model, self.diagnostics)
         catalog=next(t.run for t in build_analysis_tools(self.context) if t.name=='list_analysis_context')
         @dynamic_prompt
         def prompt(request):

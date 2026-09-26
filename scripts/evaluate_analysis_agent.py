@@ -55,7 +55,7 @@ def load_frames():
             for name in ("bank_loan", "titanic")}
 
 
-def fixture_reference_context(table, frame, context_dir=None):
+def fixture_reference_context(table, frame, context_dir=None, *, include_descriptions=True):
     """Describe actual fixture types and bounded category values, without answers.
 
     Optional external aliases are table-wide fixture context. Never inject a
@@ -63,6 +63,7 @@ def fixture_reference_context(table, frame, context_dir=None):
     """
     context_dir = Path(context_dir) if context_dir else ROOT / "test_set/data_context"
     aliases = {}
+    descriptions = {}
     alias_source = None
     context_path = context_dir / (table + ".json")
     if context_path.exists():
@@ -70,6 +71,7 @@ def fixture_reference_context(table, frame, context_dir=None):
         if external.get("table") != table:
             raise ValueError("External fixture context belongs to another table")
         aliases = {column["name"]: column.get("aliases", []) for column in external.get("columns", [])}
+        descriptions = {column["name"]: column.get("description", "") for column in external.get("columns", [])}
         alias_source = external.get("source")
     columns = []
     for name, dtype in frame.dtypes.items():
@@ -81,6 +83,7 @@ def fixture_reference_context(table, frame, context_dir=None):
                 value = value.item() if isinstance(value, np.generic) else value
                 top_values.append({"value": value, "count": int(count)})
         columns.append({"name": name, "dtype": str(dtype), "distinct_count": distinct,
+                        "description": descriptions.get(name, "") if include_descriptions else "",
                         "null_count": int(series.isna().sum()), "top_values": top_values,
                         "aliases": [value for value in aliases.get(name, []) if isinstance(value, str)][:20]})
     return {"table": table, "training_status": "fixture_profile", "columns": columns,
@@ -1450,7 +1453,7 @@ def preserve_runtime_metadata(runtime, spec, artifact_dir=None):
 
 
 def evaluate_case(spec, grading, model, *, frames=None, artifact_dir=None,
-                  include_final_output=False):
+                  include_final_output=False, include_descriptions=True):
     from core.analysis_agent.runtime import GraphAnalysisRuntime
     from langchain_core.messages import AIMessage, ToolMessage
     base = {"id": spec["id"], "prompt": spec["prompt"], "target_table": spec["target_table"],
@@ -1479,7 +1482,8 @@ def evaluate_case(spec, grading, model, *, frames=None, artifact_dir=None,
             payload = frame.to_csv(index=False).encode()
             info = runtime.datasets.register(frame.copy(), source=spec["target_table"],
                 coverage="complete", predicate_known=True, snapshot="fixture:" + sha256(payload).hexdigest())
-            runtime.context.reference_context[:] = [fixture_reference_context(spec["target_table"], frame)]
+            runtime.context.reference_context[:] = [fixture_reference_context(spec["target_table"], frame,
+                include_descriptions=include_descriptions)]
             # Tests can bind deterministic calls after the actual fixture ID exists.
             if hasattr(model, "evaluation_dataset_id"):
                 model.evaluation_dataset_id = info.id
@@ -1589,6 +1593,8 @@ def main(argv=None):
                         help="Databricks serving is metered; SQL execution remains disconnected")
     parser.add_argument("--include-final-output", action="store_true",
                         help="Include fixture-only assistant text for local judge evaluation; output may contain fixture rows")
+    parser.add_argument("--aliases-only", action="store_true",
+                        help="Reproduce the earlier context without table-wide descriptions")
     parser.add_argument("--output", type=Path, default=ROOT / "docs/actual_agent_evaluation.json")
     args = parser.parse_args(argv)
     if args.live_local_model and args.provider != "ollama":
@@ -1627,7 +1633,8 @@ def main(argv=None):
             try:
                 result = evaluate_case(spec, grading.get(spec["id"]), model, frames=frames,
                                        artifact_dir=args.output.parent / "actual_agent_eval_artifacts",
-                                       include_final_output=args.include_final_output)
+                                       include_final_output=args.include_final_output,
+                                       include_descriptions=not args.aliases_only)
             except Exception as exc:
                 result = {"id": spec["id"], "status": "FAIL", "reason": "Evaluation exception",
                           "error_type": type(exc).__name__}
@@ -1638,6 +1645,7 @@ def main(argv=None):
             args.output.write_text(json.dumps(build_report(results, specs, grading, mode, model_name),
                                              ensure_ascii=False, indent=2) + "\n")
         report = build_report(results, specs, grading, mode, model_name)
+    report['semantic_context'] = 'aliases_only' if args.aliases_only else 'table_wide_readme_descriptions'
     args.output.parent.mkdir(parents=True, exist_ok=True)
     args.output.write_text(json.dumps(report, ensure_ascii=False, indent=2) + "\n")
     print(json.dumps(report["coverage"], ensure_ascii=False))

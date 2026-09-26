@@ -24,6 +24,7 @@
 | `list_analysis_context` | 완료 | 부분 | 해당 없음 | 완료 | 완료 | 공통 envelope 적용 |
 | `read_analysis_skill` | 완료 | 완료 | 해당 없음 | 부분 | 완료 | 임의 경로·크기·manifest 차단 유지 |
 | `inspect_table_context` | 완료 | 완료 | stale이면 조회하지 않고 refresh SQL만 반환 | 완료 | 완료 | 실제 승인 schema 우선 |
+| `resolve_analysis_intent` | 완료 | 완료 | SQL·원본 전송 없음 | 완료 | 요청별 1회·모델 2회 한도 | 외부 description과 실제 schema 기반 COUNT/AVG 의미 연결; 해석 합의는 계산 완료 근거가 아님 |
 | `inspect_dataset` | 완료 | 완료 | 해당 없음 | 완료 | 완료 | 로딩 ID만 허용 |
 | `profile_dataset` | 완료 | 완료 | 원격 실행 없음 | 완료 | 완료 | 결측·고유값·요약 통계 결정적 복구 연결 |
 | `use_dataset` | 완료 | 완료 | 부족한 범위는 `needs_data` | 완료 | 완료 | 조건/lineage 보수적 검사 |

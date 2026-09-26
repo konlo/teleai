@@ -198,7 +198,7 @@ def load_saved_reference_context(storage_dir):
             if saved:
                 result.append(enrich_reference_context({'table':saved.table_fqn, 'training_status':saved.training_status,
                     'trained_at':saved.trained_at, 'observed_at':saved.trained_at,
-                    'columns':[{'name':c.name, 'dtype':c.dtype, 'aliases':c.aliases,
+                    'columns':[{'name':c.name, 'dtype':c.dtype, 'aliases':c.aliases, 'description':c.description,
                                 'top_values':c.top_values[:10]} for c in saved.columns]}))
         except (OSError, ValueError, KeyError):
             continue

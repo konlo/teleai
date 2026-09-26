@@ -863,7 +863,11 @@ class RecoveryMiddleware(AgentMiddleware):
                     'chart', 'pivot_requested', 'group_summary_requested',
                     'profile_kind', 'outlier_spec', 'statistical_kind'))
                     and set(operations) <= {'COUNT'}
-                    and re.search(r'빈도|분포.*표|frequency', text, re.I)):
+                    and (re.search(r'빈도|분포.*표|종류별|범주별|현황.*(?:세어|건수)|frequency', text, re.I)
+                         or (operations == ['COUNT'] and any(re.search(
+                             re.escape(term) + r'\s*별', text)
+                             for name in mentioned_columns
+                             for term in (name, *column_aliases.get(name, ())))))):
                 scoped = current['scope']
                 predicates = {item['column'] for item in scoped.get('conditions', [])}
                 axes = [name for name in mentioned_columns if name not in predicates]
@@ -1029,6 +1033,22 @@ class RecoveryMiddleware(AgentMiddleware):
                 continue
             if message.tool_call_id not in current['processed']:
                 current['processed'].append(message.tool_call_id)
+            if name == 'resolve_analysis_intent':
+                current['model_calls'] += observation.get('semantic_model_calls', 0)
+                current['model_seconds'] += observation.get('semantic_model_seconds', 0)
+                binding = observation.get('semantic_binding') or {}
+                if (observation.get('status') == 'ready'
+                        and observation.get('request_id') == current.get('request_id')):
+                    from core.analysis_agent.semantic import eligible, semantic_metadata
+                    metadata = semantic_metadata(self.context, binding.get('dataset_id'))
+                    if (eligible(current) and metadata
+                            and metadata['context_digest'] == binding.get('context_digest')
+                            and binding.get('operation') in current.get('operations', [])):
+                        current['semantic_binding'] = binding
+                        current['required_columns'] = [binding['column']]
+                        current['required_sources'] = [binding['source']]
+                        current['scope']['columns'] = [binding['column']]
+                        current['scope']['conditions'] = binding['conditions']
             failed = observation.get('status') in {'error', 'rejected', 'needs_data', 'needs_context', 'needs_refresh', 'unavailable', 'no_valid_chart'}
             if failed:
                 current['failed'][name or message.tool_call_id] = observation
@@ -1437,6 +1457,8 @@ class RecoveryMiddleware(AgentMiddleware):
                         current['count_rate_evidence'] = observation
                     for tool in ('recommend_chart_images', 'render_chart_spec', 'render_count_rate_chart', 'render_histogram', 'prepare_histogram', 'show_chart'):
                         current['failed'].pop(tool, None)
+        if self.context and self.context.semantic_resolver:
+            self.context.semantic_resolver.request = deepcopy(current)
         return current, calls
 
     @staticmethod
@@ -1900,6 +1922,18 @@ class RecoveryMiddleware(AgentMiddleware):
         return {'recovery': current, 'messages': [message]}
 
     def _next_local(self, current, calls):
+        if self.context and self.context.semantic_resolver:
+            from core.analysis_agent.semantic import eligible, semantic_metadata
+            if (eligible(current) and current.get('model_calls', 0) <= self.max_model_calls - 2
+                    and not any(c.get('name') == 'resolve_analysis_intent' for c in calls.values())):
+                candidates = [info for info in self.context.datasets.metadata.values()
+                    if info.grain == 'raw' and self._source_matches(info, current)
+                    and self._fresh_for_request(info, current)
+                    and (current.get('current_result_only') or (info.coverage == 'complete' and info.predicate_known))
+                    and semantic_metadata(self.context, info.id)]
+                candidates = self._requested_dataset_candidates(candidates, current)
+                if len(candidates) == 1:
+                    return {'name':'resolve_analysis_intent', 'args':{'dataset_id':candidates[0].id}}
         if (self.context and current.get('frequency_column') and not current.get('evidence_ids')
                 and not current.get('fresh_source_required')):
             scope = current.get('scope', {})
@@ -2954,6 +2988,9 @@ class RecoveryMiddleware(AgentMiddleware):
 
     def before_step(self, state):
         current, calls = self._state(state)
+        if (current.get('failed', {}).get('resolve_analysis_intent', {}).get('error_code')
+                == 'semantic_binding_unverified' and not current.get('required_columns')):
+            return {**self._finish(current, reason='analysis_target_unresolved'), 'jump_to':'end'}
         if current.get('schema_probe_dtype_unknown'):
             return {**self._finish(current, reason='schema_probe_dtype_unknown'), 'jump_to':'end'}
         # A failed approved query cannot be repaired by another model turn when
