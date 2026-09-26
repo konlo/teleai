@@ -591,7 +591,7 @@ class RecoveryMiddleware(AgentMiddleware):
             requested_result_rows = (int(result_rows_match[1].replace(',', ''))
                                      if result_rows_match else None)
             current = dict(request_id=human.id, request_text=text, attempts=0, chart=chart, kind=kind,
-                join=join_requested, join_how=join_how,
+                join=join_requested, requested_join=join_requested, join_how=join_how,
                 statistical_kind=statistical_kind,
                 pivot_requested=pivot_requested and bool(pivot_aggregation),
                 pivot_aggregation=pivot_aggregation,
@@ -1054,7 +1054,7 @@ class RecoveryMiddleware(AgentMiddleware):
                 continue
             if message.tool_call_id not in current['processed']:
                 current['processed'].append(message.tool_call_id)
-            if name == 'inspect_column_definitions' and observation.get('metadata_plan'):
+            if name in {'inspect_column_definitions', 'inspect_table_relationships'} and observation.get('metadata_plan'):
                 current['metadata_query_plan'] = observation['metadata_plan']
             if name == 'resolve_analysis_intent':
                 current['model_calls'] += observation.get('semantic_model_calls', 0)
@@ -1459,6 +1459,17 @@ class RecoveryMiddleware(AgentMiddleware):
                 dataset_id = observation.get('dataset', {}).get('id')
                 if self._valid_calculation(dataset_id, arguments, current):
                     current['evidence_ids'].append(dataset_id)
+                    if (name == 'query_databricks' and current.get('join') and current.get('calculation')
+                            and not re.search(r'데이터셋|데이터프레임|조인\s*결과|합친\s*데이터|저장|내보내|다운로드|\b(?:dataset|dataframe|save|export|download)\b|joined\s+rows|merged\s+data',
+                                              current.get('request_text', ''), re.I)):
+                        from sqlglot import exp, parse_one
+                        info = self.context.datasets.metadata[dataset_id]
+                        if parse_one(info.query, read=self.sql_dialect).find(exp.Join) is not None:
+                            # The joined population was validated above. A
+                            # scalar request needs its aggregate, not a second
+                            # materialization of every joined source row.
+                            current['join_query_evidence'] = {'dataset_id': dataset_id,
+                                'source': info.source, 'basis': current.get('join_relationship_basis', 'explicit_request')}
             if name in {'recommend_chart_images', 'render_chart_spec', 'render_count_rate_chart', 'render_histogram', 'prepare_histogram', 'show_chart'} and observation.get('cards'):
                 current['chart'] = True
                 dataset_id = arguments.get('dataset_id') or observation.get('loaded_dataset')
@@ -1493,7 +1504,7 @@ class RecoveryMiddleware(AgentMiddleware):
         if not expected:
             return True
         expected_keys = {self._source_key(source) for source in expected}
-        actual_keys = {self._source_key(info.source)}
+        actual_keys = {self._source_key(source) for source in info.source.split(' | ')}
         if self.context and (getattr(info, 'parent_ids', ()) or info.parent_id):
             pending = list(info.parent_ids) if getattr(info, 'parent_ids', ()) else [info.parent_id]
             visited = set()
@@ -1511,7 +1522,7 @@ class RecoveryMiddleware(AgentMiddleware):
                 elif parent.parent_id:
                     pending.append(parent.parent_id)
                 else:
-                    actual_keys.add(self._source_key(parent.source))
+                    actual_keys.update(self._source_key(source) for source in parent.source.split(' | '))
         return expected_keys.issubset(actual_keys)
 
     @staticmethod
@@ -1522,8 +1533,27 @@ class RecoveryMiddleware(AgentMiddleware):
 
     def _scope_valid(self, executed, current, histogram_column=None, *, record_error=True,
                      dialect=None):
-        if not self._has_scope(current): return True
-        if scope_matches(executed, current['scope'], histogram_column=histogram_column,
+        requested = current.get('scope', {})
+        query = executed if isinstance(executed, str) else getattr(executed, 'query', '')
+        if (query and self.context and not requested.get('join_edges') and dialect != 'duckdb'
+                and not getattr(executed, 'parent_id', None)
+                and not getattr(executed, 'parent_ids', None)):
+            from sqlglot import exp, parse_one
+            from sqlglot.errors import SqlglotError
+            from core.analysis_relationships import metadata_join_scope
+            try:
+                joined = parse_one(query, read=dialect or self.sql_dialect).find(exp.Join) is not None
+            except (ValueError, TypeError, SqlglotError):
+                joined = False
+            if joined:
+                requested = metadata_join_scope(query, self.context, requested,
+                    dialect=dialect or self.sql_dialect,
+                    required_sources=current.get('required_sources', [])) if current.get('requested_join') else None
+                if requested is None:
+                    if record_error: current['scope_error'] = 'unverified_join_relationship'
+                    return False
+        if requested is current.get('scope') and not self._has_scope(current): return True
+        if scope_matches(executed, requested, histogram_column=histogram_column,
                          dialect=dialect or self.sql_dialect): return True
         if record_error:
             self._record_scope_error(current)
@@ -3193,9 +3223,17 @@ class RecoveryMiddleware(AgentMiddleware):
                 joined = False  # The SQL preflight reports malformed SQL first.
             scope = current.get('scope', {})
             if joined and not scope.get('join_edges'):
-                current['scope_error'] = ('request_scope_unresolved' if scope.get('unresolved')
-                                          else 'unverified_join_relationship')
-                return False
+                from core.analysis_relationships import metadata_join_scope
+                verified = metadata_join_scope(call.get('args', {}).get('query', ''),
+                    self.context, scope, dialect=self.sql_dialect,
+                    required_sources=current.get('required_sources', [])) if self.context and current.get('requested_join') else None
+                if verified is None:
+                    current['scope_error'] = ('request_scope_unresolved' if scope.get('unresolved')
+                                              else 'unverified_join_relationship')
+                    return False
+                current['join_relationship_basis'] = 'fresh_database_catalog'
+                if not self._scope_valid(call.get('args', {}).get('query', ''), current):
+                    return False
         if not self._has_scope(current): return True
         arguments = call.get('args', {})
         if call.get('name') == 'local_analysis_sql':

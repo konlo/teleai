@@ -58,6 +58,10 @@ def build_analysis_tools(context: AnalysisToolContext) -> list[ToolDefinition]:
         from core.analysis_metadata_discovery import inspect_column_definitions as inspect
         return inspect(context, table)
 
+    def inspect_table_relationships(table):
+        from core.analysis_relationships import inspect_relationships
+        return inspect_relationships(context, table)
+
     def resolve_analysis_intent(dataset_id):
         if context.semantic_resolver is None:
             return {'status':'needs_context', 'message':'의미 해석 서비스가 연결되지 않았습니다.'}
@@ -660,6 +664,8 @@ def build_analysis_tools(context: AnalysisToolContext) -> list[ToolDefinition]:
 
     string = {"type": "string"}
     definitions = [
+        tool("inspect_table_relationships", "조인 전에 DB metadata에서 확인된 외래 키와 참조 키를 읽습니다. 없으면 알려진 catalog.schema.table의 관계 metadata 조회 계획을 반환합니다. 이름만으로 관계를 추측하지 마세요. metadata_plan은 query_databricks로 승인 요청하세요. 여러 관계의 역할·실제 cardinality는 별도 확인이 필요합니다.",
+             {"table":string}, ["table"], inspect_table_relationships),
         tool("inspect_column_definitions", "업무 의미가 부족하면 확인된 catalog.schema.table의 저장된 컬럼 설명을 읽습니다. 없으면 Unity Catalog information_schema.columns의 정확한 조회 계획만 반환합니다. metadata_plan을 query_databricks로 제안하고 사용자 승인을 기다리세요. 원본 행은 로딩하지 않습니다.",
              {"table":string}, ["table"], inspect_column_definitions),
         tool("search_analysis_tools", "필요한 기능·도구명·오류와 관련된 등록 도구의 실제 입력/출력 schema와 제약·권한·관련 스킬을 검색합니다. 대체 경로 탐색용이며 데이터 조회나 실행은 하지 않습니다.",

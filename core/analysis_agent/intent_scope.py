@@ -459,16 +459,18 @@ def scope_matches(executed, requested, *, histogram_column=None, dialect='databr
             alias=join.this.alias_or_name
             if not alias or alias in aliases: raise ValueError('duplicate join alias')
             predicate=join.args.get('on')
-            if (not isinstance(predicate, exp.EQ)
-                    or not isinstance(predicate.this, exp.Column)
-                    or not isinstance(predicate.expression, exp.Column)):
-                raise ValueError('unsupported join condition')
-            left,right=predicate.this,predicate.expression
-            if (not left.table or not right.table or left.table == right.table
-                    or {left.table,right.table} - (aliases | {alias})
-                    or alias not in {left.table,right.table}):
-                raise ValueError('unbound join condition')
-            edges.append(sorted([left.table+'.'+left.name, right.table+'.'+right.name]))
+            terms = list(predicate.flatten()) if isinstance(predicate, exp.And) else [predicate]
+            for term in terms:
+                if (not isinstance(term, exp.EQ)
+                        or not isinstance(term.this, exp.Column)
+                        or not isinstance(term.expression, exp.Column)):
+                    raise ValueError('unsupported join condition')
+                left,right=term.this,term.expression
+                if (not left.table or not right.table or left.table == right.table
+                        or {left.table,right.table} - (aliases | {alias})
+                        or alias not in {left.table,right.table}):
+                    raise ValueError('unbound join condition')
+                edges.append(sorted([left.table+'.'+left.name, right.table+'.'+right.name]))
             aliases.add(alias)
         return edges, aliases
 

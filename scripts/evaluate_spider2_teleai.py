@@ -33,6 +33,8 @@ SQLite does not supply Databricks spatial functions by default. Check the
 bounded type examples: a POINT stored as `(longitude,latitude)` text needs
 numeric extraction from that text, and a JSON object needs its observed key.
 Keep every filter, OR condition, join role and requested unit from the question.
+Inspect declared foreign keys with inspect_table_relationships before joining.
+Do not infer a relationship from similar names or silently pick an ambiguous role.
 If the schema is insufficient, inspect it; if the request cannot be grounded,
 report the missing information instead of inventing results.
 """
@@ -74,8 +76,23 @@ def schema_context(path: Path) -> list[dict]:
                         f'WHERE "{quoted}" IS NOT NULL LIMIT 2').fetchall()
                     column['top_values'] = [str(value[0])[:160] for value in values]
                 columns.append(column)
+            foreign_keys = {}
+            for row in db.execute(f'PRAGMA foreign_key_list("{escaped}")'):
+                key = foreign_keys.setdefault(row[0], {'name': str(row[0]), 'columns': [],
+                    'target_table': row[2], 'target_columns': []})
+                key['columns'].append((row[1], row[3]))
+                key['target_columns'].append((row[1], row[4]))
+            for key in foreign_keys.values():
+                key['columns'] = [value for _, value in sorted(key['columns'])]
+                key['target_columns'] = [value for _, value in sorted(key['target_columns'])]
+                if any(value is None for value in key['target_columns']):
+                    target = key['target_table'].replace('"', '""')
+                    primary = sorted((row[5], row[1]) for row in db.execute(f'PRAGMA table_info("{target}")') if row[5])
+                    key['target_columns'] = [value for _, value in primary]
             contexts.append({"table": name, "training_status": "runtime_schema",
                              "observed_at": stamp, "columns": columns,
+                             "relationship_authority": "database_catalog",
+                             "foreign_keys": list(foreign_keys.values()),
                              "source": "read-only public Spider2 SQLite schema and bounded type examples"})
     return contexts
 
@@ -156,7 +173,7 @@ def evaluate_task(spider_root: Path, task: dict, model, predictions: Path,
                 reference_context_loader=lambda: contexts,
                 reference_document=supplied_document, sql_dialect="sqlite",
                 proposal_validator=lambda query: check_sqlite_candidate(path, query),
-                tool_allowlist=({'inspect_table_context', 'query_databricks'}
+                tool_allowlist=({'inspect_table_context', 'inspect_table_relationships', 'query_databricks'}
                                 if benchmark_instruction else None),
                 agent_instructions=(SQLITE_PROPOSAL_INSTRUCTIONS
                                     if benchmark_instruction else None))

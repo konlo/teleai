@@ -3,11 +3,13 @@
 ## Current Status
 - **Last Updated**: 2026-09-26
 - **Status**: In Progress — 로컬 단일 사용자 범위에서도 정식 출시 NO-GO
-- **Summary**: 도구 검색·복구 skill, 승인형 컬럼 설명 발견, metadata/raw 선택 분리, 필터와 측정값이 같은 후속 계산, 요약 호출 예산을 일괄 보강했다. 최종 설명 제공 fixture 평가 97 PASS/103 UNGRADED(앞선 96 PASS/1 미완료도 보존), 실제 모델 5여정·6턴 PASS. 앱 309·migration 133·reference 217 PASS. 실제 웹 평균 timeout을 수정 후 동일 체크포인트에서 0.134초에 복구, 후속 중앙값 0.324초. [검증 기록](docs/evaluation/2026-09-26_autonomy_results.md).
-- **Next Session Focus**: 운영 metadata 조회 승인·업무 설명, 실제 FK/관계 탐색과 SQL 의도/역할 계약, 미채점 103 oracle 및 judge calibration, 최종 빌드의 승인형 신규 적재·대규모 원격 전송/RSS, 격리 코드 실행. 별도 서버 배포 제외.
+- **Summary**: DB 선언 FK/복합 키 발견, 요청 출처·JOIN 의도·필터 검증, 승인 SQL 집계 완료, metadata/raw 분리, 미로딩 조인 통계의 도구 메뉴 선택을 보강했다. 최종 fixture 평가 97 PASS/103 UNGRADED(모델 사용 6문항), 앱 320·migration 133·reference 217 PASS. 실제 모델 조인 정답 3을 4회 추론·8.550/8.349초에 얻었으나 반복 중 호출·시간 한도 및 RateLimitError도 발생했다. 실제 웹 후속 최댓값 86, 0.458초·모델/새 SQL 0회, raw hash 불변. [최신 검증 기록](docs/evaluation/2026-09-26_relationship_discovery.md).
+- **Next Session Focus**: 모델 API 호출 제한·지연에서의 재개/복구, 암묵적 다중 출처 의도와 다중 FK 역할·CTE/HAVING 계약, 운영 metadata 승인·업무 설명, 미채점 103 oracle 및 judge calibration, 승인형 신규 적재·대규모 원격 전송/RSS, 격리 코드 실행. 별도 서버 배포 제외.
 - **Current qualification**: 지원 부분집합 97/97 중 6문항이 모델을 호출했다. 공식 Spider 고정 5문항 0/5, DeepEval 보조 judge 평균 0.7667이나 서식 편향으로 release 판정 불가. 100만 행 로컬 저장·복원 검증은 원격 적재 증거가 아니다. 신규 Databricks SQL 0회, draft PR #68 미병합.
 
 ## Next Action Items
+- [x] fresh 선언 FK·복합 키 탐색, 명시적 JOIN 출처/조건 검증, 승인된 조인 통계 결과의 완료 계약을 구현했다. 실제 UC metadata 실행과 복잡한 SQL 자동 계획은 후속 검증 대상이다.
+- [ ] 실모델 반복 중 RateLimitError와 시간 한도 실패를 사용자 재입력 없이 안전하게 재개하는 정책을 검증한다. 원격 SQL 실패/불명 제출과 모델 요청 실패는 구분해야 한다.
 - [x] 사용자의 `LIMIT 10`은 Databricks 화면에서 직접 실행한 것으로 확인했다. 챗봇 승인·저장 검증과 구분했다. 이후 별도의 제품 승인형 `LIMIT 10000` 조회를 1회 완료했다.
 - [x] 현재 PC의 로컬 단일 사용자 범위에서 저장소 보존·재시작·실제 화면 여정을 검증했다. 별도 1인용 Linux 호스트 배포는 이번 범위에서 제외한다.
 - [ ] 모델 직접 실행의 다양한 held-out/복구 여정과 지연을 개선한다. 한 IQR 답변의 필수 필드와 정확한 로컬 표본의 예산 소진 후 재개는 수정했다. Spider SQL 제안 실패, 실제 UI 재개, 103개 미채점 oracle과 DeepEval/Spider 확대 평가는 남아 있다.
@@ -1763,3 +1765,19 @@ Task definitions and acceptance conditions: docs/agent_remaining_tasks_2026-09-1
 - 일반 agent 동등 성능이나 범용 GO는 선언하지 않는다. 남은 작업은 운영 의미 metadata, 복잡한 SQL 관계/범위 계약, 103 oracle·judge calibration, 대규모 원격 적재, 격리 코드 실행이다.
 
 - **Remote Gate** [Agent: Codex]: 코드·평가 commit `c110984658c815a8a47803940666428a10773f5f`를 PR #68 브랜치에 push했다. GitHub Actions [36216644618](https://github.com/konlo/teleai/actions/runs/36216644618)의 migration·application·agentic·reference·compile 단계가 모두 성공했다. draft·미병합 상태와 범용 NO-GO는 유지한다.
+
+## [2026-09-26 14:47:56 KST] [Agent: Codex] User Request: 계속 진행
+- **Action**: 프로젝트 관리·기록 스킬을 이어 적용한다. 복잡한 SQL에서 실제 관계 metadata 발견과 join 역할 검증, 중간 탐색/최종 결과 구분을 함께 점검하고 독립 회귀와 실제 모델 평가로 검증한다. 신규 Databricks SQL은 승인 없이 실행하지 않는다.
+
+## [2026-09-26 20:12 KST] [Agent: Codex] 관계 탐색·SQL 집계·실모델 복구 보강
+- **Implementation**: 실제 FK metadata/복합 키를 탐색하고 요청 출처·명시적 JOIN 의도·필터를 검증한다. 통계만 필요한 경우 승인 SQL 집계로 완료하며 joined raw 저장 요청은 별도로 유지한다. metadata 조회 뒤 원본 선택을 보존하고, 일부 source가 없는 명확한 조인 통계는 탐색·SQL 승인 도구로 집중한다.
+- **Failures retained**: 초기 실제 모델은 미로딩 dataset을 로컬 조인하려 하거나 이미 확인된 스키마를 재탐색하여 호출/시간 한도에 도달했다. 보강 후 4회 모델 호출·8.550/8.349초에 정답 3으로 완료한 두 실행이 있으나 같은 단계에서 RateLimitError 두 번도 발생했다. 마지막 엄격한 사용자 의도 상태 분리 후 실행도 RateLimitError였다. 서로 다른 빌드의 개발 시도를 하나의 성공률로 합산하지 않는다.
+- **Validation**: 최종 앱 320/320, migration 133/133, reference/Level3 217/217, compileall·diff·pip PASS. 고정 200문항은 97 PASS/103 UNGRADED, 실제 모델 사용 6문항. Spider 고정 원문 5문항 재평가 0/5, 나머지 SQL 지시 track은 별도로 채점한다.
+- **Actual Web**: 최종 코드로 8502 앱을 재시작(PID 45374, health ok)하고 기존 대화에서 후속 age 최댓값 86을 검증했다. age ≥ 60 조건 유지·독립 Parquet 정답 일치, 0.458초·모델 0회·새 원격 SQL 0회. raw SHA256 불변과 completed 승인 1건을 확인했다.
+- **Artifacts**: docs/evaluation/2026-09-26_relationship_discovery.md, relationship_live/scores/web JSON 및 tool contract matrix 갱신. 신규 Databricks metadata SELECT는 실행하지 않았다. 범용 GO는 보류한다.
+- **Final Spider**: 최신 코드의 고정 5문항 원문/SQL 지시 두 track 모두 공식 0/5(각각 제출 1개도 오답). SQL 지시 track의 2문항 RateLimitError는 공급자 실패로 구분했다. 첫 승인 SQL 제안 평가의 한계와 중간/최종 결과를 relationship_spider.json에 보존했다.
+
+## Daily Wrap-ups — 2026-09-26 (관계 탐색·조인 집계)
+- DB 관계를 발견하고 SQL을 요청 의도·실제 schema와 검증한 뒤 승인형 집계로 완료하는 경로를 추가했다. 원본 저장 요청을 집계만으로 완료하지 않으며, 원본 선택·재시작·복합 키·모호한 관계·잘못된 조건을 자동 검사한다.
+- 앱 320·migration 133·reference/Level3 217 PASS, 고정 평가 97 PASS/103 UNGRADED. 웹 후속 max 86·0.458초·원본과 승인 장부 보존을 확인했다.
+- 실제 합성 조인 성공은 확보했으나 API 제한과 실행 예산 실패도 재현됐다. Spider 0/5, 103 oracle, 운영 metadata/대규모 신규 적재 검증, 복잡한 SQL 역할/범위 해석과 격리 실행이 남아 범용 NO-GO를 유지한다.

@@ -25,6 +25,7 @@
 | `read_analysis_skill` | 완료 | 완료 | 해당 없음 | 부분 | 완료 | 임의 경로·크기·manifest 차단 유지 |
 | `search_analysis_tools` | 완료 | 완료 | 실제 등록 allowlist 밖 도구 비노출; 실행하지 않음 | 부분 | 완료 | 최대 3개 실제 schema·version·권한·관련 skill 발견, 원격 권한 확대 없음 |
 | `inspect_column_definitions` | 완료 | 완료 | 정확한 metadata SQL은 기존 승인 gateway 필수; 거절 시 0회 실행 | 완료 | 완료 | 저장된 fresh 컬럼 comment 재사용, source·query·dtype·페이지 한도 확인, raw 선택 유지; 실 Databricks 실행 미검증 |
+| `inspect_table_relationships` | 완료 | 완료 | 정확한 metadata SQL 승인 필수 | 완료 | 완료 | fresh 선언 FK·복합 키·같은 catalog의 참조 키 발견; 모호한 키·stale·페이지 포화 차단, metadata/raw 분리. 실제 UC 조회는 미검증 |
 | `inspect_table_context` | 완료 | 완료 | stale이면 조회하지 않고 refresh SQL만 반환 | 완료 | 완료 | 실제 승인 schema 우선 |
 | `resolve_analysis_intent` | 완료 | 완료 | SQL·원본 전송 없음 | 완료 | 요청별 1회·모델 2회 한도 | 외부 description과 실제 schema 기반 COUNT/AVG 의미 연결; 해석 합의는 계산 완료 근거가 아님 |
 | `inspect_dataset` | 완료 | 완료 | 해당 없음 | 완료 | 완료 | 로딩 ID만 허용 |
@@ -48,6 +49,8 @@
 | `select_outlier_rows` | 완료 | 완료 | 원격 실행 없음 | 완료 | 완료 | 원시 행 비노출, parent·snapshot·predicate·행 수·digest 보존, child dataset 후속 계산 고정 |
 | `winsorize_numeric` | 완료 | 완료 | 원격 실행 없음 | 완료 | 완료 | raw 수치 컬럼, 하·상위 분위수, clip 건수, 원본/보정 평균·범위, 원본 불변 계약 |
 | `query_databricks` | 완료 | 완료 | 정확한 fingerprint별 HITL, 불명 제출 자동 재실행 금지 | 완료 | 완료 | 원격 연결이 있을 때만 등록 |
+
+2026-09-26 관계 보강: 명시적으로 요청한 출처와 JOIN에 한해 최신 DB 선언 키를 검사하고 승인된 SQL 집계로 완료할 수 있다. 집계만 요청했으면 joined raw 전체를 추가 적재하지 않는다. 원본 저장도 요청한 경우에는 집계 한 행으로 완료 처리하지 않는다. 2~4개 물리 테이블의 단순 INNER JOIN만 자동 관계 검증 대상이며 실제 키 유일성·미일치 행 수는 별도 검증 사항이다. [계약·실모델·실패 기록](evaluation/2026-09-26_relationship_discovery.md).
 
 `propose_databricks_query`는 registry 호환 정의에는 남아 있지만 production LangGraph에서는 등록하지 않는다. production은 `query_databricks`와 `HumanInTheLoopMiddleware`를 사용한다.
 

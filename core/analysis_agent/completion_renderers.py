@@ -83,6 +83,10 @@ def render_profile(runtime, current):
 
 def render_join(runtime, current):
     parts = []
+    if current.get('join_query_evidence') and not current.get('join_evidence'):
+        evidence = current['join_query_evidence']
+        return (f"{evidence['source']}를 승인된 SQL에서 조인하여 요청한 통계를 계산했습니다. "
+                '결과는 해당 조인 조건으로 결합된 행 기준입니다. 키의 실제 유일성·미일치 행 수는 별도로 측정하지 않았습니다.')
     if current.get('join_evidence') and runtime.context:
         evidence = current['join_evidence']
         summary = evidence['summary']
@@ -315,4 +319,3 @@ def render_calculation(runtime, current):
             parts.append('```csv\n' + preview.to_csv(index=False).strip() + '\n```')
         if info.rows > 15: parts.append(f'총 {info.rows}행 중 앞 15행입니다. 전체 결과는 저장된 데이터에서 확인할 수 있습니다.')
     return '\n\n'.join(parts)
-

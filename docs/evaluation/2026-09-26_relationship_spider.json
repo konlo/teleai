@@ -1,0 +1,1036 @@
+{
+  "mode": "fixed five Spider2-Lite SQLite tasks; first SQL proposal only, not complete interactive agent execution",
+  "official_scoring": "unmodified official execution/result comparison; no gold visible to agent",
+  "denominator_note": "0 of 1 submitted in each track, 0 of 5 selected; not all 547 official cases run",
+  "databricks_sql_executions": 0,
+  "tracks": [
+    {
+      "revision": "intermediate",
+      "track": "original",
+      "selected": 5,
+      "correct": 0,
+      "submitted": 1,
+      "provider": "databricks",
+      "model": "databricks-qwen3-next-80b-a3b-instruct",
+      "results": [
+        {
+          "id": "local221",
+          "db": "EU_soccer",
+          "benchmark": "Spider2-Lite SQLite",
+          "mode": "TeleAI SQL proposal; no automatic approval or remote SQL execution; read-only public SQLite probe",
+          "prompt_mode": "original_question",
+          "status": "SQL_PROPOSED",
+          "agent_status": "awaiting_approval",
+          "probe": {
+            "status": "executable",
+            "elapsed_seconds": 0.0
+          },
+          "tools": [
+            "inspect_table_context",
+            "inspect_table_context",
+            "query_databricks"
+          ],
+          "schema_tables": 8,
+          "elapsed_seconds": 7.105,
+          "remote_executions": 0,
+          "proposed_sql": "SELECT home_team_api_id, away_team_api_id, home_team_goal, away_team_goal FROM Match\n"
+        },
+        {
+          "id": "local009",
+          "db": "Airlines",
+          "benchmark": "Spider2-Lite SQLite",
+          "mode": "TeleAI SQL proposal; no automatic approval or remote SQL execution; read-only public SQLite probe",
+          "prompt_mode": "original_question",
+          "status": "NO_SQL_PROPOSAL",
+          "agent_status": "exhausted",
+          "tools": [
+            "inspect_table_context",
+            "inspect_table_context",
+            "inspect_column_definitions",
+            "plan_source_discovery",
+            "list_analysis_context",
+            "query_databricks",
+            "query_databricks"
+          ],
+          "model_calls": 10,
+          "recovery_attempts": 2,
+          "sql_drafts": [
+            {
+              "source": "default.public.flights",
+              "query": "SELECT DISTINCT departure_airport, arrival_airport FROM flights WHERE departure_airport IN (SELECT airport_code FROM default.public.airports_data WHERE city->>'en' = 'Abakan' OR city->>'ru' = 'Абакан') OR arrival_airport IN (SELECT airport_code FROM default.public.airports_data WHERE city->>'en' = 'Abakan' OR city->>'ru' = 'Абакан') LIMIT 5",
+              "reason": "아바칸(Abakan)을 출발지 또는 도착지로 하는 항공 노선의 공항 코드를 확인하여, 이후 좌표를 조인해 거리 계산을 위한 기반 데이터를 확보합니다."
+            },
+            {
+              "source": "flights",
+              "query": "SELECT DISTINCT departure_airport, arrival_airport FROM flights WHERE departure_airport IN (SELECT airport_code FROM airports_data WHERE city->>'en' = 'Abakan' OR city->>'ru' = 'Абакан') OR arrival_airport IN (SELECT airport_code FROM airports_data WHERE city->>'en' = 'Abakan' OR city->>'ru' = 'Абакан') LIMIT 5",
+              "reason": "아바칸(Abakan)을 출발지 또는 도착지로 하는 항공 노선의 공항 코드를 확인하여, 이후 위도/경도 기반 거리 계산을 위한 기초 데이터를 확보합니다."
+            }
+          ],
+          "observations": [
+            {
+              "tool": "inspect_table_context",
+              "status": "ready",
+              "error_code": null
+            },
+            {
+              "tool": "inspect_table_context",
+              "status": "ready",
+              "error_code": null
+            },
+            {
+              "tool": "inspect_column_definitions",
+              "status": "needs_context",
+              "error_code": null
+            },
+            {
+              "tool": "plan_source_discovery",
+              "status": "needs_context",
+              "error_code": null
+            },
+            {
+              "tool": "list_analysis_context",
+              "status": "ready",
+              "error_code": null
+            }
+          ],
+          "draft_probe": {
+            "status": "executable",
+            "elapsed_seconds": 0.003
+          },
+          "failure_causes": [
+            "agent_incomplete"
+          ],
+          "remote_executions": 0,
+          "error_type": null,
+          "elapsed_seconds": 30.116
+        },
+        {
+          "id": "local210",
+          "db": "delivery_center",
+          "benchmark": "Spider2-Lite SQLite",
+          "mode": "TeleAI SQL proposal; no automatic approval or remote SQL execution; read-only public SQLite probe",
+          "prompt_mode": "original_question",
+          "status": "NO_SQL_PROPOSAL",
+          "agent_status": "blocked",
+          "tools": [
+            "inspect_table_context",
+            "inspect_table_context",
+            "inspect_table_context",
+            "plan_source_discovery",
+            "query_databricks",
+            "query_databricks"
+          ],
+          "model_calls": 10,
+          "recovery_attempts": 2,
+          "sql_drafts": [
+            {
+              "source": "default.public.orders",
+              "query": "SELECT DISTINCT order_created_month, order_created_year FROM orders WHERE order_created_year IN (2026) AND order_created_month IN (2, 3) ORDER BY order_created_year, order_created_month",
+              "reason": "2026년 2월과 3월에 완료된 주문이 존재하는지 확인하여 월별 집계 기반으로 허브 증가율 분석을 진행하기 위함."
+            },
+            {
+              "source": "orders",
+              "query": "SELECT DISTINCT order_created_month, order_created_year FROM orders WHERE order_created_year = 2026 AND order_created_month IN (2, 3) ORDER BY order_created_year, order_created_month",
+              "reason": "2026년 2월과 3월 주문 데이터 존재 여부 확인하여 월별 집계 기반 분석 가능 여부 판단"
+            }
+          ],
+          "observations": [
+            {
+              "tool": "inspect_table_context",
+              "status": "ready",
+              "error_code": null
+            },
+            {
+              "tool": "inspect_table_context",
+              "status": "ready",
+              "error_code": null
+            },
+            {
+              "tool": "inspect_table_context",
+              "status": "ready",
+              "error_code": null
+            },
+            {
+              "tool": "plan_source_discovery",
+              "status": "needs_context",
+              "error_code": null
+            }
+          ],
+          "draft_probe": {
+            "status": "executable",
+            "elapsed_seconds": 0.022
+          },
+          "failure_causes": [
+            "request_scope_unresolved"
+          ],
+          "remote_executions": 0,
+          "error_type": null,
+          "elapsed_seconds": 22.927
+        },
+        {
+          "id": "local358",
+          "db": "log",
+          "benchmark": "Spider2-Lite SQLite",
+          "mode": "TeleAI SQL proposal; no automatic approval or remote SQL execution; read-only public SQLite probe",
+          "prompt_mode": "original_question",
+          "status": "NO_SQL_PROPOSAL",
+          "agent_status": "exhausted",
+          "tools": [
+            "inspect_table_context",
+            "inspect_column_definitions",
+            "plan_source_discovery",
+            "list_analysis_context",
+            "inspect_table_context",
+            "local_analysis_sql"
+          ],
+          "model_calls": 10,
+          "recovery_attempts": 1,
+          "sql_drafts": [],
+          "observations": [
+            {
+              "tool": "inspect_table_context",
+              "status": "ready",
+              "error_code": null
+            },
+            {
+              "tool": "inspect_column_definitions",
+              "status": "needs_context",
+              "error_code": null
+            },
+            {
+              "tool": "plan_source_discovery",
+              "status": "needs_context",
+              "error_code": null
+            },
+            {
+              "tool": "list_analysis_context",
+              "status": "ready",
+              "error_code": null
+            },
+            {
+              "tool": "inspect_table_context",
+              "status": "ready",
+              "error_code": null
+            },
+            {
+              "tool": "local_analysis_sql",
+              "status": "error",
+              "error_code": "dataset_not_loaded"
+            }
+          ],
+          "draft_probe": null,
+          "failure_causes": [
+            "model_no_output"
+          ],
+          "remote_executions": 0,
+          "error_type": null,
+          "elapsed_seconds": 24.517
+        },
+        {
+          "id": "local198",
+          "db": "chinook",
+          "benchmark": "Spider2-Lite SQLite",
+          "mode": "TeleAI SQL proposal; no automatic approval or remote SQL execution; read-only public SQLite probe",
+          "prompt_mode": "original_question",
+          "status": "NO_SQL_PROPOSAL",
+          "agent_status": "blocked",
+          "tools": [
+            "aggregate_dataset",
+            "inspect_table_context",
+            "inspect_table_context",
+            "plan_source_discovery",
+            "query_databricks",
+            "query_databricks"
+          ],
+          "model_calls": 10,
+          "recovery_attempts": 2,
+          "sql_drafts": [
+            {
+              "source": "main.public.invoices",
+              "query": "SELECT Country, SUM(Total) AS total_sales FROM invoices JOIN customers ON invoices.CustomerId = customers.CustomerId GROUP BY Country HAVING COUNT(customers.CustomerId) > 4",
+              "reason": "고객 수 > 4인 국가별 총 매출을 계산하여 중앙값을 산출하기 위함. invoices와 customers는 CustomerId로 조인 가능하며, Country는 customers 테이블에 존재. 집계 후 중앙값 계산을 위해 먼저 국가별 총 매출을 구함."
+            },
+            {
+              "source": "invoices",
+              "query": "SELECT c.Country, SUM(i.Total) AS total_sales FROM invoices i JOIN customers c ON i.CustomerId = c.CustomerId GROUP BY c.Country HAVING COUNT(c.CustomerId) > 4",
+              "reason": "고객 수가 4명 초과인 국가별 총 매출을 계산하여 중앙값을 산출하기 위함"
+            }
+          ],
+          "observations": [
+            {
+              "tool": "aggregate_dataset",
+              "status": "error",
+              "error_code": "dataset_not_loaded"
+            },
+            {
+              "tool": "inspect_table_context",
+              "status": "ready",
+              "error_code": null
+            },
+            {
+              "tool": "inspect_table_context",
+              "status": "ready",
+              "error_code": null
+            },
+            {
+              "tool": "plan_source_discovery",
+              "status": "needs_context",
+              "error_code": null
+            }
+          ],
+          "draft_probe": {
+            "status": "executable",
+            "elapsed_seconds": 0.002
+          },
+          "failure_causes": [
+            "agent_incomplete"
+          ],
+          "remote_executions": 0,
+          "error_type": null,
+          "elapsed_seconds": 22.59
+        }
+      ]
+    },
+    {
+      "revision": "intermediate",
+      "track": "sql",
+      "selected": 5,
+      "correct": 0,
+      "submitted": 1,
+      "provider": "databricks",
+      "model": "databricks-qwen3-next-80b-a3b-instruct",
+      "results": [
+        {
+          "id": "local221",
+          "db": "EU_soccer",
+          "benchmark": "Spider2-Lite SQLite",
+          "mode": "TeleAI SQL proposal; no automatic approval or remote SQL execution; read-only public SQLite probe",
+          "prompt_mode": "sql_instructed",
+          "status": "NO_SQL_PROPOSAL",
+          "agent_status": "blocked",
+          "tools": [
+            "inspect_table_relationships",
+            "inspect_table_context",
+            "inspect_table_context",
+            "query_databricks",
+            "query_databricks",
+            "inspect_table_relationships",
+            "inspect_table_relationships"
+          ],
+          "model_calls": 10,
+          "recovery_attempts": 2,
+          "sql_drafts": [
+            {
+              "source": "Match | Team",
+              "query": "SELECT t.team_long_name, COUNT(*) AS wins\nFROM Match m\nJOIN Team t ON m.home_team_api_id = t.team_api_id\nWHERE m.home_team_goal > m.away_team_goal\nGROUP BY t.team_long_name\nORDER BY wins DESC\nLIMIT 10",
+              "reason": "승리한 팀을 식별하려면 홈팀의 골이 원정팀의 골보다 많은 경기를 카운트해야 합니다. Team 테이블에서 팀 이름을 가져오기 위해 home_team_api_id로 조인합니다. 상위 10개 팀을 요청했으므로 LIMIT 10을 적용합니다."
+            },
+            {
+              "source": "Match | Team",
+              "query": "SELECT t.team_long_name, COUNT(*) AS wins\nFROM Match m\nJOIN Team t ON m.home_team_api_id = t.team_api_id\nWHERE m.home_team_goal > m.away_team_goal\nGROUP BY t.team_long_name\nORDER BY wins DESC\nLIMIT 10",
+              "reason": "팀의 승리 수를 계산하려면 홈팀의 골이 원정팀 골보다 많은 경기만 카운트해야 합니다. Match 테이블의 home_team_api_id와 Team 테이블의 team_api_id는 외래 키 관계로 연결되어 있으며, team_long_name을 통해 팀 이름을 출력합니다. 승리 기준은 home_team_goal > away_team_goal이며, 상위 10팀을 요청했으므로 LIMIT 10을 적용합니다."
+            }
+          ],
+          "observations": [
+            {
+              "tool": "inspect_table_relationships",
+              "status": "ready",
+              "error_code": null
+            },
+            {
+              "tool": "inspect_table_context",
+              "status": "ready",
+              "error_code": null
+            },
+            {
+              "tool": "inspect_table_context",
+              "status": "ready",
+              "error_code": null
+            },
+            {
+              "tool": "inspect_table_relationships",
+              "status": "ready",
+              "error_code": null
+            },
+            {
+              "tool": "inspect_table_relationships",
+              "status": "ready",
+              "error_code": null
+            }
+          ],
+          "draft_probe": {
+            "status": "executable",
+            "elapsed_seconds": 0.017
+          },
+          "failure_causes": [
+            "unverified_join_relationship"
+          ],
+          "remote_executions": 0,
+          "error_type": null,
+          "elapsed_seconds": 21.257
+        },
+        {
+          "id": "local009",
+          "db": "Airlines",
+          "benchmark": "Spider2-Lite SQLite",
+          "mode": "TeleAI SQL proposal; no automatic approval or remote SQL execution; read-only public SQLite probe",
+          "prompt_mode": "sql_instructed",
+          "status": "NO_SQL_PROPOSAL",
+          "agent_status": "incomplete",
+          "tools": [],
+          "model_calls": 0,
+          "recovery_attempts": 0,
+          "sql_drafts": [],
+          "observations": [],
+          "draft_probe": null,
+          "failure_causes": [
+            "RateLimitError"
+          ],
+          "remote_executions": 0,
+          "error_type": "RateLimitError",
+          "elapsed_seconds": 0.38
+        },
+        {
+          "id": "local210",
+          "db": "delivery_center",
+          "benchmark": "Spider2-Lite SQLite",
+          "mode": "TeleAI SQL proposal; no automatic approval or remote SQL execution; read-only public SQLite probe",
+          "prompt_mode": "sql_instructed",
+          "status": "NO_SQL_PROPOSAL",
+          "agent_status": "blocked",
+          "tools": [
+            "inspect_table_context",
+            "inspect_table_context",
+            "inspect_table_relationships",
+            "query_databricks",
+            "inspect_table_context",
+            "inspect_table_relationships",
+            "query_databricks"
+          ],
+          "model_calls": 7,
+          "recovery_attempts": 2,
+          "sql_drafts": [
+            {
+              "source": "orders | hubs",
+              "query": "SELECT h.hub_id, h.hub_name, \n       SUM(CASE WHEN o.order_created_month = 2 AND o.order_status = 'finished' THEN 1 ELSE 0 END) AS feb_finished_orders,\n       SUM(CASE WHEN o.order_created_month = 3 AND o.order_status = 'finished' THEN 1 ELSE 0 END) AS mar_finished_orders\nFROM orders o\nJOIN hubs h ON o.store_id = h.hub_id\nWHERE o.order_created_year = 2024\nGROUP BY h.hub_id, h.hub_name\nHAVING mar_finished_orders > 0 AND feb_finished_orders > 0 AND (mar_finished_orders - feb_finished_orders) * 100.0 / feb_finished_orders > 20",
+              "reason": "사용자 요청: 2월에서 3월로 완료된 주문이 20% 이상 증가한 허브를 식별. orders 테이블에 order_created_month와 order_status 컬럼이 있어 월별 완료 주문 수를 집계 가능. hubs 테이블은 hub_id와 hub_name을 제공. orders.store_id와 hubs.hub_id 간 관계는 외래 키로 선언되지 않았으나, 업무적 맥락에서 store가 hub에 속한다고 가정하고 조인. 2024년 데이터로 제한하고, 증가율 계산 후 20% 초과 조건 적용."
+            },
+            {
+              "source": "orders | stores | hubs",
+              "query": "SELECT h.hub_id, h.hub_name, \n       SUM(CASE WHEN o.order_created_month = 2 AND o.order_status = 'finished' THEN 1 ELSE 0 END) AS feb_finished_orders,\n       SUM(CASE WHEN o.order_created_month = 3 AND o.order_status = 'finished' THEN 1 ELSE 0 END) AS mar_finished_orders\nFROM orders o\nJOIN stores s ON o.store_id = s.store_id\nJOIN hubs h ON s.hub_id = h.hub_id\nWHERE o.order_created_year = 2024\nGROUP BY h.hub_id, h.hub_name\nHAVING mar_finished_orders > 0 AND feb_finished_orders > 0 AND (mar_finished_orders - feb_finished_orders) * 100.0 / feb_finished_orders > 20",
+              "reason": "사용자 요청: 2월에서 3월로 완료된 주문이 20% 이상 증가한 허브를 식별. orders 테이블에서 order_created_month와 order_status로 월별 완료 주문 수를 집계. stores 테이블을 통해 store_id와 hub_id를 연결. hubs 테이블에서 hub_name을 반환. 2024년 데이터로 제한하고, 증가율 계산 후 20% 초과 조건 적용."
+            }
+          ],
+          "observations": [
+            {
+              "tool": "inspect_table_context",
+              "status": "ready",
+              "error_code": null
+            },
+            {
+              "tool": "inspect_table_context",
+              "status": "ready",
+              "error_code": null
+            },
+            {
+              "tool": "inspect_table_relationships",
+              "status": "ready",
+              "error_code": null
+            },
+            {
+              "tool": "inspect_table_context",
+              "status": "ready",
+              "error_code": null
+            },
+            {
+              "tool": "inspect_table_relationships",
+              "status": "ready",
+              "error_code": null
+            }
+          ],
+          "draft_probe": {
+            "status": "executable",
+            "elapsed_seconds": 0.023
+          },
+          "failure_causes": [
+            "request_scope_unresolved"
+          ],
+          "remote_executions": 0,
+          "error_type": null,
+          "elapsed_seconds": 16.24
+        },
+        {
+          "id": "local358",
+          "db": "log",
+          "benchmark": "Spider2-Lite SQLite",
+          "mode": "TeleAI SQL proposal; no automatic approval or remote SQL execution; read-only public SQLite probe",
+          "prompt_mode": "sql_instructed",
+          "status": "SQL_PROPOSED",
+          "agent_status": "awaiting_approval",
+          "probe": {
+            "status": "executable",
+            "elapsed_seconds": 0.0
+          },
+          "tools": [
+            "inspect_table_context",
+            "query_databricks"
+          ],
+          "schema_tables": 19,
+          "elapsed_seconds": 7.124,
+          "remote_executions": 0,
+          "proposed_sql": "SELECT \n  CASE \n    WHEN CAST(SUBSTR(birth_date, 1, 4) AS INTEGER) >= 1976 AND CAST(SUBSTR(birth_date, 1, 4) AS INTEGER) <= 1985 THEN '20s'\n    WHEN CAST(SUBSTR(birth_date, 1, 4) AS INTEGER) >= 1966 AND CAST(SUBSTR(birth_date, 1, 4) AS INTEGER) <= 1975 THEN '30s'\n    WHEN CAST(SUBSTR(birth_date, 1, 4) AS INTEGER) >= 1956 AND CAST(SUBSTR(birth_date, 1, 4) AS INTEGER) <= 1965 THEN '40s'\n    WHEN CAST(SUBSTR(birth_date, 1, 4) AS INTEGER) >= 1946 AND CAST(SUBSTR(birth_date, 1, 4) AS INTEGER) <= 1955 THEN '50s'\n    ELSE 'others'\n  END AS age_category,\n  COUNT(*) AS user_count\nFROM mst_users\nWHERE birth_date IS NOT NULL AND LENGTH(birth_date) >= 4\nGROUP BY age_category\nORDER BY age_category;\n"
+        },
+        {
+          "id": "local198",
+          "db": "chinook",
+          "benchmark": "Spider2-Lite SQLite",
+          "mode": "TeleAI SQL proposal; no automatic approval or remote SQL execution; read-only public SQLite probe",
+          "prompt_mode": "sql_instructed",
+          "status": "NO_SQL_PROPOSAL",
+          "agent_status": "incomplete",
+          "tools": [
+            "inspect_table_relationships",
+            "inspect_table_relationships",
+            "inspect_table_context",
+            "inspect_table_context",
+            "query_databricks",
+            "query_databricks"
+          ],
+          "model_calls": 4,
+          "recovery_attempts": 2,
+          "sql_drafts": [
+            {
+              "source": "customers | invoices",
+              "query": "SELECT c.Country, SUM(i.Total) AS TotalSales\nFROM customers c\nJOIN invoices i ON c.CustomerId = i.CustomerId\nGROUP BY c.Country\nHAVING COUNT(c.CustomerId) > 4",
+              "reason": "고객 수가 4명 초과인 국가별 총 매출을 계산하여 중앙값을 구하기 위한 전처리 단계입니다. customers와 invoices는 CustomerId로 조인 가능하며, Country는 customers 테이블에 존재합니다."
+            },
+            {
+              "source": "customers | invoices",
+              "query": "SELECT c.Country, SUM(i.Total) AS TotalSales\nFROM customers c\nJOIN invoices i ON c.CustomerId = i.CustomerId\nGROUP BY c.Country\nHAVING COUNT(c.CustomerId) > 4",
+              "reason": "고객 수가 4명 초과인 국가별 총 매출을 계산하여 중앙값을 구하기 위한 중간 집계."
+            }
+          ],
+          "observations": [
+            {
+              "tool": "inspect_table_relationships",
+              "status": "ready",
+              "error_code": null
+            },
+            {
+              "tool": "inspect_table_relationships",
+              "status": "ready",
+              "error_code": null
+            },
+            {
+              "tool": "inspect_table_context",
+              "status": "ready",
+              "error_code": null
+            },
+            {
+              "tool": "inspect_table_context",
+              "status": "ready",
+              "error_code": null
+            }
+          ],
+          "draft_probe": {
+            "status": "executable",
+            "elapsed_seconds": 0.001
+          },
+          "failure_causes": [
+            "request_scope_mismatch",
+            "RateLimitError"
+          ],
+          "remote_executions": 0,
+          "error_type": "RateLimitError",
+          "elapsed_seconds": 5.712
+        }
+      ]
+    },
+    {
+      "revision": "final",
+      "track": "original",
+      "selected": 5,
+      "correct": 0,
+      "submitted": 1,
+      "provider": "databricks",
+      "model": "databricks-qwen3-next-80b-a3b-instruct",
+      "results": [
+        {
+          "id": "local221",
+          "db": "EU_soccer",
+          "benchmark": "Spider2-Lite SQLite",
+          "mode": "TeleAI SQL proposal; no automatic approval or remote SQL execution; read-only public SQLite probe",
+          "prompt_mode": "original_question",
+          "status": "SQL_PROPOSED",
+          "agent_status": "awaiting_approval",
+          "probe": {
+            "status": "executable",
+            "elapsed_seconds": 0.014
+          },
+          "tools": [
+            "inspect_table_context",
+            "inspect_table_context",
+            "local_analysis_sql",
+            "query_databricks"
+          ],
+          "schema_tables": 8,
+          "elapsed_seconds": 9.595,
+          "remote_executions": 0,
+          "proposed_sql": "SELECT home_team_api_id AS team_api_id, COUNT(*) AS wins FROM Match WHERE home_team_goal > away_team_goal GROUP BY home_team_api_id UNION ALL SELECT away_team_api_id AS team_api_id, COUNT(*) AS wins FROM Match WHERE away_team_goal > home_team_goal GROUP BY away_team_api_id\n"
+        },
+        {
+          "id": "local009",
+          "db": "Airlines",
+          "benchmark": "Spider2-Lite SQLite",
+          "mode": "TeleAI SQL proposal; no automatic approval or remote SQL execution; read-only public SQLite probe",
+          "prompt_mode": "original_question",
+          "status": "NO_SQL_PROPOSAL",
+          "agent_status": "blocked",
+          "tools": [
+            "inspect_table_context",
+            "inspect_table_context",
+            "inspect_column_definitions",
+            "plan_source_discovery",
+            "list_analysis_context",
+            "query_databricks",
+            "inspect_table_relationships"
+          ],
+          "model_calls": 10,
+          "recovery_attempts": 1,
+          "sql_drafts": [
+            {
+              "source": "airports_data",
+              "query": "SELECT airport_code, city, coordinates FROM airports_data LIMIT 5",
+              "reason": "아바칸 포함 경로의 최장 거리 계산을 위해 공항 코드, 도시 이름(EN), 위도/경도 좌표를 확인해야 합니다. 현재 로딩된 데이터는 컬럼 정보만 존재하며 실제 행 데이터가 필요합니다."
+            }
+          ],
+          "observations": [
+            {
+              "tool": "inspect_table_context",
+              "status": "ready",
+              "error_code": null
+            },
+            {
+              "tool": "inspect_table_context",
+              "status": "ready",
+              "error_code": null
+            },
+            {
+              "tool": "inspect_column_definitions",
+              "status": "needs_context",
+              "error_code": null
+            },
+            {
+              "tool": "plan_source_discovery",
+              "status": "needs_context",
+              "error_code": null
+            },
+            {
+              "tool": "list_analysis_context",
+              "status": "ready",
+              "error_code": null
+            },
+            {
+              "tool": "inspect_table_relationships",
+              "status": "ready",
+              "error_code": null
+            }
+          ],
+          "draft_probe": {
+            "status": "executable",
+            "elapsed_seconds": 0.0
+          },
+          "failure_causes": [
+            "request_scope_unresolved"
+          ],
+          "remote_executions": 0,
+          "error_type": null,
+          "elapsed_seconds": 24.937
+        },
+        {
+          "id": "local210",
+          "db": "delivery_center",
+          "benchmark": "Spider2-Lite SQLite",
+          "mode": "TeleAI SQL proposal; no automatic approval or remote SQL execution; read-only public SQLite probe",
+          "prompt_mode": "original_question",
+          "status": "NO_SQL_PROPOSAL",
+          "agent_status": "exhausted",
+          "tools": [
+            "inspect_table_context",
+            "inspect_table_context",
+            "inspect_table_context",
+            "plan_source_discovery",
+            "inspect_table_relationships",
+            "inspect_table_context"
+          ],
+          "model_calls": 10,
+          "recovery_attempts": 0,
+          "sql_drafts": [],
+          "observations": [
+            {
+              "tool": "inspect_table_context",
+              "status": "ready",
+              "error_code": null
+            },
+            {
+              "tool": "inspect_table_context",
+              "status": "ready",
+              "error_code": null
+            },
+            {
+              "tool": "inspect_table_context",
+              "status": "ready",
+              "error_code": null
+            },
+            {
+              "tool": "plan_source_discovery",
+              "status": "needs_context",
+              "error_code": null
+            },
+            {
+              "tool": "inspect_table_relationships",
+              "status": "ready",
+              "error_code": null
+            },
+            {
+              "tool": "inspect_table_context",
+              "status": "ready",
+              "error_code": null
+            }
+          ],
+          "draft_probe": null,
+          "failure_causes": [
+            "model_no_output"
+          ],
+          "remote_executions": 0,
+          "error_type": null,
+          "elapsed_seconds": 21.837
+        },
+        {
+          "id": "local358",
+          "db": "log",
+          "benchmark": "Spider2-Lite SQLite",
+          "mode": "TeleAI SQL proposal; no automatic approval or remote SQL execution; read-only public SQLite probe",
+          "prompt_mode": "original_question",
+          "status": "NO_SQL_PROPOSAL",
+          "agent_status": "incomplete",
+          "tools": [],
+          "model_calls": 0,
+          "recovery_attempts": 0,
+          "sql_drafts": [],
+          "observations": [],
+          "draft_probe": null,
+          "failure_causes": [
+            "model_timeout"
+          ],
+          "remote_executions": 0,
+          "error_type": "APITimeoutError",
+          "elapsed_seconds": 60.194
+        },
+        {
+          "id": "local198",
+          "db": "chinook",
+          "benchmark": "Spider2-Lite SQLite",
+          "mode": "TeleAI SQL proposal; no automatic approval or remote SQL execution; read-only public SQLite probe",
+          "prompt_mode": "original_question",
+          "status": "NO_SQL_PROPOSAL",
+          "agent_status": "blocked",
+          "tools": [
+            "aggregate_dataset",
+            "inspect_table_context",
+            "inspect_table_context",
+            "query_databricks",
+            "query_databricks",
+            "inspect_table_relationships",
+            "inspect_table_relationships"
+          ],
+          "model_calls": 10,
+          "recovery_attempts": 2,
+          "sql_drafts": [
+            {
+              "source": "invoices",
+              "query": "SELECT c.Country, SUM(i.Total) AS TotalSales FROM invoices i JOIN customers c ON i.CustomerId = c.CustomerId GROUP BY c.Country HAVING COUNT(c.CustomerId) > 4",
+              "reason": "고객 수가 4명 초과인 국가별 총 매출을 계산하여 중앙값을 구하기 위한 원본 데이터 조회"
+            },
+            {
+              "source": "invoices | customers",
+              "query": "SELECT c.Country, SUM(i.Total) AS TotalSales FROM invoices i JOIN customers c ON i.CustomerId = c.CustomerId GROUP BY c.Country HAVING COUNT(c.CustomerId) > 4",
+              "reason": "고객 수가 4명 초과인 국가별 총 매출을 계산하여 중앙값을 구하기 위한 원본 데이터를 조회합니다."
+            }
+          ],
+          "observations": [
+            {
+              "tool": "aggregate_dataset",
+              "status": "error",
+              "error_code": "dataset_not_loaded"
+            },
+            {
+              "tool": "inspect_table_context",
+              "status": "ready",
+              "error_code": null
+            },
+            {
+              "tool": "inspect_table_context",
+              "status": "ready",
+              "error_code": null
+            },
+            {
+              "tool": "inspect_table_relationships",
+              "status": "ready",
+              "error_code": null
+            },
+            {
+              "tool": "inspect_table_relationships",
+              "status": "ready",
+              "error_code": null
+            }
+          ],
+          "draft_probe": {
+            "status": "executable",
+            "elapsed_seconds": 0.002
+          },
+          "failure_causes": [
+            "unverified_join_relationship"
+          ],
+          "remote_executions": 0,
+          "error_type": null,
+          "elapsed_seconds": 25.459
+        }
+      ]
+    },
+    {
+      "revision": "final",
+      "track": "sql",
+      "selected": 5,
+      "correct": 0,
+      "submitted": 1,
+      "provider": "databricks",
+      "model": "databricks-qwen3-next-80b-a3b-instruct",
+      "results": [
+        {
+          "id": "local221",
+          "db": "EU_soccer",
+          "benchmark": "Spider2-Lite SQLite",
+          "mode": "TeleAI SQL proposal; no automatic approval or remote SQL execution; read-only public SQLite probe",
+          "prompt_mode": "sql_instructed",
+          "status": "NO_SQL_PROPOSAL",
+          "agent_status": "incomplete",
+          "tools": [
+            "inspect_table_relationships",
+            "inspect_table_context"
+          ],
+          "model_calls": 2,
+          "recovery_attempts": 0,
+          "sql_drafts": [],
+          "observations": [
+            {
+              "tool": "inspect_table_relationships",
+              "status": "ready",
+              "error_code": null
+            },
+            {
+              "tool": "inspect_table_context",
+              "status": "ready",
+              "error_code": null
+            }
+          ],
+          "draft_probe": null,
+          "failure_causes": [
+            "RateLimitError"
+          ],
+          "remote_executions": 0,
+          "error_type": "RateLimitError",
+          "elapsed_seconds": 3.047
+        },
+        {
+          "id": "local009",
+          "db": "Airlines",
+          "benchmark": "Spider2-Lite SQLite",
+          "mode": "TeleAI SQL proposal; no automatic approval or remote SQL execution; read-only public SQLite probe",
+          "prompt_mode": "sql_instructed",
+          "status": "NO_SQL_PROPOSAL",
+          "agent_status": "incomplete",
+          "tools": [
+            "inspect_table_context",
+            "inspect_table_context",
+            "inspect_table_relationships"
+          ],
+          "model_calls": 3,
+          "recovery_attempts": 0,
+          "sql_drafts": [],
+          "observations": [
+            {
+              "tool": "inspect_table_context",
+              "status": "ready",
+              "error_code": null
+            },
+            {
+              "tool": "inspect_table_context",
+              "status": "ready",
+              "error_code": null
+            },
+            {
+              "tool": "inspect_table_relationships",
+              "status": "ready",
+              "error_code": null
+            }
+          ],
+          "draft_probe": null,
+          "failure_causes": [
+            "RateLimitError"
+          ],
+          "remote_executions": 0,
+          "error_type": "RateLimitError",
+          "elapsed_seconds": 3.441
+        },
+        {
+          "id": "local210",
+          "db": "delivery_center",
+          "benchmark": "Spider2-Lite SQLite",
+          "mode": "TeleAI SQL proposal; no automatic approval or remote SQL execution; read-only public SQLite probe",
+          "prompt_mode": "sql_instructed",
+          "status": "NO_SQL_PROPOSAL",
+          "agent_status": "blocked",
+          "tools": [
+            "inspect_table_context",
+            "inspect_table_context",
+            "inspect_table_relationships",
+            "query_databricks",
+            "inspect_table_context",
+            "inspect_table_relationships",
+            "query_databricks"
+          ],
+          "model_calls": 7,
+          "recovery_attempts": 2,
+          "sql_drafts": [
+            {
+              "source": "orders | hubs",
+              "query": "SELECT h.hub_id, h.hub_name, \n       SUM(CASE WHEN o.order_created_year = 2023 AND o.order_created_month = 2 AND o.order_status = 'finished' THEN 1 ELSE 0 END) AS feb_finished_orders,\n       SUM(CASE WHEN o.order_created_year = 2023 AND o.order_created_month = 3 AND o.order_status = 'finished' THEN 1 ELSE 0 END) AS mar_finished_orders\nFROM orders o\nJOIN hubs h ON o.store_id = h.hub_id\nGROUP BY h.hub_id, h.hub_name\nHAVING mar_finished_orders > 0 AND feb_finished_orders > 0 AND (mar_finished_orders - feb_finished_orders) * 100.0 / feb_finished_orders > 20",
+              "reason": "사용자 요청: 2월에서 3월로 완료된 주문이 20% 이상 증가한 허브를 식별. orders 테이블에 order_created_year, order_created_month, order_status 컬럼이 있어 월별 완료 주문 수를 집계 가능. hubs 테이블은 hub_id와 hub_name을 제공. orders.store_id와 hubs.hub_id 간 관계는 외래 키로 선언되지 않았으나, 업무적 맥락에서 store가 hub에 속한다고 가정하고 JOIN. 조건: 2023년 2월과 3월, order_status = 'finished', 증가율 > 20%."
+            },
+            {
+              "source": "orders | stores | hubs",
+              "query": "SELECT h.hub_name\nFROM orders o\nJOIN stores s ON o.store_id = s.store_id\nJOIN hubs h ON s.hub_id = h.hub_id\nWHERE o.order_status = 'finished'\nGROUP BY h.hub_id, h.hub_name\nHAVING SUM(CASE WHEN o.order_created_year = 2023 AND o.order_created_month = 3 THEN 1 ELSE 0 END) > 0\n   AND SUM(CASE WHEN o.order_created_year = 2023 AND o.order_created_month = 2 THEN 1 ELSE 0 END) > 0\n   AND (SUM(CASE WHEN o.order_created_year = 2023 AND o.order_created_month = 3 THEN 1 ELSE 0 END) - SUM(CASE WHEN o.order_created_year = 2023 AND o.order_created_month = 2 THEN 1 ELSE 0 END)) * 100.0 / SUM(CASE WHEN o.order_created_year = 2023 AND o.order_created_month = 2 THEN 1 ELSE 0 END) > 20",
+              "reason": "사용자 요청: 2월에서 3월로 완료된 주문이 20% 이상 증가한 허브를 식별. orders는 order_created_year/month로 월 필터, order_status로 'finished' 필터. stores는 hub_id로 hubs와 연결. hubs는 hub_name을 출력. 모든 조건을 유지하며, JOIN 경로는 store_id → hub_id로 정확히 매핑."
+            }
+          ],
+          "observations": [
+            {
+              "tool": "inspect_table_context",
+              "status": "ready",
+              "error_code": null
+            },
+            {
+              "tool": "inspect_table_context",
+              "status": "ready",
+              "error_code": null
+            },
+            {
+              "tool": "inspect_table_relationships",
+              "status": "ready",
+              "error_code": null
+            },
+            {
+              "tool": "inspect_table_context",
+              "status": "ready",
+              "error_code": null
+            },
+            {
+              "tool": "inspect_table_relationships",
+              "status": "ready",
+              "error_code": null
+            }
+          ],
+          "draft_probe": {
+            "status": "executable",
+            "elapsed_seconds": 0.02
+          },
+          "failure_causes": [
+            "request_scope_unresolved"
+          ],
+          "remote_executions": 0,
+          "error_type": null,
+          "elapsed_seconds": 19.24
+        },
+        {
+          "id": "local358",
+          "db": "log",
+          "benchmark": "Spider2-Lite SQLite",
+          "mode": "TeleAI SQL proposal; no automatic approval or remote SQL execution; read-only public SQLite probe",
+          "prompt_mode": "sql_instructed",
+          "status": "SQL_PROPOSED",
+          "agent_status": "awaiting_approval",
+          "probe": {
+            "status": "executable",
+            "elapsed_seconds": 0.0
+          },
+          "tools": [
+            "inspect_table_context",
+            "query_databricks"
+          ],
+          "schema_tables": 19,
+          "elapsed_seconds": 4.79,
+          "remote_executions": 0,
+          "proposed_sql": "SELECT \n  CASE \n    WHEN CAST(strftime('%Y', 'now') AS INTEGER) - CAST(SUBSTR(birth_date, 1, 4) AS INTEGER) BETWEEN 20 AND 29 THEN '20s'\n    WHEN CAST(strftime('%Y', 'now') AS INTEGER) - CAST(SUBSTR(birth_date, 1, 4) AS INTEGER) BETWEEN 30 AND 39 THEN '30s'\n    WHEN CAST(strftime('%Y', 'now') AS INTEGER) - CAST(SUBSTR(birth_date, 1, 4) AS INTEGER) BETWEEN 40 AND 49 THEN '40s'\n    WHEN CAST(strftime('%Y', 'now') AS INTEGER) - CAST(SUBSTR(birth_date, 1, 4) AS INTEGER) BETWEEN 50 AND 59 THEN '50s'\n    ELSE 'others'\n  END AS age_category,\n  COUNT(*) AS user_count\nFROM mst_users\nWHERE birth_date IS NOT NULL AND LENGTH(birth_date) >= 4\nGROUP BY age_category\nORDER BY age_category;\n"
+        },
+        {
+          "id": "local198",
+          "db": "chinook",
+          "benchmark": "Spider2-Lite SQLite",
+          "mode": "TeleAI SQL proposal; no automatic approval or remote SQL execution; read-only public SQLite probe",
+          "prompt_mode": "sql_instructed",
+          "status": "NO_SQL_PROPOSAL",
+          "agent_status": "blocked",
+          "tools": [
+            "inspect_table_relationships",
+            "inspect_table_relationships",
+            "inspect_table_context",
+            "inspect_table_context",
+            "query_databricks"
+          ],
+          "model_calls": 4,
+          "recovery_attempts": 1,
+          "sql_drafts": [
+            {
+              "source": "customers | invoices",
+              "query": "SELECT c.Country, SUM(i.Total) AS TotalSales\nFROM customers c\nJOIN invoices i ON c.CustomerId = i.CustomerId\nGROUP BY c.Country\nHAVING COUNT(c.CustomerId) > 4",
+              "reason": "고객 수가 4명 초과인 국가별 총 매출을 계산하여 중앙값을 구하기 위한 중간 집계."
+            }
+          ],
+          "observations": [
+            {
+              "tool": "inspect_table_relationships",
+              "status": "ready",
+              "error_code": null
+            },
+            {
+              "tool": "inspect_table_relationships",
+              "status": "ready",
+              "error_code": null
+            },
+            {
+              "tool": "inspect_table_context",
+              "status": "ready",
+              "error_code": null
+            },
+            {
+              "tool": "inspect_table_context",
+              "status": "ready",
+              "error_code": null
+            }
+          ],
+          "draft_probe": {
+            "status": "executable",
+            "elapsed_seconds": 0.0
+          },
+          "failure_causes": [
+            "unverified_join_relationship"
+          ],
+          "remote_executions": 0,
+          "error_type": null,
+          "elapsed_seconds": 6.059
+        }
+      ]
+    }
+  ]
+}
