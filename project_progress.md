@@ -1910,3 +1910,5 @@ Task definitions and acceptance conditions: docs/agent_remaining_tasks_2026-09-1
 - 실제 Databricks 100,000행을 1회 적재하고 성공 observation 직렬화 결함을 수정했다. 저장 receipt로 재조회 없이 복구했다.
 - 문자열 수치의 원본 보존 projection과 명시적 결측 정책, 남은 계산/차트 자동 진행을 구현했다. 실모델 1회·11.562초의 정답/이미지와 실제 웹 smoke를 확인했다.
 - application 378 / migration 136 / reference 217 통과. 복잡한 SQL 의미 검증·103 미채점 oracle·DeepEval 보정은 다음 과제로 남는다. 별도 서버 운영은 범위 밖이다.
+
+- **Remote Gate**: 구현 `6b087ac`을 push했고 GitHub Actions `36324857324`가 전체 migration/application/agentic/reference/compile 검사를 통과했다. 최종 점검에서 결측값 변환을 명시적으로 금지하거나 문자열을 단지 언급한 요청은 변환 정책으로 인정하지 않도록 추가 보강했고 관련 4개 회귀가 통과했다.

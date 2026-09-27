@@ -24,3 +24,5 @@
 - **범용 agent 정식 GO는 보류**: 앞선 Spider 고정 5문항의 역할별 JOIN/JSON OR 과잉 차단, 임의 연도, DISTINCT·중앙값 단계 누락을 이 변경이 해결하지 않는다. 103개 미채점 oracle, DeepEval judge calibration, 복합 분석 확대도 남는다. SQL 승인은 더 이상 이번 검증의 blocker가 아니다.
 
 최신 코드로 Streamlit을 재시작한 뒤 [실제 웹 smoke](web_smoke.json)도 통과했다. 기존 대화의 10,000행 원본에서 age 평균 40.931과 히스토그램이 표시됐고 model 0회, 원본 SHA256 유지, 기존 completed SQL 1회 그대로였다.
+
+원격 CI: 구현 `6b087ac`의 GitHub Actions `36324857324` 전체 gate PASS. 추가로 결측 처리 부정 요청·단순 문자열 언급을 정책으로 오인하지 않는 검사를 보강하고 관련 회귀 4개를 재검증했다.

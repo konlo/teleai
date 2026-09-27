@@ -95,6 +95,11 @@ class NumericPreparationTests(unittest.TestCase):
                     'args':{'missing_values':['invented']}},state))
                 self.assertFalse(r.recovery._proposed_scope_valid({'name':'prepare_numeric_dataset',
                     'args':{'missing_values':[3]}},state))
+                for text in ['"missing" 문자열은 결측 처리하지 말고 그대로 유지해.',
+                             '"missing" 문자열의 건수를 알려줘.',
+                             'Do not treat "missing" as null.']:
+                    self.assertFalse(r.recovery._numeric_missing_policy_valid(
+                        {'missing_values':['missing']},{'request_text':text}))
             finally:r.close()
 
     def test_nonfinite_precision_boolean_and_unknown_tokens_not_dropped(self):

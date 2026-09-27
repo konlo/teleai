@@ -2055,7 +2055,15 @@ class RecoveryMiddleware(AgentMiddleware):
     def _numeric_missing_policy_valid(arguments,current):
         text=current.get('request_text','')
         values=arguments.get('missing_values',[])
-        return isinstance(values,list) and all(isinstance(value,str) and any(
+        if not isinstance(values,list):return False
+        if not values:return True
+        # Mentioning a literal (or explicitly forbidding conversion) is not a
+        # missing-value policy. Unsupported wording remains unverified.
+        negative=re.search(r'(?:결측|NULL|NaN).{0,24}(?:처리|변환|간주)\s*(?:하지\s*(?:마|말|않)|금지)|'
+                           r"(?:do\s+not|don't|never)\s+(?:treat|convert|map|interpret)",text,re.I)
+        positive=re.search(r'(?:결측|NULL|NaN).{0,20}(?:처리|변환|간주)|'
+                           r'(?:treat|convert|map|interpret).{0,100}(?:missing|null|nan)',text,re.I)
+        return bool(positive and not negative) and all(isinstance(value,str) and any(
             quote+value+quote in text for quote in ('"', "'", '`')) for value in values)
 
     def _prepared_numeric_call(self,current,calls):
