@@ -27,3 +27,9 @@
 - 이 검사는 신규 Databricks warehouse SQL을 실행하지 않는다. 이 소규모 결과가 임의 분석 성능, 전체 GO 또는 Codex/Claude Code 동등성을 뜻하지 않는다.
 
 다음 과제: 복잡한 다단계 SQL/조건 의미, 103개 미채점 oracle와 judge calibration, 대규모 신규 원격 적재, 격리 코드 실행. 모델 공급자 지연으로 남은 계산이 완료되지 않는 경우도 운영 검증 대상으로 유지한다. 범용 GO 보류.
+
+## 재확인 및 배포 후보 기록
+
+같은 compound 요청의 [별도 재확인](2026-09-27_progress_compound_recheck.json)은 65.091초, 실제 모델 호출 4회, 평균 9.0·차트 1개로 PASS했다. 이 실행의 실패/재시도 장부는 0이다. 최초 7/8 성공률과 156.738초 timeout 실패를 교체하지 않는다.
+
+코드 commit `8eebf82cbb687e400b9f25ce604efd8ca9db2f47`의 [원격 전체 CI](https://github.com/konlo/teleai/actions/runs/36309460574)가 성공했다. PR #68은 draft·미병합이다. 앱 PID 86044, health ok, 실제 브라우저에서 기존 대화/결과 복원과 Databricks 모델 선택을 확인했다. 이번 화면 검증은 재시작 복원이며 신규 분석/장애 주입은 CLI graph에서 검증했다.

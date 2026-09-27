@@ -1845,3 +1845,11 @@ Task definitions and acceptance conditions: docs/agent_remaining_tasks_2026-09-1
 - **Validation**: 신규 회귀 6개, application 358·migration 133·reference/Level3 217 PASS. 기존 반복 모델 호출은 10→4, 실제 반복 탐색은 2회에 제한한다. 평균+차트에서는 평균을 다시 실행하지 않고 미완료 차트만 생성한다.
 - **Actual model**: 자동 로컬 계획/구제 비활성화 8여정·9턴 중 7여정·8턴 PASS. compound는 차트 후 모델 APITimeoutError 3회로 156.738초에 미완료. 원본·차트 보존 및 미완료 판정을 유지했다. 별도 재확인은 성공률과 분리해 기록한다.
 - **Artifacts**: docs/evaluation/2026-09-27_progress_guard.md 및 baseline/live/verified JSON. 신규 coverage 테스트 최초 실패는 metadata 복사본을 수정한 fixture 문제로 판명돼 실제 임시 영속 저장소 변경으로 정정했다.
+
+- **Recheck**: compound 동일 요청의 별도 재확인은 65.091초·실모델 4회·오류/재시도 0회, 평균 9.0·차트 1개 PASS. 최초 7/8여정 결과와 timeout 실패는 별도로 유지한다.
+- **Remote Gate**: 코드 `8eebf82cbb687e400b9f25ce604efd8ca9db2f47` push·원격 SHA 일치. GitHub Actions [36309460574](https://github.com/konlo/teleai/actions/runs/36309460574)의 모든 release gate 성공. PR #68 갱신·draft·미병합. 앱 PID 86044·health ok·기존 대화/결과 및 Databricks 모델 선택 복원을 화면에서 확인했다.
+
+### Daily Wrap-up — 2026-09-27 목표 기반 재계획
+- **Key Accomplishments**: 오늘 보강한 모델 추론 복구, 실패 도구 대체 계획에 이어 성공한 탐색의 무진전 반복까지 구분한다. 완료 근거를 유지하며 남은 목표만 재계획하고 실제 metadata 변화는 재확인할 수 있다.
+- **Major Issues**: 실모델 복합 요청에서 세 번의 API timeout으로 미완료가 발생했다. 같은 요청 재확인은 성공했으나 65.091초로 지연이 남았다. 실패를 성공률에서 제거하지 않았다.
+- **Next Action Items**: 복잡한 다단계 계획, 독립 평가/103 oracle, 승인형 대규모 원격 적재, 격리 실행 및 공급자 지연 대응을 계속한다. 일반 GO는 보류한다.
