@@ -1,0 +1,44 @@
+{
+  "generated_at": "2026-09-27T07:20:39.964428+00:00",
+  "provider": "databricks",
+  "mode": "real-model synthetic journeys; deterministic rescue disabled",
+  "limitations": [
+    "Some cases inject a first faulty call; subsequent decisions use the live model.",
+    "No real remote SQL executor is connected; this does not validate loading."
+  ],
+  "results": [
+    {
+      "id": "repeated_outage",
+      "status": "FAIL",
+      "injected_first_call": true,
+      "live_calls": 0,
+      "turns": [
+        {
+          "prompt": "reading 평균을 알려줘.",
+          "status": "FAIL",
+          "agent_status": "exhausted",
+          "final_output": "반복 실행 한도에 도달해 분석을 중단했습니다. 검증된 완료 결과가 없으며 기존 데이터는 보존했습니다.",
+          "expected": 9.0,
+          "actual": null,
+          "model_calls": 2,
+          "search_used": false,
+          "tools": [
+            "aggregate_dataset",
+            "aggregate_dataset"
+          ],
+          "chart_count": 0,
+          "raw_unchanged": true,
+          "approval_requests": 0,
+          "remote_executions": 0,
+          "stop_reason": "repeated_failed_tool",
+          "elapsed_seconds": 0.085,
+          "repair_events": [],
+          "executed_tools": [
+            "aggregate_dataset",
+            "aggregate_dataset"
+          ]
+        }
+      ]
+    }
+  ]
+}

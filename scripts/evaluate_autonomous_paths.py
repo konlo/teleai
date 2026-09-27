@@ -28,16 +28,17 @@ from utils.analysis_datasets import stored_dataset_digest
 class FaultThenLiveModel(BaseChatModel):
     delegate: Any
     first_call: dict | None = None
+    inject_count: int = 1
     tracker: dict = Field(default_factory=dict)
     @property
     def _llm_type(self): return 'fault-injection-then-live-model'
     def bind_tools(self,tools,**kwargs):
         return self.model_copy(update={'delegate':self.delegate.bind_tools(tools,**kwargs)})
     def _generate(self,messages,stop=None,run_manager=None,**kwargs):
-        if self.first_call and not self.tracker.get('injected'):
-            self.tracker['injected']=True
+        if self.first_call and self.tracker.get('injected',0)<self.inject_count:
+            self.tracker['injected']=self.tracker.get('injected',0)+1
             args={k:self.tracker['dataset_id'] if v=='$raw' else v for k,v in self.first_call['args'].items()}
-            msg=AIMessage(content='',tool_calls=[{'name':self.first_call['name'],'args':args,'id':'injected-fault'}])
+            msg=AIMessage(content='',tool_calls=[{'name':self.first_call['name'],'args':args,'id':f'injected-fault-{self.tracker["injected"]}'}])
         else:
             self.tracker['live_calls']=self.tracker.get('live_calls',0)+1
             msg=self.delegate.invoke(messages)
@@ -49,6 +50,10 @@ CASES=[
  {'id':'repair_sql','prompt':'reading 평균을 알려줘.', 'expected':9.,
   'first_call':{'name':'local_analysis_sql','args':{'dataset_id':'$raw','query':'SELECT AVG(missing_column) AS mean FROM data'}}},
  {'id':'local_outage','prompt':'reading 평균을 알려줘.', 'expected':9.,'outage':True,
+  'first_call':{'name':'aggregate_dataset','args':{'dataset_id':'$raw','aggregation':'mean','value_column':'reading'}}},
+ {'id':'repeated_outage','prompt':'reading 평균을 알려줘.', 'expected':9.,'outage':True,'inject_count':2,
+  'first_call':{'name':'aggregate_dataset','args':{'dataset_id':'$raw','aggregation':'mean','value_column':'reading'}}},
+ {'id':'local_timeout','prompt':'reading 평균을 알려줘.', 'expected':9.,'timeout':True,
   'first_call':{'name':'aggregate_dataset','args':{'dataset_id':'$raw','aggregation':'mean','value_column':'reading'}}},
  {'id':'compound','prompt':'reading 평균을 계산하고 reading 히스토그램도 보여줘.', 'expected':9.,'chart':True},
  {'id':'followup','prompt':'reading >= 10인 행의 건수를 알려줘.', 'expected':2.,
@@ -64,7 +69,7 @@ def evaluate_case(spec,delegate):
             raise AssertionError('Unapproved remote execution')
         return forbidden
     with tempfile.TemporaryDirectory(prefix='teleai-autonomy-') as root:
-        model=FaultThenLiveModel(delegate=delegate,first_call=spec.get('first_call'))
+        model=FaultThenLiveModel(delegate=delegate,first_call=spec.get('first_call'),inject_count=spec.get('inject_count',1))
         r=GraphAnalysisRuntime(root,'evaluation',spec['id'],model)
         frame=pd.DataFrame({'reading':[2.,4.,10.,20.], 'cohort':['red','red','blue','blue']})
         raw=r.datasets.register(frame,source='unfamiliar.observations',coverage='complete',predicate_known=True,snapshot='synthetic-v1')
@@ -84,6 +89,9 @@ def evaluate_case(spec,delegate):
                         stack.enter_context(patch('core.analysis_runtime_tools.build_aggregate_dataset',return_value={
                             'status':'unavailable','error_code':'local_worker_unavailable','retryable':False,
                             'message':'This local aggregate tool is unavailable for this turn. Use a different local tool with the same raw dataset and request scope; no remote reload is necessary.'}))
+                    if spec.get('timeout'):
+                        stack.enter_context(patch('core.analysis_runtime_tools.build_aggregate_dataset',
+                                                  side_effect=TimeoutError('synthetic local worker timeout')))
                     outcome=r.submit(turn['prompt'])
                 state=r.inspect()['recovery']
                 evidence=state.get('evidence_ids',[])
@@ -100,6 +108,8 @@ def evaluate_case(spec,delegate):
                 messages=r.events()
                 called=[call['name'] for m in messages if isinstance(m,AIMessage) for call in m.tool_calls]
                 search_used='search_analysis_tools' in called
+                log=[json.loads(line) for line in r.diagnostics.path.read_text().splitlines()]
+                repair_events=[e for e in log if e['event'].startswith('tool_repair_')]
                 if turn.get('search_required'):valid=valid and search_used
                 turns.append({'prompt':turn['prompt'],'status':'PASS' if valid else 'FAIL',
                     'agent_status':outcome['status'],'final_output':outcome.get('text',''),
@@ -108,6 +118,8 @@ def evaluate_case(spec,delegate):
                     'raw_unchanged':digest==stored_dataset_digest(r.datasets,raw.id),
                     'approval_requests':len(requests),'remote_executions':len(remote),
                     'stop_reason':state.get('stop_reason'),'elapsed_seconds':round(time.monotonic()-start,3)})
+                turns[-1]['repair_events']=repair_events
+                turns[-1]['executed_tools']=[e['tool'] for e in log if e['event']=='tool_started']
                 if spec.get('followup') and len(turns)==1:
                     # Restart actual runtime; all scope must come from checkpoint.
                     r.close()

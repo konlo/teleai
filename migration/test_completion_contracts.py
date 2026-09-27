@@ -100,7 +100,10 @@ class CompletionTests(unittest.TestCase):
             result = r.submit('histogram')
             self.assertEqual(result['status'], 'exhausted', result)
             self.assertEqual(r.inspect()['recovery']['stop_reason'], 'repeated_failed_tool')
-            self.assertEqual(model.position, 2)
+            # One failure executes; the duplicate is blocked and receives one
+            # bounded opportunity to choose a different plan before stopping.
+            self.assertEqual(model.position, 3)
+            self.assertEqual(sum(m.name=='inspect_dataset' for m in r.events() if isinstance(m,ToolMessage)),1)
             self.assertEqual(r.inspect()['state'], 'idle')
             r.close()
 

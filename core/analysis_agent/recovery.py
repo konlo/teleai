@@ -1112,6 +1112,10 @@ class RecoveryMiddleware(AgentMiddleware):
                     current['remote_rejected'] = True
                 signature = self._signature(call or {'name': name, 'args': {}})
                 current['failed_signatures'][signature] = current['failed_signatures'].get(signature, 0) + 1
+                if name != 'query_databricks':
+                    current.setdefault('tool_failures', {})[signature] = {
+                        'tool':name,'status':observation.get('status'),
+                        'error_code':observation.get('error_code'), 'call_id':message.tool_call_id}
             else:
                 current['failed'].pop(name, None)
                 if (name == 'inspect_dataset' and current.get('preview_limit')
@@ -3125,12 +3129,47 @@ class RecoveryMiddleware(AgentMiddleware):
         proposed = self._next_local(current, calls)
         if proposed: return {**self._dispatch(current, proposed), 'jump_to': 'tools'}
         current['model_started_at'] = time.time()
+        from core.analysis_agent.tool_repair import repair_instruction, signature_id
+        notified=current.setdefault('repair_notified', [])
+        pending=[key for key in current.get('tool_failures', {}) if key not in notified]
+        messages=[]
+        if pending:
+            notified.extend(pending)
+            available=(self.context.allowed_tool_names or frozenset()) if self.context else frozenset()
+            messages.append(SystemMessage(content=repair_instruction(current,available,pending),
+                additional_kwargs={'lc_source':'tool_repair'}))
+            self.diagnostics.emit('tool_repair_diagnosed',request_id=current.get('request_id'),
+                failure_ids=[signature_id(key) for key in pending])
         scope_key = json.dumps(current.get('scope', {}), sort_keys=True, ensure_ascii=False)
         if self._has_scope(current) and current.get('scope_notified') != scope_key:
             current['scope_notified'] = scope_key
-            return {'recovery':current, 'messages':[SystemMessage(content=self._scope_instruction(current),
-                additional_kwargs={'lc_source':'recovery_scope'})]}
-        return {'recovery': current}
+            messages.append(SystemMessage(content=self._scope_instruction(current),
+                additional_kwargs={'lc_source':'recovery_scope'}))
+        return {'recovery': current, **({'messages':messages} if messages else {})}
+
+    def _reject_repeated_local_failure(self, current, last):
+        from core.analysis_agent.tool_repair import repair_instruction, signature_id
+        repeated=[]
+        for call in last.tool_calls:
+            key=self._signature(call)
+            failure=current.get('tool_failures',{}).get(key)
+            # Metadata refresh is allowed to change a prior observation. The
+            # remote approval ledger alone owns query retry decisions.
+            if failure and failure.get('status') in {'error','unavailable','needs_data','no_valid_chart'}:
+                repeated.append(key)
+        if not repeated:return None
+        rejected=current.setdefault('repair_rejected',[])
+        if any(key in rejected for key in repeated) or len(rejected)>=self.max_attempts:
+            return self._finish(current,last,'repeated_failed_tool')
+        rejected.extend(repeated)
+        self.diagnostics.emit('tool_repair_duplicate_blocked',request_id=current.get('request_id'),
+            failure_ids=[signature_id(key) for key in repeated])
+        available=(self.context.allowed_tool_names or frozenset()) if self.context else frozenset()
+        current['model_started_at']=time.time()
+        return {'recovery':current, 'messages':[RemoveMessage(id=last.id),
+            SystemMessage(content=repair_instruction(current,available,repeated),
+                additional_kwargs={'lc_source':'recovery','invalidated_message_id':last.id,
+                                   'repair_phase':'replan'})], 'jump_to':'model'}
 
     @staticmethod
     def _scope_instruction(current):
@@ -3448,6 +3487,8 @@ class RecoveryMiddleware(AgentMiddleware):
             return self._finish(current, last, reason)
         if last.tool_calls and remote_block and any(c['name'] == 'query_databricks' for c in last.tool_calls):
             return self._finish(current, last, 'remote_blocked')
+        repaired=self._reject_repeated_local_failure(current,last)
+        if repaired:return repaired
         for call in last.tool_calls:
             error = self._proposal_preflight_error(call)
             if error:

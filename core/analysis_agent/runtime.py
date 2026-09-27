@@ -275,6 +275,10 @@ class GraphAnalysisRuntime:
                         self.on_progress(tool_progress(last))
                     elif isinstance(last,AIMessage) and last.tool_calls:
                         self.on_progress('필요한 분석 도구를 실행하고 있습니다.')
+                    elif last.additional_kwargs.get('repair_phase')=='replan':
+                        self.on_progress('같은 실패 호출을 차단했습니다. 다른 도구나 수정된 계획을 검토하고 있습니다.')
+                    elif last.additional_kwargs.get('lc_source')=='tool_repair':
+                        self.on_progress('도구 실패 원인을 확인했습니다. 원래 분석 조건을 유지할 대체 방법을 찾고 있습니다.')
                 if messages and isinstance(messages[-1],ToolMessage) and messages[-1].name=='query_databricks':
                     try:
                         observation=json.loads(messages[-1].content)

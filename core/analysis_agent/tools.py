@@ -67,6 +67,12 @@ def local_tools(context, diagnostics=None):
                             'retryable': False,
                             'column':exc.column, 'dtype':exc.dtype, 'value_examples':exc.examples,
                             'message':'조건값 자료형이 실제 컬럼과 다릅니다. 이 결과를 0건으로 해석하지 마세요. 관측된 문자열 값과 사용자 의미를 확인해 조건을 수정하세요. 값 예시는 전체 허용값 목록이 아닙니다.'})
+                if isinstance(exc, TimeoutError):
+                    return normalize_tool_result({'status':'unavailable','error_code':'local_tool_timeout',
+                            'retryable':False,
+                            'message':'로컬 도구가 제한 시간 안에 완료되지 않았습니다. 결과는 검증되지 않았습니다. '
+                                      '원래 조건과 보유 데이터를 유지하며 다른 로컬 도구를 선택하세요. '
+                                      '이 실패는 원격 데이터 재조회 승인이나 동일 호출 재실행의 근거가 아닙니다.'})
                 if isinstance(exc, (duckdb.Error, SqlglotError)):
                     return normalize_tool_result({'status':'error','error_code':'local_sql_error',
                             'retryable': False,

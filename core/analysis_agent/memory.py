@@ -146,7 +146,7 @@ class Transcript:
                     self.db.conn.execute('INSERT OR IGNORE INTO rejected_transcript SELECT * FROM transcript WHERE id=?',(invalidated,))
                     self.db.conn.execute('DELETE FROM transcript WHERE id=?',(invalidated,))
                 rows=[row for row in rows if row[0]!=invalidated]
-            if message.additional_kwargs.get('lc_source')in {'summarization','discovery_compaction','recovery'}:continue
+            if message.additional_kwargs.get('lc_source')in {'summarization','discovery_compaction','recovery','tool_repair'}:continue
             if not message.id:continue
             rows.append((message.id,json.dumps(message_to_dict(message),ensure_ascii=False,default=str)))
         with self.db.lock,self.db.conn:

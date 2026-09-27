@@ -3,11 +3,12 @@
 ## Current Status
 - **Last Updated**: 2026-09-27
 - **Status**: In Progress — 범용 자율 분석 agent 정식 출시 NO-GO
-- **Summary**: 승인 판독 실패가 기존 승인을 취소하는 문제와 대화 요약의 숨은 재시도를 수정했다. 모든 해당 추론 경로에 공통 영속 예산·cooldown을 적용했다. 앱 346·migration 133·reference 217 PASS. 실제 모델 보조 경로 5개 PASS, 관계 탐색 여정 정답 3·7.320초, 실제 웹 후속 중위수 39.0·3.619초·원본/승인 보존. [최신 검증](docs/evaluation/2026-09-27_auxiliary_recovery.md).
+- **Summary**: 도구 실패 진단→동일 실패 실행 차단→대체 계획→실제 결과 검증을 보강했다. 실제 모델 7여정·8턴 PASS(일부 합성 장애 주입), 앱 352·migration 133·reference 217 PASS. 로컬 TimeoutError도 대화 중단 대신 대체 도구를 선택할 수 있는 관찰로 반환한다. [최신 검증](docs/evaluation/2026-09-27_tool_repair_loop.md).
 - **Next Session Focus**: 복합 부정/NULL·암묵적 다중 출처·역할별 조인·CTE/HAVING 계획, 103 oracle 및 judge calibration, 승인형 대규모 신규 적재·RSS·격리 코드 실행. 별도 서버 배포 제외.
-- **Current qualification**: 이번 5개 검사는 보조 모델 경로의 통합 검증이며 Codex/Claude Code 동등성이나 전체 GO 증거가 아니다. 이전 고정 200문항 97 PASS/103 UNGRADED 및 Spider 0/5는 재측정하지 않았다. 신규 Databricks warehouse SQL 0회, draft PR #68 미병합.
+- **Current qualification**: 실제 모델 도구 복구 여정은 통과했지만 범용 GO나 Codex/Claude Code 동등성은 미입증이다. 기존 고정 200문항 97 PASS/103 UNGRADED 및 Spider 0/5는 재평가하지 않았다. 신규 Databricks warehouse SQL 0회, draft PR #68 미병합.
 
 ## Next Action Items
+- [x] 실패 원인별 진단·등록된 대체 도구 안내, 동일 실패 재실행 방지, 요청별 복구 계획/재시작 보존, 실제 로컬 timeout 복구와 화면 진행 상태를 구현했다. 조건을 제거하는 대체 SQL은 차단한다.
 - [x] fresh 선언 FK·복합 키 탐색, 명시적 JOIN 출처/조건 검증, 승인된 조인 통계 결과의 완료 계약을 구현했다. 실제 UC metadata 실행과 복잡한 SQL 자동 계획은 후속 검증 대상이다.
 - [x] 주 분석·의미 해석의 모델 실패에 한정한 영속 재시도/cooldown/예산을 구현하고, 승인 SQL 1회 실행과 중단 후 재개를 장애 주입으로 검증했다. 요약/승인 분류도 공통 장부에 통합했고 재시작·예산·승인 보존을 검증했다. 실제 공급자 장기 outage 검증은 남는다.
 - [x] 미확정 수치 연산의 독립 해석과 고정 조건을 연결하고, 실제 웹의 후속 연산 변경 및 단일 제외 조건을 검증했다.
@@ -1819,3 +1820,16 @@ Task definitions and acceptance conditions: docs/agent_remaining_tasks_2026-09-1
 - **Next Action Items**: 남은 GO 조건은 최신 검증 문서의 4개 묶음이며 이번 보조 경로 완료를 범용 agent 완성으로 계산하지 않는다.
 
 - **Remote Gate**: 코드·평가 commit `5df1fa5c6294467dbaa09823085c8f0a3773b02c` push·원격 SHA 일치 확인. GitHub Actions [36298143397](https://github.com/konlo/teleai/actions/runs/36298143397) 전체 성공. draft PR #68 갱신·미병합. 최종 앱 PID 76265, health `ok`, Databricks 모델 선택·기존 대화/결과 화면 복원 확인.
+
+## [2026-09-27 16:18:54 KST] [Agent: Codex] User Request: 문제를 스스로 해결하는 agent 기능에 집중해 계속 구현
+- **Action**: 도구 실패 관찰·원인 분류·계획 변경·검증의 연결을 점검하고, 반복 오류를 실제로 수정하는 graph 여정을 보강한다. 기존 프로젝트 관리/기록 및 출시 기준을 적용하며 신규 warehouse SQL은 실행하지 않는다.
+
+## [2026-09-27 16:29:03 KST] [Agent: Codex] 도구 문제 해결 loop 검증
+- **Action**: 실패 관찰을 정형화해 실제 등록 도구 안에서 수정/대체 계획을 선택하도록 안내했다. 동일 실패 호출은 실제 실행 전에 거부하며 반복 시 한도 내에서 종료한다. SQL 승인 및 원본/범위 계약은 유지한다.
+- **Evidence**: 같은 장애 도구를 두 번 선택한 baseline은 실모델 대체 시도 전에 실패했다. 수정 후 실제 모델이 다른 로컬 SQL 도구로 평균 9.0을 계산했다. 최종 6여정·7턴 및 별도 실제 TimeoutError 주입 1여정 PASS. 자동 계획/구제는 비활성화했고 실제 모델이 복구 도구를 선택했다.
+- **Validation**: application 352, migration 133, reference/Level3 217 PASS. 새 회귀 6개로 조건 보존·원본·재시작·실행 횟수·진행 상태를 확인했다. 기존 fixture의 마지막 메시지 타입 가정으로 난 최초 migration/A3_014 실패도 원인 수정했다.
+- **Artifact Update**: docs/evaluation/2026-09-27_tool_repair_loop.md, baseline/initial/live/timeout JSON. 일반 GO 보류와 잔여 4개 과제 묶음은 유지한다.
+
+### Daily Wrap-up — 2026-09-27 도구 복구 loop
+- **Key Accomplishments**: 모델이 동일 오류를 반복 실행하지 않고 실제 다른 도구로 복구하는 경로를 구현·검증했다. 로컬 timeout도 복구 관찰로 통합했다.
+- **Next Action Items**: 복잡한 계획과 독립 평가 공백, 승인형 대규모 적재, 격리 실행을 계속한다. 이번 소수 여정 성공을 전체 지원으로 계산하지 않는다.

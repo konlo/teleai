@@ -11,8 +11,10 @@ from core.analysis_agent.diagnostics import Diagnostics, process_peak_rss_bytes
 
 class RecoveryModel(QuietModel):
     def _generate(self, messages, **kwargs):
-        if isinstance(messages[-1], ToolMessage):
-            observation=json.loads(messages[-1].content)
+        # Recovery guidance may follow the tool result in model context.
+        latest=next((m for m in reversed(messages) if isinstance(m,ToolMessage)),None)
+        if latest is not None:
+            observation=json.loads(latest.content)
             if observation.get('error_code')=='dataset_not_loaded':
                 message=AIMessage(content='',tool_calls=[{'name':'inspect_table_context','args':{'table':'fixture.table'},'id':'schema'}])
             else:
