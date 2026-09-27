@@ -1,15 +1,17 @@
 # Project Progress Log
 
 ## Current Status
-- **Last Updated**: 2026-09-26
-- **Status**: In Progress — 로컬 단일 사용자 범위에서도 정식 출시 NO-GO
-- **Summary**: DB 선언 FK/복합 키 발견, 요청 출처·JOIN 의도·필터 검증, 승인 SQL 집계 완료, metadata/raw 분리, 미로딩 조인 통계의 도구 메뉴 선택을 보강했다. 최종 fixture 평가 97 PASS/103 UNGRADED(모델 사용 6문항), 앱 320·migration 133·reference 217 PASS. 실제 모델 조인 정답 3을 4회 추론·8.550/8.349초에 얻었으나 반복 중 호출·시간 한도 및 RateLimitError도 발생했다. 실제 웹 후속 최댓값 86, 0.458초·모델/새 SQL 0회, raw hash 불변. [최신 검증 기록](docs/evaluation/2026-09-26_relationship_discovery.md).
-- **Next Session Focus**: 모델 API 호출 제한·지연에서의 재개/복구, 암묵적 다중 출처 의도와 다중 FK 역할·CTE/HAVING 계약, 운영 metadata 승인·업무 설명, 미채점 103 oracle 및 judge calibration, 승인형 신규 적재·대규모 원격 전송/RSS, 격리 코드 실행. 별도 서버 배포 제외.
-- **Current qualification**: 지원 부분집합 97/97 중 6문항이 모델을 호출했다. 공식 Spider 고정 5문항 0/5, DeepEval 보조 judge 평균 0.7667이나 서식 편향으로 release 판정 불가. 100만 행 로컬 저장·복원 검증은 원격 적재 증거가 아니다. 신규 Databricks SQL 0회, draft PR #68 미병합.
+- **Last Updated**: 2026-09-27
+- **Status**: In Progress — 범용 자율 분석 agent 정식 출시 NO-GO
+- **Summary**: 미확정 수치 연산의 독립 의미 해석→실제 계산→범위 검증을 연결하고, 후속 연산 변경·제외 조건·영속 모델 재시도를 보강했다. 고정 자연어 평가 7/10→10/10(12턴 중 실모델 사용 3턴), 앱 335·migration 133·reference 217 PASS. 실제 웹 후속 중위수 62.0(3.693초), 제외 조건 평균 40.11816(0.326초), 원본·선택 ID·승인 1건 보존. [최신 검증](docs/evaluation/2026-09-27_language_and_recovery.md).
+- **Next Session Focus**: 복합 부정/NULL·암묵적 다중 출처·역할별 조인·CTE/HAVING 계획, 요약/승인 분류 모델 복구 통합, 103 oracle 및 judge calibration, 승인형 대규모 신규 적재·RSS·격리 코드 실행. 별도 서버 배포 제외.
+- **Current qualification**: 작은 자연어 세트의 10/10은 Codex/Claude Code 동등성이나 전체 GO 증거가 아니다. 이전 고정 200문항 97 PASS/103 UNGRADED 및 Spider 0/5는 이번에 재측정하지 않았다. 신규 Databricks warehouse SQL 0회, draft PR #68 미병합.
 
 ## Next Action Items
 - [x] fresh 선언 FK·복합 키 탐색, 명시적 JOIN 출처/조건 검증, 승인된 조인 통계 결과의 완료 계약을 구현했다. 실제 UC metadata 실행과 복잡한 SQL 자동 계획은 후속 검증 대상이다.
-- [ ] 실모델 반복 중 RateLimitError와 시간 한도 실패를 사용자 재입력 없이 안전하게 재개하는 정책을 검증한다. 원격 SQL 실패/불명 제출과 모델 요청 실패는 구분해야 한다.
+- [x] 주 분석·의미 해석의 모델 실패에 한정한 영속 재시도/cooldown/예산을 구현하고, 승인 SQL 1회 실행과 중단 후 재개를 장애 주입으로 검증했다. 요약/승인 분류 및 장기 outage 통합 검증은 남는다.
+- [x] 미확정 수치 연산의 독립 해석과 고정 조건을 연결하고, 실제 웹의 후속 연산 변경 및 단일 제외 조건을 검증했다.
+- [ ] 복합 부정·NULL 포함 범위와 고급 다단계 계획의 독립 정답 평가를 확대한다.
 - [x] 사용자의 `LIMIT 10`은 Databricks 화면에서 직접 실행한 것으로 확인했다. 챗봇 승인·저장 검증과 구분했다. 이후 별도의 제품 승인형 `LIMIT 10000` 조회를 1회 완료했다.
 - [x] 현재 PC의 로컬 단일 사용자 범위에서 저장소 보존·재시작·실제 화면 여정을 검증했다. 별도 1인용 Linux 호스트 배포는 이번 범위에서 제외한다.
 - [ ] 모델 직접 실행의 다양한 held-out/복구 여정과 지연을 개선한다. 한 IQR 답변의 필수 필드와 정확한 로컬 표본의 예산 소진 후 재개는 수정했다. Spider SQL 제안 실패, 실제 UI 재개, 103개 미채점 oracle과 DeepEval/Spider 확대 평가는 남아 있다.
@@ -1783,3 +1785,19 @@ Task definitions and acceptance conditions: docs/agent_remaining_tasks_2026-09-1
 - 실제 합성 조인 성공은 확보했으나 API 제한과 실행 예산 실패도 재현됐다. Spider 0/5, 103 oracle, 운영 metadata/대규모 신규 적재 검증, 복잡한 SQL 역할/범위 해석과 격리 실행이 남아 범용 NO-GO를 유지한다.
 
 - **Remote Gate** [Agent: Codex]: 코드·평가 commit `49b7a6e312f538e1ca9161f988fa9dde4c6cf799`를 push하고 원격 SHA 일치를 확인했다. GitHub Actions [36238260204](https://github.com/konlo/teleai/actions/runs/36238260204)의 전체 deterministic-validation이 2분 12초에 성공했다. PR #68 설명을 최신 근거와 한계로 갱신했고 draft·미병합 상태를 유지한다.
+
+## [2026-09-27 09:30:17 KST] [Agent: Codex] User Request: GO까지 자연어 이해·자율 수행·복구를 고도화
+- **Action**: 기존 실패와 미채점 범위를 기준으로 구조적 개선 및 수용 기준을 정리한다. 모델 오류 복구·요청 의미/계획·완료 검증을 분리하고 실제 모델 및 새로운 표현의 여정으로 검증한다. 신규 Databricks SQL 승인·원본 보존 계약은 유지한다.
+
+## [2026-09-27 09:59:05 KST] [Agent: Codex] Implementation and validation
+- **Action**: 새 고정 자연어 실패 3건을 재현하고 연산 의미/조건/후속 참조를 보강했다. 추론 재시도는 DB 실행기 밖에서 수행하며 요청별 실패·예산·cooldown을 SQLite에 보존한다.
+- **Outcome**: 실제 모델 포함 10여정·12턴 PASS, application 335/335, migration 133/133, reference/Level3 217/217 PASS. 승인 SQL 이후 모델 오류도 SQL 재실행 없이 복구했다(합성 executor 장애 주입).
+- **Web**: Databricks 모델을 선택한 실제 웹에서 후속 중위수 62.0과 제외 후 평균 40.118163961542436을 확인했다. 기존 승인된 raw 10,000행 SHA256와 선택 ID·completed 승인 1건 불변. 신규 warehouse SQL 없음.
+- **Artifact Update**: `docs/evaluation/2026-09-27_language_and_recovery.md`와 최초/중간 실패/최종/웹 JSON 증거. 질문이나 정답을 수정해 점수를 올리지 않았다.
+- **Decision**: Codex/Claude Code 수준 또는 범용 GO로 선언하지 않는다. 미지원 복합 의미·코드 실행·103 oracle·실제 대규모 원격 적재 gate가 남아 있다.
+
+## Daily Wrap-ups
+### 2026-09-27
+- **Key Accomplishments**: 자연어 통계 해석, 후속 연산 변경, 단일 제외 조건, 영속 추론 장애 복구를 구현하고 실제 웹 결과까지 확인했다.
+- **Major Issues Encountered**: 결정 경로의 반대 모집단 계산, 계산 없는 완료, 이전 연산 오상속, 재개 시 대기 시간 과금 문제를 수정했다. 강화된 차트 grader의 정상 빈도 집계 오판도 실패 근거와 함께 정정했다.
+- **Next Action Items**: 위 Current Status 및 최신 검증 문서의 4개 GO 조건을 따른다.

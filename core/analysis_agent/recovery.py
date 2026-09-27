@@ -953,8 +953,10 @@ class RecoveryMiddleware(AgentMiddleware):
                     # explicitly requested measure: "그중 reading 평균" after
                     # a reading threshold must not lose the named measure.
                     explicit_measures = _named_measures(text, current['required_columns'], column_aliases)
+                    fresh_predicates = {item['column'] for item in
+                        resolve_request_scope(text, self.context, {}).get('conditions', [])}
                     measures = explicit_measures or [column for column in current['required_columns']
-                                                     if column not in predicate_columns]
+                                                     if column not in fresh_predicates]
                     if not measures:
                         previous_predicates = {item['column'] for item in (
                             previous.get('scope', {}).get('conditions', [])
@@ -962,6 +964,16 @@ class RecoveryMiddleware(AgentMiddleware):
                         measures = [column for column in previous.get('required_columns', [])
                                     if column not in previous_predicates]
                     current['required_columns'] = measures
+                    # An unfamiliar newly named statistic must not silently
+                    # inherit the prior operation (e.g. MAX -> "middle value").
+                    # Predicate-only follow-ups retain the established plan.
+                    if not operations and measures and any(
+                            column in mentioned_columns and column not in fresh_predicates
+                            for column in measures):
+                        inherited_ops = previous.get('operations', [])
+                        if len(inherited_ops) == 1:
+                            current['previous_operation'] = inherited_ops[0]
+                        current['operations'] = []
                 elif not current['required_columns']:
                     current['required_columns'] = previous.get('required_columns', [])
                 if not current['required_sources']: current['required_sources'] = previous.get('required_sources', [])
@@ -974,6 +986,10 @@ class RecoveryMiddleware(AgentMiddleware):
                 current['preview_limit'] = 0
             current['named_measure_columns'] = _named_measures(
                 text, current['required_columns'], column_aliases)
+            from core.analysis_agent.operation_binding import candidate
+            if candidate(current):
+                current['operation_pending'] = True
+                current['calculation'] = True
         upgraded_current_result = bool(human and current.get('request_id') == human.id
             and current_loaded_reference and not current.get('current_result_only'))
         if upgraded_current_result:
@@ -1057,7 +1073,7 @@ class RecoveryMiddleware(AgentMiddleware):
             if name in {'inspect_column_definitions', 'inspect_table_relationships'} and observation.get('metadata_plan'):
                 current['metadata_query_plan'] = observation['metadata_plan']
             if name == 'resolve_analysis_intent':
-                current['model_calls'] += observation.get('semantic_model_calls', 0)
+                current['model_calls'] += observation.get('semantic_model_successes', observation.get('semantic_model_calls', 0))
                 current['model_seconds'] += observation.get('semantic_model_seconds', 0)
                 binding = observation.get('semantic_binding') or {}
                 if (observation.get('status') == 'ready'
@@ -1072,6 +1088,23 @@ class RecoveryMiddleware(AgentMiddleware):
                         current['required_sources'] = [binding['source']]
                         current['scope']['columns'] = [binding['column']]
                         current['scope']['conditions'] = binding['conditions']
+            if name == 'resolve_analysis_operation':
+                current['model_calls'] += observation.get('semantic_model_successes', observation.get('semantic_model_calls', 0))
+                current['model_seconds'] += observation.get('semantic_model_seconds', 0)
+                binding = observation.get('operation_binding') or {}
+                from core.analysis_agent.operation_binding import metadata_for, OPERATIONS
+                metadata = metadata_for(self.context, binding.get('dataset_id'), current)
+                if (current.get('operation_pending') and observation.get('status') == 'ready'
+                        and observation.get('request_id') == current.get('request_id') and metadata
+                        and binding.get('context_digest') == metadata['context_digest']
+                        and binding.get('operation') in OPERATIONS
+                        and binding.get('column') == metadata['column']):
+                    current['operation_binding'] = binding
+                    current['operation_pending'] = False
+                    current['operations'] = [binding['operation']]
+                    current['named_measure_columns'] = [binding['column']]
+                    current['required_columns'] = [binding['column']]
+                    current['required_sources'] = [binding['source']]
             failed = observation.get('status') in {'error', 'rejected', 'needs_data', 'needs_context', 'needs_refresh', 'unavailable', 'no_valid_chart'}
             if failed:
                 current['failed'][name or message.tool_call_id] = observation
@@ -1491,6 +1524,8 @@ class RecoveryMiddleware(AgentMiddleware):
                         current['count_rate_evidence'] = observation
                     for tool in ('recommend_chart_images', 'render_chart_spec', 'render_count_rate_chart', 'render_histogram', 'prepare_histogram', 'show_chart'):
                         current['failed'].pop(tool, None)
+        if getattr(self, 'model_attempts', None):
+            self.model_attempts.sync(current)
         if self.context and self.context.semantic_resolver:
             self.context.semantic_resolver.request = deepcopy(current)
         return current, calls
@@ -1794,6 +1829,8 @@ class RecoveryMiddleware(AgentMiddleware):
         return True
 
     def _valid_calculation(self, dataset_id, arguments, current):
+        if current.get('operation_pending'):
+            return False
         # A model-selected column is not independent evidence of intent. An
         # unbound qualified count must not become a count of some other outcome.
         if (not current.get('required_columns') and not current.get('whole_row_count')
@@ -1958,6 +1995,11 @@ class RecoveryMiddleware(AgentMiddleware):
                     '추측한 수치는 결과로 채택하지 않았으며 기존 데이터는 보존했습니다.')
         if reason == 'completion_output_missing':
             text = '검증된 결과를 표시하는 데 실패했습니다. 완료로 처리하지 않았으며 기존 데이터는 보존했습니다.'
+        if not success and current.get('operation_pending'):
+            current['status'] = 'blocked'
+            current['stop_reason'] = 'analysis_operation_unresolved'
+            text = ('요청하신 계산 방법을 확정하지 못했습니다. 평균·중앙값·최솟값·최댓값·합계 중 '
+                    '원하시는 연산을 알려주세요. 검증하지 않은 수치는 표시하지 않았으며 기존 데이터는 보존했습니다.')
         # Free-form text is allowed only for requests with no analytical obligation.
         if success and not active_contracts(current) and last:
             text = text or last.content
@@ -1975,6 +2017,13 @@ class RecoveryMiddleware(AgentMiddleware):
         return {'recovery': current, 'messages': [message]}
 
     def _next_local(self, current, calls):
+        if self.context and current.get('operation_pending'):
+            from core.analysis_agent.operation_binding import metadata_for
+            if not any(c.get('name') == 'resolve_analysis_operation' for c in calls.values()):
+                candidates = [info for info in self.context.datasets.metadata.values()
+                    if metadata_for(self.context, info.id, current)]
+                if len(candidates) == 1:
+                    return {'name':'resolve_analysis_operation','args':{'dataset_id':candidates[0].id}}
         if self.context and self.context.semantic_resolver:
             from core.analysis_agent.semantic import eligible, semantic_metadata
             if (eligible(current) and current.get('model_calls', 0) <= self.max_model_calls - 2
@@ -3044,6 +3093,9 @@ class RecoveryMiddleware(AgentMiddleware):
 
     def before_step(self, state):
         current, calls = self._state(state)
+        if current.get('operation_pending') and any(
+                c.get('name') == 'resolve_analysis_operation' for c in calls.values()):
+            return {**self._finish(current, reason='analysis_operation_unresolved'), 'jump_to':'end'}
         if (current.get('failed', {}).get('resolve_analysis_intent', {}).get('error_code')
                 == 'semantic_binding_unverified' and not current.get('required_columns')):
             return {**self._finish(current, reason='analysis_target_unresolved'), 'jump_to':'end'}
@@ -3361,7 +3413,9 @@ class RecoveryMiddleware(AgentMiddleware):
         current, calls = self._state(state)
         current['model_calls'] += 1
         started = current.pop('model_started_at', None)
-        if started: current['model_seconds'] += max(0, time.time() - started)
+        if started:
+            current['model_seconds'] += max(0, time.time() - started
+                - current.pop('_new_model_failure_seconds', 0.))
         for call in last.tool_calls:
             if call['name'] in {'recommend_chart_images', 'render_chart_spec', 'render_count_rate_chart', 'render_histogram', 'show_chart'}: current['chart'] = True
             if call['name'] == 'join_datasets': current['join'] = True

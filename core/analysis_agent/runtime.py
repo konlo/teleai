@@ -24,6 +24,7 @@ from core.analysis_agent.tools import local_tools
 from core.analysis_agent.progress import tool_progress
 from core.analysis_agent.policy import RuntimePolicy
 from core.analysis_agent.tool_focus import FocusedScalarToolsMiddleware, FocusedRemoteJoinToolsMiddleware
+from core.analysis_agent.model_recovery import ModelAttemptLedger, ModelRecoveryMiddleware
 
 
 class GraphAnalysisRuntime:
@@ -98,11 +99,18 @@ class GraphAnalysisRuntime:
             remote_available=self.remote_execute is not None, sql_dialect=self.sql_dialect,
             proposal_validator=proposal_validator)
         self.recovery=recovery
+        self.model_attempts = ModelAttemptLedger(self.db)
+        recovery.model_attempts = self.model_attempts
+        model_recovery = ModelRecoveryMiddleware(self.model_attempts,self.diagnostics,self.policy,
+            max_calls=recovery.max_model_calls,
+            on_progress=lambda text:self.on_progress(text) if self.on_progress else None)
+        self.context.semantic_resolver.model_recovery = model_recovery
         middleware=[QueuedRequestMiddleware(),RecoveryPlanningMiddleware(recovery),CompactDiscoveryMiddleware(),
                     FocusedScalarToolsMiddleware(self.context,self.diagnostics),
                     memory_middleware(model,summary_trigger_tokens,summary_keep_messages,diagnostics=self.diagnostics),
                     ModelTimingMiddleware(self.diagnostics),prompt,
-                    FocusedRemoteJoinToolsMiddleware(self.context,self.diagnostics)]
+                    FocusedRemoteJoinToolsMiddleware(self.context,self.diagnostics),
+                    model_recovery]
         if self.remote_execute is not None:
             if not connection_identity:raise ValueError('Connection identity required')
             @tool
@@ -239,6 +247,7 @@ class GraphAnalysisRuntime:
                     if selected else None),
                 'requests':pending,'uncertain_executions':self.ledger.uncertain(),
                 'recovery':state.values.get('recovery',{}),
+                'model_recovery':self.model_attempts.get((state.values.get('recovery') or {}).get('request_id','')),
                 'operational_policy':self.policy.public()}
 
     def _invoke(self,value):
@@ -368,6 +377,14 @@ class GraphAnalysisRuntime:
                     # validated local tool call to the tools node, even when
                     # the persisted model budget has been exhausted.
                     self.agent.update_state(self.config,local,as_node='RecoveryMiddleware.after_model')
+                else:
+                    # A paused checkpoint's wall-clock start includes time the
+                    # user was away. Charge recorded failed attempts, then
+                    # start a new inference interval without resetting budgets.
+                    current = dict(checkpoint.values.get('recovery') or {})
+                    self.model_attempts.sync(current)
+                    current['model_started_at'] = time.time()
+                    self.agent.update_state(self.config, {'recovery':current})
             return self._invoke(None)
 
     def recommend_charts(self,dataset_id):

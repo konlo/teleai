@@ -291,6 +291,38 @@ def resolve_request_scope(text, context, previous=None):
         else:
             unresolved.append('ambiguous_date_column' if candidates else 'ungrounded_date_column')
 
+    # Negating a compound predicate needs a boolean expression tree, not an
+    # inversion of its last comparison. Bind only a single explicit predicate
+    # here; ambiguity becomes an obligation instead of a plausible wrong sum.
+    exclusions = [end for start, end in spans if re.match(
+        r'\s*(?:(?:인|인 것은|인 것|인 행|인 데이터|인 경우|인 항목|인 것들|인 행들)\s*)?'
+        r'(?:은|는|을|를)?\s*(?:제외|빼고)', text[end:])]
+    if exclusions:
+        predicates = list({json.dumps(item, sort_keys=True):item for item in found}.values())
+        inverse = {'eq':'ne', 'ne':'eq', 'gt':'le', 'ge':'lt', 'lt':'ge', 'le':'gt'}
+        if len(predicates) == 1 and predicates[0]['op'] in inverse:
+            predicate = predicates[0]
+            # Complementing SQL comparisons drops NULLs. Require evidence
+            # that the chosen population has none before using that shortcut.
+            raw = [item for item in context.datasets.metadata.values()
+                   if item.grain == 'raw' and predicate['column'] in item.columns] if context else []
+            selected = getattr(context, 'selected_dataset_id', None)
+            if selected:
+                raw = [item for item in raw if item.id == selected]
+            null_free = False
+            if len(raw) == 1:
+                store = context.datasets
+                if hasattr(store, 'inspect'):
+                    null_free = store.inspect(raw[0].id).get('null_counts', {}).get(predicate['column']) == 0
+                elif raw[0].rows <= 256 and not full_read_preflight(store, [raw[0].id]):
+                    null_free = not project_dataset(store, raw[0].id, [predicate['column']]).isna().any().any()
+            if null_free:
+                found = [{**predicate, 'op':inverse[predicate['op']]}]
+            else:
+                unresolved.append('exclusion_null_policy_unresolved')
+        else:
+            unresolved.append('compound_exclusion_unresolved')
+
     disjunction = bool(re.search(r'\bOR\b|또는|혹은|아니면|이나|거나|중\s*하나라도', text, re.I))
     if found or _ISO.search(text):
         if re.search(r'부터.*까지|\bbetween\b', text, re.I) and not numeric_ranges:

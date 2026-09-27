@@ -301,7 +301,8 @@ class PersistentDatasets(DatasetStore):
             source = BytesIO(payload)
         else:
             source = path
-        schema = pq.ParquetFile(source).schema_arrow
+        parquet = pq.ParquetFile(source)
+        schema = parquet.schema_arrow
         dtypes = {}
         for field in schema:
             if field.name in info.columns:
@@ -309,7 +310,17 @@ class PersistentDatasets(DatasetStore):
                     dtypes[field.name] = str(pd.Series(dtype=field.type.to_pandas_dtype()).dtype)
                 except (TypeError, NotImplementedError):
                     dtypes[field.name] = str(field.type)
-        return {'dataset': asdict(info), 'dtypes': dtypes,
+        # Footer statistics prove absence of NULL without decoding large data.
+        # Missing statistics are unknown, never silently treated as zero.
+        null_counts = {}
+        for index, name in enumerate(parquet.schema.names):
+            if name not in info.columns or parquet.schema.column(index).path != name:
+                continue
+            counts = [parquet.metadata.row_group(group).column(index).statistics
+                      for group in range(parquet.metadata.num_row_groups)]
+            null_counts[name] = (sum(item.null_count for item in counts)
+                if all(item is not None and item.has_null_count for item in counts) else None)
+        return {'dataset': asdict(info), 'dtypes': dtypes, 'null_counts': null_counts,
                 'preview': self.db.dataset_preview(dataset_id) or []}
 
     def register_batches(self, batches, *, columns, source, max_rows,

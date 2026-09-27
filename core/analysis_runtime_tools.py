@@ -67,6 +67,12 @@ def build_analysis_tools(context: AnalysisToolContext) -> list[ToolDefinition]:
             return {'status':'needs_context', 'message':'의미 해석 서비스가 연결되지 않았습니다.'}
         return context.semantic_resolver.resolve(dataset_id)
 
+    def resolve_analysis_operation(dataset_id):
+        if context.semantic_resolver is None:
+            return {'status':'needs_context', 'error_code':'operation_binding_unverified'}
+        from core.analysis_agent.operation_binding import resolve
+        return resolve(context.semantic_resolver, dataset_id)
+
     def inspect_dataset(dataset_id):
         if hasattr(datasets, 'inspect'):
             return datasets.inspect(dataset_id)
@@ -674,6 +680,8 @@ def build_analysis_tools(context: AnalysisToolContext) -> list[ToolDefinition]:
              ["query"], search_analysis_tools),
         tool("resolve_analysis_intent", "분석 대상이 불명확할 때 저장된 외부 컬럼 설명으로 의미를 독립적으로 확인합니다. 모델 호출을 사용하며 실제 데이터 조회/계산은 하지 않습니다. 정의가 없거나 충돌하면 확인 질문이 필요합니다.",
              {"dataset_id": string}, ["dataset_id"], resolve_analysis_intent),
+        tool("resolve_analysis_operation", "기존 규칙으로 연산을 확정하지 못한 요청을 독립적으로 해석합니다. 실제 컬럼 하나의 기본 통계 연산만 결정하며 데이터·출처·필터는 변경하지 않습니다. 실제 계산과 결과 검증은 별도입니다.",
+             {"dataset_id": string}, ["dataset_id"], resolve_analysis_operation),
         tool("list_analysis_context", "현재 보유 데이터와 읽을 수 있는 분석 스킬 목록. 원격 조회 없음.", {}, [], catalog),
         tool("read_analysis_skill", "등록된 분석 스킬을 필요할 때 읽습니다.", {"name": string}, ["name"], registry.read),
         tool("inspect_table_context", "테이블의 저장된 스키마 스냅샷과 승인 후 로딩된 실제 스키마를 비교합니다. stale 또는 needs_refresh이면 그 컬럼으로 새 SQL을 만들지 말고 반환된 SELECT * LIMIT 0 조회를 사용자에게 승인 요청하세요. 이 도구 자체는 원격 조회하지 않습니다. table은 available_tables의 정확한 테이블명입니다.",

@@ -26,6 +26,7 @@ class DiscoveryTests(unittest.TestCase):
                     self.assertEqual(first['status'],'answered',first)
                     if interrupted:
                         with patch.object(r.recovery,'_next_local',return_value=None), \
+                                patch('core.analysis_agent.model_recovery.time.sleep'), \
                                 patch.object(EvaluationModel,'_generate',side_effect=TimeoutError('injected')):
                             result=r.submit('그중 reading 평균을 알려줘')
                         self.assertEqual(result['status'],'incomplete',result)
@@ -34,7 +35,11 @@ class DiscoveryTests(unittest.TestCase):
                         result=r.submit('그중 reading 평균을 알려줘')
                     self.assertEqual(result['status'],'answered',result)
                     state=r.inspect()['recovery']
-                    self.assertEqual(state['model_calls'],0)
+                    # Failed inference attempts now survive checkpoint replay.
+                    # Local rescue adds no call; the three injected attempts
+                    # must remain visible instead of being erased on resume.
+                    self.assertEqual(state['model_calls'],3 if interrupted else 0)
+                    self.assertEqual(r.inspect()['model_recovery']['failures'],3 if interrupted else 0)
                     self.assertEqual(r.datasets.frames[state['evidence_ids'][-1]].iloc[0,0],15.)
                     self.assertFalse(r.inspect()['requests'])
                 finally:r.close()

@@ -6,6 +6,7 @@ import re
 import time
 
 from langchain_core.messages import HumanMessage, SystemMessage
+from types import SimpleNamespace
 
 from core.analysis_catalog import _source_key, schema_fingerprint, table_context_freshness
 
@@ -110,6 +111,35 @@ class SemanticResolver:
         self.context, self.model, self.diagnostics = context, model, diagnostics
         self.request = {}
         self.seen = set()
+        self.model_recovery = None
+
+    def invoke(self, instruction, payload, result, started):
+        """Share the inference-only retry budget with planning model calls."""
+        def call(_request):
+            result['semantic_model_calls'] += 1
+            response = self.model.invoke([SystemMessage(content=instruction), HumanMessage(content=payload)])
+            result['semantic_model_successes'] = result.get('semantic_model_successes', 0) + 1
+            return response
+        result.setdefault('semantic_model_successes', 0)
+        if self.model_recovery is None:
+            return call(None)
+        current = {**self.request,
+            'model_calls':self.request.get('model_calls', 0) + result['semantic_model_successes'],
+            'model_seconds':self.request.get('model_seconds', 0.) + time.monotonic()-started,
+            'model_started_at':time.time()}
+        return self.model_recovery.wrap_model_call(SimpleNamespace(state={'recovery':current}), call)
+
+    def finish_timing(self, result, started, failure_seconds_before):
+        elapsed = time.monotonic()-started
+        failures = (self.model_recovery.ledger.get(self.request['request_id'])['failed_seconds']
+                    - failure_seconds_before) if self.model_recovery else 0.
+        result['semantic_elapsed_seconds'] = round(elapsed, 3)
+        # Failed attempts/waits are accounted once by the durable ledger.
+        result['semantic_model_seconds'] = round(max(0., elapsed-failures), 3)
+
+    def failure_seconds(self):
+        return (self.model_recovery.ledger.get(self.request['request_id'])['failed_seconds']
+                if self.model_recovery else 0.)
 
     def resolve(self, dataset_id):
         current = self.request
@@ -157,12 +187,12 @@ class SemanticResolver:
                 'Copy operation from input; preserve numeric value types. No SQL, explanations or answers.')
         plans = []
         started = time.monotonic()
+        failure_seconds_before = self.failure_seconds()
         try:
             for instruction in (base, 'Independently audit the requested meaning from the supplied definitions. ' + base):
-                result['semantic_model_calls'] += 1
                 self.diagnostics.emit('semantic_model_call_started', request_id=request_id,
-                                      interpretation=result['semantic_model_calls'])
-                response = self.model.invoke([SystemMessage(content=instruction), HumanMessage(content=payload)])
+                                      interpretation=len(plans)+1)
+                response = self.invoke(instruction, payload, result, started)
                 text = str(response.content).strip()
                 if text.startswith('```'):
                     text = re.sub(r'^```(?:json)?\s*|\s*```$', '', text)
@@ -175,7 +205,7 @@ class SemanticResolver:
         except Exception as exc:
             self.diagnostics.failure(exc, stage='semantic_interpretation')
         finally:
-            result['semantic_model_seconds'] = round(time.monotonic()-started, 3)
+            self.finish_timing(result, started, failure_seconds_before)
         fixed = current.get('scope', {}).get('conditions', [])
         if (len(plans) == 2 and plans[0] is not None and plans[0] == plans[1]
                 and all(item in plans[0]['conditions'] for item in fixed)):
