@@ -203,7 +203,7 @@ def main():
               'remote_calls': 0, 'model_calls': 0,
               'measurement': 'Fresh subprocess ru_maxrss includes interpreter, imports, serialization, retained cache, and caller copies. It is not a hard RSS limit or allocation delta.',
               'scope': 'Synthetic five-column data; 750000 default rows matches an observed row count only. It does not reproduce operational width, dtype, distribution or total data size.',
-              'limitations': ['No retention/TTL or disk quota policy is implemented.',
+              'limitations': ['This storage-component benchmark does not exercise the runtime retention/TTL or disk quota policies.',
                               'Cache budget bounds retained DataFrame deep size, not process RSS.',
                               'SIGKILL tests process interruption, not power loss, disk-full, filesystem corruption or concurrent writes.',
                               'No product memory or latency SLO has been supplied; no general capacity pass is asserted.'],

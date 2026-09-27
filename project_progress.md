@@ -3,11 +3,14 @@
 ## Current Status
 - **Last Updated**: 2026-09-27
 - **Status**: In Progress — 범용 자율 분석 agent 정식 출시 NO-GO
-- **Summary**: 모델 일시 실패 후 검증된 로컬 작업 자동 continuation을 구현하고, 실모델에서 발견한 차트 입력/출력 lineage 오류 및 실제 웹의 명시적 필터 해제 무시를 함께 수정했다. 실모델+주입장애 복구 PASS, 실제 웹 원본 표본 평균 40.931/PNG/원본 보존 PASS(0.383초). 앱 369·migration 136·reference 217 PASS. 최초 실패를 보존했다. [최신 검증](docs/evaluation/2026-09-27_local_continuation.md).
+- **Summary**: 고급 분석·대규모 적재 검증을 실행했다. 통계10문항/조인/시계열 독립 oracle PASS, 합성100만행 batch 적재→EDA→실패보존/재시작 PASS(18.590초, peak RSS 약484MiB). 실제 모델 Spider 고정5문항은 제안1/5·제안정답0/1; 차단초안4건 중1건은 정답으로 과잉차단 확인. 실제 Databricks10만행 적재는 사용자 exact-query 승인 대기(실행0). [최신 보고](docs/evaluation/2026-09-27_advanced_scale/report.md).
 - **Next Session Focus**: 복합 부정/NULL·암묵적 다중 출처·역할별 조인·CTE/HAVING 계획, 103 oracle 및 judge calibration, 승인형 대규모 신규 적재·RSS·격리 코드 실행. 별도 서버 배포 제외.
 - **Current qualification**: 이번 실모델 7/8여정 결과와 모델 timeout 미완료를 함께 유지한다. 이전 고정 200문항 97 PASS/103 UNGRADED 및 Spider 0/5는 재평가하지 않았다. 범용 GO/동등 성능은 미입증이다. 신규 warehouse SQL 0회, draft PR #68 미병합.
 
 ## Next Action Items
+- [x] 지원 통계·조인·시계열 독립 oracle, 최신 실제 모델 Spider 고정5문항 공식 scorer, 합성100만행 staging/EDA/RSS/중단·byte제한/재시작 검증을 수행했다. 검증 통과와 고급 분석 실패를 구분했다.
+- [ ] 실제 Databricks `SELECT * FROM workspace.default.ncr_ride LIMIT 100000` 1회 승인 후 적재/RSS/EDA를 측정한다. checkpoint `40840eb0-42c5-4ac8-a221-8a7016b8ced6` 준비 완료, 신규 SQL 실행0.
+- [ ] 고급 분석 P0: JSON/OR와 테이블 역할 조건을 독립 요청 계약에 표현하고 검증 가능한 다단계 집계를 계획한다. 정답 차단(local009), 홈/원정 누락, 임의 연도, DISTINCT/중앙값 누락을 이번 고정 실패로 회귀 검증한다.
 - [x] 일시적 모델 실패 후 로컬 자동 continuation, 복구 중 모델/원격 재실행 차단, checkpoint 보존 및 차트 입력/출력 ID 검증을 구현했다. 10개 계약 및 실제 모델+장애 주입 재검증 PASS.
 - [x] 무진전 탐색 반복 감지, 완료/미완료 목표 분리, 동일 추가 조회 차단, 변경된 schema/coverage의 재확인과 재시작 상태 보존을 구현·검증했다. 모델 API 지연에 따른 미완료 운영 검증은 남는다.
 - [x] 실패 원인별 진단·등록된 대체 도구 안내, 동일 실패 재실행 방지, 요청별 복구 계획/재시작 보존, 실제 로컬 timeout 복구와 화면 진행 상태를 구현했다. 조건을 제거하는 대체 SQL은 차단한다.
@@ -1874,3 +1877,19 @@ Task definitions and acceptance conditions: docs/agent_remaining_tasks_2026-09-1
 - Next: 미검증 고급 계획·복합 조건·독립 oracle/judge·대규모 적재/RSS·격리 실행은 남아 있으며 범용 NO-GO 유지. 별도 서버 배포는 제외한다.
 
 - **Remote verification**: code commit `3dd30a5` push 완료. GitHub Actions `36310768258`의 전체 gate가 2분 46초에 PASS했다. PR #68 설명·증거를 갱신했고 draft/미병합 상태다.
+
+## [2026-09-27 22:26:03 KST] [Agent: Codex] User Request: 고급 분석 대규모 적재 검증 진행
+- **Action**: 고급 분석 독립 정답·대용량 적재/EDA/RSS/실패 보존 검증을 실행한다. 실제 신규 Databricks SQL은 정확한 계획의 승인 후 실행하며 로컬 합성 부하와 구분한다.
+
+- **Action** [Agent: Codex]: 기존 통계/조인/시계열 oracle 평가와 Spider2-Lite 고정5문항을 현재 Databricks 모델로 실행했다. 공식 scorer는 제안/차단 초안을 분리했다. Gold는 모델에 제공하지 않았다.
+- **Outcome**: 통계10/10·조인·시계열 PASS. Spider SQL 제안1/5, 제출정답0/1. 차단초안1/4 정답(local009)으로 agent 과잉차단 확인, 나머지는 의미 계획 오류. 전체547문항 score로 오인하지 않는다.
+- **Action**: scripts/evaluate_streaming_scale.py 추가. 실제 ingestion에 synthetic cursor로100만행을1024행 이하batch로 전달하고 평균/조건변경/차트/원본복귀/재시작·50,176행 전송중단·128KiB byte admission을 확인했다.
+- **Outcome**: 100만행 적재2.652초, 전체18.590초, peak RSS507,904,000 bytes. 독립 평균49.95/94.95 일치, 원본유실0·부분후보발행0·network/model0. 이는 실제 warehouse throughput이 아니다. 별도SIGKILL storage시험도PASS.
+- **Action**: scripts/validate_databricks_scale.py를 추가하고 정확한 SQL1회의 승인 checkpoint만 생성했다. 사용자에게 승인질문 전달; 실행하지 않음. 기존대화와 별도영속저장소.
+- **Validation**: 관련 적재/부분읽기/메모리계약28/28 PASS, compileall/diff PASS. 코드변경은 평가harness·저장소시험설명·문서에 한정되며 고급plan기능을 구현한 것으로 주장하지 않는다.
+- **Artifact Update**: docs/evaluation/2026-09-27_advanced_scale/의 계획·개별결과·공식score·종합보고서.
+
+### Daily Wrap-up — 2026-09-27 고급 분석·대규모 검증
+- 100만행 로컬 적재와 EDA·장애보존의 수치근거를 추가했다. 지원통계/조인/시계열 정답검사를 재실행했다.
+- 실제 모델 고급문항에서 오답계획과 정답과잉차단을 분리 확인했다. 범용GO는NO-GO유지.
+- Next: SQL1회 사용자승인 후 실제10만행 적재 측정. 고급요청계약·역할별OR/JSON·다단계지표계획 보강과 같은고정문항 재평가.
