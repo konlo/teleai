@@ -1801,3 +1801,5 @@ Task definitions and acceptance conditions: docs/agent_remaining_tasks_2026-09-1
 - **Key Accomplishments**: 자연어 통계 해석, 후속 연산 변경, 단일 제외 조건, 영속 추론 장애 복구를 구현하고 실제 웹 결과까지 확인했다.
 - **Major Issues Encountered**: 결정 경로의 반대 모집단 계산, 계산 없는 완료, 이전 연산 오상속, 재개 시 대기 시간 과금 문제를 수정했다. 강화된 차트 grader의 정상 빈도 집계 오판도 실패 근거와 함께 정정했다.
 - **Next Action Items**: 위 Current Status 및 최신 검증 문서의 4개 GO 조건을 따른다.
+
+- **Remote Gate**: 코드·평가 commit `4fabe1ca22675dc6c93336bad51dfb7eba56f6e8` push 완료. GitHub Actions `36284183243` 전체 성공, draft PR #68 갱신·미병합. 최종 코드 앱 PID 64106, health `ok`, 실제 화면 보존·Databricks 모델 선택 확인.

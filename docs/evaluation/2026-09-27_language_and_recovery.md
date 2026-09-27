@@ -55,4 +55,8 @@ PNG 평가를 강화하면서 처음에는 raw ID만 허용해 정상적인 완�
 .telly_runtime/v1-venv/bin/python test_set/run_test_set.py --all --quiet
 ```
 
-원격 CI 및 commit 근거는 검증 완료 후 이 문서에 추가한다.
+## 원격 CI와 실행 상태
+
+코드·평가 commit `4fabe1ca22675dc6c93336bad51dfb7eba56f6e8`을 push했다. [GitHub Actions 36284183243](https://github.com/konlo/teleai/actions/runs/36284183243)의 migration, application, agentic recovery, reference suite, compile 단계가 모두 성공했다. [PR #68](https://github.com/konlo/teleai/pull/68)은 draft·미병합 상태다.
+
+최종 commit으로 localhost 앱을 재시작했다(PID 64106). health 응답은 `ok`이고 실제 화면에서 기존 대화·원본·두 계산 결과가 보존됨을 확인했다. 검증에 사용한 Databricks 모델을 선택해 두었다. CI 성공으로 위 미완료 GO 조건을 해소한 것으로 계산하지 않는다.
