@@ -29,3 +29,5 @@
 4. 격리된 코드 실행, 장기 공급자 장애 운영 검증. 이번 재시도 실패 검사는 합성 장애 주입이며 공급자 장기 장애 실증이 아니다.
 
 대화 요약은 프레임워크 내부 확장점에 의존하므로 LangChain 업그레이드 시 graph 회귀를 필수로 실행한다. 이 검증은 Codex/Claude Code 동등 성능을 입증하지 않는다.
+
+원격 검증: 코드 commit `5df1fa5c6294467dbaa09823085c8f0a3773b02c`의 [전체 CI](https://github.com/konlo/teleai/actions/runs/36298143397) 성공. PR #68은 draft·미병합이며 최종 코드 앱은 PID 76265로 실행 중이다.

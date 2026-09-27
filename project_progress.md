@@ -1817,3 +1817,5 @@ Task definitions and acceptance conditions: docs/agent_remaining_tasks_2026-09-1
 - **Key Accomplishments**: 승인/대화 보존과 전 추론 경로의 공통 복구 예산을 연결했고 실제 모델·웹·장애 주입 검증을 마쳤다.
 - **Major Issues**: 승인 이유 질문을 불명확 발화로 처리하는 실모델 실패와 옛 오류 응답에 의존한 migration fixture 2개를 원인별로 수정했다. 기존 승인/복제 격리 assertion은 유지했다.
 - **Next Action Items**: 남은 GO 조건은 최신 검증 문서의 4개 묶음이며 이번 보조 경로 완료를 범용 agent 완성으로 계산하지 않는다.
+
+- **Remote Gate**: 코드·평가 commit `5df1fa5c6294467dbaa09823085c8f0a3773b02c` push·원격 SHA 일치 확인. GitHub Actions [36298143397](https://github.com/konlo/teleai/actions/runs/36298143397) 전체 성공. draft PR #68 갱신·미병합. 최종 앱 PID 76265, health `ok`, Databricks 모델 선택·기존 대화/결과 화면 복원 확인.
