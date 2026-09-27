@@ -1070,6 +1070,8 @@ class RecoveryMiddleware(AgentMiddleware):
                 continue
             if message.tool_call_id not in current['processed']:
                 current['processed'].append(message.tool_call_id)
+            from core.analysis_agent.progress_guard import observe
+            observe(current,call,observation,self.context)
             if name in {'inspect_column_definitions', 'inspect_table_relationships'} and observation.get('metadata_plan'):
                 current['metadata_query_plan'] = observation['metadata_plan']
             if name == 'resolve_analysis_intent':
@@ -1943,6 +1945,9 @@ class RecoveryMiddleware(AgentMiddleware):
         text = rendered if success else remote_failure_message([current['failed'].get('query_databricks', {})], current.get('remote_rejected', False))
         if not success and not remote_block and reason not in {'missing_evidence', 'unresolved_failure'}:
             text = '반복 실행 한도에 도달해 분석을 중단했습니다. 검증된 완료 결과가 없으며 기존 데이터는 보존했습니다.'
+        if not success and not remote_block and reason=='discovery_stalled':
+            text = ('같은 정보 조회가 반복되어 중단했습니다. 필요한 분석 결과를 검증하지 못했습니다. '
+                    '기존 데이터와 완료된 결과는 보존했으며, 부족한 정보나 다른 분석 방법이 필요합니다.')
         if not success and current.get('metadata_kind') and reason == 'schema_refresh_unavailable':
             current['status'] = 'blocked'
             text = ('저장된 테이블 스키마가 오래되어 현재 항목을 확인할 수 없습니다. '
@@ -3140,12 +3145,45 @@ class RecoveryMiddleware(AgentMiddleware):
                 additional_kwargs={'lc_source':'tool_repair'}))
             self.diagnostics.emit('tool_repair_diagnosed',request_id=current.get('request_id'),
                 failure_ids=[signature_id(key) for key in pending])
+        from core.analysis_agent import progress_guard
+        stalled=progress_guard.stalled(current,self.context)
+        notified_progress=current.setdefault('progress_notified',[])
+        fresh=[progress_guard.token(key,record) for key,record in stalled.items()
+               if progress_guard.token(key,record) not in notified_progress]
+        if fresh:
+            notified_progress.extend(fresh)
+            available=(self.context.allowed_tool_names or frozenset()) if self.context else frozenset()
+            messages.append(SystemMessage(content=progress_guard.instruction(current,available),
+                additional_kwargs={'lc_source':'tool_repair','repair_phase':'stalled'}))
+            self.diagnostics.emit('tool_progress_stalled',request_id=current.get('request_id'),
+                observation_ids=fresh,missing=[c.name for c in missing_contracts(current)])
         scope_key = json.dumps(current.get('scope', {}), sort_keys=True, ensure_ascii=False)
         if self._has_scope(current) and current.get('scope_notified') != scope_key:
             current['scope_notified'] = scope_key
             messages.append(SystemMessage(content=self._scope_instruction(current),
                 additional_kwargs={'lc_source':'recovery_scope'}))
         return {'recovery': current, **({'messages':messages} if messages else {})}
+
+    def _reject_stalled_discovery(self,current,last):
+        if not last.tool_calls:return None
+        from core.analysis_agent import progress_guard
+        stalled=progress_guard.stalled(current,self.context)
+        repeated={progress_guard.call_key(call):stalled[progress_guard.call_key(call)]
+                  for call in last.tool_calls if progress_guard.call_key(call) in stalled}
+        if not repeated:return None
+        tokens=[progress_guard.token(key,record) for key,record in repeated.items()]
+        rejected=current.setdefault('progress_rejected',[])
+        if any(key in rejected for key in tokens) or len(rejected)>=self.max_attempts:
+            return self._finish(current,last,'discovery_stalled')
+        rejected.extend(tokens)
+        self.diagnostics.emit('tool_progress_duplicate_blocked',request_id=current.get('request_id'),
+            observation_ids=tokens,missing=[c.name for c in missing_contracts(current)])
+        available=(self.context.allowed_tool_names or frozenset()) if self.context else frozenset()
+        current['model_started_at']=time.time()
+        return {'recovery':current,'messages':[RemoveMessage(id=last.id),
+            SystemMessage(content=progress_guard.instruction(current,available),
+                additional_kwargs={'lc_source':'recovery','invalidated_message_id':last.id,
+                                   'repair_phase':'stalled'})],'jump_to':'model'}
 
     def _reject_repeated_local_failure(self, current, last):
         from core.analysis_agent.tool_repair import repair_instruction, signature_id
@@ -3489,6 +3527,8 @@ class RecoveryMiddleware(AgentMiddleware):
             return self._finish(current, last, 'remote_blocked')
         repaired=self._reject_repeated_local_failure(current,last)
         if repaired:return repaired
+        stalled=self._reject_stalled_discovery(current,last)
+        if stalled:return stalled
         for call in last.tool_calls:
             error = self._proposal_preflight_error(call)
             if error:

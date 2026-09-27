@@ -1,0 +1,48 @@
+{
+  "generated_at": "2026-09-27T09:20:27.328460+00:00",
+  "provider": "databricks",
+  "mode": "real-model synthetic journeys; deterministic rescue disabled",
+  "limitations": [
+    "Some cases inject a first faulty call; subsequent decisions use the live model.",
+    "No real remote SQL executor is connected; this does not validate loading."
+  ],
+  "results": [
+    {
+      "id": "repeated_discovery",
+      "status": "PASS",
+      "injected_first_call": true,
+      "live_calls": 2,
+      "turns": [
+        {
+          "prompt": "reading 평균을 알려줘.",
+          "status": "PASS",
+          "agent_status": "answered",
+          "final_output": "보유 데이터로 계산한 결과입니다. 출처: unfamiliar.observations\n분석 범위: 요청 조건에 포함된 보유 데이터 전체\n\n평균: 9.0",
+          "expected": 9.0,
+          "actual": 9.0,
+          "model_calls": 5,
+          "search_used": false,
+          "tools": [
+            "list_analysis_context",
+            "list_analysis_context",
+            "inspect_dataset",
+            "aggregate_dataset"
+          ],
+          "chart_count": 0,
+          "raw_unchanged": true,
+          "approval_requests": 0,
+          "remote_executions": 0,
+          "stop_reason": null,
+          "elapsed_seconds": 7.921,
+          "repair_events": [],
+          "executed_tools": [
+            "list_analysis_context",
+            "list_analysis_context",
+            "inspect_dataset",
+            "aggregate_dataset"
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,384 @@
+{
+  "generated_at": "2026-09-27T09:25:31.648761+00:00",
+  "provider": "databricks",
+  "mode": "real-model synthetic journeys; deterministic rescue disabled",
+  "limitations": [
+    "Some cases inject a first faulty call; subsequent decisions use the live model.",
+    "No real remote SQL executor is connected; this does not validate loading."
+  ],
+  "results": [
+    {
+      "id": "repeated_discovery",
+      "status": "PASS",
+      "injected_first_call": true,
+      "live_calls": 2,
+      "turns": [
+        {
+          "prompt": "reading 평균을 알려줘.",
+          "status": "PASS",
+          "agent_status": "answered",
+          "final_output": "보유 데이터로 계산한 결과입니다. 출처: unfamiliar.observations\n분석 범위: 요청 조건에 포함된 보유 데이터 전체\n\n평균: 9.0",
+          "expected": 9.0,
+          "actual": 9.0,
+          "model_calls": 5,
+          "search_used": false,
+          "tools": [
+            "list_analysis_context",
+            "list_analysis_context",
+            "inspect_dataset",
+            "aggregate_dataset"
+          ],
+          "chart_count": 0,
+          "raw_unchanged": true,
+          "approval_requests": 0,
+          "remote_executions": 0,
+          "stop_reason": null,
+          "elapsed_seconds": 6.809,
+          "repair_events": [
+            {
+              "time": "2026-09-27T09:22:14.881659+00:00",
+              "event": "tool_progress_stalled",
+              "run_id": "5f21421d6eec497baf2327d12d6da587",
+              "request_id": "3284d24b-2082-4608-8aeb-7f8c2a0c2b5f",
+              "observation_ids": [
+                "d49307dba33513436c765a4b4a2a3b152d2feca84412b566757ada450dd25588"
+              ],
+              "missing": [
+                "calculation"
+              ]
+            },
+            {
+              "time": "2026-09-27T09:22:14.886115+00:00",
+              "event": "tool_progress_duplicate_blocked",
+              "run_id": "5f21421d6eec497baf2327d12d6da587",
+              "request_id": "3284d24b-2082-4608-8aeb-7f8c2a0c2b5f",
+              "observation_ids": [
+                "d49307dba33513436c765a4b4a2a3b152d2feca84412b566757ada450dd25588"
+              ],
+              "missing": [
+                "calculation"
+              ]
+            }
+          ],
+          "executed_tools": [
+            "list_analysis_context",
+            "list_analysis_context",
+            "inspect_dataset",
+            "aggregate_dataset"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "discover_mean",
+      "status": "PASS",
+      "injected_first_call": false,
+      "live_calls": 3,
+      "turns": [
+        {
+          "prompt": "로컬 평균 집계 도구의 입력 규칙을 검색해서 확인한 뒤 reading 평균을 계산해줘.",
+          "status": "PASS",
+          "agent_status": "answered",
+          "final_output": "보유 데이터로 계산한 결과입니다. 출처: unfamiliar.observations\n분석 범위: 요청 조건에 포함된 보유 데이터 전체\n\n평균: 9.0",
+          "expected": 9.0,
+          "actual": 9.0,
+          "model_calls": 3,
+          "search_used": true,
+          "tools": [
+            "search_analysis_tools",
+            "inspect_dataset",
+            "aggregate_dataset"
+          ],
+          "chart_count": 0,
+          "raw_unchanged": true,
+          "approval_requests": 0,
+          "remote_executions": 0,
+          "stop_reason": null,
+          "elapsed_seconds": 8.156,
+          "repair_events": [],
+          "executed_tools": [
+            "search_analysis_tools",
+            "inspect_dataset",
+            "aggregate_dataset"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "repair_sql",
+      "status": "PASS",
+      "injected_first_call": true,
+      "live_calls": 2,
+      "turns": [
+        {
+          "prompt": "reading 평균을 알려줘.",
+          "status": "PASS",
+          "agent_status": "answered",
+          "final_output": "보유 데이터로 계산한 결과입니다. 출처: unfamiliar.observations\n분석 범위: 요청 조건에 포함된 보유 데이터 전체\n\n평균: 9.0",
+          "expected": 9.0,
+          "actual": 9.0,
+          "model_calls": 3,
+          "search_used": false,
+          "tools": [
+            "local_analysis_sql",
+            "inspect_dataset",
+            "aggregate_dataset"
+          ],
+          "chart_count": 0,
+          "raw_unchanged": true,
+          "approval_requests": 0,
+          "remote_executions": 0,
+          "stop_reason": null,
+          "elapsed_seconds": 5.643,
+          "repair_events": [
+            {
+              "time": "2026-09-27T09:22:29.800532+00:00",
+              "event": "tool_repair_diagnosed",
+              "run_id": "b419c458952f4b58918e526a982eff1e",
+              "request_id": "1fa83d42-ef0a-4883-897d-8617677ad2ad",
+              "failure_ids": [
+                "bcf8eef42ed9ff3e"
+              ]
+            }
+          ],
+          "executed_tools": [
+            "local_analysis_sql",
+            "inspect_dataset",
+            "aggregate_dataset"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "local_outage",
+      "status": "PASS",
+      "injected_first_call": true,
+      "live_calls": 1,
+      "turns": [
+        {
+          "prompt": "reading 평균을 알려줘.",
+          "status": "PASS",
+          "agent_status": "answered",
+          "final_output": "보유 데이터로 계산한 결과입니다. 출처: unfamiliar.observations\n분석 범위: 요청 조건에 포함된 보유 데이터 전체\n\n평균: 9.0",
+          "expected": 9.0,
+          "actual": 9.0,
+          "model_calls": 2,
+          "search_used": false,
+          "tools": [
+            "aggregate_dataset",
+            "local_analysis_sql"
+          ],
+          "chart_count": 0,
+          "raw_unchanged": true,
+          "approval_requests": 0,
+          "remote_executions": 0,
+          "stop_reason": null,
+          "elapsed_seconds": 1.705,
+          "repair_events": [
+            {
+              "time": "2026-09-27T09:22:35.457521+00:00",
+              "event": "tool_repair_diagnosed",
+              "run_id": "cdbc7372675f4a409311b7109dce52c2",
+              "request_id": "c2187252-475b-4a7b-a071-8c464eae0efe",
+              "failure_ids": [
+                "b1563b4430b3d938"
+              ]
+            }
+          ],
+          "executed_tools": [
+            "aggregate_dataset",
+            "local_analysis_sql"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "repeated_outage",
+      "status": "PASS",
+      "injected_first_call": true,
+      "live_calls": 1,
+      "turns": [
+        {
+          "prompt": "reading 평균을 알려줘.",
+          "status": "PASS",
+          "agent_status": "answered",
+          "final_output": "보유 데이터로 계산한 결과입니다. 출처: unfamiliar.observations\n분석 범위: 요청 조건에 포함된 보유 데이터 전체\n\n평균: 9.0",
+          "expected": 9.0,
+          "actual": 9.0,
+          "model_calls": 3,
+          "search_used": false,
+          "tools": [
+            "aggregate_dataset",
+            "local_analysis_sql"
+          ],
+          "chart_count": 0,
+          "raw_unchanged": true,
+          "approval_requests": 0,
+          "remote_executions": 0,
+          "stop_reason": null,
+          "elapsed_seconds": 2.648,
+          "repair_events": [
+            {
+              "time": "2026-09-27T09:22:37.176448+00:00",
+              "event": "tool_repair_diagnosed",
+              "run_id": "061718a8deac4945a27451de8bff8ad2",
+              "request_id": "30de619d-917e-4f14-be08-4e9703b96370",
+              "failure_ids": [
+                "51d9bd599361f00a"
+              ]
+            },
+            {
+              "time": "2026-09-27T09:22:37.179125+00:00",
+              "event": "tool_repair_duplicate_blocked",
+              "run_id": "061718a8deac4945a27451de8bff8ad2",
+              "request_id": "30de619d-917e-4f14-be08-4e9703b96370",
+              "failure_ids": [
+                "51d9bd599361f00a"
+              ]
+            }
+          ],
+          "executed_tools": [
+            "aggregate_dataset",
+            "local_analysis_sql"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "local_timeout",
+      "status": "PASS",
+      "injected_first_call": true,
+      "live_calls": 1,
+      "turns": [
+        {
+          "prompt": "reading 평균을 알려줘.",
+          "status": "PASS",
+          "agent_status": "answered",
+          "final_output": "보유 데이터로 계산한 결과입니다. 출처: unfamiliar.observations\n분석 범위: 요청 조건에 포함된 보유 데이터 전체\n\n평균: 9.0",
+          "expected": 9.0,
+          "actual": 9.0,
+          "model_calls": 2,
+          "search_used": false,
+          "tools": [
+            "aggregate_dataset",
+            "local_analysis_sql"
+          ],
+          "chart_count": 0,
+          "raw_unchanged": true,
+          "approval_requests": 0,
+          "remote_executions": 0,
+          "stop_reason": null,
+          "elapsed_seconds": 3.261,
+          "repair_events": [
+            {
+              "time": "2026-09-27T09:22:39.840043+00:00",
+              "event": "tool_repair_diagnosed",
+              "run_id": "6e81197e852e466b8cb934e662932f5b",
+              "request_id": "7f7c4d24-5b4e-4da7-bdd8-b67d7ffaba0e",
+              "failure_ids": [
+                "637b4f69e9ceb7cc"
+              ]
+            }
+          ],
+          "executed_tools": [
+            "aggregate_dataset",
+            "local_analysis_sql"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "compound",
+      "status": "FAIL",
+      "injected_first_call": false,
+      "live_calls": 5,
+      "turns": [
+        {
+          "prompt": "reading 평균을 계산하고 reading 히스토그램도 보여줘.",
+          "status": "FAIL",
+          "agent_status": "incomplete",
+          "final_output": "분석 중 오류가 발생했습니다 (APITimeoutError, 오류 ID: 085ef712061a). 기존 결과는 보존했습니다. 미완료 분석 재개로 다시 시도할 수 있습니다.",
+          "expected": 9.0,
+          "actual": null,
+          "model_calls": 2,
+          "search_used": false,
+          "tools": [
+            "profile_dataset",
+            "render_chart_spec"
+          ],
+          "chart_count": 1,
+          "raw_unchanged": true,
+          "approval_requests": 0,
+          "remote_executions": 0,
+          "stop_reason": null,
+          "elapsed_seconds": 156.738,
+          "repair_events": [],
+          "executed_tools": [
+            "profile_dataset",
+            "render_chart_spec"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "followup",
+      "status": "PASS",
+      "injected_first_call": false,
+      "live_calls": 3,
+      "turns": [
+        {
+          "prompt": "reading >= 10인 행의 건수를 알려줘.",
+          "status": "PASS",
+          "agent_status": "answered",
+          "final_output": "보유 데이터로 계산한 결과입니다. 출처: unfamiliar.observations\n분석 범위: 요청 조건에 포함된 보유 데이터 전체\n\n적용 조건: reading ≥ 10\n\n건수: 2",
+          "expected": 2.0,
+          "actual": 2.0,
+          "model_calls": 2,
+          "search_used": false,
+          "tools": [
+            "inspect_dataset",
+            "local_analysis_sql"
+          ],
+          "chart_count": 0,
+          "raw_unchanged": true,
+          "approval_requests": 0,
+          "remote_executions": 0,
+          "stop_reason": null,
+          "elapsed_seconds": 8.108,
+          "repair_events": [],
+          "executed_tools": [
+            "inspect_dataset",
+            "local_analysis_sql"
+          ]
+        },
+        {
+          "prompt": "그중 reading 평균을 알려줘.",
+          "status": "PASS",
+          "agent_status": "answered",
+          "final_output": "보유 데이터로 계산한 결과입니다. 출처: unfamiliar.observations\n분석 범위: 요청 조건에 포함된 보유 데이터 전체\n\n적용 조건: reading ≥ 10\n\n평균: 15.0",
+          "expected": 15.0,
+          "actual": 15.0,
+          "model_calls": 1,
+          "search_used": false,
+          "tools": [
+            "inspect_dataset",
+            "local_analysis_sql",
+            "local_analysis_sql"
+          ],
+          "chart_count": 0,
+          "raw_unchanged": true,
+          "approval_requests": 0,
+          "remote_executions": 0,
+          "stop_reason": null,
+          "elapsed_seconds": 3.671,
+          "repair_events": [],
+          "executed_tools": [
+            "inspect_dataset",
+            "local_analysis_sql",
+            "local_analysis_sql"
+          ]
+        }
+      ]
+    }
+  ]
+}

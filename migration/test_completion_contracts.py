@@ -113,8 +113,9 @@ class CompletionTests(unittest.TestCase):
             r = GraphAnalysisRuntime(root, 'owner', 'metadata-loop', model)
             result = r.submit('histogram')
             self.assertEqual(result['status'], 'exhausted', result)
-            self.assertEqual(r.inspect()['recovery']['stop_reason'], 'model_call_budget')
-            self.assertEqual(model.position, 10)
+            self.assertEqual(r.inspect()['recovery']['stop_reason'], 'discovery_stalled')
+            self.assertEqual(model.position, 4)
+            self.assertEqual(sum(m.name=='list_analysis_context' for m in r.events() if isinstance(m,ToolMessage)),2)
             r.close()
 
     def test_complete_cached_plan_ends_without_model_or_remote_call(self):

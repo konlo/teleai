@@ -3,11 +3,12 @@
 ## Current Status
 - **Last Updated**: 2026-09-27
 - **Status**: In Progress — 범용 자율 분석 agent 정식 출시 NO-GO
-- **Summary**: 도구 실패 진단→동일 실패 실행 차단→대체 계획→실제 결과 검증을 보강했다. 실제 모델 7여정·8턴 PASS(일부 합성 장애 주입), 앱 352·migration 133·reference 217 PASS. 로컬 TimeoutError도 대화 중단 대신 대체 도구를 선택할 수 있는 관찰로 반환한다. [최신 검증](docs/evaluation/2026-09-27_tool_repair_loop.md).
+- **Summary**: 같은 성공한 탐색의 무진전 반복을 감지해 완료/미완료 목표별로 재계획하도록 보강했다. 완고한 반복은 모델 10회 대신 4회·실제 탐색 2회에 종료하며, 유효한 대안을 선택하면 계산/차트까지 완료한다. 앱 358·migration 133·reference 217 PASS. 실모델 종합은 7/8여정 PASS, 복합 요청 1건은 API timeout으로 미완료. [최신 검증](docs/evaluation/2026-09-27_progress_guard.md).
 - **Next Session Focus**: 복합 부정/NULL·암묵적 다중 출처·역할별 조인·CTE/HAVING 계획, 103 oracle 및 judge calibration, 승인형 대규모 신규 적재·RSS·격리 코드 실행. 별도 서버 배포 제외.
-- **Current qualification**: 실제 모델 도구 복구 여정은 통과했지만 범용 GO나 Codex/Claude Code 동등성은 미입증이다. 기존 고정 200문항 97 PASS/103 UNGRADED 및 Spider 0/5는 재평가하지 않았다. 신규 Databricks warehouse SQL 0회, draft PR #68 미병합.
+- **Current qualification**: 이번 실모델 7/8여정 결과와 모델 timeout 미완료를 함께 유지한다. 이전 고정 200문항 97 PASS/103 UNGRADED 및 Spider 0/5는 재평가하지 않았다. 범용 GO/동등 성능은 미입증이다. 신규 warehouse SQL 0회, draft PR #68 미병합.
 
 ## Next Action Items
+- [x] 무진전 탐색 반복 감지, 완료/미완료 목표 분리, 동일 추가 조회 차단, 변경된 schema/coverage의 재확인과 재시작 상태 보존을 구현·검증했다. 모델 API 지연에 따른 미완료 운영 검증은 남는다.
 - [x] 실패 원인별 진단·등록된 대체 도구 안내, 동일 실패 재실행 방지, 요청별 복구 계획/재시작 보존, 실제 로컬 timeout 복구와 화면 진행 상태를 구현했다. 조건을 제거하는 대체 SQL은 차단한다.
 - [x] fresh 선언 FK·복합 키 탐색, 명시적 JOIN 출처/조건 검증, 승인된 조인 통계 결과의 완료 계약을 구현했다. 실제 UC metadata 실행과 복잡한 SQL 자동 계획은 후속 검증 대상이다.
 - [x] 주 분석·의미 해석의 모델 실패에 한정한 영속 재시도/cooldown/예산을 구현하고, 승인 SQL 1회 실행과 중단 후 재개를 장애 주입으로 검증했다. 요약/승인 분류도 공통 장부에 통합했고 재시작·예산·승인 보존을 검증했다. 실제 공급자 장기 outage 검증은 남는다.
@@ -1835,3 +1836,12 @@ Task definitions and acceptance conditions: docs/agent_remaining_tasks_2026-09-1
 - **Next Action Items**: 복잡한 계획과 독립 평가 공백, 승인형 대규모 적재, 격리 실행을 계속한다. 이번 소수 여정 성공을 전체 지원으로 계산하지 않는다.
 
 - **Remote Gate**: 코드 commit `abb85dbf7fb1112254265d61b048685c9ebe4544` push·원격 SHA 일치. GitHub Actions [36303236880](https://github.com/konlo/teleai/actions/runs/36303236880)의 모든 release gate 성공. PR #68 갱신·draft·미병합. 최종 앱 PID 80870, health ok, Databricks 모델 선택과 기존 대화/결과 복원을 실제 화면에서 확인했다. 이번 브라우저 검사는 복원 확인이며 새 장애를 실제 UI에 주입한 검사는 아니다.
+
+## [2026-09-27 18:17:45 KST] [Agent: Codex] User Request: 계속 진행
+- **Action**: 프로젝트 관리/기록 및 출시 기준을 이어 적용한다. 성공한 도구 관찰만 반복하고 완료 근거를 만들지 못하는 무진전 loop를 재현하고, 목표·부족한 근거 중심으로 제한된 재계획을 구현한다. 신규 Databricks warehouse SQL은 실행하지 않는다.
+
+## [2026-09-27 18:28:01 KST] [Agent: Codex] 무진전 탐색 loop 검증
+- **Action**: 동일 탐색의 입력/관찰/metadata/검증 근거를 비교하여 완료 근거 없는 반복을 차단한다. 남은 목표만 모델에 제시하고 실제 schema/coverage 변경은 재확인할 수 있다. 원격 승인 계약과 원본 보존은 유지한다.
+- **Validation**: 신규 회귀 6개, application 358·migration 133·reference/Level3 217 PASS. 기존 반복 모델 호출은 10→4, 실제 반복 탐색은 2회에 제한한다. 평균+차트에서는 평균을 다시 실행하지 않고 미완료 차트만 생성한다.
+- **Actual model**: 자동 로컬 계획/구제 비활성화 8여정·9턴 중 7여정·8턴 PASS. compound는 차트 후 모델 APITimeoutError 3회로 156.738초에 미완료. 원본·차트 보존 및 미완료 판정을 유지했다. 별도 재확인은 성공률과 분리해 기록한다.
+- **Artifacts**: docs/evaluation/2026-09-27_progress_guard.md 및 baseline/live/verified JSON. 신규 coverage 테스트 최초 실패는 metadata 복사본을 수정한 fixture 문제로 판명돼 실제 임시 영속 저장소 변경으로 정정했다.

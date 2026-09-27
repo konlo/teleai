@@ -46,6 +46,8 @@ class FaultThenLiveModel(BaseChatModel):
 
 
 CASES=[
+ {'id':'repeated_discovery','prompt':'reading 평균을 알려줘.', 'expected':9.,'inject_count':3,
+  'first_call':{'name':'list_analysis_context','args':{}}},
  {'id':'discover_mean','prompt':'로컬 평균 집계 도구의 입력 규칙을 검색해서 확인한 뒤 reading 평균을 계산해줘.', 'expected':9.,'search_required':True},
  {'id':'repair_sql','prompt':'reading 평균을 알려줘.', 'expected':9.,
   'first_call':{'name':'local_analysis_sql','args':{'dataset_id':'$raw','query':'SELECT AVG(missing_column) AS mean FROM data'}}},
@@ -109,7 +111,7 @@ def evaluate_case(spec,delegate):
                 called=[call['name'] for m in messages if isinstance(m,AIMessage) for call in m.tool_calls]
                 search_used='search_analysis_tools' in called
                 log=[json.loads(line) for line in r.diagnostics.path.read_text().splitlines()]
-                repair_events=[e for e in log if e['event'].startswith('tool_repair_')]
+                repair_events=[e for e in log if e['event'].startswith(('tool_repair_','tool_progress_'))]
                 if turn.get('search_required'):valid=valid and search_used
                 turns.append({'prompt':turn['prompt'],'status':'PASS' if valid else 'FAIL',
                     'agent_status':outcome['status'],'final_output':outcome.get('text',''),
@@ -120,6 +122,8 @@ def evaluate_case(spec,delegate):
                     'stop_reason':state.get('stop_reason'),'elapsed_seconds':round(time.monotonic()-start,3)})
                 turns[-1]['repair_events']=repair_events
                 turns[-1]['executed_tools']=[e['tool'] for e in log if e['event']=='tool_started']
+                turns[-1]['model_recovery']=r.inspect()['model_recovery']
+                turns[-1]['model_failure_events']=[e for e in log if e['event']=='model_inference_failed']
                 if spec.get('followup') and len(turns)==1:
                     # Restart actual runtime; all scope must come from checkpoint.
                     r.close()
