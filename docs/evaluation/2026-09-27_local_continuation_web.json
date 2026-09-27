@@ -1,0 +1,53 @@
+{
+  "mode": "actual localhost browser, retained previously approved 10000-row sample",
+  "prompt": "현재 로딩된 10,000행 원본 표본 전체에서 age 평균을 계산하고 age 히스토그램도 보여줘. 이전 age 조건은 적용하지 말고 보유 데이터만 사용해.",
+  "initial_failure_and_recheck": [
+    {
+      "run_id": "7868f8cf4abc47dab9158fd57e4fb71e",
+      "status": "exhausted",
+      "elapsed_seconds": 30.576,
+      "tools": [
+        "local_analysis_sql",
+        "inspect_table_context",
+        "inspect_dataset"
+      ],
+      "model_calls": 4
+    },
+    {
+      "run_id": "ff1a3346ec5f47a58911412748b3fc56",
+      "status": "answered",
+      "elapsed_seconds": 0.383,
+      "tools": [
+        "show_chart",
+        "local_analysis_sql"
+      ],
+      "model_calls": 0
+    }
+  ],
+  "independent_mean": 40.931,
+  "actual_mean": 40.931,
+  "mean_matches": true,
+  "scope": {
+    "conditions": [],
+    "any_conditions": [],
+    "join_edges": [],
+    "measure_conditions": [],
+    "ratio": null,
+    "unresolved": [],
+    "columns": [
+      "age"
+    ]
+  },
+  "chart_count": 1,
+  "raw_sha256": "7c4a1c20588261932629087d091d43e1ad2d80f4e36cb3d1acb20eb8462fe10d",
+  "raw_unchanged": true,
+  "approval_ledger_counts": {
+    "completed": 1
+  },
+  "new_remote_queries": 0,
+  "browser_observation": "age histogram image, 10000 valid values / 20 bins and mean 40.931 visibly rendered.",
+  "limitations": [
+    "Existing raw sample only; no new Databricks loading.",
+    "Final web turn used grounded local planning, zero model calls."
+  ]
+}

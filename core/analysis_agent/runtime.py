@@ -252,6 +252,37 @@ class GraphAnalysisRuntime:
                 'model_recovery':self.model_attempts.get((state.values.get('recovery') or {}).get('request_id','')),
                 'operational_policy':self.policy.public()}
 
+    def _stream_with_local_recovery(self, value):
+        """Continue a failed model node once, using only verified local work.
+
+        Keep the same run, elapsed clock and checkpoint. Never replay the
+        original input or a pending tools node (which could contain SQL).
+        """
+        from core.analysis_agent.model_recovery import transient_model_error
+        try:
+            yield from self.agent.stream(value,self.config,stream_mode='values')
+        except Exception as exc:
+            checkpoint = self.agent.get_state(self.config)
+            current = checkpoint.values.get('recovery') or {}
+            if (not transient_model_error(exc) or checkpoint.next != ('model',)
+                    or current.get('local_continuation')
+                    or self._pending() or self.ledger.uncertain()):
+                raise
+            candidate = {**checkpoint.values, 'recovery':{**current,
+                'local_continuation':{'error_type':type(exc).__name__}}}
+            local = self.recovery.resume_local_call(candidate)
+            if local is None:
+                raise
+            error_id = self.diagnostics.failure(exc, stage='model_local_continuation')
+            local['recovery']['local_continuation'] = {'error_id':error_id}
+            self.agent.update_state(self.config,local,as_node='RecoveryMiddleware.after_model')
+            self.diagnostics.emit('automatic_local_continuation', error_id=error_id,
+                request_id=local['recovery'].get('request_id'))
+            if self.on_progress:
+                self.on_progress('모델 연결이 지연되어 보유 데이터로 남은 작업을 이어가고 있습니다. 완료된 결과는 유지합니다.')
+            # Errors here propagate normally; no recursive retry or budget reset.
+            yield from self.agent.stream(None,self.config,stream_mode='values')
+
     def _invoke(self,value):
         self._refresh_reference_context()
         started=time.monotonic()
@@ -265,7 +296,7 @@ class GraphAnalysisRuntime:
             result={}
             completed_load_id=''
             if self.on_progress:self.on_progress('요청과 보유 데이터를 확인하고 있습니다.')
-            for update in self.agent.stream(value,self.config,stream_mode='values'):
+            for update in self._stream_with_local_recovery(value):
                 result=update
                 messages=update.get('messages',[])
                 self.transcript.record(messages)

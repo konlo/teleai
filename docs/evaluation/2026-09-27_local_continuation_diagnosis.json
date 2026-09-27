@@ -1,0 +1,89 @@
+{
+  "generated_at": "2026-09-27T09:41:44.875834+00:00",
+  "provider": "databricks",
+  "mode": "live model initial decisions + injected APITimeoutError + production local continuation",
+  "limitations": [
+    "Synthetic four-row local fixture; no warehouse SQL executor connected.",
+    "Outage is injected, not an observed Databricks outage. This is not an official benchmark score.",
+    "Deterministic planner is disabled before outage to exercise model decisions; restored only for continuation."
+  ],
+  "result": {
+    "status": "FAIL",
+    "prompt": "먼저 reading 히스토그램을 만들고, 이어서 reading 평균도 계산해줘.",
+    "outcome": {
+      "error_id": "fb40404fca7b",
+      "status": "incomplete",
+      "error_type": "APITimeoutError",
+      "text": "분석 중 오류가 발생했습니다 (APITimeoutError, 오류 ID: fb40404fca7b). 기존 결과는 보존했습니다. 미완료 분석 재개로 다시 시도할 수 있습니다.",
+      "elapsed_seconds": 13.294
+    },
+    "expected_mean": 9.0,
+    "actual_mean": null,
+    "chart_count": 0,
+    "valid_png": false,
+    "raw_unchanged": true,
+    "tracker": {
+      "live_calls": 1,
+      "injected_timeouts": 3
+    },
+    "model_calls": 1,
+    "model_recovery": {
+      "failures": 3,
+      "failed_seconds": 3.0098299171077088,
+      "retries": 2,
+      "next_allowed_at": 1790502104.860105,
+      "aux_calls": 0,
+      "aux_seconds": 0.0
+    },
+    "recovery_events": [],
+    "executed_tools": [
+      "prepare_histogram"
+    ],
+    "tool_calls": [
+      {
+        "name": "prepare_histogram",
+        "args": {
+          "source": "unfamiliar.observations",
+          "column": "reading",
+          "dataset_id": "c54e9ab7-15af-4f97-825e-25664aafc49d"
+        },
+        "id": "call_47ab87a5-5906-47c6-bf31-fdb6e1d00b7c",
+        "type": "tool_call"
+      }
+    ],
+    "recovery_state": {
+      "scope": {
+        "conditions": [],
+        "any_conditions": [],
+        "join_edges": [],
+        "measure_conditions": [],
+        "ratio": null,
+        "unresolved": [],
+        "columns": [
+          "reading"
+        ]
+      },
+      "scope_error": null,
+      "required_columns": [
+        "reading"
+      ],
+      "operations": [
+        "AVG"
+      ],
+      "kind": "histogram",
+      "current_result_only": false,
+      "failed": {},
+      "histogram_plan": null
+    },
+    "progress": [
+      "요청과 보유 데이터를 확인하고 있습니다.",
+      "필요한 분석 도구를 실행하고 있습니다.",
+      "필요한 분석 도구를 실행하고 있습니다.",
+      "생성된 차트의 요청 조건을 검증하고 있습니다.",
+      "생성된 차트의 요청 조건을 검증하고 있습니다.",
+      "모델 응답이 일시적으로 지연되어 요청을 보존한 채 다시 시도하고 있습니다.",
+      "모델 응답이 일시적으로 지연되어 요청을 보존한 채 다시 시도하고 있습니다."
+    ],
+    "approval_requests": 0
+  }
+}

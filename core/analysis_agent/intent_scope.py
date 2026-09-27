@@ -123,6 +123,24 @@ def _grounding(text, context):
     return columns, unresolved
 
 
+def _reset_filter_columns(text, grounding):
+    """Recognize an explicit filter-removal command, never a generic negation.
+
+    Only grounded column names/aliases can select a partial reset. Preserve
+    filters on all other columns and parse any replacement predicate normally.
+    """
+    action = r'(?:적용하지\s*말(?:고|아|아줘)|해제(?:해|하고|하고는)|제거(?:해|하고)|초기화(?:해|하고))'
+    qualifier = r'(?:조건|필터)(?:은|는|을|를)?\s*'
+    all_filters = bool(re.search(r'(?:이전|기존|모든|전체)\s*' + qualifier + action, text))
+    columns = set()
+    for name, metadata in grounding.items():
+        aliases = sorted({name, *metadata['aliases']}, key=len, reverse=True)
+        names = '(?:' + '|'.join(re.escape(alias) for alias in aliases) + ')'
+        if re.search(r'(?<![A-Za-z0-9_])`?' + names + r'`?\s*' + qualifier + action, text):
+            columns.add(name)
+    return all_filters, columns
+
+
 def resolve_request_scope(text, context, previous=None):
     """Return supported request predicates and explicit unresolved reason codes.
 
@@ -133,8 +151,10 @@ def resolve_request_scope(text, context, previous=None):
     text = str(text)
     grounding, unresolved = _grounding(text, context)
     previous = previous or {}
-    inherited = bool(_REFERENCE.search(text) or _PREVIOUS_MONTH.search(text))
-    conditions = [dict(c) for c in previous.get('conditions', [])] if inherited else []
+    reset_all, reset_columns = _reset_filter_columns(text, grounding)
+    inherited = bool(_REFERENCE.search(text) or _PREVIOUS_MONTH.search(text) or reset_all or reset_columns)
+    conditions = [dict(c) for c in previous.get('conditions', [])
+                  if not reset_all and c.get('column') not in reset_columns] if inherited else []
     inherited_measure = [dict(c) for c in previous.get('measure_conditions', [])] if inherited else []
     inherited_ratio = dict(previous.get('ratio', {})) if inherited and previous.get('ratio') else None
     if inherited: unresolved.extend(previous.get('unresolved', []))

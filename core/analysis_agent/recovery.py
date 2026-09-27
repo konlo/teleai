@@ -1511,7 +1511,11 @@ class RecoveryMiddleware(AgentMiddleware):
                                 'source': info.source, 'basis': current.get('join_relationship_basis', 'explicit_request')}
             if name in {'recommend_chart_images', 'render_chart_spec', 'render_count_rate_chart', 'render_histogram', 'prepare_histogram', 'show_chart'} and observation.get('cards'):
                 current['chart'] = True
-                dataset_id = arguments.get('dataset_id') or observation.get('loaded_dataset')
+                # prepare_histogram binds its input raw branch with dataset_id,
+                # but returns a chart over the derived frequency dataset.
+                # Validate the card against that output, not against its parent.
+                dataset_id = (observation.get('loaded_dataset') if name == 'prepare_histogram'
+                              else arguments.get('dataset_id') or observation.get('loaded_dataset'))
                 valid = []
                 for entry in observation['cards']:
                     try: card = self.artifacts[entry['id']]
@@ -1945,6 +1949,9 @@ class RecoveryMiddleware(AgentMiddleware):
         text = rendered if success else remote_failure_message([current['failed'].get('query_databricks', {})], current.get('remote_rejected', False))
         if not success and not remote_block and reason not in {'missing_evidence', 'unresolved_failure'}:
             text = '반복 실행 한도에 도달해 분석을 중단했습니다. 검증된 완료 결과가 없으며 기존 데이터는 보존했습니다.'
+        if not success and not remote_block and reason=='local_continuation_unavailable':
+            text = ('모델 연결 오류 후 보유 데이터로 가능한 작업을 이어갔지만, 남은 분석을 검증하지 못했습니다. '
+                    '기존 데이터와 완료된 결과는 보존했습니다. 모델 연결 복구 또는 추가 정보가 필요합니다.')
         if not success and not remote_block and reason=='discovery_stalled':
             text = ('같은 정보 조회가 반복되어 중단했습니다. 필요한 분석 결과를 검증하지 못했습니다. '
                     '기존 데이터와 완료된 결과는 보존했으며, 부족한 정보나 다른 분석 방법이 필요합니다.')
@@ -2607,7 +2614,8 @@ class RecoveryMiddleware(AgentMiddleware):
                     return {'name':'render_count_rate_chart', 'args':arguments}
         if (self.context and current.get('chart') and not current.get('time_series_frequency')
                 and current.get('kind') in {'bar', 'line', 'scatter', 'boxplot', 'histogram'}
-                and (current.get('kind') != 'histogram' or current.get('current_result_only'))
+                and (current.get('kind') != 'histogram' or current.get('current_result_only')
+                     or current.get('local_continuation'))
                 and not current.get('count_rate_layout')
                 and not current.get('fresh_source_required') and not current.get('artifact_ids')):
             columns = current.get('required_columns', [])
@@ -3090,10 +3098,14 @@ class RecoveryMiddleware(AgentMiddleware):
                 or len(current['sent_calls']) >= self.max_tool_calls
                 or current.get('remote_rejected')
                 or remote_blocked(current)
-                or self._complete(current)):
+                or self._complete(current)
+                or any(count >= 2 for count in current['failed_signatures'].values())):
             return None
         proposed = self._next_local(current, calls)
         if (not proposed or proposed['name'] not in {'local_analysis_sql', 'detect_outliers', 'summarize_groups', 'render_chart_spec'}
+                or (self.context and proposed['name'] not in self.context.allowed_tool_names)
+                or (self.context and proposed.get('args', {}).get('dataset_id')
+                    not in self.context.datasets.metadata)
                 or not self._proposed_scope_valid(proposed, current)):
             return None
         self.diagnostics.emit('checkpoint_local_rescue', request_id=current.get('request_id'),
@@ -3124,6 +3136,12 @@ class RecoveryMiddleware(AgentMiddleware):
             return {**self._finish(current, reason='schema_refresh_unavailable'), 'jump_to':'end'}
         if (active_contracts(current) or current.get('plan')) and self._complete(current):
             return {**self._finish(current), 'jump_to': 'end'}
+        if current.get('local_continuation'):
+            # A provider outage must not fall back into inference or discovery.
+            # All remaining obligations still pass the normal completion gate.
+            local = self.resume_local_call(state)
+            if local: return {**local, 'jump_to':'tools'}
+            return {**self._finish(current, reason='local_continuation_unavailable'), 'jump_to':'end'}
         reason = self._limit_reason(current)
         if reason:
             rescued = self._budget_local_rescue(current, calls)

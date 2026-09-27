@@ -205,3 +205,27 @@ class IntentScopeTests(unittest.TestCase):
 
 if __name__ == '__main__':
     unittest.main()
+
+
+class FilterResetScopeTests(unittest.TestCase):
+    def test_only_explicitly_removed_filter_is_cleared(self):
+        context=IntentScopeTests().context()
+        prior={'conditions':[asdict(Condition('value','lt',60)),asdict(Condition('group_key','eq','X'))]}
+        scope=resolve_request_scope('그중 이전 value 조건은 적용하지 말고 value 평균을 알려줘',context,prior)
+        self.assertEqual(scope['conditions'],[asdict(Condition('group_key','eq','X'))])
+        self.assertEqual(len(prior['conditions']),2)
+        scope=resolve_request_scope('value 필터를 해제해줘. 같은 그룹에서 평균',context,prior)
+        self.assertEqual(scope['conditions'],[asdict(Condition('group_key','eq','X'))])
+
+    def test_global_reset_and_new_predicate(self):
+        context=IntentScopeTests().context()
+        prior={'conditions':[asdict(Condition('value','lt',60)),asdict(Condition('group_key','eq','X'))]}
+        scope=resolve_request_scope('기존 조건을 해제하고 value >= 10인 value 평균',context,prior)
+        self.assertEqual(scope['conditions'],[asdict(Condition('value','ge',10))])
+
+    def test_operation_negation_or_keep_request_does_not_remove_filter(self):
+        context=IntentScopeTests().context()
+        prior={'conditions':[asdict(Condition('value','lt',60))]}
+        for text in ['그중 평균 말고 value 중앙값','value 조건은 해제하지 말고 같은 조건을 유지해줘']:
+            with self.subTest(text=text):
+                self.assertEqual(resolve_request_scope(text,context,prior)['conditions'],prior['conditions'])

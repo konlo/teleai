@@ -3,11 +3,12 @@
 ## Current Status
 - **Last Updated**: 2026-09-27
 - **Status**: In Progress — 범용 자율 분석 agent 정식 출시 NO-GO
-- **Summary**: 같은 성공한 탐색의 무진전 반복을 감지해 완료/미완료 목표별로 재계획하도록 보강했다. 완고한 반복은 모델 10회 대신 4회·실제 탐색 2회에 종료하며, 유효한 대안을 선택하면 계산/차트까지 완료한다. 앱 358·migration 133·reference 217 PASS. 실모델 종합은 7/8여정 PASS, 복합 요청 1건은 API timeout으로 미완료. [최신 검증](docs/evaluation/2026-09-27_progress_guard.md).
+- **Summary**: 모델 일시 실패 후 검증된 로컬 작업 자동 continuation을 구현하고, 실모델에서 발견한 차트 입력/출력 lineage 오류 및 실제 웹의 명시적 필터 해제 무시를 함께 수정했다. 실모델+주입장애 복구 PASS, 실제 웹 원본 표본 평균 40.931/PNG/원본 보존 PASS(0.383초). 앱 369·migration 136·reference 217 PASS. 최초 실패를 보존했다. [최신 검증](docs/evaluation/2026-09-27_local_continuation.md).
 - **Next Session Focus**: 복합 부정/NULL·암묵적 다중 출처·역할별 조인·CTE/HAVING 계획, 103 oracle 및 judge calibration, 승인형 대규모 신규 적재·RSS·격리 코드 실행. 별도 서버 배포 제외.
 - **Current qualification**: 이번 실모델 7/8여정 결과와 모델 timeout 미완료를 함께 유지한다. 이전 고정 200문항 97 PASS/103 UNGRADED 및 Spider 0/5는 재평가하지 않았다. 범용 GO/동등 성능은 미입증이다. 신규 warehouse SQL 0회, draft PR #68 미병합.
 
 ## Next Action Items
+- [x] 일시적 모델 실패 후 로컬 자동 continuation, 복구 중 모델/원격 재실행 차단, checkpoint 보존 및 차트 입력/출력 ID 검증을 구현했다. 10개 계약 및 실제 모델+장애 주입 재검증 PASS.
 - [x] 무진전 탐색 반복 감지, 완료/미완료 목표 분리, 동일 추가 조회 차단, 변경된 schema/coverage의 재확인과 재시작 상태 보존을 구현·검증했다. 모델 API 지연에 따른 미완료 운영 검증은 남는다.
 - [x] 실패 원인별 진단·등록된 대체 도구 안내, 동일 실패 재실행 방지, 요청별 복구 계획/재시작 보존, 실제 로컬 timeout 복구와 화면 진행 상태를 구현했다. 조건을 제거하는 대체 SQL은 차단한다.
 - [x] fresh 선언 FK·복합 키 탐색, 명시적 JOIN 출처/조건 검증, 승인된 조인 통계 결과의 완료 계약을 구현했다. 실제 UC metadata 실행과 복잡한 SQL 자동 계획은 후속 검증 대상이다.
@@ -1853,3 +1854,21 @@ Task definitions and acceptance conditions: docs/agent_remaining_tasks_2026-09-1
 - **Key Accomplishments**: 오늘 보강한 모델 추론 복구, 실패 도구 대체 계획에 이어 성공한 탐색의 무진전 반복까지 구분한다. 완료 근거를 유지하며 남은 목표만 재계획하고 실제 metadata 변화는 재확인할 수 있다.
 - **Major Issues**: 실모델 복합 요청에서 세 번의 API timeout으로 미완료가 발생했다. 같은 요청 재확인은 성공했으나 65.091초로 지연이 남았다. 실패를 성공률에서 제거하지 않았다.
 - **Next Action Items**: 복잡한 다단계 계획, 독립 평가/103 oracle, 승인형 대규모 원격 적재, 격리 실행 및 공급자 지연 대응을 계속한다. 일반 GO는 보류한다.
+
+## [2026-09-27 18:32:17 KST] [Agent: Codex] User Request: 실패를 agent 공통 기능 보강으로 해결
+- **Action**: 직전 복합 요청의 모델 timeout 미완료를 재현하고, 이미 검증된 결과를 보존한 채 남은 작업을 안전한 로컬 도구로 자동 수행하는 공통 복구를 구현한다. 프로젝트 관리/기록 및 출시 기준을 이어 적용하고 원격 SQL 승인 계약은 유지한다.
+
+- **Action** [Agent: Codex]: 모델 노드 실패를 분류하고 동일 실행 안에서 검증된 로컬 도구만 이어가도록 구현했다. 완료 근거·필터·원본·예산·원격 승인 상태를 보존하며 실패 원인을 기록한다.
+- **Finding**: 실모델이 prepare_histogram에 원본 dataset_id를 명시하면 차트의 파생 dataset_id와 잘못 비교하여 완료를 거절하는 공통 lineage 오류를 발견했다. 출력 loaded_dataset을 검증하도록 수정하고 실제 호출을 회귀 테스트에 추가했다.
+- **Outcome**: 새로운 10개 계약 PASS. application 368/368, migration 133/133, reference+Level3 217/217, compileall/diff PASS. 실모델 장애 주입은 최초 2회 FAIL 기록 후 수정 재검증 PASS(13.913초). 원격 SQL 미실행. 범용 출시 NO-GO 유지.
+- **Artifact Update**: docs/evaluation/2026-09-27_local_continuation.md 및 최초/진단/수정후 JSON 3개, scripts/evaluate_local_continuation.py, tests/test_local_continuation.py.
+- **Runtime**: 8502 Streamlit을 PID 87306으로 재시작하고 health=ok 확인. 기존 영속 데이터/대화는 유지했다.
+- **Web smoke**: 재시작 뒤 기존 대화/분석 결과가 표시되고 Databricks 모델 선택을 복원했다. 브라우저에서 이미 보유한 10,000행 원본의 조건 없는 평균+히스토그램을 실행하여 실제 화면 결과를 확인 중이다.
+
+- **Additional finding / fix**: 실제 웹의 “이전 age 조건은 적용하지 말고”가 이전 필터를 상속해 scope mismatch로 중단했다. schema 기반 명시적 필터 해제를 공통 해석 단계에 추가했다. 지정 컬럼 외 조건, 연산만 바꾸는 말고, 해제하지 말라는 부정 지시는 보존한다.
+- **Final validation**: application 369/369, migration 136/136, reference+Level3 217/217 PASS. 신규 continuation 11건 + scope 3건. 동일 웹 요청은 평균 40.931/PNG 1개/0.383초/model 0회, 원본 digest·승인 completed 1건 유지. PID 87703 health=ok, Databricks 선택 복원.
+
+### Daily Wrap-up — 2026-09-27 실패를 공통 agent 기능으로 보강
+- 모델 장애 시 사용자 재개 없이 검증된 남은 로컬 목표를 완료하는 경로, checkpoint 보존, 근거 기반 중단을 추가했다.
+- 실모델/실제 웹 검증 중 드러난 차트 lineage 비교 오류와 필터 해제 해석 오류를 수정했다. 최초 실패와 수정 후 결과를 모두 보존했다.
+- Next: 미검증 고급 계획·복합 조건·독립 oracle/judge·대규모 적재/RSS·격리 실행은 남아 있으며 범용 NO-GO 유지. 별도 서버 배포는 제외한다.

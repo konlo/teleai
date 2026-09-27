@@ -1,0 +1,109 @@
+{
+  "generated_at": "2026-09-27T09:42:55.414573+00:00",
+  "provider": "databricks",
+  "mode": "live model initial decisions + injected APITimeoutError + production local continuation",
+  "limitations": [
+    "Synthetic four-row local fixture; no warehouse SQL executor connected.",
+    "Outage is injected, not an observed Databricks outage. This is not an official benchmark score.",
+    "Deterministic planner is disabled before outage to exercise model decisions; restored only for continuation."
+  ],
+  "result": {
+    "status": "PASS",
+    "prompt": "먼저 reading 히스토그램을 만들고, 이어서 reading 평균도 계산해줘.",
+    "outcome": {
+      "status": "answered",
+      "text": "reading 분포 이미지를 생성했습니다.\n분석 범위: 빈도 합계 4 · complete · SELECT \"reading\", COUNT(*) AS \"__frequency\" FROM data WHERE NOT \"reading\" IS NULL GROUP BY \"reading\"\n\n보유 데이터로 계산한 결과입니다. 출처: unfamiliar.observations\n분석 범위: 요청 조건에 포함된 보유 데이터 전체\n\n평균: 9.0",
+      "elapsed_seconds": 13.913
+    },
+    "expected_mean": 9.0,
+    "actual_mean": 9.0,
+    "chart_count": 1,
+    "valid_png": true,
+    "raw_unchanged": true,
+    "tracker": {
+      "live_calls": 1,
+      "injected_timeouts": 3
+    },
+    "model_calls": 4,
+    "model_recovery": {
+      "failures": 3,
+      "failed_seconds": 3.010999834164977,
+      "retries": 2,
+      "next_allowed_at": 1790502175.376687,
+      "aux_calls": 0,
+      "aux_seconds": 0.0
+    },
+    "recovery_events": [
+      {
+        "time": "2026-09-27T09:42:55.394603+00:00",
+        "event": "automatic_local_continuation",
+        "run_id": "fa6fb1560d564a74ac04b288cab2c710",
+        "error_id": "ffc8e27ceb7b",
+        "request_id": "98a0554e-b12b-43b3-b76c-9df14a45f9ca"
+      }
+    ],
+    "executed_tools": [
+      "prepare_histogram",
+      "local_analysis_sql"
+    ],
+    "tool_calls": [
+      {
+        "name": "prepare_histogram",
+        "args": {
+          "source": "unfamiliar.observations",
+          "column": "reading",
+          "dataset_id": "21604928-be93-4fb7-adf6-465f45bb3443"
+        },
+        "id": "call_e13953f1-02c6-4c70-ab7d-ed783571bab2",
+        "type": "tool_call"
+      },
+      {
+        "name": "local_analysis_sql",
+        "args": {
+          "dataset_id": "21604928-be93-4fb7-adf6-465f45bb3443",
+          "query": "SELECT AVG(\"reading\") AS average FROM data",
+          "requested_conditions": []
+        },
+        "id": "b0517d78-e434-4c3d-a426-941cc96633b5",
+        "type": "tool_call"
+      }
+    ],
+    "recovery_state": {
+      "scope": {
+        "conditions": [],
+        "any_conditions": [],
+        "join_edges": [],
+        "measure_conditions": [],
+        "ratio": null,
+        "unresolved": [],
+        "columns": [
+          "reading"
+        ]
+      },
+      "scope_error": null,
+      "required_columns": [
+        "reading"
+      ],
+      "operations": [
+        "AVG"
+      ],
+      "kind": "histogram",
+      "current_result_only": false,
+      "failed": {},
+      "histogram_plan": null
+    },
+    "progress": [
+      "요청과 보유 데이터를 확인하고 있습니다.",
+      "필요한 분석 도구를 실행하고 있습니다.",
+      "필요한 분석 도구를 실행하고 있습니다.",
+      "생성된 차트의 요청 조건을 검증하고 있습니다.",
+      "생성된 차트의 요청 조건을 검증하고 있습니다.",
+      "모델 응답이 일시적으로 지연되어 요청을 보존한 채 다시 시도하고 있습니다.",
+      "모델 응답이 일시적으로 지연되어 요청을 보존한 채 다시 시도하고 있습니다.",
+      "모델 연결이 지연되어 보유 데이터로 남은 작업을 이어가고 있습니다. 완료된 결과는 유지합니다.",
+      "필요한 분석 도구를 실행하고 있습니다.",
+      "계산 결과의 기간·조건과 정확성을 검증하고 있습니다."
+    ],
+    "approval_requests": 0
+  }
+}
