@@ -35,3 +35,7 @@
 명시적인 필터 해제 명령을 runtime schema의 컬럼/alias에 연결하도록 수정했다. 지정한 컬럼의 조건만 제거하고 다른 조건은 유지한다. 전역 해제와 새 조건, “평균 말고 중앙값”의 필터 유지, “해제하지 말고 유지”의 부정 지시를 회귀 검사한다. 임의의 복잡한 자연어 해제가 모두 지원된다는 의미는 아니다. 세 개의 scope 계약과 하나의 실제 graph 후속 여정을 추가했다.
 
 동일 웹 요청 재실행: answered, 평균 40.931(독립 Parquet 계산 일치), 실제 PNG 1개/유효값 10,000개/20 bins, 0.383초, 모델 호출 0회. 원본 SHA256 불변, 승인 장부 completed 1건 유지, 신규 SQL 0회. 최초 실패도 증거에 포함했다. PID 87703의 loopback 앱 health=ok, Databricks 모델 선택과 기존 대화를 복원했다.
+
+## 원격 검증
+
+코드 commit `3dd30a5892309e7d6c290089c3e428d9561b5b63`을 push했다. [GitHub Actions 36310768258](https://github.com/konlo/teleai/actions/runs/36310768258)이 2분 46초에 migration/application/agentic/reference/compile 전 단계를 통과했다. Draft PR #68은 갱신했으며 병합하지 않았다.

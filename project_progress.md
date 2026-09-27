@@ -1872,3 +1872,5 @@ Task definitions and acceptance conditions: docs/agent_remaining_tasks_2026-09-1
 - 모델 장애 시 사용자 재개 없이 검증된 남은 로컬 목표를 완료하는 경로, checkpoint 보존, 근거 기반 중단을 추가했다.
 - 실모델/실제 웹 검증 중 드러난 차트 lineage 비교 오류와 필터 해제 해석 오류를 수정했다. 최초 실패와 수정 후 결과를 모두 보존했다.
 - Next: 미검증 고급 계획·복합 조건·독립 oracle/judge·대규모 적재/RSS·격리 실행은 남아 있으며 범용 NO-GO 유지. 별도 서버 배포는 제외한다.
+
+- **Remote verification**: code commit `3dd30a5` push 완료. GitHub Actions `36310768258`의 전체 gate가 2분 46초에 PASS했다. PR #68 설명·증거를 갱신했고 draft/미병합 상태다.
