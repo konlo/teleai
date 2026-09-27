@@ -104,10 +104,12 @@ class GraphAnalysisRuntime:
         model_recovery = ModelRecoveryMiddleware(self.model_attempts,self.diagnostics,self.policy,
             max_calls=recovery.max_model_calls,
             on_progress=lambda text:self.on_progress(text) if self.on_progress else None)
+        self.model_recovery = model_recovery
         self.context.semantic_resolver.model_recovery = model_recovery
         middleware=[QueuedRequestMiddleware(),RecoveryPlanningMiddleware(recovery),CompactDiscoveryMiddleware(),
                     FocusedScalarToolsMiddleware(self.context,self.diagnostics),
-                    memory_middleware(model,summary_trigger_tokens,summary_keep_messages,diagnostics=self.diagnostics),
+                    memory_middleware(model,summary_trigger_tokens,summary_keep_messages,diagnostics=self.diagnostics,
+                                      model_recovery=model_recovery),
                     ModelTimingMiddleware(self.diagnostics),prompt,
                     FocusedRemoteJoinToolsMiddleware(self.context,self.diagnostics),
                     model_recovery]
@@ -344,15 +346,11 @@ class GraphAnalysisRuntime:
                 reject_words={'취소','조회 취소','취소해줘','아니','아니요','재조회하지 마'}
                 if len(pending)==1 and normalized in approve_words|reject_words:
                     return self._respond_locked(pending[0]['id'],normalized in approve_words)
-                # Narrow, read-only interpretation while paused; no tools or approval API.
-                decision=self.model.invoke([
-                    SystemMessage(content='사용자 메시지가 오직 현재 승인 상태/이유를 묻는지 판정하세요. 변경, 실행, 취소, 모호함은 change입니다. JSON만 반환: {"action":"status"} 또는 {"action":"change"}.'),
-                    HumanMessage(content=text)])
-                try:status_only=json.loads(decision.content).get('action')=='status'
-                except (ValueError,TypeError):status_only=False
-                if status_only:
+                from core.analysis_agent.approval_intent import classify_pending_message
+                interpreted = classify_pending_message(self, text, pending)
+                if interpreted['action'] != 'change':
                     return {'status':'awaiting_approval','requests':pending,
-                            'text':'아래 조회의 승인을 기다리고 있습니다. 아직 실행하지 않았습니다.'}
+                            **{key:value for key,value in interpreted.items() if key != 'action'}}
                 for item in pending:self.ledger.invalidate(item['id'])
                 # Finish old HITL calls before appending a real new user turn.
                 # Updating messages directly here would put the old rejection

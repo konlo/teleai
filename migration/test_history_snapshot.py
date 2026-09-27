@@ -7,6 +7,7 @@ from pathlib import Path
 from core.analysis_agent.assets import AssetDB
 from core.analysis_agent.runtime import GraphAnalysisRuntime
 from migration.test_persistent_runtime import QuietModel
+from migration.test_approval_rollout import ChangeModel
 from migration.test_recovery_journey import SOURCE
 from scripts.check_cached_histogram import copy_runtime_snapshot
 
@@ -25,7 +26,7 @@ class HistorySnapshotTests(unittest.TestCase):
             target.close()
             copied = copy_runtime_snapshot(original.db.directory, directory)
             self.assertEqual(len(copied), 3)
-            clone = GraphAnalysisRuntime(clone_root, 'validation', 'cache', QuietModel(),
+            clone = GraphAnalysisRuntime(clone_root, 'validation', 'cache', ChangeModel(),
                 connection_identity='test', remote_factory=factory)
             self.assertEqual(clone.inspect()['message_count'], initial_count)
             self.assertEqual(clone.inspect()['state'], 'awaiting_approval')

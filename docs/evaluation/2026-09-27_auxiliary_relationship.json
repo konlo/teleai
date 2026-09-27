@@ -1,0 +1,163 @@
+{
+  "status": "PASS",
+  "provider": "databricks",
+  "mode": "real model with synthetic public SQLite and explicit local-test approval",
+  "prompt": "Count records with classification='accepted' after join readings and codes. Find the table relationship in the schema first.",
+  "agent_status": "answered",
+  "error_type": null,
+  "stop_reason": null,
+  "expected": 3,
+  "actual": 3.0,
+  "model_calls": 4,
+  "executions_before_approval": 0,
+  "public_sqlite_executions": 1,
+  "databricks_sql_executions": 0,
+  "queries": [
+    "SELECT COUNT(*) AS count FROM readings r JOIN codes c ON r.code_ref = c.code WHERE c.classification = 'accepted'"
+  ],
+  "raw_preserved": true,
+  "final_output": "readings | codes를 승인된 SQL에서 조인하여 요청한 통계를 계산했습니다. 결과는 해당 조인 조건으로 결합된 행 기준입니다. 키의 실제 유일성·미일치 행 수는 별도로 측정하지 않았습니다.\n\n보유 데이터로 계산한 결과입니다. 출처: readings | codes\n분석 범위: 요청 조건에 포함된 보유 데이터 전체\n\n적용 조건: classification = accepted\n\n건수: 3",
+  "tools": [
+    "inspect_table_relationships",
+    "inspect_table_context",
+    "query_databricks"
+  ],
+  "tool_observations": [
+    {
+      "tool": "inspect_table_relationships",
+      "content": "{\"status\": \"ready\", \"table\": \"readings\", \"foreign_keys\": [{\"name\": \"0\", \"columns\": [\"code_ref\"], \"target_table\": \"codes\", \"target_columns\": [\"code\"]}], \"observed_at\": \"2026-09-27T05:41:01.346593+00:00\", \"version\": \"d15aedb893b05a8b36d470c07ad0321e6593630715a8f178a805bd8a5a6f731c\", \"scope\": \"DB에 선언된 관계입니다. 실제 행의 유일성·누락·업무 역할을 보증하지 않습니다.\", \"message\": \"여러 키가 같은 테이블을 가리키면 역할을 확인하세요. 새 SQL은 별도 승인이 필요합니다.\", \"next_steps\": [\"사용자가 지정한 테이블·조건의 실제 컬럼을 inspect_table_context에서 확인하세요.\", \"양쪽 raw dataset이 이미 로딩되어 있으면 보유 dataset ID로 로컬 조인을 검토하세요.\", \"일부 테이블이 로딩되지 않은 통계 요청은 연결된 SQL 엔진에서 JOIN/집계 SELECT를 query_databricks로 승인 요청할 수 있습니다. 전체 raw 로딩은 필수가 아닙니다.\", \"명시된 컬럼·리터럴 조건과 최신 스키마로 의미가 확정됐으면 추가 설명이나 catalog 탐색 없이 계산 계획으로 진행하세요.\"], \"evidence_ids\": [\"d15aedb893b05a8b36d470c07ad0321e6593630715a8f178a805bd8a5a6f731c\"], \"error_code\": null, \"retryable\": false, \"user_action\": \"\"}"
+    },
+    {
+      "tool": "inspect_table_context",
+      "content": "{\"status\": \"ready\", \"table_context\": {\"table\": \"codes\", \"training_status\": \"runtime_schema\", \"observed_at\": \"2026-09-27T05:41:01.346593+00:00\", \"columns\": [{\"name\": \"code\", \"dtype\": \"INTEGER\"}, {\"name\": \"classification\", \"dtype\": \"TEXT\"}], \"relationship_authority\": \"database_catalog\", \"foreign_keys\": [], \"source\": \"read-only public Spider2 SQLite schema and bounded type examples\", \"freshness\": \"fresh\", \"schema_fingerprint\": \"5433e51230ab223516bcb1bd36171e4e77e69117d107011565e31518e4706218\"}, \"schema_changed\": false, \"authority\": \"saved_snapshot\", \"scope\": \"저장된 스키마 스냅샷입니다. observed_at과 freshness를 함께 확인해야 합니다.\", \"evidence_ids\": [], \"error_code\": null, \"retryable\": false, \"user_action\": \"\"}"
+    },
+    {
+      "tool": "query_databricks",
+      "content": "{\"status\": \"ready\", \"dataset\": {\"id\": \"a31c1d2c-9d10-4c24-8ad8-9f4e7d60ac32\", \"source\": \"readings | codes\", \"columns\": [\"count\"], \"rows\": 1, \"coverage\": \"complete\", \"conditions\": [], \"predicate_known\": true, \"grain\": \"aggregate\", \"aggregation\": \"\", \"snapshot\": \"2026-09-27T05:41:08.654012+00:00\", \"query\": \"SELECT COUNT(*) AS count FROM readings r JOIN codes c ON r.code_ref = c.code WHERE c.classification = 'accepted'\", \"parent_id\": \"\", \"parent_ids\": [], \"role\": \"aggregate\", \"root_id\": \"\"}, \"evidence_ids\": [\"a31c1d2c-9d10-4c24-8ad8-9f4e7d60ac32\"], \"error_code\": null, \"retryable\": false, \"user_action\": \"\", \"scope\": \"도구가 반환한 구조화 결과 범위입니다.\"}"
+    }
+  ],
+  "model_actions": [
+    {
+      "calls": [
+        {
+          "name": "inspect_table_relationships",
+          "args": {
+            "table": "readings"
+          },
+          "id": "call_21419144-33ac-49e1-ba91-ad65c0d2477b",
+          "type": "tool_call"
+        }
+      ],
+      "text": ""
+    },
+    {
+      "calls": [
+        {
+          "name": "inspect_table_context",
+          "args": {
+            "table": "codes"
+          },
+          "id": "call_d3645023-2871-4b40-9097-f568d40bd1e7",
+          "type": "tool_call"
+        }
+      ],
+      "text": ""
+    },
+    {
+      "calls": [
+        {
+          "name": "query_databricks",
+          "args": {
+            "source": "readings",
+            "query": "SELECT COUNT(*) AS count FROM readings r JOIN codes c ON r.code_ref = c.code WHERE c.classification = 'accepted'",
+            "reason": "readings와 codes 테이블을 code_ref와 code로 조인한 후 classification='accepted'인 레코드 수를 집계합니다. 테이블 관계는 외래 키로 선언되었고, classification 컬럼은 codes 테이블에 존재합니다."
+          },
+          "id": "call_33900770-a795-4fda-9e13-8c388567c711",
+          "type": "tool_call"
+        }
+      ],
+      "text": ""
+    },
+    {
+      "calls": [
+        {
+          "name": "query_databricks",
+          "args": {
+            "source": "readings | codes",
+            "query": "SELECT COUNT(*) AS count FROM readings r JOIN codes c ON r.code_ref = c.code WHERE c.classification = 'accepted'",
+            "reason": "readings와 codes 테이블을 code_ref = code로 조인하고, classification이 'accepted'인 레코드 수를 집계합니다. 테이블 관계는 외래 키로 선언되었으며, classification 컬럼은 codes 테이블에 존재합니다."
+          },
+          "id": "call_1e0119bd-961e-4aac-9d4c-cd49bcdb861f",
+          "type": "tool_call"
+        }
+      ],
+      "text": ""
+    },
+    {
+      "calls": [],
+      "text": "readings | codes를 승인된 SQL에서 조인하여 요청한 통계를 계산했습니다. 결과는 해당 조인 조건으로 결합된 행 기준입니다. 키의 실제 유일성·미일치 행 수는 별도로 측정하지 않았습니다.\n\n보유 데이터로 계산한 결과입니다. 출처: readings | codes\n분석 범위: 요청 조건에 포함된 보유 데이터 전체\n\n적용 조건: classification = accepted\n\n건수: 3"
+    }
+  ],
+  "scope": {
+    "conditions": [
+      {
+        "column": "classification",
+        "op": "eq",
+        "value": "accepted"
+      }
+    ],
+    "any_conditions": [],
+    "join_edges": [],
+    "measure_conditions": [],
+    "ratio": null,
+    "unresolved": [],
+    "columns": [
+      "classification"
+    ]
+  },
+  "intent": {
+    "join": true,
+    "calculation": true,
+    "chart": false,
+    "data_load": false,
+    "required_sources": [
+      "readings",
+      "codes"
+    ],
+    "operations": [
+      "COUNT"
+    ]
+  },
+  "focus_events": [
+    {
+      "time": "2026-09-27T05:41:01.664503+00:00",
+      "event": "model_tools_focused",
+      "run_id": "dc1348496a82443f9f9867b58023a707",
+      "mode": "remote_join",
+      "tool_count": 7
+    },
+    {
+      "time": "2026-09-27T05:41:03.850149+00:00",
+      "event": "model_tools_focused",
+      "run_id": "dc1348496a82443f9f9867b58023a707",
+      "mode": "remote_join",
+      "tool_count": 7
+    },
+    {
+      "time": "2026-09-27T05:41:04.560744+00:00",
+      "event": "model_tools_focused",
+      "run_id": "dc1348496a82443f9f9867b58023a707",
+      "mode": "remote_join",
+      "tool_count": 7
+    },
+    {
+      "time": "2026-09-27T05:41:06.611026+00:00",
+      "event": "model_tools_focused",
+      "run_id": "dc1348496a82443f9f9867b58023a707",
+      "mode": "remote_join",
+      "tool_count": 7
+    }
+  ],
+  "errors": [],
+  "elapsed_seconds": 7.32
+}

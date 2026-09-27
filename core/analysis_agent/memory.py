@@ -1,6 +1,7 @@
 """Compact model context while preserving the full user-visible transcript."""
 import json
 import time
+from contextvars import ContextVar
 from typing import NotRequired
 from langchain.agents.middleware import SummarizationMiddleware, AgentMiddleware, AgentState
 from langchain_core.messages import ToolMessage
@@ -49,24 +50,47 @@ class QueuedRequestMiddleware(AgentMiddleware):
 
 
 class ObservedSummarizationMiddleware(SummarizationMiddleware):
-    def __init__(self, *args, diagnostics=None, max_model_calls=10, **kwargs):
+    def __init__(self, *args, diagnostics=None, max_model_calls=10, model_recovery=None, **kwargs):
         super().__init__(*args, **kwargs)
         self.diagnostics = diagnostics
         self.max_model_calls = max_model_calls
+        self.model_recovery = model_recovery
+        self._summary_current = ContextVar('summary_recovery', default=None)
+        # LangChain installs an independent with_retry() here. Disable it:
+        # only the shared ledger may retry and classify inference failures.
+        self._summary_model = self.model
+
+    def _create_summary(self, messages_to_summarize):
+        parent = super()._create_summary
+        current = self._summary_current.get()
+        if self.model_recovery is None or not current:
+            return parent(messages_to_summarize)
+        return self.model_recovery.invoke(current, lambda: parent(messages_to_summarize), reserve_calls=1)
 
     def before_model(self, state, runtime):
-        recovery = state.get('recovery')
+        original = state.get('recovery')
+        recovery = dict(original) if original is not None else None
+        if recovery is not None and self.model_recovery:
+            recorded = self.model_recovery.ledger.get(recovery.get('request_id', ''))
+            resumed_failure = recorded['failures'] > recovery.get('accounted_model_failures', 0)
+            self.model_recovery.ledger.sync(recovery)
+            if resumed_failure:
+                recovery['model_started_at'] = time.time()
         # Reserve the remaining call for analysis. Summary generation uses the
         # same model and must not escape the persisted per-turn call budget.
         if recovery and recovery.get('model_calls', 0) >= self.max_model_calls - 1:
-            return None
+            return {'recovery':recovery} if recovery != original else None
         started = time.monotonic()
-        if self.diagnostics is None:
-            result = super().before_model(state, runtime)
-        else:
-            with self.diagnostics.span('summarization', message_count=len(state['messages'])) as details:
+        token = self._summary_current.set(recovery)
+        try:
+            if self.diagnostics is None:
                 result = super().before_model(state, runtime)
-                details['summarized'] = bool(result)
+            else:
+                with self.diagnostics.span('summarization', message_count=len(state['messages'])) as details:
+                    result = super().before_model(state, runtime)
+                    details['summarized'] = bool(result)
+        finally:
+            self._summary_current.reset(token)
         if result and recovery is not None:
             updated = dict(recovery)
             updated['model_calls'] = updated.get('model_calls', 0) + 1
@@ -76,6 +100,8 @@ class ObservedSummarizationMiddleware(SummarizationMiddleware):
             if not updated.get('model_started_at'):
                 updated['model_seconds'] = updated.get('model_seconds', 0) + time.monotonic() - started
             result = {**result, 'recovery': updated}
+        elif recovery != original:
+            return {'recovery':recovery}
         return result
 
 
@@ -90,7 +116,7 @@ class ModelTimingMiddleware(AgentMiddleware):
             return response
 
 
-def memory_middleware(model,trigger_tokens=6000,keep_messages=8,diagnostics=None):
+def memory_middleware(model,trigger_tokens=6000,keep_messages=8,diagnostics=None,model_recovery=None):
     # Summarization copies established facts; it does not plan or execute tools.
     # Keep reasoning on for the analysis model while avoiding a second reasoning
     # pass on the full history. The original transcript remains persisted.
@@ -100,7 +126,8 @@ def memory_middleware(model,trigger_tokens=6000,keep_messages=8,diagnostics=None
     return ObservedSummarizationMiddleware(summary_model,trigger=('tokens',trigger_tokens),
         keep=('messages',keep_messages),
         token_counter=lambda messages:count_tokens_approximately(messages,chars_per_token=2),
-        summary_prompt=SUMMARY_PROMPT,trim_tokens_to_summarize=None,diagnostics=diagnostics)
+        summary_prompt=SUMMARY_PROMPT,trim_tokens_to_summarize=None,diagnostics=diagnostics,
+        model_recovery=model_recovery)
 
 
 class Transcript:

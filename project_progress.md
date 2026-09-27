@@ -3,13 +3,13 @@
 ## Current Status
 - **Last Updated**: 2026-09-27
 - **Status**: In Progress — 범용 자율 분석 agent 정식 출시 NO-GO
-- **Summary**: 미확정 수치 연산의 독립 의미 해석→실제 계산→범위 검증을 연결하고, 후속 연산 변경·제외 조건·영속 모델 재시도를 보강했다. 고정 자연어 평가 7/10→10/10(12턴 중 실모델 사용 3턴), 앱 335·migration 133·reference 217 PASS. 실제 웹 후속 중위수 62.0(3.693초), 제외 조건 평균 40.11816(0.326초), 원본·선택 ID·승인 1건 보존. [최신 검증](docs/evaluation/2026-09-27_language_and_recovery.md).
-- **Next Session Focus**: 복합 부정/NULL·암묵적 다중 출처·역할별 조인·CTE/HAVING 계획, 요약/승인 분류 모델 복구 통합, 103 oracle 및 judge calibration, 승인형 대규모 신규 적재·RSS·격리 코드 실행. 별도 서버 배포 제외.
-- **Current qualification**: 작은 자연어 세트의 10/10은 Codex/Claude Code 동등성이나 전체 GO 증거가 아니다. 이전 고정 200문항 97 PASS/103 UNGRADED 및 Spider 0/5는 이번에 재측정하지 않았다. 신규 Databricks warehouse SQL 0회, draft PR #68 미병합.
+- **Summary**: 승인 판독 실패가 기존 승인을 취소하는 문제와 대화 요약의 숨은 재시도를 수정했다. 모든 해당 추론 경로에 공통 영속 예산·cooldown을 적용했다. 앱 346·migration 133·reference 217 PASS. 실제 모델 보조 경로 5개 PASS, 관계 탐색 여정 정답 3·7.320초, 실제 웹 후속 중위수 39.0·3.619초·원본/승인 보존. [최신 검증](docs/evaluation/2026-09-27_auxiliary_recovery.md).
+- **Next Session Focus**: 복합 부정/NULL·암묵적 다중 출처·역할별 조인·CTE/HAVING 계획, 103 oracle 및 judge calibration, 승인형 대규모 신규 적재·RSS·격리 코드 실행. 별도 서버 배포 제외.
+- **Current qualification**: 이번 5개 검사는 보조 모델 경로의 통합 검증이며 Codex/Claude Code 동등성이나 전체 GO 증거가 아니다. 이전 고정 200문항 97 PASS/103 UNGRADED 및 Spider 0/5는 재측정하지 않았다. 신규 Databricks warehouse SQL 0회, draft PR #68 미병합.
 
 ## Next Action Items
 - [x] fresh 선언 FK·복합 키 탐색, 명시적 JOIN 출처/조건 검증, 승인된 조인 통계 결과의 완료 계약을 구현했다. 실제 UC metadata 실행과 복잡한 SQL 자동 계획은 후속 검증 대상이다.
-- [x] 주 분석·의미 해석의 모델 실패에 한정한 영속 재시도/cooldown/예산을 구현하고, 승인 SQL 1회 실행과 중단 후 재개를 장애 주입으로 검증했다. 요약/승인 분류 및 장기 outage 통합 검증은 남는다.
+- [x] 주 분석·의미 해석의 모델 실패에 한정한 영속 재시도/cooldown/예산을 구현하고, 승인 SQL 1회 실행과 중단 후 재개를 장애 주입으로 검증했다. 요약/승인 분류도 공통 장부에 통합했고 재시작·예산·승인 보존을 검증했다. 실제 공급자 장기 outage 검증은 남는다.
 - [x] 미확정 수치 연산의 독립 해석과 고정 조건을 연결하고, 실제 웹의 후속 연산 변경 및 단일 제외 조건을 검증했다.
 - [ ] 복합 부정·NULL 포함 범위와 고급 다단계 계획의 독립 정답 평가를 확대한다.
 - [x] 사용자의 `LIMIT 10`은 Databricks 화면에서 직접 실행한 것으로 확인했다. 챗봇 승인·저장 검증과 구분했다. 이후 별도의 제품 승인형 `LIMIT 10000` 조회를 1회 완료했다.
@@ -1803,3 +1803,17 @@ Task definitions and acceptance conditions: docs/agent_remaining_tasks_2026-09-1
 - **Next Action Items**: 위 Current Status 및 최신 검증 문서의 4개 GO 조건을 따른다.
 
 - **Remote Gate**: 코드·평가 commit `4fabe1ca22675dc6c93336bad51dfb7eba56f6e8` push 완료. GitHub Actions `36284183243` 전체 성공, draft PR #68 갱신·미병합. 최종 코드 앱 PID 64106, health `ok`, 실제 화면 보존·Databricks 모델 선택 확인.
+
+## [2026-09-27 14:30:07 KST] [Agent: Codex] User Request: 나머지 진행
+- **Action**: 남은 모델 호출 경로(대화 요약·승인 상태 분류)의 실패 복구·예산·승인 보존을 우선 구현하고 실제 graph 회귀로 검증한다. 신규 warehouse 조회 없이 진행한다.
+
+## [2026-09-27 14:45 KST] [Agent: Codex] 보조 추론 복구 완료
+- **Action**: 승인 상태 판독의 오류/모호함을 요청 변경과 분리하고 캐시·영속 호출/시간 예산을 적용했다. 요약의 프레임워크 독립 재시도를 제거해 공통 복구를 적용하고 마지막 분석 호출을 보존했다. 기존 장부 upgrade가 이전 실패 기록을 유지한다.
+- **Prompt decision**: 상태/이유 질문이라는 좁은 규칙을 승인 절차의 정책·필요성 질문까지 명시하는 규칙으로 대체했다. 실행/취소 권한은 분류기가 가지지 않는다. 최초 실제 모델 4/5 두 실행의 실패도 보존했다.
+- **Validation**: 최종 application 346, migration 133, reference/Level3 217 PASS, 새 핵심 회귀 11개. 실제 모델 보조 경로 5/5 PASS와 고정 합성 관계 탐색 여정 PASS(정답 3·모델 4회·7.320초). 실제 웹 중위수 39.0은 age < 60 후속 조건과 독립 Parquet 정답에 일치(3.619초·모델 2회). raw SHA256·active ID·completed 승인 1건 불변.
+- **Artifacts**: docs/evaluation/2026-09-27_auxiliary_recovery.md와 초기 실패/재확인/최종/관계/웹 JSON. 운영 metadata·대규모 신규 적재·103 oracle·복합 SQL·격리 실행은 남는다. 일반 GO 보류.
+
+### Daily Wrap-up — 2026-09-27 보조 추론 복구
+- **Key Accomplishments**: 승인/대화 보존과 전 추론 경로의 공통 복구 예산을 연결했고 실제 모델·웹·장애 주입 검증을 마쳤다.
+- **Major Issues**: 승인 이유 질문을 불명확 발화로 처리하는 실모델 실패와 옛 오류 응답에 의존한 migration fixture 2개를 원인별로 수정했다. 기존 승인/복제 격리 assertion은 유지했다.
+- **Next Action Items**: 남은 GO 조건은 최신 검증 문서의 4개 묶음이며 이번 보조 경로 완료를 범용 agent 완성으로 계산하지 않는다.

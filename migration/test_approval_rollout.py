@@ -21,6 +21,12 @@ class StatusModel(QuietModel):
         return ChatResult(generations=[ChatGeneration(message=AIMessage(content=text))])
 
 
+class ChangeModel(QuietModel):
+    def _generate(self,messages,**kwargs):
+        text='{"action":"change"}' if messages[0].content.startswith('사용자 메시지가 오직') else '변경 조건 확인'
+        return ChatResult(generations=[ChatGeneration(message=AIMessage(content=text))])
+
+
 class NoUnexpectedModelCall(QuietModel):
     def _generate(self,messages,**kwargs):
         raise AssertionError('controller-authored data load must finish from tool evidence')
@@ -182,7 +188,9 @@ class GraphApprovalTests(unittest.TestCase):
 
     def test_changed_request_invalidates_old_approval(self):
         with tempfile.TemporaryDirectory() as root:
-            calls=[];r=self.runtime(root,QuietModel(),calls)
+            # An explicit classified change invalidates a grant; malformed
+            # model output must no longer stand in for a change decision.
+            calls=[];r=self.runtime(root,ChangeModel(),calls)
             pending=r.propose_query('fixture','SELECT 1','test')['requests'][0]
             r.submit('기간을 바꿔줘')
             self.assertEqual(r.ledger.get(pending['id'])['status'],'invalidated')

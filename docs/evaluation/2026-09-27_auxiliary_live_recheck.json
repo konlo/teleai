@@ -1,0 +1,80 @@
+{
+  "provider": "databricks",
+  "data": "synthetic only",
+  "query_executions": 0,
+  "results": [
+    {
+      "kind": "pending_message",
+      "prompt": "지금 어떤 승인을 기다리고 있어?",
+      "status": "PASS",
+      "expected": "status",
+      "actual": "status",
+      "approval_preserved": true,
+      "error_type": null,
+      "elapsed_seconds": 0.972,
+      "invalid_response_events": 0,
+      "model_recovery": {
+        "failures": 0,
+        "failed_seconds": 0.0,
+        "retries": 0,
+        "next_allowed_at": 0.0,
+        "aux_calls": 1,
+        "aux_seconds": 0.9697639159858227
+      }
+    },
+    {
+      "kind": "pending_message",
+      "prompt": "왜 승인을 받아야 해?",
+      "status": "FAIL",
+      "expected": "status",
+      "actual": "uncertain",
+      "approval_preserved": true,
+      "error_type": null,
+      "elapsed_seconds": 0.55,
+      "invalid_response_events": 0,
+      "model_recovery": {
+        "failures": 0,
+        "failed_seconds": 0.0,
+        "retries": 0,
+        "next_allowed_at": 0.0,
+        "aux_calls": 2,
+        "aux_seconds": 1.518440498970449
+      }
+    },
+    {
+      "kind": "pending_message",
+      "prompt": "음...",
+      "status": "PASS",
+      "expected": "uncertain",
+      "actual": "uncertain",
+      "approval_preserved": true,
+      "error_type": null,
+      "elapsed_seconds": 1.011,
+      "invalid_response_events": 0,
+      "model_recovery": {
+        "failures": 0,
+        "failed_seconds": 0.0,
+        "retries": 0,
+        "next_allowed_at": 0.0,
+        "aux_calls": 3,
+        "aux_seconds": 2.527316831983626
+      }
+    },
+    {
+      "kind": "cached_status",
+      "status": "PASS"
+    },
+    {
+      "kind": "summary_graph",
+      "status": "PASS",
+      "transcript_preserved": true,
+      "agent_status": "answered",
+      "summary_model_calls": 1,
+      "model_calls": 2,
+      "output": "앞선 대화에서는 데이터를 아직 로딩하지 않았으며, 분석 목적이나 조건도 확정되지 않았습니다. 현재는 데이터 준비 단계로, 실제 분석을 진행하려면 우선 필요한 테이블을 조회하고 로딩해야 합니다.",
+      "error_type": null,
+      "elapsed_seconds": 4.491
+    }
+  ],
+  "status": "FAIL"
+}
