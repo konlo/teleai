@@ -35,6 +35,7 @@ from utils.analysis_aggregate import aggregate_dataset as build_aggregate_datase
 from utils.analysis_compare import compare_group_aggregates as build_group_comparison
 from utils.analysis_pivot import pivot_dataset as build_pivot_dataset
 from utils.analysis_group_summary import summarize_groups as build_group_summary
+from utils.analysis_numeric import prepare_numeric_dataset as build_numeric_dataset
 
 
 def build_analysis_tools(context: AnalysisToolContext) -> list[ToolDefinition]:
@@ -80,6 +81,9 @@ def build_analysis_tools(context: AnalysisToolContext) -> list[ToolDefinition]:
         frame = datasets.frames[dataset_id]
         return {"dataset": asdict(info), "dtypes": frame.dtypes.astype(str).to_dict(),
                 "preview": frame.head(5).to_dict(orient="records")}
+
+    def prepare_numeric_dataset(dataset_id, columns, missing_values=None):
+        return build_numeric_dataset(datasets, dataset_id, columns, missing_values)
 
     def profile_dataset(dataset_id, columns=None, offset=0, limit=50):
         return build_dataset_profile(datasets, dataset_id, columns, offset, limit)
@@ -670,6 +674,10 @@ def build_analysis_tools(context: AnalysisToolContext) -> list[ToolDefinition]:
 
     string = {"type": "string"}
     definitions = [
+        tool("prepare_numeric_dataset", "숫자가 문자열로 저장되어 수치 계산/히스토그램이 실패할 때 보유 원본에서 필요한 컬럼만 Float64로 변환한 자식 dataset을 만듭니다. 모든 행과 원본을 보존하며 원격 조회하지 않습니다. missing_values는 의미를 확인한 정확한 결측 문자열만 명시하세요. 다른 비수치 값은 거절하며 삭제하지 않습니다. 반환 dataset ID로 후속 분석하고 conversion의 결측 수를 설명하세요.",
+             {"dataset_id":string,"columns":{"type":"array","items":string,"minItems":1,"maxItems":8,"uniqueItems":True},
+              "missing_values":{"type":"array","items":{"type":"string","maxLength":64},"maxItems":16}},
+             ["dataset_id","columns"], prepare_numeric_dataset),
         tool("inspect_table_relationships", "조인 전에 DB metadata에서 확인된 외래 키와 참조 키를 읽습니다. 없으면 알려진 catalog.schema.table의 관계 metadata 조회 계획을 반환합니다. 이름만으로 관계를 추측하지 마세요. metadata_plan은 query_databricks로 승인 요청하세요. 여러 관계의 역할·실제 cardinality는 별도 확인이 필요합니다.",
              {"table":string}, ["table"], inspect_table_relationships),
         tool("inspect_column_definitions", "업무 의미가 부족하면 확인된 catalog.schema.table의 저장된 컬럼 설명을 읽습니다. 없으면 Unity Catalog information_schema.columns의 정확한 조회 계획만 반환합니다. metadata_plan을 query_databricks로 제안하고 사용자 승인을 기다리세요. 원본 행은 로딩하지 않습니다.",

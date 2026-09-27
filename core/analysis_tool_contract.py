@@ -3,6 +3,44 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from typing import Any, Callable
+from datetime import date, datetime, time, timedelta
+from decimal import Decimal
+import base64
+import math
+
+
+def json_tool_value(value):
+    """Convert observation values, never the stored source, to strict JSON types.
+
+    Decimal strings preserve precision; dates preserve timezone information.
+    Missing/non-finite values are null. Unknown objects fail explicitly instead
+    of making LangChain silently fall back to a non-JSON Python repr.
+    """
+    import numpy as np
+    import pandas as pd
+    if value is None or value is pd.NA or value is pd.NaT:
+        return None
+    if isinstance(value, dict):
+        if any(not isinstance(key, str) for key in value):
+            raise TypeError('Tool observation keys must be strings')
+        return {key: json_tool_value(item) for key, item in value.items()}
+    if isinstance(value, (list, tuple, np.ndarray)):
+        return [json_tool_value(item) for item in value]
+    if isinstance(value, np.generic):
+        return json_tool_value(value.item())
+    if isinstance(value, Decimal):
+        return str(value) if value.is_finite() else None
+    if isinstance(value, (datetime, date, time)):
+        return value.isoformat()
+    if isinstance(value, timedelta):
+        return str(value)
+    if isinstance(value, (bytes, bytearray, memoryview)):
+        return {'encoding': 'base64', 'value': base64.b64encode(bytes(value)).decode('ascii')}
+    if isinstance(value, float):
+        return value if math.isfinite(value) else None
+    if isinstance(value, (str, bool, int)):
+        return value
+    raise TypeError('Unsupported tool observation type: ' + type(value).__name__)
 
 
 TOOL_RESULT_STATUSES = (
@@ -63,7 +101,7 @@ def normalize_tool_result(result: dict[str, Any], *, default_status: str = "read
         "Databricks 조회 승인 여부를 결정해주세요." if status == "awaiting_approval" else "",
     )
     normalized.setdefault("scope", "도구가 반환한 구조화 결과 범위입니다.")
-    return normalized
+    return json_tool_value(normalized)
 
 
 @dataclass(frozen=True)

@@ -26,7 +26,7 @@ def _named_measures(text, columns, aliases=None):
     result = []
     for column in columns:
         for term in (column, *aliases.get(column, ())):
-            name = r'(?<![A-Za-z0-9_])' + re.escape(term) + r'(?![A-Za-z0-9_])'
+            name = r'(?<![A-Za-z0-9_])[`\"]?' + re.escape(term) + r'[`\"]?(?![A-Za-z0-9_])'
             if (re.search(name + r'\)?(?:의)?\s*' + operation, text, re.I)
                     or re.search(operation + r'\s*(?:of\s+|\(\s*)' + name, text, re.I)):
                 result.append(column)
@@ -1074,6 +1074,19 @@ class RecoveryMiddleware(AgentMiddleware):
             observe(current,call,observation,self.context)
             if name in {'inspect_column_definitions', 'inspect_table_relationships'} and observation.get('metadata_plan'):
                 current['metadata_query_plan'] = observation['metadata_plan']
+            if name == 'prepare_numeric_dataset' and observation.get('status') == 'ready' and self.context:
+                parent=self.context.datasets.metadata.get(arguments.get('dataset_id'))
+                child=self.context.datasets.metadata.get(observation.get('dataset',{}).get('id'))
+                requested=set(current.get('required_columns',[]))
+                if (parent is not None and child is not None and requested
+                        and child.parent_id==parent.id and child.rows==parent.rows
+                        and child.snapshot==parent.snapshot and child.coverage==parent.coverage
+                        and requested==set(child.columns)==set(arguments.get('columns',[]))
+                        and self._source_matches(parent,current)
+                        and parent.id==self.context.selected_dataset_id
+                        and self._numeric_missing_policy_valid(arguments,current)):
+                    current['numeric_prepared_dataset']=child.id
+                    current['numeric_preparation']=observation.get('conversion',[])
             if name == 'resolve_analysis_intent':
                 current['model_calls'] += observation.get('semantic_model_successes', observation.get('semantic_model_calls', 0))
                 current['model_seconds'] += observation.get('semantic_model_seconds', 0)
@@ -1920,7 +1933,13 @@ class RecoveryMiddleware(AgentMiddleware):
         return completion_ready(current)
 
     def _answer(self, current):
-        return render_completion(self, current)
+        answer=render_completion(self, current)
+        for entry in current.get('numeric_preparation',[]):
+            valid=entry['rows']-entry['source_nulls']-entry['declared_missing']
+            answer+=(f"\n\n수치 변환: {entry['column']} · 전체 {entry['rows']:,}행 중 유효 값 {valid:,}개 · "
+                     f"기존 결측 {entry['source_nulls']:,}개 · 명시한 문자열 결측 {entry['declared_missing']:,}개. "
+                     'Float64로 계산했으며 원본과 모든 행은 보존했습니다.')
+        return answer
 
     def _limit_reason(self, current):
         if current['model_calls'] >= self.max_model_calls: return 'model_call_budget'
@@ -2032,7 +2051,40 @@ class RecoveryMiddleware(AgentMiddleware):
             dataset_ids=current['evidence_ids'], artifact_ids=current['artifact_ids'])
         return {'recovery': current, 'messages': [message]}
 
+    @staticmethod
+    def _numeric_missing_policy_valid(arguments,current):
+        text=current.get('request_text','')
+        values=arguments.get('missing_values',[])
+        return isinstance(values,list) and all(isinstance(value,str) and any(
+            quote+value+quote in text for quote in ('"', "'", '`')) for value in values)
+
+    def _prepared_numeric_call(self,current,calls):
+        # Preparation is an intermediate artifact, not completion. Continue the
+        # original scalar/chart obligations using that verified same-row branch.
+        dataset_id=current.get('numeric_prepared_dataset')
+        if (not self.context or dataset_id not in self.context.datasets.metadata
+                or self._has_scope(current) or current.get('fresh_source_required')
+                or current.get('scalar_grouping') or current.get('chart_spec_requested')):
+            return None
+        info=self.context.datasets.metadata[dataset_id]
+        columns=current.get('required_columns',[])
+        if len(columns)!=1 or columns[0] not in info.columns:return None
+        if not current.get('current_result_only') and (info.coverage!='complete' or not info.predicate_known):return None
+        operations=current.get('operations',[])
+        aliases={'AVG':'average','SUM':'sum','MIN':'minimum','MAX':'maximum','MEDIAN':'median'}
+        if current.get('calculation') and not current.get('evidence_ids') and operations and set(operations)<=set(aliases):
+            quoted='"'+columns[0].replace('"','""')+'"'
+            projections=', '.join(f'{op}({quoted}) AS {aliases[op]}' for op in operations)
+            call={'name':'local_analysis_sql','args':{'dataset_id':dataset_id,
+                'query':'SELECT '+projections+' FROM data','current_result_only':True}}
+        elif current.get('chart') and current.get('kind')=='histogram' and not current.get('artifact_ids'):
+            call={'name':'render_chart_spec','args':{'dataset_id':dataset_id,'kind':'histogram','x':columns[0]}}
+        else:return None
+        return None if any(self._signature(c)==self._signature(call) for c in calls.values()) else call
+
     def _next_local(self, current, calls):
+        prepared=self._prepared_numeric_call(current,calls)
+        if prepared:return prepared
         if self.context and current.get('operation_pending'):
             from core.analysis_agent.operation_binding import metadata_for
             if not any(c.get('name') == 'resolve_analysis_operation' for c in calls.values()):
@@ -3350,6 +3402,10 @@ class RecoveryMiddleware(AgentMiddleware):
                 additional_kwargs={'lc_source':'proposal_preflight'})], 'jump_to':'model'}
 
     def _proposed_scope_valid(self, call, current):
+        if call.get('name')=='prepare_numeric_dataset':
+            if not self._numeric_missing_policy_valid(call.get('args',{}),current):
+                current['scope_error']='numeric_missing_policy_unverified'
+                return False
         if call.get('name') == 'query_databricks' and current.get('metadata_query_plan'):
             plan = current['metadata_query_plan']
             args = call.get('args', {})

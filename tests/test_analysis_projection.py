@@ -264,7 +264,7 @@ class ProjectionTests(unittest.TestCase):
                 alias_collision = sql(info.id,
                     "SELECT measure AS unused FROM data WHERE unused = 'a'")
             self.assertEqual(result["status"], "ready")
-            self.assertEqual(result["dataset"]["columns"], ("measure", "unused"))
+            self.assertEqual(result["dataset"]["columns"], ["measure", "unused"])
             self.assertEqual(store.frames[result["dataset"]["id"]]["unused"].tolist(), ["a", "b"])
             self.assertEqual(alias_collision["status"], "ready")
             self.assertEqual(store.frames[alias_collision["dataset"]["id"]]["unused"].tolist(), [1])

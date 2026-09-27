@@ -324,6 +324,11 @@ class GraphAnalysisRuntime:
                 return {'status':'awaiting_approval','requests':self._pending()}
             messages=self.agent.get_state(self.config).values.get('messages',[])
             outcome=messages[-1].additional_kwargs.get('analysis_status','answered') if messages else 'answered'
+            # A completed receipt may have been recovered without rerunning its
+            # tool. Only the current verified load contract can select that raw.
+            recovery=self.agent.get_state(self.config).values.get('recovery',{})
+            if not completed_load_id and recovery.get('data_load'):
+                completed_load_id=recovery.get('load_evidence_id','')
             if outcome=='answered' and completed_load_id in self.datasets.metadata:
                 loaded=self.datasets.metadata[completed_load_id]
                 # A remote statistic is evidence for this answer, not a new
@@ -399,12 +404,62 @@ class GraphAnalysisRuntime:
                 raise ValueError('미완료 분석이 있습니다. 먼저 resume()로 재개해주세요.')
             return self._invoke({'messages':[HumanMessage(content=text)]})
 
+    def _recover_completed_observations(self, checkpoint):
+        """Repair legacy non-JSON receipts from the durable ledger, never SQL.
+
+        Only the current request's exact call and an existing matching dataset
+        are eligible. No parsing/evaluation of Python repr or uncertain receipts.
+        """
+        messages=checkpoint.values.get('messages',[])
+        human=latest_user_request(messages)
+        if human is None:return False
+        start=next((i for i,m in enumerate(messages) if m.id==human.id),len(messages))
+        calls={c['id']:c for m in messages[start:] if isinstance(m,AIMessage) for c in m.tool_calls}
+        replacements=[]
+        for message in messages[start:]:
+            if not isinstance(message,ToolMessage):continue
+            call=calls.get(message.tool_call_id,{})
+            if call.get('name')!='query_databricks':continue
+            try:
+                if isinstance(json.loads(message.content),dict):continue
+            except (ValueError,TypeError):pass
+            try:receipt=self.ledger.get(message.tool_call_id)
+            except KeyError:continue
+            arguments=call.get('args',{})
+            if (receipt['status']!='completed'
+                    or any(receipt[key]!=arguments.get(key) for key in ('source','query','reason'))):continue
+            result=receipt.get('result') or {}
+            dataset=result.get('dataset') or {}
+            info=self.datasets.metadata.get(dataset.get('id'))
+            if (result.get('status')!='ready' or info is None
+                    or info.query!=receipt['query'] or info.source!=dataset.get('source')
+                    or info.rows!=dataset.get('rows') or list(info.columns)!=dataset.get('columns')):continue
+            replacements.append(message.model_copy(update={'content':json.dumps(
+                normalize_tool_result(result),ensure_ascii=False,allow_nan=False)}))
+            self.diagnostics.emit('completed_observation_recovered',
+                tool_call_id=message.tool_call_id,dataset_id=info.id,remote_reexecuted=False)
+        if not replacements:return False
+        current=dict(checkpoint.values.get('recovery') or {})
+        ids={m.tool_call_id for m in replacements}
+        current['processed']=[key for key in current.get('processed',[]) if key not in ids]
+        self.agent.update_state(self.config,{'messages':replacements,'recovery':current})
+        self.transcript.record(replacements)
+        return True
+
     def resume(self):
         with self._exclusive():
             if self._pending():raise ValueError('대기 중인 조회는 먼저 승인 또는 거절해주세요.')
             if self.ledger.uncertain():raise PermissionError('원격 제출 상태가 불명확합니다. 자동 재개할 수 없습니다.')
             checkpoint=self.agent.get_state(self.config)
             if not checkpoint.next:raise ValueError('재개할 작업이 없습니다.')
+            if self._recover_completed_observations(checkpoint):
+                checkpoint=self.agent.get_state(self.config)
+                current,_=self.recovery._state(checkpoint.values)
+                if self.recovery._complete(current):
+                    # Re-enter normal after-model completion validation using
+                    # verified evidence; no inference is needed for a receipt.
+                    self.agent.update_state(self.config,self.recovery._finish(current),as_node='model')
+                    return self._invoke(None)
             if checkpoint.next == ('model',):
                 local=self.recovery.resume_local_call(checkpoint.values)
                 if local is not None:

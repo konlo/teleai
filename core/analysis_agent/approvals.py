@@ -3,6 +3,7 @@ from hashlib import sha256
 import json
 import sqlite3
 from core.analysis_load_plan import source_plan
+from core.analysis_tool_contract import json_tool_value
 
 
 class QueryNotSubmitted(RuntimeError):
@@ -69,8 +70,8 @@ class ApprovalLedger:
             if row[1]!='approved':raise PermissionError('미승인 또는 제출 상태 불명인 조회는 실행할 수 없습니다.')
             db.execute("UPDATE requests SET status='submitting' WHERE id=?",(key,))
         try:
-            result=executor(envelope)
-            encoded=json.dumps(result,ensure_ascii=False,default=str)
+            result=json_tool_value(executor(envelope))
+            encoded=json.dumps(result,ensure_ascii=False,allow_nan=False)
         except BaseException as exc:
             with self.connect() as db:
                 db.execute('UPDATE requests SET status=? WHERE id=?',

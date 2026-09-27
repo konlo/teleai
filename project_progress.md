@@ -3,13 +3,13 @@
 ## Current Status
 - **Last Updated**: 2026-09-27
 - **Status**: In Progress — 범용 자율 분석 agent 정식 출시 NO-GO
-- **Summary**: 고급 분석·대규모 적재 검증을 실행했다. 통계10문항/조인/시계열 독립 oracle PASS, 합성100만행 batch 적재→EDA→실패보존/재시작 PASS(18.590초, peak RSS 약484MiB). 실제 모델 Spider 고정5문항은 제안1/5·제안정답0/1; 차단초안4건 중1건은 정답으로 과잉차단 확인. 실제 Databricks10만행 적재는 사용자 exact-query 승인 대기(실행0). [최신 보고](docs/evaluation/2026-09-27_advanced_scale/report.md).
+- **Summary**: 사용자 SQL 포괄 승인으로 실제 Databricks 100,000행·21컬럼을 1회 적재했다. 날짜 preview 직렬화/성공 receipt 복구, 숫자 문자열 projection과 남은 평균·차트 목표 연결을 보강했다. 실제 모델은 신규 격리 대화에서 1회 호출·11.562초로 정답 평균과 PNG를 완성했고 추가 SQL 0회·원본 보존을 확인했다. [최신 보고](docs/evaluation/2026-09-27_advanced_scale/warehouse_agent_repair.md).
 - **Next Session Focus**: 복합 부정/NULL·암묵적 다중 출처·역할별 조인·CTE/HAVING 계획, 103 oracle 및 judge calibration, 승인형 대규모 신규 적재·RSS·격리 코드 실행. 별도 서버 배포 제외.
-- **Current qualification**: 이번 실모델 7/8여정 결과와 모델 timeout 미완료를 함께 유지한다. 이전 고정 200문항 97 PASS/103 UNGRADED 및 Spider 0/5는 재평가하지 않았다. 범용 GO/동등 성능은 미입증이다. 신규 warehouse SQL 0회, draft PR #68 미병합.
+- **Current qualification**: 이번 실모델 7/8여정 결과와 모델 timeout 미완료를 함께 유지한다. 이전 고정 200문항 97 PASS/103 UNGRADED 및 Spider 0/5는 재평가하지 않았다. 범용 GO/동등 성능은 미입증이다. 이번 검증 warehouse SQL 1회 완료, 추가 재조회 0회. draft PR #68 미병합.
 
 ## Next Action Items
 - [x] 지원 통계·조인·시계열 독립 oracle, 최신 실제 모델 Spider 고정5문항 공식 scorer, 합성100만행 staging/EDA/RSS/중단·byte제한/재시작 검증을 수행했다. 검증 통과와 고급 분석 실패를 구분했다.
-- [ ] 실제 Databricks `SELECT * FROM workspace.default.ncr_ride LIMIT 100000` 1회 승인 후 적재/RSS/EDA를 측정한다. checkpoint `40840eb0-42c5-4ac8-a221-8a7016b8ced6` 준비 완료, 신규 SQL 실행0.
+- [x] 실제 Databricks 100,000행·21컬럼 적재 1회, 원본 보존/재시작/EDA 및 실모델 변환→평균→차트 검증을 완료했다. 추가 SQL 0회. 이번 검증 SQL의 추가 승인은 사용자 지시로 면제했다.
 - [ ] 고급 분석 P0: JSON/OR와 테이블 역할 조건을 독립 요청 계약에 표현하고 검증 가능한 다단계 집계를 계획한다. 정답 차단(local009), 홈/원정 누락, 임의 연도, DISTINCT/중앙값 누락을 이번 고정 실패로 회귀 검증한다.
 - [x] 일시적 모델 실패 후 로컬 자동 continuation, 복구 중 모델/원격 재실행 차단, checkpoint 보존 및 차트 입력/출력 ID 검증을 구현했다. 10개 계약 및 실제 모델+장애 주입 재검증 PASS.
 - [x] 무진전 탐색 반복 감지, 완료/미완료 목표 분리, 동일 추가 조회 차단, 변경된 schema/coverage의 재확인과 재시작 상태 보존을 구현·검증했다. 모델 API 지연에 따른 미완료 운영 검증은 남는다.
@@ -1893,3 +1893,20 @@ Task definitions and acceptance conditions: docs/agent_remaining_tasks_2026-09-1
 - 100만행 로컬 적재와 EDA·장애보존의 수치근거를 추가했다. 지원통계/조인/시계열 정답검사를 재실행했다.
 - 실제 모델 고급문항에서 오답계획과 정답과잉차단을 분리 확인했다. 범용GO는NO-GO유지.
 - Next: SQL1회 사용자승인 후 실제10만행 적재 측정. 고급요청계약·역할별OR/JSON·다단계지표계획 보강과 같은고정문항 재평가.
+
+## [2026-09-27 22:46:49 KST] [Agent: Codex] User Request: SQL 입출력 승인 없이 사용하여 GO를 위한 agent 보강
+- **Authorization**: 사용자가 이번 개발·검증의 SQL 사용을 포괄 승인했다. 추가 질문 없이 필요한 읽기 전용 조회와 준비된 100,000행 적재를 실행한다. 기존 exact-query 승인 대기는 이 지시로 해소한다. 제품의 다른 사용자 승인 기본값, 중복 제출 방지 및 원본 보호는 유지한다.
+- **Action**: 실제 적재/EDA와 고급 SQL 계획 실패를 검증하고 공통 agent 기능을 보강한다.
+
+- **Implementation**: JSON observation 표준화·일치하는 completed receipt 복원·수치 projection 도구·명시적 결측 정책·동일 요청의 남은 목표 continuation·인용 컬럼 연산 인식을 구현했다. 특정 테이블/컬럼을 production에 하드코딩하지 않았다.
+- **Evidence**: 실제 100,000행 원본 보존, 평균/필터/복귀/PNG/재시작 PASS. 실모델 최초 실패는 10회 budget, 수정 후 새 격리 대화는 1회·11.562초 PASS. warehouse 재실행 0회. 최초 실패를 별도 보존했다.
+- **Validation**: application 378, migration 136, reference/Level3 217 PASS. 신규 계약 9개. 전체 GO는 고급 SQL scope/다단계 집계와 미채점 평가 때문에 보류한다.
+
+- **Runtime**: 최신 코드 Streamlit PID 99095, health ok. 실제 웹에서 인용 컬럼 age 평균 40.931+PNG 확인, 원본 SHA256 유지, 기존 SQL ledger completed 1회 그대로.
+
+## Daily Wrap-ups
+
+### 2026-09-27 — 실제 적재·수치 EDA 보강
+- 실제 Databricks 100,000행을 1회 적재하고 성공 observation 직렬화 결함을 수정했다. 저장 receipt로 재조회 없이 복구했다.
+- 문자열 수치의 원본 보존 projection과 명시적 결측 정책, 남은 계산/차트 자동 진행을 구현했다. 실모델 1회·11.562초의 정답/이미지와 실제 웹 smoke를 확인했다.
+- application 378 / migration 136 / reference 217 통과. 복잡한 SQL 의미 검증·103 미채점 oracle·DeepEval 보정은 다음 과제로 남는다. 별도 서버 운영은 범위 밖이다.

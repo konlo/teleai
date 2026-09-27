@@ -40,9 +40,13 @@ def main():
                 raise ValueError('No matching pending exact-query request; no query executed')
             started=time.monotonic();outcome=r.respond(request['id'],approved=True)
             state=r.inspect();selected=state.get('selected_dataset') or {}
-            dataset_id=selected.get('id');info=r.datasets.metadata.get(dataset_id)
+            receipt=r.ledger.get(request['id'])
+            dataset_id=(receipt.get('result') or {}).get('dataset',{}).get('id') or selected.get('id')
+            info=r.datasets.metadata.get(dataset_id)
             record={'mode':'actual Databricks exact-query approved load','query':QUERY,
                 'request_id':request['id'],'status':outcome['status'],'error_type':outcome.get('error_type'),
+                'ingestion_status':'completed' if receipt['status']=='completed' and info else receipt['status'],
+                'analysis_status':outcome['status'],
                 'elapsed_seconds':round(time.monotonic()-started,3),'peak_rss_bytes':peak_rss_bytes(),
                 'ledger_status':r.ledger.get(request['id'])['status'],
                 'rows':info.rows if info else None,'columns':len(info.columns) if info else None,

@@ -1,0 +1,108 @@
+{
+  "generated_at": "2026-09-27T13:58:38.907847+00:00",
+  "mode": "actual stored Databricks data, production graph, independent Pandas oracle",
+  "limitations": [
+    "No actual LLM inference in this EDA test.",
+    "LIMIT result is a sample, not the complete table.",
+    "Only numerical summaries, histogram, filtering/reset and restart are evaluated."
+  ],
+  "raw_id": "ab17964d-a8e3-4a03-a83c-df844482ebde",
+  "rows": 100000,
+  "columns": 21,
+  "query": "SELECT * FROM workspace.default.ncr_ride LIMIT 100000",
+  "coverage": "unknown",
+  "raw_digest": "e59f93d660eae1068087b19f2f029d3db7ccfc4f9bf9032d27e4ca9ec3190bd1",
+  "receipt_recovery": {
+    "status": "answered",
+    "elapsed_seconds": 0.109,
+    "error_type": null
+  },
+  "runtime_schema": {
+    "Date": "datetime64[ms]",
+    "Time": "datetime64[ns, Etc/UTC]",
+    "Booking ID": "object",
+    "Booking Status": "object",
+    "Customer ID": "object",
+    "Vehicle Type": "object",
+    "Pickup Location": "object",
+    "Drop Location": "object",
+    "Avg VTAT": "object",
+    "Avg CTAT": "object",
+    "Cancelled Rides by Customer": "object",
+    "Reason for cancelling by Customer": "object",
+    "Cancelled Rides by Driver": "object",
+    "Driver Cancellation Reason": "object",
+    "Incomplete Rides": "object",
+    "Incomplete Rides Reason": "object",
+    "Booking Value": "object",
+    "Ride Distance": "object",
+    "Driver Ratings": "object",
+    "Customer Rating": "object",
+    "Payment Method": "object"
+  },
+  "preparation": {
+    "mode": "controller-selected tool, not autonomous LLM planning",
+    "column": "Avg VTAT",
+    "missing_values": [
+      "null"
+    ],
+    "conversion": [
+      {
+        "column": "Avg VTAT",
+        "source_dtype": "object",
+        "rows": 100000,
+        "source_nulls": 0,
+        "declared_missing": 7043,
+        "invalid_values": 0,
+        "non_finite_values": 0
+      }
+    ],
+    "rows_preserved": true,
+    "dataset_id": "9597e943-f645-4b14-a270-808ce9636d33"
+  },
+  "eda": [
+    {
+      "status": "PASS",
+      "prompt": "현재 로딩된 표본에서 `Avg VTAT` 평균을 알려줘",
+      "actual": 8.46354013145856,
+      "expected": 8.463540131458632,
+      "model_calls": 0,
+      "chart_count": 0,
+      "raw_preserved": true,
+      "elapsed_seconds": 0.137,
+      "stop_reason": null
+    },
+    {
+      "status": "PASS",
+      "prompt": "현재 로딩된 표본에서 `Avg VTAT` >= 8.3인 행의 `Avg VTAT` 평균을 알려줘",
+      "actual": 11.619873749302139,
+      "expected": 11.619873749302187,
+      "model_calls": 0,
+      "chart_count": 0,
+      "raw_preserved": true,
+      "elapsed_seconds": 0.03,
+      "stop_reason": null
+    },
+    {
+      "status": "PASS",
+      "prompt": "현재 로딩된 원본 표본에서 `Avg VTAT` 평균과 `Avg VTAT` 히스토그램을 보여줘. 이전 `Avg VTAT` 조건은 적용하지 말고 보유 데이터만 사용해.",
+      "actual": 8.46354013145856,
+      "expected": 8.463540131458632,
+      "model_calls": 0,
+      "chart_count": 1,
+      "raw_preserved": true,
+      "elapsed_seconds": 7.886,
+      "stop_reason": null
+    }
+  ],
+  "reopen": {
+    "raw_preserved": true,
+    "selected_preserved": true,
+    "rows": 100000
+  },
+  "remote_reexecutions": 0,
+  "status": "PASS",
+  "elapsed_seconds": 11.915,
+  "peak_rss_bytes": 387678208,
+  "histogram_file": "docs/evaluation/2026-09-27_advanced_scale/warehouse_eda_verified.png"
+}

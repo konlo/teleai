@@ -21,12 +21,16 @@ def diagnosis(failure, available):
         action='Find the retained dataset ID and verify its source and coverage. A table name is not a dataset ID.'
     elif code in {'invalid_tool_arguments','invalid_tool_input','invalid_condition_value'}:
         category='invalid_arguments'
-        tools=['search_analysis_tools','inspect_dataset','inspect_table_context']
+        tools=['search_analysis_tools','inspect_dataset','prepare_numeric_dataset','inspect_table_context']
         action='Inspect the actual input schema and column types, then change the invalid arguments without changing user intent.'
     elif code=='local_sql_error':
         category='invalid_local_sql'
-        tools=['inspect_dataset','search_analysis_tools','aggregate_dataset']
+        tools=['inspect_dataset','search_analysis_tools','prepare_numeric_dataset','aggregate_dataset']
         action='Verify real columns/types and SQL syntax, or choose a compatible structured calculation tool.'
+    elif code=='numeric_conversion_unresolved':
+        category='numeric_representation_unresolved'
+        tools=['inspect_dataset','profile_dataset']
+        action='Verify the meaning of nonnumeric values before declaring missing strings. Never silently drop rows or reload the source.'
     elif code=='full_frame_budget':
         category='local_resource_limit'
         tools=['search_analysis_tools','local_analysis_sql']
