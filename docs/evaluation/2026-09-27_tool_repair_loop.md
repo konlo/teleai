@@ -37,3 +37,5 @@
 - 최종 application 352/352, migration 133/133, reference/Level3 217/217(58 figures), compileall·diff check PASS.
 
 7개 실제 모델 여정(두 보고서, 8턴)이 통과했지만 임의 문제 해결 성능이나 Codex/Claude Code 동등성을 뜻하지 않는다. 복잡한 SQL/복합 조건 계획, 미채점 103문항과 judge calibration, 실제 승인형 대규모 원격 적재, 격리 코드 실행 및 장기 장애 검증은 남는다. 범용 GO 보류.
+
+코드 `abb85dbf7fb1112254265d61b048685c9ebe4544`의 [원격 전체 CI](https://github.com/konlo/teleai/actions/runs/36303236880) 성공. PR #68 draft·미병합, 최종 Streamlit PID 80870·health ok. 브라우저에서 기존 대화/결과 복원과 Databricks 모델 선택을 확인했다. 장애 복구의 실제 모델 증거는 위 CLI graph 여정이며 실제 UI 장애 주입과 구분한다.
