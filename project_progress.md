@@ -1955,3 +1955,13 @@ Task definitions and acceptance conditions: docs/agent_remaining_tasks_2026-09-1
 
 - **Validation**: 변경/신규168파일 약4MB를포함했다. Python평가스크립트compile통과, 추가파일의credential패턴검출0. staged검사에서공식평가용SQL복사본2개의후행공백을발견해정리했다. SQL원문은proposals.json에보존되어있고의미는변경하지않았다.
 - **Outcome**: 평가·맥락진단·fixture·실행증거·출시기준·작업기록을현재브랜치에커밋했다. origin push 및원격SHA대조로마무리한다.
+
+## [2026-09-28T15:44:03] [Agent: Codex] User Request: pip 설치 패키지를 requirement.txt에 추가
+- **Action**: 기존 requirements 진입점·runtime lock·평가 환경의 직접 의존성을 비교하고 설치 가능한 dependency 파일과 안내를 보강한다.
+
+- **Artifact Update**: requirements.txt에 앱/평가 설치 경로를 명시하고 requirements-agent.in의 직접 의존성 11종을 보완했다. requirements-eval.txt에 검증 환경의 DeepEval 4.2.3, OpenAI SDK 3.17.0, pytest 9.1.1, google-cloud-bigquery 3.45.2, pandas 3.0.6, tqdm 4.70.1, gdown 5.2.2를 기록했다. README에 별도 평가 venv 설치법을 추가했다.
+- **Decision**: DeepEval click<8.4와 앱 click==8.5.0 충돌 때문에 평가 의존성을 앱 requirements에 합치지 않았다. 기존 런타임 lock·실행 환경은 변경하지 않았다. Spider2 저장소/데이터는 별도 준비 대상이다.
+- **Outcome**: 기존 앱·평가 환경에서 requirements 설치 dry-run, 직접 의존성 dry-run, pip check 및 주요 import smoke가 모두 통과했다. 신규 빈 환경 전체 재설치나 모델/SQL 평가는 수행하지 않았으며 GO 판정은 변경하지 않는다.
+
+## [2026-09-28T15:49:33+09:00] [Agent: Codex] User Request: push 해둬
+- **Action**: requirements 및 평가 도구 설치 안내 변경 5개 파일을 확인했다. 기존 환경의 설치 dry-run·pip check·import 검증 통과 결과를 포함하여 커밋하고 현재 브랜치를 origin에 push한다.
