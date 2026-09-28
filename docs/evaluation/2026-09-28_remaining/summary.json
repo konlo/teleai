@@ -1,0 +1,74 @@
+{
+  "generated_at": "2026-09-28T07:13:14.928799+09:00",
+  "decision": "NO_GO",
+  "reference": {
+    "total_reference_cases": 200,
+    "supported_oracles": 97,
+    "selected": 200,
+    "statuses": {
+      "PASS": 97,
+      "UNGRADED": 103
+    },
+    "all_selected_passed": false,
+    "ungraded_is_never_pass": true
+  },
+  "language": {
+    "journeys": 10,
+    "passed": 10,
+    "turns": 12
+  },
+  "numeric_regression": {
+    "unique_cases": 4,
+    "runs": 12,
+    "passed": 3,
+    "false_completions": 6,
+    "declared_complete": 9,
+    "exhausted": 3,
+    "all_raw_preserved": true
+  },
+  "fault_recovery": {
+    "cases": 3,
+    "passed": 3,
+    "mode": "injected faults with real model; deterministic rescue disabled"
+  },
+  "spider": {
+    "selected": 5,
+    "proposals": 1,
+    "official_correct": 0,
+    "rejected_diagnostic_correct": 0,
+    "rejected_drafts": 4,
+    "full_benchmark_score": null
+  },
+  "deepeval": {
+    "tool_exact_match_1": 9,
+    "tool_exact_match_0": 1,
+    "tool_checked": 10,
+    "calibration_correct": 3,
+    "calibration_total": 4,
+    "real_answer_judge_attempted": 4,
+    "real_answer_judge_scored": 0,
+    "real_answer_judge_errors": 4,
+    "diagnostic_recheck": {
+      "id": "grouped_scalar:1",
+      "judge_score": 0.0,
+      "classification_correct": true,
+      "original_retry_root_cause": "not_reproduced"
+    }
+  },
+  "retained_100k": {
+    "status": "PASS",
+    "model_calls": 1,
+    "chart_count": 1,
+    "raw_preserved": true,
+    "original_raw_preserved": true,
+    "elapsed_seconds": 15.715
+  },
+  "warehouse_sql_executions": 0,
+  "overall_agent_score": null,
+  "remaining": [
+    "103 reference cases lack independent oracle",
+    "unseen composite EDA generalization",
+    "judge calibration and availability",
+    "new remote-scale transfer and web UI not run this batch"
+  ]
+}

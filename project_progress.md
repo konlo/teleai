@@ -1,13 +1,16 @@
 # Project Progress Log
 
 ## Current Status
-- **Last Updated**: 2026-09-27
+- **Last Updated**: 2026-09-28
 - **Status**: In Progress — 범용 자율 분석 agent 정식 출시 NO-GO
-- **Summary**: 사용자 SQL 포괄 승인으로 실제 Databricks 100,000행·21컬럼을 1회 적재했다. 날짜 preview 직렬화/성공 receipt 복구, 숫자 문자열 projection과 남은 평균·차트 목표 연결을 보강했다. 실제 모델은 신규 격리 대화에서 1회 호출·11.562초로 정답 평균과 PNG를 완성했고 추가 SQL 0회·원본 보존을 확인했다. [최신 보고](docs/evaluation/2026-09-27_advanced_scale/warehouse_agent_repair.md).
+- **Summary**: 9/28 후속 평가: 기존200문항97PASS/103UNGRADED, 자연어10여정PASS, 지정장애복구3/3PASS, 실제보유10만행EDA PASS. 복합EDA4종×3회는3PASS/9FAIL이며 잘못된 완료6건. 새 Spider5문항정답0/5, DeepEval judge 보정실패/실제응답4건채점오류. [최신 결과](docs/evaluation/2026-09-28_remaining/report.md). 범용 NO-GO 유지.
+- **Latest Audit**: 9/28 대화맥락 실제8종×2회에서9/16여정·51/62턴PASS, 잘못된완료6건. 부분조건해제/설명복귀/출처전환 실패가2회씩재현됐다. 원본보존·재시작·세션격리는PASS. [최신 맥락평가](docs/evaluation/2026-09-28_context/report.md).
 - **Next Session Focus**: 복합 부정/NULL·암묵적 다중 출처·역할별 조인·CTE/HAVING 계획, 103 oracle 및 judge calibration, 승인형 대규모 신규 적재·RSS·격리 코드 실행. 별도 서버 배포 제외.
 - **Current qualification**: 이번 실모델 7/8여정 결과와 모델 timeout 미완료를 함께 유지한다. 이전 고정 200문항 97 PASS/103 UNGRADED 및 Spider 0/5는 재평가하지 않았다. 범용 GO/동등 성능은 미입증이다. 이번 검증 warehouse SQL 1회 완료, 추가 재조회 0회. draft PR #68 미병합.
 
 ## Next Action Items
+- [ ] 대화 맥락 P0: 부분 조건 해제 시 유지 조건 소실, 설명 후 분석 복귀 차단, 자연어 데이터 전환 후 이전 source 재참조를 공통 context 전환 계약으로 수정한다. 실제8종×2회는9/16여정·51/62턴 통과, 잘못된 완료6건. 요약 stress1/2여정 통과. [근거](docs/evaluation/2026-09-28_context/report.md).
+- [ ] 자율 복구 감사 P0: 결측 처리 정책이 그룹 평균 목표를 지우는 의도 충돌, “구간 수 5개”를 기본20 bins로 완료하는 설정 누락을 공통 요청/완료 계약으로 해결한다. 필터 평균 후 남은 차트 continuation과 역할별 SQL 검증을 함께 보강한다. [재현·우선순위·acceptance](docs/evaluation/2026-09-27_agent_self_recovery_audit.md).
 - [x] 지원 통계·조인·시계열 독립 oracle, 최신 실제 모델 Spider 고정5문항 공식 scorer, 합성100만행 staging/EDA/RSS/중단·byte제한/재시작 검증을 수행했다. 검증 통과와 고급 분석 실패를 구분했다.
 - [x] 실제 Databricks 100,000행·21컬럼 적재 1회, 원본 보존/재시작/EDA 및 실모델 변환→평균→차트 검증을 완료했다. 추가 SQL 0회. 이번 검증 SQL의 추가 승인은 사용자 지시로 면제했다.
 - [ ] 고급 분석 P0: JSON/OR와 테이블 역할 조건을 독립 요청 계약에 표현하고 검증 가능한 다단계 집계를 계획한다. 정답 차단(local009), 홈/원정 누락, 임의 연도, DISTINCT/중앙값 누락을 이번 고정 실패로 회귀 검증한다.
@@ -1912,3 +1915,40 @@ Task definitions and acceptance conditions: docs/agent_remaining_tasks_2026-09-1
 - application 378 / migration 136 / reference 217 통과. 복잡한 SQL 의미 검증·103 미채점 oracle·DeepEval 보정은 다음 과제로 남는다. 별도 서버 운영은 범위 밖이다.
 
 - **Remote Gate**: 구현 `6b087ac`을 push했고 GitHub Actions `36324857324`가 전체 migration/application/agentic/reference/compile 검사를 통과했다. 최종 점검에서 결측값 변환을 명시적으로 금지하거나 문자열을 단지 언급한 요청은 변환 정책으로 인정하지 않도록 추가 보강했고 관련 4개 회귀가 통과했다.
+
+## [2026-09-27 23:21:31 KST] [Agent: Codex] User Request: 테스트 중 자율 복구 실패를 검토하고 추가 agent 보강 필요 여부 확인
+- **Action**: 최신 실패/수정 증거와 실제 recovery·tool·완료 검증 코드를 대조하고, 공통 복구 범위의 공백을 재현하여 우선순위와 acceptance 기준을 기록한다. 이번 요청은 진단이므로 production 동작 변경 없이 검사한다.
+
+- **Action** [Agent: Codex]: 최신 실제 모델 Spider 실패·수치 EDA 성공/실패와 의도 해석/완료/복구 코드를 대조했다. 새 스키마 임시 저장소4개로 continuation 범위를 검사했다.
+- **Outcome**: 기본 평균+차트 정상. 그룹 평균+결측 정책은 결측 프로파일만 답하고 완료, 구간 수5개는20 bins로 완료하는 P0를 재현했다. 조건 평균은 정답이나 남은 차트는 추가 추론이 필요했다. 이 사례는 scripted model 두 번째 호출 오류를 주입했으므로 실제 모델 실패율로 계산하지 않는다. 모든 원본 digest 유지, 원격 SQL/실모델 호출0.
+- **Validation**: 관련 unittest32개 PASS. pytest는 venv에 없어 unittest 경로로 실행했다. production 코드/앱은 미변경. 범용 NO-GO 유지.
+- **Artifact Update**: scripts/audit_numeric_continuation.py, docs/evaluation/2026-09-27_numeric_continuation_audit.json, docs/evaluation/2026-09-27_agent_self_recovery_audit.md. 요청 계약·시각화 spec 검증·고급 SQL 재계획·artifact 기반 continuation·대규모 재사용/receipt 복원 acceptance를 기록했다.
+
+## [2026-09-27 23:30:08 KST] [Agent: Codex] User Request: agent가 잘 동작하는지 완성도를 어떻게 측정할지 설명
+- **Action**: 기존 출시 기준과 실제 실패를 토대로 독립 정답·자율 복구·잘못된 완료·데이터 보존·효율 평가 및 GO 기준 제안을 정리한다. 새 실측 점수나 승인된 출시 기준으로 혼동하지 않도록 구분한다.
+
+- **Artifact Update**: docs/evaluation/2026-09-27_agent_maturity_measurement.md에 지표별 분모·독립 oracle·실패/미채점 처리·held-out/장애/규모 평가·DeepEval/Spider 역할·LLM/agent 원인 비교를 기록했다.
+- **Decision**: 기존 ≥95% 완료·≥90% 복구·DeepEval0.8 기준은 제품 제안값으로 유지한다. 거짓 완료/원본 유실/중복 실행은 표본0건 gate이며 평균 점수로 상쇄하지 않는다. 현 시점 완성도%는 산출 근거 부족, NO-GO 유지. 이번 요청은 측정 설계이며 새 테스트/production 변경 없음.
+
+## [2026-09-28T07:02:05] [Agent: Codex] User Request: 나머지 평가 진행
+- **Action**: 실제 모델 복합 EDA/후속 대화/복구, DeepEval 및 Spider 평가 도구의 실행 범위를 확인하고 독립 정답으로 후속 평가한다. 기존 실패와 새 결과를 구분한다.
+
+- **Action** [Agent: Codex]: 전체 reference200개 중 oracle97개를 실제 graph/Databricks 모델 설정으로 재평가했다. 자연어10여정12턴, 복합4종3회 반복, 지정장애복구3개와 모델후속대화1개, 새로운Spider5개, DeepEval 도구/정상·오답대조군/실제응답을 실행했다.
+- **Outcome**: reference97PASS/103UNGRADED, 자연어10/10·복구3/3·후속1/1PASS. 복합3/12PASS·6거짓완료·3예산소진, 원본12/12유지. Spider0/5이며 차단초안4개도공식오답. 실제보유10만행은15.715초·모델1회·원본2종hash유지·추가SQL0 PASS.
+- **Evaluator finding**: DeepEval exact tool1.0은9/10이지만 나머지1개도대체도구로실제정답. Judge 대조군3/4일치, 정답을형식으로감점. 실제응답4개는RetryError로미채점이며 원인chain관측을평가harness에추가해1건진단재확인한다.
+- **Artifact Update**: docs/evaluation/2026-09-28_remaining/ 전체원자료·report.md·summary.json, scripts/evaluate_numeric_audit_live.py, scripts/calibrate_deepeval_judge.py. production agent/UI 변경없음.
+
+- **Final evaluator check**: 중첩RetryError/일반예외 타입기록 검사2개 PASS. DeepEval 그룹평균누락1건 진단재실행은0.0정상채점. 최초4건RetryError 내부원인은재현되지않아미확정으로남겼으며 원래실패결과를보존했다. 평가harness compile/diff검사PASS, 범용NO-GO.
+
+## [2026-09-28T07:15:01] [Agent: Codex] User Request: 대화 연결·맥락 유지와 엉뚱한 주제로 벗어나지 않는지 집중 평가
+- **Action**: 원문과 독립 기대 상태를 턴별로 고정하고 생략 참조·조건 수정/해제·주제 중단/복귀·source 전환·차트 설정·재시작·세션 격리를 실제 graph와 Databricks 모델로 평가한다.
+
+- **Interim findings**: 연속대화 첫실행에서 부분조건해제 시전체조건소실(정답15→15.2), 설명요청을분석으로오분류하여복귀도차단, B전환후이전필터잔존(200→250)·그데이터후속에서A로복귀(250→15)를재현했다. 단순참조·재시작·차트설정수정·별도대화격리는첫실행통과. 낮춘요약trigger의8턴실행에서조건은남아있으나평균복귀미완료1회.
+- **Validation**: memory/scope/replacement 기존계약25개PASS. 두번째반복평가를진행하며 최초실패를보존한다. production수정/원격SQL없음.
+
+- **Final outcome**: 대화맥락8종×2회,9/16여정·51/62턴PASS. 부분조건해제/설명복귀/출처전환은각2회실패, 잘못된완료6건. 단순참조/재시작/차트수정/세션격리는각2회PASS. 요약stress1/2PASS이며 실제요약발생과 상태보존/실행미완료를구분했다. 원본62턴유지, SQL0.
+- **Artifact Update**: tests/fixtures/conversation_context_journeys.json, scripts/evaluate_conversation_context.py, docs/evaluation/2026-09-28_context/ 보고서·원시/최종결과·요약·표현진단. docs/agent_release_criteria.md에대화맥락평가기준추가. summary 판정은실제완료이벤트만세도록평가기를정정했고원시결과도보존했다.
+- **Validation**: 기존25계약PASS, 평가script compile/diffPASS. production agent/UI 미변경. 범용NO-GO유지.
+
+## [2026-09-28 15:19:36 KST] [Agent: Codex] User Request: git에 변경사항 모두 push
+- **Action**: 평가도구·fixture·진단/실행결과·출시기준·작업기록 전체 변경을 점검하고 현재 작업 브랜치에 커밋/push한 뒤 원격 SHA를 확인한다.

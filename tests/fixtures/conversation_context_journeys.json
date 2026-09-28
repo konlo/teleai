@@ -1,0 +1,373 @@
+{
+  "datasets": [
+    {
+      "source": "synthetic.phase_a",
+      "columns": [
+        "score",
+        "segment",
+        "latency_ms"
+      ],
+      "rows": [
+        [
+          2,
+          "red",
+          120
+        ],
+        [
+          4,
+          "red",
+          90
+        ],
+        [
+          10,
+          "blue",
+          60
+        ],
+        [
+          20,
+          "blue",
+          30
+        ],
+        [
+          40,
+          "green",
+          15
+        ]
+      ]
+    },
+    {
+      "source": "synthetic.phase_b",
+      "columns": [
+        "score",
+        "segment",
+        "latency_ms"
+      ],
+      "rows": [
+        [
+          100,
+          "red",
+          9
+        ],
+        [
+          200,
+          "blue",
+          6
+        ],
+        [
+          300,
+          "blue",
+          3
+        ]
+      ]
+    }
+  ],
+  "cases": [
+    {
+      "id": "ellipsis_correction_reset",
+      "turns": [
+        {
+          "prompt": "segment가 'blue'인 행의 score 평균을 알려줘.",
+          "kind": "scalar",
+          "expected": 15,
+          "column": "score",
+          "operation": "AVG",
+          "source": "synthetic.phase_a"
+        },
+        {
+          "prompt": "그중 최댓값은?",
+          "kind": "scalar",
+          "expected": 20,
+          "column": "score",
+          "operation": "MAX",
+          "source": "synthetic.phase_a"
+        },
+        {
+          "prompt": "아니, 같은 그룹의 최솟값으로 바꿔줘.",
+          "kind": "scalar",
+          "expected": 10,
+          "column": "score",
+          "operation": "MIN",
+          "source": "synthetic.phase_a"
+        },
+        {
+          "prompt": "같은 그룹에서 이번에는 latency_ms 평균을 알려줘.",
+          "kind": "scalar",
+          "expected": 45,
+          "column": "latency_ms",
+          "operation": "AVG",
+          "source": "synthetic.phase_a"
+        },
+        {
+          "prompt": "이전 segment 조건은 적용하지 말고 원본 score 평균을 알려줘.",
+          "kind": "scalar",
+          "expected": 15.2,
+          "column": "score",
+          "operation": "AVG",
+          "source": "synthetic.phase_a"
+        }
+      ]
+    },
+    {
+      "id": "selective_filter",
+      "turns": [
+        {
+          "prompt": "segment가 'blue'이고 score >= 15인 행의 score 평균을 알려줘.",
+          "kind": "scalar",
+          "expected": 20,
+          "column": "score",
+          "operation": "AVG",
+          "source": "synthetic.phase_a"
+        },
+        {
+          "prompt": "score 조건만 제거하고 segment 조건은 유지해서 score 평균을 알려줘.",
+          "kind": "scalar",
+          "expected": 15,
+          "column": "score",
+          "operation": "AVG",
+          "source": "synthetic.phase_a"
+        },
+        {
+          "prompt": "이번에는 segment가 'red'인 행의 score 평균을 알려줘. 이전 blue 조건은 대체해.",
+          "kind": "scalar",
+          "expected": 3,
+          "column": "score",
+          "operation": "AVG",
+          "source": "synthetic.phase_a"
+        }
+      ]
+    },
+    {
+      "id": "topic_pause_return",
+      "turns": [
+        {
+          "prompt": "segment가 'blue'인 행의 score 평균을 알려줘.",
+          "kind": "scalar",
+          "expected": 15,
+          "column": "score",
+          "operation": "AVG",
+          "source": "synthetic.phase_a"
+        },
+        {
+          "kind": "explanation",
+          "prompt": "데이터 분석은 잠시 멈춰. 히스토그램과 막대그래프의 차이만 설명하고 계산이나 차트 생성은 하지 마.",
+          "must_contain": [
+            "히스토그램",
+            "막대"
+          ],
+          "no_tools": true
+        },
+        {
+          "prompt": "아까 분석하던 같은 그룹으로 돌아가서 score 최댓값을 알려줘.",
+          "kind": "scalar",
+          "expected": 20,
+          "column": "score",
+          "operation": "MAX",
+          "source": "synthetic.phase_a"
+        }
+      ]
+    },
+    {
+      "id": "language_source_switch",
+      "turns": [
+        {
+          "prompt": "segment가 'blue'인 행의 score 평균을 알려줘.",
+          "kind": "scalar",
+          "expected": 15,
+          "column": "score",
+          "operation": "AVG",
+          "source": "synthetic.phase_a"
+        },
+        {
+          "prompt": "이제 synthetic.phase_b 데이터로 바꿔서 score 평균을 알려줘. 앞의 조건은 적용하지 마.",
+          "kind": "scalar",
+          "expected": 200,
+          "column": "score",
+          "operation": "AVG",
+          "source": "synthetic.phase_b"
+        },
+        {
+          "prompt": "그 데이터에서 segment가 'blue'인 행의 score 평균은?",
+          "kind": "scalar",
+          "expected": 250,
+          "column": "score",
+          "operation": "AVG",
+          "source": "synthetic.phase_b"
+        },
+        {
+          "prompt": "처음 synthetic.phase_a 원본으로 돌아가서 모든 행의 score 평균을 알려줘. 이전 segment 조건은 적용하지 마.",
+          "kind": "scalar",
+          "expected": 15.2,
+          "column": "score",
+          "operation": "AVG",
+          "source": "synthetic.phase_a"
+        }
+      ]
+    },
+    {
+      "id": "restart_followup",
+      "turns": [
+        {
+          "prompt": "segment가 'blue'인 행의 score 평균을 알려줘.",
+          "kind": "scalar",
+          "expected": 15,
+          "column": "score",
+          "operation": "AVG",
+          "source": "synthetic.phase_a"
+        },
+        {
+          "prompt": "그중 score 최댓값을 알려줘.",
+          "kind": "scalar",
+          "expected": 20,
+          "column": "score",
+          "operation": "MAX",
+          "source": "synthetic.phase_a",
+          "reopen_before": true
+        },
+        {
+          "prompt": "같은 조건으로 latency_ms 평균도 알려줘.",
+          "kind": "scalar",
+          "expected": 45,
+          "column": "latency_ms",
+          "operation": "AVG",
+          "source": "synthetic.phase_a"
+        }
+      ]
+    },
+    {
+      "id": "chart_edit",
+      "turns": [
+        {
+          "kind": "chart",
+          "prompt": "score 히스토그램을 5개 구간으로 보여줘.",
+          "source": "synthetic.phase_a",
+          "column": "score",
+          "bins": 5,
+          "expected_values": [
+            2,
+            4,
+            10,
+            20,
+            40
+          ]
+        },
+        {
+          "kind": "chart",
+          "prompt": "방금 그 히스토그램의 구간 수만 10개로 바꿔줘. 나머지는 그대로 유지해.",
+          "source": "synthetic.phase_a",
+          "column": "score",
+          "bins": 10,
+          "expected_values": [
+            2,
+            4,
+            10,
+            20,
+            40
+          ]
+        }
+      ]
+    },
+    {
+      "id": "session_isolation",
+      "turns": [
+        {
+          "prompt": "segment가 'blue'인 행의 score 평균을 알려줘.",
+          "kind": "scalar",
+          "expected": 15,
+          "column": "score",
+          "operation": "AVG",
+          "source": "synthetic.phase_a"
+        },
+        {
+          "prompt": "score 평균을 알려줘.",
+          "kind": "scalar",
+          "expected": 200,
+          "column": "score",
+          "operation": "AVG",
+          "source": "synthetic.phase_b",
+          "new_session_before": true,
+          "select_source": "synthetic.phase_b"
+        },
+        {
+          "prompt": "처음 대화의 그중 score 최댓값을 알려줘.",
+          "kind": "scalar",
+          "expected": 20,
+          "column": "score",
+          "operation": "MAX",
+          "source": "synthetic.phase_a",
+          "return_session_before": true
+        }
+      ]
+    },
+    {
+      "id": "summary_followup",
+      "summary_trigger_tokens": 1200,
+      "require_summary": true,
+      "turns": [
+        {
+          "prompt": "segment가 'blue'인 행의 score 평균을 알려줘.",
+          "kind": "scalar",
+          "expected": 15,
+          "column": "score",
+          "operation": "AVG",
+          "source": "synthetic.phase_a"
+        },
+        {
+          "prompt": "그중 score 최댓값은?",
+          "kind": "scalar",
+          "expected": 20,
+          "column": "score",
+          "operation": "MAX",
+          "source": "synthetic.phase_a"
+        },
+        {
+          "prompt": "같은 조건에서 score 최솟값은?",
+          "kind": "scalar",
+          "expected": 10,
+          "column": "score",
+          "operation": "MIN",
+          "source": "synthetic.phase_a"
+        },
+        {
+          "prompt": "같은 그룹에서 latency_ms 평균은?",
+          "kind": "scalar",
+          "expected": 45,
+          "column": "latency_ms",
+          "operation": "AVG",
+          "source": "synthetic.phase_a"
+        },
+        {
+          "prompt": "같은 조건에서 latency_ms 최댓값은?",
+          "kind": "scalar",
+          "expected": 60,
+          "column": "latency_ms",
+          "operation": "MAX",
+          "source": "synthetic.phase_a"
+        },
+        {
+          "prompt": "그중 latency_ms 최솟값은?",
+          "kind": "scalar",
+          "expected": 30,
+          "column": "latency_ms",
+          "operation": "MIN",
+          "source": "synthetic.phase_a"
+        },
+        {
+          "prompt": "같은 그룹에서 score 평균으로 다시 돌아가줘.",
+          "kind": "scalar",
+          "expected": 15,
+          "column": "score",
+          "operation": "AVG",
+          "source": "synthetic.phase_a"
+        },
+        {
+          "prompt": "이전 segment 조건은 적용하지 말고 원본 score 평균을 알려줘.",
+          "kind": "scalar",
+          "expected": 15.2,
+          "column": "score",
+          "operation": "AVG",
+          "source": "synthetic.phase_a"
+        }
+      ]
+    }
+  ]
+}

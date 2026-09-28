@@ -27,6 +27,18 @@ EXPECTED_SINGLE_TOOL = {
 JUDGE_CASES = {"L1_001", "L1_016", "L1_017", "L1_036", "L2_005", "L2_036", "L2_051"}
 
 
+def error_chain(error):
+    """Keep provider/evaluator failure types without logging prompts or secrets."""
+    result, seen = [], set()
+    while error is not None and id(error) not in seen and len(result) < 8:
+        seen.add(id(error))
+        result.append(type(error).__name__)
+        attempt = getattr(error, 'last_attempt', None)
+        nested = attempt.exception() if attempt is not None and attempt.done() else None
+        error = nested or error.__cause__ or error.__context__
+    return result
+
+
 def real_records(source):
     """Accept measured graph reports, retaining synthetic-fault qualifications."""
     if source.get('mode') in {'live-local-model', 'live-databricks-model'}:
@@ -110,6 +122,7 @@ def main() -> int:
                 entry["tool_reason"] = metric.reason
             except Exception as exc:
                 entry["tool_error"] = type(exc).__name__
+                entry["tool_error_chain"] = error_chain(exc)
         judge_cases = set(args.judge_id or JUDGE_CASES)
         if not args.skip_judge and case_id in judge_cases and record.get("final_output"):
             case = LLMTestCase(input=record["prompt"],
@@ -130,6 +143,7 @@ def main() -> int:
                 entry["judge_reason"] = metric.reason
             except Exception as exc:
                 entry["judge_error"] = type(exc).__name__
+                entry["judge_error_chain"] = error_chain(exc)
         results.append(entry)
         args.output.parent.mkdir(parents=True, exist_ok=True)
         args.output.write_text(json.dumps({"generated_at": datetime.now(timezone.utc).isoformat(),
