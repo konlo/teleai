@@ -1,0 +1,93 @@
+{
+  "generated_at": "2026-09-14T03:41:48.240232+00:00",
+  "model": "gemma4:e4b",
+  "endpoint_host": "127.0.0.1",
+  "prompt": "현재 보유한 bank_loan 데이터에서 age와 balance의 피어슨 상관계수를 계산해줘.",
+  "oracle": {
+    "kind": "pearson_correlation",
+    "expected": 0.025270754258456884
+  },
+  "summary": {
+    "count": 5,
+    "p50_seconds": 77.451,
+    "p95_seconds": 80.704,
+    "max_seconds": 80.704,
+    "percentile_method": "nearest-rank",
+    "requested_iterations": 5,
+    "successes": 5,
+    "failures": 0,
+    "max_process_peak_rss_bytes": 218464256
+  },
+  "results": [
+    {
+      "iteration": 1,
+      "status": "PASS",
+      "agent_status": "answered",
+      "elapsed_seconds": 80.704,
+      "model_calls": 1,
+      "model_seconds": 80.47855281829834,
+      "tool_calls": 1,
+      "evidence_values": [
+        0.025270754258456814
+      ]
+    },
+    {
+      "iteration": 2,
+      "status": "PASS",
+      "agent_status": "answered",
+      "elapsed_seconds": 76.097,
+      "model_calls": 1,
+      "model_seconds": 76.0352520942688,
+      "tool_calls": 1,
+      "evidence_values": [
+        0.025270754258456814
+      ]
+    },
+    {
+      "iteration": 3,
+      "status": "PASS",
+      "agent_status": "answered",
+      "elapsed_seconds": 78.735,
+      "model_calls": 1,
+      "model_seconds": 78.67541980743408,
+      "tool_calls": 1,
+      "evidence_values": [
+        0.025270754258456814
+      ]
+    },
+    {
+      "iteration": 4,
+      "status": "PASS",
+      "agent_status": "answered",
+      "elapsed_seconds": 77.451,
+      "model_calls": 1,
+      "model_seconds": 77.38613104820251,
+      "tool_calls": 1,
+      "evidence_values": [
+        0.025270754258456814
+      ]
+    },
+    {
+      "iteration": 5,
+      "status": "PASS",
+      "agent_status": "answered",
+      "elapsed_seconds": 74.875,
+      "model_calls": 1,
+      "model_seconds": 74.81430339813232,
+      "tool_calls": 1,
+      "evidence_values": [
+        0.025270754258456814
+      ]
+    }
+  ],
+  "safety": {
+    "databricks_calls": 0,
+    "remote_tool_registered": false,
+    "fixture_rows": 2000
+  },
+  "limitations": [
+    "This measures one correlation intent against one local model and one fixture.",
+    "The five-run p95 is the nearest-rank maximum and needs production traffic calibration.",
+    "It does not represent concurrent model serving or remote Databricks latency."
+  ]
+}

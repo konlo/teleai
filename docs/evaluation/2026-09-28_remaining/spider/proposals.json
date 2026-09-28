@@ -1,0 +1,340 @@
+{
+  "provider": "databricks",
+  "model": "databricks-qwen3-next-80b-a3b-instruct",
+  "model_timeout_seconds": 60.0,
+  "results": [
+    {
+      "id": "local002",
+      "db": "E_commerce",
+      "benchmark": "Spider2-Lite SQLite",
+      "mode": "TeleAI SQL proposal; no automatic approval or remote SQL execution; read-only public SQLite probe",
+      "prompt_mode": "sql_instructed",
+      "status": "NO_SQL_PROPOSAL",
+      "agent_status": "blocked",
+      "tools": [
+        "inspect_table_context",
+        "inspect_table_context",
+        "inspect_table_context",
+        "inspect_table_relationships",
+        "inspect_table_relationships",
+        "inspect_table_relationships",
+        "query_databricks",
+        "inspect_table_context"
+      ],
+      "model_calls": 10,
+      "recovery_attempts": 1,
+      "sql_drafts": [
+        {
+          "source": "orders | order_items | products",
+          "query": "SELECT DATE(o.order_purchase_timestamp) AS sale_date, SUM(oi.price) AS daily_sales\nFROM orders o\nJOIN order_items oi ON o.order_id = oi.order_id\nJOIN products p ON oi.product_id = p.product_id\nWHERE o.order_purchase_timestamp >= '2017-01-01' AND o.order_purchase_timestamp < '2018-08-30'\n  AND (p.product_category_name = 'brinquedos' OR p.product_category_name = 'toys' OR p.product_category_name LIKE '%toy%' OR p.product_category_name LIKE '%brinquedo%')\nGROUP BY DATE(o.order_purchase_timestamp)\nORDER BY sale_date",
+          "reason": "일일 장난감 판매 데이터를 추출하여 2017-01-01부터 2018-08-29까지의 기간을 기반으로 선형 회귀 모델을 적용할 수 있도록 준비합니다. 제품 카테고리 이름은 'brinquedos', 'toys', 또는 관련 키워드를 포함하는 경우를 포함하여 검색합니다."
+        }
+      ],
+      "observations": [
+        {
+          "tool": "inspect_table_context",
+          "status": "ready",
+          "error_code": null
+        },
+        {
+          "tool": "inspect_table_context",
+          "status": "ready",
+          "error_code": null
+        },
+        {
+          "tool": "inspect_table_context",
+          "status": "ready",
+          "error_code": null
+        },
+        {
+          "tool": "inspect_table_relationships",
+          "status": "ready",
+          "error_code": null
+        },
+        {
+          "tool": "inspect_table_relationships",
+          "status": "ready",
+          "error_code": null
+        },
+        {
+          "tool": "inspect_table_relationships",
+          "status": "ready",
+          "error_code": null
+        },
+        {
+          "tool": "inspect_table_context",
+          "status": "ready",
+          "error_code": null
+        }
+      ],
+      "draft_probe": {
+        "status": "executable",
+        "elapsed_seconds": 0.118
+      },
+      "failure_causes": [
+        "unverified_join_relationship"
+      ],
+      "remote_executions": 0,
+      "error_type": null,
+      "elapsed_seconds": 29.883
+    },
+    {
+      "id": "local003",
+      "db": "E_commerce",
+      "benchmark": "Spider2-Lite SQLite",
+      "mode": "TeleAI SQL proposal; no automatic approval or remote SQL execution; read-only public SQLite probe",
+      "prompt_mode": "sql_instructed",
+      "status": "NO_SQL_PROPOSAL",
+      "agent_status": "blocked",
+      "tools": [
+        "inspect_table_relationships",
+        "inspect_table_relationships",
+        "inspect_table_relationships",
+        "inspect_table_relationships",
+        "inspect_table_context",
+        "inspect_table_context",
+        "inspect_table_context",
+        "inspect_table_context",
+        "query_databricks",
+        "query_databricks",
+        "inspect_table_relationships"
+      ],
+      "model_calls": 10,
+      "recovery_attempts": 2,
+      "sql_drafts": [
+        {
+          "source": "customers | orders | order_items | order_payments",
+          "query": "WITH delivered_orders AS (\n  SELECT \n    c.customer_unique_id,\n    o.order_id,\n    o.order_purchase_timestamp,\n    SUM(oi.price + oi.freight_value) AS order_total\n  FROM customers c\n  JOIN orders o ON c.customer_id = o.customer_id\n  JOIN order_items oi ON o.order_id = oi.order_id\n  JOIN order_payments op ON o.order_id = op.order_id\n  WHERE o.order_status = 'delivered'\n  GROUP BY c.customer_unique_id, o.order_id, o.order_purchase_timestamp\n),\nrfm_calc AS (\n  SELECT \n    customer_unique_id,\n    COUNT(order_id) AS frequency,\n    SUM(order_total) AS monetary,\n    MAX(order_purchase_timestamp) AS last_purchase_date\n  FROM delivered_orders\n  GROUP BY customer_unique_id\n),\nrfm_scores AS (\n  SELECT \n    customer_unique_id,\n    frequency,\n    monetary,\n    last_purchase_date,\n    (julianday('now') - julianday(last_purchase_date)) AS recency_days,\n    CASE \n      WHEN (julianday('now') - julianday(last_purchase_date)) <= 30 THEN 1\n      WHEN (julianday('now') - julianday(last_purchase_date)) <= 60 THEN 2\n      WHEN (julianday('now') - julianday(last_purchase_date)) <= 90 THEN 3\n      WHEN (julianday('now') - julianday(last_purchase_date)) <= 180 THEN 4\n      ELSE 5\n    END AS recency_score,\n    CASE \n      WHEN frequency <= 1 THEN 5\n      WHEN frequency <= 2 THEN 4\n      WHEN frequency <= 4 THEN 3\n      WHEN frequency <= 7 THEN 2\n      ELSE 1\n    END AS frequency_score,\n    CASE \n      WHEN monetary <= 100 THEN 5\n      WHEN monetary <= 200 THEN 4\n      WHEN monetary <= 500 THEN 3\n      WHEN monetary <= 1000 THEN 2\n      ELSE 1\n    END AS monetary_score\n  FROM rfm_calc\n)\nSELECT \n  recency_score,\n  frequency_score,\n  monetary_score,\n  AVG(order_total) AS avg_sales_per_order\nFROM delivered_orders do\nJOIN rfm_scores rs ON do.customer_unique_id = rs.customer_unique_id\nGROUP BY recency_score, frequency_score, monetary_score\nORDER BY recency_score, frequency_score, monetary_score;",
+          "reason": "RFM 세그먼트별 주문당 평균 매출을 계산하기 위해, 배송완료 주문만을 대상으로 고객별 최신 구매일을 기준으로 Recency를 계산하고, Frequency와 Monetary를 5분위로 점수화하여 RFM 세그먼트를 정의합니다. 주문당 평균 매출은 총 매출 ÷ 주문 수로 계산하며, 각 RFM 세그먼트별로 집계합니다. 점수화 기준은 데이터 분포에 기반한 사전 정의된 임계값을 사용합니다."
+        },
+        {
+          "source": "customers | orders | order_items | order_payments",
+          "query": "WITH delivered_orders AS (\n  SELECT \n    c.customer_unique_id,\n    o.order_id,\n    o.order_purchase_timestamp,\n    SUM(oi.price + oi.freight_value) AS order_total\n  FROM customers c\n  JOIN orders o ON c.customer_id = o.customer_id\n  JOIN order_items oi ON o.order_id = oi.order_id\n  JOIN order_payments op ON o.order_id = op.order_id\n  WHERE o.order_status = 'delivered'\n  GROUP BY c.customer_unique_id, o.order_id, o.order_purchase_timestamp\n),\nrfm_calc AS (\n  SELECT \n    customer_unique_id,\n    COUNT(order_id) AS frequency,\n    SUM(order_total) AS monetary,\n    MAX(order_purchase_timestamp) AS last_purchase_date\n  FROM delivered_orders\n  GROUP BY customer_unique_id\n),\nrfm_scores AS (\n  SELECT \n    customer_unique_id,\n    frequency,\n    monetary,\n    last_purchase_date,\n    (julianday('now') - julianday(last_purchase_date)) AS recency_days,\n    CASE \n      WHEN (julianday('now') - julianday(last_purchase_date)) <= 30 THEN 1\n      WHEN (julianday('now') - julianday(last_purchase_date)) <= 60 THEN 2\n      WHEN (julianday('now') - julianday(last_purchase_date)) <= 90 THEN 3\n      WHEN (julianday('now') - julianday(last_purchase_date)) <= 180 THEN 4\n      ELSE 5\n    END AS recency_score,\n    CASE \n      WHEN frequency <= 1 THEN 5\n      WHEN frequency <= 2 THEN 4\n      WHEN frequency <= 4 THEN 3\n      WHEN frequency <= 7 THEN 2\n      ELSE 1\n    END AS frequency_score,\n    CASE \n      WHEN monetary <= 100 THEN 5\n      WHEN monetary <= 200 THEN 4\n      WHEN monetary <= 500 THEN 3\n      WHEN monetary <= 1000 THEN 2\n      ELSE 1\n    END AS monetary_score\n  FROM rfm_calc\n)\nSELECT \n  rs.recency_score,\n  rs.frequency_score,\n  rs.monetary_score,\n  AVG(do.order_total) AS avg_sales_per_order\nFROM delivered_orders do\nJOIN rfm_scores rs ON do.customer_unique_id = rs.customer_unique_id\nGROUP BY rs.recency_score, rs.frequency_score, rs.monetary_score\nORDER BY rs.recency_score, rs.frequency_score, rs.monetary_score;",
+          "reason": "고객별 배송완료 주문의 총매출과 주문수를 기반으로 주문당 평균 매출을 계산하고, Recency는 최신 구매일 기준으로 일수로 계산하여 5점 척도로 변환합니다. Frequency와 Monetary도 동일한 방식으로 5점 척도로 변환하여 RFM 세그먼트를 정의하고, 각 세그먼트별 주문당 평균 매출을 집계합니다."
+        }
+      ],
+      "observations": [
+        {
+          "tool": "inspect_table_relationships",
+          "status": "ready",
+          "error_code": null
+        },
+        {
+          "tool": "inspect_table_relationships",
+          "status": "ready",
+          "error_code": null
+        },
+        {
+          "tool": "inspect_table_relationships",
+          "status": "ready",
+          "error_code": null
+        },
+        {
+          "tool": "inspect_table_relationships",
+          "status": "ready",
+          "error_code": null
+        },
+        {
+          "tool": "inspect_table_context",
+          "status": "ready",
+          "error_code": null
+        },
+        {
+          "tool": "inspect_table_context",
+          "status": "ready",
+          "error_code": null
+        },
+        {
+          "tool": "inspect_table_context",
+          "status": "ready",
+          "error_code": null
+        },
+        {
+          "tool": "inspect_table_context",
+          "status": "ready",
+          "error_code": null
+        },
+        {
+          "tool": "inspect_table_relationships",
+          "status": "ready",
+          "error_code": null
+        }
+      ],
+      "draft_probe": {
+        "status": "executable",
+        "elapsed_seconds": 0.851
+      },
+      "failure_causes": [
+        "unverified_join_relationship"
+      ],
+      "remote_executions": 0,
+      "error_type": null,
+      "elapsed_seconds": 72.625
+    },
+    {
+      "id": "local004",
+      "db": "E_commerce",
+      "benchmark": "Spider2-Lite SQLite",
+      "mode": "TeleAI SQL proposal; no automatic approval or remote SQL execution; read-only public SQLite probe",
+      "prompt_mode": "sql_instructed",
+      "status": "NO_SQL_PROPOSAL",
+      "agent_status": "blocked",
+      "tools": [
+        "inspect_table_relationships",
+        "inspect_table_relationships",
+        "inspect_table_relationships",
+        "inspect_table_context",
+        "inspect_table_context",
+        "inspect_table_context",
+        "query_databricks",
+        "inspect_table_relationships",
+        "query_databricks"
+      ],
+      "model_calls": 6,
+      "recovery_attempts": 2,
+      "sql_drafts": [
+        {
+          "source": "orders | order_payments",
+          "query": "SELECT o.customer_id, COUNT(o.order_id) AS order_count, AVG(op.payment_value) AS avg_payment_per_order\nFROM orders o\nJOIN order_payments op ON o.order_id = op.order_id\nGROUP BY o.customer_id\nORDER BY avg_payment_per_order DESC\nLIMIT 3",
+          "reason": "상위 3명의 고객을 식별하기 위해 주문 수와 평균 결제 금액을 계산합니다. 고객 ID를 기준으로 그룹화하고, 평균 결제 금액으로 정렬하여 상위 3명을 추출합니다."
+        },
+        {
+          "source": "orders | order_payments",
+          "query": "SELECT \n    o.customer_id,\n    COUNT(o.order_id) AS number_of_orders,\n    AVG(op.payment_value) AS average_payment_per_order,\n    CASE \n        WHEN (julianday(MAX(o.order_purchase_timestamp)) - julianday(MIN(o.order_purchase_timestamp))) / 7 < 1.0 \n        THEN 1.0 \n        ELSE (julianday(MAX(o.order_purchase_timestamp)) - julianday(MIN(o.order_purchase_timestamp))) / 7 \n    END AS customer_lifespan_in_weeks\nFROM orders o\nJOIN order_payments op ON o.order_id = op.order_id\nGROUP BY o.customer_id\nORDER BY average_payment_per_order DESC\nLIMIT 3",
+          "reason": "To compute the number of orders, average payment per order, and customer lifespan in weeks for the top 3 customers by average payment, using the observed schema and SQLite date functions."
+        }
+      ],
+      "observations": [
+        {
+          "tool": "inspect_table_relationships",
+          "status": "ready",
+          "error_code": null
+        },
+        {
+          "tool": "inspect_table_relationships",
+          "status": "ready",
+          "error_code": null
+        },
+        {
+          "tool": "inspect_table_relationships",
+          "status": "ready",
+          "error_code": null
+        },
+        {
+          "tool": "inspect_table_context",
+          "status": "ready",
+          "error_code": null
+        },
+        {
+          "tool": "inspect_table_context",
+          "status": "ready",
+          "error_code": null
+        },
+        {
+          "tool": "inspect_table_context",
+          "status": "ready",
+          "error_code": null
+        },
+        {
+          "tool": "inspect_table_relationships",
+          "status": "ready",
+          "error_code": null
+        }
+      ],
+      "draft_probe": {
+        "status": "executable",
+        "elapsed_seconds": 0.245
+      },
+      "failure_causes": [
+        "unverified_join_relationship"
+      ],
+      "remote_executions": 0,
+      "error_type": null,
+      "elapsed_seconds": 20.675
+    },
+    {
+      "id": "local007",
+      "db": "Baseball",
+      "benchmark": "Spider2-Lite SQLite",
+      "mode": "TeleAI SQL proposal; no automatic approval or remote SQL execution; read-only public SQLite probe",
+      "prompt_mode": "sql_instructed",
+      "status": "SQL_PROPOSED",
+      "agent_status": "awaiting_approval",
+      "prediction": "/Users/najongseong/git_repository/teleai/docs/evaluation/2026-09-28_remaining/spider/predictions/local007.sql",
+      "probe": {
+        "status": "executable",
+        "elapsed_seconds": 0.0
+      },
+      "tools": [
+        "inspect_table_context",
+        "query_databricks"
+      ],
+      "schema_tables": 26,
+      "elapsed_seconds": 4.055,
+      "remote_executions": 0
+    },
+    {
+      "id": "local008",
+      "db": "Baseball",
+      "benchmark": "Spider2-Lite SQLite",
+      "mode": "TeleAI SQL proposal; no automatic approval or remote SQL execution; read-only public SQLite probe",
+      "prompt_mode": "sql_instructed",
+      "status": "NO_SQL_PROPOSAL",
+      "agent_status": "blocked",
+      "tools": [
+        "inspect_table_context",
+        "inspect_table_context",
+        "query_databricks",
+        "inspect_table_relationships",
+        "inspect_table_relationships",
+        "query_databricks"
+      ],
+      "model_calls": 10,
+      "recovery_attempts": 2,
+      "sql_drafts": [
+        {
+          "source": "batting | player",
+          "query": "SELECT p.name_given, b.g AS games_played, b.r AS runs, b.h AS hits, b.hr AS home_runs\nFROM batting b\nJOIN player p ON b.player_id = p.player_id\nORDER BY b.g DESC, b.r DESC, b.h DESC, b.hr DESC\nLIMIT 1",
+          "reason": "사용자는 게임 수, 런, 히트, 홈런 중 최고값을 달성한 선수의 주 이름과 해당 점수를 요청했습니다. batting 테이블에는 g(게임 수), r(런), h(히트), hr(홈런) 컬럼이 있고, player 테이블에는 name_given(주 이름)이 있습니다. player_id로 조인하여 최고값을 가진 선수를 찾습니다. ORDER BY로 모든 지표를 내림차순 정렬하여 최고값을 우선적으로 추출합니다."
+        },
+        {
+          "source": "batting | player",
+          "query": "SELECT p.name_given, b.g AS games_played, b.r AS runs, b.h AS hits, b.hr AS home_runs\nFROM batting b\nJOIN player p ON b.player_id = p.player_id\nWHERE b.g = (SELECT MAX(g) FROM batting)\n   OR b.r = (SELECT MAX(r) FROM batting)\n   OR b.h = (SELECT MAX(h) FROM batting)\n   OR b.hr = (SELECT MAX(hr) FROM batting)\nORDER BY b.g DESC, b.r DESC, b.h DESC, b.hr DESC",
+          "reason": "사용자는 경기 수, 득점, 안타, 홈런 중 각각 최고값을 기록한 선수의 이름(name_given)과 해당 점수값을 요청했습니다. batting 테이블에 g, r, h, hr 컬럼이 있고, player 테이블에 name_given이 있으므로 두 테이블을 player_id로 조인합니다. 각 지표의 최대값을 서브쿼리로 비교하여 OR 조건으로 해당 선수를 추출합니다. 결과는 각 지표별 최고값을 포함하며, 점수 내림차순으로 정렬해 명확히 표시합니다."
+        }
+      ],
+      "observations": [
+        {
+          "tool": "inspect_table_context",
+          "status": "ready",
+          "error_code": null
+        },
+        {
+          "tool": "inspect_table_context",
+          "status": "ready",
+          "error_code": null
+        },
+        {
+          "tool": "inspect_table_relationships",
+          "status": "ready",
+          "error_code": null
+        },
+        {
+          "tool": "inspect_table_relationships",
+          "status": "ready",
+          "error_code": null
+        }
+      ],
+      "draft_probe": {
+        "status": "executable",
+        "elapsed_seconds": 0.087
+      },
+      "failure_causes": [
+        "unverified_join_relationship"
+      ],
+      "remote_executions": 0,
+      "error_type": null,
+      "elapsed_seconds": 38.04
+    }
+  ]
+}

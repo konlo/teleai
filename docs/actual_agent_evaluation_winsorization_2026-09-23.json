@@ -1,0 +1,78 @@
+{
+  "generated_at": "2026-09-23T13:57:39.799063+00:00",
+  "status": "PASS",
+  "runtime": "core.analysis_agent.runtime.GraphAnalysisRuntime",
+  "cases": [
+    {
+      "name": "arbitrary-schema winsorization",
+      "status": "PASS",
+      "tools": {
+        "winsorize_numeric": 1
+      },
+      "model_calls": 0,
+      "expected": {
+        "lower": -39.39999999999999,
+        "upper": 403.00000000000034,
+        "original_mean": 130.71428571428572,
+        "winsorized_mean": 54.08571428571434,
+        "lower_count": 1,
+        "upper_count": 1
+      },
+      "actual": {
+        "lower": -39.39999999999999,
+        "upper": 403.00000000000034,
+        "original_mean": 130.71428571428572,
+        "winsorized_mean": 54.08571428571434,
+        "lower_count": 1,
+        "upper_count": 1
+      },
+      "source_unchanged": true
+    },
+    {
+      "name": "unchanged L2_096 prompt",
+      "reference_id": "L2_096",
+      "status": "PASS",
+      "tools": {
+        "winsorize_numeric": 1
+      },
+      "model_calls": 0,
+      "remote_executions": 0,
+      "evidence": {
+        "comparisons": [
+          {
+            "dataset_id": "4ac8477a-0984-49ac-9fd2-5158bc07b5fc",
+            "thresholds": {
+              "lower": -2566.58,
+              "upper": 66933.24999999999
+            },
+            "clipped_counts": {
+              "lower": 20,
+              "upper": 20,
+              "total": 40
+            },
+            "original": {
+              "mean": 2760.0675,
+              "minimum": -2985,
+              "maximum": 83389
+            },
+            "winsorized": {
+              "mean": 2676.3342000000002,
+              "minimum": -2566.58,
+              "maximum": 66933.24999999999
+            }
+          }
+        ]
+      }
+    }
+  ],
+  "passed": 2,
+  "total": 2,
+  "model_calls": 0,
+  "remote_executions": 0,
+  "elapsed_seconds": 0.597,
+  "limitations": [
+    "Local fixtures; no Databricks or browser execution",
+    "The tool returns aggregate evidence and intentionally does not materialize a transformed dataset",
+    "L2_096 increases primary independent grading coverage to 74/200 together with L2_089"
+  ]
+}

@@ -9,32 +9,41 @@
       "status": "PASS",
       "result": {
         "status": "answered",
-        "text": "요청하신 대로 보유 데이터에서 '2026-08' 기간의 `value` 평균을 계산했습니다.\n\n**결과:**\n*   **2026-08의 value 평균:** 40.0\n\n이 결과는 원본 데이터를 기반으로 집계된 값이며, 해당 조건(period = '2026-08')에 맞는 모든 데이터 포인트를 사용하여 계산되었습니다.",
-        "elapsed_seconds": 162.817
+        "text": "보유 데이터로 계산한 결과입니다. 출처: acceptance.synthetic_events\n분석 범위: 요청 조건에 포함된 보유 데이터 전체\n\n적용 조건: period = 2026-08\n\n평균: 40.0",
+        "elapsed_seconds": 23.176
       },
       "observations": [
         {
           "status": "ready",
           "dataset": {
-            "id": "90dd039a-f5f8-46bb-b8b0-dc04edf98868",
+            "id": "5f8778be-a3b4-4c79-8e51-d5388f67a95f",
             "source": "acceptance.synthetic_events",
             "columns": [
               "avg(\"value\")"
             ],
             "rows": 1,
             "coverage": "complete",
-            "conditions": [],
+            "conditions": [
+              {
+                "column": "period",
+                "op": "eq",
+                "value": "2026-08"
+              }
+            ],
             "predicate_known": false,
             "grain": "aggregate",
-            "aggregation": "SELECT AVG(value) FROM data WHERE period = '2026-08'",
+            "aggregation": "SELECT AVG(value) FROM data",
             "snapshot": "",
-            "query": "SELECT AVG(value) FROM data WHERE period = '2026-08'",
-            "parent_id": "a4d6937f-e291-475c-92d3-b6f6373c02bf"
+            "query": "SELECT AVG(value) FROM data",
+            "parent_id": "04025daf-a699-457c-80da-47835e70895a"
           },
           "preview": [
             {
               "avg(\"value\")": 40.0
             }
+          ],
+          "applied_corrections": [
+            "added_local_data_from"
           ]
         }
       ]
@@ -46,32 +55,46 @@
       "status": "PASS",
       "result": {
         "status": "answered",
-        "text": "네, 'Segment A'로 조건을 추가하여 다시 계산했습니다.\n\n**결과:**\n*   **2026-08의 Segment A value 평균:** 40.0\n\n이 결과는 원본 데이터를 기반으로 집계되었으며, 조건은 `period = '2026-08'` 이고 `segment = 'A'`인 데이터만을 사용했습니다.",
-        "elapsed_seconds": 81.124
+        "text": "보유 데이터로 계산한 결과입니다. 출처: acceptance.synthetic_events\n분석 범위: 요청 조건에 포함된 보유 데이터 전체\n\n적용 조건: period = 2026-08 AND segment = A\n\n평균: 40.0",
+        "elapsed_seconds": 26.511
       },
       "observations": [
         {
           "status": "ready",
           "dataset": {
-            "id": "f75b43f5-55d0-414f-a67e-65b4e2c6fe7c",
+            "id": "8b55f207-880d-4c92-9f98-101a810fae85",
             "source": "acceptance.synthetic_events",
             "columns": [
               "avg(\"value\")"
             ],
             "rows": 1,
             "coverage": "complete",
-            "conditions": [],
+            "conditions": [
+              {
+                "column": "period",
+                "op": "eq",
+                "value": "2026-08"
+              },
+              {
+                "column": "segment",
+                "op": "eq",
+                "value": "A"
+              }
+            ],
             "predicate_known": false,
             "grain": "aggregate",
-            "aggregation": "SELECT AVG(value) FROM data WHERE period = '2026-08' AND segment = 'A'",
+            "aggregation": "SELECT AVG(value) FROM data",
             "snapshot": "",
-            "query": "SELECT AVG(value) FROM data WHERE period = '2026-08' AND segment = 'A'",
-            "parent_id": "a4d6937f-e291-475c-92d3-b6f6373c02bf"
+            "query": "SELECT AVG(value) FROM data",
+            "parent_id": "04025daf-a699-457c-80da-47835e70895a"
           },
           "preview": [
             {
               "avg(\"value\")": 40.0
             }
+          ],
+          "applied_corrections": [
+            "added_local_data_from"
           ]
         }
       ]
@@ -83,32 +106,46 @@
       "status": "PASS",
       "result": {
         "status": "answered",
-        "text": "네, 집계 함수를 평균(AVG)에서 중앙값(MEDIAN)으로 변경하여 다시 계산했습니다.\n\n**결과:**\n*   **2026-08의 Segment A value 중앙값:** 20.0\n\n이 값은 '2026-08' 기간 중 'Segment A'에 해당하는 `value` 데이터들의 중앙값을 나타냅니다.",
-        "elapsed_seconds": 49.007
+        "text": "보유 데이터로 계산한 결과입니다. 출처: acceptance.synthetic_events\n분석 범위: 요청 조건에 포함된 보유 데이터 전체\n\n적용 조건: period = 2026-08 AND segment = A\n\n중앙값: 20.0",
+        "elapsed_seconds": 32.905
       },
       "observations": [
         {
           "status": "ready",
           "dataset": {
-            "id": "34b5f78c-8d68-4fd6-99ce-d7ad04f04e6b",
+            "id": "79c94602-83d5-444b-b620-67afc0e68ea6",
             "source": "acceptance.synthetic_events",
             "columns": [
               "median(\"value\")"
             ],
             "rows": 1,
             "coverage": "complete",
-            "conditions": [],
+            "conditions": [
+              {
+                "column": "period",
+                "op": "eq",
+                "value": "2026-08"
+              },
+              {
+                "column": "segment",
+                "op": "eq",
+                "value": "A"
+              }
+            ],
             "predicate_known": false,
             "grain": "aggregate",
-            "aggregation": "SELECT MEDIAN(value) FROM data WHERE period = '2026-08' AND segment = 'A'",
+            "aggregation": "SELECT MEDIAN(value) FROM data",
             "snapshot": "",
-            "query": "SELECT MEDIAN(value) FROM data WHERE period = '2026-08' AND segment = 'A'",
-            "parent_id": "a4d6937f-e291-475c-92d3-b6f6373c02bf"
+            "query": "SELECT MEDIAN(value) FROM data",
+            "parent_id": "04025daf-a699-457c-80da-47835e70895a"
           },
           "preview": [
             {
               "median(\"value\")": 20.0
             }
+          ],
+          "applied_corrections": [
+            "added_local_data_from"
           ]
         }
       ]
@@ -120,32 +157,46 @@
       "status": "PASS",
       "result": {
         "status": "answered",
-        "text": "네, 동일한 그룹('Segment A')의 이전 달인 '2026-07'에 대한 중앙값을 계산했습니다.\n\n**결과:**\n*   **2026-07의 Segment A value 중앙값:** 4.0\n\n따라서, **2026-08 (20.0)**와 비교했을 때, 이전 달인 **2026-07 (4.0)**의 중앙값이 더 낮은 것을 확인할 수 있습니다.",
-        "elapsed_seconds": 73.133
+        "text": "보유 데이터로 계산한 결과입니다. 출처: acceptance.synthetic_events\n분석 범위: 요청 조건에 포함된 보유 데이터 전체\n\n적용 조건: period = 2026-07 AND segment = A\n\n중앙값: 4.0",
+        "elapsed_seconds": 47.618
       },
       "observations": [
         {
           "status": "ready",
           "dataset": {
-            "id": "a273ec29-4ff2-4139-ac10-d67340cf68d5",
+            "id": "66300ce1-ebf6-4140-9e69-88fe6ec03cc3",
             "source": "acceptance.synthetic_events",
             "columns": [
               "median(\"value\")"
             ],
             "rows": 1,
             "coverage": "complete",
-            "conditions": [],
+            "conditions": [
+              {
+                "column": "period",
+                "op": "eq",
+                "value": "2026-07"
+              },
+              {
+                "column": "segment",
+                "op": "eq",
+                "value": "A"
+              }
+            ],
             "predicate_known": false,
             "grain": "aggregate",
-            "aggregation": "SELECT MEDIAN(value) FROM data WHERE period = '2026-07' AND segment = 'A'",
+            "aggregation": "SELECT MEDIAN(value) FROM data",
             "snapshot": "",
-            "query": "SELECT MEDIAN(value) FROM data WHERE period = '2026-07' AND segment = 'A'",
-            "parent_id": "a4d6937f-e291-475c-92d3-b6f6373c02bf"
+            "query": "SELECT MEDIAN(value) FROM data",
+            "parent_id": "04025daf-a699-457c-80da-47835e70895a"
           },
           "preview": [
             {
               "median(\"value\")": 4.0
             }
+          ],
+          "applied_corrections": [
+            "added_local_data_from"
           ]
         }
       ]

@@ -1,0 +1,138 @@
+{
+  "generated_at": "2026-09-27T22:11:14.691979+00:00",
+  "source_report": "/Users/najongseong/git_repository/teleai/docs/evaluation/2026-09-28_remaining/numeric_live.json",
+  "judge_model": "gemma4:e4b",
+  "source_mode": "live-databricks-model",
+  "limitations": [
+    "LLM judge scores supplement independent numeric/scope/artifact contracts.",
+    "Tool correctness covers only the explicitly configured legacy cases, not general autonomy."
+  ],
+  "results": [
+    {
+      "id": "scalar_chart:1",
+      "product_oracle_status": "PASS",
+      "model_calls": 1,
+      "tool_call_names": [
+        "prepare_numeric_dataset",
+        "local_analysis_sql",
+        "render_chart_spec"
+      ],
+      "judge_error": "RetryError"
+    },
+    {
+      "id": "filtered_scalar_chart:1",
+      "product_oracle_status": "FAIL",
+      "model_calls": 8,
+      "tool_call_names": [
+        "prepare_numeric_dataset",
+        "local_analysis_sql",
+        "prepare_histogram",
+        "inspect_table_context",
+        "inspect_dataset"
+      ],
+      "judge_error": "RetryError"
+    },
+    {
+      "id": "grouped_scalar:1",
+      "product_oracle_status": "FAIL",
+      "model_calls": 0,
+      "tool_call_names": [
+        "profile_dataset"
+      ],
+      "judge_error": "RetryError"
+    },
+    {
+      "id": "custom_chart:1",
+      "product_oracle_status": "FAIL",
+      "model_calls": 1,
+      "tool_call_names": [
+        "prepare_numeric_dataset",
+        "local_analysis_sql",
+        "render_chart_spec"
+      ],
+      "judge_error": "RetryError"
+    },
+    {
+      "id": "scalar_chart:2",
+      "product_oracle_status": "PASS",
+      "model_calls": 1,
+      "tool_call_names": [
+        "prepare_numeric_dataset",
+        "local_analysis_sql",
+        "render_chart_spec"
+      ]
+    },
+    {
+      "id": "filtered_scalar_chart:2",
+      "product_oracle_status": "FAIL",
+      "model_calls": 10,
+      "tool_call_names": [
+        "prepare_numeric_dataset",
+        "local_analysis_sql",
+        "prepare_histogram",
+        "inspect_table_context",
+        "search_analysis_tools",
+        "inspect_dataset",
+        "profile_dataset"
+      ]
+    },
+    {
+      "id": "grouped_scalar:2",
+      "product_oracle_status": "FAIL",
+      "model_calls": 0,
+      "tool_call_names": [
+        "profile_dataset"
+      ]
+    },
+    {
+      "id": "custom_chart:2",
+      "product_oracle_status": "FAIL",
+      "model_calls": 1,
+      "tool_call_names": [
+        "prepare_numeric_dataset",
+        "local_analysis_sql",
+        "render_chart_spec"
+      ]
+    },
+    {
+      "id": "scalar_chart:3",
+      "product_oracle_status": "PASS",
+      "model_calls": 1,
+      "tool_call_names": [
+        "prepare_numeric_dataset",
+        "local_analysis_sql",
+        "render_chart_spec"
+      ]
+    },
+    {
+      "id": "filtered_scalar_chart:3",
+      "product_oracle_status": "FAIL",
+      "model_calls": 7,
+      "tool_call_names": [
+        "prepare_numeric_dataset",
+        "local_analysis_sql",
+        "prepare_histogram",
+        "inspect_table_context",
+        "inspect_dataset"
+      ]
+    },
+    {
+      "id": "grouped_scalar:3",
+      "product_oracle_status": "FAIL",
+      "model_calls": 0,
+      "tool_call_names": [
+        "profile_dataset"
+      ]
+    },
+    {
+      "id": "custom_chart:3",
+      "product_oracle_status": "FAIL",
+      "model_calls": 1,
+      "tool_call_names": [
+        "prepare_numeric_dataset",
+        "local_analysis_sql",
+        "render_chart_spec"
+      ]
+    }
+  ]
+}

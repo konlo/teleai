@@ -1,0 +1,103 @@
+{
+  "model": "gemma4:e4b",
+  "database_calls": 0,
+  "turns": [
+    {
+      "prompt": "보유 데이터에서 2026-08의 value 평균을 계산해줘.",
+      "expected": 40,
+      "actual": 40.0,
+      "status": "PASS",
+      "result": {
+        "status": "answered",
+        "text": "보유 데이터로 계산한 결과입니다. 출처: acceptance.synthetic_events, 범위: complete.\n\n\"avg(\"\"value\"\")\"\n40.0",
+        "elapsed_seconds": 22.767
+      },
+      "observations": [
+        {
+          "status": "ready",
+          "dataset": {
+            "id": "a4a250eb-3a73-4d4e-a768-b197e401481d",
+            "source": "acceptance.synthetic_events",
+            "columns": [
+              "avg(\"value\")"
+            ],
+            "rows": 1,
+            "coverage": "complete",
+            "conditions": [
+              {
+                "column": "period",
+                "op": "eq",
+                "value": "2026-08"
+              }
+            ],
+            "predicate_known": false,
+            "grain": "aggregate",
+            "aggregation": "SELECT AVG(value) FROM data",
+            "snapshot": "",
+            "query": "SELECT AVG(value) FROM data",
+            "parent_id": "3fb02c9f-747c-42bb-9cde-1fe76fcc4921"
+          },
+          "preview": [
+            {
+              "avg(\"value\")": 40.0
+            }
+          ],
+          "applied_corrections": [
+            "added_local_data_from"
+          ]
+        }
+      ]
+    },
+    {
+      "prompt": "그중 segment A만 계산해줘.",
+      "expected": 40,
+      "actual": 40.0,
+      "status": "FAIL",
+      "result": {
+        "status": "exhausted",
+        "text": "복구를 시도했지만 요청한 결과를 확인하지 못했습니다. 기존 데이터는 보존했습니다.",
+        "elapsed_seconds": 77.071
+      },
+      "observations": [
+        {
+          "status": "ready",
+          "dataset": {
+            "id": "bf7ab19a-8414-4c4a-92e5-8031f44335ac",
+            "source": "acceptance.synthetic_events",
+            "columns": [
+              "avg(\"value\")"
+            ],
+            "rows": 1,
+            "coverage": "complete",
+            "conditions": [
+              {
+                "column": "period",
+                "op": "eq",
+                "value": "2026-08"
+              },
+              {
+                "column": "segment",
+                "op": "eq",
+                "value": "A"
+              }
+            ],
+            "predicate_known": false,
+            "grain": "aggregate",
+            "aggregation": "SELECT AVG(value) FROM data",
+            "snapshot": "",
+            "query": "SELECT AVG(value) FROM data",
+            "parent_id": "3fb02c9f-747c-42bb-9cde-1fe76fcc4921"
+          },
+          "preview": [
+            {
+              "avg(\"value\")": 40.0
+            }
+          ],
+          "applied_corrections": [
+            "added_local_data_from"
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,136 @@
+{
+  "generated_at": "2026-09-27T22:12:55.711834+00:00",
+  "source_report": "/Users/najongseong/git_repository/teleai/docs/evaluation/2026-09-28_remaining/numeric_live.json",
+  "judge_model": "gemma4:e4b",
+  "source_mode": "live-databricks-model",
+  "limitations": [
+    "LLM judge scores supplement independent numeric/scope/artifact contracts.",
+    "Tool correctness covers only the explicitly configured legacy cases, not general autonomy."
+  ],
+  "results": [
+    {
+      "id": "scalar_chart:1",
+      "product_oracle_status": "PASS",
+      "model_calls": 1,
+      "tool_call_names": [
+        "prepare_numeric_dataset",
+        "local_analysis_sql",
+        "render_chart_spec"
+      ]
+    },
+    {
+      "id": "filtered_scalar_chart:1",
+      "product_oracle_status": "FAIL",
+      "model_calls": 8,
+      "tool_call_names": [
+        "prepare_numeric_dataset",
+        "local_analysis_sql",
+        "prepare_histogram",
+        "inspect_table_context",
+        "inspect_dataset"
+      ]
+    },
+    {
+      "id": "grouped_scalar:1",
+      "product_oracle_status": "FAIL",
+      "model_calls": 0,
+      "tool_call_names": [
+        "profile_dataset"
+      ],
+      "judge_score": 0.0,
+      "judge_reason": "The actual output completely fails to address the user's request to calculate the average of 'sensor reading' grouped by 'cohort'. Instead, it provides a detailed data profiling report, which is irrelevant. This failure is evident when comparing the actual descriptive output (showing zero missing values) against the expected numerical calculation (A=1.5; B=3.5), resulting in a major penalty for missing the required result."
+    },
+    {
+      "id": "custom_chart:1",
+      "product_oracle_status": "FAIL",
+      "model_calls": 1,
+      "tool_call_names": [
+        "prepare_numeric_dataset",
+        "local_analysis_sql",
+        "render_chart_spec"
+      ]
+    },
+    {
+      "id": "scalar_chart:2",
+      "product_oracle_status": "PASS",
+      "model_calls": 1,
+      "tool_call_names": [
+        "prepare_numeric_dataset",
+        "local_analysis_sql",
+        "render_chart_spec"
+      ]
+    },
+    {
+      "id": "filtered_scalar_chart:2",
+      "product_oracle_status": "FAIL",
+      "model_calls": 10,
+      "tool_call_names": [
+        "prepare_numeric_dataset",
+        "local_analysis_sql",
+        "prepare_histogram",
+        "inspect_table_context",
+        "search_analysis_tools",
+        "inspect_dataset",
+        "profile_dataset"
+      ]
+    },
+    {
+      "id": "grouped_scalar:2",
+      "product_oracle_status": "FAIL",
+      "model_calls": 0,
+      "tool_call_names": [
+        "profile_dataset"
+      ]
+    },
+    {
+      "id": "custom_chart:2",
+      "product_oracle_status": "FAIL",
+      "model_calls": 1,
+      "tool_call_names": [
+        "prepare_numeric_dataset",
+        "local_analysis_sql",
+        "render_chart_spec"
+      ]
+    },
+    {
+      "id": "scalar_chart:3",
+      "product_oracle_status": "PASS",
+      "model_calls": 1,
+      "tool_call_names": [
+        "prepare_numeric_dataset",
+        "local_analysis_sql",
+        "render_chart_spec"
+      ]
+    },
+    {
+      "id": "filtered_scalar_chart:3",
+      "product_oracle_status": "FAIL",
+      "model_calls": 7,
+      "tool_call_names": [
+        "prepare_numeric_dataset",
+        "local_analysis_sql",
+        "prepare_histogram",
+        "inspect_table_context",
+        "inspect_dataset"
+      ]
+    },
+    {
+      "id": "grouped_scalar:3",
+      "product_oracle_status": "FAIL",
+      "model_calls": 0,
+      "tool_call_names": [
+        "profile_dataset"
+      ]
+    },
+    {
+      "id": "custom_chart:3",
+      "product_oracle_status": "FAIL",
+      "model_calls": 1,
+      "tool_call_names": [
+        "prepare_numeric_dataset",
+        "local_analysis_sql",
+        "render_chart_spec"
+      ]
+    }
+  ]
+}

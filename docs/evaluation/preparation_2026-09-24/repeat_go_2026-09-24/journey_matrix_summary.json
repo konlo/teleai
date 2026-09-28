@@ -1,0 +1,426 @@
+{
+  "description": "Synthetic fixture production-graph probes; no Databricks query or deployment-host validation",
+  "curated_11": {
+    "coverage": {
+      "total_reference_cases": 200,
+      "supported_oracles": 87,
+      "selected": 11,
+      "statuses": {
+        "PASS": 11
+      },
+      "all_selected_passed": true,
+      "ungraded_is_never_pass": true
+    },
+    "results": [
+      {
+        "id": "L1_001",
+        "status": "PASS",
+        "elapsed_seconds": 0.142,
+        "reason": "Inspected table context metadata matches the reference",
+        "tools": {
+          "inspect_table_context": 1
+        },
+        "remote_executions": 0,
+        "forbidden_executor_invocations": 0,
+        "model_calls": 0
+      },
+      {
+        "id": "L1_016",
+        "status": "PASS",
+        "elapsed_seconds": 28.118,
+        "reason": "Compared final structured calculation with independent reference",
+        "tools": {
+          "aggregate_dataset": 1
+        },
+        "remote_executions": 0,
+        "forbidden_executor_invocations": 0,
+        "model_calls": 1
+      },
+      {
+        "id": "L1_036",
+        "status": "PASS",
+        "elapsed_seconds": 0.125,
+        "reason": "Compared final structured calculation with independent reference",
+        "tools": {
+          "local_analysis_sql": 1
+        },
+        "remote_executions": 0,
+        "forbidden_executor_invocations": 0,
+        "model_calls": 0
+      },
+      {
+        "id": "L1_062",
+        "status": "PASS",
+        "elapsed_seconds": 0.13,
+        "reason": "Pivot values, axes, aggregation and lineage match the reference",
+        "tools": {
+          "pivot_dataset": 1
+        },
+        "remote_executions": 0,
+        "forbidden_executor_invocations": 0,
+        "model_calls": 0
+      },
+      {
+        "id": "L1_076",
+        "status": "PASS",
+        "elapsed_seconds": 7.864,
+        "reason": "Real PNG and plotted weighted distribution match the reference",
+        "tools": {
+          "prepare_histogram": 1
+        },
+        "remote_executions": 0,
+        "forbidden_executor_invocations": 0,
+        "model_calls": 0
+      },
+      {
+        "id": "L1_086",
+        "status": "PASS",
+        "elapsed_seconds": 0.063,
+        "reason": "Real PNG and declarative chart data match the independent reference",
+        "tools": {
+          "render_chart_spec": 1
+        },
+        "remote_executions": 0,
+        "forbidden_executor_invocations": 0,
+        "model_calls": 0
+      },
+      {
+        "id": "L2_036",
+        "status": "PASS",
+        "elapsed_seconds": 0.031,
+        "reason": "Structured outlier evidence matches the independent reference",
+        "tools": {
+          "detect_outliers": 1
+        },
+        "remote_executions": 0,
+        "forbidden_executor_invocations": 0,
+        "model_calls": 0
+      },
+      {
+        "id": "L2_037",
+        "status": "PASS",
+        "elapsed_seconds": 0.057,
+        "reason": "Lineage-safe outlier cohort aggregates match the independent reference",
+        "tools": {
+          "select_outlier_rows": 1,
+          "aggregate_dataset": 2
+        },
+        "remote_executions": 0,
+        "forbidden_executor_invocations": 0,
+        "model_calls": 0
+      },
+      {
+        "id": "L2_051",
+        "status": "PASS",
+        "elapsed_seconds": 0.037,
+        "reason": "Structured statistical evidence matches the independent reference",
+        "tools": {
+          "statistical_test": 1
+        },
+        "remote_executions": 0,
+        "forbidden_executor_invocations": 0,
+        "model_calls": 0
+      },
+      {
+        "id": "L2_061",
+        "status": "PASS",
+        "elapsed_seconds": 0.093,
+        "reason": "Count/rate chart PNG and numerator/denominator evidence match the reference",
+        "tools": {
+          "render_count_rate_chart": 1
+        },
+        "remote_executions": 0,
+        "forbidden_executor_invocations": 0,
+        "model_calls": 0
+      },
+      {
+        "id": "L2_096",
+        "status": "PASS",
+        "elapsed_seconds": 0.031,
+        "reason": "Winsorization boundaries and before/after statistics match the reference",
+        "tools": {
+          "winsorize_numeric": 1
+        },
+        "remote_executions": 0,
+        "forbidden_executor_invocations": 0,
+        "model_calls": 0
+      }
+    ]
+  },
+  "sequential_partial": {
+    "coverage": {
+      "total_reference_cases": 200,
+      "supported_oracles": 87,
+      "selected": 25,
+      "statuses": {
+        "PASS": 19,
+        "UNGRADED": 6
+      },
+      "all_selected_passed": false,
+      "ungraded_is_never_pass": true
+    },
+    "results": [
+      {
+        "id": "L1_001",
+        "status": "PASS",
+        "elapsed_seconds": 0.151,
+        "reason": "Inspected table context metadata matches the reference",
+        "tools": {
+          "inspect_table_context": 1
+        },
+        "remote_executions": 0,
+        "forbidden_executor_invocations": 0,
+        "model_calls": 0
+      },
+      {
+        "id": "L1_002",
+        "status": "PASS",
+        "elapsed_seconds": 0.03,
+        "reason": "Inspected table context metadata matches the reference",
+        "tools": {
+          "inspect_table_context": 1
+        },
+        "remote_executions": 0,
+        "forbidden_executor_invocations": 0,
+        "model_calls": 0
+      },
+      {
+        "id": "L1_003",
+        "status": "PASS",
+        "elapsed_seconds": 0.029,
+        "reason": "Inspected table context metadata matches the reference",
+        "tools": {
+          "inspect_table_context": 1
+        },
+        "remote_executions": 0,
+        "forbidden_executor_invocations": 0,
+        "model_calls": 0
+      },
+      {
+        "id": "L1_004",
+        "status": "PASS",
+        "elapsed_seconds": 0.029,
+        "reason": "Inspected table context metadata matches the reference",
+        "tools": {
+          "inspect_table_context": 1
+        },
+        "remote_executions": 0,
+        "forbidden_executor_invocations": 0,
+        "model_calls": 0
+      },
+      {
+        "id": "L1_005",
+        "status": "PASS",
+        "elapsed_seconds": 0.116,
+        "reason": "Compared final structured calculation with independent reference",
+        "tools": {
+          "local_analysis_sql": 1
+        },
+        "remote_executions": 0,
+        "forbidden_executor_invocations": 0,
+        "model_calls": 0
+      },
+      {
+        "id": "L1_006",
+        "status": "PASS",
+        "elapsed_seconds": 0.07,
+        "reason": "Structured dataset profile matches the independent reference",
+        "tools": {
+          "profile_dataset": 1
+        },
+        "remote_executions": 0,
+        "forbidden_executor_invocations": 0,
+        "model_calls": 0
+      },
+      {
+        "id": "L1_007",
+        "status": "PASS",
+        "elapsed_seconds": 0.084,
+        "reason": "Inspected table context metadata matches the reference",
+        "tools": {
+          "inspect_table_context": 1
+        },
+        "remote_executions": 0,
+        "forbidden_executor_invocations": 0,
+        "model_calls": 0
+      },
+      {
+        "id": "L1_008",
+        "status": "PASS",
+        "elapsed_seconds": 0.033,
+        "reason": "Structured dataset profile matches the independent reference",
+        "tools": {
+          "profile_dataset": 1
+        },
+        "remote_executions": 0,
+        "forbidden_executor_invocations": 0,
+        "model_calls": 0
+      },
+      {
+        "id": "L1_009",
+        "status": "PASS",
+        "elapsed_seconds": 0.126,
+        "reason": "Structured dataset profile matches the independent reference",
+        "tools": {
+          "profile_dataset": 1,
+          "inspect_table_context": 1
+        },
+        "remote_executions": 0,
+        "forbidden_executor_invocations": 0,
+        "model_calls": 0
+      },
+      {
+        "id": "L1_010",
+        "status": "UNGRADED",
+        "reason": "No explicit machine-comparable oracle; no model call"
+      },
+      {
+        "id": "L1_011",
+        "status": "UNGRADED",
+        "reason": "No explicit machine-comparable oracle; no model call"
+      },
+      {
+        "id": "L1_012",
+        "status": "UNGRADED",
+        "reason": "No explicit machine-comparable oracle; no model call"
+      },
+      {
+        "id": "L1_013",
+        "status": "UNGRADED",
+        "reason": "No explicit machine-comparable oracle; no model call"
+      },
+      {
+        "id": "L1_014",
+        "status": "UNGRADED",
+        "reason": "No explicit machine-comparable oracle; no model call"
+      },
+      {
+        "id": "L1_015",
+        "status": "UNGRADED",
+        "reason": "No explicit machine-comparable oracle; no model call"
+      },
+      {
+        "id": "L1_016",
+        "status": "PASS",
+        "elapsed_seconds": 27.243,
+        "reason": "Compared final structured calculation with independent reference",
+        "tools": {
+          "aggregate_dataset": 1
+        },
+        "remote_executions": 0,
+        "forbidden_executor_invocations": 0,
+        "model_calls": 1
+      },
+      {
+        "id": "L1_017",
+        "status": "PASS",
+        "elapsed_seconds": 0.201,
+        "reason": "Compared final structured calculation with independent reference",
+        "tools": {
+          "local_analysis_sql": 1
+        },
+        "remote_executions": 0,
+        "forbidden_executor_invocations": 0,
+        "model_calls": 0
+      },
+      {
+        "id": "L1_018",
+        "status": "PASS",
+        "elapsed_seconds": 0.127,
+        "reason": "Compared final structured calculation with independent reference",
+        "tools": {
+          "local_analysis_sql": 1
+        },
+        "remote_executions": 0,
+        "forbidden_executor_invocations": 0,
+        "model_calls": 0
+      },
+      {
+        "id": "L1_019",
+        "status": "PASS",
+        "elapsed_seconds": 0.091,
+        "reason": "Compared final structured calculation with independent reference",
+        "tools": {
+          "local_analysis_sql": 1
+        },
+        "remote_executions": 0,
+        "forbidden_executor_invocations": 0,
+        "model_calls": 0
+      },
+      {
+        "id": "L1_020",
+        "status": "PASS",
+        "elapsed_seconds": 30.819,
+        "reason": "Compared final structured calculation with independent reference",
+        "tools": {
+          "aggregate_dataset": 1
+        },
+        "remote_executions": 0,
+        "forbidden_executor_invocations": 0,
+        "model_calls": 1
+      },
+      {
+        "id": "L1_021",
+        "status": "PASS",
+        "elapsed_seconds": 78.067,
+        "reason": "Compared final structured calculation with independent reference",
+        "tools": {
+          "aggregate_dataset": 1
+        },
+        "remote_executions": 0,
+        "forbidden_executor_invocations": 0,
+        "model_calls": 1
+      },
+      {
+        "id": "L1_022",
+        "status": "PASS",
+        "elapsed_seconds": 75.489,
+        "reason": "Compared final structured calculation with independent reference",
+        "tools": {
+          "aggregate_dataset": 1
+        },
+        "remote_executions": 0,
+        "forbidden_executor_invocations": 0,
+        "model_calls": 1
+      },
+      {
+        "id": "L1_023",
+        "status": "PASS",
+        "elapsed_seconds": 0.069,
+        "reason": "Compared final structured calculation with independent reference",
+        "tools": {
+          "local_analysis_sql": 1
+        },
+        "remote_executions": 0,
+        "forbidden_executor_invocations": 0,
+        "model_calls": 0
+      },
+      {
+        "id": "L1_024",
+        "status": "PASS",
+        "elapsed_seconds": 65.733,
+        "reason": "Compared final structured calculation with independent reference",
+        "tools": {
+          "local_analysis_sql": 1
+        },
+        "remote_executions": 0,
+        "forbidden_executor_invocations": 0,
+        "model_calls": 1
+      },
+      {
+        "id": "L1_025",
+        "status": "PASS",
+        "elapsed_seconds": 65.638,
+        "reason": "Compared final structured calculation with independent reference",
+        "tools": {
+          "aggregate_dataset": 1
+        },
+        "remote_executions": 0,
+        "forbidden_executor_invocations": 0,
+        "model_calls": 1
+      }
+    ],
+    "stopped_after": "L1_025",
+    "stop_reason": "Manual interruption before L1_026 because multiple model turns took 65–78 seconds; remaining cases not run. Do not treat as a full-suite score."
+  }
+}

@@ -1,0 +1,438 @@
+{
+  "generated_at": "2026-09-13T03:25:44.211764+00:00",
+  "mode": "live-local-model",
+  "runtime": "core.analysis_agent.runtime.GraphAnalysisRuntime",
+  "model": "gemma4:e4b",
+  "data_scope": "preloaded complete local test_set fixtures in temporary per-case scope",
+  "coverage": {
+    "total_reference_cases": 200,
+    "supported_oracles": 20,
+    "selected": 1,
+    "statuses": {
+      "PASS": 1
+    },
+    "all_selected_passed": true,
+    "ungraded_is_never_pass": true
+  },
+  "latency_seconds": {
+    "total": 0.18,
+    "max": 0.18
+  },
+  "remote_executions": 0,
+  "results": [
+    {
+      "id": "L1_038",
+      "prompt": "타이타닉 승객 중 여성(female) 승객들의 생존율(%)을 계산해줘.",
+      "target_table": "titanic",
+      "reference_sha256": "b43a8a1c5df6901644e75d4116e405b810d40a19b4de5f18804084bcf17ce77a",
+      "status": "PASS",
+      "reason": "Compared final structured calculation with independent reference",
+      "evidence": {
+        "expected": 74.35064935064936,
+        "actual": 74.35064935064936,
+        "result_dataset_id": "3cc22525-1ddb-4326-91c7-751a8e5af88c",
+        "counterfactual_probes": 2
+      },
+      "agent_status": "answered",
+      "runtime_state": "idle",
+      "elapsed_seconds": 0.18,
+      "tools": {
+        "local_analysis_sql": 1
+      },
+      "tool_calls": [
+        {
+          "id": "b65e86cf-5bd0-4f51-8acd-400d616918aa",
+          "tool": "local_analysis_sql",
+          "arguments": {
+            "dataset_id": "2422c579-a4d0-4baf-959f-04a639424527",
+            "query": "SELECT 100.0 * AVG(\"Survived\") AS percent FROM data",
+            "requested_conditions": [
+              {
+                "column": "Sex",
+                "op": "eq",
+                "value": "female"
+              }
+            ]
+          }
+        }
+      ],
+      "queries": [
+        {
+          "tool": "local_analysis_sql",
+          "query": "SELECT 100.0 * AVG(\"Survived\") AS percent FROM data"
+        }
+      ],
+      "observations": [
+        {
+          "tool": "local_analysis_sql",
+          "status": "ready",
+          "error_code": null
+        }
+      ],
+      "remote_executions": 0,
+      "forbidden_executor_invocations": 0,
+      "error_type": null,
+      "error_id": null,
+      "runtime_metadata": {
+        "case_id": "L1_038",
+        "run_id": "2ec91638e538458ab3f7e84db7038537",
+        "state": "idle",
+        "message_count": 4,
+        "pending_requests": 0,
+        "recovery_status": "complete",
+        "recovery_attempts": 0,
+        "reference_context": [
+          {
+            "table": "titanic",
+            "training_status": "fixture_profile",
+            "columns": [
+              {
+                "name": "PassengerId",
+                "dtype": "int64",
+                "distinct_count": 891,
+                "null_count": 0,
+                "top_values": [],
+                "aliases": [
+                  "승객 번호"
+                ]
+              },
+              {
+                "name": "Survived",
+                "dtype": "int64",
+                "distinct_count": 2,
+                "null_count": 0,
+                "top_values": [
+                  {
+                    "value": 0,
+                    "count": 564
+                  },
+                  {
+                    "value": 1,
+                    "count": 327
+                  }
+                ],
+                "aliases": [
+                  "생존율",
+                  "생존 여부"
+                ]
+              },
+              {
+                "name": "Pclass",
+                "dtype": "int64",
+                "distinct_count": 3,
+                "null_count": 0,
+                "top_values": [
+                  {
+                    "value": 3,
+                    "count": 490
+                  },
+                  {
+                    "value": 1,
+                    "count": 223
+                  },
+                  {
+                    "value": 2,
+                    "count": 178
+                  }
+                ],
+                "aliases": [
+                  "등급",
+                  "좌석 등급",
+                  "객실 등급"
+                ]
+              },
+              {
+                "name": "Name",
+                "dtype": "object",
+                "distinct_count": 891,
+                "null_count": 0,
+                "top_values": [],
+                "aliases": [
+                  "이름"
+                ]
+              },
+              {
+                "name": "Sex",
+                "dtype": "object",
+                "distinct_count": 2,
+                "null_count": 0,
+                "top_values": [
+                  {
+                    "value": "male",
+                    "count": 583
+                  },
+                  {
+                    "value": "female",
+                    "count": 308
+                  }
+                ],
+                "aliases": [
+                  "성별",
+                  "남성",
+                  "여성"
+                ]
+              },
+              {
+                "name": "Age",
+                "dtype": "float64",
+                "distinct_count": 382,
+                "null_count": 193,
+                "top_values": [],
+                "aliases": [
+                  "나이",
+                  "연령"
+                ]
+              },
+              {
+                "name": "SibSp",
+                "dtype": "int64",
+                "distinct_count": 7,
+                "null_count": 0,
+                "top_values": [
+                  {
+                    "value": 0,
+                    "count": 621
+                  },
+                  {
+                    "value": 1,
+                    "count": 185
+                  },
+                  {
+                    "value": 2,
+                    "count": 48
+                  },
+                  {
+                    "value": 4,
+                    "count": 16
+                  },
+                  {
+                    "value": 3,
+                    "count": 14
+                  },
+                  {
+                    "value": 8,
+                    "count": 5
+                  },
+                  {
+                    "value": 5,
+                    "count": 2
+                  }
+                ],
+                "aliases": [
+                  "형제자매",
+                  "배우자"
+                ]
+              },
+              {
+                "name": "Parch",
+                "dtype": "int64",
+                "distinct_count": 7,
+                "null_count": 0,
+                "top_values": [
+                  {
+                    "value": 0,
+                    "count": 652
+                  },
+                  {
+                    "value": 1,
+                    "count": 119
+                  },
+                  {
+                    "value": 2,
+                    "count": 103
+                  },
+                  {
+                    "value": 4,
+                    "count": 6
+                  },
+                  {
+                    "value": 3,
+                    "count": 5
+                  },
+                  {
+                    "value": 5,
+                    "count": 5
+                  },
+                  {
+                    "value": 6,
+                    "count": 1
+                  }
+                ],
+                "aliases": [
+                  "부모",
+                  "자녀"
+                ]
+              },
+              {
+                "name": "Ticket",
+                "dtype": "object",
+                "distinct_count": 891,
+                "null_count": 0,
+                "top_values": [],
+                "aliases": [
+                  "티켓"
+                ]
+              },
+              {
+                "name": "Fare",
+                "dtype": "float64",
+                "distinct_count": 798,
+                "null_count": 0,
+                "top_values": [],
+                "aliases": [
+                  "요금",
+                  "운임",
+                  "승선료"
+                ]
+              },
+              {
+                "name": "Cabin",
+                "dtype": "object",
+                "distinct_count": 50,
+                "null_count": 672,
+                "top_values": [],
+                "aliases": [
+                  "객실 번호",
+                  "객실"
+                ]
+              },
+              {
+                "name": "Embarked",
+                "dtype": "object",
+                "distinct_count": 3,
+                "null_count": 12,
+                "top_values": [
+                  {
+                    "value": "S",
+                    "count": 639
+                  },
+                  {
+                    "value": "C",
+                    "count": 181
+                  },
+                  {
+                    "value": "Q",
+                    "count": 59
+                  }
+                ],
+                "aliases": [
+                  "승선 항구",
+                  "출발지"
+                ]
+              }
+            ],
+            "alias_source": "test_set/README.md > 데이터 스키마 > workspace.default.titanic; complete table-level aliases, not question-specific synonym_mapping",
+            "source": "local test_set fixture; not a live Databricks table"
+          }
+        ],
+        "datasets": [
+          {
+            "id": "2422c579-a4d0-4baf-959f-04a639424527",
+            "source": "titanic",
+            "columns": [
+              "PassengerId",
+              "Survived",
+              "Pclass",
+              "Name",
+              "Sex",
+              "Age",
+              "SibSp",
+              "Parch",
+              "Ticket",
+              "Fare",
+              "Cabin",
+              "Embarked"
+            ],
+            "rows": 891,
+            "coverage": "complete",
+            "conditions": [],
+            "predicate_known": true,
+            "grain": "raw",
+            "aggregation": "",
+            "snapshot": "fixture:261728c6b4aefb97391c652943bd7af2acea038e39d35f98779a975f900e0688",
+            "query": "",
+            "parent_id": ""
+          },
+          {
+            "id": "3cc22525-1ddb-4326-91c7-751a8e5af88c",
+            "source": "titanic",
+            "columns": [
+              "percent"
+            ],
+            "rows": 1,
+            "coverage": "complete",
+            "conditions": [
+              {
+                "column": "Sex",
+                "op": "eq",
+                "value": "female"
+              }
+            ],
+            "predicate_known": false,
+            "grain": "aggregate",
+            "aggregation": "SELECT 100.0 * AVG(\"Survived\") AS percent FROM data",
+            "snapshot": "fixture:261728c6b4aefb97391c652943bd7af2acea038e39d35f98779a975f900e0688",
+            "query": "SELECT 100.0 * AVG(\"Survived\") AS percent FROM data",
+            "parent_id": "2422c579-a4d0-4baf-959f-04a639424527"
+          }
+        ],
+        "charts": [],
+        "diagnostics": [
+          {
+            "time": "2026-09-13T03:25:44.066588+00:00",
+            "event": "run_started",
+            "run_id": "2ec91638e538458ab3f7e84db7038537",
+            "operation": "submit"
+          },
+          {
+            "time": "2026-09-13T03:25:44.141538+00:00",
+            "event": "recovery_transition",
+            "run_id": "2ec91638e538458ab3f7e84db7038537",
+            "tool": "local_analysis_sql"
+          },
+          {
+            "time": "2026-09-13T03:25:44.142810+00:00",
+            "event": "tool_started",
+            "run_id": "2ec91638e538458ab3f7e84db7038537",
+            "tool": "local_analysis_sql"
+          },
+          {
+            "time": "2026-09-13T03:25:44.185092+00:00",
+            "event": "tool_completed",
+            "run_id": "2ec91638e538458ab3f7e84db7038537",
+            "tool": "local_analysis_sql",
+            "status": "ready",
+            "elapsed_seconds": 0.042
+          },
+          {
+            "time": "2026-09-13T03:25:44.187102+00:00",
+            "event": "calculation_evidence",
+            "run_id": "2ec91638e538458ab3f7e84db7038537"
+          },
+          {
+            "time": "2026-09-13T03:25:44.188737+00:00",
+            "event": "completion_checked",
+            "run_id": "2ec91638e538458ab3f7e84db7038537",
+            "status": "complete",
+            "attempts": 0
+          },
+          {
+            "time": "2026-09-13T03:25:44.190324+00:00",
+            "event": "run_completed",
+            "run_id": "2ec91638e538458ab3f7e84db7038537",
+            "status": "answered",
+            "elapsed_seconds": 0.124
+          }
+        ],
+        "path": "/Users/najongseong/git_repository/teleai/docs/actual_agent_eval_artifacts/L1_038-2ec91638e538-metadata.json"
+      }
+    }
+  ],
+  "limitations": [
+    "Not a Databricks or browser end-to-end test",
+    "Single-turn questions; follow-up journeys require separate evaluation",
+    "Final prose is not graded; PASS establishes tool-result/artifact accuracy only",
+    "Unsupported reference cases stay UNGRADED and are excluded from success claims",
+    "Scripted-model tests validate the harness, not natural-language model quality"
+  ]
+}

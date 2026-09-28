@@ -1,0 +1,46 @@
+{
+  "generated_at": "2026-09-14T03:44:05.268215+00:00",
+  "model": "gemma4:e4b",
+  "num_predict": 1024,
+  "endpoint_host": "127.0.0.1",
+  "prompt": "현재 보유한 bank_loan 데이터에서 age와 balance의 피어슨 상관계수를 계산해줘.",
+  "oracle": {
+    "kind": "pearson_correlation",
+    "expected": 0.025270754258456884
+  },
+  "summary": {
+    "count": 1,
+    "p50_seconds": 75.023,
+    "p95_seconds": 75.023,
+    "max_seconds": 75.023,
+    "percentile_method": "nearest-rank",
+    "requested_iterations": 5,
+    "successes": 1,
+    "failures": 0,
+    "max_process_peak_rss_bytes": 213745664
+  },
+  "results": [
+    {
+      "iteration": 1,
+      "status": "PASS",
+      "agent_status": "answered",
+      "elapsed_seconds": 75.023,
+      "model_calls": 1,
+      "model_seconds": 74.82157301902771,
+      "tool_calls": 1,
+      "evidence_values": [
+        0.025270754258456814
+      ]
+    }
+  ],
+  "safety": {
+    "databricks_calls": 0,
+    "remote_tool_registered": false,
+    "fixture_rows": 2000
+  },
+  "limitations": [
+    "This measures one correlation intent against one local model and one fixture.",
+    "The five-run p95 is the nearest-rank maximum and needs production traffic calibration.",
+    "It does not represent concurrent model serving or remote Databricks latency."
+  ]
+}

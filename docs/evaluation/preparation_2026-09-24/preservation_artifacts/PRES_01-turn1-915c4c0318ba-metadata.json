@@ -1,0 +1,197 @@
+{
+  "case_id": "PRES_01-turn1",
+  "run_id": "915c4c0318ba45b5b86d36425be5409b",
+  "state": "idle",
+  "message_count": 4,
+  "pending_requests": 0,
+  "recovery_status": "complete",
+  "recovery_attempts": 0,
+  "recovery_model_calls": 0,
+  "reference_context": [
+    {
+      "table": "fixture.sensor_readings",
+      "training_status": "fixture_profile",
+      "columns": [
+        {
+          "name": "event_key",
+          "dtype": "int64",
+          "distinct_count": 8,
+          "null_count": 0,
+          "top_values": [
+            {
+              "value": 1,
+              "count": 1
+            },
+            {
+              "value": 2,
+              "count": 1
+            },
+            {
+              "value": 3,
+              "count": 1
+            },
+            {
+              "value": 4,
+              "count": 1
+            },
+            {
+              "value": 5,
+              "count": 1
+            },
+            {
+              "value": 6,
+              "count": 1
+            },
+            {
+              "value": 7,
+              "count": 1
+            },
+            {
+              "value": 8,
+              "count": 1
+            }
+          ],
+          "aliases": []
+        },
+        {
+          "name": "reading",
+          "dtype": "float64",
+          "distinct_count": 6,
+          "null_count": 1,
+          "top_values": [
+            {
+              "value": 2.0,
+              "count": 2
+            },
+            {
+              "value": -4.0,
+              "count": 1
+            },
+            {
+              "value": 0.0,
+              "count": 1
+            },
+            {
+              "value": 8.0,
+              "count": 1
+            },
+            {
+              "value": 12.0,
+              "count": 1
+            },
+            {
+              "value": 50.0,
+              "count": 1
+            }
+          ],
+          "aliases": []
+        },
+        {
+          "name": "zone",
+          "dtype": "object",
+          "distinct_count": 2,
+          "null_count": 0,
+          "top_values": [
+            {
+              "value": "east",
+              "count": 4
+            },
+            {
+              "value": "west",
+              "count": 4
+            }
+          ],
+          "aliases": []
+        }
+      ],
+      "alias_source": null,
+      "source": "local test_set fixture; not a live Databricks table"
+    }
+  ],
+  "datasets": [
+    {
+      "id": "d2d11960-f22c-412a-8ea5-ee1124dd8e75",
+      "source": "fixture.sensor_readings",
+      "columns": [
+        "event_key",
+        "reading",
+        "zone"
+      ],
+      "rows": 8,
+      "coverage": "complete",
+      "conditions": [],
+      "predicate_known": true,
+      "grain": "raw",
+      "aggregation": "",
+      "snapshot": "fixture:preservation-v1",
+      "query": "",
+      "parent_id": "",
+      "parent_ids": [],
+      "role": "root",
+      "root_id": "d2d11960-f22c-412a-8ea5-ee1124dd8e75"
+    }
+  ],
+  "charts": [
+    {
+      "id": "135346dd-64ce-4797-92b0-361d7ba908ba",
+      "dataset_id": "d2d11960-f22c-412a-8ea5-ee1124dd8e75",
+      "kind": "histogram",
+      "columns": [
+        "reading"
+      ],
+      "png_sha256": "c084dfeef8490ac54e0e1730894472b2268ad106bab1e39b482894a53b6277b0",
+      "png_valid": true,
+      "path": "/Users/najongseong/git_repository/teleai/docs/evaluation/preparation_2026-09-24/preservation_artifacts/PRES_01-turn1-c084dfeef849.png"
+    }
+  ],
+  "diagnostics": [
+    {
+      "time": "2026-09-24T04:23:13.337523+00:00",
+      "event": "run_started",
+      "run_id": "915c4c0318ba45b5b86d36425be5409b",
+      "operation": "submit"
+    },
+    {
+      "time": "2026-09-24T04:23:13.397792+00:00",
+      "event": "recovery_transition",
+      "run_id": "915c4c0318ba45b5b86d36425be5409b",
+      "tool": "prepare_histogram"
+    },
+    {
+      "time": "2026-09-24T04:23:13.399060+00:00",
+      "event": "tool_started",
+      "run_id": "915c4c0318ba45b5b86d36425be5409b",
+      "tool": "prepare_histogram"
+    },
+    {
+      "time": "2026-09-24T04:23:16.636621+00:00",
+      "event": "tool_completed",
+      "run_id": "915c4c0318ba45b5b86d36425be5409b",
+      "tool": "prepare_histogram",
+      "status": "ready",
+      "elapsed_seconds": 7.628
+    },
+    {
+      "time": "2026-09-24T04:23:16.638354+00:00",
+      "event": "completion_checked",
+      "run_id": "915c4c0318ba45b5b86d36425be5409b",
+      "status": "complete",
+      "attempts": 0
+    },
+    {
+      "time": "2026-09-24T04:23:16.639457+00:00",
+      "event": "run_completed",
+      "run_id": "915c4c0318ba45b5b86d36425be5409b",
+      "status": "answered",
+      "elapsed_seconds": 7.692
+    },
+    {
+      "time": "2026-09-24T04:23:16.639496+00:00",
+      "event": "turn_slo",
+      "run_id": "915c4c0318ba45b5b86d36425be5409b",
+      "elapsed_seconds": 7.692,
+      "limit": 180.0,
+      "status": "ok"
+    }
+  ]
+}

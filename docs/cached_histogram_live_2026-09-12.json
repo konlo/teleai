@@ -1,0 +1,65 @@
+{
+  "status": "PASS",
+  "mode": "actual-local-model",
+  "request": "age에 대한 histogram을 보여줘",
+  "source_conversation": "c1022998-2a9c-43f6-ac8a-6a903f5e21b7",
+  "source_assets_read_only": true,
+  "original_chart_reused": true,
+  "remote_executions": 0,
+  "result": {
+    "status": "answered",
+    "text": "age 분포 이미지를 생성했습니다.\n분석 범위: 빈도 합계 750,000 · complete · SELECT `age`, COUNT(*) AS `__frequency` FROM `workspace`.`default`.`bank_loan` WHERE `age` IS NOT NULL GROUP BY `age`",
+    "elapsed_seconds": 31.922
+  },
+  "recovery": {
+    "request_id": "209d1eaf-f8c7-4f3b-87cd-95437305f2a2",
+    "attempts": 0,
+    "chart": true,
+    "kind": "histogram",
+    "calculation": false,
+    "operations": [],
+    "current_result_only": false,
+    "required_columns": [
+      "age"
+    ],
+    "required_sources": [],
+    "columns": [
+      "age"
+    ],
+    "failed": {},
+    "status": "complete",
+    "processed": [
+      "4df4ef2c-f0a9-4cbd-8ddb-3932df6f9950"
+    ],
+    "sent_calls": [
+      "4df4ef2c-f0a9-4cbd-8ddb-3932df6f9950"
+    ],
+    "failed_signatures": {},
+    "evidence_ids": [],
+    "artifact_ids": [
+      "9654cc78-4cd9-49e6-bd4d-e38431c6371d"
+    ],
+    "model_calls": 1,
+    "model_seconds": 31.82724618911743,
+    "plan": {
+      "source": "workspace.default.bank_loan",
+      "query": "SELECT `age`, COUNT(*) AS `__frequency` FROM `workspace`.`default`.`bank_loan` WHERE `age` IS NOT NULL GROUP BY `age`",
+      "reason": "age 히스토그램에 필요한 값별 빈도를 조회합니다. 원본 행 전체는 가져오지 않습니다.",
+      "value_column": "age",
+      "weight_column": "__frequency"
+    },
+    "plan_call": "4df4ef2c-f0a9-4cbd-8ddb-3932df6f9950",
+    "query_seen": "4df4ef2c-f0a9-4cbd-8ddb-3932df6f9950",
+    "loaded_dataset": "0bc1fc37-9a45-49f5-8d96-412414fa317b",
+    "stop_reason": null
+  },
+  "evidence": [
+    {
+      "chart_id": "9654cc78-4cd9-49e6-bd4d-e38431c6371d",
+      "dataset_id": "0bc1fc37-9a45-49f5-8d96-412414fa317b",
+      "png_sha256": "c742f7f00e0f7ba5fd2a6c4df9688764ca3dc671d0b0b9a36efb2d0a8cda460e",
+      "scope": "빈도 합계 750,000 · complete · SELECT `age`, COUNT(*) AS `__frequency` FROM `workspace`.`default`.`bank_loan` WHERE `age` IS NOT NULL GROUP BY `age`",
+      "image_path": "/Users/najongseong/git_repository/teleai/docs/cached_histogram_live_2026-09-12.png"
+    }
+  ]
+}

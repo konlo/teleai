@@ -1,0 +1,555 @@
+{
+  "generated_at": "2026-09-23T21:13:40.309979+00:00",
+  "status": "PASS",
+  "runtime": "core.analysis_agent.runtime.GraphAnalysisRuntime",
+  "oracle": "independent pandas crosstab/pivot_table executed from unchanged reference code",
+  "cases": [
+    {
+      "name": "arbitrary-schema production pivot",
+      "status": "PASS",
+      "tools": {
+        "pivot_dataset": 1
+      },
+      "model_calls": 0,
+      "remote_executions": 0,
+      "frame_matches": true,
+      "lineage_matches": true,
+      "digest_present": true,
+      "restart_evidence_matches": true,
+      "expected": [
+        {
+          "segment_code": "east",
+          "store": 1,
+          "web": 1
+        },
+        {
+          "segment_code": "north",
+          "store": 1,
+          "web": 1
+        },
+        {
+          "segment_code": "west",
+          "store": 1,
+          "web": 1
+        }
+      ],
+      "actual": [
+        {
+          "segment_code": "east",
+          "store": 1,
+          "web": 1
+        },
+        {
+          "segment_code": "north",
+          "store": 1,
+          "web": 1
+        },
+        {
+          "segment_code": "west",
+          "store": 1,
+          "web": 1
+        }
+      ]
+    },
+    {
+      "name": "unchanged L1_062 prompt",
+      "reference_id": "L1_062",
+      "status": "PASS",
+      "tools": {
+        "pivot_dataset": 1
+      },
+      "model_calls": 0,
+      "remote_executions": 0,
+      "evidence": {
+        "pivots": [
+          {
+            "dataset_id": "cdbe9974-71fb-44ae-b037-63c241b8112c",
+            "shape": [
+              12,
+              4
+            ],
+            "data_sha256": "e52d4add1ce85d90ba0c0f91ffb42bdf6f98af79e1e0db88caa49e0cbd46aded",
+            "specification": {
+              "index_columns": [
+                "job"
+              ],
+              "column_columns": [
+                "marital"
+              ],
+              "aggregation": "count",
+              "value_column": "",
+              "success_value": null,
+              "conditions": [],
+              "margins": false,
+              "margins_name": "전체",
+              "sort": "ascending"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "unchanged L1_063 prompt",
+      "reference_id": "L1_063",
+      "status": "PASS",
+      "tools": {
+        "pivot_dataset": 1
+      },
+      "model_calls": 0,
+      "remote_executions": 0,
+      "evidence": {
+        "pivots": [
+          {
+            "dataset_id": "767ba6b6-4078-4960-8316-c133585fd7d9",
+            "shape": [
+              4,
+              3
+            ],
+            "data_sha256": "19bf0eecacbd35dfa30e1fed20d4892fa29c8c5ff32eadce313d80d25cd0f33d",
+            "specification": {
+              "index_columns": [
+                "education"
+              ],
+              "column_columns": [
+                "housing"
+              ],
+              "aggregation": "mean",
+              "value_column": "balance",
+              "success_value": null,
+              "conditions": [],
+              "margins": false,
+              "margins_name": "전체",
+              "sort": "ascending"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "unchanged L1_064 prompt",
+      "reference_id": "L1_064",
+      "status": "PASS",
+      "tools": {
+        "pivot_dataset": 1
+      },
+      "model_calls": 0,
+      "remote_executions": 0,
+      "evidence": {
+        "pivots": [
+          {
+            "dataset_id": "59137782-5d11-4109-9890-484077c08d57",
+            "shape": [
+              3,
+              3
+            ],
+            "data_sha256": "3e160dfe5a46b373eecc650b64ea202a19e14b59f848e17612b96cbc406c4ff2",
+            "specification": {
+              "index_columns": [
+                "Pclass"
+              ],
+              "column_columns": [
+                "Sex"
+              ],
+              "aggregation": "success_rate",
+              "value_column": "Survived",
+              "success_value": 1,
+              "conditions": [],
+              "margins": false,
+              "margins_name": "전체",
+              "sort": "ascending"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "unchanged L2_021 prompt",
+      "reference_id": "L2_021",
+      "status": "PASS",
+      "tools": {
+        "pivot_dataset": 1
+      },
+      "model_calls": 0,
+      "remote_executions": 0,
+      "evidence": {
+        "pivots": [
+          {
+            "dataset_id": "d2fc62be-d19f-4bb3-9295-f763d64cfa6f",
+            "shape": [
+              13,
+              5
+            ],
+            "data_sha256": "817ff0e585f3e1f005558b02c499d6a53a2d418e5ed59a506b4242596e4fa769",
+            "specification": {
+              "index_columns": [
+                "job"
+              ],
+              "column_columns": [
+                "marital"
+              ],
+              "aggregation": "count",
+              "value_column": "",
+              "success_value": null,
+              "conditions": [],
+              "margins": true,
+              "margins_name": "전체총계",
+              "sort": "ascending"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "unchanged L2_022 prompt",
+      "reference_id": "L2_022",
+      "status": "PASS",
+      "tools": {
+        "pivot_dataset": 1
+      },
+      "model_calls": 0,
+      "remote_executions": 0,
+      "evidence": {
+        "pivots": [
+          {
+            "dataset_id": "3b5fe594-8eaf-4d82-bcea-d3b1d3f228ac",
+            "shape": [
+              5,
+              4
+            ],
+            "data_sha256": "9d11bb5814ad33e796124bec63df070640bff5792c0ad046fa92825a8ead4f96",
+            "specification": {
+              "index_columns": [
+                "education"
+              ],
+              "column_columns": [
+                "housing"
+              ],
+              "aggregation": "mean",
+              "value_column": "balance",
+              "success_value": null,
+              "conditions": [],
+              "margins": true,
+              "margins_name": "전체평균",
+              "sort": "ascending"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "unchanged L2_023 prompt",
+      "reference_id": "L2_023",
+      "status": "PASS",
+      "tools": {
+        "pivot_dataset": 1
+      },
+      "model_calls": 0,
+      "remote_executions": 0,
+      "evidence": {
+        "pivots": [
+          {
+            "dataset_id": "e7c224fc-7257-4de2-b262-81134a39daa9",
+            "shape": [
+              4,
+              4
+            ],
+            "data_sha256": "0dee5f5ae212a38551e7d780d035170727dc1f8ed1667a3e518926c9f1aedb5c",
+            "specification": {
+              "index_columns": [
+                "Pclass"
+              ],
+              "column_columns": [
+                "Sex"
+              ],
+              "aggregation": "success_rate",
+              "value_column": "Survived",
+              "success_value": 1,
+              "conditions": [],
+              "margins": true,
+              "margins_name": "전체생존율",
+              "sort": "ascending"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "unchanged L2_024 prompt",
+      "reference_id": "L2_024",
+      "status": "PASS",
+      "tools": {
+        "pivot_dataset": 1
+      },
+      "model_calls": 0,
+      "remote_executions": 0,
+      "evidence": {
+        "pivots": [
+          {
+            "dataset_id": "000264ff-e175-40f5-86bf-a7c528630897",
+            "shape": [
+              12,
+              5
+            ],
+            "data_sha256": "41eea58c7b8a9d8bccad995c00bdefb515de5c6b81a0e68d1910feabd0761e51",
+            "specification": {
+              "index_columns": [
+                "job"
+              ],
+              "column_columns": [
+                "housing",
+                "loan"
+              ],
+              "aggregation": "count",
+              "value_column": "",
+              "success_value": null,
+              "conditions": [],
+              "margins": false,
+              "margins_name": "전체",
+              "sort": "ascending"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "unchanged L2_025 prompt",
+      "reference_id": "L2_025",
+      "status": "PASS",
+      "tools": {
+        "pivot_dataset": 1
+      },
+      "model_calls": 0,
+      "remote_executions": 0,
+      "evidence": {
+        "pivots": [
+          {
+            "dataset_id": "31c5b576-26b6-4614-baef-126f4f52f3a7",
+            "shape": [
+              12,
+              4
+            ],
+            "data_sha256": "1c6bfe7c711dfb58bf1fc21c4459822627d4db3b918bf01d86ba6a55e42a6376",
+            "specification": {
+              "index_columns": [
+                "month"
+              ],
+              "column_columns": [
+                "contact"
+              ],
+              "aggregation": "count",
+              "value_column": "",
+              "success_value": null,
+              "conditions": [
+                {
+                  "column": "y",
+                  "op": "eq",
+                  "value": "yes"
+                }
+              ],
+              "margins": false,
+              "margins_name": "전체",
+              "sort": "calendar_month"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "unchanged L2_027 prompt",
+      "reference_id": "L2_027",
+      "status": "PASS",
+      "tools": {
+        "pivot_dataset": 1
+      },
+      "model_calls": 0,
+      "remote_executions": 0,
+      "evidence": {
+        "pivots": [
+          {
+            "dataset_id": "30fc64cf-78a6-4dd9-8927-3f9dd0dbff26",
+            "shape": [
+              13,
+              4
+            ],
+            "data_sha256": "3946a499dc9845bf9c9a6e4f8ab13c74af0a1222e497a4e060cfec1566b34f42",
+            "specification": {
+              "index_columns": [
+                "job"
+              ],
+              "column_columns": [
+                "y"
+              ],
+              "aggregation": "mean",
+              "value_column": "duration",
+              "success_value": null,
+              "conditions": [],
+              "margins": true,
+              "margins_name": "전체평균",
+              "sort": "ascending"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "unchanged L2_028 prompt",
+      "reference_id": "L2_028",
+      "status": "PASS",
+      "tools": {
+        "pivot_dataset": 1
+      },
+      "model_calls": 0,
+      "remote_executions": 0,
+      "evidence": {
+        "pivots": [
+          {
+            "dataset_id": "29f9bd34-46ae-4269-a43c-04a4915b7d54",
+            "shape": [
+              3,
+              4
+            ],
+            "data_sha256": "336d24eabb9224a3d2ab50ddebe6f6844610aaf3bd3790b529e2038e8d3b20e4",
+            "specification": {
+              "index_columns": [
+                "Pclass"
+              ],
+              "column_columns": [
+                "Embarked"
+              ],
+              "aggregation": "mean",
+              "value_column": "Fare",
+              "success_value": null,
+              "conditions": [],
+              "margins": false,
+              "margins_name": "전체",
+              "sort": "ascending"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "unchanged L2_029 prompt",
+      "reference_id": "L2_029",
+      "status": "PASS",
+      "tools": {
+        "pivot_dataset": 1
+      },
+      "model_calls": 0,
+      "remote_executions": 0,
+      "evidence": {
+        "pivots": [
+          {
+            "dataset_id": "2672e26f-d4e5-4214-b852-c9d6efbfa368",
+            "shape": [
+              4,
+              4
+            ],
+            "data_sha256": "ef5911ef75a918e9aa101801f42bf7d7db619dcd35f66e1e16b4937181fd3fb3",
+            "specification": {
+              "index_columns": [
+                "education"
+              ],
+              "column_columns": [
+                "marital"
+              ],
+              "aggregation": "success_rate",
+              "value_column": "y",
+              "success_value": "yes",
+              "conditions": [],
+              "margins": false,
+              "margins_name": "전체",
+              "sort": "ascending"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "unchanged L2_031 prompt",
+      "reference_id": "L2_031",
+      "status": "PASS",
+      "tools": {
+        "pivot_dataset": 1
+      },
+      "model_calls": 0,
+      "remote_executions": 0,
+      "evidence": {
+        "pivots": [
+          {
+            "dataset_id": "4d0a9c74-539d-4742-9168-88ced2002c37",
+            "shape": [
+              12,
+              3
+            ],
+            "data_sha256": "da3bdc0ba921f42b5c1da6665bddd3956f2a2939d9b635d58e995f0fae73e8eb",
+            "specification": {
+              "index_columns": [
+                "month"
+              ],
+              "column_columns": [
+                "housing"
+              ],
+              "aggregation": "count",
+              "value_column": "",
+              "success_value": null,
+              "conditions": [],
+              "margins": false,
+              "margins_name": "전체",
+              "sort": "calendar_month"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "unchanged L2_034 prompt",
+      "reference_id": "L2_034",
+      "status": "PASS",
+      "tools": {
+        "pivot_dataset": 1
+      },
+      "model_calls": 0,
+      "remote_executions": 0,
+      "evidence": {
+        "pivots": [
+          {
+            "dataset_id": "b458df60-a6ac-4dee-b167-d203d535474d",
+            "shape": [
+              4,
+              3
+            ],
+            "data_sha256": "e81ca2f74ae893645edc81fd15f1cbccdb4c6c5e9d9fcd2d9db1246a02d39cae",
+            "specification": {
+              "index_columns": [
+                "poutcome"
+              ],
+              "column_columns": [
+                "y"
+              ],
+              "aggregation": "overall_percent",
+              "value_column": "",
+              "success_value": null,
+              "conditions": [],
+              "margins": false,
+              "margins_name": "전체",
+              "sort": "ascending"
+            }
+          }
+        ]
+      }
+    }
+  ],
+  "passed": 14,
+  "total": 14,
+  "primary_grading_cases": 13,
+  "primary_grading_total": 87,
+  "model_calls": 0,
+  "remote_executions": 0,
+  "elapsed_seconds": 1.222,
+  "limitations": [
+    "Local fixtures only; no Databricks or browser execution",
+    "Thirteen unchanged pivot prompts raise independent grading coverage to 87/200",
+    "Multi-measure summaries and binned pivot requests remain outside this tool contract"
+  ]
+}

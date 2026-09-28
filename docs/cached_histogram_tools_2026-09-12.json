@@ -1,0 +1,44 @@
+{
+  "status": "PASS",
+  "mode": "local-tools",
+  "request": "age에 대한 histogram을 보여줘",
+  "source_conversation": "c1022998-2a9c-43f6-ac8a-6a903f5e21b7",
+  "source_assets_read_only": true,
+  "original_chart_reused": true,
+  "remote_executions": 0,
+  "result": {
+    "status": "ready",
+    "histogram_plan": {
+      "source": "workspace.default.bank_loan",
+      "query": "SELECT `age`, COUNT(*) AS `__frequency` FROM `workspace`.`default`.`bank_loan` WHERE `age` IS NOT NULL GROUP BY `age`",
+      "reason": "age 히스토그램에 필요한 값별 빈도를 조회합니다. 원본 행 전체는 가져오지 않습니다.",
+      "value_column": "age",
+      "weight_column": "__frequency"
+    },
+    "loaded_dataset": "0bc1fc37-9a45-49f5-8d96-412414fa317b",
+    "cards": [
+      {
+        "id": "9654cc78-4cd9-49e6-bd4d-e38431c6371d",
+        "dataset_id": "0bc1fc37-9a45-49f5-8d96-412414fa317b",
+        "title": "age 분포",
+        "reason": "값별 빈도를 가중치로 사용했습니다. 원본 행을 펼치거나 표본을 만들지 않았습니다.",
+        "kind": "histogram",
+        "columns": [
+          "age"
+        ],
+        "scope": "빈도 합계 750,000 · complete · SELECT `age`, COUNT(*) AS `__frequency` FROM `workspace`.`default`.`bank_loan` WHERE `age` IS NOT NULL GROUP BY `age`"
+      }
+    ],
+    "reused": true
+  },
+  "recovery": {},
+  "evidence": [
+    {
+      "chart_id": "9654cc78-4cd9-49e6-bd4d-e38431c6371d",
+      "dataset_id": "0bc1fc37-9a45-49f5-8d96-412414fa317b",
+      "png_sha256": "c742f7f00e0f7ba5fd2a6c4df9688764ca3dc671d0b0b9a36efb2d0a8cda460e",
+      "scope": "빈도 합계 750,000 · complete · SELECT `age`, COUNT(*) AS `__frequency` FROM `workspace`.`default`.`bank_loan` WHERE `age` IS NOT NULL GROUP BY `age`",
+      "image_path": "/Users/najongseong/git_repository/teleai/docs/cached_histogram_tools_2026-09-12.png"
+    }
+  ]
+}

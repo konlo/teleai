@@ -1,4 +1,5 @@
 import unittest
+from pathlib import Path
 from unittest.mock import MagicMock, patch
 
 import pandas as pd
@@ -54,12 +55,16 @@ class QueryTests(unittest.TestCase):
         cursor.execute.assert_called_once_with("SELECT x FROM events")
         self.assertEqual(result['dataset']['coverage'], 'truncated')
         self.assertEqual(result['dataset']['rows'], 2)
+        self.assertTrue(result['dataset']['snapshot'])
 
 
 class PageTests(unittest.TestCase):
     def test_page_proposal_and_cancel_do_not_connect(self):
         with patch('databricks.sql.connect') as connect:
-            app = AppTest.from_file('pages/Telly.py', default_timeout=20).run()
+            # This test asserts the legacy session contract independently of the
+            # installed LangChain major version; v1 has separate persistent UI tests.
+            page = Path(__file__).resolve().parents[1] / 'ui' / 'legacy_telly.py'
+            app = AppTest.from_file(str(page), default_timeout=20).run()
             self.assertEqual(len(app.exception), 0)
             app.text_input[0].set_value('catalog.schema.events').run()
             next(b for b in app.button if b.label == '데이터 불러오기 제안').click().run()

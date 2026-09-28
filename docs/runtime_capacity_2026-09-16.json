@@ -1,0 +1,62 @@
+{
+  "created_at": "2026-09-15T21:32:57.312793+00:00",
+  "source": "docs/runtime_performance_2026-09-16.json",
+  "ready": true,
+  "policy": {
+    "deterministic_p95_seconds": 1.0,
+    "min_concurrent_requests": 20,
+    "min_workers": 4,
+    "memory_limit_bytes": 1073741824,
+    "rss_warning_bytes": 805306368,
+    "rss_critical_bytes": 939524096
+  },
+  "checks": [
+    {
+      "name": "benchmark_safety",
+      "status": "pass",
+      "observed": 1,
+      "limit": 1,
+      "message": "모델·Databricks 호출 없이 원본을 변경하지 않은 측정입니다."
+    },
+    {
+      "name": "minimum_load_sample",
+      "status": "pass",
+      "observed": 20,
+      "limit": 20,
+      "message": "동시 표본 20건·worker 4개를 실행했습니다."
+    },
+    {
+      "name": "concurrent_success",
+      "status": "pass",
+      "observed": 20,
+      "limit": 20,
+      "message": "동시 요청 성공 20/20, 실패 0건입니다."
+    },
+    {
+      "name": "local_p95",
+      "status": "pass",
+      "observed": 0.161968,
+      "limit": 1.0,
+      "message": "결정적 로컬 분석 p95가 제한 안에 있습니다."
+    },
+    {
+      "name": "concurrent_p95",
+      "status": "pass",
+      "observed": 0.549185,
+      "limit": 1.0,
+      "message": "결정적 로컬 분석 p95가 제한 안에 있습니다."
+    },
+    {
+      "name": "peak_rss",
+      "status": "pass",
+      "observed": 378601472,
+      "limit": 805306368,
+      "message": "peak RSS가 경고 기준보다 낮습니다."
+    }
+  ],
+  "safety": {
+    "databricks_calls": 0,
+    "model_calls": 0,
+    "source_asset_mutated": false
+  }
+}

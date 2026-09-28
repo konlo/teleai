@@ -1,0 +1,63 @@
+{
+  "scope": "fixed five Spider2-Lite SQLite tasks; TeleAI proposal adapter; no warehouse execution",
+  "provider": "databricks",
+  "fixed_ids": [
+    "local221",
+    "local009",
+    "local210",
+    "local358",
+    "local198"
+  ],
+  "proposed": 1,
+  "tasks": 5,
+  "official_scoring_submitted": {
+    "correct": 0,
+    "submitted": 1,
+    "scores": {
+      "local358": 0
+    }
+  },
+  "rejected_draft_diagnostic": {
+    "correct": 1,
+    "drafts": 4,
+    "scores": {
+      "local009": 1,
+      "local198": 0,
+      "local210": 0,
+      "local221": 0
+    }
+  },
+  "limitations": [
+    "Rejected draft scoring is diagnostic and must not count as agent success.",
+    "Official scorer prints a 547-task denominator even for subsets; that full benchmark score is not reported here.",
+    "No gold SQL/results were provided to the model. Only runtime schema and task-provided document were used.",
+    "SQL proposal correctness is not approval/loading/EDA success."
+  ],
+  "failure_analysis": [
+    {
+      "id": "local009",
+      "layer": "agent_scope_verification",
+      "finding": "Executable, officially correct draft blocked with request_scope_unresolved. Role-specific OR across decoded JSON fields needs a verifiable request contract."
+    },
+    {
+      "id": "local221",
+      "layer": "model_plan_and_agent_relation_binding",
+      "finding": "Only home-team wins counted; away wins missing. Relationship validation also blocks the proposal."
+    },
+    {
+      "id": "local210",
+      "layer": "model_plan_and_agent_scope_binding",
+      "finding": "Unrequested year 2026 added; finished-order month comparison scope unresolved."
+    },
+    {
+      "id": "local198",
+      "layer": "model_multistage_plan_and_agent_relation_binding",
+      "finding": "Median step missing; COUNT of joined customer rows is not distinct customer count."
+    },
+    {
+      "id": "local358",
+      "layer": "model_metric_definition",
+      "finding": "Submitted query executable but official result differs; current-year anchor and birth-date NULL handling require explicit metric semantics."
+    }
+  ]
+}

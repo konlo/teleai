@@ -1,0 +1,92 @@
+{
+  "created_at": "2026-09-15T21:28:38.423264+00:00",
+  "observed_retained_traffic": {
+    "count": 28,
+    "p50_seconds": 23.583,
+    "p95_seconds": 215.301,
+    "max_seconds": 277.124,
+    "percentile_method": "nearest-rank",
+    "status_counts": {
+      "answered": 18,
+      "exhausted": 4,
+      "blocked": 4,
+      "None": 2
+    },
+    "scope": "all retained v1 run_completed events, including pre-fix failures",
+    "current_code_only": false,
+    "rss_instrumented_turns": 6,
+    "instrumented_current_code": {
+      "count": 6,
+      "p50_seconds": 0.177,
+      "p95_seconds": 33.039,
+      "max_seconds": 33.039,
+      "percentile_method": "nearest-rank",
+      "max_process_peak_rss_bytes": 268353536,
+      "max_frame_cache_bytes": 6421244
+    }
+  },
+  "current_local_dataframe_benchmark": {
+    "count": 30,
+    "p50_seconds": 0.086621,
+    "p95_seconds": 0.161968,
+    "max_seconds": 0.183152,
+    "percentile_method": "nearest-rank",
+    "iterations": 30,
+    "source": "workspace.default.bank_loan",
+    "rows": 10000,
+    "columns": 18,
+    "prompt": "현재 로딩된 10,000행 표본의 age 히스토그램을 보여줘",
+    "model_calls": 0,
+    "remote_calls": 0,
+    "actual_png_each_run": true,
+    "process_peak_rss_bytes": 318111744,
+    "scope": "cold temporary conversations using a copy of the persisted 10,000-row DataFrame"
+  },
+  "current_concurrent_local_benchmark": {
+    "count": 20,
+    "p50_seconds": 0.444924,
+    "p95_seconds": 0.549185,
+    "max_seconds": 0.56115,
+    "percentile_method": "nearest-rank",
+    "requests": 20,
+    "workers": 4,
+    "successes": 20,
+    "failures": 0,
+    "wall_seconds": 2.948196,
+    "throughput_requests_per_second": 6.784,
+    "errors": [],
+    "model_calls": 0,
+    "remote_calls": 0,
+    "process_peak_rss_bytes": 378601472,
+    "scope": "parallel cold conversations using independent copies of the persisted local DataFrame"
+  },
+  "current_local_correlation_benchmark": {
+    "count": 30,
+    "p50_seconds": 0.039819,
+    "p95_seconds": 0.047492,
+    "max_seconds": 0.075279,
+    "percentile_method": "nearest-rank",
+    "iterations": 30,
+    "prompt": "현재 보유한 bank_loan 데이터에서 age와 balance의 피어슨 상관계수를 계산해줘.",
+    "expected": 0.059183710251925696,
+    "model_calls": 0,
+    "remote_calls": 0,
+    "scope": "cold temporary conversations using the persisted local DataFrame and a pandas oracle"
+  },
+  "live_server_memory_snapshot": {
+    "pid": 68365,
+    "rss_bytes": 17465344,
+    "measurement": "single ps RSS snapshot after the verified live journey"
+  },
+  "safety": {
+    "databricks_calls": 0,
+    "model_calls": 0,
+    "source_asset_mutated": false
+  },
+  "interpretation_limits": [
+    "Retained traffic includes failures from older code and is a historical baseline, not a current-version SLO claim.",
+    "The controlled benchmark covers the deterministic current-DataFrame histogram path only.",
+    "The concurrent benchmark uses isolated conversations in one process; it is not a distributed deployment load test.",
+    "The server RSS value is one snapshot; instrumented live-turn counts remain too small for a product-wide RSS percentile."
+  ]
+}

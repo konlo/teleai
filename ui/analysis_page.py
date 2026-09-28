@@ -11,10 +11,11 @@ import pandas as pd
 import streamlit as st
 from dotenv import load_dotenv
 from ui.analysis_text import display_analysis_text
-from langchain_ollama import ChatOllama
 from langchain_core.messages import HumanMessage, AIMessage, ToolMessage
 from core.analysis_agent.runtime import GraphAnalysisRuntime
 from core.analysis_agent.databricks import ConnectionConfig, make_executor
+from core.analysis_agent.policy import RuntimePolicy
+from core.analysis_agent.model_provider import build_analysis_chat_model
 
 load_dotenv(ROOT/'.env')
 st.set_page_config(page_title='Telly · 분석',page_icon='📊',layout='wide')
@@ -34,30 +35,32 @@ with sqlite3.connect(root/'conversations.sqlite') as db:
     db.execute('INSERT OR IGNORE INTO conversations VALUES (?,?)',(cid,'분석 '+cid[:8]))
     conversations=db.execute('SELECT id,title FROM conversations ORDER BY rowid DESC').fetchall()
 st.query_params['conversation']=cid
-if st.session_state.get('v1_runtime_id')!=cid:
+with st.sidebar:
+    provider_label = st.selectbox('분석 모델',
+        ['로컬 Ollama', 'Databricks 모델 · 토큰 사용량 과금'],
+        key='v1_model_provider')
+provider = 'databricks' if provider_label.startswith('Databricks') else 'ollama'
+runtime_id = (cid, provider)
+if st.session_state.get('v1_runtime_id')!=runtime_id:
     previous=st.session_state.pop('v1_runtime',None)
     if previous:previous.close()
-    model=ChatOllama(model=os.getenv('OLLAMA_MODEL','gemma4:e4b'),
-        base_url=os.getenv('OLLAMA_BASE_URL','http://localhost:11434'),reasoning=True,
-        temperature=0,num_ctx=16384,num_predict=4096,client_kwargs={'timeout':60})
+    policy=RuntimePolicy.from_env()
+    try:
+        model=build_analysis_chat_model(policy,provider=provider)
+    except ValueError as exc:
+        st.error(str(exc))
+        st.stop()
     config=ConnectionConfig.from_env()
+    from core.analysis_catalog import load_saved_reference_context
+    context_loader=lambda:load_saved_reference_context(ROOT/'.telly_table_context')
     runtime=GraphAnalysisRuntime(root,owner,cid,model,
-        connection_identity=config.identity(),remote_factory=lambda d:make_executor(config,d))
-    from utils.table_context import load_saved_table_context
-    for path in sorted((ROOT/'.telly_table_context/contexts').glob('*.json')):
-        try:
-            raw=json.loads(path.read_text())
-            saved=load_saved_table_context(raw['table_fqn'])
-            if saved:
-                runtime.context.reference_context.append({'table':saved.table_fqn,
-                    'training_status':saved.training_status,
-                    'columns':[{'name':c.name,'dtype':c.dtype,'aliases':c.aliases,
-                                'top_values':c.top_values[:10]} for c in saved.columns]})
-        except (OSError,ValueError,KeyError):
-            continue
+        connection_identity=config.identity(),
+        remote_factory=lambda d:make_executor(config,d,max_rows=policy.max_remote_rows),
+        reference_context_loader=context_loader,policy=policy)
     st.session_state.v1_runtime=runtime
-    st.session_state.v1_runtime_id=cid
+    st.session_state.v1_runtime_id=runtime_id
 runtime=st.session_state.v1_runtime
+BUSY_NOTICE='현재 분석이 이미 실행 중입니다. 완료될 때까지 잠시 기다려주세요.'
 
 
 def action(fn):
@@ -69,8 +72,11 @@ def action(fn):
             progress.update(label='확인이 필요합니다.' if state=='error' else '처리했습니다.',state=state)
         st.session_state.v1_notice=result.get('text','') if isinstance(result,dict) and result.get('status') not in {'answered','needs_data','blocked','exhausted'} else ''
     except Exception as exc:
-        error_id=runtime.diagnostics.failure(exc, stage='ui_action')
-        st.session_state.v1_notice=f'오류 ID: {error_id}. '+'작업을 완료하지 못했습니다. 기존 결과와 승인 상태를 확인해주세요. ('+type(exc).__name__+')'
+        if isinstance(exc,RuntimeError) and str(exc)=='현재 대화가 실행 중입니다.':
+            st.session_state.v1_notice=BUSY_NOTICE
+        else:
+            error_id=runtime.diagnostics.failure(exc, stage='ui_action')
+            st.session_state.v1_notice=f'오류 ID: {error_id}. '+'작업을 완료하지 못했습니다. 기존 결과와 승인 상태를 확인해주세요. ('+type(exc).__name__+')'
     finally:
         runtime.on_progress=None
 
@@ -92,18 +98,34 @@ with st.sidebar:
             fixture=json.loads((ROOT/'tests/fixtures/analysis_acceptance.json').read_text())
             info=runtime.datasets.register(pd.DataFrame(fixture['rows']),source=fixture['source'],
                 coverage='complete',predicate_known=True)
+            runtime.select_dataset(info.id)
             return {'text':f'합성 예제 데이터 {info.rows}행을 로컬에 준비했습니다.'}
         action(example);st.rerun()
     st.subheader('보유한 결과')
+    selected_id=runtime.context.selected_dataset_id
     for index,info in enumerate(runtime.datasets.metadata.values(),1):
-        with st.expander(f'결과 {index} · {info.source} · {info.rows:,}행'):
-            st.caption(f'{info.grain} · {info.coverage}')
-            st.dataframe(runtime.datasets.frames[info.id].head(5),hide_index=True)
+        marker=' · 분석 기준' if info.id==selected_id else ''
+        with st.expander(f'결과 {index} · {info.source} · {info.rows:,}행{marker}'):
+            st.caption(f'{info.role} · {info.grain} · {info.coverage}')
+            preview=runtime.db.dataset_preview(info.id)
+            if preview is None:
+                st.caption('이전 형식으로 저장된 결과입니다. 전체 데이터를 화면 미리보기용으로 복원하지 않습니다.')
+            elif preview:
+                st.dataframe(preview,hide_index=True)
+            else:
+                st.caption('조회 결과에 행이 없습니다.')
+            if st.button('분석 기준으로 선택',key='select-'+info.id,disabled=info.id==selected_id):
+                action(lambda:runtime.select_dataset(info.id));st.rerun()
             if st.button('차트 추천',key='recommend-'+info.id):
                 action(lambda:runtime.recommend_charts(info.id));st.rerun()
     with st.expander('분석 스킬'):
         from utils.analysis_skill_registry import AnalysisSkillRegistry
         for item in AnalysisSkillRegistry().list():st.write(item['name']+' — '+item['description'])
+    with st.expander('현재 지원 범위와 운영 한도'):
+        policy=runtime.inspect()['operational_policy']
+        st.write('지원: 보유 데이터 재사용, 기본 집계, 명시적 필터, histogram/bar/line/scatter/단일 수치 boxplot')
+        st.write('검증 중: 조인, 가설 검정, 고급 복합 시각화')
+        st.caption(f"원격 결과 최대 {policy['max_remote_rows']:,}행 · 최대 {policy['max_dataset_columns']:,}열 · 대화별 저장공간 {policy['scope_disk_quota_bytes'] / 1024**3:.1f} GiB · 정리 후보 기준 {policy['retention_days']}일")
 
 for message in runtime.events():
     if isinstance(message,(HumanMessage,AIMessage)) and message.content:
@@ -112,9 +134,15 @@ for message in runtime.events():
             content=message.content
             if isinstance(content,str) and content.startswith('선택한 차트:'):content=content.split(', dataset_id=')[0]
             st.markdown(display_analysis_text(content,runtime.datasets.metadata))
-    if isinstance(message,ToolMessage) and message.name in {'recommend_chart_images','render_histogram'}:
-        data=json.loads(message.content)
-        cards=[runtime.artifacts[c['id']] for c in data.get('cards',[]) if c['id'] in runtime.artifacts]
+    if isinstance(message,ToolMessage):
+        try:
+            data=json.loads(message.content)
+        except (TypeError,ValueError):
+            data={}
+        references=data.get('cards',[]) if isinstance(data,dict) else []
+        cards=[runtime.artifacts[card_id] for item in references
+               if isinstance(item,dict) and isinstance(card_id:=item.get('id'),str)
+               and card_id in runtime.artifacts]
         if cards:
             with st.chat_message('assistant'):
                 st.write('이렇게 살펴볼 수 있어요')
@@ -122,7 +150,7 @@ for message in runtime.events():
                     with column:
                         st.image(card.image,caption=card.title)
                         st.caption(card.reason+' · '+card.scope)
-                        if st.button('이 차트 선택',key=card.id):
+                        if st.button('이 차트 선택',key=f'chart-{message.id}-{card.id}'):
                             action(lambda:runtime.select_chart(card.id))
                             st.session_state.v1_selected=card.id;st.rerun()
 selected=None
@@ -134,6 +162,10 @@ if selected in runtime.artifacts:
     card=runtime.artifacts[selected];st.subheader(card.title);st.image(card.image);st.caption(card.scope)
 
 state=runtime.inspect()
+if state['state']=='idle' and st.session_state.get('v1_notice')==BUSY_NOTICE:
+    # A concurrent duplicate submission can finish before this page reruns.
+    # Do not leave an obsolete "already running" notice after completion.
+    st.session_state.pop('v1_notice',None)
 if state.get('recovery',{}).get('status')=='blocked':
     from core.analysis_agent.failure_messages import remote_failure_message
     failures=list(state['recovery'].get('failed',{}).values())
@@ -141,11 +173,20 @@ if state.get('recovery',{}).get('status')=='blocked':
         st.error(remote_failure_message(failures))
 for pending in state['requests']:
     with st.container(border=True):
-        st.subheader('추가 데이터를 불러올까요?')
-        st.write(pending['reason']);st.code(pending['query'],language='sql')
+        schema_probe=runtime.is_schema_probe(pending['query'])
+        st.subheader('현재 컬럼을 확인할까요?' if schema_probe else '추가 데이터를 불러올까요?')
+        from core.analysis_load_plan import source_plan
+        plan=source_plan(pending['source'],pending['query'])
+        st.write(pending['reason'])
+        st.caption('대상: '+(', '.join(plan.actual_tables) if plan.actual_tables else pending['source'])
+                   +' · 결과 유형: '+('컬럼 정보(0행)' if schema_probe else
+                                  '집계' if plan.grain=='aggregate' else '행 데이터')
+                   +' · SQL 행 제한: '+('있음' if plan.bounded_result else '없음'))
+        st.code(pending['query'],language='sql')
         st.caption('이 조회에만 승인이 적용됩니다. 기존 결과는 유지됩니다.')
         yes,no=st.columns(2)
-        if yes.button('불러오고 계속',key='yes-'+pending['id'],disabled=pending['status']!='proposed'):
+        if yes.button('컬럼 확인하고 계속' if schema_probe else '불러오고 계속',
+                      key='yes-'+pending['id'],disabled=pending['status']!='proposed'):
             action(lambda:runtime.respond(pending['id'],approved=True));st.rerun()
         if no.button('조회 취소',key='no-'+pending['id'],disabled=pending['status'] not in {'proposed','invalidated'}):
             action(lambda:runtime.cancel(pending['id']));st.rerun()

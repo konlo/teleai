@@ -1,0 +1,42 @@
+{
+  "mode": "synthetic labelled judge calibration; not agent runs",
+  "judge": "gemma4:e4b",
+  "threshold": 0.8,
+  "results": [
+    {
+      "id": "correct_groups",
+      "expected_pass": true,
+      "score": 0.6,
+      "reason": "The actual output successfully provides the correct calculated values (A=1.5, B=3.5) requested by the input. However, it fails to adhere to the concise, structured formatting demonstrated in the Expected Output (\"A=1.5; B=3.5\"). The use of natural language (\"A 평균 1.5, B 평균 3.5입니다.\") instead of the required key-value pair format constitutes a significant formatting shortcoming.",
+      "classification_correct": false,
+      "elapsed_seconds": 38.533
+    },
+    {
+      "id": "missing_goal",
+      "expected_pass": false,
+      "score": 0.0,
+      "reason": "The actual output fails to meet the primary requirement specified in the input, which was to show the average by group. The actual response only provides status messages ('결측값은 0개입니다. 분석을 완료했습니다.') and completely omits the required calculations and values (A=1.5; B=3.5), resulting in a failure according to Evaluation Step 1 and Step 3.",
+      "classification_correct": true,
+      "elapsed_seconds": 29.071
+    },
+    {
+      "id": "wrong_number",
+      "expected_pass": false,
+      "score": 0.0,
+      "reason": "The actual output fails to align with the expected output on multiple counts. The expected output requires a specific key-value format ('mean=2.5'), but the actual output provides a natural language response ('평균은 25.0입니다.'). Furthermore, the calculated value (25.0) is incorrect compared to the required value (2.5), resulting in a failure based on the comparison requirements outlined in the evaluation steps.",
+      "classification_correct": true,
+      "elapsed_seconds": 32.185
+    },
+    {
+      "id": "wrong_bins",
+      "expected_pass": false,
+      "score": 0.0,
+      "reason": "The actual output fails to meet the core requirement specified in the input and expected output. The input requests '5개 구간' (5 bins), and the expected output confirms 'bins=5'. However, the actual output explicitly states the rendering setting used was 'bins=20', violating the requirement check (Step 1) and failing due to incorrect chart settings (Step 3).",
+      "classification_correct": true,
+      "elapsed_seconds": 29.48
+    }
+  ],
+  "limitations": [
+    "Four controls only; passing does not establish judge reliability."
+  ]
+}

@@ -1,0 +1,51 @@
+{
+  "generated_at": "2026-09-27T22:09:06.974131+00:00",
+  "mode": "actual Databricks model; isolated retained actual warehouse data",
+  "request": "현재 로딩된 표본에서 `Avg VTAT` 평균과 히스토그램을 보여줘. 수치 변환 시 [\"null\"] 문자열만 결측값으로 처리하고 원본과 모든 행은 보존해.",
+  "rows": 100000,
+  "status": "PASS",
+  "agent_status": "answered",
+  "error_type": null,
+  "stop_reason": null,
+  "actual": 8.46354013145856,
+  "expected": 8.463540131458632,
+  "chart_count": 1,
+  "model_calls": 1,
+  "elapsed_seconds": 15.715,
+  "tools": [
+    {
+      "tool": "prepare_numeric_dataset"
+    },
+    {
+      "tool": "local_analysis_sql"
+    },
+    {
+      "tool": "render_chart_spec"
+    }
+  ],
+  "observations": [
+    {
+      "tool": "prepare_numeric_dataset",
+      "status": "ready",
+      "error_code": null
+    },
+    {
+      "tool": "local_analysis_sql",
+      "status": "ready",
+      "error_code": null
+    },
+    {
+      "tool": "render_chart_spec",
+      "status": "ready",
+      "error_code": null
+    }
+  ],
+  "raw_preserved": true,
+  "original_raw_preserved": true,
+  "warehouse_sql_executions": 0,
+  "answer": "Avg VTAT 분포 이미지를 생성했습니다.\n분석 범위: 보유 100,000행 기준 · unknown · raw · 표시 데이터 92,957개 · 집계 none\n\n보유 데이터로 계산한 결과입니다. 출처: workspace.default.ncr_ride\n분석 범위: 현재 보유한 일부 데이터\n\n평균: 8.46354013145856\n\n수치 변환: Avg VTAT · 전체 100,000행 중 유효 값 92,957개 · 기존 결측 0개 · 명시한 문자열 결측 7,043개. Float64로 계산했으며 원본과 모든 행은 보존했습니다.",
+  "limitations": [
+    "One explicitly specified missing-value policy; ambiguity resolution is not tested.",
+    "Retained warehouse sample, not full population. No SQL or browser action in this run."
+  ]
+}

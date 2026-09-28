@@ -1,0 +1,10 @@
+{
+  "ddl": "CREATE TABLE codes (code INTEGER PRIMARY KEY, classification TEXT); CREATE TABLE readings (code_ref INTEGER REFERENCES codes(code), measurement REAL);",
+  "tables": {
+    "codes": {"columns": ["code", "classification"], "rows": [[101, "accepted"], [202, "declined"]]},
+    "readings": {"columns": ["code_ref", "measurement"], "rows": [[101, 2], [101, 4], [202, 8], [101, 10], [null, 9]]}
+  },
+  "protected_source": "readings",
+  "prompt": "Count records with classification='accepted' after join readings and codes. Find the table relationship in the schema first.",
+  "expected": 3
+}

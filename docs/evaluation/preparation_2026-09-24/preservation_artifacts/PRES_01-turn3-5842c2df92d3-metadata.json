@@ -1,0 +1,398 @@
+{
+  "case_id": "PRES_01-turn3",
+  "run_id": "5842c2df92d34e2abd058a902fd4c764",
+  "state": "idle",
+  "message_count": 15,
+  "pending_requests": 0,
+  "recovery_status": "complete",
+  "recovery_attempts": 0,
+  "recovery_model_calls": 0,
+  "reference_context": [
+    {
+      "table": "fixture.sensor_readings",
+      "training_status": "fixture_profile",
+      "columns": [
+        {
+          "name": "event_key",
+          "dtype": "int64",
+          "distinct_count": 8,
+          "null_count": 0,
+          "top_values": [
+            {
+              "value": 1,
+              "count": 1
+            },
+            {
+              "value": 2,
+              "count": 1
+            },
+            {
+              "value": 3,
+              "count": 1
+            },
+            {
+              "value": 4,
+              "count": 1
+            },
+            {
+              "value": 5,
+              "count": 1
+            },
+            {
+              "value": 6,
+              "count": 1
+            },
+            {
+              "value": 7,
+              "count": 1
+            },
+            {
+              "value": 8,
+              "count": 1
+            }
+          ],
+          "aliases": []
+        },
+        {
+          "name": "reading",
+          "dtype": "float64",
+          "distinct_count": 6,
+          "null_count": 1,
+          "top_values": [
+            {
+              "value": 2.0,
+              "count": 2
+            },
+            {
+              "value": -4.0,
+              "count": 1
+            },
+            {
+              "value": 0.0,
+              "count": 1
+            },
+            {
+              "value": 8.0,
+              "count": 1
+            },
+            {
+              "value": 12.0,
+              "count": 1
+            },
+            {
+              "value": 50.0,
+              "count": 1
+            }
+          ],
+          "aliases": []
+        },
+        {
+          "name": "zone",
+          "dtype": "object",
+          "distinct_count": 2,
+          "null_count": 0,
+          "top_values": [
+            {
+              "value": "east",
+              "count": 4
+            },
+            {
+              "value": "west",
+              "count": 4
+            }
+          ],
+          "aliases": []
+        }
+      ],
+      "alias_source": null,
+      "source": "local test_set fixture; not a live Databricks table"
+    }
+  ],
+  "datasets": [
+    {
+      "id": "d2d11960-f22c-412a-8ea5-ee1124dd8e75",
+      "source": "fixture.sensor_readings",
+      "columns": [
+        "event_key",
+        "reading",
+        "zone"
+      ],
+      "rows": 8,
+      "coverage": "complete",
+      "conditions": [],
+      "predicate_known": true,
+      "grain": "raw",
+      "aggregation": "",
+      "snapshot": "fixture:preservation-v1",
+      "query": "",
+      "parent_id": "",
+      "parent_ids": [],
+      "role": "root",
+      "root_id": "d2d11960-f22c-412a-8ea5-ee1124dd8e75"
+    }
+  ],
+  "charts": [
+    {
+      "id": "135346dd-64ce-4797-92b0-361d7ba908ba",
+      "dataset_id": "d2d11960-f22c-412a-8ea5-ee1124dd8e75",
+      "kind": "histogram",
+      "columns": [
+        "reading"
+      ],
+      "png_sha256": "c084dfeef8490ac54e0e1730894472b2268ad106bab1e39b482894a53b6277b0",
+      "png_valid": true,
+      "path": "/Users/najongseong/git_repository/teleai/docs/evaluation/preparation_2026-09-24/preservation_artifacts/PRES_01-turn3-c084dfeef849.png"
+    }
+  ],
+  "diagnostics": [
+    {
+      "time": "2026-09-24T04:23:13.337523+00:00",
+      "event": "run_started",
+      "run_id": "915c4c0318ba45b5b86d36425be5409b",
+      "operation": "submit"
+    },
+    {
+      "time": "2026-09-24T04:23:13.397792+00:00",
+      "event": "recovery_transition",
+      "run_id": "915c4c0318ba45b5b86d36425be5409b",
+      "tool": "prepare_histogram"
+    },
+    {
+      "time": "2026-09-24T04:23:13.399060+00:00",
+      "event": "tool_started",
+      "run_id": "915c4c0318ba45b5b86d36425be5409b",
+      "tool": "prepare_histogram"
+    },
+    {
+      "time": "2026-09-24T04:23:16.636621+00:00",
+      "event": "tool_completed",
+      "run_id": "915c4c0318ba45b5b86d36425be5409b",
+      "tool": "prepare_histogram",
+      "status": "ready",
+      "elapsed_seconds": 7.628
+    },
+    {
+      "time": "2026-09-24T04:23:16.638354+00:00",
+      "event": "completion_checked",
+      "run_id": "915c4c0318ba45b5b86d36425be5409b",
+      "status": "complete",
+      "attempts": 0
+    },
+    {
+      "time": "2026-09-24T04:23:16.639457+00:00",
+      "event": "run_completed",
+      "run_id": "915c4c0318ba45b5b86d36425be5409b",
+      "status": "answered",
+      "elapsed_seconds": 7.692
+    },
+    {
+      "time": "2026-09-24T04:23:16.639496+00:00",
+      "event": "turn_slo",
+      "run_id": "915c4c0318ba45b5b86d36425be5409b",
+      "elapsed_seconds": 7.692,
+      "limit": 180.0,
+      "status": "ok"
+    },
+    {
+      "time": "2026-09-24T04:23:16.642232+00:00",
+      "event": "run_started",
+      "run_id": "4da67219b4654a3b8366982c634324fd",
+      "operation": "submit"
+    },
+    {
+      "time": "2026-09-24T04:23:16.644801+00:00",
+      "event": "request_scope_rejected",
+      "run_id": "4da67219b4654a3b8366982c634324fd"
+    },
+    {
+      "time": "2026-09-24T04:23:16.645619+00:00",
+      "event": "summarization_started",
+      "run_id": "4da67219b4654a3b8366982c634324fd",
+      "span_id": "3df2dd3ea936"
+    },
+    {
+      "time": "2026-09-24T04:23:16.645714+00:00",
+      "event": "summarization_finished",
+      "run_id": "4da67219b4654a3b8366982c634324fd",
+      "span_id": "3df2dd3ea936",
+      "status": "ok",
+      "elapsed_seconds": 0.0
+    },
+    {
+      "time": "2026-09-24T04:23:16.646018+00:00",
+      "event": "model_call_started",
+      "run_id": "4da67219b4654a3b8366982c634324fd",
+      "span_id": "72c35a135034"
+    },
+    {
+      "time": "2026-09-24T04:23:16.646655+00:00",
+      "event": "context_budget",
+      "run_id": "4da67219b4654a3b8366982c634324fd",
+      "characters": 8406,
+      "limit": 32000
+    },
+    {
+      "time": "2026-09-24T04:24:05.094125+00:00",
+      "event": "model_call_finished",
+      "run_id": "4da67219b4654a3b8366982c634324fd",
+      "span_id": "72c35a135034",
+      "status": "ok",
+      "elapsed_seconds": 48.448
+    },
+    {
+      "time": "2026-09-24T04:24:05.111227+00:00",
+      "event": "request_scope_rejected",
+      "run_id": "4da67219b4654a3b8366982c634324fd"
+    },
+    {
+      "time": "2026-09-24T04:24:05.112962+00:00",
+      "event": "summarization_started",
+      "run_id": "4da67219b4654a3b8366982c634324fd",
+      "span_id": "6ea92748a613"
+    },
+    {
+      "time": "2026-09-24T04:24:05.113157+00:00",
+      "event": "summarization_finished",
+      "run_id": "4da67219b4654a3b8366982c634324fd",
+      "span_id": "6ea92748a613",
+      "status": "ok",
+      "elapsed_seconds": 0.0
+    },
+    {
+      "time": "2026-09-24T04:24:05.116559+00:00",
+      "event": "model_call_started",
+      "run_id": "4da67219b4654a3b8366982c634324fd",
+      "span_id": "388681cb66c9"
+    },
+    {
+      "time": "2026-09-24T04:24:05.118279+00:00",
+      "event": "context_budget",
+      "run_id": "4da67219b4654a3b8366982c634324fd",
+      "characters": 8854,
+      "limit": 32000
+    },
+    {
+      "time": "2026-09-24T04:24:18.653507+00:00",
+      "event": "model_call_finished",
+      "run_id": "4da67219b4654a3b8366982c634324fd",
+      "span_id": "388681cb66c9",
+      "status": "ok",
+      "elapsed_seconds": 13.537
+    },
+    {
+      "time": "2026-09-24T04:24:18.661504+00:00",
+      "event": "request_scope_rejected",
+      "run_id": "4da67219b4654a3b8366982c634324fd"
+    },
+    {
+      "time": "2026-09-24T04:24:18.662972+00:00",
+      "event": "summarization_started",
+      "run_id": "4da67219b4654a3b8366982c634324fd",
+      "span_id": "9d4940717018"
+    },
+    {
+      "time": "2026-09-24T04:24:18.663223+00:00",
+      "event": "summarization_finished",
+      "run_id": "4da67219b4654a3b8366982c634324fd",
+      "span_id": "9d4940717018",
+      "status": "ok",
+      "elapsed_seconds": 0.0
+    },
+    {
+      "time": "2026-09-24T04:24:18.664243+00:00",
+      "event": "model_call_started",
+      "run_id": "4da67219b4654a3b8366982c634324fd",
+      "span_id": "6e6e3ce8d4f9"
+    },
+    {
+      "time": "2026-09-24T04:24:18.666076+00:00",
+      "event": "context_budget",
+      "run_id": "4da67219b4654a3b8366982c634324fd",
+      "characters": 9302,
+      "limit": 32000
+    },
+    {
+      "time": "2026-09-24T04:24:34.396613+00:00",
+      "event": "model_call_finished",
+      "run_id": "4da67219b4654a3b8366982c634324fd",
+      "span_id": "6e6e3ce8d4f9",
+      "status": "ok",
+      "elapsed_seconds": 15.732
+    },
+    {
+      "time": "2026-09-24T04:24:34.400757+00:00",
+      "event": "completion_checked",
+      "run_id": "4da67219b4654a3b8366982c634324fd",
+      "status": "exhausted",
+      "attempts": 2
+    },
+    {
+      "time": "2026-09-24T04:24:34.406679+00:00",
+      "event": "run_completed",
+      "run_id": "4da67219b4654a3b8366982c634324fd",
+      "status": "exhausted",
+      "elapsed_seconds": 77.764
+    },
+    {
+      "time": "2026-09-24T04:24:34.407015+00:00",
+      "event": "turn_slo",
+      "run_id": "4da67219b4654a3b8366982c634324fd",
+      "elapsed_seconds": 77.764,
+      "limit": 180.0,
+      "status": "ok"
+    },
+    {
+      "time": "2026-09-24T04:24:34.427921+00:00",
+      "event": "run_started",
+      "run_id": "5842c2df92d34e2abd058a902fd4c764",
+      "operation": "submit"
+    },
+    {
+      "time": "2026-09-24T04:24:34.436197+00:00",
+      "event": "cached_chart_reuse_planned",
+      "run_id": "5842c2df92d34e2abd058a902fd4c764"
+    },
+    {
+      "time": "2026-09-24T04:24:34.436282+00:00",
+      "event": "recovery_transition",
+      "run_id": "5842c2df92d34e2abd058a902fd4c764",
+      "tool": "show_chart"
+    },
+    {
+      "time": "2026-09-24T04:24:34.437528+00:00",
+      "event": "tool_started",
+      "run_id": "5842c2df92d34e2abd058a902fd4c764",
+      "tool": "show_chart"
+    },
+    {
+      "time": "2026-09-24T04:24:34.437638+00:00",
+      "event": "tool_completed",
+      "run_id": "5842c2df92d34e2abd058a902fd4c764",
+      "tool": "show_chart",
+      "status": "ready",
+      "elapsed_seconds": 0.0
+    },
+    {
+      "time": "2026-09-24T04:24:34.438714+00:00",
+      "event": "completion_checked",
+      "run_id": "5842c2df92d34e2abd058a902fd4c764",
+      "status": "complete",
+      "attempts": 0
+    },
+    {
+      "time": "2026-09-24T04:24:34.439856+00:00",
+      "event": "run_completed",
+      "run_id": "5842c2df92d34e2abd058a902fd4c764",
+      "status": "answered",
+      "elapsed_seconds": 0.012
+    },
+    {
+      "time": "2026-09-24T04:24:34.439888+00:00",
+      "event": "turn_slo",
+      "run_id": "5842c2df92d34e2abd058a902fd4c764",
+      "elapsed_seconds": 0.012,
+      "limit": 180.0,
+      "status": "ok"
+    }
+  ]
+}

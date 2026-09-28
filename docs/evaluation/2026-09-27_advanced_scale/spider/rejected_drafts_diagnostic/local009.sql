@@ -1,0 +1,5 @@
+SELECT MAX(2 * 6371 * ASIN(SQRT(POWER(SIN((CAST(SUBSTR(a2.coordinates, INSTR(a2.coordinates, ',') + 1, LENGTH(a2.coordinates) - INSTR(a2.coordinates, ',') - 1) AS REAL) - CAST(SUBSTR(a1.coordinates, INSTR(a1.coordinates, ',') + 1, LENGTH(a1.coordinates) - INSTR(a1.coordinates, ',') - 1) AS REAL)) * 3.141592653589793 / 180 / 2), 2) + COS(CAST(SUBSTR(a1.coordinates, INSTR(a1.coordinates, ',') + 1, LENGTH(a1.coordinates) - INSTR(a1.coordinates, ',') - 1) AS REAL) * 3.141592653589793 / 180) * COS(CAST(SUBSTR(a2.coordinates, INSTR(a2.coordinates, ',') + 1, LENGTH(a2.coordinates) - INSTR(a2.coordinates, ',') - 1) AS REAL) * 3.141592653589793 / 180) * POWER(SIN((CAST(SUBSTR(a2.coordinates, 2, INSTR(a2.coordinates, ',') - 2) AS REAL) - CAST(SUBSTR(a1.coordinates, 2, INSTR(a1.coordinates, ',') - 2) AS REAL)) * 3.141592653589793 / 180 / 2), 2)))) AS max_distance
+FROM flights f
+JOIN airports_data a1 ON f.departure_airport = a1.airport_code
+JOIN airports_data a2 ON f.arrival_airport = a2.airport_code
+WHERE (JSON_EXTRACT(a1.city, '$.en') = 'Abakan' OR JSON_EXTRACT(a2.city, '$.en') = 'Abakan')

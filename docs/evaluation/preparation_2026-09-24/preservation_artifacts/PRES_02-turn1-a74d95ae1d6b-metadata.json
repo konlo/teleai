@@ -1,0 +1,238 @@
+{
+  "case_id": "PRES_02-turn1",
+  "run_id": "a74d95ae1d6b41a9a674e2e58cbd3bdc",
+  "state": "idle",
+  "message_count": 4,
+  "pending_requests": 0,
+  "recovery_status": "complete",
+  "recovery_attempts": 0,
+  "recovery_model_calls": 1,
+  "reference_context": [
+    {
+      "table": "fixture.sensor_readings",
+      "training_status": "fixture_profile",
+      "columns": [
+        {
+          "name": "event_key",
+          "dtype": "int64",
+          "distinct_count": 8,
+          "null_count": 0,
+          "top_values": [
+            {
+              "value": 1,
+              "count": 1
+            },
+            {
+              "value": 2,
+              "count": 1
+            },
+            {
+              "value": 3,
+              "count": 1
+            },
+            {
+              "value": 4,
+              "count": 1
+            },
+            {
+              "value": 5,
+              "count": 1
+            },
+            {
+              "value": 6,
+              "count": 1
+            },
+            {
+              "value": 7,
+              "count": 1
+            },
+            {
+              "value": 8,
+              "count": 1
+            }
+          ],
+          "aliases": []
+        },
+        {
+          "name": "reading",
+          "dtype": "float64",
+          "distinct_count": 6,
+          "null_count": 1,
+          "top_values": [
+            {
+              "value": 2.0,
+              "count": 2
+            },
+            {
+              "value": -4.0,
+              "count": 1
+            },
+            {
+              "value": 0.0,
+              "count": 1
+            },
+            {
+              "value": 8.0,
+              "count": 1
+            },
+            {
+              "value": 12.0,
+              "count": 1
+            },
+            {
+              "value": 50.0,
+              "count": 1
+            }
+          ],
+          "aliases": []
+        },
+        {
+          "name": "zone",
+          "dtype": "object",
+          "distinct_count": 2,
+          "null_count": 0,
+          "top_values": [
+            {
+              "value": "east",
+              "count": 4
+            },
+            {
+              "value": "west",
+              "count": 4
+            }
+          ],
+          "aliases": []
+        }
+      ],
+      "alias_source": null,
+      "source": "local test_set fixture; not a live Databricks table"
+    }
+  ],
+  "datasets": [
+    {
+      "id": "7cd6e2ae-5a67-46b6-920b-e5905914f86f",
+      "source": "fixture.sensor_readings",
+      "columns": [
+        "event_key",
+        "reading",
+        "zone"
+      ],
+      "rows": 8,
+      "coverage": "complete",
+      "conditions": [],
+      "predicate_known": true,
+      "grain": "raw",
+      "aggregation": "",
+      "snapshot": "fixture:preservation-v1",
+      "query": "",
+      "parent_id": "",
+      "parent_ids": [],
+      "role": "root",
+      "root_id": "7cd6e2ae-5a67-46b6-920b-e5905914f86f"
+    },
+    {
+      "id": "97a7286b-fe21-4387-8b52-a3db9f7c338d",
+      "source": "fixture.sensor_readings",
+      "columns": [
+        "mean_reading"
+      ],
+      "rows": 1,
+      "coverage": "complete",
+      "conditions": [],
+      "predicate_known": true,
+      "grain": "aggregate",
+      "aggregation": "mean(reading)",
+      "snapshot": "fixture:preservation-v1",
+      "query": "SELECT AVG(\"reading\") AS \"mean_reading\" FROM data",
+      "parent_id": "7cd6e2ae-5a67-46b6-920b-e5905914f86f",
+      "parent_ids": [],
+      "role": "derived",
+      "root_id": "7cd6e2ae-5a67-46b6-920b-e5905914f86f"
+    }
+  ],
+  "charts": [],
+  "diagnostics": [
+    {
+      "time": "2026-09-24T05:33:05.623441+00:00",
+      "event": "run_started",
+      "run_id": "a74d95ae1d6b41a9a674e2e58cbd3bdc",
+      "operation": "submit"
+    },
+    {
+      "time": "2026-09-24T05:33:05.691206+00:00",
+      "event": "summarization_started",
+      "run_id": "a74d95ae1d6b41a9a674e2e58cbd3bdc",
+      "span_id": "0944fb0645ac"
+    },
+    {
+      "time": "2026-09-24T05:33:05.691306+00:00",
+      "event": "summarization_finished",
+      "run_id": "a74d95ae1d6b41a9a674e2e58cbd3bdc",
+      "span_id": "0944fb0645ac",
+      "status": "ok",
+      "elapsed_seconds": 0.0
+    },
+    {
+      "time": "2026-09-24T05:33:05.691719+00:00",
+      "event": "model_call_started",
+      "run_id": "a74d95ae1d6b41a9a674e2e58cbd3bdc",
+      "span_id": "37708a194011"
+    },
+    {
+      "time": "2026-09-24T05:33:05.692942+00:00",
+      "event": "context_budget",
+      "run_id": "a74d95ae1d6b41a9a674e2e58cbd3bdc",
+      "characters": 6779,
+      "limit": 32000
+    },
+    {
+      "time": "2026-09-24T05:34:09.372579+00:00",
+      "event": "model_call_finished",
+      "run_id": "a74d95ae1d6b41a9a674e2e58cbd3bdc",
+      "span_id": "37708a194011",
+      "status": "ok",
+      "elapsed_seconds": 63.681
+    },
+    {
+      "time": "2026-09-24T05:34:09.384298+00:00",
+      "event": "tool_started",
+      "run_id": "a74d95ae1d6b41a9a674e2e58cbd3bdc",
+      "tool": "aggregate_dataset"
+    },
+    {
+      "time": "2026-09-24T05:34:09.393425+00:00",
+      "event": "tool_completed",
+      "run_id": "a74d95ae1d6b41a9a674e2e58cbd3bdc",
+      "tool": "aggregate_dataset",
+      "status": "ready",
+      "elapsed_seconds": 0.009
+    },
+    {
+      "time": "2026-09-24T05:34:09.415998+00:00",
+      "event": "calculation_evidence",
+      "run_id": "a74d95ae1d6b41a9a674e2e58cbd3bdc"
+    },
+    {
+      "time": "2026-09-24T05:34:09.417514+00:00",
+      "event": "completion_checked",
+      "run_id": "a74d95ae1d6b41a9a674e2e58cbd3bdc",
+      "status": "complete",
+      "attempts": 0
+    },
+    {
+      "time": "2026-09-24T05:34:09.419266+00:00",
+      "event": "run_completed",
+      "run_id": "a74d95ae1d6b41a9a674e2e58cbd3bdc",
+      "status": "answered",
+      "elapsed_seconds": 63.796
+    },
+    {
+      "time": "2026-09-24T05:34:09.419316+00:00",
+      "event": "turn_slo",
+      "run_id": "a74d95ae1d6b41a9a674e2e58cbd3bdc",
+      "elapsed_seconds": 63.796,
+      "limit": 180.0,
+      "status": "ok"
+    }
+  ]
+}

@@ -1,0 +1,103 @@
+{
+  "generated_at": "2026-09-19T04:37:05.769621+00:00",
+  "status": "PASS",
+  "runtime": "core.analysis_agent.runtime.GraphAnalysisRuntime",
+  "prompt": "customer_analytics와 transaction_history를 customer_id로 내부 조인해서 조인 결과 행 개수와 컬럼 수를 보여줘",
+  "data_scope": {
+    "left_fixture": "tests/analysis_benchmark_100/customer_analytics.csv",
+    "right_fixture": "tests/analysis_benchmark_100/transaction_history.csv",
+    "left_rows": 1000,
+    "right_rows": 5000
+  },
+  "oracle": {
+    "implementation": "pandas.DataFrame.merge independent of production DuckDB join",
+    "rows": 5000,
+    "columns": 25,
+    "data_sha256": "9cd26aebd4721c5f1ca3c8ba02011d2e706dddbd6ddc903ee35d9eeaa38feb94"
+  },
+  "evidence": {
+    "outcome": "answered",
+    "tool_observations": 1,
+    "join_summary": {
+      "how": "inner",
+      "left_on": [
+        "customer_id"
+      ],
+      "right_on": [
+        "customer_id"
+      ],
+      "relationship": "one_to_many",
+      "left_rows": 1000,
+      "right_rows": 5000,
+      "left_coverage": "complete",
+      "right_coverage": "complete",
+      "left_conditions": [],
+      "right_conditions": [],
+      "left_distinct_non_null_keys": 1000,
+      "right_distinct_non_null_keys": 947,
+      "matched_distinct_keys": 947,
+      "left_null_key_rows": 0,
+      "right_null_key_rows": 0,
+      "unmatched_left_rows": 53,
+      "unmatched_right_rows": 0,
+      "expected_rows": 5000,
+      "expansion_ratio": 1.0,
+      "max_rows": 100000,
+      "max_expansion_ratio": 5.0,
+      "actual_rows": 5000
+    },
+    "dataset": {
+      "id": "8920d473-5c32-4060-827a-004996f15c80",
+      "source": "customer_analytics JOIN transaction_history",
+      "columns": [
+        "customer_id",
+        "age",
+        "gender",
+        "job",
+        "marital",
+        "education",
+        "credit_score",
+        "annual_income",
+        "balance",
+        "housing_loan",
+        "personal_loan",
+        "signup_date",
+        "last_active_date",
+        "device_type",
+        "service_tier",
+        "churn",
+        "campaign_contact_count",
+        "satisfaction_score",
+        "tx_id",
+        "tx_datetime",
+        "tx_type",
+        "amount",
+        "channel",
+        "is_declined",
+        "fee"
+      ],
+      "rows": 5000,
+      "coverage": "complete",
+      "conditions": [],
+      "predicate_known": true,
+      "grain": "joined",
+      "aggregation": "",
+      "snapshot": "join:dae8a11e4cd9b7d75584d19ccb3af2aaf737de6c51f6097c9faf4a7e342f7ddf",
+      "query": "SELECT COALESCE(l.\"customer_id\", r.\"customer_id\") AS \"customer_id\", l.\"age\" AS \"age\", l.\"gender\" AS \"gender\", l.\"job\" AS \"job\", l.\"marital\" AS \"marital\", l.\"education\" AS \"education\", l.\"credit_score\" AS \"credit_score\", l.\"annual_income\" AS \"annual_income\", l.\"balance\" AS \"balance\", l.\"housing_loan\" AS \"housing_loan\", l.\"personal_loan\" AS \"personal_loan\", l.\"signup_date\" AS \"signup_date\", l.\"last_active_date\" AS \"last_active_date\", l.\"device_type\" AS \"device_type\", l.\"service_tier\" AS \"service_tier\", l.\"churn\" AS \"churn\", l.\"campaign_contact_count\" AS \"campaign_contact_count\", l.\"satisfaction_score\" AS \"satisfaction_score\", r.\"tx_id\" AS \"tx_id\", r.\"tx_datetime\" AS \"tx_datetime\", r.\"tx_type\" AS \"tx_type\", r.\"amount\" AS \"amount\", r.\"channel\" AS \"channel\", r.\"is_declined\" AS \"is_declined\", r.\"fee\" AS \"fee\" FROM left_data AS l INNER JOIN right_data AS r ON l.\"customer_id\" = r.\"customer_id\"",
+      "parent_id": "0fb63d39-bd7a-42d7-927e-c341ed1f28f5",
+      "parent_ids": [
+        "0fb63d39-bd7a-42d7-927e-c341ed1f28f5",
+        "862b65ab-aca1-4e6d-b8a8-4b547125d7b6"
+      ]
+    },
+    "actual_data_sha256": "9cd26aebd4721c5f1ca3c8ba02011d2e706dddbd6ddc903ee35d9eeaa38feb94",
+    "same_values": true,
+    "model_calls": 0,
+    "remote_executions": 0
+  },
+  "elapsed_seconds": 0.266,
+  "limitations": [
+    "Local fixture evaluation; no Databricks or browser execution",
+    "Validates an unambiguous inner join journey; many-to-many and output-limit rejection are unit contracts"
+  ]
+}

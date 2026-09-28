@@ -78,13 +78,29 @@ class RecoveryJourneyTests(unittest.TestCase):
             self.assertEqual(r.inspect()['state'],'idle');r.close()
 
 class EvidenceTests(unittest.TestCase):
+    def test_active_request_prompt_uses_original_not_summary_or_approval(self):
+        from langchain_core.messages import HumanMessage
+        class PromptCheckingModel(QuietModel):
+            def _generate(self,messages,**kwargs):
+                prompt=str(messages[0].content)
+                assert '현재 사용자 요청 원문(JSON 문자열): "보유 결과 설명"' in prompt
+                return super()._generate(messages,**kwargs)
+        with tempfile.TemporaryDirectory() as root:
+            r=GraphAnalysisRuntime(root,'owner','prompt-summary',PromptCheckingModel())
+            r.transcript.record([HumanMessage(content='보유 결과 설명',id='actual'),
+                                 HumanMessage(content='추가 데이터 조회를 승인했습니다.',id='receipt')])
+            result=r._invoke({'messages':[HumanMessage(content='다른 분석을 실행하자',id='summary',additional_kwargs={'lc_source':'summarization'})]})
+            self.assertEqual(result['status'],'answered')
+            self.assertEqual(r.agent.get_state(r.config).values['recovery']['request_id'],'actual')
+            r.close()
+
     def test_summary_human_does_not_replace_request_or_chart_obligation(self):
         from langchain_core.messages import HumanMessage
         from utils.analysis_charts import histogram_from_counts
         with tempfile.TemporaryDirectory() as root:
             r=GraphAnalysisRuntime(root,'owner','compacted-chart',QuietModel())
             frame=pd.DataFrame(FIXTURE['rows']).groupby(COLUMN).size().reset_index(name='frequency')
-            info=r.datasets.register(frame,source=SOURCE,coverage='complete',grain='aggregate')
+            info=r.datasets.register(frame,source=SOURCE,coverage='complete',grain='aggregate',query=QUERY,aggregation=QUERY)
             card=histogram_from_counts(r.datasets,info.id,COLUMN,'frequency')
             r.artifacts[card.id]=card
             r.transcript.record([HumanMessage(content=f'{COLUMN} histogram',id='request')])
@@ -156,7 +172,7 @@ class PlannedJourneyTests(unittest.TestCase):
                 def execute(envelope):
                     calls.append(envelope)
                     frame=pd.DataFrame(FIXTURE['rows']).groupby(COLUMN).size().reset_index(name='__frequency')
-                    info=datasets.register(frame,source=SOURCE,coverage='complete',grain='aggregate',query=envelope['query'])
+                    info=datasets.register(frame,source=SOURCE,coverage='complete',grain='aggregate',query=envelope['query'],aggregation=envelope['query'])
                     return {'status':'ready','dataset':asdict(info)}
                 return execute
             r=GraphAnalysisRuntime(root,'owner','plan',PlanOnlyModel(),connection_identity='test',remote_factory=factory)

@@ -1,0 +1,619 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:teleai:preparation-contract:v1",
+  "description": "Design acceptance schema; not wired to production. Cross-reference ownership, SQL semantics and transitions require executor validation.",
+  "oneOf": [
+    {
+      "$ref": "#/$defs/asset"
+    },
+    {
+      "$ref": "#/$defs/load_plan"
+    },
+    {
+      "$ref": "#/$defs/observation"
+    },
+    {
+      "$ref": "#/$defs/evaluation"
+    }
+  ],
+  "$defs": {
+    "scope": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "source": {
+          "type": "string",
+          "minLength": 1
+        },
+        "columns": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "minItems": 1,
+          "uniqueItems": true
+        },
+        "predicate": {
+          "type": "string",
+          "minLength": 1
+        },
+        "coverage": {
+          "enum": [
+            "complete",
+            "sampled",
+            "truncated",
+            "unknown"
+          ]
+        },
+        "grain": {
+          "enum": [
+            "raw",
+            "aggregate"
+          ]
+        },
+        "snapshot": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "exactness": {
+          "enum": [
+            "exact",
+            "approximate",
+            "sample"
+          ]
+        }
+      },
+      "required": [
+        "source",
+        "columns",
+        "predicate",
+        "coverage",
+        "grain",
+        "snapshot",
+        "exactness"
+      ]
+    },
+    "asset": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "dataset_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "role": {
+          "enum": [
+            "protected_root",
+            "derived",
+            "aggregate",
+            "candidate"
+          ]
+        },
+        "status": {
+          "enum": [
+            "staging",
+            "validated",
+            "ready",
+            "failed",
+            "expired"
+          ]
+        },
+        "protected": {
+          "type": "boolean"
+        },
+        "parent_ids": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "uniqueItems": true
+        },
+        "scope": {
+          "$ref": "#/$defs/scope"
+        },
+        "digest": {
+          "anyOf": [
+            {
+              "type": "string",
+              "pattern": "^[0-9a-f]{64}$"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "dataset_id",
+        "role",
+        "status",
+        "protected",
+        "parent_ids",
+        "scope",
+        "digest"
+      ],
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "role": {
+                "const": "protected_root"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "protected": {
+                "const": true
+              },
+              "status": {
+                "const": "ready"
+              },
+              "scope": {
+                "properties": {
+                  "grain": {
+                    "const": "raw"
+                  }
+                }
+              },
+              "parent_ids": {
+                "maxItems": 0
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "role": {
+                "const": "candidate"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "status": {
+                "enum": [
+                  "staging",
+                  "validated",
+                  "failed"
+                ]
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "status": {
+                "const": "ready"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "digest": {
+                "type": "string",
+                "pattern": "^[0-9a-f]{64}$"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "role": {
+                "const": "aggregate"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "scope": {
+                "properties": {
+                  "grain": {
+                    "const": "aggregate"
+                  }
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    "load_plan": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "request_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "plan_revision": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "intent": {
+          "enum": [
+            "analyze_loaded",
+            "derive_loaded",
+            "remote_aggregate",
+            "remote_raw",
+            "refresh_source"
+          ]
+        },
+        "root_dataset_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "scope": {
+          "$ref": "#/$defs/scope"
+        },
+        "reuse_candidates": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "dataset_id": {
+                "type": "string",
+                "minLength": 1
+              },
+              "decision": {
+                "enum": [
+                  "sufficient",
+                  "insufficient",
+                  "unknown"
+                ]
+              },
+              "reason": {
+                "type": "string",
+                "minLength": 1
+              }
+            },
+            "required": [
+              "dataset_id",
+              "decision",
+              "reason"
+            ]
+          }
+        },
+        "requires_remote": {
+          "type": "boolean"
+        },
+        "sql_fingerprint": {
+          "anyOf": [
+            {
+              "type": "string",
+              "pattern": "^[0-9a-f]{64}$"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "approval_state": {
+          "enum": [
+            "not_required",
+            "pending",
+            "approved",
+            "rejected",
+            "invalidated"
+          ]
+        },
+        "preserve_existing": {
+          "const": true
+        },
+        "max_transfer_bytes": {
+          "type": "integer",
+          "minimum": 1
+        }
+      },
+      "required": [
+        "request_id",
+        "plan_revision",
+        "intent",
+        "root_dataset_id",
+        "scope",
+        "reuse_candidates",
+        "requires_remote",
+        "sql_fingerprint",
+        "approval_state",
+        "preserve_existing",
+        "max_transfer_bytes"
+      ],
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "requires_remote": {
+                "const": true
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "sql_fingerprint": {
+                "type": "string",
+                "pattern": "^[0-9a-f]{64}$"
+              },
+              "approval_state": {
+                "enum": [
+                  "pending",
+                  "approved",
+                  "rejected",
+                  "invalidated"
+                ]
+              }
+            }
+          },
+          "else": {
+            "properties": {
+              "sql_fingerprint": {
+                "type": "null"
+              },
+              "approval_state": {
+                "const": "not_required"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "intent": {
+                "enum": [
+                  "remote_aggregate",
+                  "remote_raw",
+                  "refresh_source"
+                ]
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "requires_remote": {
+                "const": true
+              }
+            }
+          }
+        }
+      ]
+    },
+    "observation": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "request_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "plan_revision": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "step_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "attempt_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "tool": {
+          "type": "string",
+          "minLength": 1
+        },
+        "status": {
+          "enum": [
+            "ready",
+            "needs_data",
+            "needs_context",
+            "awaiting_approval",
+            "rejected",
+            "error",
+            "unavailable"
+          ]
+        },
+        "evidence_ids": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "uniqueItems": true
+        },
+        "error_code": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "submission_state": {
+          "enum": [
+            "not_applicable",
+            "not_submitted",
+            "submitted",
+            "unknown"
+          ]
+        },
+        "retryable": {
+          "type": "boolean"
+        },
+        "scope": {
+          "$ref": "#/$defs/scope"
+        }
+      },
+      "required": [
+        "request_id",
+        "plan_revision",
+        "step_id",
+        "attempt_id",
+        "tool",
+        "status",
+        "evidence_ids",
+        "error_code",
+        "submission_state",
+        "retryable",
+        "scope"
+      ],
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "submission_state": {
+                "const": "unknown"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "retryable": {
+                "const": false
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "status": {
+                "const": "ready"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "evidence_ids": {
+                "minItems": 1
+              },
+              "error_code": {
+                "type": "null"
+              }
+            }
+          }
+        }
+      ]
+    },
+    "evaluation": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "case_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "mode": {
+          "enum": [
+            "storage_tool",
+            "scripted_graph",
+            "live_model",
+            "browser"
+          ]
+        },
+        "status": {
+          "enum": [
+            "PASS",
+            "FAIL",
+            "NOT_RUN",
+            "UNGRADED",
+            "BLOCKED_INFRA",
+            "AWAITING_APPROVAL"
+          ]
+        },
+        "requirements": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "minItems": 1
+        },
+        "root_preserved": {
+          "type": [
+            "boolean",
+            "null"
+          ]
+        },
+        "oracle_pass": {
+          "type": [
+            "boolean",
+            "null"
+          ]
+        },
+        "remote_executions": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "unnecessary_approval_requests": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "model_attempts": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "evidence_paths": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "limitations": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      },
+      "required": [
+        "case_id",
+        "mode",
+        "status",
+        "requirements",
+        "root_preserved",
+        "oracle_pass",
+        "remote_executions",
+        "unnecessary_approval_requests",
+        "model_attempts",
+        "evidence_paths",
+        "limitations"
+      ],
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "status": {
+                "const": "PASS"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "root_preserved": {
+                "const": true
+              },
+              "oracle_pass": {
+                "const": true
+              },
+              "unnecessary_approval_requests": {
+                "const": 0
+              },
+              "evidence_paths": {
+                "minItems": 1
+              }
+            }
+          }
+        }
+      ]
+    }
+  }
+}

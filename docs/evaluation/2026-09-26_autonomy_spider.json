@@ -1,0 +1,114 @@
+{
+  "baseline_spider": {
+    "selected": 5,
+    "submitted": 3,
+    "official_correct": 0,
+    "fixed_selection_score": 0,
+    "results": [
+      {
+        "id": "local221",
+        "status": "SQL_PROPOSED",
+        "agent_status": "awaiting_approval",
+        "elapsed_seconds": 6.688
+      },
+      {
+        "id": "local009",
+        "status": "NO_SQL_PROPOSAL",
+        "agent_status": "answered",
+        "model_calls": 2,
+        "failure_causes": [
+          "model_no_output"
+        ],
+        "error_type": null,
+        "elapsed_seconds": 6.913
+      },
+      {
+        "id": "local210",
+        "status": "NO_SQL_PROPOSAL",
+        "agent_status": "blocked",
+        "model_calls": 10,
+        "failure_causes": [
+          "request_scope_unresolved"
+        ],
+        "error_type": null,
+        "elapsed_seconds": 47.833
+      },
+      {
+        "id": "local358",
+        "status": "SQL_PROPOSED",
+        "agent_status": "awaiting_approval",
+        "elapsed_seconds": 5.11
+      },
+      {
+        "id": "local198",
+        "status": "SQL_PROPOSED",
+        "agent_status": "awaiting_approval",
+        "elapsed_seconds": 8.458
+      }
+    ]
+  },
+  "sql_track": {
+    "selected": 5,
+    "submitted": 1,
+    "official_correct": 0,
+    "fixed_selection_score": 0,
+    "results": [
+      {
+        "id": "local221",
+        "status": "NO_SQL_PROPOSAL",
+        "agent_status": "blocked",
+        "model_calls": 7,
+        "failure_causes": [
+          "unverified_join_relationship"
+        ],
+        "error_type": null,
+        "elapsed_seconds": 20.173
+      },
+      {
+        "id": "local009",
+        "status": "NO_SQL_PROPOSAL",
+        "agent_status": "blocked",
+        "model_calls": 5,
+        "failure_causes": [
+          "request_scope_unresolved"
+        ],
+        "error_type": null,
+        "elapsed_seconds": 19.247
+      },
+      {
+        "id": "local210",
+        "status": "NO_SQL_PROPOSAL",
+        "agent_status": "blocked",
+        "model_calls": 6,
+        "failure_causes": [
+          "request_scope_unresolved"
+        ],
+        "error_type": null,
+        "elapsed_seconds": 11.938
+      },
+      {
+        "id": "local358",
+        "status": "SQL_PROPOSED",
+        "agent_status": "awaiting_approval",
+        "elapsed_seconds": 5.089
+      },
+      {
+        "id": "local198",
+        "status": "NO_SQL_PROPOSAL",
+        "agent_status": "blocked",
+        "model_calls": 6,
+        "failure_causes": [
+          "unverified_join_relationship"
+        ],
+        "error_type": null,
+        "elapsed_seconds": 10.249
+      }
+    ]
+  },
+  "limitations": [
+    "Same five selected SQLite tasks, not all 547.",
+    "Proposal-only adapter stops at the first approval; exploratory preview SQL is not a final solution.",
+    "Gold answers were not passed to the agent.",
+    "Original and SQL-instructed prompt tracks are separate."
+  ]
+}

@@ -1,0 +1,79 @@
+{
+  "protected_root": {
+    "dataset_id": "root-fixture",
+    "role": "protected_root",
+    "status": "ready",
+    "protected": true,
+    "parent_ids": [],
+    "scope": {
+      "source": "fixture.sensor_readings",
+      "columns": [
+        "event_key",
+        "reading",
+        "zone"
+      ],
+      "predicate": "TRUE",
+      "coverage": "complete",
+      "grain": "raw",
+      "snapshot": "fixture:preservation-v1",
+      "exactness": "exact"
+    },
+    "digest": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+  },
+  "remote_load": {
+    "request_id": "r-fixture",
+    "plan_revision": 1,
+    "intent": "remote_raw",
+    "root_dataset_id": "root-fixture",
+    "scope": {
+      "source": "fixture.sensor_readings",
+      "columns": [
+        "event_key",
+        "reading",
+        "zone"
+      ],
+      "predicate": "TRUE",
+      "coverage": "complete",
+      "grain": "raw",
+      "snapshot": "fixture:preservation-v1",
+      "exactness": "exact"
+    },
+    "reuse_candidates": [
+      {
+        "dataset_id": "root-fixture",
+        "decision": "insufficient",
+        "reason": "Fixture requests a different snapshot; no execution authorized yet."
+      }
+    ],
+    "requires_remote": true,
+    "sql_fingerprint": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+    "approval_state": "pending",
+    "preserve_existing": true,
+    "max_transfer_bytes": 1048576
+  },
+  "unknown_submission": {
+    "request_id": "r-fixture",
+    "plan_revision": 1,
+    "step_id": "s-fixture",
+    "attempt_id": "a-fixture",
+    "tool": "query_databricks",
+    "status": "unavailable",
+    "evidence_ids": [],
+    "error_code": "submission_unknown",
+    "submission_state": "unknown",
+    "retryable": false,
+    "scope": {
+      "source": "fixture.sensor_readings",
+      "columns": [
+        "event_key",
+        "reading",
+        "zone"
+      ],
+      "predicate": "TRUE",
+      "coverage": "complete",
+      "grain": "raw",
+      "snapshot": "fixture:preservation-v1",
+      "exactness": "exact"
+    }
+  }
+}

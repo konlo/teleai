@@ -1,0 +1,292 @@
+{
+  "provider": "databricks",
+  "model": "databricks-qwen3-next-80b-a3b-instruct",
+  "model_timeout_seconds": 60.0,
+  "results": [
+    {
+      "id": "local221",
+      "db": "EU_soccer",
+      "benchmark": "Spider2-Lite SQLite",
+      "mode": "TeleAI SQL proposal; no automatic approval or remote SQL execution; read-only public SQLite probe",
+      "prompt_mode": "sql_instructed",
+      "status": "NO_SQL_PROPOSAL",
+      "agent_status": "blocked",
+      "tools": [
+        "inspect_table_relationships",
+        "inspect_table_context",
+        "inspect_table_context",
+        "query_databricks",
+        "query_databricks",
+        "inspect_table_relationships",
+        "inspect_table_relationships"
+      ],
+      "model_calls": 10,
+      "recovery_attempts": 2,
+      "sql_drafts": [
+        {
+          "source": "Match | Team",
+          "query": "SELECT t.team_long_name, COUNT(*) AS wins\nFROM Match m\nJOIN Team t ON m.home_team_api_id = t.team_api_id\nWHERE m.home_team_goal > m.away_team_goal\nGROUP BY t.team_long_name\nORDER BY wins DESC\nLIMIT 10",
+          "reason": "팀의 승리 수를 계산하려면 Match 테이블에서 홈팀이 골을 더 많이 넣은 경기(홈팀 승리)를 필터링하고, Team 테이블과 조인하여 팀 이름을 가져와야 합니다. 승리 수를 기준으로 내림차순 정렬 후 상위 10개 팀을 반환합니다."
+        },
+        {
+          "source": "Match | Team",
+          "query": "SELECT t.team_long_name, COUNT(*) AS wins\nFROM Match m\nJOIN Team t ON m.home_team_api_id = t.team_api_id\nWHERE m.home_team_goal > m.away_team_goal\nGROUP BY t.team_long_name\nORDER BY wins DESC\nLIMIT 10",
+          "reason": "팀의 승리 수를 계산하려면 홈팀이 어웨이팀보다 더 많은 골을 넣은 경기( home_team_goal > away_team_goal )를 기준으로 집계해야 합니다. Match 테이블의 home_team_api_id와 Team 테이블의 team_api_id를 조인하여 팀 이름을 가져오고, 승리 횟수를 세어 상위 10팀을 반환합니다."
+        }
+      ],
+      "observations": [
+        {
+          "tool": "inspect_table_relationships",
+          "status": "ready",
+          "error_code": null
+        },
+        {
+          "tool": "inspect_table_context",
+          "status": "ready",
+          "error_code": null
+        },
+        {
+          "tool": "inspect_table_context",
+          "status": "ready",
+          "error_code": null
+        },
+        {
+          "tool": "inspect_table_relationships",
+          "status": "ready",
+          "error_code": null
+        },
+        {
+          "tool": "inspect_table_relationships",
+          "status": "ready",
+          "error_code": null
+        }
+      ],
+      "draft_probe": {
+        "status": "executable",
+        "elapsed_seconds": 0.017
+      },
+      "failure_causes": [
+        "unverified_join_relationship"
+      ],
+      "remote_executions": 0,
+      "error_type": null,
+      "elapsed_seconds": 22.132
+    },
+    {
+      "id": "local009",
+      "db": "Airlines",
+      "benchmark": "Spider2-Lite SQLite",
+      "mode": "TeleAI SQL proposal; no automatic approval or remote SQL execution; read-only public SQLite probe",
+      "prompt_mode": "sql_instructed",
+      "status": "NO_SQL_PROPOSAL",
+      "agent_status": "blocked",
+      "tools": [
+        "inspect_table_context",
+        "inspect_table_context",
+        "inspect_table_relationships",
+        "inspect_table_relationships",
+        "query_databricks",
+        "query_databricks",
+        "inspect_table_context"
+      ],
+      "model_calls": 9,
+      "recovery_attempts": 2,
+      "sql_drafts": [
+        {
+          "source": "airports_data | flights",
+          "query": "SELECT MAX(2 * 6371 * ASIN(SQRT(POWER(SIN((CAST(JSON_EXTRACT(a2.coordinates, '$.latitude') AS REAL) - CAST(JSON_EXTRACT(a1.coordinates, '$.latitude') AS REAL)) * 3.141592653589793 / 180 / 2), 2) + COS(CAST(JSON_EXTRACT(a1.coordinates, '$.latitude') AS REAL) * 3.141592653589793 / 180) * COS(CAST(JSON_EXTRACT(a2.coordinates, '$.latitude') AS REAL) * 3.141592653589793 / 180) * POWER(SIN((CAST(JSON_EXTRACT(a2.coordinates, '$.longitude') AS REAL) - CAST(JSON_EXTRACT(a1.coordinates, '$.longitude') AS REAL)) * 3.141592653589793 / 180 / 2), 2)))) AS max_distance\nFROM flights f\nJOIN airports_data a1 ON f.departure_airport = a1.airport_code\nJOIN airports_data a2 ON f.arrival_airport = a2.airport_code\nWHERE (JSON_EXTRACT(a1.city, '$.en') = 'Abakan' OR JSON_EXTRACT(a2.city, '$.en') = 'Abakan')",
+          "reason": "Abakan을 출발지 또는 도착지로 하는 항공 노선 중 최대 거리를 계산하기 위해 Haversine 공식을 적용. airports_data의 city와 coordinates는 JSON 형식이므로 JSON_EXTRACT로 en 키를 추출하고, coordinates는 (longitude,latitude) 텍스트가 아니라 POINT 타입으로 저장되어 있으므로 직접 좌표를 사용. flights 테이블의 departure_airport와 arrival_airport를 airports_data의 airport_code와 조인하여 해당 공항의 도시와 좌표를 연결."
+        },
+        {
+          "source": "airports_data | flights",
+          "query": "SELECT MAX(2 * 6371 * ASIN(SQRT(POWER(SIN((CAST(SUBSTR(a2.coordinates, INSTR(a2.coordinates, ',') + 1, LENGTH(a2.coordinates) - INSTR(a2.coordinates, ',') - 1) AS REAL) - CAST(SUBSTR(a1.coordinates, INSTR(a1.coordinates, ',') + 1, LENGTH(a1.coordinates) - INSTR(a1.coordinates, ',') - 1) AS REAL)) * 3.141592653589793 / 180 / 2), 2) + COS(CAST(SUBSTR(a1.coordinates, INSTR(a1.coordinates, ',') + 1, LENGTH(a1.coordinates) - INSTR(a1.coordinates, ',') - 1) AS REAL) * 3.141592653589793 / 180) * COS(CAST(SUBSTR(a2.coordinates, INSTR(a2.coordinates, ',') + 1, LENGTH(a2.coordinates) - INSTR(a2.coordinates, ',') - 1) AS REAL) * 3.141592653589793 / 180) * POWER(SIN((CAST(SUBSTR(a2.coordinates, 2, INSTR(a2.coordinates, ',') - 2) AS REAL) - CAST(SUBSTR(a1.coordinates, 2, INSTR(a1.coordinates, ',') - 2) AS REAL)) * 3.141592653589793 / 180 / 2), 2)))) AS max_distance\nFROM flights f\nJOIN airports_data a1 ON f.departure_airport = a1.airport_code\nJOIN airports_data a2 ON f.arrival_airport = a2.airport_code\nWHERE (JSON_EXTRACT(a1.city, '$.en') = 'Abakan' OR JSON_EXTRACT(a2.city, '$.en') = 'Abakan')",
+          "reason": "airports_data.coordinates는 POINT 형식으로 '(longitude,latitude)' 텍스트로 저장됨. JSON_EXTRACT는 사용 불가. SUBSTR와 INSTR로 위도/경도 추출. Abakan 도시 조건은 city 컬럼의 JSON 문자열에서 en 키로 필터링. Haversine 공식 적용하여 최대 거리 계산."
+        }
+      ],
+      "observations": [
+        {
+          "tool": "inspect_table_context",
+          "status": "ready",
+          "error_code": null
+        },
+        {
+          "tool": "inspect_table_context",
+          "status": "ready",
+          "error_code": null
+        },
+        {
+          "tool": "inspect_table_relationships",
+          "status": "ready",
+          "error_code": null
+        },
+        {
+          "tool": "inspect_table_relationships",
+          "status": "ready",
+          "error_code": null
+        },
+        {
+          "tool": "inspect_table_context",
+          "status": "ready",
+          "error_code": null
+        }
+      ],
+      "draft_probe": {
+        "status": "executable",
+        "elapsed_seconds": 0.013
+      },
+      "failure_causes": [
+        "request_scope_unresolved"
+      ],
+      "remote_executions": 0,
+      "error_type": null,
+      "elapsed_seconds": 26.423
+    },
+    {
+      "id": "local210",
+      "db": "delivery_center",
+      "benchmark": "Spider2-Lite SQLite",
+      "mode": "TeleAI SQL proposal; no automatic approval or remote SQL execution; read-only public SQLite probe",
+      "prompt_mode": "sql_instructed",
+      "status": "NO_SQL_PROPOSAL",
+      "agent_status": "blocked",
+      "tools": [
+        "inspect_table_context",
+        "inspect_table_context",
+        "inspect_table_relationships",
+        "query_databricks",
+        "inspect_table_context",
+        "inspect_table_relationships",
+        "query_databricks"
+      ],
+      "model_calls": 7,
+      "recovery_attempts": 2,
+      "sql_drafts": [
+        {
+          "source": "orders | hubs",
+          "query": "SELECT h.hub_name, \n       SUM(CASE WHEN o.order_created_month = 2 AND o.order_status = 'finished' THEN 1 ELSE 0 END) AS feb_finished_orders, \n       SUM(CASE WHEN o.order_created_month = 3 AND o.order_status = 'finished' THEN 1 ELSE 0 END) AS mar_finished_orders\nFROM orders o\nJOIN hubs h ON o.store_id = h.hub_id\nWHERE o.order_created_year = 2026\nGROUP BY h.hub_name\nHAVING mar_finished_orders > 0 AND feb_finished_orders > 0",
+          "reason": "February와 March의 완료된 주문 수를 허브별로 집계하여 20% 이상 증가한 허브를 식별하기 위해, orders와 hubs 테이블을 store_id와 hub_id로 조인합니다. order_created_month와 order_status를 기준으로 월별 완료 주문 수를 계산하고, 증가율을 계산하기 위한 기초 데이터를 생성합니다."
+        },
+        {
+          "source": "orders | stores | hubs",
+          "query": "SELECT h.hub_name, \n       SUM(CASE WHEN o.order_created_month = 2 AND o.order_status = 'finished' THEN 1 ELSE 0 END) AS feb_finished_orders, \n       SUM(CASE WHEN o.order_created_month = 3 AND o.order_status = 'finished' THEN 1 ELSE 0 END) AS mar_finished_orders\nFROM orders o\nJOIN stores s ON o.store_id = s.store_id\nJOIN hubs h ON s.hub_id = h.hub_id\nWHERE o.order_created_year = 2026\nGROUP BY h.hub_name\nHAVING feb_finished_orders > 0 AND mar_finished_orders > 0 AND (mar_finished_orders - feb_finished_orders) * 100.0 / feb_finished_orders > 20",
+          "reason": "사용자 요청: 2월에서 3월로 완료된 주문이 20% 이상 증가한 허브를 식별. orders 테이블에서 order_created_month와 order_status로 월별 완료 주문 수 집계, stores를 통해 hub_id 연결, hubs에서 hub_name 반환. 2026년 데이터로 제한하고, 증가율 계산 후 20% 초과 필터 적용."
+        }
+      ],
+      "observations": [
+        {
+          "tool": "inspect_table_context",
+          "status": "ready",
+          "error_code": null
+        },
+        {
+          "tool": "inspect_table_context",
+          "status": "ready",
+          "error_code": null
+        },
+        {
+          "tool": "inspect_table_relationships",
+          "status": "ready",
+          "error_code": null
+        },
+        {
+          "tool": "inspect_table_context",
+          "status": "ready",
+          "error_code": null
+        },
+        {
+          "tool": "inspect_table_relationships",
+          "status": "ready",
+          "error_code": null
+        }
+      ],
+      "draft_probe": {
+        "status": "executable",
+        "elapsed_seconds": 0.022
+      },
+      "failure_causes": [
+        "request_scope_unresolved"
+      ],
+      "remote_executions": 0,
+      "error_type": null,
+      "elapsed_seconds": 16.864
+    },
+    {
+      "id": "local358",
+      "db": "log",
+      "benchmark": "Spider2-Lite SQLite",
+      "mode": "TeleAI SQL proposal; no automatic approval or remote SQL execution; read-only public SQLite probe",
+      "prompt_mode": "sql_instructed",
+      "status": "SQL_PROPOSED",
+      "agent_status": "awaiting_approval",
+      "prediction": "/Users/najongseong/git_repository/teleai/docs/evaluation/2026-09-27_advanced_scale/spider/predictions/local358.sql",
+      "probe": {
+        "status": "executable",
+        "elapsed_seconds": 0.0
+      },
+      "tools": [
+        "inspect_table_context",
+        "query_databricks"
+      ],
+      "schema_tables": 19,
+      "elapsed_seconds": 5.253,
+      "remote_executions": 0
+    },
+    {
+      "id": "local198",
+      "db": "chinook",
+      "benchmark": "Spider2-Lite SQLite",
+      "mode": "TeleAI SQL proposal; no automatic approval or remote SQL execution; read-only public SQLite probe",
+      "prompt_mode": "sql_instructed",
+      "status": "NO_SQL_PROPOSAL",
+      "agent_status": "blocked",
+      "tools": [
+        "inspect_table_relationships",
+        "inspect_table_relationships",
+        "inspect_table_context",
+        "inspect_table_context",
+        "query_databricks"
+      ],
+      "model_calls": 4,
+      "recovery_attempts": 1,
+      "sql_drafts": [
+        {
+          "source": "customers | invoices",
+          "query": "SELECT c.Country, SUM(i.Total) AS TotalSales\nFROM customers c\nJOIN invoices i ON c.CustomerId = i.CustomerId\nGROUP BY c.Country\nHAVING COUNT(c.CustomerId) > 4",
+          "reason": "고객 수가 4명 초과인 국가별 총 매출을 계산하여 중앙값을 구하기 위한 중간 집계."
+        }
+      ],
+      "observations": [
+        {
+          "tool": "inspect_table_relationships",
+          "status": "ready",
+          "error_code": null
+        },
+        {
+          "tool": "inspect_table_relationships",
+          "status": "ready",
+          "error_code": null
+        },
+        {
+          "tool": "inspect_table_context",
+          "status": "ready",
+          "error_code": null
+        },
+        {
+          "tool": "inspect_table_context",
+          "status": "ready",
+          "error_code": null
+        }
+      ],
+      "draft_probe": {
+        "status": "executable",
+        "elapsed_seconds": 0.0
+      },
+      "failure_causes": [
+        "unverified_join_relationship"
+      ],
+      "remote_executions": 0,
+      "error_type": null,
+      "elapsed_seconds": 5.146
+    }
+  ]
+}

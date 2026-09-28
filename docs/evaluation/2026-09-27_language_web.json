@@ -1,0 +1,55 @@
+{
+  "data": "previously approved real Databricks 10000-row sample",
+  "new_remote_sql": 0,
+  "approval_counts": [
+    [
+      "completed",
+      1
+    ]
+  ],
+  "raw_sha256": "7c4a1c20588261932629087d091d43e1ad2d80f4e36cb3d1acb20eb8462fe10d",
+  "raw_preserved": true,
+  "selected_raw_preserved": true,
+  "turns": [
+    {
+      "status": "PASS",
+      "actual": 62.0,
+      "expected": 62.0,
+      "query": "SELECT MEDIAN(\"age\") AS median FROM data",
+      "model_calls": 2,
+      "tool_calls": 2,
+      "elapsed_seconds": 3.693,
+      "run_id": "9a144066e7f949699e48b033d7159530",
+      "conditions": [
+        {
+          "column": "age",
+          "op": "ge",
+          "value": 60
+        }
+      ],
+      "parent_id": "89d6181f-9dc1-4e8c-b656-5860b6099a88"
+    },
+    {
+      "status": "PASS",
+      "actual": 40.118163961542436,
+      "expected": 40.118163961542436,
+      "query": "SELECT AVG(\"age\") AS average FROM data",
+      "model_calls": 0,
+      "tool_calls": 1,
+      "elapsed_seconds": 0.326,
+      "run_id": "b2789dce33504c82aa94c4c6937bdd57",
+      "conditions": [
+        {
+          "column": "age",
+          "op": "lt",
+          "value": 60
+        }
+      ],
+      "parent_id": "89d6181f-9dc1-4e8c-b656-5860b6099a88"
+    }
+  ],
+  "app_pid": 63616,
+  "final_app_pid": 64106,
+  "code_commit": "4fabe1ca22675dc6c93336bad51dfb7eba56f6e8",
+  "restart_preserved_results": true
+}

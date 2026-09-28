@@ -8,7 +8,8 @@ import pandas as pd
 
 from core.analysis_approval import ApprovalQueue
 from core.analysis_loop import AnalysisSession
-from core.analysis_runtime_tools import build_runtime_tools
+from core.analysis_runtime_tools import build_analysis_tools, build_runtime_tools
+from core.analysis_tool_contract import AnalysisToolContext
 from utils.analysis_datasets import AnalysisNeed, Condition, DatasetStore, assess_reuse
 from utils.analysis_skill_registry import AnalysisSkillRegistry
 from utils.analysis_charts import recommend_charts
@@ -121,7 +122,8 @@ class DatasetTests(unittest.TestCase):
 class SkillTests(unittest.TestCase):
     def test_discovery_and_on_demand_content(self):
         registry = AnalysisSkillRegistry()
-        self.assertEqual(len(registry.list()), 4)
+        self.assertEqual(len(registry.list()), 5)
+        self.assertIn('search_analysis_tools', registry.read('autonomous-recovery')['body'])
         self.assertTrue(all("body" not in entry for entry in registry.list()))
         self.assertIn("Databricks", registry.read("dataframe-reuse")["body"])
 
@@ -136,6 +138,19 @@ class SkillTests(unittest.TestCase):
             (root / "escape").symlink_to(outside, target_is_directory=True)
             with self.assertRaises(ValueError):
                 AnalysisSkillRegistry(root).read("escape")
+
+    def test_chart_skill_matches_current_renderer_and_does_not_claim_edit_controls(self):
+        body = AnalysisSkillRegistry().read("chart-recommendations")["body"]
+        for supported in ("히스토그램", "막대", "선 그래프", "산점도", "박스플롯"):
+            self.assertIn(supported, body)
+        for unsupported in ("그룹별 박스플롯", "상관 히트맵", "bin 개수", "색상", "축", "제목"):
+            self.assertIn(unsupported, body)
+        self.assertIn("아직 지원하지 않는다", body)
+        self.assertIn("Databricks 재조회를 요청하지 않는다", body)
+        context = AnalysisToolContext(DatasetStore(), {}, [], lambda **_: None)
+        recommend = next(tool for tool in build_analysis_tools(context)
+                         if tool.name == "recommend_chart_images")
+        self.assertEqual(set(recommend.parameters["properties"]), {"dataset_id", "columns"})
 
 
 class LoopTests(unittest.TestCase):

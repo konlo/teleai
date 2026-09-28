@@ -1,0 +1,545 @@
+{
+  "provider": "databricks",
+  "data": "synthetic local only",
+  "remote_sql_executions": 0,
+  "results": [
+    {
+      "id": "literal_mean",
+      "status": "PASS",
+      "turns": [
+        {
+          "prompt": "score 평균을 알려줘.",
+          "status": "PASS",
+          "actual": 15.2,
+          "expected": 15.2,
+          "scope_verified": true,
+          "operation_verified": true,
+          "chart_verified": true,
+          "agent_status": "answered",
+          "error_type": null,
+          "output": "보유 데이터로 계산한 결과입니다. 출처: synthetic.sensor_trials\n분석 범위: 요청 조건에 포함된 보유 데이터 전체\n\n평균: 15.2",
+          "recovery_scope": {
+            "conditions": [],
+            "any_conditions": [],
+            "join_edges": [],
+            "measure_conditions": [],
+            "ratio": null,
+            "unresolved": [],
+            "columns": [
+              "score"
+            ]
+          },
+          "operations": [
+            "AVG"
+          ],
+          "model_calls": 0,
+          "model_recovery": {
+            "failures": 0,
+            "failed_seconds": 0.0,
+            "retries": 0,
+            "next_allowed_at": 0.0
+          },
+          "raw_preserved": true,
+          "chart_count": 0,
+          "elapsed_seconds": 0.105
+        }
+      ]
+    },
+    {
+      "id": "korean_median",
+      "status": "PASS",
+      "turns": [
+        {
+          "prompt": "score의 중위수를 알려줘.",
+          "status": "PASS",
+          "actual": 10.0,
+          "expected": 10,
+          "scope_verified": true,
+          "operation_verified": true,
+          "chart_verified": true,
+          "agent_status": "answered",
+          "error_type": null,
+          "output": "보유 데이터로 계산한 결과입니다. 출처: synthetic.sensor_trials\n분석 범위: 요청 조건에 포함된 보유 데이터 전체\n\n중앙값: 10.0",
+          "recovery_scope": {
+            "conditions": [],
+            "any_conditions": [],
+            "join_edges": [],
+            "measure_conditions": [],
+            "ratio": null,
+            "unresolved": [],
+            "columns": [
+              "score"
+            ]
+          },
+          "operations": [
+            "MEDIAN"
+          ],
+          "model_calls": 2,
+          "model_recovery": {
+            "failures": 0,
+            "failed_seconds": 0.0,
+            "retries": 0,
+            "next_allowed_at": 0.0
+          },
+          "raw_preserved": true,
+          "chart_count": 0,
+          "elapsed_seconds": 2.672
+        }
+      ]
+    },
+    {
+      "id": "described_median",
+      "status": "PASS",
+      "turns": [
+        {
+          "prompt": "score를 크기순으로 늘어놓았을 때 한가운데 오는 값을 계산해줘.",
+          "status": "PASS",
+          "actual": 10.0,
+          "expected": 10,
+          "scope_verified": true,
+          "operation_verified": true,
+          "chart_verified": true,
+          "agent_status": "answered",
+          "error_type": null,
+          "output": "보유 데이터로 계산한 결과입니다. 출처: synthetic.sensor_trials\n분석 범위: 요청 조건에 포함된 보유 데이터 전체\n\n중앙값: 10.0",
+          "recovery_scope": {
+            "conditions": [],
+            "any_conditions": [],
+            "join_edges": [],
+            "measure_conditions": [],
+            "ratio": null,
+            "unresolved": [],
+            "columns": [
+              "score"
+            ]
+          },
+          "operations": [
+            "MEDIAN"
+          ],
+          "model_calls": 2,
+          "model_recovery": {
+            "failures": 0,
+            "failed_seconds": 0.0,
+            "retries": 0,
+            "next_allowed_at": 0.0
+          },
+          "raw_preserved": true,
+          "chart_count": 0,
+          "elapsed_seconds": 2.752
+        }
+      ]
+    },
+    {
+      "id": "informal_max",
+      "status": "PASS",
+      "turns": [
+        {
+          "prompt": "score 중 제일 큰 숫자가 뭐야?",
+          "status": "PASS",
+          "actual": 40.0,
+          "expected": 40,
+          "scope_verified": true,
+          "operation_verified": true,
+          "chart_verified": true,
+          "agent_status": "answered",
+          "error_type": null,
+          "output": "보유 데이터로 계산한 결과입니다. 출처: synthetic.sensor_trials\n분석 범위: 요청 조건에 포함된 보유 데이터 전체\n\n최댓값: 40",
+          "recovery_scope": {
+            "conditions": [],
+            "any_conditions": [],
+            "join_edges": [],
+            "measure_conditions": [],
+            "ratio": null,
+            "unresolved": [],
+            "columns": [
+              "score"
+            ]
+          },
+          "operations": [
+            "MAX"
+          ],
+          "model_calls": 2,
+          "model_recovery": {
+            "failures": 0,
+            "failed_seconds": 0.0,
+            "retries": 0,
+            "next_allowed_at": 0.0
+          },
+          "raw_preserved": true,
+          "chart_count": 0,
+          "elapsed_seconds": 2.438
+        }
+      ]
+    },
+    {
+      "id": "english_mean",
+      "status": "PASS",
+      "turns": [
+        {
+          "prompt": "What is the average score for the rows where segment = 'blue'?",
+          "status": "PASS",
+          "actual": 15.0,
+          "expected": 15,
+          "scope_verified": true,
+          "operation_verified": true,
+          "chart_verified": true,
+          "agent_status": "answered",
+          "error_type": null,
+          "output": "보유 데이터로 계산한 결과입니다. 출처: synthetic.sensor_trials\n분석 범위: 요청 조건에 포함된 보유 데이터 전체\n\n적용 조건: segment = blue\n\n평균: 15.0",
+          "recovery_scope": {
+            "conditions": [
+              {
+                "column": "segment",
+                "op": "eq",
+                "value": "blue"
+              }
+            ],
+            "any_conditions": [],
+            "join_edges": [],
+            "measure_conditions": [],
+            "ratio": null,
+            "unresolved": [],
+            "columns": [
+              "score",
+              "segment"
+            ]
+          },
+          "operations": [
+            "AVG"
+          ],
+          "model_calls": 0,
+          "model_recovery": {
+            "failures": 0,
+            "failed_seconds": 0.0,
+            "retries": 0,
+            "next_allowed_at": 0.0
+          },
+          "raw_preserved": true,
+          "chart_count": 0,
+          "elapsed_seconds": 0.025
+        }
+      ]
+    },
+    {
+      "id": "exclude_high",
+      "status": "PASS",
+      "turns": [
+        {
+          "prompt": "score가 10 이상인 것은 제외하고 나머지 score 평균을 알려줘.",
+          "status": "PASS",
+          "actual": 3.0,
+          "expected": 3,
+          "scope_verified": true,
+          "operation_verified": true,
+          "chart_verified": true,
+          "agent_status": "answered",
+          "error_type": null,
+          "output": "보유 데이터로 계산한 결과입니다. 출처: synthetic.sensor_trials\n분석 범위: 요청 조건에 포함된 보유 데이터 전체\n\n적용 조건: score < 10\n\n평균: 3.0",
+          "recovery_scope": {
+            "conditions": [
+              {
+                "column": "score",
+                "op": "lt",
+                "value": 10
+              }
+            ],
+            "any_conditions": [],
+            "join_edges": [],
+            "measure_conditions": [],
+            "ratio": null,
+            "unresolved": [],
+            "columns": [
+              "score"
+            ]
+          },
+          "operations": [
+            "AVG"
+          ],
+          "model_calls": 0,
+          "model_recovery": {
+            "failures": 0,
+            "failed_seconds": 0.0,
+            "retries": 0,
+            "next_allowed_at": 0.0
+          },
+          "raw_preserved": true,
+          "chart_count": 0,
+          "elapsed_seconds": 0.019
+        }
+      ]
+    },
+    {
+      "id": "explicit_filter",
+      "status": "PASS",
+      "turns": [
+        {
+          "prompt": "score가 10 미만인 행의 score 평균을 알려줘.",
+          "status": "PASS",
+          "actual": 3.0,
+          "expected": 3,
+          "scope_verified": true,
+          "operation_verified": true,
+          "chart_verified": true,
+          "agent_status": "answered",
+          "error_type": null,
+          "output": "보유 데이터로 계산한 결과입니다. 출처: synthetic.sensor_trials\n분석 범위: 요청 조건에 포함된 보유 데이터 전체\n\n적용 조건: score < 10\n\n평균: 3.0",
+          "recovery_scope": {
+            "conditions": [
+              {
+                "column": "score",
+                "op": "lt",
+                "value": 10
+              }
+            ],
+            "any_conditions": [],
+            "join_edges": [],
+            "measure_conditions": [],
+            "ratio": null,
+            "unresolved": [],
+            "columns": [
+              "score"
+            ]
+          },
+          "operations": [
+            "AVG"
+          ],
+          "model_calls": 0,
+          "model_recovery": {
+            "failures": 0,
+            "failed_seconds": 0.0,
+            "retries": 0,
+            "next_allowed_at": 0.0
+          },
+          "raw_preserved": true,
+          "chart_count": 0,
+          "elapsed_seconds": 0.018
+        }
+      ]
+    },
+    {
+      "id": "followup",
+      "status": "PASS",
+      "turns": [
+        {
+          "prompt": "segment가 'blue'인 행의 score 평균을 알려줘.",
+          "status": "PASS",
+          "actual": 15.0,
+          "expected": 15,
+          "scope_verified": true,
+          "operation_verified": true,
+          "chart_verified": true,
+          "agent_status": "answered",
+          "error_type": null,
+          "output": "보유 데이터로 계산한 결과입니다. 출처: synthetic.sensor_trials\n분석 범위: 요청 조건에 포함된 보유 데이터 전체\n\n적용 조건: segment = blue\n\n평균: 15.0",
+          "recovery_scope": {
+            "conditions": [
+              {
+                "column": "segment",
+                "op": "eq",
+                "value": "blue"
+              }
+            ],
+            "any_conditions": [],
+            "join_edges": [],
+            "measure_conditions": [],
+            "ratio": null,
+            "unresolved": [],
+            "columns": [
+              "score",
+              "segment"
+            ]
+          },
+          "operations": [
+            "AVG"
+          ],
+          "model_calls": 0,
+          "model_recovery": {
+            "failures": 0,
+            "failed_seconds": 0.0,
+            "retries": 0,
+            "next_allowed_at": 0.0
+          },
+          "raw_preserved": true,
+          "chart_count": 0,
+          "elapsed_seconds": 0.019
+        },
+        {
+          "prompt": "그중 score 최댓값도 알려줘.",
+          "status": "PASS",
+          "actual": 20.0,
+          "expected": 20,
+          "scope_verified": true,
+          "operation_verified": true,
+          "chart_verified": true,
+          "agent_status": "answered",
+          "error_type": null,
+          "output": "보유 데이터로 계산한 결과입니다. 출처: synthetic.sensor_trials\n분석 범위: 요청 조건에 포함된 보유 데이터 전체\n\n적용 조건: segment = blue\n\n최댓값: 20",
+          "recovery_scope": {
+            "conditions": [
+              {
+                "column": "segment",
+                "op": "eq",
+                "value": "blue"
+              }
+            ],
+            "any_conditions": [],
+            "join_edges": [],
+            "measure_conditions": [],
+            "ratio": null,
+            "unresolved": [],
+            "columns": [
+              "score"
+            ]
+          },
+          "operations": [
+            "MAX"
+          ],
+          "model_calls": 0,
+          "model_recovery": {
+            "failures": 0,
+            "failed_seconds": 0.0,
+            "retries": 0,
+            "next_allowed_at": 0.0
+          },
+          "raw_preserved": true,
+          "chart_count": 0,
+          "elapsed_seconds": 0.023
+        }
+      ]
+    },
+    {
+      "id": "change_measure",
+      "status": "PASS",
+      "turns": [
+        {
+          "prompt": "segment가 'blue'인 행의 score 평균을 알려줘.",
+          "status": "PASS",
+          "actual": 15.0,
+          "expected": 15,
+          "scope_verified": true,
+          "operation_verified": true,
+          "chart_verified": true,
+          "agent_status": "answered",
+          "error_type": null,
+          "output": "보유 데이터로 계산한 결과입니다. 출처: synthetic.sensor_trials\n분석 범위: 요청 조건에 포함된 보유 데이터 전체\n\n적용 조건: segment = blue\n\n평균: 15.0",
+          "recovery_scope": {
+            "conditions": [
+              {
+                "column": "segment",
+                "op": "eq",
+                "value": "blue"
+              }
+            ],
+            "any_conditions": [],
+            "join_edges": [],
+            "measure_conditions": [],
+            "ratio": null,
+            "unresolved": [],
+            "columns": [
+              "score",
+              "segment"
+            ]
+          },
+          "operations": [
+            "AVG"
+          ],
+          "model_calls": 0,
+          "model_recovery": {
+            "failures": 0,
+            "failed_seconds": 0.0,
+            "retries": 0,
+            "next_allowed_at": 0.0
+          },
+          "raw_preserved": true,
+          "chart_count": 0,
+          "elapsed_seconds": 0.019
+        },
+        {
+          "prompt": "같은 그룹에서 이번에는 latency_ms 평균을 알려줘.",
+          "status": "PASS",
+          "actual": 45.0,
+          "expected": 45,
+          "scope_verified": true,
+          "operation_verified": true,
+          "chart_verified": true,
+          "agent_status": "answered",
+          "error_type": null,
+          "output": "보유 데이터로 계산한 결과입니다. 출처: synthetic.sensor_trials\n분석 범위: 요청 조건에 포함된 보유 데이터 전체\n\n적용 조건: segment = blue\n\n평균: 45.0",
+          "recovery_scope": {
+            "conditions": [
+              {
+                "column": "segment",
+                "op": "eq",
+                "value": "blue"
+              }
+            ],
+            "any_conditions": [],
+            "join_edges": [],
+            "measure_conditions": [],
+            "ratio": null,
+            "unresolved": [],
+            "columns": [
+              "latency_ms",
+              "segment"
+            ]
+          },
+          "operations": [
+            "AVG"
+          ],
+          "model_calls": 0,
+          "model_recovery": {
+            "failures": 0,
+            "failed_seconds": 0.0,
+            "retries": 0,
+            "next_allowed_at": 0.0
+          },
+          "raw_preserved": true,
+          "chart_count": 0,
+          "elapsed_seconds": 0.029
+        }
+      ]
+    },
+    {
+      "id": "chart_compound",
+      "status": "FAIL",
+      "turns": [
+        {
+          "prompt": "score 평균을 계산하고 score 히스토그램도 보여줘.",
+          "status": "FAIL",
+          "actual": 15.2,
+          "expected": 15.2,
+          "scope_verified": true,
+          "operation_verified": true,
+          "chart_verified": false,
+          "agent_status": "answered",
+          "error_type": null,
+          "output": "score 분포 이미지를 생성했습니다.\n분석 범위: 빈도 합계 5 · complete · SELECT \"score\", COUNT(*) AS \"__frequency\" FROM data WHERE NOT \"score\" IS NULL GROUP BY \"score\"\n\n보유 데이터로 계산한 결과입니다. 출처: synthetic.sensor_trials\n분석 범위: 요청 조건에 포함된 보유 데이터 전체\n\n평균: 15.2",
+          "recovery_scope": {
+            "conditions": [],
+            "any_conditions": [],
+            "join_edges": [],
+            "measure_conditions": [],
+            "ratio": null,
+            "unresolved": [],
+            "columns": [
+              "score"
+            ]
+          },
+          "operations": [
+            "AVG"
+          ],
+          "model_calls": 0,
+          "model_recovery": {
+            "failures": 0,
+            "failed_seconds": 0.0,
+            "retries": 0,
+            "next_allowed_at": 0.0
+          },
+          "raw_preserved": true,
+          "chart_count": 1,
+          "elapsed_seconds": 7.715
+        }
+      ]
+    }
+  ]
+}

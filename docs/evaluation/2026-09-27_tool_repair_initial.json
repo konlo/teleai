@@ -1,0 +1,63 @@
+{
+  "generated_at": "2026-09-27T07:22:09.303674+00:00",
+  "provider": "databricks",
+  "mode": "real-model synthetic journeys; deterministic rescue disabled",
+  "limitations": [
+    "Some cases inject a first faulty call; subsequent decisions use the live model.",
+    "No real remote SQL executor is connected; this does not validate loading."
+  ],
+  "results": [
+    {
+      "id": "repeated_outage",
+      "status": "PASS",
+      "injected_first_call": true,
+      "live_calls": 1,
+      "turns": [
+        {
+          "prompt": "reading 평균을 알려줘.",
+          "status": "PASS",
+          "agent_status": "answered",
+          "final_output": "보유 데이터로 계산한 결과입니다. 출처: unfamiliar.observations\n분석 범위: 요청 조건에 포함된 보유 데이터 전체\n\n평균: 9.0",
+          "expected": 9.0,
+          "actual": 9.0,
+          "model_calls": 3,
+          "search_used": false,
+          "tools": [
+            "aggregate_dataset",
+            "local_analysis_sql"
+          ],
+          "chart_count": 0,
+          "raw_unchanged": true,
+          "approval_requests": 0,
+          "remote_executions": 0,
+          "stop_reason": null,
+          "elapsed_seconds": 2.806,
+          "repair_events": [
+            {
+              "time": "2026-09-27T07:22:06.575358+00:00",
+              "event": "tool_repair_diagnosed",
+              "run_id": "9143869e7cbc4ac195b97905886dd6ad",
+              "request_id": "4b6b6d27-fa95-417e-ad30-88b97b345bff",
+              "failure_ids": [
+                "ee90a4d79b3e4502"
+              ]
+            },
+            {
+              "time": "2026-09-27T07:22:06.578435+00:00",
+              "event": "tool_repair_duplicate_blocked",
+              "run_id": "9143869e7cbc4ac195b97905886dd6ad",
+              "request_id": "4b6b6d27-fa95-417e-ad30-88b97b345bff",
+              "failure_ids": [
+                "ee90a4d79b3e4502"
+              ]
+            }
+          ],
+          "executed_tools": [
+            "aggregate_dataset",
+            "local_analysis_sql"
+          ]
+        }
+      ]
+    }
+  ]
+}

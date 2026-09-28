@@ -1,0 +1,83 @@
+{
+  "generated_at": "2026-09-26T03:49:31.357387+00:00",
+  "source_report": "/private/tmp/teleai_autonomy_final/report.json",
+  "judge_model": "gemma4:e4b",
+  "source_mode": "real-model synthetic journeys; deterministic rescue disabled",
+  "limitations": [
+    "LLM judge scores supplement independent numeric/scope/artifact contracts.",
+    "Tool correctness covers only the explicitly configured legacy cases, not general autonomy.",
+    "The judge penalized source/scope formatting despite correct independent scalar oracles; these scores are not calibrated release accuracy.",
+    "Judged the earlier /tmp/teleai_autonomy_final/report.json traces, not the latest rerun."
+  ],
+  "results": [
+    {
+      "id": "discover_mean",
+      "product_oracle_status": "PASS",
+      "model_calls": 3,
+      "tool_call_names": [
+        "search_analysis_tools",
+        "inspect_dataset",
+        "aggregate_dataset"
+      ],
+      "judge_score": 0.6,
+      "judge_reason": "The response successfully identifies the requested calculation and provides the correct result (9.0), aligning with Steps 1 and 2. However, the output fails to adhere to the formatting constraints specified in Step 3. The actual output includes structured metadata (e.g., '출처: unfamiliar.observations', '분석 범위:...') and uses a formatted block structure, which contradicts the Expected Output's requirement for simple, ordinary prose."
+    },
+    {
+      "id": "repair_sql",
+      "product_oracle_status": "PASS",
+      "model_calls": 3,
+      "tool_call_names": [
+        "local_analysis_sql",
+        "inspect_dataset",
+        "local_analysis_sql"
+      ],
+      "judge_score": 0.8,
+      "judge_reason": "The response correctly identifies the requested calculation (average of reading) and provides the accurate result (9.0), fulfilling Step 1 and Step 2. However, the output structure violates Step 3 by including excessive metadata and internal fields (e.g., '출처: unfamiliar.observations', '분석 범위: ...'). This structured, metadata-heavy format contradicts the Expected Output's explicit instruction to provide the answer in 'ordinary prose' and avoid internal test fields."
+    },
+    {
+      "id": "local_outage",
+      "product_oracle_status": "PASS",
+      "model_calls": 5,
+      "tool_call_names": [
+        "aggregate_dataset",
+        "profile_dataset",
+        "local_analysis_sql"
+      ],
+      "judge_score": 0.8,
+      "judge_reason": "The response correctly identifies the requested calculation (average of reading) and provides the accurate result (9.0), fulfilling Step 1 and Step 2. However, the output structure violates Step 3 by including excessive metadata and internal fields (e.g., '출처: unfamiliar.observations', '분석 범위: ...'). This structured, metadata-heavy format contradicts the Expected Output's explicit instruction to provide the answer in 'ordinary prose' and avoid internal test fields."
+    },
+    {
+      "id": "compound",
+      "product_oracle_status": "PASS",
+      "model_calls": 4,
+      "tool_call_names": [
+        "profile_dataset",
+        "render_chart_spec",
+        "aggregate_dataset"
+      ],
+      "judge_score": 0.9,
+      "judge_reason": "The response successfully identifies the requested calculation (average) and confirms the generation of the histogram, meeting the core requirements of the prompt. The calculated average of 9.0 is accurate. However, the output format is overly structured and technical, including detailed scope and source information, which deviates from the Expected Output's requirement for 'ordinary prose; no JSON or particular output format is required.'"
+    },
+    {
+      "id": "followup",
+      "product_oracle_status": "PASS",
+      "model_calls": 1,
+      "tool_call_names": [
+        "local_analysis_sql"
+      ],
+      "judge_score": 0.7,
+      "judge_reason": "The response correctly identifies the requested calculation (count of rows where reading >= 10) and provides the accurate final result (2). However, the formatting is a significant shortcoming. The Expected Output explicitly requires the answer to be in 'ordinary prose' with no specific format, while the Actual Output uses a highly structured, report-like format including headers like '출처' and '분석 범위', failing to meet the required output style."
+    },
+    {
+      "id": "followup:2",
+      "product_oracle_status": "PASS",
+      "model_calls": 1,
+      "tool_call_names": [
+        "local_analysis_sql",
+        "local_analysis_sql"
+      ],
+      "judge_score": 0.8,
+      "judge_reason": "The response successfully identifies the requested calculation (average of reading) and provides the correct numerical result (15.0), aligning with the core requirement of the test case. However, the output format is overly structured and technical, including detailed metadata like '분석 범위' and '적용 조건'. This violates the explicit instruction in the expected output that the answer must be provided in 'ordinary prose; no JSON or particular output format is required,' which is a key consideration under the evaluation steps."
+    }
+  ]
+}

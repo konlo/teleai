@@ -1,0 +1,99 @@
+{
+  "created_at": "2026-09-24T17:48:41.582182+00:00",
+  "benchmark_input": {
+    "asset_id": "5e8719a9-0f24-4a50-a993-24b75962c6bd",
+    "persisted_source": "fixture.variable_schema",
+    "persisted_rows": 10000,
+    "sample_rows": 10000,
+    "sample_is_full_source": true
+  },
+  "observed_retained_traffic": {
+    "count": 0,
+    "p50_seconds": null,
+    "p95_seconds": null,
+    "max_seconds": null,
+    "percentile_method": "nearest-rank",
+    "status_counts": {},
+    "scope": "all retained v1 run_completed events, including pre-fix failures",
+    "current_code_only": false,
+    "rss_instrumented_turns": 0,
+    "instrumented_current_code": {
+      "count": 0,
+      "p50_seconds": null,
+      "p95_seconds": null,
+      "max_seconds": null,
+      "percentile_method": "nearest-rank",
+      "max_process_peak_rss_bytes": null,
+      "max_frame_cache_bytes": null
+    }
+  },
+  "current_local_dataframe_benchmark": {
+    "count": 30,
+    "p50_seconds": 0.077179,
+    "p95_seconds": 0.132893,
+    "max_seconds": 8.766046,
+    "percentile_method": "nearest-rank",
+    "iterations": 30,
+    "source": "benchmark.sample",
+    "persisted_source": "fixture.variable_schema",
+    "persisted_rows": 10000,
+    "rows": 10000,
+    "columns": 16,
+    "prompt": "현재 보유한 데이터의 `metric_x` 컬럼 히스토그램을 보여줘",
+    "model_calls": 0,
+    "remote_calls": 0,
+    "actual_png_each_run": true,
+    "process_peak_rss_bytes": 344997888,
+    "scope": "cold temporary conversations using a bounded persisted-data sample"
+  },
+  "current_concurrent_local_benchmark": {
+    "count": 20,
+    "p50_seconds": 0.388085,
+    "p95_seconds": 0.431293,
+    "max_seconds": 0.445543,
+    "percentile_method": "nearest-rank",
+    "requests": 20,
+    "workers": 4,
+    "successes": 20,
+    "failures": 0,
+    "wall_seconds": 2.225616,
+    "throughput_requests_per_second": 8.986,
+    "errors": [],
+    "model_calls": 0,
+    "remote_calls": 0,
+    "process_peak_rss_bytes": 384516096,
+    "scope": "parallel cold conversations using independent copies of the persisted local DataFrame"
+  },
+  "current_local_correlation_benchmark": {
+    "count": 30,
+    "p50_seconds": 0.018102,
+    "p95_seconds": 0.019252,
+    "max_seconds": 0.036153,
+    "percentile_method": "nearest-rank",
+    "iterations": 30,
+    "prompt": "현재 보유한 데이터의 `metric_x`와 `metric_y`의 피어슨 상관계수를 계산해줘.",
+    "expected": 1.0,
+    "model_calls": 0,
+    "remote_calls": 0,
+    "scope": "cold temporary conversations using the persisted local DataFrame and a pandas oracle"
+  },
+  "live_server_memory_snapshot": {
+    "pid": null,
+    "rss_bytes": null,
+    "measurement": "single ps RSS snapshot after the verified live journey"
+  },
+  "safety": {
+    "databricks_calls": 0,
+    "model_calls": 0,
+    "source_asset_mutated": false,
+    "source_asset_sha256_before": "90c9ee03671d73d94b0192c31fdf07b389ba98ee3b729ac4c0df575a20332ad4",
+    "source_asset_sha256_after": "90c9ee03671d73d94b0192c31fdf07b389ba98ee3b729ac4c0df575a20332ad4"
+  },
+  "interpretation_limits": [
+    "The sampled asset is re-scoped as benchmark.sample; a bounded prefix is not the complete source population.",
+    "Retained traffic includes failures from older code and is a historical baseline, not a current-version SLO claim.",
+    "The controlled benchmark covers the deterministic current-DataFrame histogram path only.",
+    "The concurrent benchmark uses isolated conversations in one process; it is not a distributed deployment load test.",
+    "The server RSS value is one snapshot; instrumented live-turn counts remain too small for a product-wide RSS percentile."
+  ]
+}
