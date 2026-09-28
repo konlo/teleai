@@ -1,5 +1,5 @@
 WITH delivered_orders AS (
-  SELECT 
+  SELECT
     c.customer_unique_id,
     o.order_id,
     o.order_purchase_timestamp,
@@ -12,7 +12,7 @@ WITH delivered_orders AS (
   GROUP BY c.customer_unique_id, o.order_id, o.order_purchase_timestamp
 ),
 rfm_calc AS (
-  SELECT 
+  SELECT
     customer_unique_id,
     COUNT(order_id) AS frequency,
     SUM(order_total) AS monetary,
@@ -21,27 +21,27 @@ rfm_calc AS (
   GROUP BY customer_unique_id
 ),
 rfm_scores AS (
-  SELECT 
+  SELECT
     customer_unique_id,
     frequency,
     monetary,
     last_purchase_date,
     (julianday('now') - julianday(last_purchase_date)) AS recency_days,
-    CASE 
+    CASE
       WHEN (julianday('now') - julianday(last_purchase_date)) <= 30 THEN 1
       WHEN (julianday('now') - julianday(last_purchase_date)) <= 60 THEN 2
       WHEN (julianday('now') - julianday(last_purchase_date)) <= 90 THEN 3
       WHEN (julianday('now') - julianday(last_purchase_date)) <= 180 THEN 4
       ELSE 5
     END AS recency_score,
-    CASE 
+    CASE
       WHEN frequency <= 1 THEN 5
       WHEN frequency <= 2 THEN 4
       WHEN frequency <= 4 THEN 3
       WHEN frequency <= 7 THEN 2
       ELSE 1
     END AS frequency_score,
-    CASE 
+    CASE
       WHEN monetary <= 100 THEN 5
       WHEN monetary <= 200 THEN 4
       WHEN monetary <= 500 THEN 3
@@ -50,7 +50,7 @@ rfm_scores AS (
     END AS monetary_score
   FROM rfm_calc
 )
-SELECT 
+SELECT
   rs.recency_score,
   rs.frequency_score,
   rs.monetary_score,
