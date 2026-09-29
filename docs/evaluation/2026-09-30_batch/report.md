@@ -64,3 +64,11 @@ Spider 평가 adapter는 SQL **제안**만 받아 공식 scorer가 공개 SQLite
 ## 출시 판정
 
 검증된 범위에서 로컬 단일 사용자 테스트는 가능하다. **범용 GO는 아니다.** 최신행 선택 전후 필터·동률/결측 처리의 후속 연결, 역할별/다단계 SQL, 대용량 D07/D08·J21~J24 전체 계약, 독립 oracle 98개가 남아 있다. 별도 서버 배포는 사용자 지시로 제외한다. 원래 요청의 필수 조건을 줄여 GO라고 선언하지 않는다.
+
+## Push 및 최종 CI
+
+구현 커밋 `836b331`, SQL 예측 파일의 공백 정리 커밋 `4ab1bcf`를 `codex/agentic-analysis-rc-2026-09-14`에 push했고 원격 SHA가 일치했다. [GitHub Actions 36592344313](https://github.com/konlo/teleai/actions/runs/36592344313)은 `4ab1bcf76e4118583ee68d4e6e4b6356bdf6fe80`의 Linux 환경에서 제품·migration·Level3·reference·compile을 모두 통과했다. 뒤따르는 결과 기록 커밋은 문서만 변경한다. CI 통과와 범용 GO 판정은 구분한다.
+
+앱은 `127.0.0.1:8502`에서 실행 중이다. 마지막 재시작 health200, 대화/차트/Parquet hash 및 SQL장부3건이 유지됐다. 명시적으로 선택한 Databricks 모델도 브라우저 reload 후 복원됐다. 선택한 모델은 대화별로 저장하며 새 대화는 로컬 기본값을 유지한다. [복원된 화면 텍스트](browser_restored.txt).
+
+남은 독립 평가의 정확한 ID/요청은 [미채점98문항](ungraded_cases.md)에 있다.

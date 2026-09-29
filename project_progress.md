@@ -2097,3 +2097,5 @@ Task definitions and acceptance conditions: docs/agent_remaining_tasks_2026-09-1
 - **추가 발견/수정 (2026-09-30 00:40 KST)**: 실제 앱 재시작 시 모델 선택이 Ollama로 초기화됨을 발견했다. 대화별 SQLite 선호 설정과 명시적 변경 callback을 추가해 재시작/대화 전환/다른 열린 탭의 오래된 상태를 분리했다. AppTest2개 PASS, 전체 최종 회귀 재실행 중.
 
 - **Final local result**: 제품 전체446/446(53.225초) PASS. 실제 웹에서 Databricks 모델 선택 후 reload해 같은 선택 복원. 앱 PID4735/health200, 저장 parquet hash 및 SQL 장부3건 불변.
+
+- **Push/CI outcome (2026-09-30)**: `836b331` 구현 + `4ab1bcf` 공백정리 push 및 원격SHA 확인. GitHub Actions36592344313 SUCCESS(제품446/migration136/Level3/reference/compile). 테스트 코드 hash 일치 검증. 후속 커밋은 결과 기록 문서만 변경한다. 미완료4묶음/독립98미채점/Spider0of10, 범용NO-GO 유지.
