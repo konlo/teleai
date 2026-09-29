@@ -14,9 +14,9 @@
 
 | 종류 | 결과와 범위 |
 |---|---|
-| 제품 전체 | 461/461 PASS, 55.794초. 이후 추가한 평가기 1개는 별도 관련 검사와 최종 CI로 확인한다. [로그](application_tests.txt) |
-| migration | 136/136 PASS, 17.900초. [로그](migration_tests.txt) |
-| reference·복구 | 217/217 PASS, 58개 그림. 마지막 경계 보강 전 결과이며 최종 CI에서 다시 실행한다. agent 자유계획 성공률이 아니다. |
+| 제품 전체 | 최종 Linux CI **464/464 PASS**, 119.824초. 앞선 로컬461/461 기록도 [로그](application_tests.txt)로 보존했다. |
+| migration | 최종 Linux CI **136/136 PASS**, 18.965초. 앞선 로컬 검사도 [로그](migration_tests.txt)로 보존했다. |
+| reference·복구 | 최종 Linux CI **217/217 PASS**, 58개 그림. 별도 agentic recovery 단계도 성공. agent 자유계획 성공률이 아니다. |
 | 최신행 정책 | 로컬/원격 모의 실행, 독립 pandas·NumPy 정답, 원본 digest, 재시작, source 변경, 이중 동률, 결측 전체, 부정문, 무한대 차단 검증. 실제 모델/warehouse 점수와 분리한다. |
 | 100만 행 최신행 | 10,000키 독립 정답 일치, 전체 pandas 읽기0, cache0, 8.884초, 프로세스 peak RSS 418,234,368 bytes. 원본·재시작 보존. [결과](large_latest/result.json) |
 | 100만 행 적재·EDA | batch 최대1024, 평균·조건부 평균·차트 PASS, 전송중단/byte한도에서 부분 결과 발행0, 원본·선택·재시작 보존. peak RSS 467,451,904 bytes. 합성 cursor 검사로 실제 네트워크 성능을 뜻하지 않는다. [결과](streaming_scale.json) |
@@ -40,3 +40,7 @@
 4. 독립 oracle: 기존200문항 중102 PASS/98 UNGRADED. 이번 새 계약·여정 테스트를 그98문항의 채점 완료로 바꾸지 않는다.
 
 재개 시 외부 서비스의 실제 한 요청이 정상 응답하는지 확인한 뒤 동일 고정 Spider10문항의 interactive 실행·공식 채점과 실제 SQL 정책 여정을 계속한다. 최초 실패/수정 후 근거를 덮어쓰지 않고 출력 디렉터리를 분리한다. 로컬 코드 통과만으로 GO를 선언하지 않는다.
+
+## 최종 저장·적용
+
+코드 `4c058175b9ef8987dfe12b918ba16828dc06a1b5`를 작업 브랜치에 push하고 원격SHA 일치를 확인했다. [최종 GitHub CI36636744608](https://github.com/konlo/teleai/actions/runs/36636744608) 성공, [기계 판독 근거](ci.json). 앱은 localhost8502, PID15225/health200이며 최종 제품 코드로 재시작 후 기존 대화·이미지 복원을 확인했다. PR68은 이전에 이미 병합되었으며 이번 후속 변경의 main 병합/운영 배포는 수행하지 않았다. 이 기록 이후 커밋은 검증 문서 갱신만 포함한다.

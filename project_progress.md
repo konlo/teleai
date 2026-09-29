@@ -3,7 +3,7 @@
 ## Current Status
 - **Last Updated**: 2026-09-30
 - **Status**: In Progress — 범용 자율 분석 agent 정식 출시 NO-GO
-- **Latest continuation**: [연속 평가·개선 보고서](docs/evaluation/2026-09-30_continuation/report.md). 동률/결측의 후속 정책과 원격/로컬 실행·완료 계약, 공급자400 분류/제한 재시도, interactive Spider 평가를 보강했다. 제품461 + migration136 PASS, 합성100만행2종 및 실제 웹12행 복구 PASS. Databricks 모델·SQL 리소스 생성400으로 실환경 재평가 차단.
+- **Latest continuation**: [연속 평가·개선 보고서](docs/evaluation/2026-09-30_continuation/report.md). 동률/결측의 후속 정책과 원격/로컬 실행·완료 계약, 공급자400 분류/제한 재시도, interactive Spider 평가를 보강했다. 최종CI 제품464 + migration136 + reference217 PASS, 합성100만행2종 및 실제 웹12행 복구 PASS. Databricks 모델·SQL 리소스 생성400으로 실환경 재평가 차단.
 - **Summary**: [통합 작업 보드](docs/evaluation/2026-09-30_batch/workboard.md)의 6묶음 중 구현·평가 미완료는 4묶음. 원격 최신행 범주/수치 histogram, 복합키·구간 후속 연결, 그룹 정렬, metadata 계획을 보강했다.
 - **Evidence**: 실제 Databricks 75만행→12키→8구간 및 웹 8→6구간·반복0조회 PASS. 제품446 + migration136 + reference/계약217 PASS. 독립 agent200문항102PASS/98UNGRADED. Spider 선정10문항 공식0/10. [종합 보고서](docs/evaluation/2026-09-30_batch/report.md).
 - **Qualification**: DeepEval 도구10/10, judge 통제12+새8 PASS 및 실제답변3개1.0은 보조 점수다. 새로운 실모델 자유계획 전체 성공률이나 범용 GO를 뜻하지 않는다. 별도 서버 배포 제외. PR68은 2026-09-28 이미 병합되었음을 API로 확인했다. 현재 후속 변경은 작업 브랜치에 push하며 main 병합/배포를 의미하지 않는다.
@@ -2118,3 +2118,5 @@ Task definitions and acceptance conditions: docs/agent_remaining_tasks_2026-09-1
 - **Final follow-up boundary**: 완료된 최신행 histogram의 짧은 bins 변경도 선택한 데이터/스냅샷이 바뀌면 이전 출처에 묶지 않도록 보강. 관련15 PASS(11.513s). 이전 PR68은 이미 병합됨을 확인했으며 후속 코드는 해당 작업 브랜치에 push한다.
 
 - **Evaluation gate hardening**: 원격/대용량 평가 CLI가 보고서의 BLOCKED/FAIL에도 성공 종료하던 문제 수정. 실제 agent answered+의도적으로 불일치시킨 독립 oracle과 warehouse 연결 실패에서 실패 종료를 검증했다. 관련5검사 PASS; 다른 평가자의 첫 SQL 탐색/최종 계산/공급자 실패 계수도 함께 확인했다.
+
+- **Final push/CI outcome [2026-09-30T07:03:45.085260+09:00]**: 코드4c058175b9ef8987dfe12b918ba16828dc06a1b5 push/원격SHA 일치. CI36636744608 SUCCESS(제품464/136 migration/reference217/58figures/별도recovery/compile). localhost PID15225 health200, 현재 정책 자동읽기, 대화·차트·원본복원 확인. 후속커밋은 이 결과 문서만 갱신. 범용NO-GO·실환경 BLOCKED_PROVIDER·잔여4묶음 유지.
