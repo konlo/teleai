@@ -103,6 +103,7 @@ def evaluate(path, fixture, output):
         report['status'] = 'FAIL'
     output.write_text(json.dumps(report, ensure_ascii=False, indent=2)+'\n')
     print(json.dumps(report, ensure_ascii=False))
+    return 0 if report['status']=='PASS' else 1
 
 
 def main():
@@ -116,7 +117,7 @@ def main():
     if args.stage == 'seed':
         seed(args.storage, fixture)
     elif args.stage == 'evaluate':
-        evaluate(args.storage, fixture, args.output)
+        return evaluate(args.storage, fixture, args.output)
     else:
         with tempfile.TemporaryDirectory(prefix='telly-large-latest-eval-') as directory:
             for stage in ('seed', 'evaluate'):
@@ -125,4 +126,4 @@ def main():
 
 
 if __name__ == '__main__':
-    main()
+    raise SystemExit(main())

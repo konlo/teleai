@@ -91,7 +91,7 @@ def main():
                     null_policy='drop_before_selection' if args.drop_missing_before_selection else 'reject')
                 if not proof:
                     report['status'] = 'INCOMPLETE'
-                    return
+                    return 1
                 actual = (proof['chart_spec']['counts'] if args.bins else
                     {row[args.value]: row[proof['count_column']] for row in proof['counts']})
                 stage = 'oracle'
@@ -145,7 +145,8 @@ def main():
         args.output.write_text(json.dumps(report, ensure_ascii=False, indent=2)+'\n')
         print(json.dumps({k: report.get(k) for k in ('status', 'stage', 'error_type', 'http_status',
             'query_count', 'agent_status', 'input_rows', 'selected_keys', 'remote_result_rows', 'reuse_queries')}))
+    return 0 if report['status']=='PASS' else 1
 
 
 if __name__ == '__main__':
-    main()
+    raise SystemExit(main())

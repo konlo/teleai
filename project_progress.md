@@ -2116,3 +2116,5 @@ Task definitions and acceptance conditions: docs/agent_remaining_tasks_2026-09-1
 - Next Action Items: 위4개 잔여 묶음 및 외부 서비스 복구 후 동일 실모델/warehouse 평가. 코드·문서 push/CI 확인을 마무리한다.
 
 - **Final follow-up boundary**: 완료된 최신행 histogram의 짧은 bins 변경도 선택한 데이터/스냅샷이 바뀌면 이전 출처에 묶지 않도록 보강. 관련15 PASS(11.513s). 이전 PR68은 이미 병합됨을 확인했으며 후속 코드는 해당 작업 브랜치에 push한다.
+
+- **Evaluation gate hardening**: 원격/대용량 평가 CLI가 보고서의 BLOCKED/FAIL에도 성공 종료하던 문제 수정. 실제 agent answered+의도적으로 불일치시킨 독립 oracle과 warehouse 연결 실패에서 실패 종료를 검증했다. 관련5검사 PASS; 다른 평가자의 첫 SQL 탐색/최종 계산/공급자 실패 계수도 함께 확인했다.
