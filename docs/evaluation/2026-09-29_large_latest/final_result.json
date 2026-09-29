@@ -1,0 +1,31 @@
+{
+  "mode": "production graph deterministic path; synthetic retained Parquet; no model inference",
+  "status": "PASS",
+  "agent_status": "answered",
+  "input_rows": 1000000,
+  "selected_keys": 10000,
+  "expected_counts": {
+    "C0": 3334,
+    "C1": 3333,
+    "C2": 3333
+  },
+  "actual_counts": {
+    "C0": 3334,
+    "C1": 3333,
+    "C2": 3333
+  },
+  "oracle_rows_match": true,
+  "raw_preserved": true,
+  "raw_full_read_attempts": [],
+  "cache_bytes": 0,
+  "elapsed_seconds": 8.156,
+  "process_peak_rss_bytes": 427900928,
+  "warehouse_queries": 0,
+  "model_calls": 0,
+  "execution_mode": "bounded_local_sql",
+  "images": [
+    "latest_distribution.png"
+  ],
+  "answer": "키 entity_key마다 observed_time이 가장 큰 행을 선택했습니다. 원본 1,000,000행 중 10,000개의 키를 각각 한 번 계산했습니다. 원본은 보존했습니다. 식별자·범주 값은 값별 빈도 막대그래프로 표시합니다.\n\nproduct_category · 키별 최신 행 분포 이미지를 생성했습니다.\n분석 범위: 보유 3행 기준 · complete · aggregate · 표시 데이터 3개 · 집계 none",
+  "restart_preserved": true
+}

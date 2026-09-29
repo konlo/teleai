@@ -1,7 +1,7 @@
 # Project Progress Log
 
 ## Current Status
-- **Latest change (2026-09-29)**: Context transitions fixed: existing 62/62 turns PASS (14 journeys PASS, 2 summary NOT_EXERCISED); separate actual-summary journeys 18/18 turns PASS with one summary each. Regressions 424 + 136 PASS. Compound EDA 12/12 remains verified. General release remains NO-GO for advanced SQL and evaluation gaps.
+- **Latest change (2026-09-29)**: Pushed accumulated fixes as 6a419a9. Added bounded local SQL latest-row selection over retained Parquet: million-row production graph PASS, raw/restart preserved, 428+136 regressions PASS. Remote warehouse latest-row pushdown and advanced evaluation remain NO-GO blockers.
 - **Last Updated**: 2026-09-29
 - **Status**: In Progress — 범용 자율 분석 agent 정식 출시 NO-GO
 - **Summary**: 9/28 후속 평가: 기존200문항97PASS/103UNGRADED, 자연어10여정PASS, 지정장애복구3/3PASS, 실제보유10만행EDA PASS. 복합EDA4종×3회는3PASS/9FAIL이며 잘못된 완료6건. 새 Spider5문항정답0/5, DeepEval judge 보정실패/실제응답4건채점오류. [최신 결과](docs/evaluation/2026-09-28_remaining/report.md). 범용 NO-GO 유지.
@@ -10,6 +10,7 @@
 - **Current qualification**: 이번 실모델 7/8여정 결과와 모델 timeout 미완료를 함께 유지한다. 이전 고정 200문항 97 PASS/103 UNGRADED 및 Spider 0/5는 재평가하지 않았다. 범용 GO/동등 성능은 미입증이다. 이번 검증 warehouse SQL 1회 완료, 추가 재조회 0회. draft PR #68 미병합.
 
 ## Next Action Items
+- [x] Large retained-data latest selection: Arrow batches -> bounded local SQL -> validated winners/chart. Million-row independent oracle and cold-cache checks PASS. [Evidence](docs/evaluation/2026-09-29_large_latest/report.md). Remote pushdown remains below.
 - [x] 시각화 표시 검증 보강: 이미지 decode/빈 이미지 검사, 최종 답변 이미지 연결, 검증된 차트만 표시, 막대/bin 검사와 실제 브라우저 로딩 확인. 전체549 PASS. [근거](docs/evaluation/2026-09-28_chart_delivery/report.md). 사용자 원래 요청/환경은 미확인.
 - [x] 2026-09-28 제품 기본값을 Databricks 읽기 전용 자동 조회로 변경했다. 기존 승인 대기 자동 재개, 거절/불확실 실행 보존, 543개 회귀, 실제 모델 합성 SQL 및 실제 SELECT 1, 앱 재시작을 검증했다. [증거](docs/evaluation/2026-09-28_automatic_reads/report.md).
 - [x] 조회 상태 응답 P0: 완료 receipt와 저장 결과 대조, 실제 목록 렌더링, 근거 없는 미래 안내 차단, 구버전 완료 응답 정정을 구현했다. 관련 109회귀 및 실제 모델+합성SQL 2/2 통과. localhost:8502 재시작/health 200. [증거](docs/evaluation/2026-09-28_remote_completion/report.md).
@@ -2050,3 +2051,9 @@ Task definitions and acceptance conditions: docs/agent_remaining_tasks_2026-09-1
 
 ## [2026-09-29T09:56:24.177934+09:00] [Agent: /root] User Request: Push accumulated changes, then continue next GO task
 - **Action**: Verify staged artifacts and prior test evidence, commit/push current branch, then implement and evaluate bounded large-data latest-row processing.
+- **Push**: Commit 6a419a99c054dcf9439634f0d2351e15799d54c9 pushed to origin/codex/agentic-analysis-rc-2026-09-14; ls-remote SHA matched.
+- **Finding**: Latest-row selection projects all input rows into pandas then sorts/copies; large retained Parquet inputs still expand into memory. Next bounded change moves this selection into resource-limited local SQL over Arrow batches; remote warehouse pushdown remains a separate gate.
+
+- **Implementation**: File-backed latest selection uses Arrow batches and bounded DuckDB for inputs over 20,000 rows. NULL/tie/type/output/resource errors do not publish a successful chart. SQL uses runtime schema only.
+- **Validation**: Application428 + migration136 PASS; compile/diff PASS. Two isolated-process million-row graph evaluations PASS; 10,000 winners match independent row/category/time oracle, file hash/restart preserved, raw full pandas reads0, cache0. Final elapsed8.156s, whole-process peak RSS427900928 bytes. Model0/warehouse0.
+- **Remaining**: This improves already retained data; remote latest-row pushdown, complex policies, advanced SQL and oracle/judge work remain.

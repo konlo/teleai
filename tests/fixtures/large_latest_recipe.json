@@ -1,0 +1,11 @@
+{
+  "source": "synthetic.large_device_events",
+  "columns": ["entity_key", "product_category", "observed_time", "unused_payload"],
+  "rows": 1000000,
+  "keys": 10000,
+  "cycles": 100,
+  "categories": ["C0", "C1", "C2"],
+  "payload_bytes": 512,
+  "expected_counts": {"C0": 3334, "C1": 3333, "C2": 3333},
+  "prompt": "entity_key 기준으로 unique한 값마다 observed_time 기준 마지막 행의 product_category 분포를 그려줘."
+}
