@@ -1,0 +1,342 @@
+{
+  "provider": "databricks",
+  "model": "databricks-qwen3-next-80b-a3b-instruct",
+  "model_timeout_seconds": 60.0,
+  "results": [
+    {
+      "id": "local007",
+      "db": "Baseball",
+      "benchmark": "Spider2-Lite SQLite",
+      "mode": "Interactive production graph with bounded read-only public SQLite execution; no gold access",
+      "remote_executions": 0,
+      "local_sql_executions": [],
+      "agent_status": "incomplete",
+      "final_output": "모델 공급자가 현재 요청을 처리할 수 없다고 응답했습니다 (오류 ID: 5ccde5a4342d). 허용된 재시도 한도 안에서 복구하지 못해 분석을 완료하지 않았습니다. 기존 결과는 보존했습니다. 연결이 복구된 후 미완료 분석 재개를 사용할 수 있습니다.",
+      "model_calls": 0,
+      "recovery_status": "working",
+      "scope_error": null,
+      "stop_reason": null,
+      "error_type": "BadRequestError",
+      "error_category": "model_provider_temporarily_unavailable",
+      "diagnostics": [
+        {
+          "time": "2026-09-29T21:27:58.931159+00:00",
+          "event": "run_started",
+          "run_id": "2d742b2cd33c4476875d11e67290b9e8",
+          "operation": "submit",
+          "process_peak_rss_bytes": 314425344
+        },
+        {
+          "time": "2026-09-29T21:27:59.027653+00:00",
+          "event": "summarization_started",
+          "run_id": "2d742b2cd33c4476875d11e67290b9e8",
+          "span_id": "f61598d03a4e",
+          "message_count": 1
+        },
+        {
+          "time": "2026-09-29T21:27:59.027739+00:00",
+          "event": "summarization_finished",
+          "run_id": "2d742b2cd33c4476875d11e67290b9e8",
+          "span_id": "f61598d03a4e",
+          "status": "ok",
+          "elapsed_seconds": 0.0,
+          "message_count": 1,
+          "summarized": false
+        },
+        {
+          "time": "2026-09-29T21:27:59.028240+00:00",
+          "event": "model_call_started",
+          "run_id": "2d742b2cd33c4476875d11e67290b9e8",
+          "span_id": "3ee17b551fdb",
+          "message_count": 1
+        },
+        {
+          "time": "2026-09-29T21:27:59.030023+00:00",
+          "event": "context_budget",
+          "run_id": "2d742b2cd33c4476875d11e67290b9e8",
+          "characters": 9814,
+          "limit": 32000
+        },
+        {
+          "time": "2026-09-29T21:27:59.998480+00:00",
+          "event": "model_inference_failed",
+          "run_id": "2d742b2cd33c4476875d11e67290b9e8",
+          "request_id": "93952a61-bf1c-4dec-892a-43b7aa74ae66",
+          "error_type": "BadRequestError",
+          "http_status": 400,
+          "error_category": "model_provider_temporarily_unavailable",
+          "retry_scheduled": true,
+          "retry_delay_seconds": 1.0
+        },
+        {
+          "time": "2026-09-29T21:28:01.338090+00:00",
+          "event": "model_inference_failed",
+          "run_id": "2d742b2cd33c4476875d11e67290b9e8",
+          "request_id": "93952a61-bf1c-4dec-892a-43b7aa74ae66",
+          "error_type": "BadRequestError",
+          "http_status": 400,
+          "error_category": "model_provider_temporarily_unavailable",
+          "retry_scheduled": true,
+          "retry_delay_seconds": 2.0
+        },
+        {
+          "time": "2026-09-29T21:28:03.651357+00:00",
+          "event": "model_inference_failed",
+          "run_id": "2d742b2cd33c4476875d11e67290b9e8",
+          "request_id": "93952a61-bf1c-4dec-892a-43b7aa74ae66",
+          "error_type": "BadRequestError",
+          "http_status": 400,
+          "error_category": "model_provider_temporarily_unavailable",
+          "retry_scheduled": false,
+          "retry_delay_seconds": null
+        },
+        {
+          "time": "2026-09-29T21:28:03.651904+00:00",
+          "event": "model_call_finished",
+          "run_id": "2d742b2cd33c4476875d11e67290b9e8",
+          "span_id": "3ee17b551fdb",
+          "status": "error",
+          "error_type": "BadRequestError",
+          "elapsed_seconds": 4.624,
+          "message_count": 1
+        },
+        {
+          "time": "2026-09-29T21:28:03.670168+00:00",
+          "event": "error",
+          "run_id": "2d742b2cd33c4476875d11e67290b9e8",
+          "error_category": "model_provider_temporarily_unavailable",
+          "error_id": "5ccde5a4342d",
+          "stage": "agent_stream",
+          "error_type": "BadRequestError",
+          "http_status": 400,
+          "frames": [
+            {
+              "file": "runtime.py",
+              "line": 358,
+              "function": "_invoke"
+            },
+            {
+              "file": "runtime.py",
+              "line": 322,
+              "function": "_stream_with_local_recovery"
+            },
+            {
+              "file": "main.py",
+              "line": 2967,
+              "function": "stream"
+            },
+            {
+              "file": "_runner.py",
+              "line": 207,
+              "function": "tick"
+            },
+            {
+              "file": "_retry.py",
+              "line": 617,
+              "function": "run_with_retry"
+            },
+            {
+              "file": "_runnable.py",
+              "line": 707,
+              "function": "invoke"
+            },
+            {
+              "file": "_runnable.py",
+              "line": 447,
+              "function": "invoke"
+            },
+            {
+              "file": "factory.py",
+              "line": 1486,
+              "function": "model_node"
+            },
+            {
+              "file": "factory.py",
+              "line": 339,
+              "function": "composed"
+            },
+            {
+              "file": "tool_focus.py",
+              "line": 125,
+              "function": "wrap_model_call"
+            },
+            {
+              "file": "factory.py",
+              "line": 329,
+              "function": "inner_handler"
+            },
+            {
+              "file": "factory.py",
+              "line": 339,
+              "function": "composed"
+            },
+            {
+              "file": "memory.py",
+              "line": 114,
+              "function": "wrap_model_call"
+            },
+            {
+              "file": "factory.py",
+              "line": 329,
+              "function": "inner_handler"
+            },
+            {
+              "file": "factory.py",
+              "line": 339,
+              "function": "composed"
+            },
+            {
+              "file": "types.py",
+              "line": 1807,
+              "function": "wrapped"
+            },
+            {
+              "file": "factory.py",
+              "line": 329,
+              "function": "inner_handler"
+            },
+            {
+              "file": "factory.py",
+              "line": 339,
+              "function": "composed"
+            },
+            {
+              "file": "tool_focus.py",
+              "line": 89,
+              "function": "wrap_model_call"
+            },
+            {
+              "file": "factory.py",
+              "line": 329,
+              "function": "inner_handler"
+            },
+            {
+              "file": "factory.py",
+              "line": 339,
+              "function": "composed"
+            },
+            {
+              "file": "tool_focus.py",
+              "line": 41,
+              "function": "wrap_model_call"
+            },
+            {
+              "file": "factory.py",
+              "line": 329,
+              "function": "inner_handler"
+            },
+            {
+              "file": "factory.py",
+              "line": 339,
+              "function": "composed"
+            },
+            {
+              "file": "tool_focus.py",
+              "line": 16,
+              "function": "wrap_model_call"
+            },
+            {
+              "file": "factory.py",
+              "line": 329,
+              "function": "inner_handler"
+            },
+            {
+              "file": "model_recovery.py",
+              "line": 126,
+              "function": "wrap_model_call"
+            },
+            {
+              "file": "model_recovery.py",
+              "line": 159,
+              "function": "invoke"
+            },
+            {
+              "file": "model_recovery.py",
+              "line": 126,
+              "function": "<lambda>"
+            },
+            {
+              "file": "factory.py",
+              "line": 1454,
+              "function": "_execute_model_sync"
+            },
+            {
+              "file": "base.py",
+              "line": 6014,
+              "function": "invoke"
+            },
+            {
+              "file": "chat_models.py",
+              "line": 488,
+              "function": "invoke"
+            },
+            {
+              "file": "chat_models.py",
+              "line": 1877,
+              "function": "generate_prompt"
+            },
+            {
+              "file": "chat_models.py",
+              "line": 1684,
+              "function": "generate"
+            },
+            {
+              "file": "chat_models.py",
+              "line": 2022,
+              "function": "_generate_with_cache"
+            },
+            {
+              "file": "base.py",
+              "line": 1750,
+              "function": "_generate"
+            },
+            {
+              "file": "base.py",
+              "line": 1747,
+              "function": "_generate"
+            },
+            {
+              "file": "_legacy_response.py",
+              "line": 369,
+              "function": "wrapped"
+            },
+            {
+              "file": "_utils.py",
+              "line": 298,
+              "function": "wrapper"
+            },
+            {
+              "file": "completions.py",
+              "line": 1296,
+              "function": "create"
+            },
+            {
+              "file": "_base_client.py",
+              "line": 1375,
+              "function": "post"
+            },
+            {
+              "file": "_base_client.py",
+              "line": 1148,
+              "function": "request"
+            }
+          ]
+        },
+        {
+          "time": "2026-09-29T21:28:03.670302+00:00",
+          "event": "turn_slo",
+          "run_id": "2d742b2cd33c4476875d11e67290b9e8",
+          "elapsed_seconds": 4.726,
+          "limit": 180.0,
+          "status": "error",
+          "process_peak_rss_bytes": 320929792,
+          "frame_cache_bytes": 0
+        }
+      ],
+      "sql_drafts": [],
+      "observations": [],
+      "status": "BLOCKED_PROVIDER",
+      "elapsed_seconds": 4.765
+    }
+  ]
+}

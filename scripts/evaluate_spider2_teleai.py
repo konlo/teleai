@@ -1,12 +1,14 @@
 """Evaluate SQL proposals from the real TeleAI graph on public Spider2-Lite SQLite tasks.
 
-This is a SQL-proposal adapter, not the full interactive product journey. It
-never executes a remote query or gives gold answers to the agent. Submit the
+Default mode is proposal-only; --interactive executes bounded public SQLite
+through the production graph until verified completion. Neither mode
+executes a remote query or gives gold answers to the agent. Submit the
 saved SQL files to Spider2's unmodified official evaluator for accuracy.
 """
 from __future__ import annotations
 
 import argparse
+from contextlib import closing
 from datetime import datetime, timezone
 import json
 import os
@@ -124,8 +126,9 @@ def check_sqlite_candidate(path: Path, query: str, *, timeout_seconds=5.0) -> di
                 "error": str(exc)[:300]}
     started = time.monotonic()
     try:
-        with sqlite3.connect(f"file:{path.resolve()}?mode=ro", uri=True) as db:
+        with closing(sqlite3.connect(f"file:{path.resolve()}?mode=ro", uri=True)) as db:
             db.execute("PRAGMA query_only=ON")
+            db.setlimit(sqlite3.SQLITE_LIMIT_LENGTH,1024*1024)
             db.set_progress_handler(
                 lambda: int(time.monotonic() - started >= timeout_seconds), 1000)
             db.execute(query).fetchone()
@@ -142,7 +145,10 @@ def check_sqlite_candidate(path: Path, query: str, *, timeout_seconds=5.0) -> di
 
 
 def evaluate_task(spider_root: Path, task: dict, model, predictions: Path,
-                  *, benchmark_instruction=False) -> dict:
+                  *, benchmark_instruction=False, interactive=False) -> dict:
+    if interactive:
+        from scripts.spider_interactive import evaluate_interactive
+        return evaluate_interactive(spider_root, task, model, predictions)
     from core.analysis_agent.runtime import GraphAnalysisRuntime
     from core.analysis_agent.policy import RuntimePolicy
     from langchain_core.messages import AIMessage, ToolMessage
@@ -295,6 +301,7 @@ def main() -> int:
                         help="Per-model HTTP timeout; 60 matches the current product setting")
     parser.add_argument("--benchmark-instruction", action="store_true",
                         help="Add a generic SQL/tool instruction, without table or gold leakage")
+    parser.add_argument("--interactive", action="store_true", help="Execute public read-only SQLite and require verified final computation; not proposal-only")
     parser.add_argument("--output-dir", required=True, type=Path)
     args = parser.parse_args()
     if args.model_timeout_seconds <= 0:
@@ -324,7 +331,7 @@ def main() -> int:
     for case_id in args.id:
         result = evaluate_task(args.spider_root, manifest[case_id], model,
                                args.output_dir / "predictions",
-                               benchmark_instruction=args.benchmark_instruction)
+                               benchmark_instruction=args.benchmark_instruction, interactive=args.interactive)
         results.append(result)
         (args.output_dir / "proposals.json").write_text(json.dumps({"provider":args.provider,
             "model": selected_model,
@@ -332,7 +339,7 @@ def main() -> int:
             "results": results}, indent=2, ensure_ascii=False) + "\n")
         print(json.dumps({"id": case_id, "status": result["status"],
                           "elapsed_seconds": result.get("elapsed_seconds")}), flush=True)
-    return 0 if all(item["status"] in {"SQL_PROPOSED", "SQL_PROPOSED_TEXT"}
+    return 0 if all(item["status"] in {"SQL_PROPOSED", "SQL_PROPOSED_TEXT", "SQL_COMPLETED"}
                     for item in results) else 1
 
 

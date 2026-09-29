@@ -316,14 +316,14 @@ def build_analysis_tools(context: AnalysisToolContext) -> list[ToolDefinition]:
         )
 
     def analyze_latest_distribution(dataset_id, key_columns, order_column, value_column,
-                                    categorical=True, tie_break_columns=None, bins=20):
+                                    categorical=True, tie_break_columns=None, bins=20, null_policy='reject'):
         from utils.analysis_latest import latest_distribution
         return latest_distribution(context,dataset_id,key_columns,order_column,value_column,
-                                   categorical,tie_break_columns,bins=bins)
+                                   categorical,tie_break_columns,bins=bins,null_policy=null_policy)
 
-    def prepare_remote_latest_distribution(source, key_columns, order_column, value_column, result_dataset_id='', categorical=True, bins=20):
+    def prepare_remote_latest_distribution(source, key_columns, order_column, value_column, result_dataset_id='', categorical=True, bins=20, tie_break_columns=None, null_policy='reject'):
         from utils.analysis_remote_latest import prepare
-        return prepare(context, source, key_columns, order_column, value_column, result_dataset_id, categorical=categorical, bins=bins)
+        return prepare(context, source, key_columns, order_column, value_column, result_dataset_id, categorical=categorical, bins=bins, tie_break_columns=tie_break_columns, null_policy=null_policy)
 
     def propose_query(source, query, reason):
         validate_query(query)
@@ -840,14 +840,17 @@ def build_analysis_tools(context: AnalysisToolContext) -> list[ToolDefinition]:
               "max_output_rows": {"type":"integer","minimum":1,"maximum":1000}},
              ["baseline_dataset_id","cohort_dataset_id","aggregation","group_column"],
              compare_group_aggregates),
-        tool("analyze_latest_distribution", "명시한 키마다 정렬 컬럼이 가장 큰 최신 행 하나를 선택하고 분포와 실제 차트를 생성합니다. 원본은 보존합니다. 정렬 기준은 물리적 행 순서가 아니며 동률/결측값은 확인이 필요합니다. 범주/식별자는 categorical=true, 연속 수치는 false입니다.",
+        tool("analyze_latest_distribution", "명시한 키마다 정렬 컬럼이 가장 큰 최신 행 하나를 선택하고 분포와 실제 차트를 생성합니다. 원본은 보존합니다. 물리적 행 순서를 쓰지 않습니다. tie_break_columns는 명시한 추가 내림차순 기준입니다. null_policy=drop_before_selection은 사용자가 명시한 경우에만 키·정렬·분포의 결측 행을 최신행 선택 전에 제외합니다. 범주/식별자는 categorical=true, 연속 수치는 false입니다.",
              {"dataset_id":string,"key_columns":{"type":"array","items":string,"minItems":1},
               "order_column":string,"value_column":string,"categorical":{"type":"boolean"},
+              "null_policy":{"type":"string","enum":["reject","drop_before_selection"]},
               "tie_break_columns":{"type":"array","items":string},"bins":{"type":"integer","minimum":2,"maximum":100}},
              ["dataset_id","key_columns","order_column","value_column"],analyze_latest_distribution),
-        tool("prepare_remote_latest_distribution", "관측된 스키마로 원격 키별 최신행의 범주 빈도 SQL을 계획합니다. 직접 조회하지 않으며 query_databricks 결과 ID를 전달하면 동일 SQL의 결측·동률·합계 검증 후 실제 막대 차트를 만듭니다. 연속 수치는 categorical=false와 bins(2~100)로 원격에서 구간 집계합니다. 필터/추가 통계는 별도 계획이 필요합니다.",
+        tool("prepare_remote_latest_distribution", "관측된 스키마로 원격 키별 최신행의 분포 SQL을 계획합니다. 직접 조회하지 않으며 query_databricks 결과 ID를 전달하면 동일 SQL의 결측·동률·합계 검증 후 실제 차트를 만듭니다. tie_break_columns는 명시된 추가 내림차순 기준입니다. null_policy=drop_before_selection은 명시된 경우에만 선택 전 결측행을 제외합니다. 연속 수치는 categorical=false와 bins(2~100)로 집계합니다. 일반 필터/추가 통계는 별도 계획이 필요합니다.",
              {"source":string,"key_columns":{"type":"array","items":string,"minItems":1,"maxItems":4},
               "order_column":string,"value_column":string,"result_dataset_id":string,
+              "null_policy":{"type":"string","enum":["reject","drop_before_selection"]},
+              "tie_break_columns":{"type":"array","items":string},
               "categorical":{"type":"boolean"},"bins":{"type":"integer","minimum":2,"maximum":100}},
              ["source","key_columns","order_column","value_column"],prepare_remote_latest_distribution),
         tool("propose_databricks_query", "Databricks 조회를 사용자에게 제안합니다. 이 도구는 실행하지 않습니다. 정확한 SQL과 이유를 표시하고 승인 대기합니다.",

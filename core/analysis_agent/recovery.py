@@ -1269,6 +1269,7 @@ class RecoveryMiddleware(AgentMiddleware):
                     current['failed'].pop(name,None)
                 elif observation.get('status')=='needs_context':
                     current['latest_question']=observation.get('message','최신 행 선택 기준을 확인해주세요.')
+                    current['latest_error_code']=observation.get('error_code')
             if name == 'prepare_remote_latest_distribution' and (current.get('latest_per_key_spec') or {}).get('remote'):
                 from core.analysis_agent.latest_selection import accepted_remote
                 spec = current['latest_per_key_spec']
@@ -1284,6 +1285,7 @@ class RecoveryMiddleware(AgentMiddleware):
                     current['failed'].pop(name, None)
                 elif observation.get('status') == 'needs_context':
                     current['latest_question'] = observation.get('message', '원격 최신행 선택 기준을 확인해주세요.')
+                    current['latest_error_code']=observation.get('error_code')
             if name == 'prepare_histogram' and observation.get('histogram_plan'):
                 plan = observation['histogram_plan']
                 if not self._scope_valid(plan.get('query', ''), current, plan.get('value_column')):
@@ -2282,6 +2284,8 @@ class RecoveryMiddleware(AgentMiddleware):
                     return None
                 arguments = {k: spec[k] for k in ('source', 'key_columns', 'order_column', 'value_column')}
                 arguments.update(categorical=spec.get('categorical',True),bins=spec.get('bins',20))
+                arguments['tie_break_columns']=spec.get('tie_break_columns',[])
+                arguments['null_policy']=spec.get('null_policy','reject')
                 plan = current.get('remote_latest_plan')
                 refresh = current.get('remote_latest_refresh')
                 receipts = current.get('remote_query_evidence', {})
@@ -2305,7 +2309,7 @@ class RecoveryMiddleware(AgentMiddleware):
             if not spec.get('question') and not current.get('latest_selection_evidence') and not any(
                     c.get('name')=='analyze_latest_distribution' for c in calls.values()):
                 return {'name':'analyze_latest_distribution','args':{key:spec[key] for key in
-                    ('dataset_id','key_columns','order_column','value_column','categorical')} | {'bins':spec.get('bins',20)}}
+                    ('dataset_id','key_columns','order_column','value_column','categorical')} | {'bins':spec.get('bins',20),'tie_break_columns':spec.get('tie_break_columns',[]),'null_policy':spec.get('null_policy','reject')}}
             return None
         if self.context and current.get('operation_pending'):
             from core.analysis_agent.operation_binding import metadata_for
@@ -3636,12 +3640,21 @@ class RecoveryMiddleware(AgentMiddleware):
     def _proposed_scope_valid(self, call, current):
         if current.get('explanation_only'): return False
         spec = current.get('latest_per_key_spec') or {}
+        if spec and not spec.get('remote') and call.get('name')=='analyze_latest_distribution':
+            arguments=call.get('args',{})
+            return (all(arguments.get(k)==spec.get(k) for k in ('dataset_id','key_columns','order_column','value_column'))
+                and arguments.get('categorical',True)==spec.get('categorical',True)
+                and arguments.get('bins',20)==spec.get('bins',20)
+                and (arguments.get('tie_break_columns') or [])==spec.get('tie_break_columns',[])
+                and arguments.get('null_policy','reject')==spec.get('null_policy','reject'))
         if spec.get('remote'):
             arguments = call.get('args', {})
             if call.get('name') == 'prepare_remote_latest_distribution':
                 return (all(arguments.get(k) == spec.get(k) for k in ('source', 'key_columns', 'order_column', 'value_column'))
                     and arguments.get('categorical',True) == spec.get('categorical',True)
-                    and arguments.get('bins',20) == spec.get('bins',20))
+                    and arguments.get('bins',20) == spec.get('bins',20)
+                    and (arguments.get('tie_break_columns') or []) == spec.get('tie_break_columns',[])
+                    and arguments.get('null_policy','reject') == spec.get('null_policy','reject'))
             if call.get('name') == 'query_databricks':
                 if any(r.get('query') == arguments.get('query') for r in current.get('remote_query_evidence', {}).values()):
                     current['scope_error'] = 'remote_result_already_available'

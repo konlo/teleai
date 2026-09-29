@@ -42,7 +42,8 @@ class Diagnostics:
         error_id = uuid4().hex[:12]
         frames = [{'file': Path(f.filename).name, 'line': f.lineno, 'function': f.name}
                   for f in traceback.extract_tb(exc.__traceback__)]
-        self.emit('error', run_id=run_id or self.run_id, error_id=error_id, stage=stage,
+        from core.analysis_agent.model_errors import model_error_category
+        self.emit('error', error_category=model_error_category(exc), run_id=run_id or self.run_id, error_id=error_id, stage=stage,
             error_type=type(exc).__name__,
             http_status=getattr(exc,'http_status',getattr(exc,'status_code',None)), frames=frames)
         return error_id

@@ -8,14 +8,16 @@ from utils.analysis_charts import render_chart_spec
 from utils.analysis_datasets import project_dataset
 
 FIELDS = ['__kind', '__value', '__frequency', '__input_rows', '__null_rows',
-          '__tied_keys', '__selected_keys', '__categories']
+          '__tied_keys', '__selected_keys', '__categories', '__nonfinite_rows']
 
 
 def _quote(name):
     return '`' + name.replace('`', '``') + '`'
 
 
-def plan(context, source, key_columns, order_column, value_column, *, categorical=True, bins=20):
+def plan(context, source, key_columns, order_column, value_column, *, categorical=True, bins=20, tie_break_columns=None, null_policy='reject'):
+    if null_policy not in {'reject','drop_before_selection'}:
+        raise ValueError('지원하지 않는 최신행 결측 정책입니다.')
     if type(categorical) is not bool or type(bins) is not int or not 2 <= bins <= 100:
         raise ValueError('categorical은 bool, bins는 2~100 정수여야 합니다.')
     observed = resolve_table_context(context.reference_context, context.datasets, source)
@@ -24,27 +26,35 @@ def plan(context, source, key_columns, order_column, value_column, *, categorica
         return {'status': 'needs_refresh', 'refresh_query': 'SELECT * FROM '+_quoted_table(source)+' LIMIT 0',
                 'message': '현재 테이블 스키마 확인이 필요합니다.'}
     types = {c['name']: c.get('dtype', '').lower() for c in schema.get('columns', [])}
-    columns = [*key_columns, order_column, value_column]
+    order = [order_column, *(tie_break_columns or [])]
+    columns = [*key_columns, *order, value_column]
     if (not 1 <= len(key_columns) <= 4 or len(set(columns)) != len(columns) or not set(columns) <= types.keys()):
         return {'status': 'needs_context', 'message': '현재 스키마에서 서로 다른 키·정렬·분포 컬럼을 확인해주세요.'}
     import re
-    if not re.search(r'int|long|short|byte|float|double|decimal|numeric|timestamp|datetime|date', types[order_column]):
+    if any(not re.search(r'int|long|short|byte|float|double|decimal|numeric|timestamp|datetime|date', types[c]) for c in order):
         return {'status': 'needs_context', 'message': '최신 순서를 확인할 수 있는 수치 또는 시간 자료형 컬럼이 필요합니다.'}
     if any(re.search(r'array|struct|map|binary', types[c]) for c in columns):
         return {'status': 'needs_context', 'message': '키·정렬·분포 컬럼은 단일 값 자료형이어야 합니다.'}
     if not categorical and not re.search(r'int|long|short|byte|float|double|decimal|numeric', types[value_column]):
         return {'status':'needs_context','message':'수치 히스토그램은 실제 수치 자료형 컬럼이 필요합니다.'}
     keys = ['_k'+str(i) for i in range(len(key_columns))]
-    aliases = [*keys, '_order', '_value']
+    order_aliases = ['_order'] + ['_tie'+str(i) for i in range(len(order)-1)]
+    aliases = [*keys, *order_aliases, '_value']
     projection = ', '.join(_quote(c)+' AS '+a for c, a in zip(columns, aliases))
     nulls = ' OR '.join(a+' IS NULL' for a in aliases)
+    infinite = []
     for c, a in zip(columns, aliases):
         if re.search(r'float|double', types[c]):
-            nulls += ' OR isnan('+a+') OR ABS('+a+") = CAST('Infinity' AS DOUBLE)"
+            nulls += ' OR isnan('+a+')'
+            infinite.append('ABS('+a+") = CAST('Infinity' AS DOUBLE)")
+    infinite_test=' OR '.join(infinite) or 'FALSE'
     group = ', '.join(keys)
+    ordering = ', '.join(a+' DESC' for a in order_aliases)
+    valid_rows = (' WHERE NOT ('+nulls+')') if null_policy=='drop_before_selection' else ''
     query = f'''WITH base AS (SELECT {projection} FROM {_quoted_table(source)}),
-quality AS (SELECT COUNT(*) AS n, COALESCE(SUM(CASE WHEN {nulls} THEN 1 ELSE 0 END), 0) AS missing FROM base),
-ranked AS (SELECT *, DENSE_RANK() OVER (PARTITION BY {group} ORDER BY _order DESC) AS _rank FROM base),
+quality AS (SELECT COUNT(*) AS n, COALESCE(SUM(CASE WHEN {nulls} THEN 1 ELSE 0 END), 0) AS missing,
+COALESCE(SUM(CASE WHEN {infinite_test} THEN 1 ELSE 0 END),0) AS nonfinite FROM base),
+ranked AS (SELECT *, DENSE_RANK() OVER (PARTITION BY {group} ORDER BY {ordering}) AS _rank FROM base{valid_rows}),
 latest AS (SELECT * FROM ranked WHERE _rank = 1),
 key_counts AS (SELECT {group}, COUNT(*) AS n FROM latest GROUP BY {group}),
 frequencies AS (SELECT CAST(_value AS STRING) AS v, COUNT(*) AS n FROM latest GROUP BY _value)
@@ -52,9 +62,9 @@ SELECT 0 AS __kind, CAST(NULL AS STRING) AS __value, 0 AS __frequency,
 n AS __input_rows, missing AS __null_rows,
 (SELECT COUNT(*) FROM key_counts WHERE n > 1) AS __tied_keys,
 (SELECT COUNT(*) FROM key_counts) AS __selected_keys,
-(SELECT COUNT(*) FROM frequencies) AS __categories FROM quality
+(SELECT COUNT(*) FROM frequencies) AS __categories, nonfinite AS __nonfinite_rows FROM quality
 UNION ALL
-SELECT 1, v, n, 0, 0, 0, 0, 0 FROM frequencies
+SELECT 1, v, n, 0, 0, 0, 0, 0, 0 FROM frequencies
 ORDER BY __kind, __value LIMIT 52'''
     if not categorical:
         # Min/max and counts use the same statement/snapshot as latest selection.
@@ -72,9 +82,9 @@ SELECT 0 AS __kind, CAST(NULL AS STRING) AS __value, 0 AS __frequency,
 n AS __input_rows, missing AS __null_rows,
 (SELECT COUNT(*) FROM key_counts WHERE n > 1) AS __tied_keys,
 (SELECT COUNT(*) FROM key_counts) AS __selected_keys,
-{bins} AS __categories, (SELECT lo FROM ranges) AS __lower, (SELECT hi FROM ranges) AS __upper FROM quality
+{bins} AS __categories, nonfinite AS __nonfinite_rows, (SELECT lo FROM ranges) AS __lower, (SELECT hi FROM ranges) AS __upper FROM quality
 UNION ALL
-SELECT 1, CAST(b.bucket AS STRING), COALESCE(f.n,0), 0,0,0,0,0,
+SELECT 1, CAST(b.bucket AS STRING), COALESCE(f.n,0), 0,0,0,0,0,0,
 r.lo+(r.hi-r.lo)*b.bucket/{bins}, r.lo+(r.hi-r.lo)*(b.bucket+1)/{bins}
 FROM bin_ids b CROSS JOIN ranges r LEFT JOIN frequencies f ON b.bucket=f.bucket
 ORDER BY __kind, __lower LIMIT {bins+1}"""
@@ -82,11 +92,12 @@ ORDER BY __kind, __lower LIMIT {bins+1}"""
     return {'status': 'planned', 'remote_latest_plan': {'source': source, 'query': query,
         'reason': '키별 최신행과 결측·동률을 동일 조회에서 검증하고 분포 빈도만 가져옵니다.',
         'key_columns': key_columns, 'order_column': order_column, 'value_column': value_column,
-        'categorical':categorical, 'bins':bins, 'schema_fingerprint': schema.get('schema_fingerprint')}}
+        'categorical':categorical, 'bins':bins, 'tie_break_columns':order[1:], 'null_policy':null_policy,
+        'schema_fingerprint': schema.get('schema_fingerprint')}}
 
 
-def prepare(context, source, key_columns, order_column, value_column, result_dataset_id='', *, categorical=True, bins=20):
-    outcome = plan(context, source, key_columns, order_column, value_column, categorical=categorical, bins=bins)
+def prepare(context, source, key_columns, order_column, value_column, result_dataset_id='', *, categorical=True, bins=20, tie_break_columns=None, null_policy='reject'):
+    outcome = plan(context, source, key_columns, order_column, value_column, categorical=categorical, bins=bins, tie_break_columns=tie_break_columns, null_policy=null_policy)
     if outcome['status'] != 'planned' or not result_dataset_id:
         return outcome
     spec = outcome['remote_latest_plan']
@@ -115,7 +126,10 @@ def prepare(context, source, key_columns, order_column, value_column, result_dat
     if len(header) != 1 or len(header)+len(data) != len(frame):
         raise ValueError('최신행 조회의 검증 행이 올바르지 않습니다.')
     h = header.iloc[0]
-    if h.__null_rows:
+    if h.__nonfinite_rows:
+        return {'status':'needs_context','error_code':'latest_nonfinite_policy',
+            'message':'키·정렬·분포 컬럼에 무한대가 있습니다. 결측 행 제외 정책으로 무한대를 임의로 제외하지 않았습니다. 별도 처리 기준이 필요합니다.'}
+    if h.__null_rows and null_policy=='reject':
         return {'status': 'needs_context', 'error_code': 'latest_null_policy',
                 'message': '키·정렬·분포 컬럼에 결측값이 있습니다. 결측값 처리 기준이 필요합니다.'}
     if h.__tied_keys:
@@ -124,9 +138,11 @@ def prepare(context, source, key_columns, order_column, value_column, result_dat
     if categorical and h.__categories > 50:
         return {'status': 'needs_context', 'error_code': 'latest_category_limit',
                 'message': '범주가 50개를 넘습니다. 상위 범주 또는 묶는 기준을 알려주세요. 일부 결과를 전체 분포로 표시하지 않았습니다.'}
-    if h.__input_rows == 0:
+    if h.__null_rows > h.__input_rows:
+        raise ValueError('결측 행 수가 전체 행 수보다 큽니다.')
+    if h.__input_rows == h.__null_rows:
         return {'status': 'needs_context', 'message': '조회 대상에 행이 없습니다.'}
-    if (h.__frequency != 0 or not pd.isna(h.__value) or h.__selected_keys > h.__input_rows
+    if (h.__frequency != 0 or not pd.isna(h.__value) or h.__selected_keys > h.__input_rows-h.__null_rows
             or h.__selected_keys < 1 or h.__categories != len(data)
             or data.__value.isna().any() or data.__value.duplicated().any()
             or (data.__frequency < (1 if categorical else 0)).any() or int(data.__frequency.sum()) != h.__selected_keys
@@ -137,7 +153,7 @@ def prepare(context, source, key_columns, order_column, value_column, result_dat
     count_column = '__key_count' if value_column != '__key_count' else '__key_count_'
     counts = data[['__value', '__frequency']].rename(columns={'__value': value_column, '__frequency': count_column})
     selection = {'kind': 'remote_latest_per_key_distribution', 'key_columns': key_columns,
-        'order_columns': [order_column], 'descending': True, 'null_policy': 'reject', 'tie_policy': 'reject',
+        'order_columns': [order_column, *(tie_break_columns or [])], 'descending': True, 'null_policy': null_policy, 'tie_policy': 'reject',
         'input_result_id': info.id, 'input_snapshot': info.snapshot}
     distribution = store.register(counts, source=info.source, parent_id=info.id, snapshot=info.snapshot,
         coverage='complete', predicate_known=True, grain='aggregate',
@@ -146,7 +162,7 @@ def prepare(context, source, key_columns, order_column, value_column, result_dat
         x=value_column, y=count_column, aggregation='none', title=value_column+' · 키별 최신행 분포', y_label='고유 키 수')
     context.artifacts[card.id] = card
     return {'status': 'ready', 'remote_latest_plan': spec, 'distribution': asdict(distribution),
-        'input_result_id': info.id, 'input_rows': int(h.__input_rows), 'selected_keys': int(h.__selected_keys),
+        'input_result_id': info.id, 'input_rows': int(h.__input_rows), 'selected_keys': int(h.__selected_keys),'excluded_rows':int(h.__null_rows),
         'count_column': count_column, 'counts': counts.to_dict('records'), 'execution_mode': 'remote_sql',
         'chart_spec': chart_spec, 'render_summary': summary,
         'cards': [{'id': card.id, 'kind': card.kind, 'title': card.title, 'dataset_id': card.dataset_id}]}
@@ -174,7 +190,7 @@ def _histogram_result(context, info, spec, header, data, bins):
             or not np.allclose(values[:,1], expected[1:], rtol=1e-12, atol=1e-12)):
         raise ValueError('원격 히스토그램 구간 경계가 유한하고 연속적인 동일 폭 구간이어야 합니다.')
     selection = {'kind':'remote_latest_per_key_distribution','key_columns':spec['key_columns'],
-        'order_columns':[spec['order_column']],'descending':True,'null_policy':'reject','tie_policy':'reject',
+        'order_columns':[spec['order_column'], *spec.get('tie_break_columns',[])],'descending':True,'null_policy':spec.get('null_policy','reject'),'tie_policy':'reject',
         'input_result_id':info.id,'input_snapshot':info.snapshot}
     counts = data[['__lower','__upper','__frequency']].copy().reset_index(drop=True)
     distribution = context.datasets.register(counts, source=info.source,parent_id=info.id,snapshot=info.snapshot,
@@ -194,7 +210,7 @@ def _histogram_result(context, info, spec, header, data, bins):
         'histogram',(spec['value_column'],),f"전체 {int(header.__selected_keys):,}개 키 · {bins}개 구간",buffer.getvalue(),render_spec)
     context.artifacts[card.id]=card
     return {'status':'ready','remote_latest_plan':spec,'distribution':asdict(distribution),
-        'input_result_id':info.id,'input_rows':int(header.__input_rows),'selected_keys':int(header.__selected_keys),
+        'input_result_id':info.id,'input_rows':int(header.__input_rows),'selected_keys':int(header.__selected_keys),'excluded_rows':int(header.__null_rows),
         'count_column':'__frequency','counts':counts.to_dict('records'),'execution_mode':'remote_sql',
         'chart_spec':render_spec,'render_summary':{'bins':bins,'total':int(heights.sum())},
         'cards':[{'id':card.id,'kind':card.kind,'title':card.title,'dataset_id':card.dataset_id}]}

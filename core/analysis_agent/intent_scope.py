@@ -409,7 +409,10 @@ def resolve_request_scope(text, context, previous=None):
     # than the population. Keep those roles separate so y='yes' in a conversion
     # rate is required inside the calculation but is not incorrectly forced
     # into the dataset WHERE clause.
-    ratio_match = re.search(r'비율|성공률|생존율|전환율|[가-힣A-Za-z]+[율률]|\b(?:ratio|rate|percentage|percent)\b', text, re.I)
+    # "동률" specifies a ranking tie, not a numerator/denominator. Keep offsets
+    # unchanged when looking for nearby column mentions below.
+    ratio_text = text.replace('동률', '동점')
+    ratio_match = re.search(r'비율|성공률|생존율|전환율|[가-힣A-Za-z]+[율률]|\b(?:ratio|rate|percentage|percent)\b', ratio_text, re.I)
     ratio_column = None
     if ratio_match:
         ranked = []

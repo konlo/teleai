@@ -16,10 +16,12 @@ def _quote(name):
 
 
 def _issue(code, message):
-    return None, {'status': 'needs_context', 'error_code': code, 'message': message}
+    return None, {'status': 'needs_context', 'error_code': code, 'message': message}, 0
 
 
-def select_latest(store, info, columns, keys, order):
+def select_latest(store, info, columns, keys, order, *, null_policy='reject'):
+    if null_policy not in {'reject','drop_before_selection'}:
+        raise ValueError('Unsupported latest-row null policy')
     batches = iter(store.frames.batches(info.id, columns, expected_rows=info.rows))
     try:
         first = next(batches, None)
@@ -53,11 +55,14 @@ def select_latest(store, info, columns, keys, order):
                     # NaN is a missing value in the pandas path; preserve parity.
                     floats = [f.name for f in first.schema if pa.types.is_floating(f.type)]
                     if floats:
+                        if conn.execute('SELECT EXISTS(SELECT 1 FROM data WHERE '+ ' OR '.join('isinf('+_quote(c)+')' for c in floats)+')').fetchone()[0]:
+                            return _issue('latest_nonfinite_policy','키·정렬·분포 컬럼에 무한대가 있습니다. 결측 행 제외와 다른 처리 기준이 필요합니다.')
                         null_test += ' OR ' + ' OR '.join('isnan(' + _quote(c) + ')' for c in floats)
-                    if conn.execute('SELECT EXISTS(SELECT 1 FROM data WHERE ' + null_test + ')').fetchone()[0]:
+                    excluded = conn.execute('SELECT COUNT(*) FROM data WHERE ' + null_test).fetchone()[0]
+                    if excluded and null_policy=='reject':
                         return _issue('latest_null_policy', '키·정렬·분포 컬럼에 결측값이 있습니다. 결측값 처리 기준을 알려주세요.')
                     # DENSE_RANK retains tied winners so ties cannot be hidden by LIMIT/ROW_NUMBER.
-                    query = ('SELECT ' + names + ' FROM data QUALIFY DENSE_RANK() OVER (PARTITION BY '
+                    query = ('SELECT ' + names + ' FROM data WHERE NOT ('+null_test+') QUALIFY DENSE_RANK() OVER (PARTITION BY '
                              + partition + ' ORDER BY ' + ordering + ') = 1 LIMIT '
                              + str(MAX_SELECTED_ROWS + 1))
                     result = conn.execute(query).to_arrow_reader(1024)
@@ -69,9 +74,11 @@ def select_latest(store, info, columns, keys, order):
                             return _issue('latest_output_limit', '최신행 결과가 로컬 처리 한도를 넘습니다. 기간·대상 범위를 좁히거나 원격 집계가 필요합니다. 표본으로 대체하지 않았습니다.')
                         parts.append(batch)
                     selected = pa.Table.from_batches(parts, schema=result.schema).to_pandas()
+                    if selected.empty:
+                        return _issue('latest_empty','결측 행을 제외한 뒤 분석할 행이 없습니다.')
                     if selected.duplicated(keys, keep=False).any():
                         return _issue('latest_order_tie', '같은 키에 최신 정렬값이 동일한 행이 여러 개입니다. 추가 정렬 컬럼을 알려주세요.')
-                    return selected, None
+                    return selected, None, excluded
                 finally:
                     timer.cancel()
                     timer.join()

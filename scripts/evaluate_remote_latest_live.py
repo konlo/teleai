@@ -25,6 +25,8 @@ def main():
     parser.add_argument('--output', type=Path, required=True)
     parser.add_argument('--bins',type=int,help='Evaluate a numeric histogram instead of category counts')
     parser.add_argument('--stale-schema', action='store_true')
+    parser.add_argument('--tie-break', help='Explicit secondary descending order column')
+    parser.add_argument('--drop-missing-before-selection', action='store_true')
     args = parser.parse_args()
     args.output.parent.mkdir(parents=True, exist_ok=True)
     load_dotenv(ROOT/'.env')
@@ -75,6 +77,8 @@ def main():
                 prompt = (args.source+' 테이블에서 '+args.key+'별 unique한 값마다 '+args.order
                     +'가 가장 큰 마지막 행의 '+args.value+' 분포를 그려줘. '
                     +(f'{args.bins}개 구간 histogram으로 그려줘.' if args.bins else args.value+'는 범주야.'))
+                if args.tie_break:prompt+=' 동률이면 '+args.tie_break+'이 가장 큰 행을 사용해줘.'
+                if args.drop_missing_before_selection:prompt+=' 결측행을 최신행 선택 전에 제외해줘.'
                 started = time.monotonic()
                 result = r.submit(prompt)
                 state = r.inspect()['recovery']
@@ -82,7 +86,9 @@ def main():
                 report.update(prompt=prompt, agent_status=result['status'], answer=result.get('text'),
                     elapsed_seconds=round(time.monotonic()-started, 3), model_calls=state.get('model_calls'),
                     remote_result_rows=r.datasets.metadata[proof['input_result_id']].rows if proof else None,
-                    input_rows=proof.get('input_rows'), selected_keys=proof.get('selected_keys'))
+                    input_rows=proof.get('input_rows'), selected_keys=proof.get('selected_keys'),
+                    excluded_rows=proof.get('excluded_rows'),tie_break=args.tie_break,
+                    null_policy='drop_before_selection' if args.drop_missing_before_selection else 'reject')
                 if not proof:
                     report['status'] = 'INCOMPLETE'
                     return
@@ -91,9 +97,21 @@ def main():
                 stage = 'oracle'
                 # ROW_NUMBER independently checks winners; agent DENSE_RANK proof
                 # already establishes absence of maximum ties and NULLs.
+                order_columns=[args.order]+([args.tie_break] if args.tie_break else [])
+                oracle_filter=''
+                if args.drop_missing_before_selection:
+                    # Independently express eligibility with conjunctions, rather than
+                    # copying the planner's negated disjunction over aliased columns.
+                    types={c['name']:c['dtype'].lower() for c in reference[0]['columns']}
+                    parts=[]
+                    for c in [args.key,*order_columns,args.value]:
+                        q=_quote(c);parts.append(q+' IS NOT NULL')
+                        if types[c] in ('float','double'):
+                            parts.extend(['NOT isnan('+q+')',q+" < CAST('Infinity' AS DOUBLE)",q+" > CAST('-Infinity' AS DOUBLE)"])
+                    oracle_filter=' WHERE '+' AND '.join(parts)
                 oracle_query = ('SELECT CAST('+_quote(args.value)+' AS STRING) AS category, COUNT(*) AS frequency FROM '
                     +'(SELECT '+_quote(args.value)+', ROW_NUMBER() OVER (PARTITION BY '+_quote(args.key)
-                    +' ORDER BY '+_quote(args.order)+' DESC) AS rn FROM '+_quoted_table(args.source)
+                    +' ORDER BY '+', '.join(_quote(c)+' DESC' for c in order_columns)+') AS rn FROM '+_quoted_table(args.source)+oracle_filter
                     +') chosen WHERE rn = 1 GROUP BY '+_quote(args.value)+' ORDER BY category')
                 oracle = {row['category']: row['frequency'] for row in direct(oracle_query)}
                 if args.bins:

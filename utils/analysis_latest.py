@@ -6,7 +6,9 @@ from utils.analysis_charts import render_chart_spec
 
 
 def latest_distribution(context, dataset_id, key_columns, order_column, value_column,
-                        categorical=True, tie_break_columns=None, *, bins=20):
+                        categorical=True, tie_break_columns=None, *, bins=20, null_policy='reject'):
+    if null_policy not in {'reject','drop_before_selection'}:
+        raise ValueError('지원되는 결측 정책은 reject 또는 drop_before_selection입니다.')
     store=context.datasets
     info=store.metadata[dataset_id]
     tie_break_columns=tie_break_columns or []
@@ -20,9 +22,10 @@ def latest_distribution(context, dataset_id, key_columns, order_column, value_co
         return {'status':'needs_context','error_code':'latest_scope_incomplete',
                 'message':'완전한 행 데이터가 필요합니다. 표본이나 집계 결과로 전체 키별 최신 행을 결정할 수 없습니다.'}
     execution_mode = 'pandas_projection'
+    excluded_rows=0
     if hasattr(store.frames, 'batches') and info.rows > 20_000:
         from utils.analysis_latest_sql import select_latest
-        selected, issue = select_latest(store, info, columns, key_columns, order)
+        selected, issue, excluded_rows = select_latest(store, info, columns, key_columns, order, null_policy=null_policy)
         if issue:
             return issue
         execution_mode = 'bounded_local_sql'
@@ -30,9 +33,18 @@ def latest_distribution(context, dataset_id, key_columns, order_column, value_co
         frame=project_dataset(store,dataset_id,columns).reset_index(drop=True)
         if frame.empty:
             return {'status':'needs_context','message':'조건에 해당하는 행이 없습니다. 최신행 분포를 그릴 데이터가 없습니다.'}
-        if frame[columns].isna().any().any():
+        import numpy as np
+        if any(np.isinf(frame[c].dropna()).any() for c in columns if pd.api.types.is_float_dtype(frame[c])):
+            return {'status':'needs_context','error_code':'latest_nonfinite_policy',
+                'message':'키·정렬·분포 컬럼에 무한대가 있습니다. 결측 행 제외와 다른 처리 기준이 필요합니다.'}
+        missing=frame[columns].isna().any(axis=1)
+        excluded_rows=int(missing.sum())
+        if excluded_rows and null_policy=='reject':
             return {'status':'needs_context','error_code':'latest_null_policy',
                     'message':'키·정렬·분포 컬럼에 결측값이 있습니다. 어떤 결측 행을 제외하거나 별도 범주로 처리할지 알려주세요.'}
+        frame=frame.loc[~missing].copy()
+        if frame.empty:
+            return {'status':'needs_context','error_code':'latest_empty','message':'결측 행을 제외한 뒤 분석할 행이 없습니다.'}
         sort_frame=frame.copy()
         for column in order:
             if not (pd.api.types.is_numeric_dtype(frame[column]) or pd.api.types.is_datetime64_any_dtype(frame[column])):
@@ -54,7 +66,7 @@ def latest_distribution(context, dataset_id, key_columns, order_column, value_co
         return {'status':'needs_context','error_code':'latest_category_limit',
                 'message':'범주가 50개를 넘습니다. 표시할 상위 범주 수나 묶는 기준을 알려주세요.'}
     contract={'kind':'latest_per_key','key_columns':list(key_columns),
-        'order_columns':order,'descending':True,'null_policy':'reject','tie_policy':'reject',
+        'order_columns':order,'descending':True,'null_policy':null_policy,'tie_policy':'reject',
         'input_dataset_id':dataset_id,'input_snapshot':info.snapshot}
     chosen=store.register(selected,source=info.source,parent_id=info.id,snapshot=info.snapshot,
         coverage='complete',predicate_known=True,conditions=info.conditions,row_selection=contract)
@@ -73,7 +85,7 @@ def latest_distribution(context, dataset_id, key_columns, order_column, value_co
         card,summary,spec=render_chart_spec(store,chosen.id,kind='histogram',x=value_column,bins=bins)
     context.artifacts[card.id]=card
     return {'status':'ready','dataset':asdict(chosen),'distribution':asdict(distribution),
-        'latest_selection':contract,'selected_keys':len(selected),'input_rows':info.rows,
+        'latest_selection':contract,'selected_keys':len(selected),'input_rows':info.rows,'excluded_rows':excluded_rows,
         'count_column':count_column,'value_column':value_column,'execution_mode':execution_mode,
         'counts':counted.head(50).to_dict('records'),'counts_truncated':len(counted)>50,
         'chart_spec':spec,'render_summary':summary,

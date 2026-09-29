@@ -21,7 +21,7 @@ class LatestSQLTests(unittest.TestCase):
                 info = r.datasets.register(frame, source=FIXTURE['source'],
                     coverage='complete', predicate_known=True)
                 with patch.object(r.datasets.frames, 'project', side_effect=AssertionError('full projection')):
-                    selected, error = select_latest(r.datasets, info, list(frame.columns), keys or [KEY], order or [CLOCK])
+                    selected, error, excluded = select_latest(r.datasets, info, list(frame.columns), keys or [KEY], order or [CLOCK])
                 self.assertEqual(len(r.datasets.metadata), 1)
                 self.assertFalse(r.artifacts)
                 self.assertFalse(r.datasets.frames.cache)

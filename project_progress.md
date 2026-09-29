@@ -3,13 +3,14 @@
 ## Current Status
 - **Last Updated**: 2026-09-30
 - **Status**: In Progress — 범용 자율 분석 agent 정식 출시 NO-GO
+- **Latest continuation**: [연속 평가·개선 보고서](docs/evaluation/2026-09-30_continuation/report.md). 동률/결측의 후속 정책과 원격/로컬 실행·완료 계약, 공급자400 분류/제한 재시도, interactive Spider 평가를 보강했다. 제품461 + migration136 PASS, 합성100만행2종 및 실제 웹12행 복구 PASS. Databricks 모델·SQL 리소스 생성400으로 실환경 재평가 차단.
 - **Summary**: [통합 작업 보드](docs/evaluation/2026-09-30_batch/workboard.md)의 6묶음 중 구현·평가 미완료는 4묶음. 원격 최신행 범주/수치 histogram, 복합키·구간 후속 연결, 그룹 정렬, metadata 계획을 보강했다.
 - **Evidence**: 실제 Databricks 75만행→12키→8구간 및 웹 8→6구간·반복0조회 PASS. 제품446 + migration136 + reference/계약217 PASS. 독립 agent200문항102PASS/98UNGRADED. Spider 선정10문항 공식0/10. [종합 보고서](docs/evaluation/2026-09-30_batch/report.md).
 - **Qualification**: DeepEval 도구10/10, judge 통제12+새8 PASS 및 실제답변3개1.0은 보조 점수다. 새로운 실모델 자유계획 전체 성공률이나 범용 GO를 뜻하지 않는다. 별도 서버 배포 제외. draft PR68 미병합.
 - **Next Session Focus**: 최신행 정책/필터 확장, 역할별·다단계 SQL, D07/D08·J21~24 전체 계약, 미채점98문항. 오늘 완료한 push/CI 근거는 보고서 말미와 validation.json에 기록한다.
 
 ## Next Action Items
-- [ ] 1. 최신행 EDA 확장: 선택 전후 필터, 동률/결측 후속 정책, 추가 통계·비균등 구간. 기본 복합키·수치 구간·반복 재사용은 완료.
+- [ ] 1. 최신행 EDA 확장: 일반 선택 전후 필터, 추가 통계·비균등 구간, 기타 정책. 추가 내림차순 동률 기준/선택 전 결측 제외의 후속 연결과 기본 복합키·수치 구간·재사용은 완료.
 - [ ] 2. 복합 SQL: 역할별 조인·JSON·OR/NOT/NULL·CTE/HAVING·DISTINCT 의미 계약 및 복구. 현재 Spider 공식0/10 개선 필수.
 - [ ] 3. 대용량: D07/D08·J21~J24 전체 여정/한도/출처 계약, 남은 도구의 부분 scan·보존·재사용. 100만행 합성 및 실제10만행/75만행 증거를 범위에 맞게 연결.
 - [ ] 4. 독립 평가: 미채점98문항 oracle, 새 schema·표현·다회 대화·실패 복구·지연 검증. 기존102PASS를 전체200PASS로 해석하지 않음.
@@ -2099,3 +2100,17 @@ Task definitions and acceptance conditions: docs/agent_remaining_tasks_2026-09-1
 - **Final local result**: 제품 전체446/446(53.225초) PASS. 실제 웹에서 Databricks 모델 선택 후 reload해 같은 선택 복원. 앱 PID4735/health200, 저장 parquet hash 및 SQL 장부3건 불변.
 
 - **Push/CI outcome (2026-09-30)**: `836b331` 구현 + `4ab1bcf` 공백정리 push 및 원격SHA 확인. GitHub Actions36592344313 SUCCESS(제품446/migration136/Level3/reference/compile). 테스트 코드 hash 일치 검증. 후속 커밋은 결과 기록 문서만 변경한다. 미완료4묶음/독립98미채점/Spider0of10, 범용NO-GO 유지.
+
+## [2026-09-30 06:18:25 KST] [Agent: Codex] User Request: 나머지 끝까지 평가 하고 개선해줘
+- **Action**: 네 잔여 묶음을 계속 수행. Spider 공개 SQL 실패를 모델 계획/범위 계약/평가 한계로 나누고 공통 수정·독립 회귀 후 실제 재평가한다. 기존 성공/실패 근거와 자동 읽기·원본 보존 정책을 유지한다.
+
+## [2026-09-30 06:49 KST] [Agent: Codex] Action: 남은 평가·복구 보강의 검증 결과
+- **Diagnosis**: Spider의 첫 SQL 제안만 평가하면 탐색 미리보기를 최종 답으로 오인할 수 있어 production graph interactive SQLite 실행을 추가했다. 실제 모델은 구조화된 일시 서비스 오류400으로 중단됐다. SQL warehouse도 schema 연결 시 리소스 생성400; 상태 API200/STOPPED. 자격 증명 실패로 단정하지 않는다.
+- **Implementation**: 특정400만 모델 호출 재시도 대상으로 분류(기존2회/시간/횟수 한도 유지). 원본 보존/재개와 오류 분류/로그 검증. 최신행 null→tie 후속 답변·재시작·source변경·실행인자/결과계약을 연결. 동률을 비율로 오인하는 의도 파싱 수정. 원격/배치SQL/작은pandas의 명시적 선택 전 결측 제외와 무한대 별도 거부를 맞췄다.
+- **Validation**: 제품461/461(55.794s), migration136/136(17.900s). reference217/217(경계 추가 전; 최종CI 재실행). 합성100만행 최신행10,000키 정답/보존/cache0(8.884s,418234368B peakRSS), 적재/EDA/중단/byte한도/재시작 PASS(467451904B peakRSS). 실제 웹 합성12행에서 결측→동률→5키 4범주 이미지660x385, counts1/2/1/1, 원본 digest보존, 모델0/SQL0.
+- **Remaining**: 범용 NO-GO. 실제 모델/warehouse 차단은 BLOCKED_PROVIDER로 기록하며 이전 Spider0/10·독립98미채점을 지우지 않는다. 최신행 일반 필터/통계/비균등 구간, 고급SQL, 대용량 전체여정, 독립oracle의4묶음은 계속 미완료다.
+- **Artifacts**: docs/evaluation/2026-09-30_continuation/에 최초실패, 재시도, 전체로그, 큰데이터결과, 실제웹 차트/보존, D07/D08·J21~J24 근거 매핑과 보고서 저장.
+
+### Daily Wrap-ups — 2026-09-30 continuation
+- 동률·결측 후속 대화 복구와 실제 이미지 표시를 구현·검증했다. 공급자 오류와 agent 결과 실패를 분리했고 읽기 전용 interactive Spider 평가를 만들었다.
+- Next Action Items: 위4개 잔여 묶음 및 외부 서비스 복구 후 동일 실모델/warehouse 평가. 코드·문서 push/CI 확인을 마무리한다.
