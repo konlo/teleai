@@ -45,3 +45,7 @@
 ## 남은 항목
 
 실제 Databricks에서 최신행 선택과 집계를 수행해 전송량을 줄이는 원격 pushdown은 아직 미구현이다. 자연어 복합키·동률 정책 후속 연결, 필터 적용 시점, 추가 통계·맞춤 구간의 복합 목표, 고급 SQL과 미채점 oracle도 남아 있다. 이번 변경은 그중 **이미 보유한 대규모 데이터 처리**를 보강한 것이다.
+
+## 원격 반영 및 출시 검증
+
+개선 코드는 `3dda6777c287c2f0447316f7dea367679dd8afc5`로 push했고 원격 SHA를 확인했다. [GitHub release gate](https://github.com/konlo/teleai/actions/runs/36506208883)가 migration/application/agentic recovery/reference 전체 suite/compile을 2분 34초에 모두 통과했다. 로컬 앱 PID80287, health200으로 반영했다. 기능 지원 범위에 대한 NO-GO 판단과 CI 통과는 구분한다.
