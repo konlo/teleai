@@ -37,11 +37,9 @@ with sqlite3.connect(root/'conversations.sqlite') as db:
     db.execute('INSERT OR IGNORE INTO conversations VALUES (?,?)',(cid,'분석 '+cid[:8]))
     conversations=db.execute('SELECT id,title FROM conversations ORDER BY rowid DESC').fetchall()
 st.query_params['conversation']=cid
+from ui.analysis_preferences import render_provider_selector
 with st.sidebar:
-    provider_label = st.selectbox('분석 모델',
-        ['로컬 Ollama', 'Databricks 모델 · 토큰 사용량 과금'],
-        key='v1_model_provider')
-provider = 'databricks' if provider_label.startswith('Databricks') else 'ollama'
+    provider = render_provider_selector(root, cid)
 runtime_id = (cid, provider, policy.require_remote_approval)
 if st.session_state.get('v1_runtime_id')!=runtime_id:
     previous=st.session_state.pop('v1_runtime',None)

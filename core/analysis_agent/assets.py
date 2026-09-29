@@ -324,6 +324,9 @@ class PersistentDatasets(DatasetStore):
         dtypes = {}
         for field in schema:
             if field.name in info.columns:
+                if pa.types.is_decimal(field.type) or pa.types.is_nested(field.type):
+                    dtypes[field.name] = str(field.type)
+                    continue
                 try:
                     dtypes[field.name] = str(pd.Series(dtype=field.type.to_pandas_dtype()).dtype)
                 except (TypeError, NotImplementedError):

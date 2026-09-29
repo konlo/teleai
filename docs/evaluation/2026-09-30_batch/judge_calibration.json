@@ -1,0 +1,43 @@
+{
+  "mode": "synthetic labelled judge calibration; not agent runs",
+  "judge": "qwen3:8b",
+  "threshold": 0.8,
+  "results": [
+    {
+      "id": "correct_groups",
+      "expected_pass": true,
+      "score": 1.0,
+      "reason": "The actual output correctly provides the required group averages (A=1.5, B=3.5) without missing data or calculation errors. The formatting difference (comma vs semicolon) does not constitute a failure as no explicit formatting was requested.",
+      "classification_correct": true,
+      "elapsed_seconds": 34.533
+    },
+    {
+      "id": "missing_goal",
+      "expected_pass": false,
+      "score": 0.0,
+      "reason": "The actual output failed to provide the requested group-wise averages (A=1.5; B=3.5) and only mentioned missing values count, which is unrelated to the calculation requirement. This omission directly violates the evaluation step requiring completion of requested calculations.",
+      "classification_correct": true,
+      "elapsed_seconds": 12.208
+    },
+    {
+      "id": "wrong_number",
+      "expected_pass": false,
+      "score": 0.0,
+      "reason": "The actual output provides an incorrect value (25.0) compared to the expected mean of 2.5, failing the requirement to accurately calculate and report the mean. The response also lacks proper formatting of the result as 'mean=2.5' as specified in the expected output.",
+      "classification_correct": true,
+      "elapsed_seconds": 18.52
+    },
+    {
+      "id": "wrong_bins",
+      "expected_pass": false,
+      "score": 0.0,
+      "reason": "The actual output specifies bins=20 instead of the requested bins=5, directly violating the test case parameter. This missing calculation fails the requirement to render the histogram with exactly 5 intervals.",
+      "classification_correct": true,
+      "elapsed_seconds": 19.688
+    }
+  ],
+  "calibration_passed": true,
+  "limitations": [
+    "Four controls only; passing does not establish judge reliability."
+  ]
+}

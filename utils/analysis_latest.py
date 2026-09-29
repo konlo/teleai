@@ -6,7 +6,7 @@ from utils.analysis_charts import render_chart_spec
 
 
 def latest_distribution(context, dataset_id, key_columns, order_column, value_column,
-                        categorical=True, tie_break_columns=None):
+                        categorical=True, tie_break_columns=None, *, bins=20):
     store=context.datasets
     info=store.metadata[dataset_id]
     tie_break_columns=tie_break_columns or []
@@ -70,7 +70,7 @@ def latest_distribution(context, dataset_id, key_columns, order_column, value_co
         card,summary,spec=render_chart_spec(store,distribution.id,kind='bar',x=value_column,
             y=count_column,aggregation='none',title=f'{value_column} · 키별 최신 행 분포',y_label='Unique keys')
     else:
-        card,summary,spec=render_chart_spec(store,chosen.id,kind='histogram',x=value_column)
+        card,summary,spec=render_chart_spec(store,chosen.id,kind='histogram',x=value_column,bins=bins)
     context.artifacts[card.id]=card
     return {'status':'ready','dataset':asdict(chosen),'distribution':asdict(distribution),
         'latest_selection':contract,'selected_keys':len(selected),'input_rows':info.rows,

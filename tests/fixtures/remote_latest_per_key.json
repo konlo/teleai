@@ -1,0 +1,10 @@
+{
+  "source": "fixture.telemetry.device_events",
+  "prompt": "fixture.telemetry.device_events 테이블에서 adapterserial별 event_time이 가장 늦은 행 하나만 사용해서 DriveProductID별 장치 수 분포를 그려줘. DriveProductID는 제품 식별자야. 원본은 보존해.",
+  "expected_counts": {
+    "P100": 1,
+    "P200": 3,
+    "P300": 1
+  },
+  "numeric_prompt": "fixture.telemetry.device_events 테이블에서 adapterserial별 event_time이 가장 늦은 행 하나만 사용해서 DriveProductID에 대한 histogram을 보여줘."
+}

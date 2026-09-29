@@ -144,6 +144,7 @@ def check_sqlite_candidate(path: Path, query: str, *, timeout_seconds=5.0) -> di
 def evaluate_task(spider_root: Path, task: dict, model, predictions: Path,
                   *, benchmark_instruction=False) -> dict:
     from core.analysis_agent.runtime import GraphAnalysisRuntime
+    from core.analysis_agent.policy import RuntimePolicy
     from langchain_core.messages import AIMessage, ToolMessage
 
     case_id = task["instance_id"]
@@ -169,6 +170,7 @@ def evaluate_task(spider_root: Path, task: dict, model, predictions: Path,
         try:
             runtime = GraphAnalysisRuntime(temp, "evaluation", case_id, model,
                 connection_identity="public-spider2-sqlite-proposal-only",
+                policy=RuntimePolicy(require_remote_approval=True),
                 remote_factory=forbidden_remote,
                 reference_context_loader=lambda: contexts,
                 reference_document=supplied_document, sql_dialect="sqlite",

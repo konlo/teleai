@@ -1,0 +1,102 @@
+{
+  "mode": "synthetic labelled judge calibration; not agent runs",
+  "judge": "qwen3:8b",
+  "threshold": 0.8,
+  "results": [
+    {
+      "id": "correct_groups",
+      "expected_pass": true,
+      "score": 1.0,
+      "reason": "The actual output correctly provides the required group averages (A=1.5, B=3.5) without missing data or calculation errors. The formatting difference (comma vs semicolon) does not constitute a failure as no explicit formatting was requested.",
+      "classification_correct": true,
+      "elapsed_seconds": 33.918
+    },
+    {
+      "id": "missing_goal",
+      "expected_pass": false,
+      "score": 0.0,
+      "reason": "The actual output failed to provide the requested group-wise averages (A=1.5; B=3.5) and only mentioned missing values count, which is unrelated to the calculation requirement. This omission directly violates the evaluation step requiring completion of requested calculations.",
+      "classification_correct": true,
+      "elapsed_seconds": 12.4
+    },
+    {
+      "id": "wrong_number",
+      "expected_pass": false,
+      "score": 0.0,
+      "reason": "The actual output provides an incorrect value (25.0) compared to the expected mean of 2.5, failing the requirement to accurately calculate and report the mean. The response also lacks proper formatting of the result as 'mean=2.5' as specified in the expected output.",
+      "classification_correct": true,
+      "elapsed_seconds": 19.899
+    },
+    {
+      "id": "wrong_bins",
+      "expected_pass": false,
+      "score": 0.0,
+      "reason": "The actual output specifies bins=20 instead of the requested bins=5, directly violating the test case parameter. This missing calculation fails the requirement to render the histogram with exactly 5 intervals.",
+      "classification_correct": true,
+      "elapsed_seconds": 25.678
+    },
+    {
+      "id": "correct_scalar",
+      "expected_pass": true,
+      "error_type": "RetryError",
+      "classification_correct": null,
+      "elapsed_seconds": 45.032
+    },
+    {
+      "id": "correct_percent",
+      "expected_pass": true,
+      "error_type": "RetryError",
+      "classification_correct": null,
+      "elapsed_seconds": 45.022
+    },
+    {
+      "id": "correct_equivalent_format",
+      "expected_pass": true,
+      "error_type": "RetryError",
+      "classification_correct": null,
+      "elapsed_seconds": 45.02
+    },
+    {
+      "id": "correct_rounded",
+      "expected_pass": true,
+      "error_type": "RetryError",
+      "classification_correct": null,
+      "elapsed_seconds": 45.022
+    },
+    {
+      "id": "wrong_scope",
+      "expected_pass": false,
+      "error_type": "RetryError",
+      "classification_correct": null,
+      "elapsed_seconds": 45.028
+    },
+    {
+      "id": "wrong_denominator",
+      "expected_pass": false,
+      "score": 0.0,
+      "reason": "The actual output incorrectly states the success rate as 100%, whereas the correct calculation (25/100) should be 25%. This failure to perform the required calculation directly violates evaluation step 3, which mandates that missing or incorrect calculations must result in a fail.",
+      "classification_correct": true,
+      "elapsed_seconds": 25.074
+    },
+    {
+      "id": "future_promise",
+      "expected_pass": false,
+      "score": 0.0,
+      "reason": "The actual output fails to list the requested tables 'A' and 'B' as required. Instead, it provides a placeholder message that does not fulfill the explicit request to show available tables. This constitutes a missing requested calculation/answer.",
+      "classification_correct": true,
+      "elapsed_seconds": 34.384
+    },
+    {
+      "id": "false_chart",
+      "expected_pass": false,
+      "score": 0.0,
+      "reason": "The actual output failed to provide the requested five-bin histogram and instead claimed completion with a technical issue explanation, which does not meet the requirement for a rendered visualization. The absence of the chart and incorrect response type directly violates the test case parameters.",
+      "classification_correct": true,
+      "elapsed_seconds": 29.315
+    }
+  ],
+  "calibration_passed": false,
+  "limitations": [
+    "Twelve labelled controls only; passing does not establish broad judge reliability."
+  ]
+}

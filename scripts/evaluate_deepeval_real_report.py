@@ -24,6 +24,15 @@ EXPECTED_SINGLE_TOOL = {
     "L2_051": "statistical_test",
     "L2_061": "render_count_rate_chart",
 }
+# Alternate plans are declared before scoring, never learned from observed traces.
+ALTERNATIVE_TOOL_PLANS = {key: [(value,)] for key,value in EXPECTED_SINGLE_TOOL.items()}
+ALTERNATIVE_TOOL_PLANS['L1_016'] = [('aggregate_dataset',), ('local_analysis_sql',)]
+
+
+def allowed_tool_plans(case_id):
+    return ALTERNATIVE_TOOL_PLANS.get(case_id, [])
+
+
 JUDGE_CASES = {"L1_001", "L1_016", "L1_017", "L1_036", "L2_005", "L2_036", "L2_051"}
 
 
@@ -78,16 +87,17 @@ def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--report", required=True, type=Path)
     parser.add_argument("--output", required=True, type=Path)
-    parser.add_argument("--judge-model", default="gemma4:e4b")
+    parser.add_argument("--judge-model")
+    parser.add_argument("--judge-provider",choices=["ollama","databricks"],default="ollama")
     parser.add_argument("--judge-id", action="append",
                         help="Judge only these case IDs; tool checks still cover the full report")
     parser.add_argument("--skip-judge", action="store_true")
     args = parser.parse_args()
+    os.environ["DEEPEVAL_RETRY_MAX_ATTEMPTS"]="1"
     os.environ["DEEPEVAL_TELEMETRY_OPT_OUT"] = "1"
     os.environ["LANGSMITH_TRACING"] = "false"
     from deepeval.test_case import LLMTestCase, ToolCall
     from deepeval.metrics import ToolCorrectnessMetric, GEval
-    from deepeval.models import OpenAIModel
     try:
         from deepeval.test_case import SingleTurnParams as Params
     except ImportError:
@@ -98,9 +108,8 @@ def main() -> int:
         records = real_records(source)
     except ValueError as exc:
         parser.error(str(exc))
-    judge_model = OpenAIModel(
-        model=args.judge_model,
-        base_url="http://localhost:11434/v1", api_key="ollama")
+    from evaluation_judge import make_judge, GROUNDING_STEPS
+    judge_model,judge_name=make_judge(args.judge_provider,args.judge_model)
     results = []
     for record in records:
         case_id = record["id"]
@@ -108,33 +117,32 @@ def main() -> int:
         entry = {"id": case_id, "product_oracle_status": record["status"],
                  "model_calls": (record.get("runtime_metadata") or {}).get("recovery_model_calls"),
                  "tool_call_names": [call["tool"] for call in tool_calls]}
-        expected_tool = EXPECTED_SINGLE_TOOL.get(case_id)
-        if expected_tool is not None:
-            case = LLMTestCase(input=record["prompt"],
-                actual_output=record.get("final_output") or "",
-                tools_called=[ToolCall(name=call["tool"]) for call in tool_calls],
-                expected_tools=[ToolCall(name=expected_tool)])
-            metric = ToolCorrectnessMetric(threshold=1.0,
-                should_exact_match=True, include_reason=True, model=judge_model)
+        plans = allowed_tool_plans(case_id)
+        if plans:
+            # Score any documented valid path; inspect/recovery tools may accompany it.
+            scores=[]
             try:
-                metric.measure(case)
-                entry["tool_correctness"] = metric.score
-                entry["tool_reason"] = metric.reason
+                for plan in plans:
+                    case=LLMTestCase(input=record['prompt'], actual_output=record.get('final_output') or '',
+                        tools_called=[ToolCall(name=call['tool']) for call in tool_calls],
+                        expected_tools=[ToolCall(name=name) for name in plan])
+                    metric=ToolCorrectnessMetric(threshold=1.0,should_exact_match=False,
+                        include_reason=False,model=judge_model)
+                    metric.measure(case)
+                    scores.append(metric.score)
+                entry['tool_correctness']=max(scores)
+                entry['allowed_tool_plans']=[list(plan) for plan in plans]
+                entry['tool_metric_scope']='Tool selection only; independent result oracle remains authoritative'
             except Exception as exc:
-                entry["tool_error"] = type(exc).__name__
-                entry["tool_error_chain"] = error_chain(exc)
+                entry['tool_error']=type(exc).__name__
+                entry['tool_error_chain']=error_chain(exc)
         judge_cases = set(args.judge_id or JUDGE_CASES)
         if not args.skip_judge and case_id in judge_cases and record.get("final_output"):
             case = LLMTestCase(input=record["prompt"],
                 actual_output=record["final_output"],
                 expected_output=expected_answer(record))
             metric = GEval(name="Fixture answer grounding",
-                evaluation_steps=[
-                    "Identify the user's requested calculation or schema fact and its scope.",
-                    "Compare the final answer with the reference facts, allowing only harmless rounding or equivalent notation.",
-                    "Reference facts may be serialized as JSON, but this is not an output-format requirement. Do not invent formatting requirements or require internal test fields in the user's answer.",
-                    "Penalize missing results, technical-error messages, unsupported claims, and false statements of completion.",
-                ],
+                evaluation_steps=GROUNDING_STEPS,
                 evaluation_params=[Params.INPUT, Params.ACTUAL_OUTPUT, Params.EXPECTED_OUTPUT],
                 threshold=0.8, model=judge_model, async_mode=False)
             try:
@@ -147,7 +155,7 @@ def main() -> int:
         results.append(entry)
         args.output.parent.mkdir(parents=True, exist_ok=True)
         args.output.write_text(json.dumps({"generated_at": datetime.now(timezone.utc).isoformat(),
-            "source_report": str(args.report.resolve()), "judge_model": args.judge_model,
+            "source_report": str(args.report.resolve()), "judge_model": judge_name, "judge_provider":args.judge_provider,
             "source_mode":source['mode'],
             "limitations":["LLM judge scores supplement independent numeric/scope/artifact contracts.",
                            "Tool correctness covers only the explicitly configured legacy cases, not general autonomy."],

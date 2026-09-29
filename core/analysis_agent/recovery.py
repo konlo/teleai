@@ -706,10 +706,7 @@ class RecoveryMiddleware(AgentMiddleware):
                         from pandas.api.types import is_bool_dtype, is_numeric_dtype
                         numeric_mentions = []
                         for column in mentioned_columns:
-                            observed = [frame[column] for frame in self.context.datasets.frames.values()
-                                        if column in frame.columns]
-                            if (observed and all(is_numeric_dtype(series) and not is_bool_dtype(series)
-                                                 for series in observed)):
+                            if self._numeric_column_known(column,current):
                                 numeric_mentions.append(column)
                         if len(numeric_mentions) == 1:
                             current['pivot_value_column'] = numeric_mentions[0]
@@ -753,10 +750,7 @@ class RecoveryMiddleware(AgentMiddleware):
                         numeric_axes = []
                         from pandas.api.types import is_bool_dtype, is_numeric_dtype
                         for axis in axes:
-                            observed = [frame[axis] for frame in self.context.datasets.frames.values()
-                                        if axis in frame.columns]
-                            if observed and all(is_numeric_dtype(series) and not is_bool_dtype(series)
-                                                for series in observed):
+                            if self._numeric_column_known(axis,current):
                                 numeric_axes.append(axis)
                         if len(numeric_axes) == 1:
                             source_axis = numeric_axes[0]
@@ -806,7 +800,6 @@ class RecoveryMiddleware(AgentMiddleware):
                         continue
                     # Inspect only the grouping column; a protected remote
                     # result may be much wider than the requested comparison.
-                    series = project_dataset(self.context.datasets, selected_id, [name])[name]
                     for term in terms:
                         match = re.search(
                             r'(?<![A-Za-z0-9_가-힣])' + re.escape(term)
@@ -814,6 +807,7 @@ class RecoveryMiddleware(AgentMiddleware):
                         if not match:
                             continue
                         values = [match.group(1), match.group(2)]
+                        series = project_dataset(self.context.datasets, selected_id, [name])[name]
                         if (values[0] != values[1] and all(series.eq(value).any() for value in values)):
                             group_candidates.append(name)
                             explicit_group_values[name] = values
@@ -832,12 +826,7 @@ class RecoveryMiddleware(AgentMiddleware):
                     from pandas.api.types import is_bool_dtype, is_numeric_dtype
                     numeric_metrics = []
                     for column in metric_candidates:
-                        observed = [project_dataset(self.context.datasets, info.id, [column])[column]
-                                    for info in self.context.datasets.metadata.values()
-                                    if info.grain == 'raw' and column in info.columns
-                                    and self._source_matches(info, current)]
-                        if observed and all(is_numeric_dtype(series) and not is_bool_dtype(series)
-                                            for series in observed):
+                        if self._numeric_column_known(column,current):
                             numeric_metrics.append(column)
                     if len(numeric_metrics) == 1:
                         value_column = numeric_metrics[0]
@@ -887,6 +876,11 @@ class RecoveryMiddleware(AgentMiddleware):
                                           'value_column':value_column}
                             metrics.append(metric)
                         if metrics:
+                            from core.analysis_agent.eda_contract import group_sort
+                            sorting=group_sort(text,metrics,group_column,column_aliases)
+                            if sorting is None:
+                                current['scope']['unresolved'].append('ambiguous_group_sort')
+                            current['group_summary_sort']=sorting or {'sort':'group_ascending','sort_by':''}
                             current['group_summary_requested'] = True
                             current['group_summary_columns'] = [group_column]
                             current['group_summary_metrics'] = metrics
@@ -1013,13 +1007,14 @@ class RecoveryMiddleware(AgentMiddleware):
                 current['operation_pending'] = True
                 current['calculation'] = True
             from core.analysis_agent.latest_selection import bind
-            latest_spec = bind(text, self.context)
+            latest_spec = bind(text, self.context, sources=current.get('required_sources', []),
+                               remote_available=self.remote_available and not current.get('current_result_only'))
             current['latest_per_key_spec'] = latest_spec
             current['latest_selection_evidence'] = None
             if latest_spec:
                 # "Latest row" is an ordering instruction, not a request to
                 # refresh a snapshot. An explicit refresh must not reuse it.
-                if re.search(r'재조회|다시\s*(?:로딩|조회|불러)|새로\s*(?:조회|로딩|불러)|\brefresh\b', text, re.I):
+                if not latest_spec.get('remote') and re.search(r'재조회|다시\s*(?:로딩|조회|불러)|새로\s*(?:조회|로딩|불러)|\brefresh\b', text, re.I):
                     latest_spec['question'] = '새 데이터 조회와 키별 최신 행 분석을 함께 요청하셨습니다. 분석할 최신 원본을 먼저 조회한 뒤 이 기준으로 분석해주세요.'
                 info = self.context.datasets.metadata.get(latest_spec.get('dataset_id'))
                 sources = current.get('required_sources') or []
@@ -1029,6 +1024,14 @@ class RecoveryMiddleware(AgentMiddleware):
                     kind='bar' if latest_spec.get('categorical',True) else 'histogram',
                     required_columns=[latest_spec['value_column']] if latest_spec.get('value_column') else [],
                     fresh_source_required=False, chart_spec_requested=True)
+                if latest_spec.get('remote'):
+                    from core.analysis_agent.latest_selection import reuse_verified
+                    reused = reuse_verified(self.context, self.artifacts, self.approval_ledger, latest_spec, previous, text)
+                    if reused:
+                        current['latest_selection_evidence'] = reused
+                        current['artifact_ids'] = [card['id'] for card in reused['cards']]
+                        current['remote_latest_reused'] = True
+                        current['remote_query_evidence'] = previous.get('remote_query_evidence', {}).copy()
             from core.analysis_agent.conversation_context import explanation_only, suspend_analysis
             if explanation_only(text):
                 suspend_analysis(current, previous)
@@ -1266,6 +1269,21 @@ class RecoveryMiddleware(AgentMiddleware):
                     current['failed'].pop(name,None)
                 elif observation.get('status')=='needs_context':
                     current['latest_question']=observation.get('message','최신 행 선택 기준을 확인해주세요.')
+            if name == 'prepare_remote_latest_distribution' and (current.get('latest_per_key_spec') or {}).get('remote'):
+                from core.analysis_agent.latest_selection import accepted_remote
+                spec = current['latest_per_key_spec']
+                if any(arguments.get(k) != spec.get(k) for k in ('source', 'key_columns', 'order_column', 'value_column')):
+                    continue
+                if observation.get('remote_latest_plan'):
+                    current['remote_latest_plan'] = observation['remote_latest_plan']
+                if observation.get('status') == 'needs_refresh':
+                    current['remote_latest_refresh'] = observation.get('refresh_query')
+                if accepted_remote(self.context, self.artifacts, spec, arguments, observation, current['remote_query_evidence']):
+                    current['latest_selection_evidence'] = observation
+                    current['artifact_ids'] = [card['id'] for card in observation['cards']]
+                    current['failed'].pop(name, None)
+                elif observation.get('status') == 'needs_context':
+                    current['latest_question'] = observation.get('message', '원격 최신행 선택 기준을 확인해주세요.')
             if name == 'prepare_histogram' and observation.get('histogram_plan'):
                 plan = observation['histogram_plan']
                 if not self._scope_valid(plan.get('query', ''), current, plan.get('value_column')):
@@ -1445,6 +1463,7 @@ class RecoveryMiddleware(AgentMiddleware):
                     and result.get('metrics') == self._group_metrics(current.get('group_summary_metrics'))
                     and result.get('conditions') == current.get('group_summary_conditions')
                     and result.get('sort') == arguments.get('sort', 'group_ascending')
+                    and result.get('sort_by','') == arguments.get('sort_by','')
                     and result.get('output_rows') == child.rows
                     and result.get('output_columns') == len(child.columns)
                     and result.get('data_sha256') == stored_dataset_digest(self.context.datasets, child_id)
@@ -1638,6 +1657,18 @@ class RecoveryMiddleware(AgentMiddleware):
             self.context.semantic_resolver.request = deepcopy(current)
         return current, calls
 
+    def _numeric_column_known(self, column, current):
+        """Use schema/footer metadata for planning, not a full column decode."""
+        from pandas.api.types import is_bool_dtype, is_numeric_dtype
+        if not self.context:return False
+        candidates=[info for info in self.context.datasets.metadata.values()
+            if info.grain=='raw' and column in info.columns and self._source_matches(info,current)]
+        if not candidates:return False
+        for info in candidates:
+            dtype=self.context.datasets.inspect(info.id).get('dtypes',{}).get(column)
+            if dtype is None or is_bool_dtype(dtype) or not is_numeric_dtype(dtype):return False
+        return True
+
     @staticmethod
     def _signature(call):
         return json.dumps([call.get('name'), call.get('args', {})], sort_keys=True, default=str)
@@ -1723,7 +1754,9 @@ class RecoveryMiddleware(AgentMiddleware):
                 or arguments.get('group_columns') != current.get('group_summary_columns')
                 or self._group_metrics(arguments.get('metrics')) !=
                    self._group_metrics(current.get('group_summary_metrics'))
-                or arguments.get('conditions', []) != current.get('group_summary_conditions')):
+                or arguments.get('conditions', []) != current.get('group_summary_conditions')
+                or any(arguments.get(k,d) != current.get('group_summary_sort',{}).get(k,d)
+                    for k,d in (('sort','group_ascending'),('sort_by','')))):
             return False
         conditions = [*info.conditions, *arguments.get('conditions', [])]
         if self._has_scope(current):
@@ -2244,10 +2277,35 @@ class RecoveryMiddleware(AgentMiddleware):
         if prepared:return prepared
         if current.get('latest_per_key_spec'):
             spec=current['latest_per_key_spec']
+            if spec.get('remote'):
+                if spec.get('question') or current.get('latest_selection_evidence'):
+                    return None
+                arguments = {k: spec[k] for k in ('source', 'key_columns', 'order_column', 'value_column')}
+                arguments.update(categorical=spec.get('categorical',True),bins=spec.get('bins',20))
+                plan = current.get('remote_latest_plan')
+                refresh = current.get('remote_latest_refresh')
+                receipts = current.get('remote_query_evidence', {})
+                if plan:
+                    receipt = next((r for r in receipts.values() if r.get('query') == plan['query']), None)
+                    if receipt:
+                        arguments['result_dataset_id'] = receipt['dataset_id']
+                        call = {'name': 'prepare_remote_latest_distribution', 'args': arguments}
+                    else:
+                        call = {'name': 'query_databricks', 'args': {k: plan[k] for k in ('source', 'query', 'reason')}}
+                elif refresh and not any(r.get('query') == refresh for r in receipts.values()):
+                    call = {'name': 'query_databricks', 'args': {'source': spec['source'], 'query': refresh,
+                        'reason': '최신행 집계 전에 현재 테이블 스키마를 확인합니다.'}}
+                else:
+                    call = {'name': 'prepare_remote_latest_distribution', 'args': arguments}
+                    # A verified schema probe allows one re-plan of the same roles.
+                    if refresh and any(r.get('query') == refresh for r in receipts.values()):
+                        attempts = sum(c.get('name') == call['name'] and c.get('args') == arguments for c in calls.values())
+                        return call if attempts < 2 else None
+                return None if any(self._signature(c) == self._signature(call) for c in calls.values()) else call
             if not spec.get('question') and not current.get('latest_selection_evidence') and not any(
                     c.get('name')=='analyze_latest_distribution' for c in calls.values()):
                 return {'name':'analyze_latest_distribution','args':{key:spec[key] for key in
-                    ('dataset_id','key_columns','order_column','value_column','categorical')}}
+                    ('dataset_id','key_columns','order_column','value_column','categorical')} | {'bins':spec.get('bins',20)}}
             return None
         if self.context and current.get('operation_pending'):
             from core.analysis_agent.operation_binding import metadata_for
@@ -2318,6 +2376,7 @@ class RecoveryMiddleware(AgentMiddleware):
                     'group_columns': current['group_summary_columns'],
                     'metrics': current['group_summary_metrics'],
                     'conditions': current.get('group_summary_conditions', []),
+                    **current.get('group_summary_sort',{}),
                 }
                 if (self._group_scope_valid(candidates[0], arguments, current)
                         and not any(c.get('name') == 'summarize_groups'
@@ -3576,6 +3635,21 @@ class RecoveryMiddleware(AgentMiddleware):
 
     def _proposed_scope_valid(self, call, current):
         if current.get('explanation_only'): return False
+        spec = current.get('latest_per_key_spec') or {}
+        if spec.get('remote'):
+            arguments = call.get('args', {})
+            if call.get('name') == 'prepare_remote_latest_distribution':
+                return (all(arguments.get(k) == spec.get(k) for k in ('source', 'key_columns', 'order_column', 'value_column'))
+                    and arguments.get('categorical',True) == spec.get('categorical',True)
+                    and arguments.get('bins',20) == spec.get('bins',20))
+            if call.get('name') == 'query_databricks':
+                if any(r.get('query') == arguments.get('query') for r in current.get('remote_query_evidence', {}).values()):
+                    current['scope_error'] = 'remote_result_already_available'
+                    return False
+                allowed = [(current.get('remote_latest_plan') or {}).get('query'), current.get('remote_latest_refresh')]
+                return (not self._has_scope(current) and arguments.get('source') == spec['source']
+                    and bool(arguments.get('query')) and arguments['query'] in allowed)
+            return call.get('name') in {'list_analysis_context', 'inspect_table_context', 'search_analysis_tools'}
         if current.get('histogram_bins') is not None and call.get('name') in {
                 'render_chart_spec','render_histogram','prepare_histogram','recommend_chart_images'}:
             if (call.get('name') != 'render_chart_spec'

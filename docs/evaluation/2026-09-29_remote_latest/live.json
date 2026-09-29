@@ -1,0 +1,96 @@
+{
+  "source": "workspace.default.bank_loan",
+  "status": "INCOMPLETE",
+  "queries": [
+    "SELECT column_name, data_type FROM `workspace`.`information_schema`.`columns` WHERE table_schema = 'default' AND table_name = 'bank_loan' ORDER BY ordinal_position"
+  ],
+  "observed_schema": [
+    {
+      "table": "workspace.default.bank_loan",
+      "observed_at": "2026-09-29T14:37:54.653317+00:00",
+      "columns": [
+        {
+          "name": "id",
+          "dtype": "LONG"
+        },
+        {
+          "name": "age",
+          "dtype": "LONG"
+        },
+        {
+          "name": "job",
+          "dtype": "STRING"
+        },
+        {
+          "name": "marital",
+          "dtype": "STRING"
+        },
+        {
+          "name": "education",
+          "dtype": "STRING"
+        },
+        {
+          "name": "default",
+          "dtype": "STRING"
+        },
+        {
+          "name": "balance",
+          "dtype": "LONG"
+        },
+        {
+          "name": "housing",
+          "dtype": "STRING"
+        },
+        {
+          "name": "loan",
+          "dtype": "STRING"
+        },
+        {
+          "name": "contact",
+          "dtype": "STRING"
+        },
+        {
+          "name": "day",
+          "dtype": "LONG"
+        },
+        {
+          "name": "month",
+          "dtype": "STRING"
+        },
+        {
+          "name": "duration",
+          "dtype": "LONG"
+        },
+        {
+          "name": "campaign",
+          "dtype": "LONG"
+        },
+        {
+          "name": "pdays",
+          "dtype": "LONG"
+        },
+        {
+          "name": "previous",
+          "dtype": "LONG"
+        },
+        {
+          "name": "poutcome",
+          "dtype": "STRING"
+        },
+        {
+          "name": "y",
+          "dtype": "LONG"
+        }
+      ]
+    }
+  ],
+  "prompt": "workspace.default.bank_loan 테이블에서 job별 unique한 값마다 id가 가장 큰 마지막 행의 education 분포를 그려줘. education는 범주야.",
+  "agent_status": "answered",
+  "answer": "최신 순서를 확인할 수 있는 수치 또는 시간 자료형 컬럼이 필요합니다.",
+  "elapsed_seconds": 0.109,
+  "model_calls": 0,
+  "remote_result_rows": null,
+  "input_rows": null,
+  "selected_keys": null,
+  "query_count": 1
+}

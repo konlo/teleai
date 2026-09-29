@@ -49,7 +49,7 @@ from core.analysis_agent.latest_selection import render as render_latest_selecti
 
 CONTRACTS = (
     CompletionContract('latest_per_key', 'latest_per_key_spec', 'latest_selection_evidence',
-                       ('analyze_latest_distribution',), render_latest_selection),
+                       ('analyze_latest_distribution', 'prepare_remote_latest_distribution'), render_latest_selection),
     CompletionContract('remote_query', 'remote_result_requested', 'remote_query_evidence',
                        ('query_databricks',), renderers.render_remote_query, remote_queries_ready),
     CompletionContract('preview', 'preview_limit', 'preview_evidence', ('inspect_dataset',), renderers.render_preview),

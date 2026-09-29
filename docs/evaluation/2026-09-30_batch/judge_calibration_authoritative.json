@@ -1,0 +1,108 @@
+{
+  "mode": "synthetic labelled judge calibration; not agent runs",
+  "judge": "databricks-qwen3-next-80b-a3b-instruct",
+  "provider": "databricks",
+  "threshold": 0.8,
+  "results": [
+    {
+      "id": "correct_groups",
+      "expected_pass": true,
+      "score": 1.0,
+      "reason": "The actual output correctly provides the group averages (A: 1.5, B: 3.5) matching the expected values, and the input only requested group averages without specifying format. The semantic content is identical despite different presentation (prose vs. key=value), which is acceptable under evaluation step 3. All requirements are satisfied.",
+      "classification_correct": true,
+      "elapsed_seconds": 2.553
+    },
+    {
+      "id": "missing_goal",
+      "expected_pass": false,
+      "score": 0.0,
+      "reason": "The input requested group averages, but the actual output neither provided the requested values (A=1.5; B=3.5) nor any group-based calculations, instead reporting missing values and completion status. This is a complete failure to deliver the requested factual output, violating evaluation step 2.",
+      "classification_correct": true,
+      "elapsed_seconds": 3.124
+    },
+    {
+      "id": "wrong_number",
+      "expected_pass": false,
+      "score": 0.2,
+      "reason": "The actual output states the mean as 25.0, but the expected output specifies 2.5, which is a factual discrepancy. The input requested the average ('평균을 보여줘'), and the actual output correctly identifies it as a mean but provides an incorrect numerical value. This is a clear factual error that violates evaluation step 2.",
+      "classification_correct": true,
+      "elapsed_seconds": 3.418
+    },
+    {
+      "id": "wrong_bins",
+      "expected_pass": false,
+      "score": 0.2,
+      "reason": "The input explicitly requested a histogram with 5 bins, but the actual output states bins=20, which is a factual error. The expected output requires bins=5, and the discrepancy is not explained or justified by any unit conversion or permissible rounding. This violates the requirement to deliver the exact requested presentation.",
+      "classification_correct": true,
+      "elapsed_seconds": 3.276
+    },
+    {
+      "id": "correct_scalar",
+      "expected_pass": true,
+      "score": 1.0,
+      "reason": "The actual output correctly provides the arithmetic mean as 2.5, matching the expected numerical value exactly. The request was in Korean ('평균을 보여줘') and the response was appropriately given in Korean ('평균은 2.5입니다'), satisfying the language context without requiring English output. No factual, numerical, or scope errors exist.",
+      "classification_correct": true,
+      "elapsed_seconds": 2.764
+    },
+    {
+      "id": "correct_percent",
+      "expected_pass": true,
+      "score": 1.0,
+      "reason": "The actual output correctly states the conversion rate as 25%, which matches the authoritative value in the expected output (25 percent). The request asked for the conversion rate in percentage form, and the response delivers it accurately in Korean with proper numerical alignment. The expected output's additional detail (ratio 0.25) is not a requested presentation requirement, so its absence does not penalize the response.",
+      "classification_correct": true,
+      "elapsed_seconds": 3.022
+    },
+    {
+      "id": "correct_equivalent_format",
+      "expected_pass": true,
+      "score": 1.0,
+      "reason": "The actual output correctly provides the group averages (A: 1.5, B: 3.5) matching the expected values exactly, and the order is unspecified in the expected output, so the reordering is acceptable. The format (key:value vs key=value) is a harmless presentation difference and does not constitute a factual error.",
+      "classification_correct": true,
+      "elapsed_seconds": 2.431
+    },
+    {
+      "id": "correct_rounded",
+      "expected_pass": true,
+      "score": 1.0,
+      "reason": "The actual output correctly rounds the mean to two decimal places as requested, yielding 1.23, which matches the expected rounding of 1.234. The response fulfills the input requirement without factual error or missing content.",
+      "classification_correct": true,
+      "elapsed_seconds": 2.576
+    },
+    {
+      "id": "wrong_scope",
+      "expected_pass": false,
+      "score": 0.2,
+      "reason": "The actual output incorrectly provides the 2024 average (2.5) instead of the requested 2025 average (8.5), and the value is factually wrong. The input explicitly requested 2025 data, but the response delivered 2024 data, constituting a factual error and unmet requirement.",
+      "classification_correct": true,
+      "elapsed_seconds": 3.135
+    },
+    {
+      "id": "wrong_denominator",
+      "expected_pass": false,
+      "score": 0.2,
+      "reason": "The actual output incorrectly states the success rate as 100%, while the expected output correctly calculates it as 25% based on 25 successes out of 100 total. This is a factual error in numerical value, directly contradicting the input request and authoritative expected output.",
+      "classification_correct": true,
+      "elapsed_seconds": 3.884
+    },
+    {
+      "id": "future_promise",
+      "expected_pass": false,
+      "score": 0.2,
+      "reason": "The actual output fails to deliver the requested list of tables (A, B) as specified in the expected output, instead promising to show results later, which violates the requirement to present the requested information immediately.",
+      "classification_correct": true,
+      "elapsed_seconds": 2.704
+    },
+    {
+      "id": "false_chart",
+      "expected_pass": false,
+      "score": 0.0,
+      "reason": "The actual output fails to deliver the requested five-bin histogram, instead providing a claim of completion without any visual or numerical data. The input explicitly requested a histogram, and the expected output correctly identifies this as a mandatory artifact. The absence of the required chart constitutes a concrete unmet requirement, warranting a low score.",
+      "classification_correct": true,
+      "elapsed_seconds": 2.379
+    }
+  ],
+  "calibration_passed": true,
+  "limitations": [
+    "Twelve labelled controls only; passing does not establish broad judge reliability."
+  ]
+}

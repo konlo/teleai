@@ -1,0 +1,89 @@
+{
+  "created_at": "2026-09-29T15:12:11.306475+00:00",
+  "mode": "synthetic cursor, production ingestion and graph",
+  "rows_requested": 1000000,
+  "network_calls": 0,
+  "model_calls": 0,
+  "baseline_peak_rss_bytes": 265699328,
+  "limitations": [
+    "No actual warehouse/network, provider model or UI is used.",
+    "Five-column cyclic fixture is not a universal data-width or performance guarantee.",
+    "Peak RSS includes interpreter/imports; cache cap is not an RSS ceiling.",
+    "Test runtime row policy is set to the synthetic workload size; product defaults are unchanged."
+  ],
+  "ingestion": {
+    "elapsed_seconds": 2.908,
+    "peak_rss_bytes": 286375936,
+    "rows": 1000000,
+    "coverage": "unknown",
+    "fetch_calls": 978,
+    "max_batch": 1024,
+    "executions": 1,
+    "file_backed": true,
+    "file_bytes": 11845826,
+    "cache_bytes": 0
+  },
+  "eda": [
+    {
+      "status": "PASS",
+      "prompt": "현재 로딩된 표본에서 measurement 평균을 알려줘",
+      "actual": 49.95,
+      "expected": 49.95,
+      "elapsed_seconds": 0.284,
+      "peak_rss_bytes": 366198784,
+      "model_calls": 0,
+      "chart_count": 0,
+      "raw_preserved": true,
+      "stop_reason": null
+    },
+    {
+      "status": "PASS",
+      "prompt": "현재 로딩된 표본에서 measurement >= 90인 행의 measurement 평균을 알려줘",
+      "actual": 94.95,
+      "expected": 94.95,
+      "elapsed_seconds": 0.089,
+      "peak_rss_bytes": 400621568,
+      "model_calls": 0,
+      "chart_count": 0,
+      "raw_preserved": true,
+      "stop_reason": null
+    },
+    {
+      "status": "PASS",
+      "prompt": "현재 로딩된 원본 표본에서 measurement 평균과 measurement 히스토그램을 보여줘. 이전 measurement 조건은 적용하지 말고 보유 데이터만 사용해.",
+      "actual": 49.95,
+      "expected": 49.95,
+      "elapsed_seconds": 10.968,
+      "peak_rss_bytes": 452509696,
+      "model_calls": 0,
+      "chart_count": 1,
+      "raw_preserved": true,
+      "stop_reason": null
+    }
+  ],
+  "interrupted_transfer": {
+    "error_type": "ConnectionError",
+    "received_rows": 50176,
+    "no_partial_publication": true,
+    "selected_preserved": true,
+    "raw_preserved": true,
+    "staging_clean": true
+  },
+  "byte_limit": {
+    "limit_bytes": 131072,
+    "error_type": "MemoryError",
+    "received_rows": 1024,
+    "no_partial_publication": true,
+    "raw_preserved": true,
+    "selected_preserved": true,
+    "staging_clean": true
+  },
+  "reopen": {
+    "raw_preserved": true,
+    "rows": 1000000,
+    "selected_preserved": true
+  },
+  "status": "PASS",
+  "elapsed_seconds": 26.58,
+  "peak_rss_bytes": 452509696
+}

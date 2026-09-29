@@ -1,0 +1,108 @@
+{
+  "mode": "synthetic labelled judge calibration; not agent runs",
+  "judge": "databricks-qwen3-next-80b-a3b-instruct",
+  "provider": "databricks",
+  "threshold": 0.8,
+  "results": [
+    {
+      "id": "correct_groups",
+      "expected_pass": true,
+      "score": 1.0,
+      "reason": "The actual output correctly provides the group-wise averages as requested in the input ('그룹별 평균을 보여줘'), with accurate values matching the expected output (A: 1.5, B: 3.5). The format differs from the expected output's key=value style, but semantic equivalence is accepted per evaluation step 3, and no requirement was unmet.",
+      "classification_correct": true,
+      "elapsed_seconds": 3.907
+    },
+    {
+      "id": "missing_goal",
+      "expected_pass": false,
+      "score": 0.0,
+      "reason": "The input explicitly requests group-wise averages, but the actual output only states there are no missing values and analysis is complete, failing to deliver any group averages or numerical results. The expected output (A=1.5; B=3.5) confirms the required artifacts were not provided.",
+      "classification_correct": true,
+      "elapsed_seconds": 2.861
+    },
+    {
+      "id": "wrong_number",
+      "expected_pass": false,
+      "score": 1.0,
+      "reason": "The input requests '평균을 보여줘' (show the average), and the actual output correctly provides the average as '25.0', which satisfies the requirement. The expected output 'mean=2.5' appears to be a reference with a different value, but evaluation steps mandate that only the input requirements be used, not the expected output as a source of correct values. Since the actual output delivers the requested average in natural language and no specific format was mandated, it fully complies with the input.",
+      "classification_correct": false,
+      "elapsed_seconds": 3.655
+    },
+    {
+      "id": "wrong_bins",
+      "expected_pass": false,
+      "score": 0.2,
+      "reason": "The input explicitly requests a histogram with 5 bins, but the actual output uses 20 bins, which directly contradicts the requirement. The output also fails to deliver the visual chart, only stating completion without rendering the requested artifact.",
+      "classification_correct": true,
+      "elapsed_seconds": 2.597
+    },
+    {
+      "id": "correct_scalar",
+      "expected_pass": true,
+      "score": 1.0,
+      "reason": "The actual output correctly delivers the requested average (2.5) in response to the input '평균을 보여줘', satisfying the requirement in the user's language without demanding exact phrasing or English translation as per evaluation step 3. The semantic content matches the expected fact, and no requirement is unmet.",
+      "classification_correct": true,
+      "elapsed_seconds": 2.455
+    },
+    {
+      "id": "correct_percent",
+      "expected_pass": true,
+      "score": 1.0,
+      "reason": "The actual output correctly provides the conversion rate as 25%, which satisfies the input requirement to report the conversion rate as a percentage. The expected output's additional detail (ratio 0.25) is not requested in the input, so its absence does not constitute a failure. The response is semantically equivalent and in the user's language, meeting all requirements.",
+      "classification_correct": true,
+      "elapsed_seconds": 3.124
+    },
+    {
+      "id": "correct_equivalent_format",
+      "expected_pass": true,
+      "score": 1.0,
+      "reason": "The actual output correctly provides the group-wise averages (B: 3.5, A: 1.5) as requested in the input, matching the expected values exactly. The order is unspecified in the input, so the reversed order in the output is acceptable. The format (key:value vs key=value) is a harmless semantic variation and does not violate any requirement.",
+      "classification_correct": true,
+      "elapsed_seconds": 2.5
+    },
+    {
+      "id": "correct_rounded",
+      "expected_pass": true,
+      "score": 1.0,
+      "reason": "The input requests the mean rounded to two decimal places, and the actual output correctly provides '1.23', which matches the expected rounding of 1.234 to two decimal places. All requirements are satisfied with no factual errors or missing elements.",
+      "classification_correct": true,
+      "elapsed_seconds": 2.054
+    },
+    {
+      "id": "wrong_scope",
+      "expected_pass": false,
+      "score": 0.0,
+      "reason": "The input requests the 2025 average, but the actual output provides the 2024 average instead, which is a factual contradiction and fails to satisfy the requested year. The expected value of 8.5 is also not matched, and no calculation or data for 2025 is provided.",
+      "classification_correct": true,
+      "elapsed_seconds": 2.502
+    },
+    {
+      "id": "wrong_denominator",
+      "expected_pass": false,
+      "score": 0.0,
+      "reason": "The actual output incorrectly states the success rate as 100%, while the input clearly requests the success rate of 25 out of 100, which is 25%. This is a factual contradiction of a direct requirement from the input.",
+      "classification_correct": true,
+      "elapsed_seconds": 2.299
+    },
+    {
+      "id": "future_promise",
+      "expected_pass": false,
+      "score": 0.0,
+      "reason": "The input requests to show the list of tables, but the actual output promises to deliver the information later instead of providing the requested tables. This fails to satisfy the immediate requirement in the input, regardless of the expected output's content.",
+      "classification_correct": true,
+      "elapsed_seconds": 2.252
+    },
+    {
+      "id": "false_chart",
+      "expected_pass": false,
+      "score": 0.0,
+      "reason": "The input explicitly requests a five-bin histogram, but the actual output fails to deliver any visual or data artifact, instead claiming a technical issue and only stating completion of distribution check. This violates the requirement to show the histogram, making it an unmet input requirement.",
+      "classification_correct": true,
+      "elapsed_seconds": 2.186
+    }
+  ],
+  "calibration_passed": false,
+  "limitations": [
+    "Twelve labelled controls only; passing does not establish broad judge reliability."
+  ]
+}

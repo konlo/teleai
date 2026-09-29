@@ -196,6 +196,10 @@ def reference_oracle(spec, grading, frames):
         plt.close("all")
         with HistogramCapture() as capture, redirect_stdout(StringIO()):
             exec(compile(spec["python_code"], f"reference:{spec['id']}", "exec"), namespace)
+        if grading["kind"] == "group_table":
+            value=namespace[grading["variable"]]
+            columns=grading["reference_groups"]+[m["reference"] for m in grading["metrics"]]
+            return value[columns].copy()
         if grading["kind"] == "histogram":
             if len(capture.histograms) != 1:
                 raise ValueError("Reference must produce exactly one supported histogram")
@@ -588,6 +592,9 @@ def _replay_calculation(runtime, dataset_id, fixture_id, fixture_frame, seen=Non
         raise ValueError("Calculation has no fixture ancestor")
     parent = _replay_calculation(runtime, info.parent_id, fixture_id, fixture_frame, seen)
     parent_info = runtime.datasets.metadata[info.parent_id]
+    if info.query.startswith("GROUP SUMMARY "):
+        from scripts.group_table_oracle import replay_summary
+        return replay_summary(parent,info.query)
     if info.query:
         # Explicit requested_conditions are applied before SQL by the tool. The
         # saved metadata also includes SQL WHERE conditions; exclude those here
@@ -622,7 +629,10 @@ def verify_counterfactuals(runtime, dataset_id, fixture_id, spec, grading, frame
     for index, variant in enumerate(variations, 1):
         oracle = reference_oracle(spec, grading, {**frames, target: variant})
         actual = _replay_calculation(runtime, dataset_id, fixture_id, variant)
-        if grading["kind"] == "scalar":
+        if grading["kind"] == "group_table":
+            from scripts.group_table_oracle import compare
+            ok=compare(actual,runtime.datasets.metadata[dataset_id],grading,oracle)
+        elif grading["kind"] == "scalar":
             column = grading.get("result_column")
             ok = (len(actual) == 1 and
                   (column in actual.columns if column else actual.shape[1] == 1) and
@@ -647,6 +657,21 @@ def grade_evidence(runtime, outcome, spec, grading, oracle, fixture_id, capture)
         return "NOT_COMPLETE", "Agent stopped or awaits approval; no implicit approval", {}
     if state["recovery"].get("status") not in {None, "complete"}:
         return "NOT_COMPLETE", "Recovery has not established completion", {}
+    if grading['kind']=='group_table':
+        from scripts.group_table_oracle import compare
+        evidence_ids=state['recovery'].get('evidence_ids',[])
+        group_evidence=state['recovery'].get('group_summary_evidence') or {}
+        if group_evidence:evidence_ids=[group_evidence['dataset']['id']]
+        if not evidence_ids:return 'FAIL','No verified grouped result',{}
+        dataset_id=evidence_ids[-1];info=runtime.datasets.metadata[dataset_id]
+        if (info.source!=spec['target_table'] or info.coverage!='complete'
+                or not _fixture_descendant(runtime,dataset_id,fixture_id)):
+            return 'FAIL','Wrong grouped result provenance',{}
+        try:
+            correct=compare(runtime.datasets.frames[dataset_id],info,grading,oracle)
+        except (KeyError,ValueError,TypeError):correct=False
+        return ('PASS' if correct else 'FAIL','Independent grouped metrics/order comparison',
+            {'result_dataset_id':dataset_id,'expected':oracle.to_dict('records')})
     if grading["kind"] in {"metadata_columns", "metadata_dtypes", "metadata_column_subset"}:
         matches = []
         for message in runtime.events():
@@ -1490,7 +1515,7 @@ def evaluate_case(spec, grading, model, *, frames=None, artifact_dir=None,
             with HistogramCapture() as capture:
                 outcome = runtime.submit(spec["prompt"])
             status, reason, evidence = grade_evidence(runtime, outcome, spec, grading, oracle, info.id, capture)
-            if status == "PASS" and grading["kind"] in {"scalar", "scalar_set", "category_counts"}:
+            if status == "PASS" and grading["kind"] in {"scalar", "scalar_set", "category_counts", "group_table"}:
                 try:
                     verified, probes = verify_counterfactuals(runtime, evidence["result_dataset_id"],
                         info.id, spec, grading, frames)

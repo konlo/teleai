@@ -1,0 +1,1490 @@
+{
+  "generated_at": "2026-09-29T15:10:12.513661+00:00",
+  "source_report": "/Users/najongseong/git_repository/teleai/docs/evaluation/2026-09-28_remaining/reference_200.json",
+  "judge_model": "gemma4:e4b",
+  "source_mode": "live-databricks-model",
+  "limitations": [
+    "LLM judge scores supplement independent numeric/scope/artifact contracts.",
+    "Tool correctness covers only the explicitly configured legacy cases, not general autonomy."
+  ],
+  "results": [
+    {
+      "id": "L1_001",
+      "product_oracle_status": "PASS",
+      "model_calls": 0,
+      "tool_call_names": [
+        "inspect_table_context"
+      ],
+      "tool_correctness": 1.0,
+      "allowed_tool_plans": [
+        [
+          "inspect_table_context"
+        ]
+      ],
+      "tool_metric_scope": "Tool selection only; independent result oracle remains authoritative"
+    },
+    {
+      "id": "L1_002",
+      "product_oracle_status": "PASS",
+      "model_calls": 0,
+      "tool_call_names": [
+        "inspect_table_context"
+      ]
+    },
+    {
+      "id": "L1_003",
+      "product_oracle_status": "PASS",
+      "model_calls": 0,
+      "tool_call_names": [
+        "inspect_table_context"
+      ]
+    },
+    {
+      "id": "L1_004",
+      "product_oracle_status": "PASS",
+      "model_calls": 0,
+      "tool_call_names": [
+        "inspect_table_context"
+      ]
+    },
+    {
+      "id": "L1_005",
+      "product_oracle_status": "PASS",
+      "model_calls": 0,
+      "tool_call_names": [
+        "local_analysis_sql"
+      ]
+    },
+    {
+      "id": "L1_006",
+      "product_oracle_status": "PASS",
+      "model_calls": 0,
+      "tool_call_names": [
+        "profile_dataset"
+      ]
+    },
+    {
+      "id": "L1_007",
+      "product_oracle_status": "PASS",
+      "model_calls": 0,
+      "tool_call_names": [
+        "inspect_table_context"
+      ]
+    },
+    {
+      "id": "L1_008",
+      "product_oracle_status": "PASS",
+      "model_calls": 0,
+      "tool_call_names": [
+        "profile_dataset"
+      ]
+    },
+    {
+      "id": "L1_009",
+      "product_oracle_status": "PASS",
+      "model_calls": 0,
+      "tool_call_names": [
+        "profile_dataset",
+        "inspect_table_context"
+      ]
+    },
+    {
+      "id": "L1_010",
+      "product_oracle_status": "UNGRADED",
+      "model_calls": null,
+      "tool_call_names": []
+    },
+    {
+      "id": "L1_011",
+      "product_oracle_status": "UNGRADED",
+      "model_calls": null,
+      "tool_call_names": []
+    },
+    {
+      "id": "L1_012",
+      "product_oracle_status": "UNGRADED",
+      "model_calls": null,
+      "tool_call_names": []
+    },
+    {
+      "id": "L1_013",
+      "product_oracle_status": "UNGRADED",
+      "model_calls": null,
+      "tool_call_names": []
+    },
+    {
+      "id": "L1_014",
+      "product_oracle_status": "UNGRADED",
+      "model_calls": null,
+      "tool_call_names": []
+    },
+    {
+      "id": "L1_015",
+      "product_oracle_status": "UNGRADED",
+      "model_calls": null,
+      "tool_call_names": []
+    },
+    {
+      "id": "L1_016",
+      "product_oracle_status": "PASS",
+      "model_calls": 0,
+      "tool_call_names": [
+        "local_analysis_sql"
+      ],
+      "tool_correctness": 1.0,
+      "allowed_tool_plans": [
+        [
+          "aggregate_dataset"
+        ],
+        [
+          "local_analysis_sql"
+        ]
+      ],
+      "tool_metric_scope": "Tool selection only; independent result oracle remains authoritative"
+    },
+    {
+      "id": "L1_017",
+      "product_oracle_status": "PASS",
+      "model_calls": 0,
+      "tool_call_names": [
+        "local_analysis_sql"
+      ],
+      "tool_correctness": 1.0,
+      "allowed_tool_plans": [
+        [
+          "local_analysis_sql"
+        ]
+      ],
+      "tool_metric_scope": "Tool selection only; independent result oracle remains authoritative"
+    },
+    {
+      "id": "L1_018",
+      "product_oracle_status": "PASS",
+      "model_calls": 0,
+      "tool_call_names": [
+        "local_analysis_sql"
+      ]
+    },
+    {
+      "id": "L1_019",
+      "product_oracle_status": "PASS",
+      "model_calls": 0,
+      "tool_call_names": [
+        "local_analysis_sql"
+      ]
+    },
+    {
+      "id": "L1_020",
+      "product_oracle_status": "PASS",
+      "model_calls": 0,
+      "tool_call_names": [
+        "local_analysis_sql"
+      ]
+    },
+    {
+      "id": "L1_021",
+      "product_oracle_status": "PASS",
+      "model_calls": 0,
+      "tool_call_names": [
+        "local_analysis_sql"
+      ]
+    },
+    {
+      "id": "L1_022",
+      "product_oracle_status": "PASS",
+      "model_calls": 3,
+      "tool_call_names": [
+        "profile_dataset",
+        "aggregate_dataset"
+      ]
+    },
+    {
+      "id": "L1_023",
+      "product_oracle_status": "PASS",
+      "model_calls": 2,
+      "tool_call_names": [
+        "resolve_analysis_intent",
+        "local_analysis_sql"
+      ]
+    },
+    {
+      "id": "L1_024",
+      "product_oracle_status": "PASS",
+      "model_calls": 2,
+      "tool_call_names": [
+        "resolve_analysis_intent",
+        "local_analysis_sql"
+      ]
+    },
+    {
+      "id": "L1_025",
+      "product_oracle_status": "PASS",
+      "model_calls": 0,
+      "tool_call_names": [
+        "local_analysis_sql"
+      ]
+    },
+    {
+      "id": "L1_026",
+      "product_oracle_status": "PASS",
+      "model_calls": 2,
+      "tool_call_names": [
+        "resolve_analysis_intent",
+        "local_analysis_sql"
+      ]
+    },
+    {
+      "id": "L1_027",
+      "product_oracle_status": "PASS",
+      "model_calls": 0,
+      "tool_call_names": [
+        "local_analysis_sql"
+      ]
+    },
+    {
+      "id": "L1_028",
+      "product_oracle_status": "PASS",
+      "model_calls": 3,
+      "tool_call_names": [
+        "resolve_analysis_intent",
+        "local_analysis_sql"
+      ]
+    },
+    {
+      "id": "L1_029",
+      "product_oracle_status": "PASS",
+      "model_calls": 0,
+      "tool_call_names": [
+        "local_analysis_sql"
+      ]
+    },
+    {
+      "id": "L1_030",
+      "product_oracle_status": "PASS",
+      "model_calls": 2,
+      "tool_call_names": [
+        "resolve_analysis_intent",
+        "local_analysis_sql"
+      ]
+    },
+    {
+      "id": "L1_031",
+      "product_oracle_status": "UNGRADED",
+      "model_calls": null,
+      "tool_call_names": []
+    },
+    {
+      "id": "L1_032",
+      "product_oracle_status": "PASS",
+      "model_calls": 0,
+      "tool_call_names": [
+        "local_analysis_sql"
+      ]
+    },
+    {
+      "id": "L1_033",
+      "product_oracle_status": "PASS",
+      "model_calls": 0,
+      "tool_call_names": [
+        "local_analysis_sql"
+      ]
+    },
+    {
+      "id": "L1_034",
+      "product_oracle_status": "UNGRADED",
+      "model_calls": null,
+      "tool_call_names": []
+    },
+    {
+      "id": "L1_035",
+      "product_oracle_status": "UNGRADED",
+      "model_calls": null,
+      "tool_call_names": []
+    },
+    {
+      "id": "L1_036",
+      "product_oracle_status": "PASS",
+      "model_calls": 0,
+      "tool_call_names": [
+        "local_analysis_sql"
+      ],
+      "tool_correctness": 1.0,
+      "allowed_tool_plans": [
+        [
+          "local_analysis_sql"
+        ]
+      ],
+      "tool_metric_scope": "Tool selection only; independent result oracle remains authoritative"
+    },
+    {
+      "id": "L1_037",
+      "product_oracle_status": "PASS",
+      "model_calls": 0,
+      "tool_call_names": [
+        "local_analysis_sql"
+      ]
+    },
+    {
+      "id": "L1_038",
+      "product_oracle_status": "PASS",
+      "model_calls": 0,
+      "tool_call_names": [
+        "local_analysis_sql"
+      ]
+    },
+    {
+      "id": "L1_039",
+      "product_oracle_status": "PASS",
+      "model_calls": 0,
+      "tool_call_names": [
+        "local_analysis_sql"
+      ]
+    },
+    {
+      "id": "L1_040",
+      "product_oracle_status": "UNGRADED",
+      "model_calls": null,
+      "tool_call_names": []
+    },
+    {
+      "id": "L1_041",
+      "product_oracle_status": "UNGRADED",
+      "model_calls": null,
+      "tool_call_names": []
+    },
+    {
+      "id": "L1_042",
+      "product_oracle_status": "UNGRADED",
+      "model_calls": null,
+      "tool_call_names": []
+    },
+    {
+      "id": "L1_043",
+      "product_oracle_status": "PASS",
+      "model_calls": 0,
+      "tool_call_names": [
+        "local_analysis_sql"
+      ]
+    },
+    {
+      "id": "L1_044",
+      "product_oracle_status": "PASS",
+      "model_calls": 0,
+      "tool_call_names": [
+        "local_analysis_sql"
+      ]
+    },
+    {
+      "id": "L1_045",
+      "product_oracle_status": "PASS",
+      "model_calls": 0,
+      "tool_call_names": [
+        "local_analysis_sql"
+      ]
+    },
+    {
+      "id": "L1_046",
+      "product_oracle_status": "PASS",
+      "model_calls": 0,
+      "tool_call_names": [
+        "local_analysis_sql"
+      ]
+    },
+    {
+      "id": "L1_047",
+      "product_oracle_status": "PASS",
+      "model_calls": 0,
+      "tool_call_names": [
+        "local_analysis_sql"
+      ]
+    },
+    {
+      "id": "L1_048",
+      "product_oracle_status": "UNGRADED",
+      "model_calls": null,
+      "tool_call_names": []
+    },
+    {
+      "id": "L1_049",
+      "product_oracle_status": "UNGRADED",
+      "model_calls": null,
+      "tool_call_names": []
+    },
+    {
+      "id": "L1_050",
+      "product_oracle_status": "UNGRADED",
+      "model_calls": null,
+      "tool_call_names": []
+    },
+    {
+      "id": "L1_051",
+      "product_oracle_status": "UNGRADED",
+      "model_calls": null,
+      "tool_call_names": []
+    },
+    {
+      "id": "L1_052",
+      "product_oracle_status": "UNGRADED",
+      "model_calls": null,
+      "tool_call_names": []
+    },
+    {
+      "id": "L1_053",
+      "product_oracle_status": "UNGRADED",
+      "model_calls": null,
+      "tool_call_names": []
+    },
+    {
+      "id": "L1_054",
+      "product_oracle_status": "UNGRADED",
+      "model_calls": null,
+      "tool_call_names": []
+    },
+    {
+      "id": "L1_055",
+      "product_oracle_status": "UNGRADED",
+      "model_calls": null,
+      "tool_call_names": []
+    },
+    {
+      "id": "L1_056",
+      "product_oracle_status": "UNGRADED",
+      "model_calls": null,
+      "tool_call_names": []
+    },
+    {
+      "id": "L1_057",
+      "product_oracle_status": "UNGRADED",
+      "model_calls": null,
+      "tool_call_names": []
+    },
+    {
+      "id": "L1_058",
+      "product_oracle_status": "UNGRADED",
+      "model_calls": null,
+      "tool_call_names": []
+    },
+    {
+      "id": "L1_059",
+      "product_oracle_status": "UNGRADED",
+      "model_calls": null,
+      "tool_call_names": []
+    },
+    {
+      "id": "L1_060",
+      "product_oracle_status": "UNGRADED",
+      "model_calls": null,
+      "tool_call_names": []
+    },
+    {
+      "id": "L1_061",
+      "product_oracle_status": "UNGRADED",
+      "model_calls": null,
+      "tool_call_names": []
+    },
+    {
+      "id": "L1_062",
+      "product_oracle_status": "PASS",
+      "model_calls": 0,
+      "tool_call_names": [
+        "pivot_dataset"
+      ],
+      "tool_correctness": 1.0,
+      "allowed_tool_plans": [
+        [
+          "pivot_dataset"
+        ]
+      ],
+      "tool_metric_scope": "Tool selection only; independent result oracle remains authoritative"
+    },
+    {
+      "id": "L1_063",
+      "product_oracle_status": "PASS",
+      "model_calls": 0,
+      "tool_call_names": [
+        "pivot_dataset"
+      ]
+    },
+    {
+      "id": "L1_064",
+      "product_oracle_status": "PASS",
+      "model_calls": 0,
+      "tool_call_names": [
+        "pivot_dataset"
+      ]
+    },
+    {
+      "id": "L1_065",
+      "product_oracle_status": "UNGRADED",
+      "model_calls": null,
+      "tool_call_names": []
+    },
+    {
+      "id": "L1_066",
+      "product_oracle_status": "UNGRADED",
+      "model_calls": null,
+      "tool_call_names": []
+    },
+    {
+      "id": "L1_067",
+      "product_oracle_status": "UNGRADED",
+      "model_calls": null,
+      "tool_call_names": []
+    },
+    {
+      "id": "L1_068",
+      "product_oracle_status": "UNGRADED",
+      "model_calls": null,
+      "tool_call_names": []
+    },
+    {
+      "id": "L1_069",
+      "product_oracle_status": "UNGRADED",
+      "model_calls": null,
+      "tool_call_names": []
+    },
+    {
+      "id": "L1_070",
+      "product_oracle_status": "UNGRADED",
+      "model_calls": null,
+      "tool_call_names": []
+    },
+    {
+      "id": "L1_071",
+      "product_oracle_status": "UNGRADED",
+      "model_calls": null,
+      "tool_call_names": []
+    },
+    {
+      "id": "L1_072",
+      "product_oracle_status": "UNGRADED",
+      "model_calls": null,
+      "tool_call_names": []
+    },
+    {
+      "id": "L1_073",
+      "product_oracle_status": "UNGRADED",
+      "model_calls": null,
+      "tool_call_names": []
+    },
+    {
+      "id": "L1_074",
+      "product_oracle_status": "UNGRADED",
+      "model_calls": null,
+      "tool_call_names": []
+    },
+    {
+      "id": "L1_075",
+      "product_oracle_status": "UNGRADED",
+      "model_calls": null,
+      "tool_call_names": []
+    },
+    {
+      "id": "L1_076",
+      "product_oracle_status": "PASS",
+      "model_calls": 0,
+      "tool_call_names": [
+        "prepare_histogram"
+      ],
+      "tool_correctness": 1.0,
+      "allowed_tool_plans": [
+        [
+          "prepare_histogram"
+        ]
+      ],
+      "tool_metric_scope": "Tool selection only; independent result oracle remains authoritative"
+    },
+    {
+      "id": "L1_077",
+      "product_oracle_status": "PASS",
+      "model_calls": 0,
+      "tool_call_names": [
+        "render_chart_spec"
+      ]
+    },
+    {
+      "id": "L1_078",
+      "product_oracle_status": "PASS",
+      "model_calls": 0,
+      "tool_call_names": [
+        "render_chart_spec"
+      ]
+    },
+    {
+      "id": "L1_079",
+      "product_oracle_status": "UNGRADED",
+      "model_calls": null,
+      "tool_call_names": []
+    },
+    {
+      "id": "L1_080",
+      "product_oracle_status": "PASS",
+      "model_calls": 0,
+      "tool_call_names": [
+        "render_chart_spec"
+      ]
+    },
+    {
+      "id": "L1_081",
+      "product_oracle_status": "PASS",
+      "model_calls": 0,
+      "tool_call_names": [
+        "render_chart_spec"
+      ]
+    },
+    {
+      "id": "L1_082",
+      "product_oracle_status": "PASS",
+      "model_calls": 0,
+      "tool_call_names": [
+        "render_chart_spec"
+      ]
+    },
+    {
+      "id": "L1_083",
+      "product_oracle_status": "PASS",
+      "model_calls": 0,
+      "tool_call_names": [
+        "prepare_histogram"
+      ]
+    },
+    {
+      "id": "L1_084",
+      "product_oracle_status": "PASS",
+      "model_calls": 0,
+      "tool_call_names": [
+        "render_chart_spec"
+      ]
+    },
+    {
+      "id": "L1_085",
+      "product_oracle_status": "PASS",
+      "model_calls": 0,
+      "tool_call_names": [
+        "render_chart_spec"
+      ]
+    },
+    {
+      "id": "L1_086",
+      "product_oracle_status": "PASS",
+      "model_calls": 0,
+      "tool_call_names": [
+        "render_chart_spec"
+      ]
+    },
+    {
+      "id": "L1_087",
+      "product_oracle_status": "PASS",
+      "model_calls": 0,
+      "tool_call_names": [
+        "render_chart_spec"
+      ]
+    },
+    {
+      "id": "L1_088",
+      "product_oracle_status": "UNGRADED",
+      "model_calls": null,
+      "tool_call_names": []
+    },
+    {
+      "id": "L1_089",
+      "product_oracle_status": "PASS",
+      "model_calls": 0,
+      "tool_call_names": [
+        "render_chart_spec"
+      ]
+    },
+    {
+      "id": "L1_090",
+      "product_oracle_status": "UNGRADED",
+      "model_calls": null,
+      "tool_call_names": []
+    },
+    {
+      "id": "L1_091",
+      "product_oracle_status": "PASS",
+      "model_calls": 0,
+      "tool_call_names": [
+        "render_chart_spec"
+      ]
+    },
+    {
+      "id": "L1_092",
+      "product_oracle_status": "PASS",
+      "model_calls": 0,
+      "tool_call_names": [
+        "render_chart_spec"
+      ]
+    },
+    {
+      "id": "L1_093",
+      "product_oracle_status": "PASS",
+      "model_calls": 0,
+      "tool_call_names": [
+        "prepare_histogram"
+      ]
+    },
+    {
+      "id": "L1_094",
+      "product_oracle_status": "PASS",
+      "model_calls": 0,
+      "tool_call_names": [
+        "render_chart_spec"
+      ]
+    },
+    {
+      "id": "L1_095",
+      "product_oracle_status": "UNGRADED",
+      "model_calls": null,
+      "tool_call_names": []
+    },
+    {
+      "id": "L1_096",
+      "product_oracle_status": "UNGRADED",
+      "model_calls": null,
+      "tool_call_names": []
+    },
+    {
+      "id": "L1_097",
+      "product_oracle_status": "UNGRADED",
+      "model_calls": null,
+      "tool_call_names": []
+    },
+    {
+      "id": "L1_098",
+      "product_oracle_status": "PASS",
+      "model_calls": 0,
+      "tool_call_names": [
+        "render_chart_spec"
+      ]
+    },
+    {
+      "id": "L1_099",
+      "product_oracle_status": "UNGRADED",
+      "model_calls": null,
+      "tool_call_names": []
+    },
+    {
+      "id": "L1_100",
+      "product_oracle_status": "UNGRADED",
+      "model_calls": null,
+      "tool_call_names": []
+    },
+    {
+      "id": "L2_001",
+      "product_oracle_status": "UNGRADED",
+      "model_calls": null,
+      "tool_call_names": []
+    },
+    {
+      "id": "L2_002",
+      "product_oracle_status": "UNGRADED",
+      "model_calls": null,
+      "tool_call_names": []
+    },
+    {
+      "id": "L2_003",
+      "product_oracle_status": "UNGRADED",
+      "model_calls": null,
+      "tool_call_names": []
+    },
+    {
+      "id": "L2_004",
+      "product_oracle_status": "UNGRADED",
+      "model_calls": null,
+      "tool_call_names": []
+    },
+    {
+      "id": "L2_005",
+      "product_oracle_status": "PASS",
+      "model_calls": 0,
+      "tool_call_names": [
+        "local_analysis_sql"
+      ],
+      "tool_correctness": 1.0,
+      "allowed_tool_plans": [
+        [
+          "local_analysis_sql"
+        ]
+      ],
+      "tool_metric_scope": "Tool selection only; independent result oracle remains authoritative"
+    },
+    {
+      "id": "L2_006",
+      "product_oracle_status": "UNGRADED",
+      "model_calls": null,
+      "tool_call_names": []
+    },
+    {
+      "id": "L2_007",
+      "product_oracle_status": "UNGRADED",
+      "model_calls": null,
+      "tool_call_names": []
+    },
+    {
+      "id": "L2_008",
+      "product_oracle_status": "UNGRADED",
+      "model_calls": null,
+      "tool_call_names": []
+    },
+    {
+      "id": "L2_009",
+      "product_oracle_status": "UNGRADED",
+      "model_calls": null,
+      "tool_call_names": []
+    },
+    {
+      "id": "L2_010",
+      "product_oracle_status": "PASS",
+      "model_calls": 0,
+      "tool_call_names": [
+        "local_analysis_sql"
+      ]
+    },
+    {
+      "id": "L2_011",
+      "product_oracle_status": "UNGRADED",
+      "model_calls": null,
+      "tool_call_names": []
+    },
+    {
+      "id": "L2_012",
+      "product_oracle_status": "PASS",
+      "model_calls": 0,
+      "tool_call_names": [
+        "local_analysis_sql"
+      ]
+    },
+    {
+      "id": "L2_013",
+      "product_oracle_status": "UNGRADED",
+      "model_calls": null,
+      "tool_call_names": []
+    },
+    {
+      "id": "L2_014",
+      "product_oracle_status": "UNGRADED",
+      "model_calls": null,
+      "tool_call_names": []
+    },
+    {
+      "id": "L2_015",
+      "product_oracle_status": "UNGRADED",
+      "model_calls": null,
+      "tool_call_names": []
+    },
+    {
+      "id": "L2_016",
+      "product_oracle_status": "UNGRADED",
+      "model_calls": null,
+      "tool_call_names": []
+    },
+    {
+      "id": "L2_017",
+      "product_oracle_status": "PASS",
+      "model_calls": 0,
+      "tool_call_names": [
+        "local_analysis_sql"
+      ]
+    },
+    {
+      "id": "L2_018",
+      "product_oracle_status": "UNGRADED",
+      "model_calls": null,
+      "tool_call_names": []
+    },
+    {
+      "id": "L2_019",
+      "product_oracle_status": "UNGRADED",
+      "model_calls": null,
+      "tool_call_names": []
+    },
+    {
+      "id": "L2_020",
+      "product_oracle_status": "PASS",
+      "model_calls": 0,
+      "tool_call_names": [
+        "local_analysis_sql"
+      ]
+    },
+    {
+      "id": "L2_021",
+      "product_oracle_status": "PASS",
+      "model_calls": 0,
+      "tool_call_names": [
+        "pivot_dataset"
+      ]
+    },
+    {
+      "id": "L2_022",
+      "product_oracle_status": "PASS",
+      "model_calls": 0,
+      "tool_call_names": [
+        "pivot_dataset"
+      ]
+    },
+    {
+      "id": "L2_023",
+      "product_oracle_status": "PASS",
+      "model_calls": 0,
+      "tool_call_names": [
+        "pivot_dataset"
+      ]
+    },
+    {
+      "id": "L2_024",
+      "product_oracle_status": "PASS",
+      "model_calls": 0,
+      "tool_call_names": [
+        "pivot_dataset"
+      ]
+    },
+    {
+      "id": "L2_025",
+      "product_oracle_status": "PASS",
+      "model_calls": 0,
+      "tool_call_names": [
+        "pivot_dataset"
+      ]
+    },
+    {
+      "id": "L2_026",
+      "product_oracle_status": "UNGRADED",
+      "model_calls": null,
+      "tool_call_names": []
+    },
+    {
+      "id": "L2_027",
+      "product_oracle_status": "PASS",
+      "model_calls": 0,
+      "tool_call_names": [
+        "pivot_dataset"
+      ]
+    },
+    {
+      "id": "L2_028",
+      "product_oracle_status": "PASS",
+      "model_calls": 0,
+      "tool_call_names": [
+        "pivot_dataset"
+      ]
+    },
+    {
+      "id": "L2_029",
+      "product_oracle_status": "PASS",
+      "model_calls": 0,
+      "tool_call_names": [
+        "pivot_dataset"
+      ]
+    },
+    {
+      "id": "L2_030",
+      "product_oracle_status": "UNGRADED",
+      "model_calls": null,
+      "tool_call_names": []
+    },
+    {
+      "id": "L2_031",
+      "product_oracle_status": "PASS",
+      "model_calls": 0,
+      "tool_call_names": [
+        "pivot_dataset"
+      ]
+    },
+    {
+      "id": "L2_032",
+      "product_oracle_status": "UNGRADED",
+      "model_calls": null,
+      "tool_call_names": []
+    },
+    {
+      "id": "L2_033",
+      "product_oracle_status": "UNGRADED",
+      "model_calls": null,
+      "tool_call_names": []
+    },
+    {
+      "id": "L2_034",
+      "product_oracle_status": "PASS",
+      "model_calls": 0,
+      "tool_call_names": [
+        "pivot_dataset"
+      ]
+    },
+    {
+      "id": "L2_035",
+      "product_oracle_status": "UNGRADED",
+      "model_calls": null,
+      "tool_call_names": []
+    },
+    {
+      "id": "L2_036",
+      "product_oracle_status": "PASS",
+      "model_calls": 0,
+      "tool_call_names": [
+        "detect_outliers"
+      ],
+      "tool_correctness": 1.0,
+      "allowed_tool_plans": [
+        [
+          "detect_outliers"
+        ]
+      ],
+      "tool_metric_scope": "Tool selection only; independent result oracle remains authoritative"
+    },
+    {
+      "id": "L2_037",
+      "product_oracle_status": "PASS",
+      "model_calls": 0,
+      "tool_call_names": [
+        "select_outlier_rows",
+        "aggregate_dataset",
+        "aggregate_dataset"
+      ]
+    },
+    {
+      "id": "L2_038",
+      "product_oracle_status": "PASS",
+      "model_calls": 0,
+      "tool_call_names": [
+        "select_outlier_rows",
+        "compare_group_aggregates"
+      ]
+    },
+    {
+      "id": "L2_039",
+      "product_oracle_status": "PASS",
+      "model_calls": 0,
+      "tool_call_names": [
+        "detect_outliers"
+      ]
+    },
+    {
+      "id": "L2_040",
+      "product_oracle_status": "PASS",
+      "model_calls": 0,
+      "tool_call_names": [
+        "select_outlier_rows",
+        "local_analysis_sql"
+      ]
+    },
+    {
+      "id": "L2_041",
+      "product_oracle_status": "UNGRADED",
+      "model_calls": null,
+      "tool_call_names": []
+    },
+    {
+      "id": "L2_042",
+      "product_oracle_status": "PASS",
+      "model_calls": 0,
+      "tool_call_names": [
+        "render_chart_spec"
+      ]
+    },
+    {
+      "id": "L2_043",
+      "product_oracle_status": "UNGRADED",
+      "model_calls": null,
+      "tool_call_names": []
+    },
+    {
+      "id": "L2_044",
+      "product_oracle_status": "UNGRADED",
+      "model_calls": null,
+      "tool_call_names": []
+    },
+    {
+      "id": "L2_045",
+      "product_oracle_status": "PASS",
+      "model_calls": 0,
+      "tool_call_names": [
+        "render_chart_spec"
+      ]
+    },
+    {
+      "id": "L2_046",
+      "product_oracle_status": "PASS",
+      "model_calls": 0,
+      "tool_call_names": [
+        "local_analysis_sql"
+      ]
+    },
+    {
+      "id": "L2_047",
+      "product_oracle_status": "UNGRADED",
+      "model_calls": null,
+      "tool_call_names": []
+    },
+    {
+      "id": "L2_048",
+      "product_oracle_status": "PASS",
+      "model_calls": 0,
+      "tool_call_names": [
+        "detect_outliers"
+      ]
+    },
+    {
+      "id": "L2_049",
+      "product_oracle_status": "UNGRADED",
+      "model_calls": null,
+      "tool_call_names": []
+    },
+    {
+      "id": "L2_050",
+      "product_oracle_status": "PASS",
+      "model_calls": 0,
+      "tool_call_names": [
+        "render_chart_spec"
+      ]
+    },
+    {
+      "id": "L2_051",
+      "product_oracle_status": "PASS",
+      "model_calls": 0,
+      "tool_call_names": [
+        "statistical_test"
+      ],
+      "tool_correctness": 1.0,
+      "allowed_tool_plans": [
+        [
+          "statistical_test"
+        ]
+      ],
+      "tool_metric_scope": "Tool selection only; independent result oracle remains authoritative"
+    },
+    {
+      "id": "L2_052",
+      "product_oracle_status": "PASS",
+      "model_calls": 0,
+      "tool_call_names": [
+        "statistical_test"
+      ]
+    },
+    {
+      "id": "L2_053",
+      "product_oracle_status": "PASS",
+      "model_calls": 0,
+      "tool_call_names": [
+        "statistical_test"
+      ]
+    },
+    {
+      "id": "L2_054",
+      "product_oracle_status": "PASS",
+      "model_calls": 0,
+      "tool_call_names": [
+        "statistical_test"
+      ]
+    },
+    {
+      "id": "L2_055",
+      "product_oracle_status": "PASS",
+      "model_calls": 0,
+      "tool_call_names": [
+        "statistical_test"
+      ]
+    },
+    {
+      "id": "L2_056",
+      "product_oracle_status": "PASS",
+      "model_calls": 0,
+      "tool_call_names": [
+        "statistical_test"
+      ]
+    },
+    {
+      "id": "L2_057",
+      "product_oracle_status": "PASS",
+      "model_calls": 0,
+      "tool_call_names": [
+        "statistical_test"
+      ]
+    },
+    {
+      "id": "L2_058",
+      "product_oracle_status": "PASS",
+      "model_calls": 0,
+      "tool_call_names": [
+        "statistical_test"
+      ]
+    },
+    {
+      "id": "L2_059",
+      "product_oracle_status": "PASS",
+      "model_calls": 0,
+      "tool_call_names": [
+        "statistical_test"
+      ]
+    },
+    {
+      "id": "L2_060",
+      "product_oracle_status": "PASS",
+      "model_calls": 0,
+      "tool_call_names": [
+        "statistical_test"
+      ]
+    },
+    {
+      "id": "L2_061",
+      "product_oracle_status": "PASS",
+      "model_calls": 0,
+      "tool_call_names": [
+        "render_count_rate_chart"
+      ],
+      "tool_correctness": 1.0,
+      "allowed_tool_plans": [
+        [
+          "render_count_rate_chart"
+        ]
+      ],
+      "tool_metric_scope": "Tool selection only; independent result oracle remains authoritative"
+    },
+    {
+      "id": "L2_062",
+      "product_oracle_status": "UNGRADED",
+      "model_calls": null,
+      "tool_call_names": []
+    },
+    {
+      "id": "L2_063",
+      "product_oracle_status": "UNGRADED",
+      "model_calls": null,
+      "tool_call_names": []
+    },
+    {
+      "id": "L2_064",
+      "product_oracle_status": "PASS",
+      "model_calls": 0,
+      "tool_call_names": [
+        "render_count_rate_chart"
+      ]
+    },
+    {
+      "id": "L2_065",
+      "product_oracle_status": "PASS",
+      "model_calls": 0,
+      "tool_call_names": [
+        "render_count_rate_chart"
+      ]
+    },
+    {
+      "id": "L2_066",
+      "product_oracle_status": "PASS",
+      "model_calls": 0,
+      "tool_call_names": [
+        "render_count_rate_chart"
+      ]
+    },
+    {
+      "id": "L2_067",
+      "product_oracle_status": "UNGRADED",
+      "model_calls": null,
+      "tool_call_names": []
+    },
+    {
+      "id": "L2_068",
+      "product_oracle_status": "PASS",
+      "model_calls": 0,
+      "tool_call_names": [
+        "render_chart_spec"
+      ]
+    },
+    {
+      "id": "L2_069",
+      "product_oracle_status": "UNGRADED",
+      "model_calls": null,
+      "tool_call_names": []
+    },
+    {
+      "id": "L2_070",
+      "product_oracle_status": "UNGRADED",
+      "model_calls": null,
+      "tool_call_names": []
+    },
+    {
+      "id": "L2_071",
+      "product_oracle_status": "UNGRADED",
+      "model_calls": null,
+      "tool_call_names": []
+    },
+    {
+      "id": "L2_072",
+      "product_oracle_status": "UNGRADED",
+      "model_calls": null,
+      "tool_call_names": []
+    },
+    {
+      "id": "L2_073",
+      "product_oracle_status": "UNGRADED",
+      "model_calls": null,
+      "tool_call_names": []
+    },
+    {
+      "id": "L2_074",
+      "product_oracle_status": "UNGRADED",
+      "model_calls": null,
+      "tool_call_names": []
+    },
+    {
+      "id": "L2_075",
+      "product_oracle_status": "UNGRADED",
+      "model_calls": null,
+      "tool_call_names": []
+    },
+    {
+      "id": "L2_076",
+      "product_oracle_status": "UNGRADED",
+      "model_calls": null,
+      "tool_call_names": []
+    },
+    {
+      "id": "L2_077",
+      "product_oracle_status": "UNGRADED",
+      "model_calls": null,
+      "tool_call_names": []
+    },
+    {
+      "id": "L2_078",
+      "product_oracle_status": "UNGRADED",
+      "model_calls": null,
+      "tool_call_names": []
+    },
+    {
+      "id": "L2_079",
+      "product_oracle_status": "UNGRADED",
+      "model_calls": null,
+      "tool_call_names": []
+    },
+    {
+      "id": "L2_080",
+      "product_oracle_status": "UNGRADED",
+      "model_calls": null,
+      "tool_call_names": []
+    },
+    {
+      "id": "L2_081",
+      "product_oracle_status": "UNGRADED",
+      "model_calls": null,
+      "tool_call_names": []
+    },
+    {
+      "id": "L2_082",
+      "product_oracle_status": "UNGRADED",
+      "model_calls": null,
+      "tool_call_names": []
+    },
+    {
+      "id": "L2_083",
+      "product_oracle_status": "UNGRADED",
+      "model_calls": null,
+      "tool_call_names": []
+    },
+    {
+      "id": "L2_084",
+      "product_oracle_status": "UNGRADED",
+      "model_calls": null,
+      "tool_call_names": []
+    },
+    {
+      "id": "L2_085",
+      "product_oracle_status": "UNGRADED",
+      "model_calls": null,
+      "tool_call_names": []
+    },
+    {
+      "id": "L2_086",
+      "product_oracle_status": "UNGRADED",
+      "model_calls": null,
+      "tool_call_names": []
+    },
+    {
+      "id": "L2_087",
+      "product_oracle_status": "UNGRADED",
+      "model_calls": null,
+      "tool_call_names": []
+    },
+    {
+      "id": "L2_088",
+      "product_oracle_status": "UNGRADED",
+      "model_calls": null,
+      "tool_call_names": []
+    },
+    {
+      "id": "L2_089",
+      "product_oracle_status": "PASS",
+      "model_calls": 0,
+      "tool_call_names": [
+        "render_count_rate_chart"
+      ]
+    },
+    {
+      "id": "L2_090",
+      "product_oracle_status": "UNGRADED",
+      "model_calls": null,
+      "tool_call_names": []
+    },
+    {
+      "id": "L2_091",
+      "product_oracle_status": "UNGRADED",
+      "model_calls": null,
+      "tool_call_names": []
+    },
+    {
+      "id": "L2_092",
+      "product_oracle_status": "UNGRADED",
+      "model_calls": null,
+      "tool_call_names": []
+    },
+    {
+      "id": "L2_093",
+      "product_oracle_status": "UNGRADED",
+      "model_calls": null,
+      "tool_call_names": []
+    },
+    {
+      "id": "L2_094",
+      "product_oracle_status": "UNGRADED",
+      "model_calls": null,
+      "tool_call_names": []
+    },
+    {
+      "id": "L2_095",
+      "product_oracle_status": "UNGRADED",
+      "model_calls": null,
+      "tool_call_names": []
+    },
+    {
+      "id": "L2_096",
+      "product_oracle_status": "PASS",
+      "model_calls": 0,
+      "tool_call_names": [
+        "winsorize_numeric"
+      ]
+    },
+    {
+      "id": "L2_097",
+      "product_oracle_status": "UNGRADED",
+      "model_calls": null,
+      "tool_call_names": []
+    },
+    {
+      "id": "L2_098",
+      "product_oracle_status": "UNGRADED",
+      "model_calls": null,
+      "tool_call_names": []
+    },
+    {
+      "id": "L2_099",
+      "product_oracle_status": "UNGRADED",
+      "model_calls": null,
+      "tool_call_names": []
+    },
+    {
+      "id": "L2_100",
+      "product_oracle_status": "UNGRADED",
+      "model_calls": null,
+      "tool_call_names": []
+    }
+  ]
+}

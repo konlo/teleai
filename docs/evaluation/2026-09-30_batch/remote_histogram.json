@@ -1,0 +1,143 @@
+{
+  "source": "workspace.default.bank_loan",
+  "status": "PASS",
+  "queries": [
+    "SELECT column_name, data_type FROM `workspace`.`information_schema`.`columns` WHERE table_schema = 'default' AND table_name = 'bank_loan' ORDER BY ordinal_position",
+    "WITH base AS (SELECT `job` AS _k0, `id` AS _order, `age` AS _value FROM `workspace`.`default`.`bank_loan`),\nquality AS (SELECT COUNT(*) AS n, COALESCE(SUM(CASE WHEN _k0 IS NULL OR _order IS NULL OR _value IS NULL THEN 1 ELSE 0 END), 0) AS missing FROM base),\nranked AS (SELECT *, DENSE_RANK() OVER (PARTITION BY _k0 ORDER BY _order DESC) AS _rank FROM base),\nlatest AS (SELECT * FROM ranked WHERE _rank = 1),\nkey_counts AS (SELECT _k0, COUNT(*) AS n FROM latest GROUP BY _k0),\nbounds AS (SELECT MIN(CAST(_value AS DOUBLE)) AS lo, MAX(CAST(_value AS DOUBLE)) AS hi FROM latest),\nranges AS (SELECT CASE WHEN lo = hi THEN lo - 0.5 ELSE lo END AS lo,\nCASE WHEN lo = hi THEN hi + 0.5 ELSE hi END AS hi FROM bounds),\nbucketed AS (SELECT CASE WHEN CAST(_value AS DOUBLE) >= hi THEN 7\nELSE GREATEST(0, LEAST(7, CAST(FLOOR((CAST(_value AS DOUBLE)-lo)/NULLIF(hi-lo,0)*8) AS INT))) END AS bucket\nFROM latest CROSS JOIN ranges),\nfrequencies AS (SELECT bucket, COUNT(*) AS n FROM bucketed GROUP BY bucket),\nbin_ids AS (SELECT EXPLODE(SEQUENCE(0,7)) AS bucket)\nSELECT 0 AS __kind, CAST(NULL AS STRING) AS __value, 0 AS __frequency,\nn AS __input_rows, missing AS __null_rows,\n(SELECT COUNT(*) FROM key_counts WHERE n > 1) AS __tied_keys,\n(SELECT COUNT(*) FROM key_counts) AS __selected_keys,\n8 AS __categories, (SELECT lo FROM ranges) AS __lower, (SELECT hi FROM ranges) AS __upper FROM quality\nUNION ALL\nSELECT 1, CAST(b.bucket AS STRING), COALESCE(f.n,0), 0,0,0,0,0,\nr.lo+(r.hi-r.lo)*b.bucket/8, r.lo+(r.hi-r.lo)*(b.bucket+1)/8\nFROM bin_ids b CROSS JOIN ranges r LEFT JOIN frequencies f ON b.bucket=f.bucket\nORDER BY __kind, __lower LIMIT 9",
+    "SELECT CAST(`age` AS STRING) AS category, COUNT(*) AS frequency FROM (SELECT `age`, ROW_NUMBER() OVER (PARTITION BY `job` ORDER BY `id` DESC) AS rn FROM `workspace`.`default`.`bank_loan`) chosen WHERE rn = 1 GROUP BY `age` ORDER BY category"
+  ],
+  "observed_schema": [
+    {
+      "table": "workspace.default.bank_loan",
+      "observed_at": "2026-09-29T15:02:58.836394+00:00",
+      "columns": [
+        {
+          "name": "id",
+          "dtype": "LONG"
+        },
+        {
+          "name": "age",
+          "dtype": "LONG"
+        },
+        {
+          "name": "job",
+          "dtype": "STRING"
+        },
+        {
+          "name": "marital",
+          "dtype": "STRING"
+        },
+        {
+          "name": "education",
+          "dtype": "STRING"
+        },
+        {
+          "name": "default",
+          "dtype": "STRING"
+        },
+        {
+          "name": "balance",
+          "dtype": "LONG"
+        },
+        {
+          "name": "housing",
+          "dtype": "STRING"
+        },
+        {
+          "name": "loan",
+          "dtype": "STRING"
+        },
+        {
+          "name": "contact",
+          "dtype": "STRING"
+        },
+        {
+          "name": "day",
+          "dtype": "LONG"
+        },
+        {
+          "name": "month",
+          "dtype": "STRING"
+        },
+        {
+          "name": "duration",
+          "dtype": "LONG"
+        },
+        {
+          "name": "campaign",
+          "dtype": "LONG"
+        },
+        {
+          "name": "pdays",
+          "dtype": "LONG"
+        },
+        {
+          "name": "previous",
+          "dtype": "LONG"
+        },
+        {
+          "name": "poutcome",
+          "dtype": "STRING"
+        },
+        {
+          "name": "y",
+          "dtype": "LONG"
+        }
+      ]
+    }
+  ],
+  "prompt": "workspace.default.bank_loan 테이블에서 job별 unique한 값마다 id가 가장 큰 마지막 행의 age 분포를 그려줘. 8개 구간 histogram으로 그려줘.",
+  "agent_status": "answered",
+  "answer": "workspace.default.bank_loan에서 키 job마다 id이 가장 큰 행을 검증했습니다. 전체 750,000행의 12개 키를 DB에서 집계했습니다. 8개 수치 구간의 히스토그램으로 표시했습니다. 원본 전체를 로딩하지 않았으며 기존 보유 데이터는 보존했습니다.\n\n원격 조회가 완료되어 결과 9행을 저장했습니다.\n\nage · 키별 최신행 분포 이미지를 생성했습니다.\n분석 범위: 전체 12개 키 · 8개 구간",
+  "elapsed_seconds": 22.793,
+  "model_calls": 0,
+  "remote_result_rows": 9,
+  "input_rows": 750000,
+  "selected_keys": 12,
+  "oracle_edges": [
+    23.0,
+    28.75,
+    34.5,
+    40.25,
+    46.0,
+    51.75,
+    57.5,
+    63.25,
+    69.0
+  ],
+  "actual_edges": [
+    23.0,
+    28.75,
+    34.5,
+    40.25,
+    46.0,
+    51.75,
+    57.5,
+    63.25,
+    69.0
+  ],
+  "actual_counts": [
+    2,
+    2,
+    1,
+    4,
+    2,
+    0,
+    0,
+    1
+  ],
+  "oracle_counts": [
+    2,
+    2,
+    1,
+    4,
+    2,
+    0,
+    0,
+    1
+  ],
+  "reuse_status": "answered",
+  "reuse_queries": 0,
+  "reused": true,
+  "query_count": 3
+}
