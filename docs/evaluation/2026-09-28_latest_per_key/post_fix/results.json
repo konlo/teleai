@@ -1,0 +1,3667 @@
+{
+  "mode": "production graph with Databricks model configured; actual model call count per result; synthetic local data",
+  "generated_at": "2026-09-28T14:23:55.210277+00:00",
+  "warehouse_sql_executions": 0,
+  "limitations": [
+    "Not the user table or real schema; source data is a 10-row synthetic fixture.",
+    "No remote warehouse loading or large-data performance measurement."
+  ],
+  "results": [
+    {
+      "id": "ambiguous_last",
+      "repeat": 1,
+      "prompt": "현재 로딩된 테이블의 DriveProductID에 대한 histogram데이타를 확인하고 싶어, 대신에 adapterserial 컬럼을 기준으로 unique한 값으로 통계를 보고 싶고. 여러 개인 경우는 마지막에 있는 데이타를 활용해줘 그려줘.",
+      "status": "PASS",
+      "agent_status": "answered",
+      "answer": "마지막 행을 결정할 정렬 기준은 어느 컬럼인가요? event_time, ingested_at",
+      "charts": [],
+      "datasets": [],
+      "raw_preserved": true,
+      "calls": [],
+      "observations": [],
+      "state": {
+        "request_id": "1350f373-d6fa-4bab-a143-6a222e3d6a5a",
+        "request_text": "현재 로딩된 테이블의 DriveProductID에 대한 histogram데이타를 확인하고 싶어, 대신에 adapterserial 컬럼을 기준으로 unique한 값으로 통계를 보고 싶고. 여러 개인 경우는 마지막에 있는 데이타를 활용해줘 그려줘.",
+        "attempts": 0,
+        "chart": true,
+        "kind": "bar",
+        "join": false,
+        "requested_join": false,
+        "join_how": null,
+        "statistical_kind": null,
+        "pivot_requested": false,
+        "pivot_aggregation": null,
+        "pivot_value_column": null,
+        "pivot_success_value": null,
+        "pivot_index_columns": [],
+        "pivot_column_columns": [],
+        "pivot_conditions": [],
+        "pivot_derived_bins": [],
+        "pivot_margins": false,
+        "pivot_sort": "ascending",
+        "pivot_margins_name": "전체",
+        "winsor_spec": null,
+        "winsor_column": null,
+        "outlier_spec": null,
+        "outlier_column": null,
+        "outlier_followup": false,
+        "outlier_selection": "outliers",
+        "outlier_group_column": null,
+        "outlier_metric_column": null,
+        "outlier_metric_aggregation": null,
+        "outlier_aggregate_mode": null,
+        "outlier_aggregate_requested": false,
+        "outlier_top_n": 0,
+        "group_summary_requested": false,
+        "group_summary_columns": [],
+        "group_summary_metrics": [],
+        "group_summary_conditions": [],
+        "calculation": false,
+        "operations": [],
+        "metadata_kind": null,
+        "scalar_grouping": false,
+        "profile_kind": null,
+        "preview_limit": 0,
+        "chart_spec_requested": true,
+        "count_rate_layout": null,
+        "chart_cumulative": false,
+        "time_series_frequency": null,
+        "time_series_aggregation": null,
+        "time_series_gap_policy": "omit",
+        "time_series_timezone": "",
+        "data_load": false,
+        "expected_load_source": "",
+        "expected_load_query": "",
+        "whole_row_count": false,
+        "current_result_only": true,
+        "requested_result_rows": null,
+        "fresh_source_required": false,
+        "request_started_at": 1790605435.412971,
+        "required_columns": [
+          "DriveProductID"
+        ],
+        "explicit_columns": [
+          "DriveProductID",
+          "adapterserial"
+        ],
+        "required_sources": [],
+        "columns": [],
+        "failed": {},
+        "status": "needs_context",
+        "previous_scope": {},
+        "scope": {
+          "conditions": [],
+          "any_conditions": [],
+          "join_edges": [],
+          "measure_conditions": [],
+          "ratio": null,
+          "unresolved": [],
+          "columns": [
+            "DriveProductID",
+            "adapterserial"
+          ]
+        },
+        "named_measure_columns": [],
+        "latest_per_key_spec": {
+          "dataset_id": "2e977a61-df66-4158-9a72-5caa24039c27",
+          "key_columns": [
+            "adapterserial"
+          ],
+          "value_column": "DriveProductID",
+          "order_column": "",
+          "categorical": true,
+          "question": "마지막 행을 결정할 정렬 기준은 어느 컬럼인가요? event_time, ingested_at",
+          "order_choices": [
+            "event_time",
+            "ingested_at"
+          ]
+        },
+        "latest_selection_evidence": null,
+        "operation_pending": false,
+        "processed": [],
+        "sent_calls": [],
+        "failed_signatures": {},
+        "evidence_ids": [],
+        "artifact_ids": [],
+        "model_calls": 0,
+        "model_seconds": 0.0,
+        "preview_evidence": null,
+        "outlier_aggregate_evidence": {},
+        "count_rate_evidence": null,
+        "count_rate_group_column": null,
+        "winsor_evidence": null,
+        "pivot_evidence": null,
+        "group_summary_evidence": null,
+        "remote_query_ids": [],
+        "remote_query_evidence": {},
+        "remote_result_requested": false,
+        "accounted_model_failures": 0,
+        "accounted_model_failure_seconds": 0.0,
+        "model_retries": 0,
+        "accounted_aux_calls": 0,
+        "accounted_aux_seconds": 0.0,
+        "_new_model_failure_seconds": 0.0,
+        "stop_reason": "latest_selection_context",
+        "latest_pending": {
+          "dataset_id": "2e977a61-df66-4158-9a72-5caa24039c27",
+          "key_columns": [
+            "adapterserial"
+          ],
+          "value_column": "DriveProductID",
+          "order_column": "",
+          "categorical": true,
+          "question": "마지막 행을 결정할 정렬 기준은 어느 컬럼인가요? event_time, ingested_at",
+          "order_choices": [
+            "event_time",
+            "ingested_at"
+          ],
+          "request_text": "현재 로딩된 테이블의 DriveProductID에 대한 histogram데이타를 확인하고 싶어, 대신에 adapterserial 컬럼을 기준으로 unique한 값으로 통계를 보고 싶고. 여러 개인 경우는 마지막에 있는 데이타를 활용해줘 그려줘."
+        }
+      },
+      "model_calls": 0,
+      "elapsed_seconds": 0.102
+    },
+    {
+      "id": "explicit_latest",
+      "repeat": 1,
+      "prompt": "현재 로딩된 데이터에서 adapterserial별 event_time이 가장 늦은 행 하나만 사용해서 DriveProductID별 장치 수 분포를 그려줘. DriveProductID는 제품 식별자야. 원본은 보존해.",
+      "status": "PASS",
+      "agent_status": "answered",
+      "answer": "키 adapterserial마다 event_time이 가장 큰 행을 선택했습니다. 원본 10행 중 5개의 키를 각각 한 번 계산했습니다. 원본은 보존했습니다. 식별자·범주 값은 값별 빈도 막대그래프로 표시합니다.\n\nDriveProductID · 키별 최신 행 분포 이미지를 생성했습니다.\n분석 범위: 보유 3행 기준 · complete · aggregate · 표시 데이터 3개 · 집계 none",
+      "charts": [
+        {
+          "kind": "bar",
+          "columns": [
+            "DriveProductID",
+            "__key_count"
+          ],
+          "image": "explicit_latest-1-0.png",
+          "accepted_by_completion": true,
+          "dataset_id": "ebd194bf-e6f6-4b8b-a5c0-f5eab1155174",
+          "query": "",
+          "counts": {
+            "P100": 1.0,
+            "P200": 3.0,
+            "P300": 1.0
+          },
+          "data": [
+            {
+              "DriveProductID": "P100",
+              "__key_count": 1
+            },
+            {
+              "DriveProductID": "P200",
+              "__key_count": 3
+            },
+            {
+              "DriveProductID": "P300",
+              "__key_count": 1
+            }
+          ],
+          "counts_match": true
+        }
+      ],
+      "datasets": [
+        {
+          "id": "f564e0bd-ba3b-4be0-9979-b522d2043380",
+          "query": "",
+          "parent_id": "73e319e7-663d-4e13-a0ff-72eb4a477617",
+          "rows": [
+            {
+              "adapterserial": "E",
+              "event_time": "2026-09-28 14:00:00",
+              "DriveProductID": "P300"
+            },
+            {
+              "adapterserial": "D",
+              "event_time": "2026-09-28 13:00:00",
+              "DriveProductID": "P100"
+            },
+            {
+              "adapterserial": "C",
+              "event_time": "2026-09-28 12:00:00",
+              "DriveProductID": "P200"
+            },
+            {
+              "adapterserial": "B",
+              "event_time": "2026-09-28 11:00:00",
+              "DriveProductID": "P200"
+            },
+            {
+              "adapterserial": "A",
+              "event_time": "2026-09-28 10:00:00",
+              "DriveProductID": "P200"
+            }
+          ]
+        },
+        {
+          "id": "ebd194bf-e6f6-4b8b-a5c0-f5eab1155174",
+          "query": "",
+          "parent_id": "f564e0bd-ba3b-4be0-9979-b522d2043380",
+          "rows": [
+            {
+              "DriveProductID": "P100",
+              "__key_count": 1
+            },
+            {
+              "DriveProductID": "P200",
+              "__key_count": 3
+            },
+            {
+              "DriveProductID": "P300",
+              "__key_count": 1
+            }
+          ]
+        }
+      ],
+      "raw_preserved": true,
+      "calls": [
+        {
+          "name": "analyze_latest_distribution",
+          "args": {
+            "dataset_id": "73e319e7-663d-4e13-a0ff-72eb4a477617",
+            "key_columns": [
+              "adapterserial"
+            ],
+            "order_column": "event_time",
+            "value_column": "DriveProductID",
+            "categorical": true
+          },
+          "id": "f2b6a936-a9c2-44b8-aa52-fd266e855414",
+          "type": "tool_call"
+        }
+      ],
+      "observations": [
+        {
+          "tool": "analyze_latest_distribution",
+          "result": {
+            "status": "ready",
+            "dataset": {
+              "id": "f564e0bd-ba3b-4be0-9979-b522d2043380",
+              "source": "fixture.telemetry.device_events",
+              "columns": [
+                "adapterserial",
+                "event_time",
+                "DriveProductID"
+              ],
+              "rows": 5,
+              "coverage": "complete",
+              "conditions": [],
+              "predicate_known": true,
+              "grain": "raw",
+              "aggregation": "",
+              "snapshot": "synthetic-v1",
+              "query": "",
+              "parent_id": "73e319e7-663d-4e13-a0ff-72eb4a477617",
+              "parent_ids": [],
+              "role": "derived",
+              "root_id": "73e319e7-663d-4e13-a0ff-72eb4a477617",
+              "row_selection": {
+                "kind": "latest_per_key",
+                "key_columns": [
+                  "adapterserial"
+                ],
+                "order_columns": [
+                  "event_time"
+                ],
+                "descending": true,
+                "null_policy": "reject",
+                "tie_policy": "reject",
+                "input_dataset_id": "73e319e7-663d-4e13-a0ff-72eb4a477617",
+                "input_snapshot": "synthetic-v1"
+              }
+            },
+            "distribution": {
+              "id": "ebd194bf-e6f6-4b8b-a5c0-f5eab1155174",
+              "source": "fixture.telemetry.device_events",
+              "columns": [
+                "DriveProductID",
+                "__key_count"
+              ],
+              "rows": 3,
+              "coverage": "complete",
+              "conditions": [],
+              "predicate_known": true,
+              "grain": "aggregate",
+              "aggregation": "count_by_value_after_latest_per_key",
+              "snapshot": "synthetic-v1",
+              "query": "",
+              "parent_id": "f564e0bd-ba3b-4be0-9979-b522d2043380",
+              "parent_ids": [],
+              "role": "derived",
+              "root_id": "73e319e7-663d-4e13-a0ff-72eb4a477617",
+              "row_selection": {
+                "kind": "latest_per_key",
+                "key_columns": [
+                  "adapterserial"
+                ],
+                "order_columns": [
+                  "event_time"
+                ],
+                "descending": true,
+                "null_policy": "reject",
+                "tie_policy": "reject",
+                "input_dataset_id": "73e319e7-663d-4e13-a0ff-72eb4a477617",
+                "input_snapshot": "synthetic-v1"
+              }
+            },
+            "latest_selection": {
+              "kind": "latest_per_key",
+              "key_columns": [
+                "adapterserial"
+              ],
+              "order_columns": [
+                "event_time"
+              ],
+              "descending": true,
+              "null_policy": "reject",
+              "tie_policy": "reject",
+              "input_dataset_id": "73e319e7-663d-4e13-a0ff-72eb4a477617",
+              "input_snapshot": "synthetic-v1"
+            },
+            "selected_keys": 5,
+            "input_rows": 10,
+            "count_column": "__key_count",
+            "value_column": "DriveProductID",
+            "counts": [
+              {
+                "DriveProductID": "P100",
+                "__key_count": 1
+              },
+              {
+                "DriveProductID": "P200",
+                "__key_count": 3
+              },
+              {
+                "DriveProductID": "P300",
+                "__key_count": 1
+              }
+            ],
+            "counts_truncated": false,
+            "chart_spec": {
+              "kind": "bar",
+              "x": "DriveProductID",
+              "y": "__key_count",
+              "category": "",
+              "aggregation": "none",
+              "sort": "none",
+              "cumulative": false,
+              "top_n": 50,
+              "bins": 20,
+              "title": "DriveProductID · 키별 최신 행 분포",
+              "x_label": "DriveProductID",
+              "y_label": "Unique keys",
+              "orientation": "vertical"
+            },
+            "render_summary": {
+              "source_rows": 3,
+              "rendered_rows": 3,
+              "data_sha256": "a303134c9bda1067d6fb6c7f05918d3bde6689d8d787f5391287681db909adac",
+              "sampled": false,
+              "aggregation": "none",
+              "points": [
+                {
+                  "x": "P100",
+                  "value": 1
+                },
+                {
+                  "x": "P200",
+                  "value": 3
+                },
+                {
+                  "x": "P300",
+                  "value": 1
+                }
+              ]
+            },
+            "cards": [
+              {
+                "id": "09341e44-44da-4fd3-9b5e-d044f322a3bf",
+                "kind": "bar",
+                "title": "DriveProductID · 키별 최신 행 분포",
+                "dataset_id": "ebd194bf-e6f6-4b8b-a5c0-f5eab1155174"
+              }
+            ],
+            "evidence_ids": [
+              "f564e0bd-ba3b-4be0-9979-b522d2043380",
+              "09341e44-44da-4fd3-9b5e-d044f322a3bf"
+            ],
+            "error_code": null,
+            "retryable": false,
+            "user_action": "",
+            "scope": "도구가 반환한 구조화 결과 범위입니다."
+          }
+        }
+      ],
+      "state": {
+        "request_id": "6752c000-44c2-46ef-a086-fe902321240c",
+        "request_text": "현재 로딩된 데이터에서 adapterserial별 event_time이 가장 늦은 행 하나만 사용해서 DriveProductID별 장치 수 분포를 그려줘. DriveProductID는 제품 식별자야. 원본은 보존해.",
+        "attempts": 0,
+        "chart": true,
+        "kind": "bar",
+        "join": false,
+        "requested_join": false,
+        "join_how": null,
+        "statistical_kind": null,
+        "pivot_requested": false,
+        "pivot_aggregation": null,
+        "pivot_value_column": null,
+        "pivot_success_value": null,
+        "pivot_index_columns": [],
+        "pivot_column_columns": [],
+        "pivot_conditions": [],
+        "pivot_derived_bins": [],
+        "pivot_margins": false,
+        "pivot_sort": "ascending",
+        "pivot_margins_name": "전체",
+        "winsor_spec": null,
+        "winsor_column": null,
+        "outlier_spec": null,
+        "outlier_column": null,
+        "outlier_followup": false,
+        "outlier_selection": "outliers",
+        "outlier_group_column": null,
+        "outlier_metric_column": null,
+        "outlier_metric_aggregation": null,
+        "outlier_aggregate_mode": null,
+        "outlier_aggregate_requested": false,
+        "outlier_top_n": 0,
+        "group_summary_requested": false,
+        "group_summary_columns": [],
+        "group_summary_metrics": [],
+        "group_summary_conditions": [],
+        "calculation": false,
+        "operations": [],
+        "metadata_kind": null,
+        "scalar_grouping": true,
+        "profile_kind": null,
+        "preview_limit": 0,
+        "chart_spec_requested": true,
+        "count_rate_layout": null,
+        "chart_cumulative": false,
+        "time_series_frequency": null,
+        "time_series_aggregation": null,
+        "time_series_gap_policy": "omit",
+        "time_series_timezone": "",
+        "data_load": false,
+        "expected_load_source": "",
+        "expected_load_query": "",
+        "whole_row_count": false,
+        "current_result_only": true,
+        "requested_result_rows": null,
+        "fresh_source_required": false,
+        "request_started_at": 1790605435.5249002,
+        "required_columns": [
+          "DriveProductID"
+        ],
+        "explicit_columns": [
+          "adapterserial",
+          "event_time",
+          "DriveProductID"
+        ],
+        "required_sources": [],
+        "columns": [],
+        "failed": {},
+        "status": "complete",
+        "previous_scope": {},
+        "scope": {
+          "conditions": [],
+          "any_conditions": [],
+          "join_edges": [],
+          "measure_conditions": [],
+          "ratio": null,
+          "unresolved": [],
+          "columns": [
+            "DriveProductID",
+            "adapterserial",
+            "event_time"
+          ]
+        },
+        "named_measure_columns": [],
+        "latest_per_key_spec": {
+          "dataset_id": "73e319e7-663d-4e13-a0ff-72eb4a477617",
+          "key_columns": [
+            "adapterserial"
+          ],
+          "value_column": "DriveProductID",
+          "order_column": "event_time",
+          "categorical": true
+        },
+        "latest_selection_evidence": {
+          "status": "ready",
+          "dataset": {
+            "id": "f564e0bd-ba3b-4be0-9979-b522d2043380",
+            "source": "fixture.telemetry.device_events",
+            "columns": [
+              "adapterserial",
+              "event_time",
+              "DriveProductID"
+            ],
+            "rows": 5,
+            "coverage": "complete",
+            "conditions": [],
+            "predicate_known": true,
+            "grain": "raw",
+            "aggregation": "",
+            "snapshot": "synthetic-v1",
+            "query": "",
+            "parent_id": "73e319e7-663d-4e13-a0ff-72eb4a477617",
+            "parent_ids": [],
+            "role": "derived",
+            "root_id": "73e319e7-663d-4e13-a0ff-72eb4a477617",
+            "row_selection": {
+              "kind": "latest_per_key",
+              "key_columns": [
+                "adapterserial"
+              ],
+              "order_columns": [
+                "event_time"
+              ],
+              "descending": true,
+              "null_policy": "reject",
+              "tie_policy": "reject",
+              "input_dataset_id": "73e319e7-663d-4e13-a0ff-72eb4a477617",
+              "input_snapshot": "synthetic-v1"
+            }
+          },
+          "distribution": {
+            "id": "ebd194bf-e6f6-4b8b-a5c0-f5eab1155174",
+            "source": "fixture.telemetry.device_events",
+            "columns": [
+              "DriveProductID",
+              "__key_count"
+            ],
+            "rows": 3,
+            "coverage": "complete",
+            "conditions": [],
+            "predicate_known": true,
+            "grain": "aggregate",
+            "aggregation": "count_by_value_after_latest_per_key",
+            "snapshot": "synthetic-v1",
+            "query": "",
+            "parent_id": "f564e0bd-ba3b-4be0-9979-b522d2043380",
+            "parent_ids": [],
+            "role": "derived",
+            "root_id": "73e319e7-663d-4e13-a0ff-72eb4a477617",
+            "row_selection": {
+              "kind": "latest_per_key",
+              "key_columns": [
+                "adapterserial"
+              ],
+              "order_columns": [
+                "event_time"
+              ],
+              "descending": true,
+              "null_policy": "reject",
+              "tie_policy": "reject",
+              "input_dataset_id": "73e319e7-663d-4e13-a0ff-72eb4a477617",
+              "input_snapshot": "synthetic-v1"
+            }
+          },
+          "latest_selection": {
+            "kind": "latest_per_key",
+            "key_columns": [
+              "adapterserial"
+            ],
+            "order_columns": [
+              "event_time"
+            ],
+            "descending": true,
+            "null_policy": "reject",
+            "tie_policy": "reject",
+            "input_dataset_id": "73e319e7-663d-4e13-a0ff-72eb4a477617",
+            "input_snapshot": "synthetic-v1"
+          },
+          "selected_keys": 5,
+          "input_rows": 10,
+          "count_column": "__key_count",
+          "value_column": "DriveProductID",
+          "counts": [
+            {
+              "DriveProductID": "P100",
+              "__key_count": 1
+            },
+            {
+              "DriveProductID": "P200",
+              "__key_count": 3
+            },
+            {
+              "DriveProductID": "P300",
+              "__key_count": 1
+            }
+          ],
+          "counts_truncated": false,
+          "chart_spec": {
+            "kind": "bar",
+            "x": "DriveProductID",
+            "y": "__key_count",
+            "category": "",
+            "aggregation": "none",
+            "sort": "none",
+            "cumulative": false,
+            "top_n": 50,
+            "bins": 20,
+            "title": "DriveProductID · 키별 최신 행 분포",
+            "x_label": "DriveProductID",
+            "y_label": "Unique keys",
+            "orientation": "vertical"
+          },
+          "render_summary": {
+            "source_rows": 3,
+            "rendered_rows": 3,
+            "data_sha256": "a303134c9bda1067d6fb6c7f05918d3bde6689d8d787f5391287681db909adac",
+            "sampled": false,
+            "aggregation": "none",
+            "points": [
+              {
+                "x": "P100",
+                "value": 1
+              },
+              {
+                "x": "P200",
+                "value": 3
+              },
+              {
+                "x": "P300",
+                "value": 1
+              }
+            ]
+          },
+          "cards": [
+            {
+              "id": "09341e44-44da-4fd3-9b5e-d044f322a3bf",
+              "kind": "bar",
+              "title": "DriveProductID · 키별 최신 행 분포",
+              "dataset_id": "ebd194bf-e6f6-4b8b-a5c0-f5eab1155174"
+            }
+          ],
+          "evidence_ids": [
+            "f564e0bd-ba3b-4be0-9979-b522d2043380",
+            "09341e44-44da-4fd3-9b5e-d044f322a3bf"
+          ],
+          "error_code": null,
+          "retryable": false,
+          "user_action": "",
+          "scope": "도구가 반환한 구조화 결과 범위입니다."
+        },
+        "operation_pending": false,
+        "processed": [
+          "f2b6a936-a9c2-44b8-aa52-fd266e855414"
+        ],
+        "sent_calls": [
+          "f2b6a936-a9c2-44b8-aa52-fd266e855414"
+        ],
+        "failed_signatures": {},
+        "evidence_ids": [],
+        "artifact_ids": [
+          "09341e44-44da-4fd3-9b5e-d044f322a3bf"
+        ],
+        "model_calls": 0,
+        "model_seconds": 0.0,
+        "preview_evidence": null,
+        "outlier_aggregate_evidence": {},
+        "count_rate_evidence": null,
+        "count_rate_group_column": null,
+        "winsor_evidence": null,
+        "pivot_evidence": null,
+        "group_summary_evidence": null,
+        "remote_query_ids": [],
+        "remote_query_evidence": {},
+        "remote_result_requested": false,
+        "accounted_model_failures": 0,
+        "accounted_model_failure_seconds": 0.0,
+        "model_retries": 0,
+        "accounted_aux_calls": 0,
+        "accounted_aux_seconds": 0.0,
+        "_new_model_failure_seconds": 0.0,
+        "stop_reason": null
+      },
+      "model_calls": 0,
+      "elapsed_seconds": 0.059
+    },
+    {
+      "id": "histogram_wording",
+      "repeat": 1,
+      "prompt": "DriveProductID histogram을 그려줘. adapterserial 기준으로 unique하게 집계하고 중복이면 event_time 기준 마지막 데이터만 활용해줘. DriveProductID는 연속 수치가 아니라 제품 식별자야.",
+      "status": "PASS",
+      "agent_status": "answered",
+      "answer": "키 adapterserial마다 event_time이 가장 큰 행을 선택했습니다. 원본 10행 중 5개의 키를 각각 한 번 계산했습니다. 원본은 보존했습니다. 식별자·범주 값은 값별 빈도 막대그래프로 표시합니다.\n\nDriveProductID · 키별 최신 행 분포 이미지를 생성했습니다.\n분석 범위: 보유 3행 기준 · complete · aggregate · 표시 데이터 3개 · 집계 none",
+      "charts": [
+        {
+          "kind": "bar",
+          "columns": [
+            "DriveProductID",
+            "__key_count"
+          ],
+          "image": "histogram_wording-1-0.png",
+          "accepted_by_completion": true,
+          "dataset_id": "04f0043b-6095-4d5a-84a8-a38cbb2c1338",
+          "query": "",
+          "counts": {
+            "P100": 1.0,
+            "P200": 3.0,
+            "P300": 1.0
+          },
+          "data": [
+            {
+              "DriveProductID": "P100",
+              "__key_count": 1
+            },
+            {
+              "DriveProductID": "P200",
+              "__key_count": 3
+            },
+            {
+              "DriveProductID": "P300",
+              "__key_count": 1
+            }
+          ],
+          "counts_match": true
+        }
+      ],
+      "datasets": [
+        {
+          "id": "43308fdb-d330-462e-8160-b4c463378dff",
+          "query": "",
+          "parent_id": "35c3a381-8cb9-4519-b321-7244d55d7f1d",
+          "rows": [
+            {
+              "adapterserial": "E",
+              "event_time": "2026-09-28 14:00:00",
+              "DriveProductID": "P300"
+            },
+            {
+              "adapterserial": "D",
+              "event_time": "2026-09-28 13:00:00",
+              "DriveProductID": "P100"
+            },
+            {
+              "adapterserial": "C",
+              "event_time": "2026-09-28 12:00:00",
+              "DriveProductID": "P200"
+            },
+            {
+              "adapterserial": "B",
+              "event_time": "2026-09-28 11:00:00",
+              "DriveProductID": "P200"
+            },
+            {
+              "adapterserial": "A",
+              "event_time": "2026-09-28 10:00:00",
+              "DriveProductID": "P200"
+            }
+          ]
+        },
+        {
+          "id": "04f0043b-6095-4d5a-84a8-a38cbb2c1338",
+          "query": "",
+          "parent_id": "43308fdb-d330-462e-8160-b4c463378dff",
+          "rows": [
+            {
+              "DriveProductID": "P100",
+              "__key_count": 1
+            },
+            {
+              "DriveProductID": "P200",
+              "__key_count": 3
+            },
+            {
+              "DriveProductID": "P300",
+              "__key_count": 1
+            }
+          ]
+        }
+      ],
+      "raw_preserved": true,
+      "calls": [
+        {
+          "name": "analyze_latest_distribution",
+          "args": {
+            "dataset_id": "35c3a381-8cb9-4519-b321-7244d55d7f1d",
+            "key_columns": [
+              "adapterserial"
+            ],
+            "order_column": "event_time",
+            "value_column": "DriveProductID",
+            "categorical": true
+          },
+          "id": "fd90da08-7488-4969-83af-5618f6fad576",
+          "type": "tool_call"
+        }
+      ],
+      "observations": [
+        {
+          "tool": "analyze_latest_distribution",
+          "result": {
+            "status": "ready",
+            "dataset": {
+              "id": "43308fdb-d330-462e-8160-b4c463378dff",
+              "source": "fixture.telemetry.device_events",
+              "columns": [
+                "adapterserial",
+                "event_time",
+                "DriveProductID"
+              ],
+              "rows": 5,
+              "coverage": "complete",
+              "conditions": [],
+              "predicate_known": true,
+              "grain": "raw",
+              "aggregation": "",
+              "snapshot": "synthetic-v1",
+              "query": "",
+              "parent_id": "35c3a381-8cb9-4519-b321-7244d55d7f1d",
+              "parent_ids": [],
+              "role": "derived",
+              "root_id": "35c3a381-8cb9-4519-b321-7244d55d7f1d",
+              "row_selection": {
+                "kind": "latest_per_key",
+                "key_columns": [
+                  "adapterserial"
+                ],
+                "order_columns": [
+                  "event_time"
+                ],
+                "descending": true,
+                "null_policy": "reject",
+                "tie_policy": "reject",
+                "input_dataset_id": "35c3a381-8cb9-4519-b321-7244d55d7f1d",
+                "input_snapshot": "synthetic-v1"
+              }
+            },
+            "distribution": {
+              "id": "04f0043b-6095-4d5a-84a8-a38cbb2c1338",
+              "source": "fixture.telemetry.device_events",
+              "columns": [
+                "DriveProductID",
+                "__key_count"
+              ],
+              "rows": 3,
+              "coverage": "complete",
+              "conditions": [],
+              "predicate_known": true,
+              "grain": "aggregate",
+              "aggregation": "count_by_value_after_latest_per_key",
+              "snapshot": "synthetic-v1",
+              "query": "",
+              "parent_id": "43308fdb-d330-462e-8160-b4c463378dff",
+              "parent_ids": [],
+              "role": "derived",
+              "root_id": "35c3a381-8cb9-4519-b321-7244d55d7f1d",
+              "row_selection": {
+                "kind": "latest_per_key",
+                "key_columns": [
+                  "adapterserial"
+                ],
+                "order_columns": [
+                  "event_time"
+                ],
+                "descending": true,
+                "null_policy": "reject",
+                "tie_policy": "reject",
+                "input_dataset_id": "35c3a381-8cb9-4519-b321-7244d55d7f1d",
+                "input_snapshot": "synthetic-v1"
+              }
+            },
+            "latest_selection": {
+              "kind": "latest_per_key",
+              "key_columns": [
+                "adapterserial"
+              ],
+              "order_columns": [
+                "event_time"
+              ],
+              "descending": true,
+              "null_policy": "reject",
+              "tie_policy": "reject",
+              "input_dataset_id": "35c3a381-8cb9-4519-b321-7244d55d7f1d",
+              "input_snapshot": "synthetic-v1"
+            },
+            "selected_keys": 5,
+            "input_rows": 10,
+            "count_column": "__key_count",
+            "value_column": "DriveProductID",
+            "counts": [
+              {
+                "DriveProductID": "P100",
+                "__key_count": 1
+              },
+              {
+                "DriveProductID": "P200",
+                "__key_count": 3
+              },
+              {
+                "DriveProductID": "P300",
+                "__key_count": 1
+              }
+            ],
+            "counts_truncated": false,
+            "chart_spec": {
+              "kind": "bar",
+              "x": "DriveProductID",
+              "y": "__key_count",
+              "category": "",
+              "aggregation": "none",
+              "sort": "none",
+              "cumulative": false,
+              "top_n": 50,
+              "bins": 20,
+              "title": "DriveProductID · 키별 최신 행 분포",
+              "x_label": "DriveProductID",
+              "y_label": "Unique keys",
+              "orientation": "vertical"
+            },
+            "render_summary": {
+              "source_rows": 3,
+              "rendered_rows": 3,
+              "data_sha256": "a303134c9bda1067d6fb6c7f05918d3bde6689d8d787f5391287681db909adac",
+              "sampled": false,
+              "aggregation": "none",
+              "points": [
+                {
+                  "x": "P100",
+                  "value": 1
+                },
+                {
+                  "x": "P200",
+                  "value": 3
+                },
+                {
+                  "x": "P300",
+                  "value": 1
+                }
+              ]
+            },
+            "cards": [
+              {
+                "id": "5ffa06bd-4e87-4e67-b76a-f1b3f2b67db6",
+                "kind": "bar",
+                "title": "DriveProductID · 키별 최신 행 분포",
+                "dataset_id": "04f0043b-6095-4d5a-84a8-a38cbb2c1338"
+              }
+            ],
+            "evidence_ids": [
+              "43308fdb-d330-462e-8160-b4c463378dff",
+              "5ffa06bd-4e87-4e67-b76a-f1b3f2b67db6"
+            ],
+            "error_code": null,
+            "retryable": false,
+            "user_action": "",
+            "scope": "도구가 반환한 구조화 결과 범위입니다."
+          }
+        }
+      ],
+      "state": {
+        "request_id": "928ecb6d-bbdf-4110-ae70-42827c4da7f8",
+        "request_text": "DriveProductID histogram을 그려줘. adapterserial 기준으로 unique하게 집계하고 중복이면 event_time 기준 마지막 데이터만 활용해줘. DriveProductID는 연속 수치가 아니라 제품 식별자야.",
+        "attempts": 0,
+        "chart": true,
+        "kind": "bar",
+        "join": false,
+        "requested_join": false,
+        "join_how": null,
+        "statistical_kind": null,
+        "pivot_requested": false,
+        "pivot_aggregation": null,
+        "pivot_value_column": null,
+        "pivot_success_value": null,
+        "pivot_index_columns": [],
+        "pivot_column_columns": [],
+        "pivot_conditions": [],
+        "pivot_derived_bins": [],
+        "pivot_margins": false,
+        "pivot_sort": "ascending",
+        "pivot_margins_name": "전체",
+        "winsor_spec": null,
+        "winsor_column": null,
+        "outlier_spec": null,
+        "outlier_column": null,
+        "outlier_followup": false,
+        "outlier_selection": "outliers",
+        "outlier_group_column": null,
+        "outlier_metric_column": null,
+        "outlier_metric_aggregation": null,
+        "outlier_aggregate_mode": null,
+        "outlier_aggregate_requested": false,
+        "outlier_top_n": 0,
+        "group_summary_requested": false,
+        "group_summary_columns": [],
+        "group_summary_metrics": [],
+        "group_summary_conditions": [],
+        "calculation": false,
+        "operations": [],
+        "metadata_kind": null,
+        "scalar_grouping": true,
+        "profile_kind": null,
+        "preview_limit": 0,
+        "chart_spec_requested": true,
+        "count_rate_layout": null,
+        "chart_cumulative": false,
+        "time_series_frequency": null,
+        "time_series_aggregation": null,
+        "time_series_gap_policy": "omit",
+        "time_series_timezone": "",
+        "data_load": false,
+        "expected_load_source": "",
+        "expected_load_query": "",
+        "whole_row_count": false,
+        "current_result_only": false,
+        "requested_result_rows": null,
+        "fresh_source_required": false,
+        "request_started_at": 1790605435.597774,
+        "required_columns": [
+          "DriveProductID"
+        ],
+        "explicit_columns": [
+          "DriveProductID",
+          "adapterserial",
+          "event_time"
+        ],
+        "required_sources": [],
+        "columns": [],
+        "failed": {},
+        "status": "complete",
+        "previous_scope": {},
+        "scope": {
+          "conditions": [],
+          "any_conditions": [],
+          "join_edges": [],
+          "measure_conditions": [],
+          "ratio": null,
+          "unresolved": [],
+          "columns": [
+            "DriveProductID",
+            "adapterserial",
+            "event_time"
+          ]
+        },
+        "named_measure_columns": [],
+        "latest_per_key_spec": {
+          "dataset_id": "35c3a381-8cb9-4519-b321-7244d55d7f1d",
+          "key_columns": [
+            "adapterserial"
+          ],
+          "value_column": "DriveProductID",
+          "order_column": "event_time",
+          "categorical": true
+        },
+        "latest_selection_evidence": {
+          "status": "ready",
+          "dataset": {
+            "id": "43308fdb-d330-462e-8160-b4c463378dff",
+            "source": "fixture.telemetry.device_events",
+            "columns": [
+              "adapterserial",
+              "event_time",
+              "DriveProductID"
+            ],
+            "rows": 5,
+            "coverage": "complete",
+            "conditions": [],
+            "predicate_known": true,
+            "grain": "raw",
+            "aggregation": "",
+            "snapshot": "synthetic-v1",
+            "query": "",
+            "parent_id": "35c3a381-8cb9-4519-b321-7244d55d7f1d",
+            "parent_ids": [],
+            "role": "derived",
+            "root_id": "35c3a381-8cb9-4519-b321-7244d55d7f1d",
+            "row_selection": {
+              "kind": "latest_per_key",
+              "key_columns": [
+                "adapterserial"
+              ],
+              "order_columns": [
+                "event_time"
+              ],
+              "descending": true,
+              "null_policy": "reject",
+              "tie_policy": "reject",
+              "input_dataset_id": "35c3a381-8cb9-4519-b321-7244d55d7f1d",
+              "input_snapshot": "synthetic-v1"
+            }
+          },
+          "distribution": {
+            "id": "04f0043b-6095-4d5a-84a8-a38cbb2c1338",
+            "source": "fixture.telemetry.device_events",
+            "columns": [
+              "DriveProductID",
+              "__key_count"
+            ],
+            "rows": 3,
+            "coverage": "complete",
+            "conditions": [],
+            "predicate_known": true,
+            "grain": "aggregate",
+            "aggregation": "count_by_value_after_latest_per_key",
+            "snapshot": "synthetic-v1",
+            "query": "",
+            "parent_id": "43308fdb-d330-462e-8160-b4c463378dff",
+            "parent_ids": [],
+            "role": "derived",
+            "root_id": "35c3a381-8cb9-4519-b321-7244d55d7f1d",
+            "row_selection": {
+              "kind": "latest_per_key",
+              "key_columns": [
+                "adapterserial"
+              ],
+              "order_columns": [
+                "event_time"
+              ],
+              "descending": true,
+              "null_policy": "reject",
+              "tie_policy": "reject",
+              "input_dataset_id": "35c3a381-8cb9-4519-b321-7244d55d7f1d",
+              "input_snapshot": "synthetic-v1"
+            }
+          },
+          "latest_selection": {
+            "kind": "latest_per_key",
+            "key_columns": [
+              "adapterserial"
+            ],
+            "order_columns": [
+              "event_time"
+            ],
+            "descending": true,
+            "null_policy": "reject",
+            "tie_policy": "reject",
+            "input_dataset_id": "35c3a381-8cb9-4519-b321-7244d55d7f1d",
+            "input_snapshot": "synthetic-v1"
+          },
+          "selected_keys": 5,
+          "input_rows": 10,
+          "count_column": "__key_count",
+          "value_column": "DriveProductID",
+          "counts": [
+            {
+              "DriveProductID": "P100",
+              "__key_count": 1
+            },
+            {
+              "DriveProductID": "P200",
+              "__key_count": 3
+            },
+            {
+              "DriveProductID": "P300",
+              "__key_count": 1
+            }
+          ],
+          "counts_truncated": false,
+          "chart_spec": {
+            "kind": "bar",
+            "x": "DriveProductID",
+            "y": "__key_count",
+            "category": "",
+            "aggregation": "none",
+            "sort": "none",
+            "cumulative": false,
+            "top_n": 50,
+            "bins": 20,
+            "title": "DriveProductID · 키별 최신 행 분포",
+            "x_label": "DriveProductID",
+            "y_label": "Unique keys",
+            "orientation": "vertical"
+          },
+          "render_summary": {
+            "source_rows": 3,
+            "rendered_rows": 3,
+            "data_sha256": "a303134c9bda1067d6fb6c7f05918d3bde6689d8d787f5391287681db909adac",
+            "sampled": false,
+            "aggregation": "none",
+            "points": [
+              {
+                "x": "P100",
+                "value": 1
+              },
+              {
+                "x": "P200",
+                "value": 3
+              },
+              {
+                "x": "P300",
+                "value": 1
+              }
+            ]
+          },
+          "cards": [
+            {
+              "id": "5ffa06bd-4e87-4e67-b76a-f1b3f2b67db6",
+              "kind": "bar",
+              "title": "DriveProductID · 키별 최신 행 분포",
+              "dataset_id": "04f0043b-6095-4d5a-84a8-a38cbb2c1338"
+            }
+          ],
+          "evidence_ids": [
+            "43308fdb-d330-462e-8160-b4c463378dff",
+            "5ffa06bd-4e87-4e67-b76a-f1b3f2b67db6"
+          ],
+          "error_code": null,
+          "retryable": false,
+          "user_action": "",
+          "scope": "도구가 반환한 구조화 결과 범위입니다."
+        },
+        "operation_pending": false,
+        "processed": [
+          "fd90da08-7488-4969-83af-5618f6fad576"
+        ],
+        "sent_calls": [
+          "fd90da08-7488-4969-83af-5618f6fad576"
+        ],
+        "failed_signatures": {},
+        "evidence_ids": [],
+        "artifact_ids": [
+          "5ffa06bd-4e87-4e67-b76a-f1b3f2b67db6"
+        ],
+        "model_calls": 0,
+        "model_seconds": 0.0,
+        "preview_evidence": null,
+        "outlier_aggregate_evidence": {},
+        "count_rate_evidence": null,
+        "count_rate_group_column": null,
+        "winsor_evidence": null,
+        "pivot_evidence": null,
+        "group_summary_evidence": null,
+        "remote_query_ids": [],
+        "remote_query_evidence": {},
+        "remote_result_requested": false,
+        "accounted_model_failures": 0,
+        "accounted_model_failure_seconds": 0.0,
+        "model_retries": 0,
+        "accounted_aux_calls": 0,
+        "accounted_aux_seconds": 0.0,
+        "_new_model_failure_seconds": 0.0,
+        "stop_reason": null
+      },
+      "model_calls": 0,
+      "elapsed_seconds": 0.051
+    },
+    {
+      "id": "renamed_schema",
+      "repeat": 1,
+      "prompt": "unit_key마다 observed_at이 가장 늦은 기록을 하나 선택하고 product_code별 장치 수 분포를 그려줘. product_code는 제품 식별자야.",
+      "status": "PASS",
+      "agent_status": "answered",
+      "answer": "키 unit_key마다 observed_at이 가장 큰 행을 선택했습니다. 원본 10행 중 5개의 키를 각각 한 번 계산했습니다. 원본은 보존했습니다. 식별자·범주 값은 값별 빈도 막대그래프로 표시합니다.\n\nproduct_code · 키별 최신 행 분포 이미지를 생성했습니다.\n분석 범위: 보유 3행 기준 · complete · aggregate · 표시 데이터 3개 · 집계 none",
+      "charts": [
+        {
+          "kind": "bar",
+          "columns": [
+            "product_code",
+            "__key_count"
+          ],
+          "image": "renamed_schema-1-0.png",
+          "accepted_by_completion": true,
+          "dataset_id": "fa04e9b0-6b9a-4eac-b85f-10289798ec01",
+          "query": "",
+          "counts": {
+            "P100": 1.0,
+            "P200": 3.0,
+            "P300": 1.0
+          },
+          "data": [
+            {
+              "product_code": "P100",
+              "__key_count": 1
+            },
+            {
+              "product_code": "P200",
+              "__key_count": 3
+            },
+            {
+              "product_code": "P300",
+              "__key_count": 1
+            }
+          ],
+          "counts_match": true
+        }
+      ],
+      "datasets": [
+        {
+          "id": "a67f1295-8209-4a33-b708-55efca9abe83",
+          "query": "",
+          "parent_id": "74d64e15-c64b-423e-9d75-50c5985ca1a1",
+          "rows": [
+            {
+              "unit_key": "E",
+              "observed_at": "2026-09-28 14:00:00",
+              "product_code": "P300"
+            },
+            {
+              "unit_key": "D",
+              "observed_at": "2026-09-28 13:00:00",
+              "product_code": "P100"
+            },
+            {
+              "unit_key": "C",
+              "observed_at": "2026-09-28 12:00:00",
+              "product_code": "P200"
+            },
+            {
+              "unit_key": "B",
+              "observed_at": "2026-09-28 11:00:00",
+              "product_code": "P200"
+            },
+            {
+              "unit_key": "A",
+              "observed_at": "2026-09-28 10:00:00",
+              "product_code": "P200"
+            }
+          ]
+        },
+        {
+          "id": "fa04e9b0-6b9a-4eac-b85f-10289798ec01",
+          "query": "",
+          "parent_id": "a67f1295-8209-4a33-b708-55efca9abe83",
+          "rows": [
+            {
+              "product_code": "P100",
+              "__key_count": 1
+            },
+            {
+              "product_code": "P200",
+              "__key_count": 3
+            },
+            {
+              "product_code": "P300",
+              "__key_count": 1
+            }
+          ]
+        }
+      ],
+      "raw_preserved": true,
+      "calls": [
+        {
+          "name": "analyze_latest_distribution",
+          "args": {
+            "dataset_id": "74d64e15-c64b-423e-9d75-50c5985ca1a1",
+            "key_columns": [
+              "unit_key"
+            ],
+            "order_column": "observed_at",
+            "value_column": "product_code",
+            "categorical": true
+          },
+          "id": "79d86285-17db-4f05-8b03-21982b7ba08e",
+          "type": "tool_call"
+        }
+      ],
+      "observations": [
+        {
+          "tool": "analyze_latest_distribution",
+          "result": {
+            "status": "ready",
+            "dataset": {
+              "id": "a67f1295-8209-4a33-b708-55efca9abe83",
+              "source": "fixture.telemetry.device_events",
+              "columns": [
+                "unit_key",
+                "observed_at",
+                "product_code"
+              ],
+              "rows": 5,
+              "coverage": "complete",
+              "conditions": [],
+              "predicate_known": true,
+              "grain": "raw",
+              "aggregation": "",
+              "snapshot": "synthetic-v1",
+              "query": "",
+              "parent_id": "74d64e15-c64b-423e-9d75-50c5985ca1a1",
+              "parent_ids": [],
+              "role": "derived",
+              "root_id": "74d64e15-c64b-423e-9d75-50c5985ca1a1",
+              "row_selection": {
+                "kind": "latest_per_key",
+                "key_columns": [
+                  "unit_key"
+                ],
+                "order_columns": [
+                  "observed_at"
+                ],
+                "descending": true,
+                "null_policy": "reject",
+                "tie_policy": "reject",
+                "input_dataset_id": "74d64e15-c64b-423e-9d75-50c5985ca1a1",
+                "input_snapshot": "synthetic-v1"
+              }
+            },
+            "distribution": {
+              "id": "fa04e9b0-6b9a-4eac-b85f-10289798ec01",
+              "source": "fixture.telemetry.device_events",
+              "columns": [
+                "product_code",
+                "__key_count"
+              ],
+              "rows": 3,
+              "coverage": "complete",
+              "conditions": [],
+              "predicate_known": true,
+              "grain": "aggregate",
+              "aggregation": "count_by_value_after_latest_per_key",
+              "snapshot": "synthetic-v1",
+              "query": "",
+              "parent_id": "a67f1295-8209-4a33-b708-55efca9abe83",
+              "parent_ids": [],
+              "role": "derived",
+              "root_id": "74d64e15-c64b-423e-9d75-50c5985ca1a1",
+              "row_selection": {
+                "kind": "latest_per_key",
+                "key_columns": [
+                  "unit_key"
+                ],
+                "order_columns": [
+                  "observed_at"
+                ],
+                "descending": true,
+                "null_policy": "reject",
+                "tie_policy": "reject",
+                "input_dataset_id": "74d64e15-c64b-423e-9d75-50c5985ca1a1",
+                "input_snapshot": "synthetic-v1"
+              }
+            },
+            "latest_selection": {
+              "kind": "latest_per_key",
+              "key_columns": [
+                "unit_key"
+              ],
+              "order_columns": [
+                "observed_at"
+              ],
+              "descending": true,
+              "null_policy": "reject",
+              "tie_policy": "reject",
+              "input_dataset_id": "74d64e15-c64b-423e-9d75-50c5985ca1a1",
+              "input_snapshot": "synthetic-v1"
+            },
+            "selected_keys": 5,
+            "input_rows": 10,
+            "count_column": "__key_count",
+            "value_column": "product_code",
+            "counts": [
+              {
+                "product_code": "P100",
+                "__key_count": 1
+              },
+              {
+                "product_code": "P200",
+                "__key_count": 3
+              },
+              {
+                "product_code": "P300",
+                "__key_count": 1
+              }
+            ],
+            "counts_truncated": false,
+            "chart_spec": {
+              "kind": "bar",
+              "x": "product_code",
+              "y": "__key_count",
+              "category": "",
+              "aggregation": "none",
+              "sort": "none",
+              "cumulative": false,
+              "top_n": 50,
+              "bins": 20,
+              "title": "product_code · 키별 최신 행 분포",
+              "x_label": "product_code",
+              "y_label": "Unique keys",
+              "orientation": "vertical"
+            },
+            "render_summary": {
+              "source_rows": 3,
+              "rendered_rows": 3,
+              "data_sha256": "e0c8beb96599b0a467309bfe5e93bc01757004c25e59afdfea14f4d1a85c5b5d",
+              "sampled": false,
+              "aggregation": "none",
+              "points": [
+                {
+                  "x": "P100",
+                  "value": 1
+                },
+                {
+                  "x": "P200",
+                  "value": 3
+                },
+                {
+                  "x": "P300",
+                  "value": 1
+                }
+              ]
+            },
+            "cards": [
+              {
+                "id": "0acb426d-fcb3-4454-aedd-d142ef830c77",
+                "kind": "bar",
+                "title": "product_code · 키별 최신 행 분포",
+                "dataset_id": "fa04e9b0-6b9a-4eac-b85f-10289798ec01"
+              }
+            ],
+            "evidence_ids": [
+              "a67f1295-8209-4a33-b708-55efca9abe83",
+              "0acb426d-fcb3-4454-aedd-d142ef830c77"
+            ],
+            "error_code": null,
+            "retryable": false,
+            "user_action": "",
+            "scope": "도구가 반환한 구조화 결과 범위입니다."
+          }
+        }
+      ],
+      "state": {
+        "request_id": "8da0eafe-c4e3-4747-8bc7-1458d2ced12b",
+        "request_text": "unit_key마다 observed_at이 가장 늦은 기록을 하나 선택하고 product_code별 장치 수 분포를 그려줘. product_code는 제품 식별자야.",
+        "attempts": 0,
+        "chart": true,
+        "kind": "bar",
+        "join": false,
+        "requested_join": false,
+        "join_how": null,
+        "statistical_kind": null,
+        "pivot_requested": false,
+        "pivot_aggregation": null,
+        "pivot_value_column": null,
+        "pivot_success_value": null,
+        "pivot_index_columns": [],
+        "pivot_column_columns": [],
+        "pivot_conditions": [],
+        "pivot_derived_bins": [],
+        "pivot_margins": false,
+        "pivot_sort": "ascending",
+        "pivot_margins_name": "전체",
+        "winsor_spec": null,
+        "winsor_column": null,
+        "outlier_spec": null,
+        "outlier_column": null,
+        "outlier_followup": false,
+        "outlier_selection": "outliers",
+        "outlier_group_column": null,
+        "outlier_metric_column": null,
+        "outlier_metric_aggregation": null,
+        "outlier_aggregate_mode": null,
+        "outlier_aggregate_requested": false,
+        "outlier_top_n": 0,
+        "group_summary_requested": false,
+        "group_summary_columns": [],
+        "group_summary_metrics": [],
+        "group_summary_conditions": [],
+        "calculation": false,
+        "operations": [],
+        "metadata_kind": null,
+        "scalar_grouping": true,
+        "profile_kind": null,
+        "preview_limit": 0,
+        "chart_spec_requested": true,
+        "count_rate_layout": null,
+        "chart_cumulative": false,
+        "time_series_frequency": null,
+        "time_series_aggregation": null,
+        "time_series_gap_policy": "omit",
+        "time_series_timezone": "",
+        "data_load": false,
+        "expected_load_source": "",
+        "expected_load_query": "",
+        "whole_row_count": false,
+        "current_result_only": false,
+        "requested_result_rows": null,
+        "fresh_source_required": false,
+        "request_started_at": 1790605435.664244,
+        "required_columns": [
+          "product_code"
+        ],
+        "explicit_columns": [
+          "unit_key",
+          "observed_at",
+          "product_code"
+        ],
+        "required_sources": [],
+        "columns": [],
+        "failed": {},
+        "status": "complete",
+        "previous_scope": {},
+        "scope": {
+          "conditions": [],
+          "any_conditions": [],
+          "join_edges": [],
+          "measure_conditions": [],
+          "ratio": null,
+          "unresolved": [],
+          "columns": [
+            "observed_at",
+            "product_code",
+            "unit_key"
+          ]
+        },
+        "named_measure_columns": [],
+        "latest_per_key_spec": {
+          "dataset_id": "74d64e15-c64b-423e-9d75-50c5985ca1a1",
+          "key_columns": [
+            "unit_key"
+          ],
+          "value_column": "product_code",
+          "order_column": "observed_at",
+          "categorical": true
+        },
+        "latest_selection_evidence": {
+          "status": "ready",
+          "dataset": {
+            "id": "a67f1295-8209-4a33-b708-55efca9abe83",
+            "source": "fixture.telemetry.device_events",
+            "columns": [
+              "unit_key",
+              "observed_at",
+              "product_code"
+            ],
+            "rows": 5,
+            "coverage": "complete",
+            "conditions": [],
+            "predicate_known": true,
+            "grain": "raw",
+            "aggregation": "",
+            "snapshot": "synthetic-v1",
+            "query": "",
+            "parent_id": "74d64e15-c64b-423e-9d75-50c5985ca1a1",
+            "parent_ids": [],
+            "role": "derived",
+            "root_id": "74d64e15-c64b-423e-9d75-50c5985ca1a1",
+            "row_selection": {
+              "kind": "latest_per_key",
+              "key_columns": [
+                "unit_key"
+              ],
+              "order_columns": [
+                "observed_at"
+              ],
+              "descending": true,
+              "null_policy": "reject",
+              "tie_policy": "reject",
+              "input_dataset_id": "74d64e15-c64b-423e-9d75-50c5985ca1a1",
+              "input_snapshot": "synthetic-v1"
+            }
+          },
+          "distribution": {
+            "id": "fa04e9b0-6b9a-4eac-b85f-10289798ec01",
+            "source": "fixture.telemetry.device_events",
+            "columns": [
+              "product_code",
+              "__key_count"
+            ],
+            "rows": 3,
+            "coverage": "complete",
+            "conditions": [],
+            "predicate_known": true,
+            "grain": "aggregate",
+            "aggregation": "count_by_value_after_latest_per_key",
+            "snapshot": "synthetic-v1",
+            "query": "",
+            "parent_id": "a67f1295-8209-4a33-b708-55efca9abe83",
+            "parent_ids": [],
+            "role": "derived",
+            "root_id": "74d64e15-c64b-423e-9d75-50c5985ca1a1",
+            "row_selection": {
+              "kind": "latest_per_key",
+              "key_columns": [
+                "unit_key"
+              ],
+              "order_columns": [
+                "observed_at"
+              ],
+              "descending": true,
+              "null_policy": "reject",
+              "tie_policy": "reject",
+              "input_dataset_id": "74d64e15-c64b-423e-9d75-50c5985ca1a1",
+              "input_snapshot": "synthetic-v1"
+            }
+          },
+          "latest_selection": {
+            "kind": "latest_per_key",
+            "key_columns": [
+              "unit_key"
+            ],
+            "order_columns": [
+              "observed_at"
+            ],
+            "descending": true,
+            "null_policy": "reject",
+            "tie_policy": "reject",
+            "input_dataset_id": "74d64e15-c64b-423e-9d75-50c5985ca1a1",
+            "input_snapshot": "synthetic-v1"
+          },
+          "selected_keys": 5,
+          "input_rows": 10,
+          "count_column": "__key_count",
+          "value_column": "product_code",
+          "counts": [
+            {
+              "product_code": "P100",
+              "__key_count": 1
+            },
+            {
+              "product_code": "P200",
+              "__key_count": 3
+            },
+            {
+              "product_code": "P300",
+              "__key_count": 1
+            }
+          ],
+          "counts_truncated": false,
+          "chart_spec": {
+            "kind": "bar",
+            "x": "product_code",
+            "y": "__key_count",
+            "category": "",
+            "aggregation": "none",
+            "sort": "none",
+            "cumulative": false,
+            "top_n": 50,
+            "bins": 20,
+            "title": "product_code · 키별 최신 행 분포",
+            "x_label": "product_code",
+            "y_label": "Unique keys",
+            "orientation": "vertical"
+          },
+          "render_summary": {
+            "source_rows": 3,
+            "rendered_rows": 3,
+            "data_sha256": "e0c8beb96599b0a467309bfe5e93bc01757004c25e59afdfea14f4d1a85c5b5d",
+            "sampled": false,
+            "aggregation": "none",
+            "points": [
+              {
+                "x": "P100",
+                "value": 1
+              },
+              {
+                "x": "P200",
+                "value": 3
+              },
+              {
+                "x": "P300",
+                "value": 1
+              }
+            ]
+          },
+          "cards": [
+            {
+              "id": "0acb426d-fcb3-4454-aedd-d142ef830c77",
+              "kind": "bar",
+              "title": "product_code · 키별 최신 행 분포",
+              "dataset_id": "fa04e9b0-6b9a-4eac-b85f-10289798ec01"
+            }
+          ],
+          "evidence_ids": [
+            "a67f1295-8209-4a33-b708-55efca9abe83",
+            "0acb426d-fcb3-4454-aedd-d142ef830c77"
+          ],
+          "error_code": null,
+          "retryable": false,
+          "user_action": "",
+          "scope": "도구가 반환한 구조화 결과 범위입니다."
+        },
+        "operation_pending": false,
+        "processed": [
+          "79d86285-17db-4f05-8b03-21982b7ba08e"
+        ],
+        "sent_calls": [
+          "79d86285-17db-4f05-8b03-21982b7ba08e"
+        ],
+        "failed_signatures": {},
+        "evidence_ids": [],
+        "artifact_ids": [
+          "0acb426d-fcb3-4454-aedd-d142ef830c77"
+        ],
+        "model_calls": 0,
+        "model_seconds": 0.0,
+        "preview_evidence": null,
+        "outlier_aggregate_evidence": {},
+        "count_rate_evidence": null,
+        "count_rate_group_column": null,
+        "winsor_evidence": null,
+        "pivot_evidence": null,
+        "group_summary_evidence": null,
+        "remote_query_ids": [],
+        "remote_query_evidence": {},
+        "remote_result_requested": false,
+        "accounted_model_failures": 0,
+        "accounted_model_failure_seconds": 0.0,
+        "model_retries": 0,
+        "accounted_aux_calls": 0,
+        "accounted_aux_seconds": 0.0,
+        "_new_model_failure_seconds": 0.0,
+        "stop_reason": null
+      },
+      "model_calls": 0,
+      "elapsed_seconds": 0.08
+    },
+    {
+      "id": "ambiguous_last",
+      "repeat": 2,
+      "prompt": "현재 로딩된 테이블의 DriveProductID에 대한 histogram데이타를 확인하고 싶어, 대신에 adapterserial 컬럼을 기준으로 unique한 값으로 통계를 보고 싶고. 여러 개인 경우는 마지막에 있는 데이타를 활용해줘 그려줘.",
+      "status": "PASS",
+      "agent_status": "answered",
+      "answer": "마지막 행을 결정할 정렬 기준은 어느 컬럼인가요? event_time, ingested_at",
+      "charts": [],
+      "datasets": [],
+      "raw_preserved": true,
+      "calls": [],
+      "observations": [],
+      "state": {
+        "request_id": "14464622-2a30-45b9-8053-9ae60e783ff2",
+        "request_text": "현재 로딩된 테이블의 DriveProductID에 대한 histogram데이타를 확인하고 싶어, 대신에 adapterserial 컬럼을 기준으로 unique한 값으로 통계를 보고 싶고. 여러 개인 경우는 마지막에 있는 데이타를 활용해줘 그려줘.",
+        "attempts": 0,
+        "chart": true,
+        "kind": "bar",
+        "join": false,
+        "requested_join": false,
+        "join_how": null,
+        "statistical_kind": null,
+        "pivot_requested": false,
+        "pivot_aggregation": null,
+        "pivot_value_column": null,
+        "pivot_success_value": null,
+        "pivot_index_columns": [],
+        "pivot_column_columns": [],
+        "pivot_conditions": [],
+        "pivot_derived_bins": [],
+        "pivot_margins": false,
+        "pivot_sort": "ascending",
+        "pivot_margins_name": "전체",
+        "winsor_spec": null,
+        "winsor_column": null,
+        "outlier_spec": null,
+        "outlier_column": null,
+        "outlier_followup": false,
+        "outlier_selection": "outliers",
+        "outlier_group_column": null,
+        "outlier_metric_column": null,
+        "outlier_metric_aggregation": null,
+        "outlier_aggregate_mode": null,
+        "outlier_aggregate_requested": false,
+        "outlier_top_n": 0,
+        "group_summary_requested": false,
+        "group_summary_columns": [],
+        "group_summary_metrics": [],
+        "group_summary_conditions": [],
+        "calculation": false,
+        "operations": [],
+        "metadata_kind": null,
+        "scalar_grouping": false,
+        "profile_kind": null,
+        "preview_limit": 0,
+        "chart_spec_requested": true,
+        "count_rate_layout": null,
+        "chart_cumulative": false,
+        "time_series_frequency": null,
+        "time_series_aggregation": null,
+        "time_series_gap_policy": "omit",
+        "time_series_timezone": "",
+        "data_load": false,
+        "expected_load_source": "",
+        "expected_load_query": "",
+        "whole_row_count": false,
+        "current_result_only": true,
+        "requested_result_rows": null,
+        "fresh_source_required": false,
+        "request_started_at": 1790605435.7592268,
+        "required_columns": [
+          "DriveProductID"
+        ],
+        "explicit_columns": [
+          "DriveProductID",
+          "adapterserial"
+        ],
+        "required_sources": [],
+        "columns": [],
+        "failed": {},
+        "status": "needs_context",
+        "previous_scope": {},
+        "scope": {
+          "conditions": [],
+          "any_conditions": [],
+          "join_edges": [],
+          "measure_conditions": [],
+          "ratio": null,
+          "unresolved": [],
+          "columns": [
+            "DriveProductID",
+            "adapterserial"
+          ]
+        },
+        "named_measure_columns": [],
+        "latest_per_key_spec": {
+          "dataset_id": "1d71a10d-3727-4a4b-b652-110c513423da",
+          "key_columns": [
+            "adapterserial"
+          ],
+          "value_column": "DriveProductID",
+          "order_column": "",
+          "categorical": true,
+          "question": "마지막 행을 결정할 정렬 기준은 어느 컬럼인가요? event_time, ingested_at",
+          "order_choices": [
+            "event_time",
+            "ingested_at"
+          ]
+        },
+        "latest_selection_evidence": null,
+        "operation_pending": false,
+        "processed": [],
+        "sent_calls": [],
+        "failed_signatures": {},
+        "evidence_ids": [],
+        "artifact_ids": [],
+        "model_calls": 0,
+        "model_seconds": 0.0,
+        "preview_evidence": null,
+        "outlier_aggregate_evidence": {},
+        "count_rate_evidence": null,
+        "count_rate_group_column": null,
+        "winsor_evidence": null,
+        "pivot_evidence": null,
+        "group_summary_evidence": null,
+        "remote_query_ids": [],
+        "remote_query_evidence": {},
+        "remote_result_requested": false,
+        "accounted_model_failures": 0,
+        "accounted_model_failure_seconds": 0.0,
+        "model_retries": 0,
+        "accounted_aux_calls": 0,
+        "accounted_aux_seconds": 0.0,
+        "_new_model_failure_seconds": 0.0,
+        "stop_reason": "latest_selection_context",
+        "latest_pending": {
+          "dataset_id": "1d71a10d-3727-4a4b-b652-110c513423da",
+          "key_columns": [
+            "adapterserial"
+          ],
+          "value_column": "DriveProductID",
+          "order_column": "",
+          "categorical": true,
+          "question": "마지막 행을 결정할 정렬 기준은 어느 컬럼인가요? event_time, ingested_at",
+          "order_choices": [
+            "event_time",
+            "ingested_at"
+          ],
+          "request_text": "현재 로딩된 테이블의 DriveProductID에 대한 histogram데이타를 확인하고 싶어, 대신에 adapterserial 컬럼을 기준으로 unique한 값으로 통계를 보고 싶고. 여러 개인 경우는 마지막에 있는 데이타를 활용해줘 그려줘."
+        }
+      },
+      "model_calls": 0,
+      "elapsed_seconds": 0.007
+    },
+    {
+      "id": "explicit_latest",
+      "repeat": 2,
+      "prompt": "현재 로딩된 데이터에서 adapterserial별 event_time이 가장 늦은 행 하나만 사용해서 DriveProductID별 장치 수 분포를 그려줘. DriveProductID는 제품 식별자야. 원본은 보존해.",
+      "status": "PASS",
+      "agent_status": "answered",
+      "answer": "키 adapterserial마다 event_time이 가장 큰 행을 선택했습니다. 원본 10행 중 5개의 키를 각각 한 번 계산했습니다. 원본은 보존했습니다. 식별자·범주 값은 값별 빈도 막대그래프로 표시합니다.\n\nDriveProductID · 키별 최신 행 분포 이미지를 생성했습니다.\n분석 범위: 보유 3행 기준 · complete · aggregate · 표시 데이터 3개 · 집계 none",
+      "charts": [
+        {
+          "kind": "bar",
+          "columns": [
+            "DriveProductID",
+            "__key_count"
+          ],
+          "image": "explicit_latest-2-0.png",
+          "accepted_by_completion": true,
+          "dataset_id": "f357fe2a-325a-4f0e-94ca-3345bf5bd81c",
+          "query": "",
+          "counts": {
+            "P100": 1.0,
+            "P200": 3.0,
+            "P300": 1.0
+          },
+          "data": [
+            {
+              "DriveProductID": "P100",
+              "__key_count": 1
+            },
+            {
+              "DriveProductID": "P200",
+              "__key_count": 3
+            },
+            {
+              "DriveProductID": "P300",
+              "__key_count": 1
+            }
+          ],
+          "counts_match": true
+        }
+      ],
+      "datasets": [
+        {
+          "id": "d55af8c1-fa56-4352-a7ac-6bf25b9c132e",
+          "query": "",
+          "parent_id": "8d9b259f-62af-44db-9a3b-8efcad9e524c",
+          "rows": [
+            {
+              "adapterserial": "E",
+              "event_time": "2026-09-28 14:00:00",
+              "DriveProductID": "P300"
+            },
+            {
+              "adapterserial": "D",
+              "event_time": "2026-09-28 13:00:00",
+              "DriveProductID": "P100"
+            },
+            {
+              "adapterserial": "C",
+              "event_time": "2026-09-28 12:00:00",
+              "DriveProductID": "P200"
+            },
+            {
+              "adapterserial": "B",
+              "event_time": "2026-09-28 11:00:00",
+              "DriveProductID": "P200"
+            },
+            {
+              "adapterserial": "A",
+              "event_time": "2026-09-28 10:00:00",
+              "DriveProductID": "P200"
+            }
+          ]
+        },
+        {
+          "id": "f357fe2a-325a-4f0e-94ca-3345bf5bd81c",
+          "query": "",
+          "parent_id": "d55af8c1-fa56-4352-a7ac-6bf25b9c132e",
+          "rows": [
+            {
+              "DriveProductID": "P100",
+              "__key_count": 1
+            },
+            {
+              "DriveProductID": "P200",
+              "__key_count": 3
+            },
+            {
+              "DriveProductID": "P300",
+              "__key_count": 1
+            }
+          ]
+        }
+      ],
+      "raw_preserved": true,
+      "calls": [
+        {
+          "name": "analyze_latest_distribution",
+          "args": {
+            "dataset_id": "8d9b259f-62af-44db-9a3b-8efcad9e524c",
+            "key_columns": [
+              "adapterserial"
+            ],
+            "order_column": "event_time",
+            "value_column": "DriveProductID",
+            "categorical": true
+          },
+          "id": "72d92041-9c8a-4f89-a62a-e4e24563873b",
+          "type": "tool_call"
+        }
+      ],
+      "observations": [
+        {
+          "tool": "analyze_latest_distribution",
+          "result": {
+            "status": "ready",
+            "dataset": {
+              "id": "d55af8c1-fa56-4352-a7ac-6bf25b9c132e",
+              "source": "fixture.telemetry.device_events",
+              "columns": [
+                "adapterserial",
+                "event_time",
+                "DriveProductID"
+              ],
+              "rows": 5,
+              "coverage": "complete",
+              "conditions": [],
+              "predicate_known": true,
+              "grain": "raw",
+              "aggregation": "",
+              "snapshot": "synthetic-v1",
+              "query": "",
+              "parent_id": "8d9b259f-62af-44db-9a3b-8efcad9e524c",
+              "parent_ids": [],
+              "role": "derived",
+              "root_id": "8d9b259f-62af-44db-9a3b-8efcad9e524c",
+              "row_selection": {
+                "kind": "latest_per_key",
+                "key_columns": [
+                  "adapterserial"
+                ],
+                "order_columns": [
+                  "event_time"
+                ],
+                "descending": true,
+                "null_policy": "reject",
+                "tie_policy": "reject",
+                "input_dataset_id": "8d9b259f-62af-44db-9a3b-8efcad9e524c",
+                "input_snapshot": "synthetic-v1"
+              }
+            },
+            "distribution": {
+              "id": "f357fe2a-325a-4f0e-94ca-3345bf5bd81c",
+              "source": "fixture.telemetry.device_events",
+              "columns": [
+                "DriveProductID",
+                "__key_count"
+              ],
+              "rows": 3,
+              "coverage": "complete",
+              "conditions": [],
+              "predicate_known": true,
+              "grain": "aggregate",
+              "aggregation": "count_by_value_after_latest_per_key",
+              "snapshot": "synthetic-v1",
+              "query": "",
+              "parent_id": "d55af8c1-fa56-4352-a7ac-6bf25b9c132e",
+              "parent_ids": [],
+              "role": "derived",
+              "root_id": "8d9b259f-62af-44db-9a3b-8efcad9e524c",
+              "row_selection": {
+                "kind": "latest_per_key",
+                "key_columns": [
+                  "adapterserial"
+                ],
+                "order_columns": [
+                  "event_time"
+                ],
+                "descending": true,
+                "null_policy": "reject",
+                "tie_policy": "reject",
+                "input_dataset_id": "8d9b259f-62af-44db-9a3b-8efcad9e524c",
+                "input_snapshot": "synthetic-v1"
+              }
+            },
+            "latest_selection": {
+              "kind": "latest_per_key",
+              "key_columns": [
+                "adapterserial"
+              ],
+              "order_columns": [
+                "event_time"
+              ],
+              "descending": true,
+              "null_policy": "reject",
+              "tie_policy": "reject",
+              "input_dataset_id": "8d9b259f-62af-44db-9a3b-8efcad9e524c",
+              "input_snapshot": "synthetic-v1"
+            },
+            "selected_keys": 5,
+            "input_rows": 10,
+            "count_column": "__key_count",
+            "value_column": "DriveProductID",
+            "counts": [
+              {
+                "DriveProductID": "P100",
+                "__key_count": 1
+              },
+              {
+                "DriveProductID": "P200",
+                "__key_count": 3
+              },
+              {
+                "DriveProductID": "P300",
+                "__key_count": 1
+              }
+            ],
+            "counts_truncated": false,
+            "chart_spec": {
+              "kind": "bar",
+              "x": "DriveProductID",
+              "y": "__key_count",
+              "category": "",
+              "aggregation": "none",
+              "sort": "none",
+              "cumulative": false,
+              "top_n": 50,
+              "bins": 20,
+              "title": "DriveProductID · 키별 최신 행 분포",
+              "x_label": "DriveProductID",
+              "y_label": "Unique keys",
+              "orientation": "vertical"
+            },
+            "render_summary": {
+              "source_rows": 3,
+              "rendered_rows": 3,
+              "data_sha256": "a303134c9bda1067d6fb6c7f05918d3bde6689d8d787f5391287681db909adac",
+              "sampled": false,
+              "aggregation": "none",
+              "points": [
+                {
+                  "x": "P100",
+                  "value": 1
+                },
+                {
+                  "x": "P200",
+                  "value": 3
+                },
+                {
+                  "x": "P300",
+                  "value": 1
+                }
+              ]
+            },
+            "cards": [
+              {
+                "id": "c7545b0b-1eaf-4274-bb7c-0304aee8f5fe",
+                "kind": "bar",
+                "title": "DriveProductID · 키별 최신 행 분포",
+                "dataset_id": "f357fe2a-325a-4f0e-94ca-3345bf5bd81c"
+              }
+            ],
+            "evidence_ids": [
+              "d55af8c1-fa56-4352-a7ac-6bf25b9c132e",
+              "c7545b0b-1eaf-4274-bb7c-0304aee8f5fe"
+            ],
+            "error_code": null,
+            "retryable": false,
+            "user_action": "",
+            "scope": "도구가 반환한 구조화 결과 범위입니다."
+          }
+        }
+      ],
+      "state": {
+        "request_id": "ad83d69b-ec76-4983-b4ce-0af224588fab",
+        "request_text": "현재 로딩된 데이터에서 adapterserial별 event_time이 가장 늦은 행 하나만 사용해서 DriveProductID별 장치 수 분포를 그려줘. DriveProductID는 제품 식별자야. 원본은 보존해.",
+        "attempts": 0,
+        "chart": true,
+        "kind": "bar",
+        "join": false,
+        "requested_join": false,
+        "join_how": null,
+        "statistical_kind": null,
+        "pivot_requested": false,
+        "pivot_aggregation": null,
+        "pivot_value_column": null,
+        "pivot_success_value": null,
+        "pivot_index_columns": [],
+        "pivot_column_columns": [],
+        "pivot_conditions": [],
+        "pivot_derived_bins": [],
+        "pivot_margins": false,
+        "pivot_sort": "ascending",
+        "pivot_margins_name": "전체",
+        "winsor_spec": null,
+        "winsor_column": null,
+        "outlier_spec": null,
+        "outlier_column": null,
+        "outlier_followup": false,
+        "outlier_selection": "outliers",
+        "outlier_group_column": null,
+        "outlier_metric_column": null,
+        "outlier_metric_aggregation": null,
+        "outlier_aggregate_mode": null,
+        "outlier_aggregate_requested": false,
+        "outlier_top_n": 0,
+        "group_summary_requested": false,
+        "group_summary_columns": [],
+        "group_summary_metrics": [],
+        "group_summary_conditions": [],
+        "calculation": false,
+        "operations": [],
+        "metadata_kind": null,
+        "scalar_grouping": true,
+        "profile_kind": null,
+        "preview_limit": 0,
+        "chart_spec_requested": true,
+        "count_rate_layout": null,
+        "chart_cumulative": false,
+        "time_series_frequency": null,
+        "time_series_aggregation": null,
+        "time_series_gap_policy": "omit",
+        "time_series_timezone": "",
+        "data_load": false,
+        "expected_load_source": "",
+        "expected_load_query": "",
+        "whole_row_count": false,
+        "current_result_only": true,
+        "requested_result_rows": null,
+        "fresh_source_required": false,
+        "request_started_at": 1790605435.8403451,
+        "required_columns": [
+          "DriveProductID"
+        ],
+        "explicit_columns": [
+          "adapterserial",
+          "event_time",
+          "DriveProductID"
+        ],
+        "required_sources": [],
+        "columns": [],
+        "failed": {},
+        "status": "complete",
+        "previous_scope": {},
+        "scope": {
+          "conditions": [],
+          "any_conditions": [],
+          "join_edges": [],
+          "measure_conditions": [],
+          "ratio": null,
+          "unresolved": [],
+          "columns": [
+            "DriveProductID",
+            "adapterserial",
+            "event_time"
+          ]
+        },
+        "named_measure_columns": [],
+        "latest_per_key_spec": {
+          "dataset_id": "8d9b259f-62af-44db-9a3b-8efcad9e524c",
+          "key_columns": [
+            "adapterserial"
+          ],
+          "value_column": "DriveProductID",
+          "order_column": "event_time",
+          "categorical": true
+        },
+        "latest_selection_evidence": {
+          "status": "ready",
+          "dataset": {
+            "id": "d55af8c1-fa56-4352-a7ac-6bf25b9c132e",
+            "source": "fixture.telemetry.device_events",
+            "columns": [
+              "adapterserial",
+              "event_time",
+              "DriveProductID"
+            ],
+            "rows": 5,
+            "coverage": "complete",
+            "conditions": [],
+            "predicate_known": true,
+            "grain": "raw",
+            "aggregation": "",
+            "snapshot": "synthetic-v1",
+            "query": "",
+            "parent_id": "8d9b259f-62af-44db-9a3b-8efcad9e524c",
+            "parent_ids": [],
+            "role": "derived",
+            "root_id": "8d9b259f-62af-44db-9a3b-8efcad9e524c",
+            "row_selection": {
+              "kind": "latest_per_key",
+              "key_columns": [
+                "adapterserial"
+              ],
+              "order_columns": [
+                "event_time"
+              ],
+              "descending": true,
+              "null_policy": "reject",
+              "tie_policy": "reject",
+              "input_dataset_id": "8d9b259f-62af-44db-9a3b-8efcad9e524c",
+              "input_snapshot": "synthetic-v1"
+            }
+          },
+          "distribution": {
+            "id": "f357fe2a-325a-4f0e-94ca-3345bf5bd81c",
+            "source": "fixture.telemetry.device_events",
+            "columns": [
+              "DriveProductID",
+              "__key_count"
+            ],
+            "rows": 3,
+            "coverage": "complete",
+            "conditions": [],
+            "predicate_known": true,
+            "grain": "aggregate",
+            "aggregation": "count_by_value_after_latest_per_key",
+            "snapshot": "synthetic-v1",
+            "query": "",
+            "parent_id": "d55af8c1-fa56-4352-a7ac-6bf25b9c132e",
+            "parent_ids": [],
+            "role": "derived",
+            "root_id": "8d9b259f-62af-44db-9a3b-8efcad9e524c",
+            "row_selection": {
+              "kind": "latest_per_key",
+              "key_columns": [
+                "adapterserial"
+              ],
+              "order_columns": [
+                "event_time"
+              ],
+              "descending": true,
+              "null_policy": "reject",
+              "tie_policy": "reject",
+              "input_dataset_id": "8d9b259f-62af-44db-9a3b-8efcad9e524c",
+              "input_snapshot": "synthetic-v1"
+            }
+          },
+          "latest_selection": {
+            "kind": "latest_per_key",
+            "key_columns": [
+              "adapterserial"
+            ],
+            "order_columns": [
+              "event_time"
+            ],
+            "descending": true,
+            "null_policy": "reject",
+            "tie_policy": "reject",
+            "input_dataset_id": "8d9b259f-62af-44db-9a3b-8efcad9e524c",
+            "input_snapshot": "synthetic-v1"
+          },
+          "selected_keys": 5,
+          "input_rows": 10,
+          "count_column": "__key_count",
+          "value_column": "DriveProductID",
+          "counts": [
+            {
+              "DriveProductID": "P100",
+              "__key_count": 1
+            },
+            {
+              "DriveProductID": "P200",
+              "__key_count": 3
+            },
+            {
+              "DriveProductID": "P300",
+              "__key_count": 1
+            }
+          ],
+          "counts_truncated": false,
+          "chart_spec": {
+            "kind": "bar",
+            "x": "DriveProductID",
+            "y": "__key_count",
+            "category": "",
+            "aggregation": "none",
+            "sort": "none",
+            "cumulative": false,
+            "top_n": 50,
+            "bins": 20,
+            "title": "DriveProductID · 키별 최신 행 분포",
+            "x_label": "DriveProductID",
+            "y_label": "Unique keys",
+            "orientation": "vertical"
+          },
+          "render_summary": {
+            "source_rows": 3,
+            "rendered_rows": 3,
+            "data_sha256": "a303134c9bda1067d6fb6c7f05918d3bde6689d8d787f5391287681db909adac",
+            "sampled": false,
+            "aggregation": "none",
+            "points": [
+              {
+                "x": "P100",
+                "value": 1
+              },
+              {
+                "x": "P200",
+                "value": 3
+              },
+              {
+                "x": "P300",
+                "value": 1
+              }
+            ]
+          },
+          "cards": [
+            {
+              "id": "c7545b0b-1eaf-4274-bb7c-0304aee8f5fe",
+              "kind": "bar",
+              "title": "DriveProductID · 키별 최신 행 분포",
+              "dataset_id": "f357fe2a-325a-4f0e-94ca-3345bf5bd81c"
+            }
+          ],
+          "evidence_ids": [
+            "d55af8c1-fa56-4352-a7ac-6bf25b9c132e",
+            "c7545b0b-1eaf-4274-bb7c-0304aee8f5fe"
+          ],
+          "error_code": null,
+          "retryable": false,
+          "user_action": "",
+          "scope": "도구가 반환한 구조화 결과 범위입니다."
+        },
+        "operation_pending": false,
+        "processed": [
+          "72d92041-9c8a-4f89-a62a-e4e24563873b"
+        ],
+        "sent_calls": [
+          "72d92041-9c8a-4f89-a62a-e4e24563873b"
+        ],
+        "failed_signatures": {},
+        "evidence_ids": [],
+        "artifact_ids": [
+          "c7545b0b-1eaf-4274-bb7c-0304aee8f5fe"
+        ],
+        "model_calls": 0,
+        "model_seconds": 0.0,
+        "preview_evidence": null,
+        "outlier_aggregate_evidence": {},
+        "count_rate_evidence": null,
+        "count_rate_group_column": null,
+        "winsor_evidence": null,
+        "pivot_evidence": null,
+        "group_summary_evidence": null,
+        "remote_query_ids": [],
+        "remote_query_evidence": {},
+        "remote_result_requested": false,
+        "accounted_model_failures": 0,
+        "accounted_model_failure_seconds": 0.0,
+        "model_retries": 0,
+        "accounted_aux_calls": 0,
+        "accounted_aux_seconds": 0.0,
+        "_new_model_failure_seconds": 0.0,
+        "stop_reason": null
+      },
+      "model_calls": 0,
+      "elapsed_seconds": 0.051
+    },
+    {
+      "id": "histogram_wording",
+      "repeat": 2,
+      "prompt": "DriveProductID histogram을 그려줘. adapterserial 기준으로 unique하게 집계하고 중복이면 event_time 기준 마지막 데이터만 활용해줘. DriveProductID는 연속 수치가 아니라 제품 식별자야.",
+      "status": "PASS",
+      "agent_status": "answered",
+      "answer": "키 adapterserial마다 event_time이 가장 큰 행을 선택했습니다. 원본 10행 중 5개의 키를 각각 한 번 계산했습니다. 원본은 보존했습니다. 식별자·범주 값은 값별 빈도 막대그래프로 표시합니다.\n\nDriveProductID · 키별 최신 행 분포 이미지를 생성했습니다.\n분석 범위: 보유 3행 기준 · complete · aggregate · 표시 데이터 3개 · 집계 none",
+      "charts": [
+        {
+          "kind": "bar",
+          "columns": [
+            "DriveProductID",
+            "__key_count"
+          ],
+          "image": "histogram_wording-2-0.png",
+          "accepted_by_completion": true,
+          "dataset_id": "68f0bd41-4569-429f-923a-1bf0fb110d27",
+          "query": "",
+          "counts": {
+            "P100": 1.0,
+            "P200": 3.0,
+            "P300": 1.0
+          },
+          "data": [
+            {
+              "DriveProductID": "P100",
+              "__key_count": 1
+            },
+            {
+              "DriveProductID": "P200",
+              "__key_count": 3
+            },
+            {
+              "DriveProductID": "P300",
+              "__key_count": 1
+            }
+          ],
+          "counts_match": true
+        }
+      ],
+      "datasets": [
+        {
+          "id": "99a163c5-abf5-4d01-acf6-ccf29448d840",
+          "query": "",
+          "parent_id": "5c81906c-cf0f-43c4-b19e-ae02c3d35c11",
+          "rows": [
+            {
+              "adapterserial": "E",
+              "event_time": "2026-09-28 14:00:00",
+              "DriveProductID": "P300"
+            },
+            {
+              "adapterserial": "D",
+              "event_time": "2026-09-28 13:00:00",
+              "DriveProductID": "P100"
+            },
+            {
+              "adapterserial": "C",
+              "event_time": "2026-09-28 12:00:00",
+              "DriveProductID": "P200"
+            },
+            {
+              "adapterserial": "B",
+              "event_time": "2026-09-28 11:00:00",
+              "DriveProductID": "P200"
+            },
+            {
+              "adapterserial": "A",
+              "event_time": "2026-09-28 10:00:00",
+              "DriveProductID": "P200"
+            }
+          ]
+        },
+        {
+          "id": "68f0bd41-4569-429f-923a-1bf0fb110d27",
+          "query": "",
+          "parent_id": "99a163c5-abf5-4d01-acf6-ccf29448d840",
+          "rows": [
+            {
+              "DriveProductID": "P100",
+              "__key_count": 1
+            },
+            {
+              "DriveProductID": "P200",
+              "__key_count": 3
+            },
+            {
+              "DriveProductID": "P300",
+              "__key_count": 1
+            }
+          ]
+        }
+      ],
+      "raw_preserved": true,
+      "calls": [
+        {
+          "name": "analyze_latest_distribution",
+          "args": {
+            "dataset_id": "5c81906c-cf0f-43c4-b19e-ae02c3d35c11",
+            "key_columns": [
+              "adapterserial"
+            ],
+            "order_column": "event_time",
+            "value_column": "DriveProductID",
+            "categorical": true
+          },
+          "id": "4b5597dd-4559-4fe2-99f0-0ba8fbbb7d80",
+          "type": "tool_call"
+        }
+      ],
+      "observations": [
+        {
+          "tool": "analyze_latest_distribution",
+          "result": {
+            "status": "ready",
+            "dataset": {
+              "id": "99a163c5-abf5-4d01-acf6-ccf29448d840",
+              "source": "fixture.telemetry.device_events",
+              "columns": [
+                "adapterserial",
+                "event_time",
+                "DriveProductID"
+              ],
+              "rows": 5,
+              "coverage": "complete",
+              "conditions": [],
+              "predicate_known": true,
+              "grain": "raw",
+              "aggregation": "",
+              "snapshot": "synthetic-v1",
+              "query": "",
+              "parent_id": "5c81906c-cf0f-43c4-b19e-ae02c3d35c11",
+              "parent_ids": [],
+              "role": "derived",
+              "root_id": "5c81906c-cf0f-43c4-b19e-ae02c3d35c11",
+              "row_selection": {
+                "kind": "latest_per_key",
+                "key_columns": [
+                  "adapterserial"
+                ],
+                "order_columns": [
+                  "event_time"
+                ],
+                "descending": true,
+                "null_policy": "reject",
+                "tie_policy": "reject",
+                "input_dataset_id": "5c81906c-cf0f-43c4-b19e-ae02c3d35c11",
+                "input_snapshot": "synthetic-v1"
+              }
+            },
+            "distribution": {
+              "id": "68f0bd41-4569-429f-923a-1bf0fb110d27",
+              "source": "fixture.telemetry.device_events",
+              "columns": [
+                "DriveProductID",
+                "__key_count"
+              ],
+              "rows": 3,
+              "coverage": "complete",
+              "conditions": [],
+              "predicate_known": true,
+              "grain": "aggregate",
+              "aggregation": "count_by_value_after_latest_per_key",
+              "snapshot": "synthetic-v1",
+              "query": "",
+              "parent_id": "99a163c5-abf5-4d01-acf6-ccf29448d840",
+              "parent_ids": [],
+              "role": "derived",
+              "root_id": "5c81906c-cf0f-43c4-b19e-ae02c3d35c11",
+              "row_selection": {
+                "kind": "latest_per_key",
+                "key_columns": [
+                  "adapterserial"
+                ],
+                "order_columns": [
+                  "event_time"
+                ],
+                "descending": true,
+                "null_policy": "reject",
+                "tie_policy": "reject",
+                "input_dataset_id": "5c81906c-cf0f-43c4-b19e-ae02c3d35c11",
+                "input_snapshot": "synthetic-v1"
+              }
+            },
+            "latest_selection": {
+              "kind": "latest_per_key",
+              "key_columns": [
+                "adapterserial"
+              ],
+              "order_columns": [
+                "event_time"
+              ],
+              "descending": true,
+              "null_policy": "reject",
+              "tie_policy": "reject",
+              "input_dataset_id": "5c81906c-cf0f-43c4-b19e-ae02c3d35c11",
+              "input_snapshot": "synthetic-v1"
+            },
+            "selected_keys": 5,
+            "input_rows": 10,
+            "count_column": "__key_count",
+            "value_column": "DriveProductID",
+            "counts": [
+              {
+                "DriveProductID": "P100",
+                "__key_count": 1
+              },
+              {
+                "DriveProductID": "P200",
+                "__key_count": 3
+              },
+              {
+                "DriveProductID": "P300",
+                "__key_count": 1
+              }
+            ],
+            "counts_truncated": false,
+            "chart_spec": {
+              "kind": "bar",
+              "x": "DriveProductID",
+              "y": "__key_count",
+              "category": "",
+              "aggregation": "none",
+              "sort": "none",
+              "cumulative": false,
+              "top_n": 50,
+              "bins": 20,
+              "title": "DriveProductID · 키별 최신 행 분포",
+              "x_label": "DriveProductID",
+              "y_label": "Unique keys",
+              "orientation": "vertical"
+            },
+            "render_summary": {
+              "source_rows": 3,
+              "rendered_rows": 3,
+              "data_sha256": "a303134c9bda1067d6fb6c7f05918d3bde6689d8d787f5391287681db909adac",
+              "sampled": false,
+              "aggregation": "none",
+              "points": [
+                {
+                  "x": "P100",
+                  "value": 1
+                },
+                {
+                  "x": "P200",
+                  "value": 3
+                },
+                {
+                  "x": "P300",
+                  "value": 1
+                }
+              ]
+            },
+            "cards": [
+              {
+                "id": "3e981f5f-39d6-4928-b43d-1b5d4565b7c2",
+                "kind": "bar",
+                "title": "DriveProductID · 키별 최신 행 분포",
+                "dataset_id": "68f0bd41-4569-429f-923a-1bf0fb110d27"
+              }
+            ],
+            "evidence_ids": [
+              "99a163c5-abf5-4d01-acf6-ccf29448d840",
+              "3e981f5f-39d6-4928-b43d-1b5d4565b7c2"
+            ],
+            "error_code": null,
+            "retryable": false,
+            "user_action": "",
+            "scope": "도구가 반환한 구조화 결과 범위입니다."
+          }
+        }
+      ],
+      "state": {
+        "request_id": "8be185d8-5005-4cd5-9dc4-7948c4f5cd87",
+        "request_text": "DriveProductID histogram을 그려줘. adapterserial 기준으로 unique하게 집계하고 중복이면 event_time 기준 마지막 데이터만 활용해줘. DriveProductID는 연속 수치가 아니라 제품 식별자야.",
+        "attempts": 0,
+        "chart": true,
+        "kind": "bar",
+        "join": false,
+        "requested_join": false,
+        "join_how": null,
+        "statistical_kind": null,
+        "pivot_requested": false,
+        "pivot_aggregation": null,
+        "pivot_value_column": null,
+        "pivot_success_value": null,
+        "pivot_index_columns": [],
+        "pivot_column_columns": [],
+        "pivot_conditions": [],
+        "pivot_derived_bins": [],
+        "pivot_margins": false,
+        "pivot_sort": "ascending",
+        "pivot_margins_name": "전체",
+        "winsor_spec": null,
+        "winsor_column": null,
+        "outlier_spec": null,
+        "outlier_column": null,
+        "outlier_followup": false,
+        "outlier_selection": "outliers",
+        "outlier_group_column": null,
+        "outlier_metric_column": null,
+        "outlier_metric_aggregation": null,
+        "outlier_aggregate_mode": null,
+        "outlier_aggregate_requested": false,
+        "outlier_top_n": 0,
+        "group_summary_requested": false,
+        "group_summary_columns": [],
+        "group_summary_metrics": [],
+        "group_summary_conditions": [],
+        "calculation": false,
+        "operations": [],
+        "metadata_kind": null,
+        "scalar_grouping": true,
+        "profile_kind": null,
+        "preview_limit": 0,
+        "chart_spec_requested": true,
+        "count_rate_layout": null,
+        "chart_cumulative": false,
+        "time_series_frequency": null,
+        "time_series_aggregation": null,
+        "time_series_gap_policy": "omit",
+        "time_series_timezone": "",
+        "data_load": false,
+        "expected_load_source": "",
+        "expected_load_query": "",
+        "whole_row_count": false,
+        "current_result_only": false,
+        "requested_result_rows": null,
+        "fresh_source_required": false,
+        "request_started_at": 1790605435.9088929,
+        "required_columns": [
+          "DriveProductID"
+        ],
+        "explicit_columns": [
+          "DriveProductID",
+          "adapterserial",
+          "event_time"
+        ],
+        "required_sources": [],
+        "columns": [],
+        "failed": {},
+        "status": "complete",
+        "previous_scope": {},
+        "scope": {
+          "conditions": [],
+          "any_conditions": [],
+          "join_edges": [],
+          "measure_conditions": [],
+          "ratio": null,
+          "unresolved": [],
+          "columns": [
+            "DriveProductID",
+            "adapterserial",
+            "event_time"
+          ]
+        },
+        "named_measure_columns": [],
+        "latest_per_key_spec": {
+          "dataset_id": "5c81906c-cf0f-43c4-b19e-ae02c3d35c11",
+          "key_columns": [
+            "adapterserial"
+          ],
+          "value_column": "DriveProductID",
+          "order_column": "event_time",
+          "categorical": true
+        },
+        "latest_selection_evidence": {
+          "status": "ready",
+          "dataset": {
+            "id": "99a163c5-abf5-4d01-acf6-ccf29448d840",
+            "source": "fixture.telemetry.device_events",
+            "columns": [
+              "adapterserial",
+              "event_time",
+              "DriveProductID"
+            ],
+            "rows": 5,
+            "coverage": "complete",
+            "conditions": [],
+            "predicate_known": true,
+            "grain": "raw",
+            "aggregation": "",
+            "snapshot": "synthetic-v1",
+            "query": "",
+            "parent_id": "5c81906c-cf0f-43c4-b19e-ae02c3d35c11",
+            "parent_ids": [],
+            "role": "derived",
+            "root_id": "5c81906c-cf0f-43c4-b19e-ae02c3d35c11",
+            "row_selection": {
+              "kind": "latest_per_key",
+              "key_columns": [
+                "adapterserial"
+              ],
+              "order_columns": [
+                "event_time"
+              ],
+              "descending": true,
+              "null_policy": "reject",
+              "tie_policy": "reject",
+              "input_dataset_id": "5c81906c-cf0f-43c4-b19e-ae02c3d35c11",
+              "input_snapshot": "synthetic-v1"
+            }
+          },
+          "distribution": {
+            "id": "68f0bd41-4569-429f-923a-1bf0fb110d27",
+            "source": "fixture.telemetry.device_events",
+            "columns": [
+              "DriveProductID",
+              "__key_count"
+            ],
+            "rows": 3,
+            "coverage": "complete",
+            "conditions": [],
+            "predicate_known": true,
+            "grain": "aggregate",
+            "aggregation": "count_by_value_after_latest_per_key",
+            "snapshot": "synthetic-v1",
+            "query": "",
+            "parent_id": "99a163c5-abf5-4d01-acf6-ccf29448d840",
+            "parent_ids": [],
+            "role": "derived",
+            "root_id": "5c81906c-cf0f-43c4-b19e-ae02c3d35c11",
+            "row_selection": {
+              "kind": "latest_per_key",
+              "key_columns": [
+                "adapterserial"
+              ],
+              "order_columns": [
+                "event_time"
+              ],
+              "descending": true,
+              "null_policy": "reject",
+              "tie_policy": "reject",
+              "input_dataset_id": "5c81906c-cf0f-43c4-b19e-ae02c3d35c11",
+              "input_snapshot": "synthetic-v1"
+            }
+          },
+          "latest_selection": {
+            "kind": "latest_per_key",
+            "key_columns": [
+              "adapterserial"
+            ],
+            "order_columns": [
+              "event_time"
+            ],
+            "descending": true,
+            "null_policy": "reject",
+            "tie_policy": "reject",
+            "input_dataset_id": "5c81906c-cf0f-43c4-b19e-ae02c3d35c11",
+            "input_snapshot": "synthetic-v1"
+          },
+          "selected_keys": 5,
+          "input_rows": 10,
+          "count_column": "__key_count",
+          "value_column": "DriveProductID",
+          "counts": [
+            {
+              "DriveProductID": "P100",
+              "__key_count": 1
+            },
+            {
+              "DriveProductID": "P200",
+              "__key_count": 3
+            },
+            {
+              "DriveProductID": "P300",
+              "__key_count": 1
+            }
+          ],
+          "counts_truncated": false,
+          "chart_spec": {
+            "kind": "bar",
+            "x": "DriveProductID",
+            "y": "__key_count",
+            "category": "",
+            "aggregation": "none",
+            "sort": "none",
+            "cumulative": false,
+            "top_n": 50,
+            "bins": 20,
+            "title": "DriveProductID · 키별 최신 행 분포",
+            "x_label": "DriveProductID",
+            "y_label": "Unique keys",
+            "orientation": "vertical"
+          },
+          "render_summary": {
+            "source_rows": 3,
+            "rendered_rows": 3,
+            "data_sha256": "a303134c9bda1067d6fb6c7f05918d3bde6689d8d787f5391287681db909adac",
+            "sampled": false,
+            "aggregation": "none",
+            "points": [
+              {
+                "x": "P100",
+                "value": 1
+              },
+              {
+                "x": "P200",
+                "value": 3
+              },
+              {
+                "x": "P300",
+                "value": 1
+              }
+            ]
+          },
+          "cards": [
+            {
+              "id": "3e981f5f-39d6-4928-b43d-1b5d4565b7c2",
+              "kind": "bar",
+              "title": "DriveProductID · 키별 최신 행 분포",
+              "dataset_id": "68f0bd41-4569-429f-923a-1bf0fb110d27"
+            }
+          ],
+          "evidence_ids": [
+            "99a163c5-abf5-4d01-acf6-ccf29448d840",
+            "3e981f5f-39d6-4928-b43d-1b5d4565b7c2"
+          ],
+          "error_code": null,
+          "retryable": false,
+          "user_action": "",
+          "scope": "도구가 반환한 구조화 결과 범위입니다."
+        },
+        "operation_pending": false,
+        "processed": [
+          "4b5597dd-4559-4fe2-99f0-0ba8fbbb7d80"
+        ],
+        "sent_calls": [
+          "4b5597dd-4559-4fe2-99f0-0ba8fbbb7d80"
+        ],
+        "failed_signatures": {},
+        "evidence_ids": [],
+        "artifact_ids": [
+          "3e981f5f-39d6-4928-b43d-1b5d4565b7c2"
+        ],
+        "model_calls": 0,
+        "model_seconds": 0.0,
+        "preview_evidence": null,
+        "outlier_aggregate_evidence": {},
+        "count_rate_evidence": null,
+        "count_rate_group_column": null,
+        "winsor_evidence": null,
+        "pivot_evidence": null,
+        "group_summary_evidence": null,
+        "remote_query_ids": [],
+        "remote_query_evidence": {},
+        "remote_result_requested": false,
+        "accounted_model_failures": 0,
+        "accounted_model_failure_seconds": 0.0,
+        "model_retries": 0,
+        "accounted_aux_calls": 0,
+        "accounted_aux_seconds": 0.0,
+        "_new_model_failure_seconds": 0.0,
+        "stop_reason": null
+      },
+      "model_calls": 0,
+      "elapsed_seconds": 0.05
+    },
+    {
+      "id": "renamed_schema",
+      "repeat": 2,
+      "prompt": "unit_key마다 observed_at이 가장 늦은 기록을 하나 선택하고 product_code별 장치 수 분포를 그려줘. product_code는 제품 식별자야.",
+      "status": "PASS",
+      "agent_status": "answered",
+      "answer": "키 unit_key마다 observed_at이 가장 큰 행을 선택했습니다. 원본 10행 중 5개의 키를 각각 한 번 계산했습니다. 원본은 보존했습니다. 식별자·범주 값은 값별 빈도 막대그래프로 표시합니다.\n\nproduct_code · 키별 최신 행 분포 이미지를 생성했습니다.\n분석 범위: 보유 3행 기준 · complete · aggregate · 표시 데이터 3개 · 집계 none",
+      "charts": [
+        {
+          "kind": "bar",
+          "columns": [
+            "product_code",
+            "__key_count"
+          ],
+          "image": "renamed_schema-2-0.png",
+          "accepted_by_completion": true,
+          "dataset_id": "30b26ddc-45e7-4fd5-8521-1ad788b4e997",
+          "query": "",
+          "counts": {
+            "P100": 1.0,
+            "P200": 3.0,
+            "P300": 1.0
+          },
+          "data": [
+            {
+              "product_code": "P100",
+              "__key_count": 1
+            },
+            {
+              "product_code": "P200",
+              "__key_count": 3
+            },
+            {
+              "product_code": "P300",
+              "__key_count": 1
+            }
+          ],
+          "counts_match": true
+        }
+      ],
+      "datasets": [
+        {
+          "id": "20783f15-8941-4d8f-b312-d2d1fd9f59aa",
+          "query": "",
+          "parent_id": "5f5bc971-c75d-4645-9a2d-e495dcf82c63",
+          "rows": [
+            {
+              "unit_key": "E",
+              "observed_at": "2026-09-28 14:00:00",
+              "product_code": "P300"
+            },
+            {
+              "unit_key": "D",
+              "observed_at": "2026-09-28 13:00:00",
+              "product_code": "P100"
+            },
+            {
+              "unit_key": "C",
+              "observed_at": "2026-09-28 12:00:00",
+              "product_code": "P200"
+            },
+            {
+              "unit_key": "B",
+              "observed_at": "2026-09-28 11:00:00",
+              "product_code": "P200"
+            },
+            {
+              "unit_key": "A",
+              "observed_at": "2026-09-28 10:00:00",
+              "product_code": "P200"
+            }
+          ]
+        },
+        {
+          "id": "30b26ddc-45e7-4fd5-8521-1ad788b4e997",
+          "query": "",
+          "parent_id": "20783f15-8941-4d8f-b312-d2d1fd9f59aa",
+          "rows": [
+            {
+              "product_code": "P100",
+              "__key_count": 1
+            },
+            {
+              "product_code": "P200",
+              "__key_count": 3
+            },
+            {
+              "product_code": "P300",
+              "__key_count": 1
+            }
+          ]
+        }
+      ],
+      "raw_preserved": true,
+      "calls": [
+        {
+          "name": "analyze_latest_distribution",
+          "args": {
+            "dataset_id": "5f5bc971-c75d-4645-9a2d-e495dcf82c63",
+            "key_columns": [
+              "unit_key"
+            ],
+            "order_column": "observed_at",
+            "value_column": "product_code",
+            "categorical": true
+          },
+          "id": "aed2d90f-26e5-42ed-9db6-3f1ecb463e15",
+          "type": "tool_call"
+        }
+      ],
+      "observations": [
+        {
+          "tool": "analyze_latest_distribution",
+          "result": {
+            "status": "ready",
+            "dataset": {
+              "id": "20783f15-8941-4d8f-b312-d2d1fd9f59aa",
+              "source": "fixture.telemetry.device_events",
+              "columns": [
+                "unit_key",
+                "observed_at",
+                "product_code"
+              ],
+              "rows": 5,
+              "coverage": "complete",
+              "conditions": [],
+              "predicate_known": true,
+              "grain": "raw",
+              "aggregation": "",
+              "snapshot": "synthetic-v1",
+              "query": "",
+              "parent_id": "5f5bc971-c75d-4645-9a2d-e495dcf82c63",
+              "parent_ids": [],
+              "role": "derived",
+              "root_id": "5f5bc971-c75d-4645-9a2d-e495dcf82c63",
+              "row_selection": {
+                "kind": "latest_per_key",
+                "key_columns": [
+                  "unit_key"
+                ],
+                "order_columns": [
+                  "observed_at"
+                ],
+                "descending": true,
+                "null_policy": "reject",
+                "tie_policy": "reject",
+                "input_dataset_id": "5f5bc971-c75d-4645-9a2d-e495dcf82c63",
+                "input_snapshot": "synthetic-v1"
+              }
+            },
+            "distribution": {
+              "id": "30b26ddc-45e7-4fd5-8521-1ad788b4e997",
+              "source": "fixture.telemetry.device_events",
+              "columns": [
+                "product_code",
+                "__key_count"
+              ],
+              "rows": 3,
+              "coverage": "complete",
+              "conditions": [],
+              "predicate_known": true,
+              "grain": "aggregate",
+              "aggregation": "count_by_value_after_latest_per_key",
+              "snapshot": "synthetic-v1",
+              "query": "",
+              "parent_id": "20783f15-8941-4d8f-b312-d2d1fd9f59aa",
+              "parent_ids": [],
+              "role": "derived",
+              "root_id": "5f5bc971-c75d-4645-9a2d-e495dcf82c63",
+              "row_selection": {
+                "kind": "latest_per_key",
+                "key_columns": [
+                  "unit_key"
+                ],
+                "order_columns": [
+                  "observed_at"
+                ],
+                "descending": true,
+                "null_policy": "reject",
+                "tie_policy": "reject",
+                "input_dataset_id": "5f5bc971-c75d-4645-9a2d-e495dcf82c63",
+                "input_snapshot": "synthetic-v1"
+              }
+            },
+            "latest_selection": {
+              "kind": "latest_per_key",
+              "key_columns": [
+                "unit_key"
+              ],
+              "order_columns": [
+                "observed_at"
+              ],
+              "descending": true,
+              "null_policy": "reject",
+              "tie_policy": "reject",
+              "input_dataset_id": "5f5bc971-c75d-4645-9a2d-e495dcf82c63",
+              "input_snapshot": "synthetic-v1"
+            },
+            "selected_keys": 5,
+            "input_rows": 10,
+            "count_column": "__key_count",
+            "value_column": "product_code",
+            "counts": [
+              {
+                "product_code": "P100",
+                "__key_count": 1
+              },
+              {
+                "product_code": "P200",
+                "__key_count": 3
+              },
+              {
+                "product_code": "P300",
+                "__key_count": 1
+              }
+            ],
+            "counts_truncated": false,
+            "chart_spec": {
+              "kind": "bar",
+              "x": "product_code",
+              "y": "__key_count",
+              "category": "",
+              "aggregation": "none",
+              "sort": "none",
+              "cumulative": false,
+              "top_n": 50,
+              "bins": 20,
+              "title": "product_code · 키별 최신 행 분포",
+              "x_label": "product_code",
+              "y_label": "Unique keys",
+              "orientation": "vertical"
+            },
+            "render_summary": {
+              "source_rows": 3,
+              "rendered_rows": 3,
+              "data_sha256": "e0c8beb96599b0a467309bfe5e93bc01757004c25e59afdfea14f4d1a85c5b5d",
+              "sampled": false,
+              "aggregation": "none",
+              "points": [
+                {
+                  "x": "P100",
+                  "value": 1
+                },
+                {
+                  "x": "P200",
+                  "value": 3
+                },
+                {
+                  "x": "P300",
+                  "value": 1
+                }
+              ]
+            },
+            "cards": [
+              {
+                "id": "fb8e56d4-9864-4f80-8c41-4c270d764a4b",
+                "kind": "bar",
+                "title": "product_code · 키별 최신 행 분포",
+                "dataset_id": "30b26ddc-45e7-4fd5-8521-1ad788b4e997"
+              }
+            ],
+            "evidence_ids": [
+              "20783f15-8941-4d8f-b312-d2d1fd9f59aa",
+              "fb8e56d4-9864-4f80-8c41-4c270d764a4b"
+            ],
+            "error_code": null,
+            "retryable": false,
+            "user_action": "",
+            "scope": "도구가 반환한 구조화 결과 범위입니다."
+          }
+        }
+      ],
+      "state": {
+        "request_id": "f0890349-2922-4214-bd7e-88836c11a9ff",
+        "request_text": "unit_key마다 observed_at이 가장 늦은 기록을 하나 선택하고 product_code별 장치 수 분포를 그려줘. product_code는 제품 식별자야.",
+        "attempts": 0,
+        "chart": true,
+        "kind": "bar",
+        "join": false,
+        "requested_join": false,
+        "join_how": null,
+        "statistical_kind": null,
+        "pivot_requested": false,
+        "pivot_aggregation": null,
+        "pivot_value_column": null,
+        "pivot_success_value": null,
+        "pivot_index_columns": [],
+        "pivot_column_columns": [],
+        "pivot_conditions": [],
+        "pivot_derived_bins": [],
+        "pivot_margins": false,
+        "pivot_sort": "ascending",
+        "pivot_margins_name": "전체",
+        "winsor_spec": null,
+        "winsor_column": null,
+        "outlier_spec": null,
+        "outlier_column": null,
+        "outlier_followup": false,
+        "outlier_selection": "outliers",
+        "outlier_group_column": null,
+        "outlier_metric_column": null,
+        "outlier_metric_aggregation": null,
+        "outlier_aggregate_mode": null,
+        "outlier_aggregate_requested": false,
+        "outlier_top_n": 0,
+        "group_summary_requested": false,
+        "group_summary_columns": [],
+        "group_summary_metrics": [],
+        "group_summary_conditions": [],
+        "calculation": false,
+        "operations": [],
+        "metadata_kind": null,
+        "scalar_grouping": true,
+        "profile_kind": null,
+        "preview_limit": 0,
+        "chart_spec_requested": true,
+        "count_rate_layout": null,
+        "chart_cumulative": false,
+        "time_series_frequency": null,
+        "time_series_aggregation": null,
+        "time_series_gap_policy": "omit",
+        "time_series_timezone": "",
+        "data_load": false,
+        "expected_load_source": "",
+        "expected_load_query": "",
+        "whole_row_count": false,
+        "current_result_only": false,
+        "requested_result_rows": null,
+        "fresh_source_required": false,
+        "request_started_at": 1790605435.9764638,
+        "required_columns": [
+          "product_code"
+        ],
+        "explicit_columns": [
+          "unit_key",
+          "observed_at",
+          "product_code"
+        ],
+        "required_sources": [],
+        "columns": [],
+        "failed": {},
+        "status": "complete",
+        "previous_scope": {},
+        "scope": {
+          "conditions": [],
+          "any_conditions": [],
+          "join_edges": [],
+          "measure_conditions": [],
+          "ratio": null,
+          "unresolved": [],
+          "columns": [
+            "observed_at",
+            "product_code",
+            "unit_key"
+          ]
+        },
+        "named_measure_columns": [],
+        "latest_per_key_spec": {
+          "dataset_id": "5f5bc971-c75d-4645-9a2d-e495dcf82c63",
+          "key_columns": [
+            "unit_key"
+          ],
+          "value_column": "product_code",
+          "order_column": "observed_at",
+          "categorical": true
+        },
+        "latest_selection_evidence": {
+          "status": "ready",
+          "dataset": {
+            "id": "20783f15-8941-4d8f-b312-d2d1fd9f59aa",
+            "source": "fixture.telemetry.device_events",
+            "columns": [
+              "unit_key",
+              "observed_at",
+              "product_code"
+            ],
+            "rows": 5,
+            "coverage": "complete",
+            "conditions": [],
+            "predicate_known": true,
+            "grain": "raw",
+            "aggregation": "",
+            "snapshot": "synthetic-v1",
+            "query": "",
+            "parent_id": "5f5bc971-c75d-4645-9a2d-e495dcf82c63",
+            "parent_ids": [],
+            "role": "derived",
+            "root_id": "5f5bc971-c75d-4645-9a2d-e495dcf82c63",
+            "row_selection": {
+              "kind": "latest_per_key",
+              "key_columns": [
+                "unit_key"
+              ],
+              "order_columns": [
+                "observed_at"
+              ],
+              "descending": true,
+              "null_policy": "reject",
+              "tie_policy": "reject",
+              "input_dataset_id": "5f5bc971-c75d-4645-9a2d-e495dcf82c63",
+              "input_snapshot": "synthetic-v1"
+            }
+          },
+          "distribution": {
+            "id": "30b26ddc-45e7-4fd5-8521-1ad788b4e997",
+            "source": "fixture.telemetry.device_events",
+            "columns": [
+              "product_code",
+              "__key_count"
+            ],
+            "rows": 3,
+            "coverage": "complete",
+            "conditions": [],
+            "predicate_known": true,
+            "grain": "aggregate",
+            "aggregation": "count_by_value_after_latest_per_key",
+            "snapshot": "synthetic-v1",
+            "query": "",
+            "parent_id": "20783f15-8941-4d8f-b312-d2d1fd9f59aa",
+            "parent_ids": [],
+            "role": "derived",
+            "root_id": "5f5bc971-c75d-4645-9a2d-e495dcf82c63",
+            "row_selection": {
+              "kind": "latest_per_key",
+              "key_columns": [
+                "unit_key"
+              ],
+              "order_columns": [
+                "observed_at"
+              ],
+              "descending": true,
+              "null_policy": "reject",
+              "tie_policy": "reject",
+              "input_dataset_id": "5f5bc971-c75d-4645-9a2d-e495dcf82c63",
+              "input_snapshot": "synthetic-v1"
+            }
+          },
+          "latest_selection": {
+            "kind": "latest_per_key",
+            "key_columns": [
+              "unit_key"
+            ],
+            "order_columns": [
+              "observed_at"
+            ],
+            "descending": true,
+            "null_policy": "reject",
+            "tie_policy": "reject",
+            "input_dataset_id": "5f5bc971-c75d-4645-9a2d-e495dcf82c63",
+            "input_snapshot": "synthetic-v1"
+          },
+          "selected_keys": 5,
+          "input_rows": 10,
+          "count_column": "__key_count",
+          "value_column": "product_code",
+          "counts": [
+            {
+              "product_code": "P100",
+              "__key_count": 1
+            },
+            {
+              "product_code": "P200",
+              "__key_count": 3
+            },
+            {
+              "product_code": "P300",
+              "__key_count": 1
+            }
+          ],
+          "counts_truncated": false,
+          "chart_spec": {
+            "kind": "bar",
+            "x": "product_code",
+            "y": "__key_count",
+            "category": "",
+            "aggregation": "none",
+            "sort": "none",
+            "cumulative": false,
+            "top_n": 50,
+            "bins": 20,
+            "title": "product_code · 키별 최신 행 분포",
+            "x_label": "product_code",
+            "y_label": "Unique keys",
+            "orientation": "vertical"
+          },
+          "render_summary": {
+            "source_rows": 3,
+            "rendered_rows": 3,
+            "data_sha256": "e0c8beb96599b0a467309bfe5e93bc01757004c25e59afdfea14f4d1a85c5b5d",
+            "sampled": false,
+            "aggregation": "none",
+            "points": [
+              {
+                "x": "P100",
+                "value": 1
+              },
+              {
+                "x": "P200",
+                "value": 3
+              },
+              {
+                "x": "P300",
+                "value": 1
+              }
+            ]
+          },
+          "cards": [
+            {
+              "id": "fb8e56d4-9864-4f80-8c41-4c270d764a4b",
+              "kind": "bar",
+              "title": "product_code · 키별 최신 행 분포",
+              "dataset_id": "30b26ddc-45e7-4fd5-8521-1ad788b4e997"
+            }
+          ],
+          "evidence_ids": [
+            "20783f15-8941-4d8f-b312-d2d1fd9f59aa",
+            "fb8e56d4-9864-4f80-8c41-4c270d764a4b"
+          ],
+          "error_code": null,
+          "retryable": false,
+          "user_action": "",
+          "scope": "도구가 반환한 구조화 결과 범위입니다."
+        },
+        "operation_pending": false,
+        "processed": [
+          "aed2d90f-26e5-42ed-9db6-3f1ecb463e15"
+        ],
+        "sent_calls": [
+          "aed2d90f-26e5-42ed-9db6-3f1ecb463e15"
+        ],
+        "failed_signatures": {},
+        "evidence_ids": [],
+        "artifact_ids": [
+          "fb8e56d4-9864-4f80-8c41-4c270d764a4b"
+        ],
+        "model_calls": 0,
+        "model_seconds": 0.0,
+        "preview_evidence": null,
+        "outlier_aggregate_evidence": {},
+        "count_rate_evidence": null,
+        "count_rate_group_column": null,
+        "winsor_evidence": null,
+        "pivot_evidence": null,
+        "group_summary_evidence": null,
+        "remote_query_ids": [],
+        "remote_query_evidence": {},
+        "remote_result_requested": false,
+        "accounted_model_failures": 0,
+        "accounted_model_failure_seconds": 0.0,
+        "model_retries": 0,
+        "accounted_aux_calls": 0,
+        "accounted_aux_seconds": 0.0,
+        "_new_model_failure_seconds": 0.0,
+        "stop_reason": null
+      },
+      "model_calls": 0,
+      "elapsed_seconds": 0.055
+    }
+  ]
+}

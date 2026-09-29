@@ -1,4 +1,5 @@
 """Production receipt transport and restart recovery; no network or model."""
+from core.analysis_agent.policy import RuntimePolicy
 from datetime import date, datetime, time, timezone
 from decimal import Decimal
 import json
@@ -57,7 +58,7 @@ class ObservationTransportTests(unittest.TestCase):
                 return {'status':'ready','dataset':asdict(info),'preview':frame.to_dict('records')}
             return execute
         return GraphAnalysisRuntime(root,'test','typed',ForbiddenModel(),
-                                    connection_identity='test',remote_factory=factory)
+                                    connection_identity='test',remote_factory=factory, policy=RuntimePolicy(require_remote_approval=True))
 
     def test_typed_load_completes_without_model_and_preserves_raw_types(self):
         with tempfile.TemporaryDirectory() as root:

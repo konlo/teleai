@@ -407,6 +407,8 @@ class PersistentCharts(MutableMapping):
     def __setitem__(self,key,card):
         if key!=card.id:raise ValueError('Chart ID mismatch')
         self.db.require(card.dataset_id,'dataset')
+        from utils.analysis_image_validation import validate_chart_image
+        validate_chart_image(card.image)
         value=asdict(card);value.pop('image')
         self.db.put(key,'chart',value,card.image)
     def __delitem__(self,key):raise TypeError('Immutable chart assets')

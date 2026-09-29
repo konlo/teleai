@@ -51,6 +51,19 @@ class ApprovalLedger:
                 ('approved' if approved else 'rejected',key,'proposed')).rowcount
             if not changed:raise PermissionError('이미 처리된 승인입니다.')
 
+    def authorize_automatic(self, key, envelope):
+        """Authorize an exact read under runtime policy, never revive a refused/failed call."""
+        source_plan(envelope['source'], envelope['query'])
+        with self.connect() as db:
+            db.execute('BEGIN IMMEDIATE')
+            row = db.execute('SELECT fingerprint,status FROM requests WHERE id=?', (key,)).fetchone()
+            if row is None or row[0] != self.fingerprint(envelope):
+                raise PermissionError('조회 내용 또는 연결이 변경되었습니다.')
+            if row[1] == 'proposed':
+                db.execute("UPDATE requests SET status='auto_authorized' WHERE id=?", (key,))
+                return True
+        return False
+
     def uncertain(self):
         with self.connect() as db:
             rows=db.execute("SELECT id,status FROM requests WHERE status IN ('submitting','unknown')").fetchall()
@@ -58,7 +71,7 @@ class ApprovalLedger:
 
     def invalidate(self,key):
         with self.connect() as db:
-            db.execute("UPDATE requests SET status='invalidated' WHERE id=? AND status IN ('proposed','approved')",(key,))
+            db.execute("UPDATE requests SET status='invalidated' WHERE id=? AND status IN ('proposed','approved','auto_authorized')",(key,))
 
     def execute(self,key,envelope,executor):
         fingerprint=self.fingerprint(envelope)
@@ -67,7 +80,7 @@ class ApprovalLedger:
             row=db.execute('SELECT fingerprint,status,result FROM requests WHERE id=?',(key,)).fetchone()
             if row is None or row[0]!=fingerprint:raise PermissionError('정확한 조회의 승인 기록이 필요합니다.')
             if row[1]=='completed':return json.loads(row[2])
-            if row[1]!='approved':raise PermissionError('미승인 또는 제출 상태 불명인 조회는 실행할 수 없습니다.')
+            if row[1] not in {'approved', 'auto_authorized'}:raise PermissionError('미승인 또는 제출 상태 불명인 조회는 실행할 수 없습니다.')
             db.execute("UPDATE requests SET status='submitting' WHERE id=?",(key,))
         try:
             result=json_tool_value(executor(envelope))

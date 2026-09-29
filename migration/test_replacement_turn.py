@@ -1,4 +1,5 @@
 """Changed approval requests become durable new turns without remote execution."""
+from core.analysis_agent.policy import RuntimePolicy
 import json
 import tempfile
 import unittest
@@ -33,7 +34,7 @@ class ReplacementModel(QuietModel):
 class ReplacementTurnTests(unittest.TestCase):
     def runtime(self, root, model, calls):
         return GraphAnalysisRuntime(root, 'owner', 'replacement', model,
-            connection_identity='test', remote_factory=lambda _: lambda envelope: calls.append(envelope))
+            connection_identity='test', remote_factory=lambda _: lambda envelope: calls.append(envelope), policy=RuntimePolicy(require_remote_approval=True))
 
     def test_change_is_a_new_request_with_new_approval_and_no_old_goal_model_call(self):
         with tempfile.TemporaryDirectory() as root:

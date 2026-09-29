@@ -1,4 +1,5 @@
 """History replay must not consume an approval or mutate the user's state."""
+from core.analysis_agent.policy import RuntimePolicy
 import fcntl
 import tempfile
 import unittest
@@ -18,7 +19,7 @@ class HistorySnapshotTests(unittest.TestCase):
             calls = []
             factory = lambda _: lambda envelope: calls.append(envelope)
             original = GraphAnalysisRuntime(source_root, 'owner', 'original', QuietModel(),
-                connection_identity='test', remote_factory=factory)
+                connection_identity='test', remote_factory=factory, policy=RuntimePolicy(require_remote_approval=True))
             request = original.propose_query(SOURCE, 'SELECT 1', '검증용 조회')['requests'][0]
             initial_count = original.inspect()['message_count']
             target = AssetDB(clone_root, 'validation', 'cache')
@@ -27,7 +28,7 @@ class HistorySnapshotTests(unittest.TestCase):
             copied = copy_runtime_snapshot(original.db.directory, directory)
             self.assertEqual(len(copied), 3)
             clone = GraphAnalysisRuntime(clone_root, 'validation', 'cache', ChangeModel(),
-                connection_identity='test', remote_factory=factory)
+                connection_identity='test', remote_factory=factory, policy=RuntimePolicy(require_remote_approval=True))
             self.assertEqual(clone.inspect()['message_count'], initial_count)
             self.assertEqual(clone.inspect()['state'], 'awaiting_approval')
             result = clone.submit('새 요청으로 바꿔서 설명해줘')

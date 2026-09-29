@@ -1,3 +1,4 @@
+from core.analysis_agent.policy import RuntimePolicy
 """Read-only SQL proposal boundaries independent of a remote warehouse or LLM."""
 from pathlib import Path
 from datetime import datetime, timezone
@@ -192,7 +193,7 @@ class JoinedScopeContractTests(unittest.TestCase):
                     connection_identity='test-connection',
                     remote_factory=lambda _: lambda envelope: remote_calls.append(envelope),
                     reference_context_loader=lambda: context,
-                    sql_dialect='sqlite')
+                    sql_dialect='sqlite', policy=RuntimePolicy(require_remote_approval=True))
                 try:
                     result = runtime.submit(
                         "Count records joining e.left_key = a.key and e.right_key = b.key "
@@ -206,7 +207,7 @@ class JoinedScopeContractTests(unittest.TestCase):
             runtime = GraphAnalysisRuntime(root, 'owner', 'missing-relationship',
                 JoinedProposalModel(query=base), connection_identity='test-connection',
                 remote_factory=lambda _: lambda envelope: self.fail('remote execution'),
-                reference_context_loader=lambda: context, sql_dialect='sqlite')
+                reference_context_loader=lambda: context, sql_dialect='sqlite', policy=RuntimePolicy(require_remote_approval=True))
             try:
                 result = runtime.submit(
                     "Count records where a.label = 'target' OR b.label = 'target'")
@@ -369,7 +370,7 @@ class PublicSqliteProbeTests(unittest.TestCase):
                 remote_factory=lambda _: lambda envelope: remote_calls.append(envelope),
                 sql_dialect='sqlite',
                 proposal_validator=lambda query: check_sqlite_candidate(path, query),
-                agent_instructions='Stage one SQLite SELECT with query_databricks.')
+                agent_instructions='Stage one SQLite SELECT with query_databricks.', policy=RuntimePolicy(require_remote_approval=True))
             try:
                 result = runtime.submit('Count records in items.')
                 self.assertEqual(result['status'], 'awaiting_approval', result)

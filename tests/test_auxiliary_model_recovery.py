@@ -1,4 +1,5 @@
 """Summary and pending-message failures must preserve history and exact grants."""
+from core.analysis_agent.policy import RuntimePolicy
 import json
 import tempfile
 import unittest
@@ -66,7 +67,7 @@ class AuxiliaryRecoveryTests(unittest.TestCase):
         calls=[] if calls is None else calls
         return GraphAnalysisRuntime(root,'owner','auxiliary',model,
             remote_factory=lambda _:lambda envelope:calls.append(envelope),
-            connection_identity='synthetic-only',**kwargs)
+            connection_identity='synthetic-only',**kwargs, policy=RuntimePolicy(require_remote_approval=True))
 
     def pending(self, r):
         return r.propose_query('fixture','SELECT 1','fixture verification')['requests'][0]

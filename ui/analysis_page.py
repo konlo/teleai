@@ -20,7 +20,9 @@ from core.analysis_agent.model_provider import build_analysis_chat_model
 load_dotenv(ROOT/'.env')
 st.set_page_config(page_title='Telly · 분석',page_icon='📊',layout='wide')
 st.title('Telly · 함께 살펴보는 데이터')
-st.caption('결과를 보며 이어서 질문하세요. 추가 데이터 조회는 실행 전에 확인합니다.')
+policy=RuntimePolicy.from_env()
+st.caption('결과를 보며 이어서 질문하세요. '+('추가 데이터 조회는 실행 전에 확인합니다.'
+    if policy.require_remote_approval else '필요한 데이터는 agent가 자동으로 조회합니다.'))
 root=Path(os.getenv('TELLY_V1_STORAGE',str(ROOT/'.telly_runtime/v1')))
 root.mkdir(parents=True,exist_ok=True)
 # Local desktop identity; this entrypoint binds loopback and is not a multi-user service.
@@ -40,11 +42,10 @@ with st.sidebar:
         ['로컬 Ollama', 'Databricks 모델 · 토큰 사용량 과금'],
         key='v1_model_provider')
 provider = 'databricks' if provider_label.startswith('Databricks') else 'ollama'
-runtime_id = (cid, provider)
+runtime_id = (cid, provider, policy.require_remote_approval)
 if st.session_state.get('v1_runtime_id')!=runtime_id:
     previous=st.session_state.pop('v1_runtime',None)
     if previous:previous.close()
-    policy=RuntimePolicy.from_env()
     try:
         model=build_analysis_chat_model(policy,provider=provider)
     except ValueError as exc:
@@ -91,7 +92,7 @@ with st.sidebar:
         st.session_state.v1_conversation=str(uuid4());st.rerun()
     st.subheader('분석할 자료')
     table=st.text_input('Databricks 테이블',placeholder='catalog.schema.table')
-    if st.button('데이터 불러오기 제안',disabled=not table.strip()):
+    if st.button('데이터 불러오기 제안' if runtime.policy.require_remote_approval else '데이터 불러오기',disabled=not table.strip()):
         action(lambda:runtime.propose_table(table));st.rerun()
     if st.button('예제 데이터로 시작'):
         def example():
@@ -127,41 +128,53 @@ with st.sidebar:
         st.write('검증 중: 조인, 가설 검정, 고급 복합 시각화')
         st.caption(f"원격 결과 최대 {policy['max_remote_rows']:,}행 · 최대 {policy['max_dataset_columns']:,}열 · 대화별 저장공간 {policy['scope_disk_quota_bytes'] / 1024**3:.1f} GiB · 정리 후보 기준 {policy['retention_days']}일")
 
-for message in runtime.events():
+from ui.analysis_chart_delivery import chart_delivery_plan, displayable_chart
+shown_chart_ids=set()
+messages=runtime.events()
+chart_plan=chart_delivery_plan(messages)
+for message in messages:
+    if isinstance(message,HumanMessage):
+        shown_chart_ids.clear()
     if isinstance(message,(HumanMessage,AIMessage)) and message.content:
         with st.chat_message('user' if isinstance(message,HumanMessage) else 'assistant'):
-            # Internal result IDs remain in model context, not user-facing prose.
             content=message.content
             if isinstance(content,str) and content.startswith('선택한 차트:'):content=content.split(', dataset_id=')[0]
             st.markdown(display_analysis_text(content,runtime.datasets.metadata))
-    if isinstance(message,ToolMessage):
-        try:
-            data=json.loads(message.content)
-        except (TypeError,ValueError):
-            data={}
-        references=data.get('cards',[]) if isinstance(data,dict) else []
-        cards=[runtime.artifacts[card_id] for item in references
-               if isinstance(item,dict) and isinstance(card_id:=item.get('id'),str)
-               and card_id in runtime.artifacts]
-        if cards:
-            with st.chat_message('assistant'):
-                st.write('이렇게 살펴볼 수 있어요')
-                for column,card in zip(st.columns(len(cards)),cards):
-                    with column:
-                        st.image(card.image,caption=card.title)
-                        st.caption(card.reason+' · '+card.scope)
-                        if st.button('이 차트 선택',key=f'chart-{message.id}-{card.id}'):
-                            action(lambda:runtime.select_chart(card.id))
-                            st.session_state.v1_selected=card.id;st.rerun()
+    references=[key for key in chart_plan.get(message.id,[]) if key not in shown_chart_ids]
+    if references:
+        with st.chat_message('assistant'):
+            for card_id in references:
+                try:
+                    card=displayable_chart(runtime.artifacts,card_id)
+                    st.image(card.image,caption=card.title, width='content')
+                except (KeyError,ValueError,OSError,TypeError) as exc:
+                    runtime.diagnostics.failure(exc,stage='chart_display')
+                    st.error('차트 이미지를 표시하지 못했습니다. 생성된 차트의 저장 상태를 확인해야 합니다. 기존 데이터는 보존되어 있습니다.')
+                    continue
+                shown_chart_ids.add(card_id)
+                st.caption(card.reason+' · '+card.scope)
+                if st.button('이 차트 선택',key=f'chart-{message.id}-{card.id}'):
+                    action(lambda:runtime.select_chart(card.id))
+                    st.session_state.v1_selected=card.id;st.rerun()
 selected=None
 for previous in reversed(runtime.events()):
     if isinstance(previous,HumanMessage) and isinstance(previous.content,str) and ', card_id=' in previous.content:
         selected=previous.content.rsplit(', card_id=',1)[1]
         break
 if selected in runtime.artifacts:
-    card=runtime.artifacts[selected];st.subheader(card.title);st.image(card.image);st.caption(card.scope)
+    try:
+        card=displayable_chart(runtime.artifacts,selected)
+        st.subheader(card.title);st.image(card.image, width='content');st.caption(card.scope)
+    except (KeyError,ValueError,OSError,TypeError) as exc:
+        runtime.diagnostics.failure(exc,stage='selected_chart_display')
+        st.error('선택한 차트 이미지를 표시하지 못했습니다. 기존 데이터는 보존되어 있습니다.')
 
 state=runtime.inspect()
+if state['requests'] and not runtime.policy.require_remote_approval and not state.get('uncertain_executions'):
+    action(runtime.resume)
+    state=runtime.inspect()
+    if not state['requests']:
+        st.rerun()
 if state['state']=='idle' and st.session_state.get('v1_notice')==BUSY_NOTICE:
     # A concurrent duplicate submission can finish before this page reruns.
     # Do not leave an obsolete "already running" notice after completion.
@@ -171,7 +184,7 @@ if state.get('recovery',{}).get('status')=='blocked':
     failures=list(state['recovery'].get('failed',{}).values())
     if any(f.get('status')=='unavailable' for f in failures):
         st.error(remote_failure_message(failures))
-for pending in state['requests']:
+for pending in (state['requests'] if runtime.policy.require_remote_approval else []):
     with st.container(border=True):
         schema_probe=runtime.is_schema_probe(pending['query'])
         st.subheader('현재 컬럼을 확인할까요?' if schema_probe else '추가 데이터를 불러올까요?')

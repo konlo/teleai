@@ -14,6 +14,16 @@ python3 scripts/run_telly.py
 
 이미 환경이 있으면 마지막 명령만 실행합니다. 브라우저에서 http://127.0.0.1:8502 를 엽니다. 새 환경의 `main.py`와 `pages/Telly.py`는 기본 분석 agent를 엽니다.
 
+`ModuleNotFoundError: No module named 'sqlglot'`가 나오면 실행한 Python 환경에 앱 의존성이 설치되어 있는지 확인합니다. `sqlglot`은 이미 `requirements-agent.txt`에 포함되어 있습니다. 저장소 루트에서 아래처럼 설치와 실행에 같은 앱 환경을 사용하세요.
+
+```sh
+.telly_runtime/v1-venv/bin/python -m pip install -r requirements.txt
+.telly_runtime/v1-venv/bin/python -c "import sys, sqlglot; print(sys.executable); print(sqlglot.__version__)"
+python3 scripts/run_telly.py
+```
+
+앱 환경이 없으면 위의 `python3.11 -m venv .telly_runtime/v1-venv` 단계부터 실행합니다. `pip`나 `streamlit` 명령만 직접 실행하면 PATH에 따라 다른 환경을 사용할 수 있습니다. Agent 평가 스크립트도 `.telly_runtime/v1-venv/bin/python scripts/<평가 스크립트>.py`로 실행합니다.
+
 ### 평가 도구 설치
 
 앱 의존성은 `requirements.txt → app-requirements.txt → requirements-agent.txt`로 설치합니다. `requirements-agent.in`은 직접 의존성 목록이며 실제 설치에는 고정 버전 파일을 사용합니다.
@@ -33,9 +43,9 @@ python3.11 -m venv .telly_runtime/eval-venv
 ## 동작
 
 - 기존 결과의 범위·컬럼·집계 상태를 확인하여 로컬 분석에 재사용합니다. 전체 범위를 보장하지 못하는 결과를 모집단으로 계산하지 않습니다.
-- Databricks에서 데이터를 새로 가져오거나 다시 로딩할 때 정확한 SQL의 승인 카드를 표시합니다. 승인 전 실행하지 않고, 변경된 조회는 다시 승인받습니다.
-- 승인/거절 후 중단된 agent loop를 이어갑니다. 제출 여부가 불명확한 조회는 자동 재실행하지 않습니다.
-- 대화, DataFrame(Parquet), 차트 PNG와 승인 기록을 `.telly_runtime/v1`에 보존합니다. 긴 모델 문맥은 요약하고 화면의 원래 대화는 유지합니다.
+- Databricks의 읽기 전용 조회는 agent가 필요에 따라 승인 없이 자동 실행합니다. 로딩된 데이터를 우선 재사용하며 SQL 검증·자원 한도·원본 보존은 유지합니다.
+- 명시적으로 수동 승인 모드가 필요한 환경에서만 `TELLY_REQUIRE_REMOTE_APPROVAL=true`를 설정하세요(기본값 `false`). 기존 승인 대기는 자동 모드에서 재개됩니다. 제출 여부가 불명확한 조회는 자동 재실행하지 않습니다.
+- 대화, DataFrame(Parquet), 차트 PNG와 실행 권한·결과 기록을 `.telly_runtime/v1`에 보존합니다. 긴 모델 문맥은 요약하고 화면의 원래 대화는 유지합니다.
 - 통계 기반 차트 추천과 이미지 선택, `analysis_skills/`의 스킬 탐색·읽기를 제공합니다.
 
 현재 실행기는 localhost 전용입니다. 기존 `.venv`와 구형 화면은 호환성을 위해 보존했으며 기존 세션을 자동 이전하지 않습니다. 구형 의존성은 `legacy-app-requirements.txt`에 있습니다.

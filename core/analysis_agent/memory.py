@@ -200,7 +200,7 @@ class ToolOutcomeMiddleware(AgentMiddleware):
             return None
         text = ('요청한 분석은 아직 완료되지 않았습니다. 분석할 데이터가 로딩되어 있지 않습니다. '
                 '저장된 테이블 설명만으로는 실제 통계나 히스토그램을 만들 수 없습니다. '
-                '필요한 데이터를 불러오는 조회를 제안하고 승인받아야 합니다.'
+                '필요한 데이터를 불러오는 읽기 전용 조회를 현재 실행 정책에 따라 수행해야 합니다.'
                 if observation.get('error_code') == 'dataset_not_loaded' else
                 '분석 도구가 작업을 완료하지 못했습니다. 결과가 확인되지 않아 계산이나 시각화를 완료했다고 안내할 수 없습니다.')
         return {'messages': [messages[-1].model_copy(update={'content': text,

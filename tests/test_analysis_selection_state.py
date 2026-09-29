@@ -1,4 +1,5 @@
 """Explicit active dataset selection survives restart and bounds chart reuse."""
+from core.analysis_agent.policy import RuntimePolicy
 import tempfile
 import unittest
 from dataclasses import asdict
@@ -23,7 +24,7 @@ class SelectionStateTests(unittest.TestCase):
                     return {'status':'ready', 'dataset':asdict(info), 'preview':[{'n':3}]}
                 return execute
             runtime = GraphAnalysisRuntime(directory, 'owner', 'aggregate-selection',
-                NoUnexpectedModelCall(), connection_identity='test', remote_factory=factory)
+                NoUnexpectedModelCall(), connection_identity='test', remote_factory=factory, policy=RuntimePolicy(require_remote_approval=True))
             try:
                 raw = runtime.datasets.register(pd.DataFrame({'measure':[1, 2, 3]}),
                     source='synthetic.events', coverage='complete', predicate_known=True)

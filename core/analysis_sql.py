@@ -35,3 +35,28 @@ def local_query(frame, sql: str, *, max_rows=20_000):
             timer.cancel()
             timer.join()
     return result.head(max_rows), len(result) > max_rows, tree
+
+
+def local_input_columns(tree, columns):
+    """Resolve nested SQL aliases against the actual bound DataFrame schema."""
+    from sqlglot.optimizer.qualify import qualify
+    from sqlglot.optimizer.scope import traverse_scope
+    from sqlglot.errors import OptimizeError
+    from duckdb import BinderException
+    try:
+        qualified = qualify(tree.copy(), dialect='duckdb',
+            schema={'data': {name: 'UNKNOWN' for name in columns}}, identify=False)
+        needed=set()
+        original_names = {name.casefold(): name for name in columns}
+        for scope in traverse_scope(qualified):
+            sources=scope.selected_sources
+            for alias, (_, source) in sources.items():
+                if isinstance(source,exp.Table) and (source.name!='data' or source.db or source.catalog):
+                    raise ValueError('로컬 SQL은 data 테이블만 참조할 수 있습니다.')
+            for column in scope.columns:
+                source=sources.get(column.table, (None,None))[1]
+                if isinstance(source,exp.Table):
+                    needed.add(original_names.get(column.name.casefold(), column.name))
+        return needed
+    except OptimizeError as exc:
+        raise BinderException('Invalid local SQL column scope: '+str(exc)) from exc

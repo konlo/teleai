@@ -1,3 +1,4 @@
+from core.analysis_agent.policy import RuntimePolicy
 import json
 import os
 from pathlib import Path
@@ -100,7 +101,7 @@ class GraphApprovalTests(unittest.TestCase):
                     'preview':frame.to_dict(orient='records')}
             return execute
         return GraphAnalysisRuntime(root,'owner','thread',model,connection_identity=connection,
-            remote_factory=factory)
+            remote_factory=factory, policy=RuntimePolicy(require_remote_approval=True))
 
     def test_reopen_status_question_approve_and_duplicate(self):
         with tempfile.TemporaryDirectory() as root:
@@ -127,7 +128,7 @@ class GraphApprovalTests(unittest.TestCase):
                         'preview':frame.to_dict(orient='records')}
                 return execute
             r=GraphAnalysisRuntime(root,'owner','preview',NoUnexpectedModelCall(),
-                connection_identity='conn',remote_factory=factory)
+                connection_identity='conn',remote_factory=factory, policy=RuntimePolicy(require_remote_approval=True))
             proposed=r.propose_table('catalog.schema.events')
             pending=proposed['requests'][0]
 
@@ -222,7 +223,7 @@ class GraphApprovalTests(unittest.TestCase):
 class RolloutPageTests(unittest.TestCase):
     def test_new_page_example_propose_cancel_and_reopen(self):
         from streamlit.testing.v1 import AppTest
-        with tempfile.TemporaryDirectory() as root,patch.dict(os.environ,{'TELLY_V1_STORAGE':root}),\
+        with tempfile.TemporaryDirectory() as root,patch.dict(os.environ,{'TELLY_V1_STORAGE':root,'TELLY_REQUIRE_REMOTE_APPROVAL':'true'}),\
              patch('langchain_ollama.ChatOllama',return_value=QuietModel()),\
              patch('databricks.sql.connect') as connect:
             app=AppTest.from_file(str(Path('main.py').resolve()),default_timeout=20).run()

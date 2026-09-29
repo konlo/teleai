@@ -1,3 +1,4 @@
+from core.analysis_agent.policy import RuntimePolicy
 """A stale schema question must produce a bounded approval, not an LLM loop."""
 from dataclasses import asdict
 from datetime import datetime, timezone
@@ -70,7 +71,7 @@ class SchemaRefreshRecoveryTests(unittest.TestCase):
             runtime = GraphAnalysisRuntime(root, "owner", "schema-forbidden", model,
                 connection_identity="test-connection",
                 remote_factory=lambda _datasets: forbidden,
-                reference_context_loader=lambda: [stale])
+                reference_context_loader=lambda: [stale], policy=RuntimePolicy(require_remote_approval=True))
             proposal = runtime.submit("events의 어떤 항목들을 볼 수 있지?")
             self.assertEqual(proposal["status"], "awaiting_approval", proposal)
             result = runtime.respond(proposal["requests"][0]["id"], approved=True)
@@ -93,7 +94,7 @@ class SchemaRefreshRecoveryTests(unittest.TestCase):
             runtime = GraphAnalysisRuntime(root, "owner", "elliptical-schema", model,
                 connection_identity="test-connection",
                 remote_factory=lambda _datasets: lambda envelope: remote_calls.append(envelope),
-                reference_context_loader=lambda: [stale, other])
+                reference_context_loader=lambda: [stale, other], policy=RuntimePolicy(require_remote_approval=True))
             listed = runtime.submit("어떤 데이타를 볼 수 있지 ?")
             self.assertEqual(listed["status"], "answered", listed)
             proposal = runtime.submit(
@@ -125,7 +126,7 @@ class SchemaRefreshRecoveryTests(unittest.TestCase):
             model = InspectOnce()
             runtime = GraphAnalysisRuntime(root, "owner", "stale-schema", model,
                 connection_identity="test-connection", remote_factory=factory,
-                reference_context_loader=lambda: [stale, fresh_other])
+                reference_context_loader=lambda: [stale, fresh_other], policy=RuntimePolicy(require_remote_approval=True))
             original = runtime.datasets.register(pd.DataFrame({"preserve": [1, 2]}),
                 source="catalog.schema.loaded", coverage="complete", predicate_known=True)
             runtime.select_dataset(original.id)
@@ -192,7 +193,7 @@ class SchemaRefreshRecoveryTests(unittest.TestCase):
             model = NoModelCall()
             runtime = GraphAnalysisRuntime(root, "owner", "unknown-dtype", model,
                 connection_identity="test-connection", remote_factory=factory,
-                reference_context_loader=lambda: [stale])
+                reference_context_loader=lambda: [stale], policy=RuntimePolicy(require_remote_approval=True))
             proposal = runtime.submit("events의 컬럼 데이터 타입은 어떤 것들이 있지?")
             self.assertEqual(proposal["status"], "awaiting_approval", proposal)
             result = runtime.respond(proposal["requests"][0]["id"], approved=True)
@@ -223,7 +224,7 @@ class SchemaRefreshRecoveryTests(unittest.TestCase):
             runtime = GraphAnalysisRuntime(root, "owner", "schema-rejected", model,
                 connection_identity="test-connection",
                 remote_factory=lambda _datasets: lambda envelope: remote_calls.append(envelope),
-                reference_context_loader=lambda: [stale])
+                reference_context_loader=lambda: [stale], policy=RuntimePolicy(require_remote_approval=True))
             proposal = runtime.submit("events의 어떤 항목들을 볼 수 있지?")
             self.assertEqual(proposal["status"], "awaiting_approval", proposal)
             result = runtime.respond(proposal["requests"][0]["id"], approved=False)

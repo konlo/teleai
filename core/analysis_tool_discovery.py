@@ -19,6 +19,8 @@ def discover_tools(definitions, skills, query, *, limit=3, allowed_names=None):
         if name == 'propose_databricks_query' and allowed_names is not None:
             name = 'query_databricks'
             schema['name'] = name
+            schema['description'] = ('필요한 읽기 전용 Databricks SQL을 실행하고 저장된 실제 결과를 반환합니다. '
+                                     '기본 자동 조회 정책에서는 승인 대기 없이 실행합니다. 실행기의 현재 정책을 따르세요.')
         if allowed_names is not None and name not in allowed_names:
             continue
         searchable = json.dumps(schema, ensure_ascii=False).casefold()
@@ -31,8 +33,8 @@ def discover_tools(definitions, skills, query, *, limit=3, allowed_names=None):
     for _, name, schema in ranked[:limit]:
         encoded = json.dumps(schema, sort_keys=True, ensure_ascii=False)
         matches.append({**schema, 'version':sha256(encoded.encode()).hexdigest(),
-            'permission':('exact_sql_approval_required' if name in
-                          {'query_databricks', 'propose_databricks_query'} else 'local_tool'),
+            'permission':('runtime_read_policy' if name == 'query_databricks' else
+                          'exact_sql_approval_required' if name == 'propose_databricks_query' else 'local_tool'),
             'related_skills':[{'name':s['name'], 'description':s['description']}
                 for s in skills if any(token in (s['name']+' '+s['description']).casefold()
                                        for token in tokens)][:3]})

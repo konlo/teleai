@@ -57,11 +57,16 @@ class StorageMemoryContractTests(unittest.TestCase):
             db = AssetDB(root, 'owner', 'conversation')
             info = PersistentDatasets(db).register(synthetic_frame(self.fixture(), 10),
                                                   source=self.fixture()['source'])
-            card = ChartPreview('chart', info.id, 'Synthetic', 'Storage test', 'line', (), 'test', b'png')
+            from io import BytesIO
+            from PIL import Image, ImageDraw
+            image=Image.new('RGB',(120,80),'white')
+            ImageDraw.Draw(image).line((10,70,100,10),fill='blue',width=3)
+            buffer=BytesIO();image.save(buffer,format='PNG')
+            card = ChartPreview('chart', info.id, 'Synthetic', 'Storage test', 'line', (), 'test', buffer.getvalue())
             with patch.object(db, 'get', side_effect=AssertionError('Payload lookup during reference check')):
                 PersistentCharts(db)[card.id] = card
             self.assertEqual(PersistentCharts(db)[card.id], card)
-            missing = ChartPreview('missing-chart', 'missing-dataset', 'Synthetic', 'Storage test', 'line', (), 'test', b'png')
+            missing = ChartPreview('missing-chart', 'missing-dataset', 'Synthetic', 'Storage test', 'line', (), 'test', buffer.getvalue())
             with self.assertRaises(KeyError):
                 PersistentCharts(db)[missing.id] = missing
             self.assertNotIn('missing-chart', db.metadata('chart'))

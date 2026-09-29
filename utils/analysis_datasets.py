@@ -75,6 +75,7 @@ class DatasetInfo:
     parent_ids: tuple[str, ...] = ()
     role: str = "unknown"  # legacy assets remain unknown; new ready assets are classified
     root_id: str = ""
+    row_selection: dict = field(default_factory=dict)
 
 
 def project_dataset(store, dataset_id: str, columns) -> pd.DataFrame:
@@ -178,6 +179,10 @@ def select_reusable_dataset(
     snapshot and must have exactly one sufficient candidate.
     """
     selected = metadata[selected_id]
+    if selected.row_selection and not need.current_result_only:
+        # A selected key/ordering cohort cannot silently expand to its raw ancestor.
+        from dataclasses import replace
+        need = replace(need, current_result_only=True, grain=selected.grain, aggregation=selected.aggregation)
     initial = assess_reuse(selected, need)
     if initial.action != "query_source" or need.current_result_only:
         return ReuseSelection(selected_id, initial, "selected")
@@ -312,6 +317,9 @@ class DatasetStore:
             parents = parent_ids or ((parent_id,) if parent_id else ())
             if len(parents) == 1 and parents[0] in self.metadata:
                 root_id = self.metadata[parents[0]].root_id
+        if parent_id in self.metadata and 'row_selection' not in provenance:
+            from copy import deepcopy
+            provenance['row_selection'] = deepcopy(self.metadata[parent_id].row_selection)
         info = DatasetInfo(asset_id, source, tuple(frame.columns), len(frame),
                            **provenance, role=role, root_id=root_id)
         self.frames[info.id] = frame

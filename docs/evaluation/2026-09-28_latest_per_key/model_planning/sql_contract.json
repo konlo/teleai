@@ -1,0 +1,175 @@
+{
+  "mode": "manually specified SQL through production tools; NOT autonomous agent success",
+  "results": [
+    {
+      "case": "window_subquery",
+      "query": "SELECT \"DriveProductID\", COUNT(*) AS device_count FROM (SELECT \"adapterserial\", \"DriveProductID\", ROW_NUMBER() OVER (PARTITION BY \"adapterserial\" ORDER BY \"event_time\" DESC) AS row_rank FROM data) ranked WHERE row_rank = 1 GROUP BY \"DriveProductID\"",
+      "duckdb_rows": [
+        {
+          "DriveProductID": "P100",
+          "device_count": 1
+        },
+        {
+          "DriveProductID": "P300",
+          "device_count": 1
+        },
+        {
+          "DriveProductID": "P200",
+          "device_count": 3
+        }
+      ],
+      "truncated": false,
+      "tool_result": {
+        "status": "ready",
+        "dataset": {
+          "id": "20c32bc2-8ad3-4001-9608-ff2c61e656ab",
+          "source": "fixture.telemetry.device_events",
+          "columns": [
+            "DriveProductID",
+            "device_count"
+          ],
+          "rows": 3,
+          "coverage": "complete",
+          "conditions": [],
+          "predicate_known": false,
+          "grain": "aggregate",
+          "aggregation": "SELECT \"DriveProductID\", COUNT(*) AS device_count FROM (SELECT \"adapterserial\", \"DriveProductID\", ROW_NUMBER() OVER (PARTITION BY \"adapterserial\" ORDER BY \"event_time\" DESC) AS row_rank FROM data) AS ranked WHERE row_rank = 1 GROUP BY \"DriveProductID\"",
+          "snapshot": "synthetic-v1",
+          "query": "SELECT \"DriveProductID\", COUNT(*) AS device_count FROM (SELECT \"adapterserial\", \"DriveProductID\", ROW_NUMBER() OVER (PARTITION BY \"adapterserial\" ORDER BY \"event_time\" DESC) AS row_rank FROM data) ranked WHERE row_rank = 1 GROUP BY \"DriveProductID\"",
+          "parent_id": "daaaf046-8697-47b2-852f-cf839f6819f4",
+          "parent_ids": [],
+          "role": "derived",
+          "root_id": "daaaf046-8697-47b2-852f-cf839f6819f4",
+          "row_selection": {}
+        },
+        "preview": [
+          {
+            "DriveProductID": "P100",
+            "device_count": 1
+          },
+          {
+            "DriveProductID": "P300",
+            "device_count": 1
+          },
+          {
+            "DriveProductID": "P200",
+            "device_count": 3
+          }
+        ],
+        "applied_corrections": [],
+        "requested_dataset_id": "daaaf046-8697-47b2-852f-cf839f6819f4",
+        "selected_dataset_id": "daaaf046-8697-47b2-852f-cf839f6819f4",
+        "selection_origin": "selected",
+        "evidence_ids": [
+          "20c32bc2-8ad3-4001-9608-ff2c61e656ab"
+        ],
+        "error_code": null,
+        "retryable": false,
+        "user_action": "",
+        "scope": "도구가 반환한 구조화 결과 범위입니다."
+      }
+    },
+    {
+      "case": "qualify_rows",
+      "query": "SELECT \"adapterserial\", \"DriveProductID\", \"event_time\" FROM data QUALIFY ROW_NUMBER() OVER (PARTITION BY \"adapterserial\" ORDER BY \"event_time\" DESC) = 1",
+      "duckdb_rows": [
+        {
+          "adapterserial": "A",
+          "DriveProductID": "P200",
+          "event_time": "2026-09-28T10:00:00"
+        },
+        {
+          "adapterserial": "B",
+          "DriveProductID": "P200",
+          "event_time": "2026-09-28T11:00:00"
+        },
+        {
+          "adapterserial": "C",
+          "DriveProductID": "P200",
+          "event_time": "2026-09-28T12:00:00"
+        },
+        {
+          "adapterserial": "D",
+          "DriveProductID": "P100",
+          "event_time": "2026-09-28T13:00:00"
+        },
+        {
+          "adapterserial": "E",
+          "DriveProductID": "P300",
+          "event_time": "2026-09-28T14:00:00"
+        }
+      ],
+      "truncated": false,
+      "tool_result": {
+        "status": "ready",
+        "dataset": {
+          "id": "76eeb872-39e1-4c68-a596-e6c5c0be01e1",
+          "source": "fixture.telemetry.device_events",
+          "columns": [
+            "adapterserial",
+            "DriveProductID",
+            "event_time"
+          ],
+          "rows": 5,
+          "coverage": "complete",
+          "conditions": [],
+          "predicate_known": false,
+          "grain": "raw",
+          "aggregation": "",
+          "snapshot": "synthetic-v1",
+          "query": "SELECT \"adapterserial\", \"DriveProductID\", \"event_time\" FROM data QUALIFY ROW_NUMBER() OVER (PARTITION BY \"adapterserial\" ORDER BY \"event_time\" DESC) = 1",
+          "parent_id": "daaaf046-8697-47b2-852f-cf839f6819f4",
+          "parent_ids": [],
+          "role": "derived",
+          "root_id": "daaaf046-8697-47b2-852f-cf839f6819f4",
+          "row_selection": {}
+        },
+        "preview": [
+          {
+            "adapterserial": "D",
+            "DriveProductID": "P100",
+            "event_time": "2026-09-28T13:00:00"
+          },
+          {
+            "adapterserial": "E",
+            "DriveProductID": "P300",
+            "event_time": "2026-09-28T14:00:00"
+          },
+          {
+            "adapterserial": "A",
+            "DriveProductID": "P200",
+            "event_time": "2026-09-28T10:00:00"
+          },
+          {
+            "adapterserial": "B",
+            "DriveProductID": "P200",
+            "event_time": "2026-09-28T11:00:00"
+          },
+          {
+            "adapterserial": "C",
+            "DriveProductID": "P200",
+            "event_time": "2026-09-28T12:00:00"
+          }
+        ],
+        "applied_corrections": [],
+        "requested_dataset_id": "daaaf046-8697-47b2-852f-cf839f6819f4",
+        "selected_dataset_id": "daaaf046-8697-47b2-852f-cf839f6819f4",
+        "selection_origin": "selected",
+        "evidence_ids": [
+          "76eeb872-39e1-4c68-a596-e6c5c0be01e1"
+        ],
+        "error_code": null,
+        "retryable": false,
+        "user_action": "",
+        "scope": "도구가 반환한 구조화 결과 범위입니다."
+      }
+    }
+  ],
+  "reference_counts": {
+    "P100": 1,
+    "P300": 1,
+    "P200": 3
+  },
+  "raw_preserved": true,
+  "reference_chart": "reference_expected.png"
+}

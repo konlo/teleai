@@ -1,0 +1,5758 @@
+{
+  "mode": "actual Databricks model; production recovery; synthetic local data",
+  "generated_at": "2026-09-28T21:30:42.188987+00:00",
+  "warehouse_sql_executions": 0,
+  "limitations": [
+    "Known fixture, not a population success estimate; deterministic paths may call no model.",
+    "Summary journey lowers trigger to 1200 tokens to exercise compaction.",
+    "Explanation turn checks topic terms and absence of actions; prose quality requires human review.",
+    "No manual resume or state correction between turns. Unfinished checkpoints block later turns."
+  ],
+  "results": [
+    {
+      "id": "ellipsis_correction_reset",
+      "repeat": 1,
+      "status": "PASS",
+      "summary_required": false,
+      "summary_seen": false,
+      "summary_events": [
+        {
+          "time": "2026-09-28T21:23:23.922523+00:00",
+          "event": "summarization_started",
+          "run_id": "70b850f6b1b34827b169a0e66799dc80",
+          "span_id": "6b4466b8efb4",
+          "message_count": 2
+        },
+        {
+          "time": "2026-09-28T21:23:23.922619+00:00",
+          "event": "summarization_finished",
+          "run_id": "70b850f6b1b34827b169a0e66799dc80",
+          "span_id": "6b4466b8efb4",
+          "status": "ok",
+          "elapsed_seconds": 0.0,
+          "message_count": 2,
+          "summarized": false
+        }
+      ],
+      "turns": [
+        {
+          "turn": 1,
+          "prompt": "segment가 'blue'인 행의 score 평균을 알려줘.",
+          "oracle": {
+            "prompt": "segment가 'blue'인 행의 score 평균을 알려줘.",
+            "kind": "scalar",
+            "expected": 15,
+            "column": "score",
+            "operation": "AVG",
+            "source": "synthetic.phase_a"
+          },
+          "status": "PASS",
+          "agent_status": "answered",
+          "false_completion": false,
+          "error_type": null,
+          "answer": "보유 데이터로 계산한 결과입니다. 출처: synthetic.phase_a\n분석 범위: 요청 조건에 포함된 보유 데이터 전체\n\n적용 조건: segment = blue\n\n평균: 15.0",
+          "evidence": [
+            {
+              "source": "synthetic.phase_a",
+              "query": "SELECT AVG(score) AS avg_score FROM data WHERE segment = 'blue'",
+              "rows": [
+                {
+                  "avg_score": 15.0
+                }
+              ]
+            }
+          ],
+          "observations": [
+            {
+              "tool": "local_analysis_sql",
+              "status": "ready",
+              "error_code": null,
+              "chart_spec": null,
+              "cards": []
+            }
+          ],
+          "tools": [
+            "local_analysis_sql"
+          ],
+          "state": {
+            "scope": {
+              "conditions": [
+                {
+                  "column": "segment",
+                  "op": "eq",
+                  "value": "blue"
+                }
+              ],
+              "any_conditions": [],
+              "join_edges": [],
+              "measure_conditions": [],
+              "ratio": null,
+              "unresolved": [],
+              "columns": [
+                "score",
+                "segment"
+              ]
+            },
+            "required_columns": [
+              "segment",
+              "score"
+            ],
+            "operations": [
+              "AVG"
+            ],
+            "kind": null,
+            "profile_kind": null,
+            "stop_reason": null
+          },
+          "model_calls": 1,
+          "raw_preserved": true,
+          "elapsed_seconds": 6.389
+        },
+        {
+          "turn": 2,
+          "prompt": "그중 최댓값은?",
+          "oracle": {
+            "prompt": "그중 최댓값은?",
+            "kind": "scalar",
+            "expected": 20,
+            "column": "score",
+            "operation": "MAX",
+            "source": "synthetic.phase_a"
+          },
+          "status": "PASS",
+          "agent_status": "answered",
+          "false_completion": false,
+          "error_type": null,
+          "answer": "보유 데이터로 계산한 결과입니다. 출처: synthetic.phase_a\n분석 범위: 요청 조건에 포함된 보유 데이터 전체\n\n적용 조건: segment = blue\n\n최댓값: 20",
+          "evidence": [
+            {
+              "source": "synthetic.phase_a",
+              "query": "SELECT MAX(\"score\") AS maximum FROM data",
+              "rows": [
+                {
+                  "maximum": 20
+                }
+              ]
+            }
+          ],
+          "observations": [
+            {
+              "tool": "local_analysis_sql",
+              "status": "ready",
+              "error_code": null,
+              "chart_spec": null,
+              "cards": []
+            }
+          ],
+          "tools": [
+            "local_analysis_sql"
+          ],
+          "state": {
+            "scope": {
+              "conditions": [
+                {
+                  "column": "segment",
+                  "op": "eq",
+                  "value": "blue"
+                }
+              ],
+              "any_conditions": [],
+              "join_edges": [],
+              "measure_conditions": [],
+              "ratio": null,
+              "unresolved": [],
+              "columns": []
+            },
+            "required_columns": [
+              "score"
+            ],
+            "operations": [
+              "MAX"
+            ],
+            "kind": null,
+            "profile_kind": null,
+            "stop_reason": null
+          },
+          "model_calls": 0,
+          "raw_preserved": true,
+          "elapsed_seconds": 0.03
+        },
+        {
+          "turn": 3,
+          "prompt": "아니, 같은 그룹의 최솟값으로 바꿔줘.",
+          "oracle": {
+            "prompt": "아니, 같은 그룹의 최솟값으로 바꿔줘.",
+            "kind": "scalar",
+            "expected": 10,
+            "column": "score",
+            "operation": "MIN",
+            "source": "synthetic.phase_a"
+          },
+          "status": "PASS",
+          "agent_status": "answered",
+          "false_completion": false,
+          "error_type": null,
+          "answer": "보유 데이터로 계산한 결과입니다. 출처: synthetic.phase_a\n분석 범위: 요청 조건에 포함된 보유 데이터 전체\n\n적용 조건: segment = blue\n\n최솟값: 10",
+          "evidence": [
+            {
+              "source": "synthetic.phase_a",
+              "query": "SELECT MIN(\"score\") AS minimum FROM data",
+              "rows": [
+                {
+                  "minimum": 10
+                }
+              ]
+            }
+          ],
+          "observations": [
+            {
+              "tool": "local_analysis_sql",
+              "status": "ready",
+              "error_code": null,
+              "chart_spec": null,
+              "cards": []
+            }
+          ],
+          "tools": [
+            "local_analysis_sql"
+          ],
+          "state": {
+            "scope": {
+              "conditions": [
+                {
+                  "column": "segment",
+                  "op": "eq",
+                  "value": "blue"
+                }
+              ],
+              "any_conditions": [],
+              "join_edges": [],
+              "measure_conditions": [],
+              "ratio": null,
+              "unresolved": [],
+              "columns": []
+            },
+            "required_columns": [
+              "score"
+            ],
+            "operations": [
+              "MIN"
+            ],
+            "kind": null,
+            "profile_kind": null,
+            "stop_reason": null
+          },
+          "model_calls": 0,
+          "raw_preserved": true,
+          "elapsed_seconds": 0.029
+        },
+        {
+          "turn": 4,
+          "prompt": "같은 그룹에서 이번에는 latency_ms 평균을 알려줘.",
+          "oracle": {
+            "prompt": "같은 그룹에서 이번에는 latency_ms 평균을 알려줘.",
+            "kind": "scalar",
+            "expected": 45,
+            "column": "latency_ms",
+            "operation": "AVG",
+            "source": "synthetic.phase_a"
+          },
+          "status": "PASS",
+          "agent_status": "answered",
+          "false_completion": false,
+          "error_type": null,
+          "answer": "보유 데이터로 계산한 결과입니다. 출처: synthetic.phase_a\n분석 범위: 요청 조건에 포함된 보유 데이터 전체\n\n적용 조건: segment = blue\n\n평균: 45.0",
+          "evidence": [
+            {
+              "source": "synthetic.phase_a",
+              "query": "SELECT AVG(\"latency_ms\") AS average FROM data",
+              "rows": [
+                {
+                  "average": 45.0
+                }
+              ]
+            }
+          ],
+          "observations": [
+            {
+              "tool": "local_analysis_sql",
+              "status": "ready",
+              "error_code": null,
+              "chart_spec": null,
+              "cards": []
+            }
+          ],
+          "tools": [
+            "local_analysis_sql"
+          ],
+          "state": {
+            "scope": {
+              "conditions": [
+                {
+                  "column": "segment",
+                  "op": "eq",
+                  "value": "blue"
+                }
+              ],
+              "any_conditions": [],
+              "join_edges": [],
+              "measure_conditions": [],
+              "ratio": null,
+              "unresolved": [],
+              "columns": [
+                "latency_ms"
+              ]
+            },
+            "required_columns": [
+              "latency_ms"
+            ],
+            "operations": [
+              "AVG"
+            ],
+            "kind": null,
+            "profile_kind": null,
+            "stop_reason": null
+          },
+          "model_calls": 0,
+          "raw_preserved": true,
+          "elapsed_seconds": 0.032
+        },
+        {
+          "turn": 5,
+          "prompt": "이전 segment 조건은 적용하지 말고 원본 score 평균을 알려줘.",
+          "oracle": {
+            "prompt": "이전 segment 조건은 적용하지 말고 원본 score 평균을 알려줘.",
+            "kind": "scalar",
+            "expected": 15.2,
+            "column": "score",
+            "operation": "AVG",
+            "source": "synthetic.phase_a"
+          },
+          "status": "PASS",
+          "agent_status": "answered",
+          "false_completion": false,
+          "error_type": null,
+          "answer": "보유 데이터로 계산한 결과입니다. 출처: synthetic.phase_a\n분석 범위: 요청 조건에 포함된 보유 데이터 전체\n\n평균: 15.2",
+          "evidence": [
+            {
+              "source": "synthetic.phase_a",
+              "query": "SELECT AVG(\"score\") AS average FROM data",
+              "rows": [
+                {
+                  "average": 15.2
+                }
+              ]
+            }
+          ],
+          "observations": [
+            {
+              "tool": "local_analysis_sql",
+              "status": "ready",
+              "error_code": null,
+              "chart_spec": null,
+              "cards": []
+            }
+          ],
+          "tools": [
+            "local_analysis_sql"
+          ],
+          "state": {
+            "scope": {
+              "conditions": [],
+              "any_conditions": [],
+              "join_edges": [],
+              "measure_conditions": [],
+              "ratio": null,
+              "unresolved": [],
+              "columns": [
+                "score",
+                "segment"
+              ]
+            },
+            "required_columns": [
+              "score"
+            ],
+            "operations": [
+              "AVG"
+            ],
+            "kind": null,
+            "profile_kind": null,
+            "stop_reason": null
+          },
+          "model_calls": 0,
+          "raw_preserved": true,
+          "elapsed_seconds": 0.031
+        }
+      ]
+    },
+    {
+      "id": "selective_filter",
+      "repeat": 1,
+      "status": "PASS",
+      "summary_required": false,
+      "summary_seen": true,
+      "summary_events": [
+        {
+          "time": "2026-09-28T21:23:30.372943+00:00",
+          "event": "summarization_started",
+          "run_id": "e37633e9cd6f4bde849aae429bf95dd8",
+          "span_id": "f8395f0f39c6",
+          "message_count": 2
+        },
+        {
+          "time": "2026-09-28T21:23:30.373003+00:00",
+          "event": "summarization_finished",
+          "run_id": "e37633e9cd6f4bde849aae429bf95dd8",
+          "span_id": "f8395f0f39c6",
+          "status": "ok",
+          "elapsed_seconds": 0.0,
+          "message_count": 2,
+          "summarized": false
+        },
+        {
+          "time": "2026-09-28T21:23:37.906201+00:00",
+          "event": "summarization_started",
+          "run_id": "e37633e9cd6f4bde849aae429bf95dd8",
+          "span_id": "889dc7ff4139",
+          "message_count": 4
+        },
+        {
+          "time": "2026-09-28T21:23:37.906381+00:00",
+          "event": "summarization_finished",
+          "run_id": "e37633e9cd6f4bde849aae429bf95dd8",
+          "span_id": "889dc7ff4139",
+          "status": "ok",
+          "elapsed_seconds": 0.0,
+          "message_count": 4,
+          "summarized": false
+        },
+        {
+          "time": "2026-09-28T21:23:40.600785+00:00",
+          "event": "summarization_started",
+          "run_id": "4cfbc3ca82ff48b3bc3e7564c677ff4d",
+          "span_id": "1bec7dedc37c",
+          "message_count": 9
+        },
+        {
+          "time": "2026-09-28T21:23:40.600885+00:00",
+          "event": "summarization_finished",
+          "run_id": "4cfbc3ca82ff48b3bc3e7564c677ff4d",
+          "span_id": "1bec7dedc37c",
+          "status": "ok",
+          "elapsed_seconds": 0.0,
+          "message_count": 9,
+          "summarized": false
+        },
+        {
+          "time": "2026-09-28T21:23:43.844883+00:00",
+          "event": "summarization_started",
+          "run_id": "4cfbc3ca82ff48b3bc3e7564c677ff4d",
+          "span_id": "58f29b67b493",
+          "message_count": 11
+        },
+        {
+          "time": "2026-09-28T21:23:47.768779+00:00",
+          "event": "summarization_finished",
+          "run_id": "4cfbc3ca82ff48b3bc3e7564c677ff4d",
+          "span_id": "58f29b67b493",
+          "status": "ok",
+          "elapsed_seconds": 3.924,
+          "message_count": 11,
+          "summarized": true
+        },
+        {
+          "time": "2026-09-28T21:23:50.491380+00:00",
+          "event": "summarization_started",
+          "run_id": "774cb54421f449c6afebee46933ddab8",
+          "span_id": "d6a8cb881744",
+          "message_count": 15
+        },
+        {
+          "time": "2026-09-28T21:23:50.491463+00:00",
+          "event": "summarization_finished",
+          "run_id": "774cb54421f449c6afebee46933ddab8",
+          "span_id": "d6a8cb881744",
+          "status": "ok",
+          "elapsed_seconds": 0.0,
+          "message_count": 15,
+          "summarized": false
+        },
+        {
+          "time": "2026-09-28T21:23:53.104090+00:00",
+          "event": "summarization_started",
+          "run_id": "774cb54421f449c6afebee46933ddab8",
+          "span_id": "4d95a13b111b",
+          "message_count": 17
+        },
+        {
+          "time": "2026-09-28T21:23:58.615785+00:00",
+          "event": "summarization_finished",
+          "run_id": "774cb54421f449c6afebee46933ddab8",
+          "span_id": "4d95a13b111b",
+          "status": "ok",
+          "elapsed_seconds": 5.512,
+          "message_count": 17,
+          "summarized": true
+        }
+      ],
+      "turns": [
+        {
+          "turn": 1,
+          "prompt": "segment가 'blue'이고 score >= 15인 행의 score 평균을 알려줘.",
+          "oracle": {
+            "prompt": "segment가 'blue'이고 score >= 15인 행의 score 평균을 알려줘.",
+            "kind": "scalar",
+            "expected": 20,
+            "column": "score",
+            "operation": "AVG",
+            "source": "synthetic.phase_a"
+          },
+          "status": "PASS",
+          "agent_status": "answered",
+          "false_completion": false,
+          "error_type": null,
+          "answer": "보유 데이터로 계산한 결과입니다. 출처: synthetic.phase_a\n분석 범위: 요청 조건에 포함된 보유 데이터 전체\n\n적용 조건: score ≥ 15 AND segment = blue\n\n평균: 20.0",
+          "evidence": [
+            {
+              "source": "synthetic.phase_a",
+              "query": "SELECT AVG(\"score\") AS \"mean_score\" FROM data",
+              "rows": [
+                {
+                  "mean_score": 20.0
+                }
+              ]
+            }
+          ],
+          "observations": [
+            {
+              "tool": "use_dataset",
+              "status": "ready",
+              "error_code": null,
+              "chart_spec": null,
+              "cards": []
+            },
+            {
+              "tool": "aggregate_dataset",
+              "status": "ready",
+              "error_code": null,
+              "chart_spec": null,
+              "cards": []
+            }
+          ],
+          "tools": [
+            "use_dataset",
+            "aggregate_dataset"
+          ],
+          "state": {
+            "scope": {
+              "conditions": [
+                {
+                  "column": "score",
+                  "op": "ge",
+                  "value": 15
+                },
+                {
+                  "column": "segment",
+                  "op": "eq",
+                  "value": "blue"
+                }
+              ],
+              "any_conditions": [],
+              "join_edges": [],
+              "measure_conditions": [],
+              "ratio": null,
+              "unresolved": [],
+              "columns": [
+                "score",
+                "segment"
+              ]
+            },
+            "required_columns": [
+              "segment",
+              "score"
+            ],
+            "operations": [
+              "AVG"
+            ],
+            "kind": null,
+            "profile_kind": null,
+            "stop_reason": null
+          },
+          "model_calls": 2,
+          "raw_preserved": true,
+          "elapsed_seconds": 10.216
+        },
+        {
+          "turn": 2,
+          "prompt": "score 조건만 제거하고 segment 조건은 유지해서 score 평균을 알려줘.",
+          "oracle": {
+            "prompt": "score 조건만 제거하고 segment 조건은 유지해서 score 평균을 알려줘.",
+            "kind": "scalar",
+            "expected": 15,
+            "column": "score",
+            "operation": "AVG",
+            "source": "synthetic.phase_a"
+          },
+          "status": "PASS",
+          "agent_status": "answered",
+          "false_completion": false,
+          "error_type": null,
+          "answer": "보유 데이터로 계산한 결과입니다. 출처: synthetic.phase_a\n분석 범위: 요청 조건에 포함된 보유 데이터 전체\n\n적용 조건: segment = blue\n\n평균: 15.0",
+          "evidence": [
+            {
+              "source": "synthetic.phase_a",
+              "query": "SELECT AVG(\"score\") AS \"mean_score\" FROM data",
+              "rows": [
+                {
+                  "mean_score": 15.0
+                }
+              ]
+            }
+          ],
+          "observations": [
+            {
+              "tool": "use_dataset",
+              "status": "ready",
+              "error_code": null,
+              "chart_spec": null,
+              "cards": []
+            },
+            {
+              "tool": "aggregate_dataset",
+              "status": "ready",
+              "error_code": null,
+              "chart_spec": null,
+              "cards": []
+            }
+          ],
+          "tools": [
+            "use_dataset",
+            "aggregate_dataset"
+          ],
+          "state": {
+            "scope": {
+              "conditions": [
+                {
+                  "column": "segment",
+                  "op": "eq",
+                  "value": "blue"
+                }
+              ],
+              "any_conditions": [],
+              "join_edges": [],
+              "measure_conditions": [],
+              "ratio": null,
+              "unresolved": [],
+              "columns": [
+                "score",
+                "segment"
+              ]
+            },
+            "required_columns": [
+              "score"
+            ],
+            "operations": [
+              "AVG"
+            ],
+            "kind": null,
+            "profile_kind": null,
+            "stop_reason": null
+          },
+          "model_calls": 3,
+          "raw_preserved": true,
+          "elapsed_seconds": 9.896
+        },
+        {
+          "turn": 3,
+          "prompt": "이번에는 segment가 'red'인 행의 score 평균을 알려줘. 이전 blue 조건은 대체해.",
+          "oracle": {
+            "prompt": "이번에는 segment가 'red'인 행의 score 평균을 알려줘. 이전 blue 조건은 대체해.",
+            "kind": "scalar",
+            "expected": 3,
+            "column": "score",
+            "operation": "AVG",
+            "source": "synthetic.phase_a"
+          },
+          "status": "PASS",
+          "agent_status": "answered",
+          "false_completion": false,
+          "error_type": null,
+          "answer": "보유 데이터로 계산한 결과입니다. 출처: synthetic.phase_a\n분석 범위: 요청 조건에 포함된 보유 데이터 전체\n\n적용 조건: segment = red\n\n평균: 3.0",
+          "evidence": [
+            {
+              "source": "synthetic.phase_a",
+              "query": "SELECT AVG(\"score\") AS \"mean_score\" FROM data",
+              "rows": [
+                {
+                  "mean_score": 3.0
+                }
+              ]
+            }
+          ],
+          "observations": [
+            {
+              "tool": "use_dataset",
+              "status": "ready",
+              "error_code": null,
+              "chart_spec": null,
+              "cards": []
+            },
+            {
+              "tool": "aggregate_dataset",
+              "status": "ready",
+              "error_code": null,
+              "chart_spec": null,
+              "cards": []
+            }
+          ],
+          "tools": [
+            "use_dataset",
+            "aggregate_dataset"
+          ],
+          "state": {
+            "scope": {
+              "conditions": [
+                {
+                  "column": "segment",
+                  "op": "eq",
+                  "value": "red"
+                }
+              ],
+              "any_conditions": [],
+              "join_edges": [],
+              "measure_conditions": [],
+              "ratio": null,
+              "unresolved": [],
+              "columns": [
+                "score",
+                "segment"
+              ]
+            },
+            "required_columns": [
+              "segment",
+              "score"
+            ],
+            "operations": [
+              "AVG"
+            ],
+            "kind": null,
+            "profile_kind": null,
+            "stop_reason": null
+          },
+          "model_calls": 3,
+          "raw_preserved": true,
+          "elapsed_seconds": 10.254
+        }
+      ]
+    },
+    {
+      "id": "topic_pause_return",
+      "repeat": 1,
+      "status": "PASS",
+      "summary_required": false,
+      "summary_seen": true,
+      "summary_events": [
+        {
+          "time": "2026-09-28T21:24:00.763976+00:00",
+          "event": "summarization_started",
+          "run_id": "96d7c411eaf946e79b8f22356fc8fd64",
+          "span_id": "ad119d3b1852",
+          "message_count": 2
+        },
+        {
+          "time": "2026-09-28T21:24:00.764031+00:00",
+          "event": "summarization_finished",
+          "run_id": "96d7c411eaf946e79b8f22356fc8fd64",
+          "span_id": "ad119d3b1852",
+          "status": "ok",
+          "elapsed_seconds": 0.0,
+          "message_count": 2,
+          "summarized": false
+        },
+        {
+          "time": "2026-09-28T21:24:06.562146+00:00",
+          "event": "summarization_started",
+          "run_id": "96d7c411eaf946e79b8f22356fc8fd64",
+          "span_id": "5661a37f3a2d",
+          "message_count": 4
+        },
+        {
+          "time": "2026-09-28T21:24:06.562236+00:00",
+          "event": "summarization_finished",
+          "run_id": "96d7c411eaf946e79b8f22356fc8fd64",
+          "span_id": "5661a37f3a2d",
+          "status": "ok",
+          "elapsed_seconds": 0.0,
+          "message_count": 4,
+          "summarized": false
+        },
+        {
+          "time": "2026-09-28T21:24:08.727371+00:00",
+          "event": "summarization_started",
+          "run_id": "8ad615ae24ae424bbbce8fa4363edddb",
+          "span_id": "15c8163b995b",
+          "message_count": 8
+        },
+        {
+          "time": "2026-09-28T21:24:08.727440+00:00",
+          "event": "summarization_finished",
+          "run_id": "8ad615ae24ae424bbbce8fa4363edddb",
+          "span_id": "15c8163b995b",
+          "status": "ok",
+          "elapsed_seconds": 0.0,
+          "message_count": 8,
+          "summarized": false
+        },
+        {
+          "time": "2026-09-28T21:24:14.561474+00:00",
+          "event": "summarization_started",
+          "run_id": "719d063a0c774574ba83b9ba44716e79",
+          "span_id": "cbc4a8f6f720",
+          "message_count": 11
+        },
+        {
+          "time": "2026-09-28T21:24:19.312471+00:00",
+          "event": "summarization_finished",
+          "run_id": "719d063a0c774574ba83b9ba44716e79",
+          "span_id": "cbc4a8f6f720",
+          "status": "ok",
+          "elapsed_seconds": 4.751,
+          "message_count": 11,
+          "summarized": true
+        }
+      ],
+      "turns": [
+        {
+          "turn": 1,
+          "prompt": "segment가 'blue'인 행의 score 평균을 알려줘.",
+          "oracle": {
+            "prompt": "segment가 'blue'인 행의 score 평균을 알려줘.",
+            "kind": "scalar",
+            "expected": 15,
+            "column": "score",
+            "operation": "AVG",
+            "source": "synthetic.phase_a"
+          },
+          "status": "PASS",
+          "agent_status": "answered",
+          "false_completion": false,
+          "error_type": null,
+          "answer": "보유 데이터로 계산한 결과입니다. 출처: synthetic.phase_a\n분석 범위: 요청 조건에 포함된 보유 데이터 전체\n\n적용 조건: segment = blue\n\n평균: 15.0",
+          "evidence": [
+            {
+              "source": "synthetic.phase_a",
+              "query": "SELECT AVG(\"score\") AS \"mean_score\" FROM data",
+              "rows": [
+                {
+                  "mean_score": 15.0
+                }
+              ]
+            }
+          ],
+          "observations": [
+            {
+              "tool": "use_dataset",
+              "status": "ready",
+              "error_code": null,
+              "chart_spec": null,
+              "cards": []
+            },
+            {
+              "tool": "aggregate_dataset",
+              "status": "ready",
+              "error_code": null,
+              "chart_spec": null,
+              "cards": []
+            }
+          ],
+          "tools": [
+            "use_dataset",
+            "aggregate_dataset"
+          ],
+          "state": {
+            "scope": {
+              "conditions": [
+                {
+                  "column": "segment",
+                  "op": "eq",
+                  "value": "blue"
+                }
+              ],
+              "any_conditions": [],
+              "join_edges": [],
+              "measure_conditions": [],
+              "ratio": null,
+              "unresolved": [],
+              "columns": [
+                "score",
+                "segment"
+              ]
+            },
+            "required_columns": [
+              "segment",
+              "score"
+            ],
+            "operations": [
+              "AVG"
+            ],
+            "kind": null,
+            "profile_kind": null,
+            "stop_reason": null
+          },
+          "model_calls": 2,
+          "raw_preserved": true,
+          "elapsed_seconds": 7.962
+        },
+        {
+          "turn": 2,
+          "prompt": "데이터 분석은 잠시 멈춰. 히스토그램과 막대그래프의 차이만 설명하고 계산이나 차트 생성은 하지 마.",
+          "oracle": {
+            "kind": "explanation",
+            "prompt": "데이터 분석은 잠시 멈춰. 히스토그램과 막대그래프의 차이만 설명하고 계산이나 차트 생성은 하지 마.",
+            "must_contain": [
+              "히스토그램",
+              "막대"
+            ],
+            "no_tools": true
+          },
+          "status": "PASS",
+          "agent_status": "answered",
+          "false_completion": false,
+          "error_type": null,
+          "answer": "히스토그램과 막대그래프는 데이터 시각화에서 서로 다른 목적을 가집니다.\n\n- **히스토그램**은 **수치형 데이터**(예: 점수, 시간, 온도)의 **분포**를 보여줍니다. 데이터를 일정한 구간(빈, bin)으로 나누고, 각 구간에 속하는 데이터의 **빈도**(개수)를 막대의 높이로 표현합니다. 따라서 막대 사이에 간격이 없고, 연속적인 값을 나타냅니다. 예: 학생들의 시험 점수 분포를 보고, 대부분이 70~80점 사이에 몰려 있는지 확인할 때 사용합니다.\n\n- **막대그래프**는 **범주형 데이터**(예: 지역, 제품 종류, 성별) 간의 **비교**를 보여줍니다. 각 막대는 서로 다른 범주를 대표하며, 막대의 높이는 해당 범주의 값(예: 평균, 합계, 개수)을 나타냅니다. 막대 사이에 명확한 간격이 있으며, 순서가 중요하지 않거나 임의로 정렬될 수 있습니다. 예: 각 지역별 판매량을 비교할 때 사용합니다.\n\n요약하면:  \n**히스토그램 = 수치의 분포 보기**,  \n**막대그래프 = 범주의 값 비교하기**입니다.",
+          "evidence": [],
+          "observations": [],
+          "tools": [],
+          "state": {
+            "scope": {
+              "conditions": [],
+              "any_conditions": [],
+              "unresolved": [],
+              "columns": []
+            },
+            "required_columns": [],
+            "operations": [],
+            "kind": null,
+            "profile_kind": null,
+            "stop_reason": null
+          },
+          "model_calls": 1,
+          "raw_preserved": true,
+          "elapsed_seconds": 5.831
+        },
+        {
+          "turn": 3,
+          "prompt": "아까 분석하던 같은 그룹으로 돌아가서 score 최댓값을 알려줘.",
+          "oracle": {
+            "prompt": "아까 분석하던 같은 그룹으로 돌아가서 score 최댓값을 알려줘.",
+            "kind": "scalar",
+            "expected": 20,
+            "column": "score",
+            "operation": "MAX",
+            "source": "synthetic.phase_a"
+          },
+          "status": "PASS",
+          "agent_status": "answered",
+          "false_completion": false,
+          "error_type": null,
+          "answer": "보유 데이터로 계산한 결과입니다. 출처: synthetic.phase_a\n분석 범위: 요청 조건에 포함된 보유 데이터 전체\n\n적용 조건: segment = blue\n\n최댓값: 20",
+          "evidence": [
+            {
+              "source": "synthetic.phase_a",
+              "query": "SELECT MAX(\"score\") AS \"max_score\" FROM data",
+              "rows": [
+                {
+                  "max_score": 20
+                }
+              ]
+            }
+          ],
+          "observations": [
+            {
+              "tool": "aggregate_dataset",
+              "status": "ready",
+              "error_code": null,
+              "chart_spec": null,
+              "cards": []
+            }
+          ],
+          "tools": [
+            "aggregate_dataset"
+          ],
+          "state": {
+            "scope": {
+              "conditions": [
+                {
+                  "column": "segment",
+                  "op": "eq",
+                  "value": "blue"
+                }
+              ],
+              "any_conditions": [],
+              "join_edges": [],
+              "measure_conditions": [],
+              "ratio": null,
+              "unresolved": [],
+              "columns": [
+                "score"
+              ]
+            },
+            "required_columns": [
+              "score"
+            ],
+            "operations": [
+              "MAX"
+            ],
+            "kind": null,
+            "profile_kind": null,
+            "stop_reason": null
+          },
+          "model_calls": 2,
+          "raw_preserved": true,
+          "elapsed_seconds": 7.084
+        }
+      ]
+    },
+    {
+      "id": "language_source_switch",
+      "repeat": 1,
+      "status": "PASS",
+      "summary_required": false,
+      "summary_seen": false,
+      "summary_events": [
+        {
+          "time": "2026-09-28T21:24:21.658527+00:00",
+          "event": "summarization_started",
+          "run_id": "1324ee1978f148f0bf7ec6f976d35230",
+          "span_id": "e2cf8e6c3c07",
+          "message_count": 2
+        },
+        {
+          "time": "2026-09-28T21:24:21.658584+00:00",
+          "event": "summarization_finished",
+          "run_id": "1324ee1978f148f0bf7ec6f976d35230",
+          "span_id": "e2cf8e6c3c07",
+          "status": "ok",
+          "elapsed_seconds": 0.0,
+          "message_count": 2,
+          "summarized": false
+        },
+        {
+          "time": "2026-09-28T21:24:28.889665+00:00",
+          "event": "summarization_started",
+          "run_id": "6d460b7b53e345c4bd95d75f11d6e080",
+          "span_id": "17efc1630539",
+          "message_count": 6
+        },
+        {
+          "time": "2026-09-28T21:24:28.889792+00:00",
+          "event": "summarization_finished",
+          "run_id": "6d460b7b53e345c4bd95d75f11d6e080",
+          "span_id": "17efc1630539",
+          "status": "ok",
+          "elapsed_seconds": 0.0,
+          "message_count": 6,
+          "summarized": false
+        }
+      ],
+      "turns": [
+        {
+          "turn": 1,
+          "prompt": "segment가 'blue'인 행의 score 평균을 알려줘.",
+          "oracle": {
+            "prompt": "segment가 'blue'인 행의 score 평균을 알려줘.",
+            "kind": "scalar",
+            "expected": 15,
+            "column": "score",
+            "operation": "AVG",
+            "source": "synthetic.phase_a"
+          },
+          "status": "PASS",
+          "agent_status": "answered",
+          "false_completion": false,
+          "error_type": null,
+          "answer": "보유 데이터로 계산한 결과입니다. 출처: synthetic.phase_a\n분석 범위: 요청 조건에 포함된 보유 데이터 전체\n\n적용 조건: segment = blue\n\n평균: 15.0",
+          "evidence": [
+            {
+              "source": "synthetic.phase_a",
+              "query": "SELECT AVG(score) AS avg_score FROM data WHERE segment = 'blue'",
+              "rows": [
+                {
+                  "avg_score": 15.0
+                }
+              ]
+            }
+          ],
+          "observations": [
+            {
+              "tool": "local_analysis_sql",
+              "status": "ready",
+              "error_code": null,
+              "chart_spec": null,
+              "cards": []
+            }
+          ],
+          "tools": [
+            "local_analysis_sql"
+          ],
+          "state": {
+            "scope": {
+              "conditions": [
+                {
+                  "column": "segment",
+                  "op": "eq",
+                  "value": "blue"
+                }
+              ],
+              "any_conditions": [],
+              "join_edges": [],
+              "measure_conditions": [],
+              "ratio": null,
+              "unresolved": [],
+              "columns": [
+                "score",
+                "segment"
+              ]
+            },
+            "required_columns": [
+              "segment",
+              "score"
+            ],
+            "operations": [
+              "AVG"
+            ],
+            "kind": null,
+            "profile_kind": null,
+            "stop_reason": null
+          },
+          "model_calls": 1,
+          "raw_preserved": true,
+          "elapsed_seconds": 7.229
+        },
+        {
+          "turn": 2,
+          "prompt": "이제 synthetic.phase_b 데이터로 바꿔서 score 평균을 알려줘. 앞의 조건은 적용하지 마.",
+          "oracle": {
+            "prompt": "이제 synthetic.phase_b 데이터로 바꿔서 score 평균을 알려줘. 앞의 조건은 적용하지 마.",
+            "kind": "scalar",
+            "expected": 200,
+            "column": "score",
+            "operation": "AVG",
+            "source": "synthetic.phase_b"
+          },
+          "status": "PASS",
+          "agent_status": "answered",
+          "false_completion": false,
+          "error_type": null,
+          "answer": "보유 데이터로 계산한 결과입니다. 출처: synthetic.phase_b\n분석 범위: 요청 조건에 포함된 보유 데이터 전체\n\n평균: 200.0",
+          "evidence": [
+            {
+              "source": "synthetic.phase_b",
+              "query": "SELECT AVG(score) AS avg_score FROM data",
+              "rows": [
+                {
+                  "avg_score": 200.0
+                }
+              ]
+            }
+          ],
+          "observations": [
+            {
+              "tool": "local_analysis_sql",
+              "status": "ready",
+              "error_code": null,
+              "chart_spec": null,
+              "cards": []
+            }
+          ],
+          "tools": [
+            "local_analysis_sql"
+          ],
+          "state": {
+            "scope": {
+              "conditions": [],
+              "any_conditions": [],
+              "join_edges": [],
+              "measure_conditions": [],
+              "ratio": null,
+              "unresolved": [],
+              "columns": [
+                "score"
+              ]
+            },
+            "required_columns": [
+              "score"
+            ],
+            "operations": [
+              "AVG"
+            ],
+            "kind": null,
+            "profile_kind": null,
+            "stop_reason": null
+          },
+          "model_calls": 1,
+          "raw_preserved": true,
+          "elapsed_seconds": 2.273
+        },
+        {
+          "turn": 3,
+          "prompt": "그 데이터에서 segment가 'blue'인 행의 score 평균은?",
+          "oracle": {
+            "prompt": "그 데이터에서 segment가 'blue'인 행의 score 평균은?",
+            "kind": "scalar",
+            "expected": 250,
+            "column": "score",
+            "operation": "AVG",
+            "source": "synthetic.phase_b"
+          },
+          "status": "PASS",
+          "agent_status": "answered",
+          "false_completion": false,
+          "error_type": null,
+          "answer": "보유 데이터로 계산한 결과입니다. 출처: synthetic.phase_b\n분석 범위: 요청 조건에 포함된 보유 데이터 전체\n\n적용 조건: segment = blue\n\n평균: 250.0",
+          "evidence": [
+            {
+              "source": "synthetic.phase_b",
+              "query": "SELECT AVG(\"score\") AS average FROM data",
+              "rows": [
+                {
+                  "average": 250.0
+                }
+              ]
+            }
+          ],
+          "observations": [
+            {
+              "tool": "local_analysis_sql",
+              "status": "ready",
+              "error_code": null,
+              "chart_spec": null,
+              "cards": []
+            }
+          ],
+          "tools": [
+            "local_analysis_sql"
+          ],
+          "state": {
+            "scope": {
+              "conditions": [
+                {
+                  "column": "segment",
+                  "op": "eq",
+                  "value": "blue"
+                }
+              ],
+              "any_conditions": [],
+              "join_edges": [],
+              "measure_conditions": [],
+              "ratio": null,
+              "unresolved": [],
+              "columns": [
+                "score",
+                "segment"
+              ]
+            },
+            "required_columns": [
+              "score"
+            ],
+            "operations": [
+              "AVG"
+            ],
+            "kind": null,
+            "profile_kind": null,
+            "stop_reason": null
+          },
+          "model_calls": 0,
+          "raw_preserved": true,
+          "elapsed_seconds": 0.026
+        },
+        {
+          "turn": 4,
+          "prompt": "처음 synthetic.phase_a 원본으로 돌아가서 모든 행의 score 평균을 알려줘. 이전 segment 조건은 적용하지 마.",
+          "oracle": {
+            "prompt": "처음 synthetic.phase_a 원본으로 돌아가서 모든 행의 score 평균을 알려줘. 이전 segment 조건은 적용하지 마.",
+            "kind": "scalar",
+            "expected": 15.2,
+            "column": "score",
+            "operation": "AVG",
+            "source": "synthetic.phase_a"
+          },
+          "status": "PASS",
+          "agent_status": "answered",
+          "false_completion": false,
+          "error_type": null,
+          "answer": "보유 데이터로 계산한 결과입니다. 출처: synthetic.phase_a\n분석 범위: 요청 조건에 포함된 보유 데이터 전체\n\n평균: 15.2",
+          "evidence": [
+            {
+              "source": "synthetic.phase_a",
+              "query": "SELECT AVG(\"score\") AS average FROM data",
+              "rows": [
+                {
+                  "average": 15.2
+                }
+              ]
+            }
+          ],
+          "observations": [
+            {
+              "tool": "local_analysis_sql",
+              "status": "ready",
+              "error_code": null,
+              "chart_spec": null,
+              "cards": []
+            }
+          ],
+          "tools": [
+            "local_analysis_sql"
+          ],
+          "state": {
+            "scope": {
+              "conditions": [],
+              "any_conditions": [],
+              "join_edges": [],
+              "measure_conditions": [],
+              "ratio": null,
+              "unresolved": [],
+              "columns": [
+                "score",
+                "segment"
+              ]
+            },
+            "required_columns": [
+              "score",
+              "segment"
+            ],
+            "operations": [
+              "AVG"
+            ],
+            "kind": null,
+            "profile_kind": null,
+            "stop_reason": null
+          },
+          "model_calls": 0,
+          "raw_preserved": true,
+          "elapsed_seconds": 0.023
+        }
+      ]
+    },
+    {
+      "id": "restart_followup",
+      "repeat": 1,
+      "status": "PASS",
+      "summary_required": false,
+      "summary_seen": false,
+      "summary_events": [
+        {
+          "time": "2026-09-28T21:24:31.227012+00:00",
+          "event": "summarization_started",
+          "run_id": "e6a5aa9df24a48c9ae39bd0418d7c293",
+          "span_id": "7c07b0728fcd",
+          "message_count": 2
+        },
+        {
+          "time": "2026-09-28T21:24:31.227062+00:00",
+          "event": "summarization_finished",
+          "run_id": "e6a5aa9df24a48c9ae39bd0418d7c293",
+          "span_id": "7c07b0728fcd",
+          "status": "ok",
+          "elapsed_seconds": 0.0,
+          "message_count": 2,
+          "summarized": false
+        }
+      ],
+      "turns": [
+        {
+          "turn": 1,
+          "prompt": "segment가 'blue'인 행의 score 평균을 알려줘.",
+          "oracle": {
+            "prompt": "segment가 'blue'인 행의 score 평균을 알려줘.",
+            "kind": "scalar",
+            "expected": 15,
+            "column": "score",
+            "operation": "AVG",
+            "source": "synthetic.phase_a"
+          },
+          "status": "PASS",
+          "agent_status": "answered",
+          "false_completion": false,
+          "error_type": null,
+          "answer": "보유 데이터로 계산한 결과입니다. 출처: synthetic.phase_a\n분석 범위: 요청 조건에 포함된 보유 데이터 전체\n\n적용 조건: segment = blue\n\n평균: 15.0",
+          "evidence": [
+            {
+              "source": "synthetic.phase_a",
+              "query": "SELECT AVG(score) AS avg_score FROM data WHERE segment = 'blue'",
+              "rows": [
+                {
+                  "avg_score": 15.0
+                }
+              ]
+            }
+          ],
+          "observations": [
+            {
+              "tool": "local_analysis_sql",
+              "status": "ready",
+              "error_code": null,
+              "chart_spec": null,
+              "cards": []
+            }
+          ],
+          "tools": [
+            "local_analysis_sql"
+          ],
+          "state": {
+            "scope": {
+              "conditions": [
+                {
+                  "column": "segment",
+                  "op": "eq",
+                  "value": "blue"
+                }
+              ],
+              "any_conditions": [],
+              "join_edges": [],
+              "measure_conditions": [],
+              "ratio": null,
+              "unresolved": [],
+              "columns": [
+                "score",
+                "segment"
+              ]
+            },
+            "required_columns": [
+              "segment",
+              "score"
+            ],
+            "operations": [
+              "AVG"
+            ],
+            "kind": null,
+            "profile_kind": null,
+            "stop_reason": null
+          },
+          "model_calls": 1,
+          "raw_preserved": true,
+          "elapsed_seconds": 4.494
+        },
+        {
+          "turn": 2,
+          "prompt": "그중 score 최댓값을 알려줘.",
+          "oracle": {
+            "prompt": "그중 score 최댓값을 알려줘.",
+            "kind": "scalar",
+            "expected": 20,
+            "column": "score",
+            "operation": "MAX",
+            "source": "synthetic.phase_a",
+            "reopen_before": true
+          },
+          "status": "PASS",
+          "agent_status": "answered",
+          "false_completion": false,
+          "error_type": null,
+          "answer": "보유 데이터로 계산한 결과입니다. 출처: synthetic.phase_a\n분석 범위: 요청 조건에 포함된 보유 데이터 전체\n\n적용 조건: segment = blue\n\n최댓값: 20",
+          "evidence": [
+            {
+              "source": "synthetic.phase_a",
+              "query": "SELECT MAX(\"score\") AS maximum FROM data",
+              "rows": [
+                {
+                  "maximum": 20
+                }
+              ]
+            }
+          ],
+          "observations": [
+            {
+              "tool": "local_analysis_sql",
+              "status": "ready",
+              "error_code": null,
+              "chart_spec": null,
+              "cards": []
+            }
+          ],
+          "tools": [
+            "local_analysis_sql"
+          ],
+          "state": {
+            "scope": {
+              "conditions": [
+                {
+                  "column": "segment",
+                  "op": "eq",
+                  "value": "blue"
+                }
+              ],
+              "any_conditions": [],
+              "join_edges": [],
+              "measure_conditions": [],
+              "ratio": null,
+              "unresolved": [],
+              "columns": [
+                "score"
+              ]
+            },
+            "required_columns": [
+              "score"
+            ],
+            "operations": [
+              "MAX"
+            ],
+            "kind": null,
+            "profile_kind": null,
+            "stop_reason": null
+          },
+          "model_calls": 0,
+          "raw_preserved": true,
+          "elapsed_seconds": 0.028
+        },
+        {
+          "turn": 3,
+          "prompt": "같은 조건으로 latency_ms 평균도 알려줘.",
+          "oracle": {
+            "prompt": "같은 조건으로 latency_ms 평균도 알려줘.",
+            "kind": "scalar",
+            "expected": 45,
+            "column": "latency_ms",
+            "operation": "AVG",
+            "source": "synthetic.phase_a"
+          },
+          "status": "PASS",
+          "agent_status": "answered",
+          "false_completion": false,
+          "error_type": null,
+          "answer": "보유 데이터로 계산한 결과입니다. 출처: synthetic.phase_a\n분석 범위: 요청 조건에 포함된 보유 데이터 전체\n\n적용 조건: segment = blue\n\n평균: 45.0",
+          "evidence": [
+            {
+              "source": "synthetic.phase_a",
+              "query": "SELECT AVG(\"latency_ms\") AS average FROM data",
+              "rows": [
+                {
+                  "average": 45.0
+                }
+              ]
+            }
+          ],
+          "observations": [
+            {
+              "tool": "local_analysis_sql",
+              "status": "ready",
+              "error_code": null,
+              "chart_spec": null,
+              "cards": []
+            }
+          ],
+          "tools": [
+            "local_analysis_sql"
+          ],
+          "state": {
+            "scope": {
+              "conditions": [
+                {
+                  "column": "segment",
+                  "op": "eq",
+                  "value": "blue"
+                }
+              ],
+              "any_conditions": [],
+              "join_edges": [],
+              "measure_conditions": [],
+              "ratio": null,
+              "unresolved": [],
+              "columns": [
+                "latency_ms"
+              ]
+            },
+            "required_columns": [
+              "latency_ms"
+            ],
+            "operations": [
+              "AVG"
+            ],
+            "kind": null,
+            "profile_kind": null,
+            "stop_reason": null
+          },
+          "model_calls": 0,
+          "raw_preserved": true,
+          "elapsed_seconds": 0.027
+        }
+      ]
+    },
+    {
+      "id": "chart_edit",
+      "repeat": 1,
+      "status": "PASS",
+      "summary_required": false,
+      "summary_seen": false,
+      "summary_events": [
+        {
+          "time": "2026-09-28T21:24:35.799441+00:00",
+          "event": "summarization_started",
+          "run_id": "886cbf1dc98b4d6bb11c943782dbf3ba",
+          "span_id": "450eb73cdba1",
+          "message_count": 1
+        },
+        {
+          "time": "2026-09-28T21:24:35.799494+00:00",
+          "event": "summarization_finished",
+          "run_id": "886cbf1dc98b4d6bb11c943782dbf3ba",
+          "span_id": "450eb73cdba1",
+          "status": "ok",
+          "elapsed_seconds": 0.0,
+          "message_count": 1,
+          "summarized": false
+        },
+        {
+          "time": "2026-09-28T21:24:46.848572+00:00",
+          "event": "summarization_started",
+          "run_id": "05900681875b4ec8a3788406c20d927b",
+          "span_id": "a5a37cb13b8d",
+          "message_count": 5
+        },
+        {
+          "time": "2026-09-28T21:24:46.848701+00:00",
+          "event": "summarization_finished",
+          "run_id": "05900681875b4ec8a3788406c20d927b",
+          "span_id": "a5a37cb13b8d",
+          "status": "ok",
+          "elapsed_seconds": 0.0,
+          "message_count": 5,
+          "summarized": false
+        }
+      ],
+      "turns": [
+        {
+          "turn": 1,
+          "prompt": "score 히스토그램을 5개 구간으로 보여줘.",
+          "oracle": {
+            "kind": "chart",
+            "prompt": "score 히스토그램을 5개 구간으로 보여줘.",
+            "source": "synthetic.phase_a",
+            "column": "score",
+            "bins": 5,
+            "expected_values": [
+              2,
+              4,
+              10,
+              20,
+              40
+            ]
+          },
+          "status": "PASS",
+          "agent_status": "answered",
+          "false_completion": false,
+          "error_type": null,
+          "answer": "score 분포 이미지를 생성했습니다.\n분석 범위: 보유 5행 기준 · complete · raw · 표시 데이터 5개 · 집계 none",
+          "evidence": [],
+          "observations": [
+            {
+              "tool": "render_chart_spec",
+              "status": "ready",
+              "error_code": null,
+              "chart_spec": {
+                "kind": "histogram",
+                "x": "score",
+                "y": "",
+                "category": "",
+                "aggregation": "none",
+                "sort": "none",
+                "cumulative": false,
+                "top_n": 50,
+                "bins": 5,
+                "title": "score 분포",
+                "x_label": "score",
+                "y_label": "Count",
+                "orientation": "vertical"
+              },
+              "cards": [
+                {
+                  "id": "94d67aee-2f3d-413a-9f17-df5f4466d510",
+                  "dataset_id": "141ab532-a1ff-4a6b-81bf-3ef0709fe9fe",
+                  "title": "score 분포",
+                  "reason": "유효값 5개를 5개 bin으로 표시했습니다.",
+                  "kind": "histogram",
+                  "columns": [
+                    "score"
+                  ],
+                  "scope": "보유 5행 기준 · complete · raw · 표시 데이터 5개 · 집계 none"
+                }
+              ]
+            }
+          ],
+          "tools": [
+            "render_chart_spec"
+          ],
+          "state": {
+            "scope": {
+              "conditions": [],
+              "any_conditions": [],
+              "join_edges": [],
+              "measure_conditions": [],
+              "ratio": null,
+              "unresolved": [],
+              "columns": [
+                "score"
+              ]
+            },
+            "required_columns": [
+              "score"
+            ],
+            "operations": [],
+            "kind": "histogram",
+            "profile_kind": null,
+            "stop_reason": null
+          },
+          "model_calls": 1,
+          "raw_preserved": true,
+          "elapsed_seconds": 11.048
+        },
+        {
+          "turn": 2,
+          "prompt": "방금 그 히스토그램의 구간 수만 10개로 바꿔줘. 나머지는 그대로 유지해.",
+          "oracle": {
+            "kind": "chart",
+            "prompt": "방금 그 히스토그램의 구간 수만 10개로 바꿔줘. 나머지는 그대로 유지해.",
+            "source": "synthetic.phase_a",
+            "column": "score",
+            "bins": 10,
+            "expected_values": [
+              2,
+              4,
+              10,
+              20,
+              40
+            ]
+          },
+          "status": "PASS",
+          "agent_status": "answered",
+          "false_completion": false,
+          "error_type": null,
+          "answer": "score 분포 이미지를 생성했습니다.\n분석 범위: 보유 5행 기준 · complete · raw · 표시 데이터 5개 · 집계 none",
+          "evidence": [],
+          "observations": [
+            {
+              "tool": "render_chart_spec",
+              "status": "ready",
+              "error_code": null,
+              "chart_spec": {
+                "kind": "histogram",
+                "x": "score",
+                "y": "",
+                "category": "",
+                "aggregation": "none",
+                "sort": "none",
+                "cumulative": false,
+                "top_n": 50,
+                "bins": 10,
+                "title": "score 분포",
+                "x_label": "score",
+                "y_label": "Count",
+                "orientation": "vertical"
+              },
+              "cards": [
+                {
+                  "id": "40618fcb-4b1f-484d-916e-f768fbef5e50",
+                  "dataset_id": "141ab532-a1ff-4a6b-81bf-3ef0709fe9fe",
+                  "title": "score 분포",
+                  "reason": "유효값 5개를 10개 bin으로 표시했습니다.",
+                  "kind": "histogram",
+                  "columns": [
+                    "score"
+                  ],
+                  "scope": "보유 5행 기준 · complete · raw · 표시 데이터 5개 · 집계 none"
+                }
+              ]
+            }
+          ],
+          "tools": [
+            "render_chart_spec"
+          ],
+          "state": {
+            "scope": {
+              "conditions": [],
+              "any_conditions": [],
+              "join_edges": [],
+              "measure_conditions": [],
+              "ratio": null,
+              "unresolved": [],
+              "columns": []
+            },
+            "required_columns": [
+              "score"
+            ],
+            "operations": [],
+            "kind": "histogram",
+            "profile_kind": null,
+            "stop_reason": null
+          },
+          "model_calls": 1,
+          "raw_preserved": true,
+          "elapsed_seconds": 2.631
+        }
+      ]
+    },
+    {
+      "id": "session_isolation",
+      "repeat": 1,
+      "status": "PASS",
+      "summary_required": false,
+      "summary_seen": false,
+      "summary_events": [
+        {
+          "time": "2026-09-28T21:24:49.578837+00:00",
+          "event": "summarization_started",
+          "run_id": "2315efd15a9d4d7887e92363226a7703",
+          "span_id": "fb4f273495f6",
+          "message_count": 2
+        },
+        {
+          "time": "2026-09-28T21:24:49.578890+00:00",
+          "event": "summarization_finished",
+          "run_id": "2315efd15a9d4d7887e92363226a7703",
+          "span_id": "fb4f273495f6",
+          "status": "ok",
+          "elapsed_seconds": 0.0,
+          "message_count": 2,
+          "summarized": false
+        }
+      ],
+      "turns": [
+        {
+          "turn": 1,
+          "prompt": "segment가 'blue'인 행의 score 평균을 알려줘.",
+          "oracle": {
+            "prompt": "segment가 'blue'인 행의 score 평균을 알려줘.",
+            "kind": "scalar",
+            "expected": 15,
+            "column": "score",
+            "operation": "AVG",
+            "source": "synthetic.phase_a"
+          },
+          "status": "PASS",
+          "agent_status": "answered",
+          "false_completion": false,
+          "error_type": null,
+          "answer": "보유 데이터로 계산한 결과입니다. 출처: synthetic.phase_a\n분석 범위: 요청 조건에 포함된 보유 데이터 전체\n\n적용 조건: segment = blue\n\n평균: 15.0",
+          "evidence": [
+            {
+              "source": "synthetic.phase_a",
+              "query": "SELECT AVG(score) AS avg_score FROM data WHERE segment = 'blue'",
+              "rows": [
+                {
+                  "avg_score": 15.0
+                }
+              ]
+            }
+          ],
+          "observations": [
+            {
+              "tool": "local_analysis_sql",
+              "status": "ready",
+              "error_code": null,
+              "chart_spec": null,
+              "cards": []
+            }
+          ],
+          "tools": [
+            "local_analysis_sql"
+          ],
+          "state": {
+            "scope": {
+              "conditions": [
+                {
+                  "column": "segment",
+                  "op": "eq",
+                  "value": "blue"
+                }
+              ],
+              "any_conditions": [],
+              "join_edges": [],
+              "measure_conditions": [],
+              "ratio": null,
+              "unresolved": [],
+              "columns": [
+                "score",
+                "segment"
+              ]
+            },
+            "required_columns": [
+              "segment",
+              "score"
+            ],
+            "operations": [
+              "AVG"
+            ],
+            "kind": null,
+            "profile_kind": null,
+            "stop_reason": null
+          },
+          "model_calls": 1,
+          "raw_preserved": true,
+          "elapsed_seconds": 5.855
+        },
+        {
+          "turn": 2,
+          "prompt": "score 평균을 알려줘.",
+          "oracle": {
+            "prompt": "score 평균을 알려줘.",
+            "kind": "scalar",
+            "expected": 200,
+            "column": "score",
+            "operation": "AVG",
+            "source": "synthetic.phase_b",
+            "new_session_before": true,
+            "select_source": "synthetic.phase_b"
+          },
+          "status": "PASS",
+          "agent_status": "answered",
+          "false_completion": false,
+          "error_type": null,
+          "answer": "보유 데이터로 계산한 결과입니다. 출처: synthetic.phase_b\n분석 범위: 요청 조건에 포함된 보유 데이터 전체\n\n평균: 200.0",
+          "evidence": [
+            {
+              "source": "synthetic.phase_b",
+              "query": "SELECT AVG(\"score\") AS average FROM data",
+              "rows": [
+                {
+                  "average": 200.0
+                }
+              ]
+            }
+          ],
+          "observations": [
+            {
+              "tool": "local_analysis_sql",
+              "status": "ready",
+              "error_code": null,
+              "chart_spec": null,
+              "cards": []
+            }
+          ],
+          "tools": [
+            "local_analysis_sql"
+          ],
+          "state": {
+            "scope": {
+              "conditions": [],
+              "any_conditions": [],
+              "join_edges": [],
+              "measure_conditions": [],
+              "ratio": null,
+              "unresolved": [],
+              "columns": [
+                "score"
+              ]
+            },
+            "required_columns": [
+              "score"
+            ],
+            "operations": [
+              "AVG"
+            ],
+            "kind": null,
+            "profile_kind": null,
+            "stop_reason": null
+          },
+          "model_calls": 0,
+          "raw_preserved": true,
+          "elapsed_seconds": 0.021
+        },
+        {
+          "turn": 3,
+          "prompt": "처음 대화의 그중 score 최댓값을 알려줘.",
+          "oracle": {
+            "prompt": "처음 대화의 그중 score 최댓값을 알려줘.",
+            "kind": "scalar",
+            "expected": 20,
+            "column": "score",
+            "operation": "MAX",
+            "source": "synthetic.phase_a",
+            "return_session_before": true
+          },
+          "status": "PASS",
+          "agent_status": "answered",
+          "false_completion": false,
+          "error_type": null,
+          "answer": "보유 데이터로 계산한 결과입니다. 출처: synthetic.phase_a\n분석 범위: 요청 조건에 포함된 보유 데이터 전체\n\n적용 조건: segment = blue\n\n최댓값: 20",
+          "evidence": [
+            {
+              "source": "synthetic.phase_a",
+              "query": "SELECT MAX(\"score\") AS maximum FROM data",
+              "rows": [
+                {
+                  "maximum": 20
+                }
+              ]
+            }
+          ],
+          "observations": [
+            {
+              "tool": "local_analysis_sql",
+              "status": "ready",
+              "error_code": null,
+              "chart_spec": null,
+              "cards": []
+            }
+          ],
+          "tools": [
+            "local_analysis_sql"
+          ],
+          "state": {
+            "scope": {
+              "conditions": [
+                {
+                  "column": "segment",
+                  "op": "eq",
+                  "value": "blue"
+                }
+              ],
+              "any_conditions": [],
+              "join_edges": [],
+              "measure_conditions": [],
+              "ratio": null,
+              "unresolved": [],
+              "columns": [
+                "score"
+              ]
+            },
+            "required_columns": [
+              "score"
+            ],
+            "operations": [
+              "MAX"
+            ],
+            "kind": null,
+            "profile_kind": null,
+            "stop_reason": null
+          },
+          "model_calls": 0,
+          "raw_preserved": true,
+          "elapsed_seconds": 0.025
+        }
+      ]
+    },
+    {
+      "id": "summary_followup",
+      "repeat": 1,
+      "status": "PASS",
+      "summary_required": true,
+      "summary_seen": true,
+      "summary_events": [
+        {
+          "time": "2026-09-28T21:24:55.518488+00:00",
+          "event": "summarization_started",
+          "run_id": "bf94dd59dbf6482bac06805305a5ad18",
+          "span_id": "69fd5125777e",
+          "message_count": 2
+        },
+        {
+          "time": "2026-09-28T21:24:55.518553+00:00",
+          "event": "summarization_finished",
+          "run_id": "bf94dd59dbf6482bac06805305a5ad18",
+          "span_id": "69fd5125777e",
+          "status": "ok",
+          "elapsed_seconds": 0.0,
+          "message_count": 2,
+          "summarized": false
+        },
+        {
+          "time": "2026-09-28T21:25:01.047683+00:00",
+          "event": "summarization_started",
+          "run_id": "bf94dd59dbf6482bac06805305a5ad18",
+          "span_id": "b0f03ca527cf",
+          "message_count": 4
+        },
+        {
+          "time": "2026-09-28T21:25:06.103516+00:00",
+          "event": "summarization_finished",
+          "run_id": "bf94dd59dbf6482bac06805305a5ad18",
+          "span_id": "b0f03ca527cf",
+          "status": "ok",
+          "elapsed_seconds": 5.056,
+          "message_count": 4,
+          "summarized": true
+        },
+        {
+          "time": "2026-09-28T21:25:08.938471+00:00",
+          "event": "summarization_started",
+          "run_id": "bf94dd59dbf6482bac06805305a5ad18",
+          "span_id": "d49741b54840",
+          "message_count": 5
+        },
+        {
+          "time": "2026-09-28T21:25:13.836095+00:00",
+          "event": "summarization_finished",
+          "run_id": "bf94dd59dbf6482bac06805305a5ad18",
+          "span_id": "d49741b54840",
+          "status": "ok",
+          "elapsed_seconds": 4.898,
+          "message_count": 5,
+          "summarized": true
+        },
+        {
+          "time": "2026-09-28T21:25:15.922290+00:00",
+          "event": "summarization_started",
+          "run_id": "a9e476149ee342d78dd85b90bc1678fe",
+          "span_id": "d4457dbeb9d7",
+          "message_count": 8
+        },
+        {
+          "time": "2026-09-28T21:25:20.928506+00:00",
+          "event": "summarization_finished",
+          "run_id": "a9e476149ee342d78dd85b90bc1678fe",
+          "span_id": "d4457dbeb9d7",
+          "status": "ok",
+          "elapsed_seconds": 5.006,
+          "message_count": 8,
+          "summarized": true
+        },
+        {
+          "time": "2026-09-28T21:25:26.910463+00:00",
+          "event": "summarization_started",
+          "run_id": "3be70303b6594f1c891321f9c1fe18d5",
+          "span_id": "991e743875c4",
+          "message_count": 8
+        },
+        {
+          "time": "2026-09-28T21:25:33.955051+00:00",
+          "event": "summarization_finished",
+          "run_id": "3be70303b6594f1c891321f9c1fe18d5",
+          "span_id": "991e743875c4",
+          "status": "ok",
+          "elapsed_seconds": 7.045,
+          "message_count": 8,
+          "summarized": true
+        },
+        {
+          "time": "2026-09-28T21:25:38.475517+00:00",
+          "event": "summarization_started",
+          "run_id": "bf7dd7ba5dea437186e6f5911387dff9",
+          "span_id": "4371e6fbd9f5",
+          "message_count": 8
+        },
+        {
+          "time": "2026-09-28T21:25:47.227867+00:00",
+          "event": "summarization_finished",
+          "run_id": "bf7dd7ba5dea437186e6f5911387dff9",
+          "span_id": "4371e6fbd9f5",
+          "status": "ok",
+          "elapsed_seconds": 8.752,
+          "message_count": 8,
+          "summarized": true
+        },
+        {
+          "time": "2026-09-28T21:25:50.932862+00:00",
+          "event": "summarization_started",
+          "run_id": "bf7dd7ba5dea437186e6f5911387dff9",
+          "span_id": "26e156b3da49",
+          "message_count": 5
+        },
+        {
+          "time": "2026-09-28T21:25:57.040063+00:00",
+          "event": "summarization_finished",
+          "run_id": "bf7dd7ba5dea437186e6f5911387dff9",
+          "span_id": "26e156b3da49",
+          "status": "ok",
+          "elapsed_seconds": 6.107,
+          "message_count": 5,
+          "summarized": true
+        },
+        {
+          "time": "2026-09-28T21:26:00.119518+00:00",
+          "event": "summarization_started",
+          "run_id": "43ae9c9f2f914a09805bf4023046f57d",
+          "span_id": "3b85e816ea92",
+          "message_count": 8
+        },
+        {
+          "time": "2026-09-28T21:26:05.339902+00:00",
+          "event": "summarization_finished",
+          "run_id": "43ae9c9f2f914a09805bf4023046f57d",
+          "span_id": "3b85e816ea92",
+          "status": "ok",
+          "elapsed_seconds": 5.22,
+          "message_count": 8,
+          "summarized": true
+        },
+        {
+          "time": "2026-09-28T21:26:09.262442+00:00",
+          "event": "summarization_started",
+          "run_id": "5d72eb6b54c445ccbb8a5b916d8f20ca",
+          "span_id": "c5d64fec3a70",
+          "message_count": 8
+        },
+        {
+          "time": "2026-09-28T21:26:15.916383+00:00",
+          "event": "summarization_finished",
+          "run_id": "5d72eb6b54c445ccbb8a5b916d8f20ca",
+          "span_id": "c5d64fec3a70",
+          "status": "ok",
+          "elapsed_seconds": 6.654,
+          "message_count": 8,
+          "summarized": true
+        },
+        {
+          "time": "2026-09-28T21:26:21.961491+00:00",
+          "event": "summarization_started",
+          "run_id": "4b8689a3df724bb7b60ef72de17576a7",
+          "span_id": "acecec23b067",
+          "message_count": 8
+        },
+        {
+          "time": "2026-09-28T21:26:30.433707+00:00",
+          "event": "summarization_finished",
+          "run_id": "4b8689a3df724bb7b60ef72de17576a7",
+          "span_id": "acecec23b067",
+          "status": "ok",
+          "elapsed_seconds": 8.472,
+          "message_count": 8,
+          "summarized": true
+        },
+        {
+          "time": "2026-09-28T21:26:34.942473+00:00",
+          "event": "summarization_started",
+          "run_id": "4b8689a3df724bb7b60ef72de17576a7",
+          "span_id": "df4686aa59d6",
+          "message_count": 4
+        },
+        {
+          "time": "2026-09-28T21:26:34.942656+00:00",
+          "event": "summarization_finished",
+          "run_id": "4b8689a3df724bb7b60ef72de17576a7",
+          "span_id": "df4686aa59d6",
+          "status": "ok",
+          "elapsed_seconds": 0.0,
+          "message_count": 4,
+          "summarized": false
+        },
+        {
+          "time": "2026-09-28T21:26:40.174127+00:00",
+          "event": "summarization_started",
+          "run_id": "4b8689a3df724bb7b60ef72de17576a7",
+          "span_id": "1ece03bd3ef1",
+          "message_count": 5
+        },
+        {
+          "time": "2026-09-28T21:26:47.835594+00:00",
+          "event": "summarization_finished",
+          "run_id": "4b8689a3df724bb7b60ef72de17576a7",
+          "span_id": "1ece03bd3ef1",
+          "status": "ok",
+          "elapsed_seconds": 7.662,
+          "message_count": 5,
+          "summarized": true
+        }
+      ],
+      "turns": [
+        {
+          "turn": 1,
+          "prompt": "segment가 'blue'인 행의 score 평균을 알려줘.",
+          "oracle": {
+            "prompt": "segment가 'blue'인 행의 score 평균을 알려줘.",
+            "kind": "scalar",
+            "expected": 15,
+            "column": "score",
+            "operation": "AVG",
+            "source": "synthetic.phase_a"
+          },
+          "status": "PASS",
+          "agent_status": "answered",
+          "false_completion": false,
+          "error_type": null,
+          "answer": "보유 데이터로 계산한 결과입니다. 출처: synthetic.phase_a\n분석 범위: 요청 조건에 포함된 보유 데이터 전체\n\n적용 조건: segment = blue\n\n평균: 15.0",
+          "evidence": [
+            {
+              "source": "synthetic.phase_a",
+              "query": "SELECT AVG(\"score\") AS \"mean_score\" FROM data",
+              "rows": [
+                {
+                  "mean_score": 15.0
+                }
+              ]
+            }
+          ],
+          "observations": [
+            {
+              "tool": "inspect_dataset",
+              "status": "ready",
+              "error_code": null,
+              "chart_spec": null,
+              "cards": []
+            },
+            {
+              "tool": "use_dataset",
+              "status": "ready",
+              "error_code": null,
+              "chart_spec": null,
+              "cards": []
+            },
+            {
+              "tool": "aggregate_dataset",
+              "status": "ready",
+              "error_code": null,
+              "chart_spec": null,
+              "cards": []
+            }
+          ],
+          "tools": [
+            "inspect_dataset",
+            "use_dataset",
+            "aggregate_dataset"
+          ],
+          "state": {
+            "scope": {
+              "conditions": [
+                {
+                  "column": "segment",
+                  "op": "eq",
+                  "value": "blue"
+                }
+              ],
+              "any_conditions": [],
+              "join_edges": [],
+              "measure_conditions": [],
+              "ratio": null,
+              "unresolved": [],
+              "columns": [
+                "score",
+                "segment"
+              ]
+            },
+            "required_columns": [
+              "segment",
+              "score"
+            ],
+            "operations": [
+              "AVG"
+            ],
+            "kind": null,
+            "profile_kind": null,
+            "stop_reason": null
+          },
+          "model_calls": 5,
+          "raw_preserved": true,
+          "elapsed_seconds": 20.397
+        },
+        {
+          "turn": 2,
+          "prompt": "그중 score 최댓값은?",
+          "oracle": {
+            "prompt": "그중 score 최댓값은?",
+            "kind": "scalar",
+            "expected": 20,
+            "column": "score",
+            "operation": "MAX",
+            "source": "synthetic.phase_a"
+          },
+          "status": "PASS",
+          "agent_status": "answered",
+          "false_completion": false,
+          "error_type": null,
+          "answer": "보유 데이터로 계산한 결과입니다. 출처: synthetic.phase_a\n분석 범위: 요청 조건에 포함된 보유 데이터 전체\n\n적용 조건: segment = blue\n\n최댓값: 20",
+          "evidence": [
+            {
+              "source": "synthetic.phase_a",
+              "query": "SELECT MAX(\"score\") AS \"max_score\" FROM data",
+              "rows": [
+                {
+                  "max_score": 20
+                }
+              ]
+            }
+          ],
+          "observations": [
+            {
+              "tool": "aggregate_dataset",
+              "status": "ready",
+              "error_code": null,
+              "chart_spec": null,
+              "cards": []
+            }
+          ],
+          "tools": [
+            "aggregate_dataset"
+          ],
+          "state": {
+            "scope": {
+              "conditions": [
+                {
+                  "column": "segment",
+                  "op": "eq",
+                  "value": "blue"
+                }
+              ],
+              "any_conditions": [],
+              "join_edges": [],
+              "measure_conditions": [],
+              "ratio": null,
+              "unresolved": [],
+              "columns": [
+                "score"
+              ]
+            },
+            "required_columns": [
+              "score"
+            ],
+            "operations": [
+              "MAX"
+            ],
+            "kind": null,
+            "profile_kind": null,
+            "stop_reason": null
+          },
+          "model_calls": 2,
+          "raw_preserved": true,
+          "elapsed_seconds": 10.983
+        },
+        {
+          "turn": 3,
+          "prompt": "같은 조건에서 score 최솟값은?",
+          "oracle": {
+            "prompt": "같은 조건에서 score 최솟값은?",
+            "kind": "scalar",
+            "expected": 10,
+            "column": "score",
+            "operation": "MIN",
+            "source": "synthetic.phase_a"
+          },
+          "status": "PASS",
+          "agent_status": "answered",
+          "false_completion": false,
+          "error_type": null,
+          "answer": "보유 데이터로 계산한 결과입니다. 출처: synthetic.phase_a\n분석 범위: 요청 조건에 포함된 보유 데이터 전체\n\n적용 조건: segment = blue\n\n최솟값: 10",
+          "evidence": [
+            {
+              "source": "synthetic.phase_a",
+              "query": "SELECT MIN(\"score\") AS \"min_score\" FROM data",
+              "rows": [
+                {
+                  "min_score": 10
+                }
+              ]
+            }
+          ],
+          "observations": [
+            {
+              "tool": "aggregate_dataset",
+              "status": "ready",
+              "error_code": null,
+              "chart_spec": null,
+              "cards": []
+            }
+          ],
+          "tools": [
+            "aggregate_dataset"
+          ],
+          "state": {
+            "scope": {
+              "conditions": [
+                {
+                  "column": "segment",
+                  "op": "eq",
+                  "value": "blue"
+                }
+              ],
+              "any_conditions": [],
+              "join_edges": [],
+              "measure_conditions": [],
+              "ratio": null,
+              "unresolved": [],
+              "columns": [
+                "score"
+              ]
+            },
+            "required_columns": [
+              "score"
+            ],
+            "operations": [
+              "MIN"
+            ],
+            "kind": null,
+            "profile_kind": null,
+            "stop_reason": null
+          },
+          "model_calls": 2,
+          "raw_preserved": true,
+          "elapsed_seconds": 11.557
+        },
+        {
+          "turn": 4,
+          "prompt": "같은 그룹에서 latency_ms 평균은?",
+          "oracle": {
+            "prompt": "같은 그룹에서 latency_ms 평균은?",
+            "kind": "scalar",
+            "expected": 45,
+            "column": "latency_ms",
+            "operation": "AVG",
+            "source": "synthetic.phase_a"
+          },
+          "status": "PASS",
+          "agent_status": "answered",
+          "false_completion": false,
+          "error_type": null,
+          "answer": "보유 데이터로 계산한 결과입니다. 출처: synthetic.phase_a\n분석 범위: 요청 조건에 포함된 보유 데이터 전체\n\n적용 조건: segment = blue\n\n평균: 45.0",
+          "evidence": [
+            {
+              "source": "synthetic.phase_a",
+              "query": "SELECT AVG(\"latency_ms\") AS \"mean_latency_ms\" FROM data",
+              "rows": [
+                {
+                  "mean_latency_ms": 45.0
+                }
+              ]
+            }
+          ],
+          "observations": [
+            {
+              "tool": "inspect_dataset",
+              "status": "ready",
+              "error_code": null,
+              "chart_spec": null,
+              "cards": []
+            },
+            {
+              "tool": "aggregate_dataset",
+              "status": "ready",
+              "error_code": null,
+              "chart_spec": null,
+              "cards": []
+            }
+          ],
+          "tools": [
+            "inspect_dataset",
+            "aggregate_dataset"
+          ],
+          "state": {
+            "scope": {
+              "conditions": [
+                {
+                  "column": "segment",
+                  "op": "eq",
+                  "value": "blue"
+                }
+              ],
+              "any_conditions": [],
+              "join_edges": [],
+              "measure_conditions": [],
+              "ratio": null,
+              "unresolved": [],
+              "columns": [
+                "latency_ms"
+              ]
+            },
+            "required_columns": [
+              "latency_ms"
+            ],
+            "operations": [
+              "AVG"
+            ],
+            "kind": null,
+            "profile_kind": null,
+            "stop_reason": null
+          },
+          "model_calls": 4,
+          "raw_preserved": true,
+          "elapsed_seconds": 21.652
+        },
+        {
+          "turn": 5,
+          "prompt": "같은 조건에서 latency_ms 최댓값은?",
+          "oracle": {
+            "prompt": "같은 조건에서 latency_ms 최댓값은?",
+            "kind": "scalar",
+            "expected": 60,
+            "column": "latency_ms",
+            "operation": "MAX",
+            "source": "synthetic.phase_a"
+          },
+          "status": "PASS",
+          "agent_status": "answered",
+          "false_completion": false,
+          "error_type": null,
+          "answer": "보유 데이터로 계산한 결과입니다. 출처: synthetic.phase_a\n분석 범위: 요청 조건에 포함된 보유 데이터 전체\n\n적용 조건: segment = blue\n\n최댓값: 60",
+          "evidence": [
+            {
+              "source": "synthetic.phase_a",
+              "query": "SELECT MAX(\"latency_ms\") AS \"max_latency_ms\" FROM data",
+              "rows": [
+                {
+                  "max_latency_ms": 60
+                }
+              ]
+            }
+          ],
+          "observations": [
+            {
+              "tool": "aggregate_dataset",
+              "status": "ready",
+              "error_code": null,
+              "chart_spec": null,
+              "cards": []
+            }
+          ],
+          "tools": [
+            "aggregate_dataset"
+          ],
+          "state": {
+            "scope": {
+              "conditions": [
+                {
+                  "column": "segment",
+                  "op": "eq",
+                  "value": "blue"
+                }
+              ],
+              "any_conditions": [],
+              "join_edges": [],
+              "measure_conditions": [],
+              "ratio": null,
+              "unresolved": [],
+              "columns": [
+                "latency_ms"
+              ]
+            },
+            "required_columns": [
+              "latency_ms"
+            ],
+            "operations": [
+              "MAX"
+            ],
+            "kind": null,
+            "profile_kind": null,
+            "stop_reason": null
+          },
+          "model_calls": 2,
+          "raw_preserved": true,
+          "elapsed_seconds": 9.142
+        },
+        {
+          "turn": 6,
+          "prompt": "그중 latency_ms 최솟값은?",
+          "oracle": {
+            "prompt": "그중 latency_ms 최솟값은?",
+            "kind": "scalar",
+            "expected": 30,
+            "column": "latency_ms",
+            "operation": "MIN",
+            "source": "synthetic.phase_a"
+          },
+          "status": "PASS",
+          "agent_status": "answered",
+          "false_completion": false,
+          "error_type": null,
+          "answer": "보유 데이터로 계산한 결과입니다. 출처: synthetic.phase_a\n분석 범위: 요청 조건에 포함된 보유 데이터 전체\n\n적용 조건: segment = blue\n\n최솟값: 30",
+          "evidence": [
+            {
+              "source": "synthetic.phase_a",
+              "query": "SELECT MIN(\"latency_ms\") AS \"min_latency_ms\" FROM data",
+              "rows": [
+                {
+                  "min_latency_ms": 30
+                }
+              ]
+            }
+          ],
+          "observations": [
+            {
+              "tool": "aggregate_dataset",
+              "status": "ready",
+              "error_code": null,
+              "chart_spec": null,
+              "cards": []
+            }
+          ],
+          "tools": [
+            "aggregate_dataset"
+          ],
+          "state": {
+            "scope": {
+              "conditions": [
+                {
+                  "column": "segment",
+                  "op": "eq",
+                  "value": "blue"
+                }
+              ],
+              "any_conditions": [],
+              "join_edges": [],
+              "measure_conditions": [],
+              "ratio": null,
+              "unresolved": [],
+              "columns": [
+                "latency_ms"
+              ]
+            },
+            "required_columns": [
+              "latency_ms"
+            ],
+            "operations": [
+              "MIN"
+            ],
+            "kind": null,
+            "profile_kind": null,
+            "stop_reason": null
+          },
+          "model_calls": 2,
+          "raw_preserved": true,
+          "elapsed_seconds": 12.698
+        },
+        {
+          "turn": 7,
+          "prompt": "같은 그룹에서 score 평균으로 다시 돌아가줘.",
+          "oracle": {
+            "prompt": "같은 그룹에서 score 평균으로 다시 돌아가줘.",
+            "kind": "scalar",
+            "expected": 15,
+            "column": "score",
+            "operation": "AVG",
+            "source": "synthetic.phase_a"
+          },
+          "status": "PASS",
+          "agent_status": "answered",
+          "false_completion": false,
+          "error_type": null,
+          "answer": "보유 데이터로 계산한 결과입니다. 출처: synthetic.phase_a\n분석 범위: 요청 조건에 포함된 보유 데이터 전체\n\n적용 조건: segment = blue\n\n평균: 15.0",
+          "evidence": [
+            {
+              "source": "synthetic.phase_a",
+              "query": "SELECT AVG(\"score\") AS \"mean_score\" FROM data",
+              "rows": [
+                {
+                  "mean_score": 15.0
+                }
+              ]
+            }
+          ],
+          "observations": [
+            {
+              "tool": "local_analysis_sql",
+              "status": "ready",
+              "error_code": null,
+              "chart_spec": null,
+              "cards": []
+            }
+          ],
+          "tools": [
+            "local_analysis_sql"
+          ],
+          "state": {
+            "scope": {
+              "conditions": [
+                {
+                  "column": "segment",
+                  "op": "eq",
+                  "value": "blue"
+                }
+              ],
+              "any_conditions": [],
+              "join_edges": [],
+              "measure_conditions": [],
+              "ratio": null,
+              "unresolved": [],
+              "columns": [
+                "score"
+              ]
+            },
+            "required_columns": [
+              "score"
+            ],
+            "operations": [
+              "AVG"
+            ],
+            "kind": null,
+            "profile_kind": null,
+            "stop_reason": null
+          },
+          "model_calls": 5,
+          "raw_preserved": true,
+          "elapsed_seconds": 33.819
+        },
+        {
+          "turn": 8,
+          "prompt": "이전 segment 조건은 적용하지 말고 원본 score 평균을 알려줘.",
+          "oracle": {
+            "prompt": "이전 segment 조건은 적용하지 말고 원본 score 평균을 알려줘.",
+            "kind": "scalar",
+            "expected": 15.2,
+            "column": "score",
+            "operation": "AVG",
+            "source": "synthetic.phase_a"
+          },
+          "status": "PASS",
+          "agent_status": "answered",
+          "false_completion": false,
+          "error_type": null,
+          "answer": "보유 데이터로 계산한 결과입니다. 출처: synthetic.phase_a\n분석 범위: 요청 조건에 포함된 보유 데이터 전체\n\n평균: 15.2",
+          "evidence": [
+            {
+              "source": "synthetic.phase_a",
+              "query": "SELECT AVG(\"score\") AS average FROM data",
+              "rows": [
+                {
+                  "average": 15.2
+                }
+              ]
+            }
+          ],
+          "observations": [
+            {
+              "tool": "local_analysis_sql",
+              "status": "ready",
+              "error_code": null,
+              "chart_spec": null,
+              "cards": []
+            }
+          ],
+          "tools": [
+            "local_analysis_sql"
+          ],
+          "state": {
+            "scope": {
+              "conditions": [],
+              "any_conditions": [],
+              "join_edges": [],
+              "measure_conditions": [],
+              "ratio": null,
+              "unresolved": [],
+              "columns": [
+                "score",
+                "segment"
+              ]
+            },
+            "required_columns": [
+              "score"
+            ],
+            "operations": [
+              "AVG"
+            ],
+            "kind": null,
+            "profile_kind": null,
+            "stop_reason": null
+          },
+          "model_calls": 0,
+          "raw_preserved": true,
+          "elapsed_seconds": 0.03
+        }
+      ]
+    },
+    {
+      "id": "ellipsis_correction_reset",
+      "repeat": 2,
+      "status": "PASS",
+      "summary_required": false,
+      "summary_seen": false,
+      "summary_events": [
+        {
+          "time": "2026-09-28T21:26:55.817019+00:00",
+          "event": "summarization_started",
+          "run_id": "745e1ddf0235417d8f96c1ced3d68bd0",
+          "span_id": "14c5fdc12b64",
+          "message_count": 2
+        },
+        {
+          "time": "2026-09-28T21:26:55.817067+00:00",
+          "event": "summarization_finished",
+          "run_id": "745e1ddf0235417d8f96c1ced3d68bd0",
+          "span_id": "14c5fdc12b64",
+          "status": "ok",
+          "elapsed_seconds": 0.0,
+          "message_count": 2,
+          "summarized": false
+        }
+      ],
+      "turns": [
+        {
+          "turn": 1,
+          "prompt": "segment가 'blue'인 행의 score 평균을 알려줘.",
+          "oracle": {
+            "prompt": "segment가 'blue'인 행의 score 평균을 알려줘.",
+            "kind": "scalar",
+            "expected": 15,
+            "column": "score",
+            "operation": "AVG",
+            "source": "synthetic.phase_a"
+          },
+          "status": "PASS",
+          "agent_status": "answered",
+          "false_completion": false,
+          "error_type": null,
+          "answer": "보유 데이터로 계산한 결과입니다. 출처: synthetic.phase_a\n분석 범위: 요청 조건에 포함된 보유 데이터 전체\n\n적용 조건: segment = blue\n\n평균: 15.0",
+          "evidence": [
+            {
+              "source": "synthetic.phase_a",
+              "query": "SELECT AVG(score) AS avg_score FROM data WHERE segment = 'blue'",
+              "rows": [
+                {
+                  "avg_score": 15.0
+                }
+              ]
+            }
+          ],
+          "observations": [
+            {
+              "tool": "local_analysis_sql",
+              "status": "ready",
+              "error_code": null,
+              "chart_spec": null,
+              "cards": []
+            }
+          ],
+          "tools": [
+            "local_analysis_sql"
+          ],
+          "state": {
+            "scope": {
+              "conditions": [
+                {
+                  "column": "segment",
+                  "op": "eq",
+                  "value": "blue"
+                }
+              ],
+              "any_conditions": [],
+              "join_edges": [],
+              "measure_conditions": [],
+              "ratio": null,
+              "unresolved": [],
+              "columns": [
+                "score",
+                "segment"
+              ]
+            },
+            "required_columns": [
+              "segment",
+              "score"
+            ],
+            "operations": [
+              "AVG"
+            ],
+            "kind": null,
+            "profile_kind": null,
+            "stop_reason": null
+          },
+          "model_calls": 1,
+          "raw_preserved": true,
+          "elapsed_seconds": 4.861
+        },
+        {
+          "turn": 2,
+          "prompt": "그중 최댓값은?",
+          "oracle": {
+            "prompt": "그중 최댓값은?",
+            "kind": "scalar",
+            "expected": 20,
+            "column": "score",
+            "operation": "MAX",
+            "source": "synthetic.phase_a"
+          },
+          "status": "PASS",
+          "agent_status": "answered",
+          "false_completion": false,
+          "error_type": null,
+          "answer": "보유 데이터로 계산한 결과입니다. 출처: synthetic.phase_a\n분석 범위: 요청 조건에 포함된 보유 데이터 전체\n\n적용 조건: segment = blue\n\n최댓값: 20",
+          "evidence": [
+            {
+              "source": "synthetic.phase_a",
+              "query": "SELECT MAX(\"score\") AS maximum FROM data",
+              "rows": [
+                {
+                  "maximum": 20
+                }
+              ]
+            }
+          ],
+          "observations": [
+            {
+              "tool": "local_analysis_sql",
+              "status": "ready",
+              "error_code": null,
+              "chart_spec": null,
+              "cards": []
+            }
+          ],
+          "tools": [
+            "local_analysis_sql"
+          ],
+          "state": {
+            "scope": {
+              "conditions": [
+                {
+                  "column": "segment",
+                  "op": "eq",
+                  "value": "blue"
+                }
+              ],
+              "any_conditions": [],
+              "join_edges": [],
+              "measure_conditions": [],
+              "ratio": null,
+              "unresolved": [],
+              "columns": []
+            },
+            "required_columns": [
+              "score"
+            ],
+            "operations": [
+              "MAX"
+            ],
+            "kind": null,
+            "profile_kind": null,
+            "stop_reason": null
+          },
+          "model_calls": 0,
+          "raw_preserved": true,
+          "elapsed_seconds": 0.025
+        },
+        {
+          "turn": 3,
+          "prompt": "아니, 같은 그룹의 최솟값으로 바꿔줘.",
+          "oracle": {
+            "prompt": "아니, 같은 그룹의 최솟값으로 바꿔줘.",
+            "kind": "scalar",
+            "expected": 10,
+            "column": "score",
+            "operation": "MIN",
+            "source": "synthetic.phase_a"
+          },
+          "status": "PASS",
+          "agent_status": "answered",
+          "false_completion": false,
+          "error_type": null,
+          "answer": "보유 데이터로 계산한 결과입니다. 출처: synthetic.phase_a\n분석 범위: 요청 조건에 포함된 보유 데이터 전체\n\n적용 조건: segment = blue\n\n최솟값: 10",
+          "evidence": [
+            {
+              "source": "synthetic.phase_a",
+              "query": "SELECT MIN(\"score\") AS minimum FROM data",
+              "rows": [
+                {
+                  "minimum": 10
+                }
+              ]
+            }
+          ],
+          "observations": [
+            {
+              "tool": "local_analysis_sql",
+              "status": "ready",
+              "error_code": null,
+              "chart_spec": null,
+              "cards": []
+            }
+          ],
+          "tools": [
+            "local_analysis_sql"
+          ],
+          "state": {
+            "scope": {
+              "conditions": [
+                {
+                  "column": "segment",
+                  "op": "eq",
+                  "value": "blue"
+                }
+              ],
+              "any_conditions": [],
+              "join_edges": [],
+              "measure_conditions": [],
+              "ratio": null,
+              "unresolved": [],
+              "columns": []
+            },
+            "required_columns": [
+              "score"
+            ],
+            "operations": [
+              "MIN"
+            ],
+            "kind": null,
+            "profile_kind": null,
+            "stop_reason": null
+          },
+          "model_calls": 0,
+          "raw_preserved": true,
+          "elapsed_seconds": 0.026
+        },
+        {
+          "turn": 4,
+          "prompt": "같은 그룹에서 이번에는 latency_ms 평균을 알려줘.",
+          "oracle": {
+            "prompt": "같은 그룹에서 이번에는 latency_ms 평균을 알려줘.",
+            "kind": "scalar",
+            "expected": 45,
+            "column": "latency_ms",
+            "operation": "AVG",
+            "source": "synthetic.phase_a"
+          },
+          "status": "PASS",
+          "agent_status": "answered",
+          "false_completion": false,
+          "error_type": null,
+          "answer": "보유 데이터로 계산한 결과입니다. 출처: synthetic.phase_a\n분석 범위: 요청 조건에 포함된 보유 데이터 전체\n\n적용 조건: segment = blue\n\n평균: 45.0",
+          "evidence": [
+            {
+              "source": "synthetic.phase_a",
+              "query": "SELECT AVG(\"latency_ms\") AS average FROM data",
+              "rows": [
+                {
+                  "average": 45.0
+                }
+              ]
+            }
+          ],
+          "observations": [
+            {
+              "tool": "local_analysis_sql",
+              "status": "ready",
+              "error_code": null,
+              "chart_spec": null,
+              "cards": []
+            }
+          ],
+          "tools": [
+            "local_analysis_sql"
+          ],
+          "state": {
+            "scope": {
+              "conditions": [
+                {
+                  "column": "segment",
+                  "op": "eq",
+                  "value": "blue"
+                }
+              ],
+              "any_conditions": [],
+              "join_edges": [],
+              "measure_conditions": [],
+              "ratio": null,
+              "unresolved": [],
+              "columns": [
+                "latency_ms"
+              ]
+            },
+            "required_columns": [
+              "latency_ms"
+            ],
+            "operations": [
+              "AVG"
+            ],
+            "kind": null,
+            "profile_kind": null,
+            "stop_reason": null
+          },
+          "model_calls": 0,
+          "raw_preserved": true,
+          "elapsed_seconds": 0.025
+        },
+        {
+          "turn": 5,
+          "prompt": "이전 segment 조건은 적용하지 말고 원본 score 평균을 알려줘.",
+          "oracle": {
+            "prompt": "이전 segment 조건은 적용하지 말고 원본 score 평균을 알려줘.",
+            "kind": "scalar",
+            "expected": 15.2,
+            "column": "score",
+            "operation": "AVG",
+            "source": "synthetic.phase_a"
+          },
+          "status": "PASS",
+          "agent_status": "answered",
+          "false_completion": false,
+          "error_type": null,
+          "answer": "보유 데이터로 계산한 결과입니다. 출처: synthetic.phase_a\n분석 범위: 요청 조건에 포함된 보유 데이터 전체\n\n평균: 15.2",
+          "evidence": [
+            {
+              "source": "synthetic.phase_a",
+              "query": "SELECT AVG(\"score\") AS average FROM data",
+              "rows": [
+                {
+                  "average": 15.2
+                }
+              ]
+            }
+          ],
+          "observations": [
+            {
+              "tool": "local_analysis_sql",
+              "status": "ready",
+              "error_code": null,
+              "chart_spec": null,
+              "cards": []
+            }
+          ],
+          "tools": [
+            "local_analysis_sql"
+          ],
+          "state": {
+            "scope": {
+              "conditions": [],
+              "any_conditions": [],
+              "join_edges": [],
+              "measure_conditions": [],
+              "ratio": null,
+              "unresolved": [],
+              "columns": [
+                "score",
+                "segment"
+              ]
+            },
+            "required_columns": [
+              "score"
+            ],
+            "operations": [
+              "AVG"
+            ],
+            "kind": null,
+            "profile_kind": null,
+            "stop_reason": null
+          },
+          "model_calls": 0,
+          "raw_preserved": true,
+          "elapsed_seconds": 0.026
+        }
+      ]
+    },
+    {
+      "id": "selective_filter",
+      "repeat": 2,
+      "status": "PASS",
+      "summary_required": false,
+      "summary_seen": false,
+      "summary_events": [
+        {
+          "time": "2026-09-28T21:27:00.796147+00:00",
+          "event": "summarization_started",
+          "run_id": "817d0244ab7c4343bc353536e6499d9c",
+          "span_id": "1d6534217c39",
+          "message_count": 2
+        },
+        {
+          "time": "2026-09-28T21:27:00.796197+00:00",
+          "event": "summarization_finished",
+          "run_id": "817d0244ab7c4343bc353536e6499d9c",
+          "span_id": "1d6534217c39",
+          "status": "ok",
+          "elapsed_seconds": 0.0,
+          "message_count": 2,
+          "summarized": false
+        }
+      ],
+      "turns": [
+        {
+          "turn": 1,
+          "prompt": "segment가 'blue'이고 score >= 15인 행의 score 평균을 알려줘.",
+          "oracle": {
+            "prompt": "segment가 'blue'이고 score >= 15인 행의 score 평균을 알려줘.",
+            "kind": "scalar",
+            "expected": 20,
+            "column": "score",
+            "operation": "AVG",
+            "source": "synthetic.phase_a"
+          },
+          "status": "PASS",
+          "agent_status": "answered",
+          "false_completion": false,
+          "error_type": null,
+          "answer": "보유 데이터로 계산한 결과입니다. 출처: synthetic.phase_a\n분석 범위: 요청 조건에 포함된 보유 데이터 전체\n\n적용 조건: score ≥ 15 AND segment = blue\n\n평균: 20.0",
+          "evidence": [
+            {
+              "source": "synthetic.phase_a",
+              "query": "SELECT AVG(score) AS avg_score FROM data WHERE segment = 'blue' AND score >= 15",
+              "rows": [
+                {
+                  "avg_score": 20.0
+                }
+              ]
+            }
+          ],
+          "observations": [
+            {
+              "tool": "local_analysis_sql",
+              "status": "ready",
+              "error_code": null,
+              "chart_spec": null,
+              "cards": []
+            }
+          ],
+          "tools": [
+            "local_analysis_sql"
+          ],
+          "state": {
+            "scope": {
+              "conditions": [
+                {
+                  "column": "score",
+                  "op": "ge",
+                  "value": 15
+                },
+                {
+                  "column": "segment",
+                  "op": "eq",
+                  "value": "blue"
+                }
+              ],
+              "any_conditions": [],
+              "join_edges": [],
+              "measure_conditions": [],
+              "ratio": null,
+              "unresolved": [],
+              "columns": [
+                "score",
+                "segment"
+              ]
+            },
+            "required_columns": [
+              "segment",
+              "score"
+            ],
+            "operations": [
+              "AVG"
+            ],
+            "kind": null,
+            "profile_kind": null,
+            "stop_reason": null
+          },
+          "model_calls": 1,
+          "raw_preserved": true,
+          "elapsed_seconds": 7.462
+        },
+        {
+          "turn": 2,
+          "prompt": "score 조건만 제거하고 segment 조건은 유지해서 score 평균을 알려줘.",
+          "oracle": {
+            "prompt": "score 조건만 제거하고 segment 조건은 유지해서 score 평균을 알려줘.",
+            "kind": "scalar",
+            "expected": 15,
+            "column": "score",
+            "operation": "AVG",
+            "source": "synthetic.phase_a"
+          },
+          "status": "PASS",
+          "agent_status": "answered",
+          "false_completion": false,
+          "error_type": null,
+          "answer": "보유 데이터로 계산한 결과입니다. 출처: synthetic.phase_a\n분석 범위: 요청 조건에 포함된 보유 데이터 전체\n\n적용 조건: segment = blue\n\n평균: 15.0",
+          "evidence": [
+            {
+              "source": "synthetic.phase_a",
+              "query": "SELECT AVG(\"score\") AS average FROM data",
+              "rows": [
+                {
+                  "average": 15.0
+                }
+              ]
+            }
+          ],
+          "observations": [
+            {
+              "tool": "local_analysis_sql",
+              "status": "ready",
+              "error_code": null,
+              "chart_spec": null,
+              "cards": []
+            }
+          ],
+          "tools": [
+            "local_analysis_sql"
+          ],
+          "state": {
+            "scope": {
+              "conditions": [
+                {
+                  "column": "segment",
+                  "op": "eq",
+                  "value": "blue"
+                }
+              ],
+              "any_conditions": [],
+              "join_edges": [],
+              "measure_conditions": [],
+              "ratio": null,
+              "unresolved": [],
+              "columns": [
+                "score",
+                "segment"
+              ]
+            },
+            "required_columns": [
+              "score"
+            ],
+            "operations": [
+              "AVG"
+            ],
+            "kind": null,
+            "profile_kind": null,
+            "stop_reason": null
+          },
+          "model_calls": 0,
+          "raw_preserved": true,
+          "elapsed_seconds": 0.026
+        },
+        {
+          "turn": 3,
+          "prompt": "이번에는 segment가 'red'인 행의 score 평균을 알려줘. 이전 blue 조건은 대체해.",
+          "oracle": {
+            "prompt": "이번에는 segment가 'red'인 행의 score 평균을 알려줘. 이전 blue 조건은 대체해.",
+            "kind": "scalar",
+            "expected": 3,
+            "column": "score",
+            "operation": "AVG",
+            "source": "synthetic.phase_a"
+          },
+          "status": "PASS",
+          "agent_status": "answered",
+          "false_completion": false,
+          "error_type": null,
+          "answer": "보유 데이터로 계산한 결과입니다. 출처: synthetic.phase_a\n분석 범위: 요청 조건에 포함된 보유 데이터 전체\n\n적용 조건: segment = red\n\n평균: 3.0",
+          "evidence": [
+            {
+              "source": "synthetic.phase_a",
+              "query": "SELECT AVG(\"score\") AS average FROM data",
+              "rows": [
+                {
+                  "average": 3.0
+                }
+              ]
+            }
+          ],
+          "observations": [
+            {
+              "tool": "local_analysis_sql",
+              "status": "ready",
+              "error_code": null,
+              "chart_spec": null,
+              "cards": []
+            }
+          ],
+          "tools": [
+            "local_analysis_sql"
+          ],
+          "state": {
+            "scope": {
+              "conditions": [
+                {
+                  "column": "segment",
+                  "op": "eq",
+                  "value": "red"
+                }
+              ],
+              "any_conditions": [],
+              "join_edges": [],
+              "measure_conditions": [],
+              "ratio": null,
+              "unresolved": [],
+              "columns": [
+                "score",
+                "segment"
+              ]
+            },
+            "required_columns": [
+              "segment",
+              "score"
+            ],
+            "operations": [
+              "AVG"
+            ],
+            "kind": null,
+            "profile_kind": null,
+            "stop_reason": null
+          },
+          "model_calls": 0,
+          "raw_preserved": true,
+          "elapsed_seconds": 0.024
+        }
+      ]
+    },
+    {
+      "id": "topic_pause_return",
+      "repeat": 2,
+      "status": "PASS",
+      "summary_required": false,
+      "summary_seen": true,
+      "summary_events": [
+        {
+          "time": "2026-09-28T21:27:08.323949+00:00",
+          "event": "summarization_started",
+          "run_id": "55c08ef412a243a1886047b7e696dd0e",
+          "span_id": "f613f7c1d2e3",
+          "message_count": 2
+        },
+        {
+          "time": "2026-09-28T21:27:08.323994+00:00",
+          "event": "summarization_finished",
+          "run_id": "55c08ef412a243a1886047b7e696dd0e",
+          "span_id": "f613f7c1d2e3",
+          "status": "ok",
+          "elapsed_seconds": 0.0,
+          "message_count": 2,
+          "summarized": false
+        },
+        {
+          "time": "2026-09-28T21:27:11.898780+00:00",
+          "event": "summarization_started",
+          "run_id": "55c08ef412a243a1886047b7e696dd0e",
+          "span_id": "0890e9ec30e4",
+          "message_count": 4
+        },
+        {
+          "time": "2026-09-28T21:27:11.899445+00:00",
+          "event": "summarization_finished",
+          "run_id": "55c08ef412a243a1886047b7e696dd0e",
+          "span_id": "0890e9ec30e4",
+          "status": "ok",
+          "elapsed_seconds": 0.001,
+          "message_count": 4,
+          "summarized": false
+        },
+        {
+          "time": "2026-09-28T21:27:15.195009+00:00",
+          "event": "summarization_started",
+          "run_id": "55c08ef412a243a1886047b7e696dd0e",
+          "span_id": "2cacc3bf18c7",
+          "message_count": 6
+        },
+        {
+          "time": "2026-09-28T21:27:15.195173+00:00",
+          "event": "summarization_finished",
+          "run_id": "55c08ef412a243a1886047b7e696dd0e",
+          "span_id": "2cacc3bf18c7",
+          "status": "ok",
+          "elapsed_seconds": 0.0,
+          "message_count": 6,
+          "summarized": false
+        },
+        {
+          "time": "2026-09-28T21:27:17.472342+00:00",
+          "event": "summarization_started",
+          "run_id": "cbecb8b66ca843e9b4981f583541c6a0",
+          "span_id": "61d24b421ed3",
+          "message_count": 10
+        },
+        {
+          "time": "2026-09-28T21:27:17.472466+00:00",
+          "event": "summarization_finished",
+          "run_id": "cbecb8b66ca843e9b4981f583541c6a0",
+          "span_id": "61d24b421ed3",
+          "status": "ok",
+          "elapsed_seconds": 0.0,
+          "message_count": 10,
+          "summarized": false
+        },
+        {
+          "time": "2026-09-28T21:27:24.009325+00:00",
+          "event": "summarization_started",
+          "run_id": "c014e88984f34a9aae0e56ec26e48aa4",
+          "span_id": "106264f59b32",
+          "message_count": 13
+        },
+        {
+          "time": "2026-09-28T21:27:29.201276+00:00",
+          "event": "summarization_finished",
+          "run_id": "c014e88984f34a9aae0e56ec26e48aa4",
+          "span_id": "106264f59b32",
+          "status": "ok",
+          "elapsed_seconds": 5.192,
+          "message_count": 13,
+          "summarized": true
+        }
+      ],
+      "turns": [
+        {
+          "turn": 1,
+          "prompt": "segment가 'blue'인 행의 score 평균을 알려줘.",
+          "oracle": {
+            "prompt": "segment가 'blue'인 행의 score 평균을 알려줘.",
+            "kind": "scalar",
+            "expected": 15,
+            "column": "score",
+            "operation": "AVG",
+            "source": "synthetic.phase_a"
+          },
+          "status": "PASS",
+          "agent_status": "answered",
+          "false_completion": false,
+          "error_type": null,
+          "answer": "보유 데이터로 계산한 결과입니다. 출처: synthetic.phase_a\n분석 범위: 요청 조건에 포함된 보유 데이터 전체\n\n적용 조건: segment = blue\n\n평균: 15.0",
+          "evidence": [
+            {
+              "source": "synthetic.phase_a",
+              "query": "SELECT AVG(\"score\") AS \"mean_score\" FROM data",
+              "rows": [
+                {
+                  "mean_score": 15.0
+                }
+              ]
+            }
+          ],
+          "observations": [
+            {
+              "tool": "inspect_dataset",
+              "status": "ready",
+              "error_code": null,
+              "chart_spec": null,
+              "cards": []
+            },
+            {
+              "tool": "use_dataset",
+              "status": "ready",
+              "error_code": null,
+              "chart_spec": null,
+              "cards": []
+            },
+            {
+              "tool": "aggregate_dataset",
+              "status": "ready",
+              "error_code": null,
+              "chart_spec": null,
+              "cards": []
+            }
+          ],
+          "tools": [
+            "inspect_dataset",
+            "use_dataset",
+            "aggregate_dataset"
+          ],
+          "state": {
+            "scope": {
+              "conditions": [
+                {
+                  "column": "segment",
+                  "op": "eq",
+                  "value": "blue"
+                }
+              ],
+              "any_conditions": [],
+              "join_edges": [],
+              "measure_conditions": [],
+              "ratio": null,
+              "unresolved": [],
+              "columns": [
+                "score",
+                "segment"
+              ]
+            },
+            "required_columns": [
+              "segment",
+              "score"
+            ],
+            "operations": [
+              "AVG"
+            ],
+            "kind": null,
+            "profile_kind": null,
+            "stop_reason": null
+          },
+          "model_calls": 3,
+          "raw_preserved": true,
+          "elapsed_seconds": 9.147
+        },
+        {
+          "turn": 2,
+          "prompt": "데이터 분석은 잠시 멈춰. 히스토그램과 막대그래프의 차이만 설명하고 계산이나 차트 생성은 하지 마.",
+          "oracle": {
+            "kind": "explanation",
+            "prompt": "데이터 분석은 잠시 멈춰. 히스토그램과 막대그래프의 차이만 설명하고 계산이나 차트 생성은 하지 마.",
+            "must_contain": [
+              "히스토그램",
+              "막대"
+            ],
+            "no_tools": true
+          },
+          "status": "PASS",
+          "agent_status": "answered",
+          "false_completion": false,
+          "error_type": null,
+          "answer": "물론입니다. 히스토그램과 막대그래프의 주요 차이를 간단히 설명드리면:\n\n- **히스토그램(Histogram)**:  \n  수치형 데이터(예: 점수, 시간, 온도 등)의 **분포**를 보여줍니다. 데이터를 일정한 구간(빈, bin)으로 나누고, 각 구간에 속하는 데이터의 **빈도(개수)**를 막대로 표현합니다. 막대 사이에 간격이 없으며, 연속적인 범위를 나타냅니다.  \n  → *“어떤 값 주변에 데이터가 몰려 있는가?”* 를 확인할 때 사용합니다.\n\n- **막대그래프(Bar Chart)**:  \n  범주형 데이터(예: 지역, 제품 종류, 색상 등)의 **각 카테고리별 값**을 비교할 때 사용합니다. 막대는 서로 떨어져 있으며, 각 막대는 독립적인 카테고리를 나타냅니다. 값은 합계, 평균, 비율 등이 될 수 있습니다.  \n  → *“어떤 카테고리가 더 높은가?”* 를 비교할 때 사용합니다.\n\n요약:  \n**히스토그램 = 수치의 분포**,  \n**막대그래프 = 범주의 비교**  \n두 그래프는 시각화 목적과 사용하는 데이터 유형이 fundamentally 다릅니다.",
+          "evidence": [],
+          "observations": [],
+          "tools": [],
+          "state": {
+            "scope": {
+              "conditions": [],
+              "any_conditions": [],
+              "unresolved": [],
+              "columns": []
+            },
+            "required_columns": [],
+            "operations": [],
+            "kind": null,
+            "profile_kind": null,
+            "stop_reason": null
+          },
+          "model_calls": 1,
+          "raw_preserved": true,
+          "elapsed_seconds": 6.53
+        },
+        {
+          "turn": 3,
+          "prompt": "아까 분석하던 같은 그룹으로 돌아가서 score 최댓값을 알려줘.",
+          "oracle": {
+            "prompt": "아까 분석하던 같은 그룹으로 돌아가서 score 최댓값을 알려줘.",
+            "kind": "scalar",
+            "expected": 20,
+            "column": "score",
+            "operation": "MAX",
+            "source": "synthetic.phase_a"
+          },
+          "status": "PASS",
+          "agent_status": "answered",
+          "false_completion": false,
+          "error_type": null,
+          "answer": "보유 데이터로 계산한 결과입니다. 출처: synthetic.phase_a\n분석 범위: 요청 조건에 포함된 보유 데이터 전체\n\n적용 조건: segment = blue\n\n최댓값: 20",
+          "evidence": [
+            {
+              "source": "synthetic.phase_a",
+              "query": "SELECT MAX(\"score\") AS \"max_score\" FROM data",
+              "rows": [
+                {
+                  "max_score": 20
+                }
+              ]
+            }
+          ],
+          "observations": [
+            {
+              "tool": "aggregate_dataset",
+              "status": "ready",
+              "error_code": null,
+              "chart_spec": null,
+              "cards": []
+            }
+          ],
+          "tools": [
+            "aggregate_dataset"
+          ],
+          "state": {
+            "scope": {
+              "conditions": [
+                {
+                  "column": "segment",
+                  "op": "eq",
+                  "value": "blue"
+                }
+              ],
+              "any_conditions": [],
+              "join_edges": [],
+              "measure_conditions": [],
+              "ratio": null,
+              "unresolved": [],
+              "columns": [
+                "score"
+              ]
+            },
+            "required_columns": [
+              "score"
+            ],
+            "operations": [
+              "MAX"
+            ],
+            "kind": null,
+            "profile_kind": null,
+            "stop_reason": null
+          },
+          "model_calls": 2,
+          "raw_preserved": true,
+          "elapsed_seconds": 7.455
+        }
+      ]
+    },
+    {
+      "id": "language_source_switch",
+      "repeat": 2,
+      "status": "PASS",
+      "summary_required": false,
+      "summary_seen": true,
+      "summary_events": [
+        {
+          "time": "2026-09-28T21:27:31.474527+00:00",
+          "event": "summarization_started",
+          "run_id": "c24defc6f0b743e6b7d2c8e700097dc3",
+          "span_id": "aec1e299dc10",
+          "message_count": 2
+        },
+        {
+          "time": "2026-09-28T21:27:31.474588+00:00",
+          "event": "summarization_finished",
+          "run_id": "c24defc6f0b743e6b7d2c8e700097dc3",
+          "span_id": "aec1e299dc10",
+          "status": "ok",
+          "elapsed_seconds": 0.0,
+          "message_count": 2,
+          "summarized": false
+        },
+        {
+          "time": "2026-09-28T21:27:36.904214+00:00",
+          "event": "summarization_started",
+          "run_id": "c24defc6f0b743e6b7d2c8e700097dc3",
+          "span_id": "ff8743feb108",
+          "message_count": 4
+        },
+        {
+          "time": "2026-09-28T21:27:36.904412+00:00",
+          "event": "summarization_finished",
+          "run_id": "c24defc6f0b743e6b7d2c8e700097dc3",
+          "span_id": "ff8743feb108",
+          "status": "ok",
+          "elapsed_seconds": 0.0,
+          "message_count": 4,
+          "summarized": false
+        },
+        {
+          "time": "2026-09-28T21:27:38.967885+00:00",
+          "event": "summarization_started",
+          "run_id": "52cf6e17289043249838583950c0b646",
+          "span_id": "89657cb93144",
+          "message_count": 8
+        },
+        {
+          "time": "2026-09-28T21:27:38.967958+00:00",
+          "event": "summarization_finished",
+          "run_id": "52cf6e17289043249838583950c0b646",
+          "span_id": "89657cb93144",
+          "status": "ok",
+          "elapsed_seconds": 0.0,
+          "message_count": 8,
+          "summarized": false
+        },
+        {
+          "time": "2026-09-28T21:27:40.433961+00:00",
+          "event": "summarization_started",
+          "run_id": "52cf6e17289043249838583950c0b646",
+          "span_id": "ff6867262e63",
+          "message_count": 10
+        },
+        {
+          "time": "2026-09-28T21:27:44.360068+00:00",
+          "event": "summarization_finished",
+          "run_id": "52cf6e17289043249838583950c0b646",
+          "span_id": "ff6867262e63",
+          "status": "ok",
+          "elapsed_seconds": 3.926,
+          "message_count": 10,
+          "summarized": true
+        }
+      ],
+      "turns": [
+        {
+          "turn": 1,
+          "prompt": "segment가 'blue'인 행의 score 평균을 알려줘.",
+          "oracle": {
+            "prompt": "segment가 'blue'인 행의 score 평균을 알려줘.",
+            "kind": "scalar",
+            "expected": 15,
+            "column": "score",
+            "operation": "AVG",
+            "source": "synthetic.phase_a"
+          },
+          "status": "PASS",
+          "agent_status": "answered",
+          "false_completion": false,
+          "error_type": null,
+          "answer": "보유 데이터로 계산한 결과입니다. 출처: synthetic.phase_a\n분석 범위: 요청 조건에 포함된 보유 데이터 전체\n\n적용 조건: segment = blue\n\n평균: 15.0",
+          "evidence": [
+            {
+              "source": "synthetic.phase_a",
+              "query": "SELECT AVG(\"score\") AS \"mean_score\" FROM data",
+              "rows": [
+                {
+                  "mean_score": 15.0
+                }
+              ]
+            }
+          ],
+          "observations": [
+            {
+              "tool": "use_dataset",
+              "status": "ready",
+              "error_code": null,
+              "chart_spec": null,
+              "cards": []
+            },
+            {
+              "tool": "aggregate_dataset",
+              "status": "ready",
+              "error_code": null,
+              "chart_spec": null,
+              "cards": []
+            }
+          ],
+          "tools": [
+            "use_dataset",
+            "aggregate_dataset"
+          ],
+          "state": {
+            "scope": {
+              "conditions": [
+                {
+                  "column": "segment",
+                  "op": "eq",
+                  "value": "blue"
+                }
+              ],
+              "any_conditions": [],
+              "join_edges": [],
+              "measure_conditions": [],
+              "ratio": null,
+              "unresolved": [],
+              "columns": [
+                "score",
+                "segment"
+              ]
+            },
+            "required_columns": [
+              "segment",
+              "score"
+            ],
+            "operations": [
+              "AVG"
+            ],
+            "kind": null,
+            "profile_kind": null,
+            "stop_reason": null
+          },
+          "model_calls": 2,
+          "raw_preserved": true,
+          "elapsed_seconds": 7.491
+        },
+        {
+          "turn": 2,
+          "prompt": "이제 synthetic.phase_b 데이터로 바꿔서 score 평균을 알려줘. 앞의 조건은 적용하지 마.",
+          "oracle": {
+            "prompt": "이제 synthetic.phase_b 데이터로 바꿔서 score 평균을 알려줘. 앞의 조건은 적용하지 마.",
+            "kind": "scalar",
+            "expected": 200,
+            "column": "score",
+            "operation": "AVG",
+            "source": "synthetic.phase_b"
+          },
+          "status": "PASS",
+          "agent_status": "answered",
+          "false_completion": false,
+          "error_type": null,
+          "answer": "보유 데이터로 계산한 결과입니다. 출처: synthetic.phase_b\n분석 범위: 요청 조건에 포함된 보유 데이터 전체\n\n평균: 200.0",
+          "evidence": [
+            {
+              "source": "synthetic.phase_b",
+              "query": "SELECT AVG(\"score\") AS \"mean_score\" FROM data",
+              "rows": [
+                {
+                  "mean_score": 200.0
+                }
+              ]
+            }
+          ],
+          "observations": [
+            {
+              "tool": "use_dataset",
+              "status": "ready",
+              "error_code": null,
+              "chart_spec": null,
+              "cards": []
+            },
+            {
+              "tool": "aggregate_dataset",
+              "status": "ready",
+              "error_code": null,
+              "chart_spec": null,
+              "cards": []
+            }
+          ],
+          "tools": [
+            "use_dataset",
+            "aggregate_dataset"
+          ],
+          "state": {
+            "scope": {
+              "conditions": [],
+              "any_conditions": [],
+              "join_edges": [],
+              "measure_conditions": [],
+              "ratio": null,
+              "unresolved": [],
+              "columns": [
+                "score"
+              ]
+            },
+            "required_columns": [
+              "score"
+            ],
+            "operations": [
+              "AVG"
+            ],
+            "kind": null,
+            "profile_kind": null,
+            "stop_reason": null
+          },
+          "model_calls": 3,
+          "raw_preserved": true,
+          "elapsed_seconds": 6.96
+        },
+        {
+          "turn": 3,
+          "prompt": "그 데이터에서 segment가 'blue'인 행의 score 평균은?",
+          "oracle": {
+            "prompt": "그 데이터에서 segment가 'blue'인 행의 score 평균은?",
+            "kind": "scalar",
+            "expected": 250,
+            "column": "score",
+            "operation": "AVG",
+            "source": "synthetic.phase_b"
+          },
+          "status": "PASS",
+          "agent_status": "answered",
+          "false_completion": false,
+          "error_type": null,
+          "answer": "보유 데이터로 계산한 결과입니다. 출처: synthetic.phase_b\n분석 범위: 요청 조건에 포함된 보유 데이터 전체\n\n적용 조건: segment = blue\n\n평균: 250.0",
+          "evidence": [
+            {
+              "source": "synthetic.phase_b",
+              "query": "SELECT AVG(\"score\") AS average FROM data",
+              "rows": [
+                {
+                  "average": 250.0
+                }
+              ]
+            }
+          ],
+          "observations": [
+            {
+              "tool": "local_analysis_sql",
+              "status": "ready",
+              "error_code": null,
+              "chart_spec": null,
+              "cards": []
+            }
+          ],
+          "tools": [
+            "local_analysis_sql"
+          ],
+          "state": {
+            "scope": {
+              "conditions": [
+                {
+                  "column": "segment",
+                  "op": "eq",
+                  "value": "blue"
+                }
+              ],
+              "any_conditions": [],
+              "join_edges": [],
+              "measure_conditions": [],
+              "ratio": null,
+              "unresolved": [],
+              "columns": [
+                "score",
+                "segment"
+              ]
+            },
+            "required_columns": [
+              "score"
+            ],
+            "operations": [
+              "AVG"
+            ],
+            "kind": null,
+            "profile_kind": null,
+            "stop_reason": null
+          },
+          "model_calls": 0,
+          "raw_preserved": true,
+          "elapsed_seconds": 0.029
+        },
+        {
+          "turn": 4,
+          "prompt": "처음 synthetic.phase_a 원본으로 돌아가서 모든 행의 score 평균을 알려줘. 이전 segment 조건은 적용하지 마.",
+          "oracle": {
+            "prompt": "처음 synthetic.phase_a 원본으로 돌아가서 모든 행의 score 평균을 알려줘. 이전 segment 조건은 적용하지 마.",
+            "kind": "scalar",
+            "expected": 15.2,
+            "column": "score",
+            "operation": "AVG",
+            "source": "synthetic.phase_a"
+          },
+          "status": "PASS",
+          "agent_status": "answered",
+          "false_completion": false,
+          "error_type": null,
+          "answer": "보유 데이터로 계산한 결과입니다. 출처: synthetic.phase_a\n분석 범위: 요청 조건에 포함된 보유 데이터 전체\n\n평균: 15.2",
+          "evidence": [
+            {
+              "source": "synthetic.phase_a",
+              "query": "SELECT AVG(\"score\") AS average FROM data",
+              "rows": [
+                {
+                  "average": 15.2
+                }
+              ]
+            }
+          ],
+          "observations": [
+            {
+              "tool": "local_analysis_sql",
+              "status": "ready",
+              "error_code": null,
+              "chart_spec": null,
+              "cards": []
+            }
+          ],
+          "tools": [
+            "local_analysis_sql"
+          ],
+          "state": {
+            "scope": {
+              "conditions": [],
+              "any_conditions": [],
+              "join_edges": [],
+              "measure_conditions": [],
+              "ratio": null,
+              "unresolved": [],
+              "columns": [
+                "score",
+                "segment"
+              ]
+            },
+            "required_columns": [
+              "score",
+              "segment"
+            ],
+            "operations": [
+              "AVG"
+            ],
+            "kind": null,
+            "profile_kind": null,
+            "stop_reason": null
+          },
+          "model_calls": 0,
+          "raw_preserved": true,
+          "elapsed_seconds": 0.026
+        }
+      ]
+    },
+    {
+      "id": "restart_followup",
+      "repeat": 2,
+      "status": "PASS",
+      "summary_required": false,
+      "summary_seen": false,
+      "summary_events": [
+        {
+          "time": "2026-09-28T21:27:45.997000+00:00",
+          "event": "summarization_started",
+          "run_id": "5d4b944770bb45fdb89dcd9d524f3c74",
+          "span_id": "65a3dc1def3a",
+          "message_count": 2
+        },
+        {
+          "time": "2026-09-28T21:27:45.997050+00:00",
+          "event": "summarization_finished",
+          "run_id": "5d4b944770bb45fdb89dcd9d524f3c74",
+          "span_id": "65a3dc1def3a",
+          "status": "ok",
+          "elapsed_seconds": 0.0,
+          "message_count": 2,
+          "summarized": false
+        },
+        {
+          "time": "2026-09-28T21:27:50.827486+00:00",
+          "event": "summarization_started",
+          "run_id": "5d4b944770bb45fdb89dcd9d524f3c74",
+          "span_id": "b7ffa9bde528",
+          "message_count": 4
+        },
+        {
+          "time": "2026-09-28T21:27:50.827671+00:00",
+          "event": "summarization_finished",
+          "run_id": "5d4b944770bb45fdb89dcd9d524f3c74",
+          "span_id": "b7ffa9bde528",
+          "status": "ok",
+          "elapsed_seconds": 0.0,
+          "message_count": 4,
+          "summarized": false
+        },
+        {
+          "time": "2026-09-28T21:27:52.699750+00:00",
+          "event": "summarization_started",
+          "run_id": "fdff31aa6c76446db67a834b735c0fc9",
+          "span_id": "4af78590c487",
+          "message_count": 9
+        },
+        {
+          "time": "2026-09-28T21:27:52.699824+00:00",
+          "event": "summarization_finished",
+          "run_id": "fdff31aa6c76446db67a834b735c0fc9",
+          "span_id": "4af78590c487",
+          "status": "ok",
+          "elapsed_seconds": 0.0,
+          "message_count": 9,
+          "summarized": false
+        },
+        {
+          "time": "2026-09-28T21:27:54.515930+00:00",
+          "event": "summarization_started",
+          "run_id": "43acb384d5064ea893eb0f2e1518ea1e",
+          "span_id": "1da49415970b",
+          "message_count": 14
+        },
+        {
+          "time": "2026-09-28T21:27:54.516017+00:00",
+          "event": "summarization_finished",
+          "run_id": "43acb384d5064ea893eb0f2e1518ea1e",
+          "span_id": "1da49415970b",
+          "status": "ok",
+          "elapsed_seconds": 0.0,
+          "message_count": 14,
+          "summarized": false
+        }
+      ],
+      "turns": [
+        {
+          "turn": 1,
+          "prompt": "segment가 'blue'인 행의 score 평균을 알려줘.",
+          "oracle": {
+            "prompt": "segment가 'blue'인 행의 score 평균을 알려줘.",
+            "kind": "scalar",
+            "expected": 15,
+            "column": "score",
+            "operation": "AVG",
+            "source": "synthetic.phase_a"
+          },
+          "status": "PASS",
+          "agent_status": "answered",
+          "false_completion": false,
+          "error_type": null,
+          "answer": "보유 데이터로 계산한 결과입니다. 출처: synthetic.phase_a\n분석 범위: 요청 조건에 포함된 보유 데이터 전체\n\n적용 조건: segment = blue\n\n평균: 15.0",
+          "evidence": [
+            {
+              "source": "synthetic.phase_a",
+              "query": "SELECT AVG(\"score\") AS \"mean_score\" FROM data",
+              "rows": [
+                {
+                  "mean_score": 15.0
+                }
+              ]
+            }
+          ],
+          "observations": [
+            {
+              "tool": "use_dataset",
+              "status": "ready",
+              "error_code": null,
+              "chart_spec": null,
+              "cards": []
+            },
+            {
+              "tool": "aggregate_dataset",
+              "status": "ready",
+              "error_code": null,
+              "chart_spec": null,
+              "cards": []
+            }
+          ],
+          "tools": [
+            "use_dataset",
+            "aggregate_dataset"
+          ],
+          "state": {
+            "scope": {
+              "conditions": [
+                {
+                  "column": "segment",
+                  "op": "eq",
+                  "value": "blue"
+                }
+              ],
+              "any_conditions": [],
+              "join_edges": [],
+              "measure_conditions": [],
+              "ratio": null,
+              "unresolved": [],
+              "columns": [
+                "score",
+                "segment"
+              ]
+            },
+            "required_columns": [
+              "segment",
+              "score"
+            ],
+            "operations": [
+              "AVG"
+            ],
+            "kind": null,
+            "profile_kind": null,
+            "stop_reason": null
+          },
+          "model_calls": 2,
+          "raw_preserved": true,
+          "elapsed_seconds": 6.69
+        },
+        {
+          "turn": 2,
+          "prompt": "그중 score 최댓값을 알려줘.",
+          "oracle": {
+            "prompt": "그중 score 최댓값을 알려줘.",
+            "kind": "scalar",
+            "expected": 20,
+            "column": "score",
+            "operation": "MAX",
+            "source": "synthetic.phase_a",
+            "reopen_before": true
+          },
+          "status": "PASS",
+          "agent_status": "answered",
+          "false_completion": false,
+          "error_type": null,
+          "answer": "보유 데이터로 계산한 결과입니다. 출처: synthetic.phase_a\n분석 범위: 요청 조건에 포함된 보유 데이터 전체\n\n적용 조건: segment = blue\n\n최댓값: 20",
+          "evidence": [
+            {
+              "source": "synthetic.phase_a",
+              "query": "SELECT MAX(\"score\") AS \"max_score\" FROM data",
+              "rows": [
+                {
+                  "max_score": 20
+                }
+              ]
+            }
+          ],
+          "observations": [
+            {
+              "tool": "aggregate_dataset",
+              "status": "ready",
+              "error_code": null,
+              "chart_spec": null,
+              "cards": []
+            }
+          ],
+          "tools": [
+            "aggregate_dataset"
+          ],
+          "state": {
+            "scope": {
+              "conditions": [
+                {
+                  "column": "segment",
+                  "op": "eq",
+                  "value": "blue"
+                }
+              ],
+              "any_conditions": [],
+              "join_edges": [],
+              "measure_conditions": [],
+              "ratio": null,
+              "unresolved": [],
+              "columns": [
+                "score"
+              ]
+            },
+            "required_columns": [
+              "score"
+            ],
+            "operations": [
+              "MAX"
+            ],
+            "kind": null,
+            "profile_kind": null,
+            "stop_reason": null
+          },
+          "model_calls": 1,
+          "raw_preserved": true,
+          "elapsed_seconds": 1.816
+        },
+        {
+          "turn": 3,
+          "prompt": "같은 조건으로 latency_ms 평균도 알려줘.",
+          "oracle": {
+            "prompt": "같은 조건으로 latency_ms 평균도 알려줘.",
+            "kind": "scalar",
+            "expected": 45,
+            "column": "latency_ms",
+            "operation": "AVG",
+            "source": "synthetic.phase_a"
+          },
+          "status": "PASS",
+          "agent_status": "answered",
+          "false_completion": false,
+          "error_type": null,
+          "answer": "보유 데이터로 계산한 결과입니다. 출처: synthetic.phase_a\n분석 범위: 요청 조건에 포함된 보유 데이터 전체\n\n적용 조건: segment = blue\n\n평균: 45.0",
+          "evidence": [
+            {
+              "source": "synthetic.phase_a",
+              "query": "SELECT AVG(\"latency_ms\") AS \"mean_latency_ms\" FROM data",
+              "rows": [
+                {
+                  "mean_latency_ms": 45.0
+                }
+              ]
+            }
+          ],
+          "observations": [
+            {
+              "tool": "aggregate_dataset",
+              "status": "ready",
+              "error_code": null,
+              "chart_spec": null,
+              "cards": []
+            }
+          ],
+          "tools": [
+            "aggregate_dataset"
+          ],
+          "state": {
+            "scope": {
+              "conditions": [
+                {
+                  "column": "segment",
+                  "op": "eq",
+                  "value": "blue"
+                }
+              ],
+              "any_conditions": [],
+              "join_edges": [],
+              "measure_conditions": [],
+              "ratio": null,
+              "unresolved": [],
+              "columns": [
+                "latency_ms"
+              ]
+            },
+            "required_columns": [
+              "latency_ms"
+            ],
+            "operations": [
+              "AVG"
+            ],
+            "kind": null,
+            "profile_kind": null,
+            "stop_reason": null
+          },
+          "model_calls": 1,
+          "raw_preserved": true,
+          "elapsed_seconds": 2.45
+        }
+      ]
+    },
+    {
+      "id": "chart_edit",
+      "repeat": 2,
+      "status": "PASS",
+      "summary_required": false,
+      "summary_seen": false,
+      "summary_events": [
+        {
+          "time": "2026-09-28T21:27:56.976208+00:00",
+          "event": "summarization_started",
+          "run_id": "4922d82335ec4fe7a501e4e64f937608",
+          "span_id": "809ab9149798",
+          "message_count": 1
+        },
+        {
+          "time": "2026-09-28T21:27:56.976257+00:00",
+          "event": "summarization_finished",
+          "run_id": "4922d82335ec4fe7a501e4e64f937608",
+          "span_id": "809ab9149798",
+          "status": "ok",
+          "elapsed_seconds": 0.0,
+          "message_count": 1,
+          "summarized": false
+        },
+        {
+          "time": "2026-09-28T21:28:00.511563+00:00",
+          "event": "summarization_started",
+          "run_id": "a47cf2ef84d14cf6bc68a77c1f22e641",
+          "span_id": "89dfeb66f755",
+          "message_count": 5
+        },
+        {
+          "time": "2026-09-28T21:28:00.511618+00:00",
+          "event": "summarization_finished",
+          "run_id": "a47cf2ef84d14cf6bc68a77c1f22e641",
+          "span_id": "89dfeb66f755",
+          "status": "ok",
+          "elapsed_seconds": 0.0,
+          "message_count": 5,
+          "summarized": false
+        }
+      ],
+      "turns": [
+        {
+          "turn": 1,
+          "prompt": "score 히스토그램을 5개 구간으로 보여줘.",
+          "oracle": {
+            "kind": "chart",
+            "prompt": "score 히스토그램을 5개 구간으로 보여줘.",
+            "source": "synthetic.phase_a",
+            "column": "score",
+            "bins": 5,
+            "expected_values": [
+              2,
+              4,
+              10,
+              20,
+              40
+            ]
+          },
+          "status": "PASS",
+          "agent_status": "answered",
+          "false_completion": false,
+          "error_type": null,
+          "answer": "score 분포 이미지를 생성했습니다.\n분석 범위: 보유 5행 기준 · complete · raw · 표시 데이터 5개 · 집계 none",
+          "evidence": [],
+          "observations": [
+            {
+              "tool": "render_chart_spec",
+              "status": "ready",
+              "error_code": null,
+              "chart_spec": {
+                "kind": "histogram",
+                "x": "score",
+                "y": "",
+                "category": "",
+                "aggregation": "none",
+                "sort": "none",
+                "cumulative": false,
+                "top_n": 50,
+                "bins": 5,
+                "title": "score 분포",
+                "x_label": "score",
+                "y_label": "Count",
+                "orientation": "vertical"
+              },
+              "cards": [
+                {
+                  "id": "cf020ced-f5ff-40a7-a2fb-27e4bda3164e",
+                  "dataset_id": "b29b8038-6810-46b7-a1aa-a29032195261",
+                  "title": "score 분포",
+                  "reason": "유효값 5개를 5개 bin으로 표시했습니다.",
+                  "kind": "histogram",
+                  "columns": [
+                    "score"
+                  ],
+                  "scope": "보유 5행 기준 · complete · raw · 표시 데이터 5개 · 집계 none"
+                }
+              ]
+            }
+          ],
+          "tools": [
+            "render_chart_spec"
+          ],
+          "state": {
+            "scope": {
+              "conditions": [],
+              "any_conditions": [],
+              "join_edges": [],
+              "measure_conditions": [],
+              "ratio": null,
+              "unresolved": [],
+              "columns": [
+                "score"
+              ]
+            },
+            "required_columns": [
+              "score"
+            ],
+            "operations": [],
+            "kind": "histogram",
+            "profile_kind": null,
+            "stop_reason": null
+          },
+          "model_calls": 1,
+          "raw_preserved": true,
+          "elapsed_seconds": 3.534
+        },
+        {
+          "turn": 2,
+          "prompt": "방금 그 히스토그램의 구간 수만 10개로 바꿔줘. 나머지는 그대로 유지해.",
+          "oracle": {
+            "kind": "chart",
+            "prompt": "방금 그 히스토그램의 구간 수만 10개로 바꿔줘. 나머지는 그대로 유지해.",
+            "source": "synthetic.phase_a",
+            "column": "score",
+            "bins": 10,
+            "expected_values": [
+              2,
+              4,
+              10,
+              20,
+              40
+            ]
+          },
+          "status": "PASS",
+          "agent_status": "answered",
+          "false_completion": false,
+          "error_type": null,
+          "answer": "score 분포 이미지를 생성했습니다.\n분석 범위: 보유 5행 기준 · complete · raw · 표시 데이터 5개 · 집계 none",
+          "evidence": [],
+          "observations": [
+            {
+              "tool": "render_chart_spec",
+              "status": "ready",
+              "error_code": null,
+              "chart_spec": {
+                "kind": "histogram",
+                "x": "score",
+                "y": "",
+                "category": "",
+                "aggregation": "none",
+                "sort": "none",
+                "cumulative": false,
+                "top_n": 50,
+                "bins": 10,
+                "title": "score 분포",
+                "x_label": "score",
+                "y_label": "Count",
+                "orientation": "vertical"
+              },
+              "cards": [
+                {
+                  "id": "419cbdb6-5065-4890-8d55-8fff750eec7e",
+                  "dataset_id": "b29b8038-6810-46b7-a1aa-a29032195261",
+                  "title": "score 분포",
+                  "reason": "유효값 5개를 10개 bin으로 표시했습니다.",
+                  "kind": "histogram",
+                  "columns": [
+                    "score"
+                  ],
+                  "scope": "보유 5행 기준 · complete · raw · 표시 데이터 5개 · 집계 none"
+                }
+              ]
+            }
+          ],
+          "tools": [
+            "render_chart_spec"
+          ],
+          "state": {
+            "scope": {
+              "conditions": [],
+              "any_conditions": [],
+              "join_edges": [],
+              "measure_conditions": [],
+              "ratio": null,
+              "unresolved": [],
+              "columns": []
+            },
+            "required_columns": [
+              "score"
+            ],
+            "operations": [],
+            "kind": "histogram",
+            "profile_kind": null,
+            "stop_reason": null
+          },
+          "model_calls": 1,
+          "raw_preserved": true,
+          "elapsed_seconds": 2.35
+        }
+      ]
+    },
+    {
+      "id": "session_isolation",
+      "repeat": 2,
+      "status": "PASS",
+      "summary_required": false,
+      "summary_seen": true,
+      "summary_events": [
+        {
+          "time": "2026-09-28T21:28:02.878983+00:00",
+          "event": "summarization_started",
+          "run_id": "3571709bc35c460195a680357738aaa9",
+          "span_id": "c4200c969a7a",
+          "message_count": 2
+        },
+        {
+          "time": "2026-09-28T21:28:02.879029+00:00",
+          "event": "summarization_finished",
+          "run_id": "3571709bc35c460195a680357738aaa9",
+          "span_id": "c4200c969a7a",
+          "status": "ok",
+          "elapsed_seconds": 0.0,
+          "message_count": 2,
+          "summarized": false
+        },
+        {
+          "time": "2026-09-28T21:28:06.390356+00:00",
+          "event": "summarization_started",
+          "run_id": "3571709bc35c460195a680357738aaa9",
+          "span_id": "06f74009b5d8",
+          "message_count": 4
+        },
+        {
+          "time": "2026-09-28T21:28:06.390790+00:00",
+          "event": "summarization_finished",
+          "run_id": "3571709bc35c460195a680357738aaa9",
+          "span_id": "06f74009b5d8",
+          "status": "ok",
+          "elapsed_seconds": 0.0,
+          "message_count": 4,
+          "summarized": false
+        },
+        {
+          "time": "2026-09-28T21:28:08.851389+00:00",
+          "event": "summarization_started",
+          "run_id": "3571709bc35c460195a680357738aaa9",
+          "span_id": "3706e874b8c0",
+          "message_count": 6
+        },
+        {
+          "time": "2026-09-28T21:28:08.851618+00:00",
+          "event": "summarization_finished",
+          "run_id": "3571709bc35c460195a680357738aaa9",
+          "span_id": "3706e874b8c0",
+          "status": "ok",
+          "elapsed_seconds": 0.0,
+          "message_count": 6,
+          "summarized": false
+        },
+        {
+          "time": "2026-09-28T21:28:11.089463+00:00",
+          "event": "summarization_started",
+          "run_id": "334148758f3f4d17bac56e9cef56f02a",
+          "span_id": "5725278587a2",
+          "message_count": 11
+        },
+        {
+          "time": "2026-09-28T21:28:11.089528+00:00",
+          "event": "summarization_finished",
+          "run_id": "334148758f3f4d17bac56e9cef56f02a",
+          "span_id": "5725278587a2",
+          "status": "ok",
+          "elapsed_seconds": 0.0,
+          "message_count": 11,
+          "summarized": false
+        },
+        {
+          "time": "2026-09-28T21:28:12.841104+00:00",
+          "event": "summarization_started",
+          "run_id": "334148758f3f4d17bac56e9cef56f02a",
+          "span_id": "dffb109293e3",
+          "message_count": 13
+        },
+        {
+          "time": "2026-09-28T21:28:17.332455+00:00",
+          "event": "summarization_finished",
+          "run_id": "334148758f3f4d17bac56e9cef56f02a",
+          "span_id": "dffb109293e3",
+          "status": "ok",
+          "elapsed_seconds": 4.491,
+          "message_count": 13,
+          "summarized": true
+        },
+        {
+          "time": "2026-09-28T21:28:19.291901+00:00",
+          "event": "summarization_started",
+          "run_id": "334148758f3f4d17bac56e9cef56f02a",
+          "span_id": "7b2826800efc",
+          "message_count": 11
+        },
+        {
+          "time": "2026-09-28T21:28:25.728478+00:00",
+          "event": "summarization_finished",
+          "run_id": "334148758f3f4d17bac56e9cef56f02a",
+          "span_id": "7b2826800efc",
+          "status": "ok",
+          "elapsed_seconds": 6.437,
+          "message_count": 11,
+          "summarized": true
+        }
+      ],
+      "turns": [
+        {
+          "turn": 1,
+          "prompt": "segment가 'blue'인 행의 score 평균을 알려줘.",
+          "oracle": {
+            "prompt": "segment가 'blue'인 행의 score 평균을 알려줘.",
+            "kind": "scalar",
+            "expected": 15,
+            "column": "score",
+            "operation": "AVG",
+            "source": "synthetic.phase_a"
+          },
+          "status": "PASS",
+          "agent_status": "answered",
+          "false_completion": false,
+          "error_type": null,
+          "answer": "보유 데이터로 계산한 결과입니다. 출처: synthetic.phase_a\n분석 범위: 요청 조건에 포함된 보유 데이터 전체\n\n적용 조건: segment = blue\n\n평균: 15.0",
+          "evidence": [
+            {
+              "source": "synthetic.phase_a",
+              "query": "SELECT AVG(\"score\") AS \"mean_score\" FROM data",
+              "rows": [
+                {
+                  "mean_score": 15.0
+                }
+              ]
+            }
+          ],
+          "observations": [
+            {
+              "tool": "inspect_dataset",
+              "status": "ready",
+              "error_code": null,
+              "chart_spec": null,
+              "cards": []
+            },
+            {
+              "tool": "use_dataset",
+              "status": "ready",
+              "error_code": null,
+              "chart_spec": null,
+              "cards": []
+            },
+            {
+              "tool": "aggregate_dataset",
+              "status": "ready",
+              "error_code": null,
+              "chart_spec": null,
+              "cards": []
+            }
+          ],
+          "tools": [
+            "inspect_dataset",
+            "use_dataset",
+            "aggregate_dataset"
+          ],
+          "state": {
+            "scope": {
+              "conditions": [
+                {
+                  "column": "segment",
+                  "op": "eq",
+                  "value": "blue"
+                }
+              ],
+              "any_conditions": [],
+              "join_edges": [],
+              "measure_conditions": [],
+              "ratio": null,
+              "unresolved": [],
+              "columns": [
+                "score",
+                "segment"
+              ]
+            },
+            "required_columns": [
+              "segment",
+              "score"
+            ],
+            "operations": [
+              "AVG"
+            ],
+            "kind": null,
+            "profile_kind": null,
+            "stop_reason": null
+          },
+          "model_calls": 3,
+          "raw_preserved": true,
+          "elapsed_seconds": 8.164
+        },
+        {
+          "turn": 2,
+          "prompt": "score 평균을 알려줘.",
+          "oracle": {
+            "prompt": "score 평균을 알려줘.",
+            "kind": "scalar",
+            "expected": 200,
+            "column": "score",
+            "operation": "AVG",
+            "source": "synthetic.phase_b",
+            "new_session_before": true,
+            "select_source": "synthetic.phase_b"
+          },
+          "status": "PASS",
+          "agent_status": "answered",
+          "false_completion": false,
+          "error_type": null,
+          "answer": "보유 데이터로 계산한 결과입니다. 출처: synthetic.phase_b\n분석 범위: 요청 조건에 포함된 보유 데이터 전체\n\n평균: 200.0",
+          "evidence": [
+            {
+              "source": "synthetic.phase_b",
+              "query": "SELECT AVG(\"score\") AS average FROM data",
+              "rows": [
+                {
+                  "average": 200.0
+                }
+              ]
+            }
+          ],
+          "observations": [
+            {
+              "tool": "local_analysis_sql",
+              "status": "ready",
+              "error_code": null,
+              "chart_spec": null,
+              "cards": []
+            }
+          ],
+          "tools": [
+            "local_analysis_sql"
+          ],
+          "state": {
+            "scope": {
+              "conditions": [],
+              "any_conditions": [],
+              "join_edges": [],
+              "measure_conditions": [],
+              "ratio": null,
+              "unresolved": [],
+              "columns": [
+                "score"
+              ]
+            },
+            "required_columns": [
+              "score"
+            ],
+            "operations": [
+              "AVG"
+            ],
+            "kind": null,
+            "profile_kind": null,
+            "stop_reason": null
+          },
+          "model_calls": 0,
+          "raw_preserved": true,
+          "elapsed_seconds": 0.021
+        },
+        {
+          "turn": 3,
+          "prompt": "처음 대화의 그중 score 최댓값을 알려줘.",
+          "oracle": {
+            "prompt": "처음 대화의 그중 score 최댓값을 알려줘.",
+            "kind": "scalar",
+            "expected": 20,
+            "column": "score",
+            "operation": "MAX",
+            "source": "synthetic.phase_a",
+            "return_session_before": true
+          },
+          "status": "PASS",
+          "agent_status": "answered",
+          "false_completion": false,
+          "error_type": null,
+          "answer": "보유 데이터로 계산한 결과입니다. 출처: synthetic.phase_a\n분석 범위: 요청 조건에 포함된 보유 데이터 전체\n\n적용 조건: segment = blue\n\n최댓값: 20",
+          "evidence": [
+            {
+              "source": "synthetic.phase_a",
+              "query": "SELECT MAX(\"score\") AS \"max_score\" FROM data WHERE \"segment\" = 'blue'",
+              "rows": [
+                {
+                  "max_score": 20
+                }
+              ]
+            }
+          ],
+          "observations": [
+            {
+              "tool": "inspect_dataset",
+              "status": "ready",
+              "error_code": null,
+              "chart_spec": null,
+              "cards": []
+            },
+            {
+              "tool": "local_analysis_sql",
+              "status": "ready",
+              "error_code": null,
+              "chart_spec": null,
+              "cards": []
+            }
+          ],
+          "tools": [
+            "inspect_dataset",
+            "aggregate_dataset",
+            "local_analysis_sql"
+          ],
+          "state": {
+            "scope": {
+              "conditions": [
+                {
+                  "column": "segment",
+                  "op": "eq",
+                  "value": "blue"
+                }
+              ],
+              "any_conditions": [],
+              "join_edges": [],
+              "measure_conditions": [],
+              "ratio": null,
+              "unresolved": [],
+              "columns": [
+                "score"
+              ]
+            },
+            "required_columns": [
+              "score"
+            ],
+            "operations": [
+              "MAX"
+            ],
+            "kind": null,
+            "profile_kind": null,
+            "stop_reason": null
+          },
+          "model_calls": 5,
+          "raw_preserved": true,
+          "elapsed_seconds": 16.938
+        }
+      ]
+    },
+    {
+      "id": "summary_followup",
+      "repeat": 2,
+      "status": "FAIL",
+      "summary_required": true,
+      "summary_seen": true,
+      "summary_events": [
+        {
+          "time": "2026-09-28T21:28:28.040612+00:00",
+          "event": "summarization_started",
+          "run_id": "1da5b4243b834e4eab5d053a6078d64e",
+          "span_id": "306c0d6d1206",
+          "message_count": 2
+        },
+        {
+          "time": "2026-09-28T21:28:28.040662+00:00",
+          "event": "summarization_finished",
+          "run_id": "1da5b4243b834e4eab5d053a6078d64e",
+          "span_id": "306c0d6d1206",
+          "status": "ok",
+          "elapsed_seconds": 0.0,
+          "message_count": 2,
+          "summarized": false
+        },
+        {
+          "time": "2026-09-28T21:28:33.531339+00:00",
+          "event": "summarization_started",
+          "run_id": "1da5b4243b834e4eab5d053a6078d64e",
+          "span_id": "da77bd9e26b2",
+          "message_count": 4
+        },
+        {
+          "time": "2026-09-28T21:28:38.306938+00:00",
+          "event": "summarization_finished",
+          "run_id": "1da5b4243b834e4eab5d053a6078d64e",
+          "span_id": "da77bd9e26b2",
+          "status": "ok",
+          "elapsed_seconds": 4.776,
+          "message_count": 4,
+          "summarized": true
+        },
+        {
+          "time": "2026-09-28T21:28:40.310292+00:00",
+          "event": "summarization_started",
+          "run_id": "8e7ea842fd564fdaaa56e34003599621",
+          "span_id": "d46453d07499",
+          "message_count": 8
+        },
+        {
+          "time": "2026-09-28T21:28:49.623913+00:00",
+          "event": "summarization_finished",
+          "run_id": "8e7ea842fd564fdaaa56e34003599621",
+          "span_id": "d46453d07499",
+          "status": "ok",
+          "elapsed_seconds": 9.314,
+          "message_count": 8,
+          "summarized": true
+        },
+        {
+          "time": "2026-09-28T21:28:53.467890+00:00",
+          "event": "summarization_started",
+          "run_id": "8e7ea842fd564fdaaa56e34003599621",
+          "span_id": "54cef56244dd",
+          "message_count": 5
+        },
+        {
+          "time": "2026-09-28T21:29:00.647170+00:00",
+          "event": "summarization_finished",
+          "run_id": "8e7ea842fd564fdaaa56e34003599621",
+          "span_id": "54cef56244dd",
+          "status": "ok",
+          "elapsed_seconds": 7.179,
+          "message_count": 5,
+          "summarized": true
+        },
+        {
+          "time": "2026-09-28T21:29:02.743503+00:00",
+          "event": "summarization_started",
+          "run_id": "8e7ea842fd564fdaaa56e34003599621",
+          "span_id": "ca1011a26a5d",
+          "message_count": 4
+        },
+        {
+          "time": "2026-09-28T21:29:07.961103+00:00",
+          "event": "summarization_finished",
+          "run_id": "8e7ea842fd564fdaaa56e34003599621",
+          "span_id": "ca1011a26a5d",
+          "status": "ok",
+          "elapsed_seconds": 5.218,
+          "message_count": 4,
+          "summarized": true
+        },
+        {
+          "time": "2026-09-28T21:29:09.698642+00:00",
+          "event": "summarization_started",
+          "run_id": "e75a24d4586e4734a34e3b283de7b30c",
+          "span_id": "95fd44b30a32",
+          "message_count": 7
+        },
+        {
+          "time": "2026-09-28T21:29:16.881540+00:00",
+          "event": "summarization_finished",
+          "run_id": "e75a24d4586e4734a34e3b283de7b30c",
+          "span_id": "95fd44b30a32",
+          "status": "ok",
+          "elapsed_seconds": 7.183,
+          "message_count": 7,
+          "summarized": true
+        },
+        {
+          "time": "2026-09-28T21:29:21.100274+00:00",
+          "event": "summarization_started",
+          "run_id": "ea2889bf37634b38aa7aeb211b3a523f",
+          "span_id": "fe4bfad4ca35",
+          "message_count": 8
+        },
+        {
+          "time": "2026-09-28T21:29:30.172581+00:00",
+          "event": "summarization_finished",
+          "run_id": "ea2889bf37634b38aa7aeb211b3a523f",
+          "span_id": "fe4bfad4ca35",
+          "status": "ok",
+          "elapsed_seconds": 9.072,
+          "message_count": 8,
+          "summarized": true
+        },
+        {
+          "time": "2026-09-28T21:29:34.834181+00:00",
+          "event": "summarization_started",
+          "run_id": "843a5c5043df40ebbc8c0e6dc2a8b667",
+          "span_id": "5b407df5a6fe",
+          "message_count": 8
+        },
+        {
+          "time": "2026-09-28T21:29:43.524335+00:00",
+          "event": "summarization_finished",
+          "run_id": "843a5c5043df40ebbc8c0e6dc2a8b667",
+          "span_id": "5b407df5a6fe",
+          "status": "ok",
+          "elapsed_seconds": 8.69,
+          "message_count": 8,
+          "summarized": true
+        },
+        {
+          "time": "2026-09-28T21:29:46.691276+00:00",
+          "event": "summarization_started",
+          "run_id": "28bd3c661d3d46dcb726bcb7b2ad15af",
+          "span_id": "3cfb183211b5",
+          "message_count": 8
+        },
+        {
+          "time": "2026-09-28T21:29:55.228957+00:00",
+          "event": "summarization_finished",
+          "run_id": "28bd3c661d3d46dcb726bcb7b2ad15af",
+          "span_id": "3cfb183211b5",
+          "status": "ok",
+          "elapsed_seconds": 8.538,
+          "message_count": 8,
+          "summarized": true
+        },
+        {
+          "time": "2026-09-28T21:30:01.131154+00:00",
+          "event": "summarization_started",
+          "run_id": "890d2578a7ef4566b2e275e69eb26303",
+          "span_id": "56b0bf00bcde",
+          "message_count": 8
+        },
+        {
+          "time": "2026-09-28T21:30:10.180791+00:00",
+          "event": "summarization_finished",
+          "run_id": "890d2578a7ef4566b2e275e69eb26303",
+          "span_id": "56b0bf00bcde",
+          "status": "ok",
+          "elapsed_seconds": 9.05,
+          "message_count": 8,
+          "summarized": true
+        },
+        {
+          "time": "2026-09-28T21:30:15.515850+00:00",
+          "event": "summarization_started",
+          "run_id": "890d2578a7ef4566b2e275e69eb26303",
+          "span_id": "ffa492bcc75f",
+          "message_count": 4
+        },
+        {
+          "time": "2026-09-28T21:30:23.593465+00:00",
+          "event": "summarization_finished",
+          "run_id": "890d2578a7ef4566b2e275e69eb26303",
+          "span_id": "ffa492bcc75f",
+          "status": "ok",
+          "elapsed_seconds": 8.078,
+          "message_count": 4,
+          "summarized": true
+        },
+        {
+          "time": "2026-09-28T21:30:29.215431+00:00",
+          "event": "summarization_started",
+          "run_id": "890d2578a7ef4566b2e275e69eb26303",
+          "span_id": "d8fae86ccb79",
+          "message_count": 4
+        },
+        {
+          "time": "2026-09-28T21:30:37.311954+00:00",
+          "event": "summarization_finished",
+          "run_id": "890d2578a7ef4566b2e275e69eb26303",
+          "span_id": "d8fae86ccb79",
+          "status": "ok",
+          "elapsed_seconds": 8.097,
+          "message_count": 4,
+          "summarized": true
+        }
+      ],
+      "turns": [
+        {
+          "turn": 1,
+          "prompt": "segment가 'blue'인 행의 score 평균을 알려줘.",
+          "oracle": {
+            "prompt": "segment가 'blue'인 행의 score 평균을 알려줘.",
+            "kind": "scalar",
+            "expected": 15,
+            "column": "score",
+            "operation": "AVG",
+            "source": "synthetic.phase_a"
+          },
+          "status": "PASS",
+          "agent_status": "answered",
+          "false_completion": false,
+          "error_type": null,
+          "answer": "보유 데이터로 계산한 결과입니다. 출처: synthetic.phase_a\n분석 범위: 요청 조건에 포함된 보유 데이터 전체\n\n적용 조건: segment = blue\n\n평균: 15.0",
+          "evidence": [
+            {
+              "source": "synthetic.phase_a",
+              "query": "SELECT AVG(\"score\") AS \"mean_score\" FROM data",
+              "rows": [
+                {
+                  "mean_score": 15.0
+                }
+              ]
+            }
+          ],
+          "observations": [
+            {
+              "tool": "use_dataset",
+              "status": "ready",
+              "error_code": null,
+              "chart_spec": null,
+              "cards": []
+            },
+            {
+              "tool": "aggregate_dataset",
+              "status": "ready",
+              "error_code": null,
+              "chart_spec": null,
+              "cards": []
+            }
+          ],
+          "tools": [
+            "use_dataset",
+            "aggregate_dataset"
+          ],
+          "state": {
+            "scope": {
+              "conditions": [
+                {
+                  "column": "segment",
+                  "op": "eq",
+                  "value": "blue"
+                }
+              ],
+              "any_conditions": [],
+              "join_edges": [],
+              "measure_conditions": [],
+              "ratio": null,
+              "unresolved": [],
+              "columns": [
+                "score",
+                "segment"
+              ]
+            },
+            "required_columns": [
+              "segment",
+              "score"
+            ],
+            "operations": [
+              "AVG"
+            ],
+            "kind": null,
+            "profile_kind": null,
+            "stop_reason": null
+          },
+          "model_calls": 3,
+          "raw_preserved": true,
+          "elapsed_seconds": 12.264
+        },
+        {
+          "turn": 2,
+          "prompt": "그중 score 최댓값은?",
+          "oracle": {
+            "prompt": "그중 score 최댓값은?",
+            "kind": "scalar",
+            "expected": 20,
+            "column": "score",
+            "operation": "MAX",
+            "source": "synthetic.phase_a"
+          },
+          "status": "FAIL",
+          "agent_status": "exhausted",
+          "false_completion": false,
+          "error_type": null,
+          "answer": "생성된 분석의 기간·필터가 요청 조건과 일치하지 않아 결과를 채택하지 않았습니다. 조건을 유지한 복구가 실행 한도 안에 완료되지 않았습니다. 기존 데이터는 보존했습니다.",
+          "evidence": [],
+          "observations": [
+            {
+              "tool": "inspect_dataset",
+              "status": "ready",
+              "error_code": null,
+              "chart_spec": null,
+              "cards": []
+            }
+          ],
+          "tools": [
+            "inspect_dataset",
+            "local_analysis_sql"
+          ],
+          "state": {
+            "scope": {
+              "conditions": [
+                {
+                  "column": "segment",
+                  "op": "eq",
+                  "value": "blue"
+                }
+              ],
+              "any_conditions": [],
+              "join_edges": [],
+              "measure_conditions": [],
+              "ratio": null,
+              "unresolved": [],
+              "columns": [
+                "score"
+              ]
+            },
+            "required_columns": [
+              "score"
+            ],
+            "operations": [
+              "MAX"
+            ],
+            "kind": null,
+            "profile_kind": null,
+            "stop_reason": "request_scope_mismatch"
+          },
+          "model_calls": 6,
+          "raw_preserved": true,
+          "elapsed_seconds": 29.39
+        },
+        {
+          "turn": 3,
+          "prompt": "같은 조건에서 score 최솟값은?",
+          "oracle": {
+            "prompt": "같은 조건에서 score 최솟값은?",
+            "kind": "scalar",
+            "expected": 10,
+            "column": "score",
+            "operation": "MIN",
+            "source": "synthetic.phase_a"
+          },
+          "status": "PASS",
+          "agent_status": "answered",
+          "false_completion": false,
+          "error_type": null,
+          "answer": "보유 데이터로 계산한 결과입니다. 출처: synthetic.phase_a\n분석 범위: 요청 조건에 포함된 보유 데이터 전체\n\n적용 조건: segment = blue\n\n최솟값: 10",
+          "evidence": [
+            {
+              "source": "synthetic.phase_a",
+              "query": "SELECT MIN(\"score\") AS \"min_score\" FROM data",
+              "rows": [
+                {
+                  "min_score": 10
+                }
+              ]
+            }
+          ],
+          "observations": [
+            {
+              "tool": "aggregate_dataset",
+              "status": "ready",
+              "error_code": null,
+              "chart_spec": null,
+              "cards": []
+            }
+          ],
+          "tools": [
+            "aggregate_dataset"
+          ],
+          "state": {
+            "scope": {
+              "conditions": [
+                {
+                  "column": "segment",
+                  "op": "eq",
+                  "value": "blue"
+                }
+              ],
+              "any_conditions": [],
+              "join_edges": [],
+              "measure_conditions": [],
+              "ratio": null,
+              "unresolved": [],
+              "columns": [
+                "score"
+              ]
+            },
+            "required_columns": [
+              "score"
+            ],
+            "operations": [
+              "MIN"
+            ],
+            "kind": null,
+            "profile_kind": null,
+            "stop_reason": null
+          },
+          "model_calls": 2,
+          "raw_preserved": true,
+          "elapsed_seconds": 11.398
+        },
+        {
+          "turn": 4,
+          "prompt": "같은 그룹에서 latency_ms 평균은?",
+          "oracle": {
+            "prompt": "같은 그룹에서 latency_ms 평균은?",
+            "kind": "scalar",
+            "expected": 45,
+            "column": "latency_ms",
+            "operation": "AVG",
+            "source": "synthetic.phase_a"
+          },
+          "status": "PASS",
+          "agent_status": "answered",
+          "false_completion": false,
+          "error_type": null,
+          "answer": "보유 데이터로 계산한 결과입니다. 출처: synthetic.phase_a\n분석 범위: 요청 조건에 포함된 보유 데이터 전체\n\n적용 조건: segment = blue\n\n평균: 45.0",
+          "evidence": [
+            {
+              "source": "synthetic.phase_a",
+              "query": "SELECT AVG(\"latency_ms\") AS \"mean_latency_ms\" FROM data",
+              "rows": [
+                {
+                  "mean_latency_ms": 45.0
+                }
+              ]
+            }
+          ],
+          "observations": [
+            {
+              "tool": "aggregate_dataset",
+              "status": "ready",
+              "error_code": null,
+              "chart_spec": null,
+              "cards": []
+            }
+          ],
+          "tools": [
+            "aggregate_dataset"
+          ],
+          "state": {
+            "scope": {
+              "conditions": [
+                {
+                  "column": "segment",
+                  "op": "eq",
+                  "value": "blue"
+                }
+              ],
+              "any_conditions": [],
+              "join_edges": [],
+              "measure_conditions": [],
+              "ratio": null,
+              "unresolved": [],
+              "columns": [
+                "latency_ms"
+              ]
+            },
+            "required_columns": [
+              "latency_ms"
+            ],
+            "operations": [
+              "AVG"
+            ],
+            "kind": null,
+            "profile_kind": null,
+            "stop_reason": null
+          },
+          "model_calls": 2,
+          "raw_preserved": true,
+          "elapsed_seconds": 13.733
+        },
+        {
+          "turn": 5,
+          "prompt": "같은 조건에서 latency_ms 최댓값은?",
+          "oracle": {
+            "prompt": "같은 조건에서 latency_ms 최댓값은?",
+            "kind": "scalar",
+            "expected": 60,
+            "column": "latency_ms",
+            "operation": "MAX",
+            "source": "synthetic.phase_a"
+          },
+          "status": "PASS",
+          "agent_status": "answered",
+          "false_completion": false,
+          "error_type": null,
+          "answer": "보유 데이터로 계산한 결과입니다. 출처: synthetic.phase_a\n분석 범위: 요청 조건에 포함된 보유 데이터 전체\n\n적용 조건: segment = blue\n\n최댓값: 60",
+          "evidence": [
+            {
+              "source": "synthetic.phase_a",
+              "query": "SELECT MAX(\"latency_ms\") AS \"max_latency_ms\" FROM data",
+              "rows": [
+                {
+                  "max_latency_ms": 60
+                }
+              ]
+            }
+          ],
+          "observations": [
+            {
+              "tool": "aggregate_dataset",
+              "status": "ready",
+              "error_code": null,
+              "chart_spec": null,
+              "cards": []
+            }
+          ],
+          "tools": [
+            "aggregate_dataset"
+          ],
+          "state": {
+            "scope": {
+              "conditions": [
+                {
+                  "column": "segment",
+                  "op": "eq",
+                  "value": "blue"
+                }
+              ],
+              "any_conditions": [],
+              "join_edges": [],
+              "measure_conditions": [],
+              "ratio": null,
+              "unresolved": [],
+              "columns": [
+                "latency_ms"
+              ]
+            },
+            "required_columns": [
+              "latency_ms"
+            ],
+            "operations": [
+              "MAX"
+            ],
+            "kind": null,
+            "profile_kind": null,
+            "stop_reason": null
+          },
+          "model_calls": 2,
+          "raw_preserved": true,
+          "elapsed_seconds": 11.856
+        },
+        {
+          "turn": 6,
+          "prompt": "그중 latency_ms 최솟값은?",
+          "oracle": {
+            "prompt": "그중 latency_ms 최솟값은?",
+            "kind": "scalar",
+            "expected": 30,
+            "column": "latency_ms",
+            "operation": "MIN",
+            "source": "synthetic.phase_a"
+          },
+          "status": "PASS",
+          "agent_status": "answered",
+          "false_completion": false,
+          "error_type": null,
+          "answer": "보유 데이터로 계산한 결과입니다. 출처: synthetic.phase_a\n분석 범위: 요청 조건에 포함된 보유 데이터 전체\n\n적용 조건: segment = blue\n\n최솟값: 30",
+          "evidence": [
+            {
+              "source": "synthetic.phase_a",
+              "query": "SELECT MIN(\"latency_ms\") AS \"min_latency_ms\" FROM data",
+              "rows": [
+                {
+                  "min_latency_ms": 30
+                }
+              ]
+            }
+          ],
+          "observations": [
+            {
+              "tool": "aggregate_dataset",
+              "status": "ready",
+              "error_code": null,
+              "chart_spec": null,
+              "cards": []
+            }
+          ],
+          "tools": [
+            "aggregate_dataset"
+          ],
+          "state": {
+            "scope": {
+              "conditions": [
+                {
+                  "column": "segment",
+                  "op": "eq",
+                  "value": "blue"
+                }
+              ],
+              "any_conditions": [],
+              "join_edges": [],
+              "measure_conditions": [],
+              "ratio": null,
+              "unresolved": [],
+              "columns": [
+                "latency_ms"
+              ]
+            },
+            "required_columns": [
+              "latency_ms"
+            ],
+            "operations": [
+              "MIN"
+            ],
+            "kind": null,
+            "profile_kind": null,
+            "stop_reason": null
+          },
+          "model_calls": 2,
+          "raw_preserved": true,
+          "elapsed_seconds": 14.44
+        },
+        {
+          "turn": 7,
+          "prompt": "같은 그룹에서 score 평균으로 다시 돌아가줘.",
+          "oracle": {
+            "prompt": "같은 그룹에서 score 평균으로 다시 돌아가줘.",
+            "kind": "scalar",
+            "expected": 15,
+            "column": "score",
+            "operation": "AVG",
+            "source": "synthetic.phase_a"
+          },
+          "status": "FAIL",
+          "agent_status": "exhausted",
+          "false_completion": false,
+          "error_type": null,
+          "answer": "복구를 시도했지만 요청한 결과를 확인하지 못했습니다. 기존 데이터는 보존했습니다.",
+          "evidence": [],
+          "observations": [],
+          "tools": [],
+          "state": {
+            "scope": {
+              "conditions": [
+                {
+                  "column": "segment",
+                  "op": "eq",
+                  "value": "blue"
+                }
+              ],
+              "any_conditions": [],
+              "join_edges": [],
+              "measure_conditions": [],
+              "ratio": null,
+              "unresolved": [],
+              "columns": [
+                "score"
+              ]
+            },
+            "required_columns": [
+              "score"
+            ],
+            "operations": [
+              "AVG"
+            ],
+            "kind": null,
+            "profile_kind": null,
+            "stop_reason": "missing_evidence"
+          },
+          "model_calls": 6,
+          "raw_preserved": true,
+          "elapsed_seconds": 41.026
+        },
+        {
+          "turn": 8,
+          "prompt": "이전 segment 조건은 적용하지 말고 원본 score 평균을 알려줘.",
+          "oracle": {
+            "prompt": "이전 segment 조건은 적용하지 말고 원본 score 평균을 알려줘.",
+            "kind": "scalar",
+            "expected": 15.2,
+            "column": "score",
+            "operation": "AVG",
+            "source": "synthetic.phase_a"
+          },
+          "status": "PASS",
+          "agent_status": "answered",
+          "false_completion": false,
+          "error_type": null,
+          "answer": "보유 데이터로 계산한 결과입니다. 출처: synthetic.phase_a\n분석 범위: 요청 조건에 포함된 보유 데이터 전체\n\n평균: 15.2",
+          "evidence": [
+            {
+              "source": "synthetic.phase_a",
+              "query": "SELECT AVG(\"score\") AS average FROM data",
+              "rows": [
+                {
+                  "average": 15.2
+                }
+              ]
+            }
+          ],
+          "observations": [
+            {
+              "tool": "local_analysis_sql",
+              "status": "ready",
+              "error_code": null,
+              "chart_spec": null,
+              "cards": []
+            }
+          ],
+          "tools": [
+            "local_analysis_sql"
+          ],
+          "state": {
+            "scope": {
+              "conditions": [],
+              "any_conditions": [],
+              "join_edges": [],
+              "measure_conditions": [],
+              "ratio": null,
+              "unresolved": [],
+              "columns": [
+                "score",
+                "segment"
+              ]
+            },
+            "required_columns": [
+              "segment",
+              "score"
+            ],
+            "operations": [
+              "AVG"
+            ],
+            "kind": null,
+            "profile_kind": null,
+            "stop_reason": null
+          },
+          "model_calls": 0,
+          "raw_preserved": true,
+          "elapsed_seconds": 0.042
+        }
+      ]
+    }
+  ]
+}

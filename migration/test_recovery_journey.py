@@ -1,3 +1,4 @@
+from core.analysis_agent.policy import RuntimePolicy
 import json
 from pathlib import Path
 import tempfile
@@ -39,7 +40,7 @@ class RecoveryJourneyTests(unittest.TestCase):
                 info=datasets.register(frame,source=SOURCE,query=QUERY,coverage='complete',grain='aggregate',aggregation=QUERY)
                 return {'status':'ready','dataset':asdict(info)}
             return execute
-        return GraphAnalysisRuntime(root,'owner','journey',model or JourneyModel(),connection_identity='test',remote_factory=factory)
+        return GraphAnalysisRuntime(root,'owner','journey',model or JourneyModel(),connection_identity='test',remote_factory=factory, policy=RuntimePolicy(require_remote_approval=True))
 
     def test_false_completion_replans_approval_reopen_then_png(self):
         with tempfile.TemporaryDirectory() as root:
@@ -175,14 +176,14 @@ class PlannedJourneyTests(unittest.TestCase):
                     info=datasets.register(frame,source=SOURCE,coverage='complete',grain='aggregate',query=envelope['query'],aggregation=envelope['query'])
                     return {'status':'ready','dataset':asdict(info)}
                 return execute
-            r=GraphAnalysisRuntime(root,'owner','plan',PlanOnlyModel(),connection_identity='test',remote_factory=factory)
+            r=GraphAnalysisRuntime(root,'owner','plan',PlanOnlyModel(),connection_identity='test',remote_factory=factory, policy=RuntimePolicy(require_remote_approval=True))
             r.context.reference_context.append({'table':SOURCE,'columns':[{'name':COLUMN,'dtype':'int64'}]})
             result=r.submit(f'{COLUMN} histogram')
             self.assertEqual(result['status'],'awaiting_approval');self.assertEqual(calls,[])
             query=result['requests'][0]['query'];self.assertIn('COUNT(*)',query);self.assertNotIn('LIMIT',query)
             request_id=result['requests'][0]['id']
             r.close()
-            r=GraphAnalysisRuntime(root,'owner','plan',PlanOnlyModel(),connection_identity='test',remote_factory=factory)
+            r=GraphAnalysisRuntime(root,'owner','plan',PlanOnlyModel(),connection_identity='test',remote_factory=factory, policy=RuntimePolicy(require_remote_approval=True))
             result=r.respond(request_id,approved=True)
             self.assertEqual(result['status'],'answered',str(result)+r.diagnostics.path.read_text());self.assertEqual(len(calls),1)
             goal=r.agent.get_state(r.config).values['recovery']

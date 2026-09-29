@@ -15,7 +15,7 @@ from utils.analysis_datasets import Condition, full_read_preflight, project_data
 
 
 _ISO = re.compile(r'(?<![A-Za-z0-9_-])(\d{4}-\d{2}(?:-\d{2})?)(?![A-Za-z0-9_-])')
-_REFERENCE = re.compile(r'그중|같은|아까|앞선|이어서|말고|대신|바꿔')
+_REFERENCE = re.compile(r'그중|같은|아까|앞선|이어서|말고|대신|바꿔|그\s*데이터|유지')
 _PREVIOUS_MONTH = re.compile(r'이전\s*달|지난\s*달|전월')
 _LITERAL = r'''(?:'(?:[^']|'')*'|"(?:[^"]|"")*"|\d{4}-\d{2}(?:-\d{2})?|[+-]?\d{1,3}(?:,\d{3})+(?:\.\d+)?|[+-]?\d+(?:\.\d+)?|true\b|false\b|[A-Za-z_][A-Za-z0-9_-]*)'''
 _NUMBER = r'[+-]?(?:\d{1,3}(?:,\d{3})+|\d+)(?:\.\d+)?'
@@ -129,9 +129,9 @@ def _reset_filter_columns(text, grounding):
     Only grounded column names/aliases can select a partial reset. Preserve
     filters on all other columns and parse any replacement predicate normally.
     """
-    action = r'(?:적용하지\s*말(?:고|아|아줘)|해제(?:해|하고|하고는)|제거(?:해|하고)|초기화(?:해|하고))'
-    qualifier = r'(?:조건|필터)(?:은|는|을|를)?\s*'
-    all_filters = bool(re.search(r'(?:이전|기존|모든|전체)\s*' + qualifier + action, text))
+    action = r'(?:적용하지\s*(?:말(?:고|아|아줘)|마)|해제(?:해|하고|하고는)|제거(?:해|하고)|초기화(?:해|하고))'
+    qualifier = r'(?:조건|필터)(?:은|는|을|를|만)?\s*'
+    all_filters = bool(re.search(r'(?:이전|기존|모든|전체|앞의)\s*' + qualifier + action, text))
     columns = set()
     for name, metadata in grounding.items():
         aliases = sorted({name, *metadata['aliases']}, key=len, reverse=True)

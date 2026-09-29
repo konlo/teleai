@@ -24,6 +24,7 @@ def _positive_float(name, default):
 
 @dataclass(frozen=True)
 class RuntimePolicy:
+    require_remote_approval: bool = False
     max_remote_rows: int = 100_000
     max_dataset_columns: int = 256
     max_dataset_bytes: int = 512 * 1024 * 1024
@@ -38,7 +39,11 @@ class RuntimePolicy:
 
     @classmethod
     def from_env(cls):
+        approval = os.getenv("TELLY_REQUIRE_REMOTE_APPROVAL", "false").strip().lower()
+        if approval not in {"true", "false", "1", "0"}:
+            raise ValueError("TELLY_REQUIRE_REMOTE_APPROVAL must be true or false")
         return cls(
+            require_remote_approval=approval in {"true", "1"},
             max_remote_rows=_positive_int("TELLY_MAX_REMOTE_ROWS", cls.max_remote_rows),
             max_dataset_columns=_positive_int("TELLY_MAX_DATASET_COLUMNS", cls.max_dataset_columns),
             max_dataset_bytes=_positive_int("TELLY_MAX_DATASET_BYTES", cls.max_dataset_bytes),

@@ -449,12 +449,15 @@ class ActualAgentEvaluationTests(unittest.TestCase):
             self.assertTrue(json.loads(metadata_text)["diagnostics"])
 
     @patch("core.analysis_agent.recovery.RecoveryMiddleware._next_local", return_value=None)
-    def test_databricks_proposal_stays_unapproved_and_not_complete(self, _planner):
+    def test_fixture_evaluation_rejects_remote_execution_under_auto_policy(self, _planner):
         result = self.evaluate("L1_016", EvaluationModel(calls=[{"name": "query_databricks", "args": {
             "source": "bank_loan", "query": "SELECT AVG(balance) FROM bank_loan", "reason": "평균 계산"}}]))
-        self.assertEqual(result["status"], "NOT_COMPLETE", result)
-        self.assertEqual(result["agent_status"], "awaiting_approval")
-        self.assertEqual(result["forbidden_executor_invocations"], 0)
+        # Fixture evaluation has no remote backend: automatic policy must not
+        # turn an attempted remote call into a successful evaluation.
+        self.assertEqual(result["status"], "FAIL", result)
+        self.assertEqual(result["agent_status"], "blocked")
+        self.assertEqual(result["remote_executions"], 0)
+        self.assertEqual(result["forbidden_executor_invocations"], 1)
 
     def test_ungraded_reference_does_not_call_model_or_pass(self):
         model = EvaluationModel()

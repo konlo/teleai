@@ -77,8 +77,10 @@ class DiscoveryTests(unittest.TestCase):
         self.assertFalse(tool.run(query='pivot_dataset')['matches'])
         context.allowed_tool_names = frozenset({'query_databricks'})
         found = tool.run(query='query_databricks')['matches'][0]
-        self.assertEqual(found['permission'], 'exact_sql_approval_required')
+        self.assertEqual(found['permission'], 'runtime_read_policy')
         self.assertEqual(found['name'], 'query_databricks')
+        self.assertNotIn('이 도구는 실행하지 않습니다', found['description'])
+        self.assertIn('승인 대기 없이', found['description'])
 
     def test_local_unavailable_does_not_block_alternative_or_report_remote_failure(self):
         model = EvaluationModel(calls=[

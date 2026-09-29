@@ -158,7 +158,7 @@ class RecoveryMiddleware(AgentMiddleware):
     def __init__(self, artifacts, diagnostics, max_attempts=2, context=None,
                  transcript=None, max_model_calls=10, max_tool_calls=12,
                  max_model_seconds=180, remote_available=False, sql_dialect='databricks',
-                 proposal_validator=None):
+                 proposal_validator=None, approval_ledger=None):
         self.artifacts, self.diagnostics = artifacts, diagnostics
         self.max_attempts, self.context, self.transcript = max_attempts, context, transcript
         self.max_model_calls, self.max_tool_calls = max_model_calls, max_tool_calls
@@ -166,6 +166,7 @@ class RecoveryMiddleware(AgentMiddleware):
         self.remote_available = remote_available
         self.sql_dialect = sql_dialect
         self.proposal_validator = proposal_validator
+        self.approval_ledger = approval_ledger
 
     def _state(self, state):
         messages = state.get('messages', [])
@@ -184,7 +185,8 @@ class RecoveryMiddleware(AgentMiddleware):
                 current['scope'] = resolve_request_scope(
                     text, self.context, current.get('previous_scope'))
         if (human and current.get('request_id') == human.id
-                and current.get('status') == 'working' and not current.get('kind')):
+                and current.get('status') == 'working' and not current.get('kind')
+                and not current.get('explanation_only')):
             recognized = _chart_kind(text)
             if recognized:
                 current['kind'] = recognized
@@ -201,9 +203,11 @@ class RecoveryMiddleware(AgentMiddleware):
             str(human.content).strip()))
         data_load = request_kind == 'remote_load' or legacy_load
         if human and current.get('request_id') != human.id:
-            previous = current
+            from core.analysis_agent.conversation_context import prior_analysis
+            previous = prior_analysis(current, self.context)
             from core.analysis_agent.clarification import continue_analysis
-            continued = continue_analysis(text, previous, self.context)
+            from core.analysis_agent.latest_selection import continue_order
+            continued = continue_order(text, previous, self.context) or continue_analysis(text, previous, self.context)
             if continued:
                 text = continued
                 current_loaded_reference = bool(previous.get('current_result_only'))
@@ -217,7 +221,7 @@ class RecoveryMiddleware(AgentMiddleware):
             # not an additional SUM measure alongside the requested row count.
             objective_text = re.sub(r'전체\s*총합계|총합계', '총계', objective_text)
             kind = _chart_kind(text)
-            chart = bool(kind or re.search(r'차트|시각화|그래프|\bchart|\bplot', text, re.I))
+            chart = bool(kind or re.search(r'차트|시각화|그래프|분포.{0,20}(?:그려|그리)|\b(?:chart|plot|viz|visuali[sz]e|visuali[sz]ation)\b', text, re.I))
             pivot_requested = bool(not chart and re.search(
                 r'피벗(?:\s*테이블)?|\bpivot(?:\s*table)?\b|교차\s*(?:빈도)?표', text, re.I))
             count_rate_signal = bool(
@@ -323,7 +327,12 @@ class RecoveryMiddleware(AgentMiddleware):
                     else:
                         outlier_spec['tail'] = 'both'
             profile_kind = None
-            if not chart and re.search(r'결측|누락|\b(?:null|missing|nan)\b', text, re.I):
+            from core.analysis_agent.eda_contract import profile_request_text, histogram_bins
+            profile_text = profile_request_text(text)
+            requested_bins = histogram_bins(text) if kind == 'histogram' else None
+            if requested_bins is not None:
+                chart_spec_requested = True
+            if not chart and re.search(r'결측|누락|\b(?:null|missing|nan)\b', profile_text, re.I):
                 profile_kind = 'missing'
             elif not chart and re.search(r'고유값|유니크|\b(?:distinct|unique)\b', text, re.I):
                 profile_kind = 'distinct'
@@ -331,7 +340,7 @@ class RecoveryMiddleware(AgentMiddleware):
                 profile_kind = 'summary'
             count_request = not chart and not profile_kind and bool(re.search(
                 r'건수|인원\s*수|명수|빈도|결측|고유값|(?:사람|고객|승객|신청자|가입자|사용자|행)[\'\"]*(?:들)?(?:의)?\s*수',
-                text))
+                profile_text))
             calculation = bool(re.search(
                 r'평균|중앙값|합계|총합|최솟값|최댓값|최소값|최대값|표준편차|상관|비율|성공률|개수|몇\s*(?:명|개|건)|계산|통계|'
                 r'[가-힣A-Za-z]+[율률]|\b(?:mean|average|avg|count|sum|median|std|correlation|ratio|rate|percentage|percent)\b', text, re.I)) or count_request
@@ -393,6 +402,9 @@ class RecoveryMiddleware(AgentMiddleware):
                 explicit_columns = [column for column in explicit_columns if column in source_columns]
             winsor_column = mentioned_columns[0] if winsor_spec and len(mentioned_columns) == 1 else None
             operations = []
+            objective_text = profile_request_text(objective_text)
+            if requested_bins is not None:
+                objective_text = re.sub(r'구간\s*개수|\bbins?\s+count\b', '', objective_text, flags=re.I)
             for pattern, operation in [(r'평균|\b(?:mean|average|avg)\b', 'AVG'),
                     (r'합계|총합|\bsum\b', 'SUM'), (r'중앙값|\bmedian\b', 'MEDIAN'),
                     (r'개수|몇\s*(?:명|개|건)|\bcount\b', 'COUNT'),
@@ -547,7 +559,7 @@ class RecoveryMiddleware(AgentMiddleware):
                 # join_datasets returns these structural counts as grounded
                 # evidence; a second SQL COUNT would add no information.
                 calculation, operations = False, []
-            if profile_kind:
+            if profile_kind and not set(operations) & {'AVG', 'SUM', 'MEDIAN', 'MIN', 'MAX'}:
                 calculation, operations = False, []
             if statistical_kind:
                 calculation, operations = False, []
@@ -619,6 +631,7 @@ class RecoveryMiddleware(AgentMiddleware):
                 scalar_grouping=bool(re.search(r'별|\bgroup\s+by\b|\bby\b', text, re.I)),
                 profile_kind=profile_kind, preview_limit=preview_limit,
                 chart_spec_requested=chart_spec_requested,
+                histogram_bins=requested_bins,
                 count_rate_layout=count_rate_layout,
                 chart_cumulative=chart_cumulative,
                 time_series_frequency=time_series_frequency,
@@ -641,6 +654,15 @@ class RecoveryMiddleware(AgentMiddleware):
                 explicit_columns=explicit_columns,
                 required_sources=required_sources,
                 columns=[], failed={}, status='working')
+            current['confirmed_analysis'] = deepcopy(previous.get('confirmed_analysis') or (
+                previous if previous.get('status') == 'complete' else {}))
+            if not required_sources and previous.get('status') == 'complete' and (calculation or chart):
+                current['required_sources'] = previous.get('required_sources', [])
+            if (not current['required_sources'] and (calculation or chart)
+                    and not join_requested and self.context):
+                selected = self.context.datasets.metadata.get(self.context.selected_dataset_id)
+                if selected and set(mentioned_columns).issubset(selected.columns):
+                    current['required_sources'] = [selected.source]
             current['previous_scope'] = previous.get('scope', {})
             current['scope'] = resolve_request_scope(text, self.context, current['previous_scope'])
             if current.get('pivot_requested'):
@@ -933,7 +955,7 @@ class RecoveryMiddleware(AgentMiddleware):
                 if current['expected_load_source']:
                     current['required_sources']=[current['expected_load_source']]
             if (previous.get('status') == 'complete' and not metadata_kind and
-                    re.search(r'그중|같은|아까|앞선|이어서|말고|대신|바꿔', text) and
+                    re.search(r'그중|같은|아까|앞선|이어서|말고|대신|바꿔|그\s*데이터|유지', text) and
                     (calculation or chart or re.search(r'그중|말고|대신|바꿔|조건', text))):
                 # Keep the operation obligation for an elliptical follow-up, but
                 # require fresh evidence. Explicit replacement operations win.
@@ -990,6 +1012,26 @@ class RecoveryMiddleware(AgentMiddleware):
             if candidate(current):
                 current['operation_pending'] = True
                 current['calculation'] = True
+            from core.analysis_agent.latest_selection import bind
+            latest_spec = bind(text, self.context)
+            current['latest_per_key_spec'] = latest_spec
+            current['latest_selection_evidence'] = None
+            if latest_spec:
+                # "Latest row" is an ordering instruction, not a request to
+                # refresh a snapshot. An explicit refresh must not reuse it.
+                if re.search(r'재조회|다시\s*(?:로딩|조회|불러)|새로\s*(?:조회|로딩|불러)|\brefresh\b', text, re.I):
+                    latest_spec['question'] = '새 데이터 조회와 키별 최신 행 분석을 함께 요청하셨습니다. 분석할 최신 원본을 먼저 조회한 뒤 이 기준으로 분석해주세요.'
+                info = self.context.datasets.metadata.get(latest_spec.get('dataset_id'))
+                sources = current.get('required_sources') or []
+                if info and sources and any(source != info.source for source in sources):
+                    latest_spec['question'] = '요청한 테이블과 현재 데이터의 출처가 다릅니다. 분석할 테이블의 데이터를 먼저 선택하거나 조회해주세요.'
+                current.update(chart=True, calculation=False, operations=[], operation_pending=False,
+                    kind='bar' if latest_spec.get('categorical',True) else 'histogram',
+                    required_columns=[latest_spec['value_column']] if latest_spec.get('value_column') else [],
+                    fresh_source_required=False, chart_spec_requested=True)
+            from core.analysis_agent.conversation_context import explanation_only, suspend_analysis
+            if explanation_only(text):
+                suspend_analysis(current, previous)
         upgraded_current_result = bool(human and current.get('request_id') == human.id
             and current_loaded_reference and not current.get('current_result_only'))
         if upgraded_current_result:
@@ -1039,6 +1081,7 @@ class RecoveryMiddleware(AgentMiddleware):
                 ('group_summary_requested', False), ('group_summary_columns', []),
                 ('group_summary_metrics', []), ('group_summary_conditions', []),
                 ('group_summary_evidence', None),
+                ('remote_query_ids', []), ('remote_query_evidence', {}),
                 ('explicit_columns', [])]:
             current.setdefault(key, default)
         start = next((i for i, m in enumerate(messages) if human and m.id == human.id), 0)
@@ -1047,6 +1090,24 @@ class RecoveryMiddleware(AgentMiddleware):
         # call that completed an earlier turn in the conversation.
         request_messages = messages[start:]
         calls = {c['id']: c for m in request_messages if isinstance(m, AIMessage) for c in m.tool_calls}
+        # Rejected preflight proposals are removed before approval/execution.
+        # They must not remain obligations after the model corrects the SQL.
+        retained = []
+        for key in current['remote_query_ids']:
+            if key in calls:
+                retained.append(key)
+            elif self.approval_ledger is not None:
+                try:
+                    self.approval_ledger.get(key)
+                    retained.append(key)
+                except KeyError:
+                    current['remote_query_evidence'].pop(key, None)
+        current['remote_query_ids'] = retained
+        for key, call in calls.items():
+            if call.get('name') == 'query_databricks' and key not in current['remote_query_ids']:
+                current['remote_query_ids'].append(key)
+        from core.analysis_agent.remote_completion import catalog_read_requested
+        current['remote_result_requested'] = bool(current['remote_query_ids']) or catalog_read_requested(current)
         if human and human.additional_kwargs.get('selected_card') in self.artifacts:
             card = self.artifacts[human.additional_kwargs['selected_card']]
             if self._valid_card(card, current, card.dataset_id): current['artifact_ids'] = [card.id]
@@ -1062,6 +1123,21 @@ class RecoveryMiddleware(AgentMiddleware):
                 if name == 'query_databricks' and 'rejected' in str(message.content).lower():
                     current['remote_rejected'] = True
             if not isinstance(observation, dict): continue
+            if name == 'query_databricks':
+                from core.analysis_agent.remote_completion import verified_receipt
+                evidence = verified_receipt(self.approval_ledger, self.context, call, observation)
+                if evidence:
+                    if message.tool_call_id not in current['remote_query_evidence']:
+                        self.diagnostics.emit('remote_result_verified', request_id=current.get('request_id'),
+                            tool_call_id=message.tool_call_id, dataset_id=evidence['dataset_id'], rows=evidence['rows'])
+                    current['remote_query_evidence'][message.tool_call_id] = evidence
+                    current.pop('unverified_execution_claim', None)
+                else:
+                    current['remote_query_evidence'].pop(message.tool_call_id, None)
+                    if observation.get('status') == 'ready':
+                        current['failed'][name] = {'status':'unavailable',
+                            'error_code':'remote_receipt_unverified'}
+                        continue
             reconsider_load = bool(current.get('data_load') and not current.get('load_evidence_id')
                 and name == 'query_databricks')
             reconsider_calculation = bool(upgraded_current_result and not current.get('evidence_ids')
@@ -1081,7 +1157,8 @@ class RecoveryMiddleware(AgentMiddleware):
                 if (parent is not None and child is not None and requested
                         and child.parent_id==parent.id and child.rows==parent.rows
                         and child.snapshot==parent.snapshot and child.coverage==parent.coverage
-                        and requested==set(child.columns)==set(arguments.get('columns',[]))
+                        and requested.issubset(child.columns)
+                        and set(child.columns)==set(arguments.get('columns',[]) + arguments.get('preserve_columns',[]))
                         and self._source_matches(parent,current)
                         and parent.id==self.context.selected_dataset_id
                         and self._numeric_missing_policy_valid(arguments,current)):
@@ -1181,6 +1258,14 @@ class RecoveryMiddleware(AgentMiddleware):
                                   and observation.get('authority') == 'approved_select_star_result'
                                   and '타입은 확인되지 않았' in observation.get('scope', '')):
                                 current['schema_probe_dtype_unknown'] = True
+            if name == 'analyze_latest_distribution' and current.get('latest_per_key_spec'):
+                from core.analysis_agent.latest_selection import accepted
+                if accepted(self.context,self.artifacts,current['latest_per_key_spec'],arguments,observation):
+                    current['latest_selection_evidence']=observation
+                    current['artifact_ids']=[card['id'] for card in observation['cards']]
+                    current['failed'].pop(name,None)
+                elif observation.get('status')=='needs_context':
+                    current['latest_question']=observation.get('message','최신 행 선택 기준을 확인해주세요.')
             if name == 'prepare_histogram' and observation.get('histogram_plan'):
                 plan = observation['histogram_plan']
                 if not self._scope_valid(plan.get('query', ''), current, plan.get('value_column')):
@@ -1592,6 +1677,13 @@ class RecoveryMiddleware(AgentMiddleware):
     def _scope_valid(self, executed, current, histogram_column=None, *, record_error=True,
                      dialect=None):
         requested = current.get('scope', {})
+        # For an explicitly retained sample, the verified local conversion
+        # followed by derive() proves these filters inside that sample. It
+        # does not promote unknown source coverage to complete coverage.
+        if (current.get('current_result_only') and current.get('numeric_prepared_dataset')
+                and getattr(executed,'parent_id',None)==current['numeric_prepared_dataset']
+                and not getattr(executed,'query','')):
+            return scope_matches(executed.conditions, requested)
         query = executed if isinstance(executed, str) else getattr(executed, 'query', '')
         if (query and self.context and not requested.get('join_edges') and dialect != 'duckdb'
                 and not getattr(executed, 'parent_id', None)
@@ -1693,7 +1785,7 @@ class RecoveryMiddleware(AgentMiddleware):
         if not self._has_scope(current):
             return True
         histogram_column = arguments.get('x') if arguments.get('kind') == 'histogram' else None
-        if scope_matches(info, current['scope'], histogram_column=histogram_column):
+        if self._scope_valid(info, current, histogram_column, record_error=False):
             return True
         if (arguments.get('kind') == 'boxplot' and arguments.get('category')
                 and self._all_group_levels_scope_valid(info, arguments['category'], current)):
@@ -1791,10 +1883,15 @@ class RecoveryMiddleware(AgentMiddleware):
         return candidates
 
     def _valid_card(self, card, current, dataset_id):
-        if not card.image.startswith(b'\x89PNG\r\n\x1a\n'): return False
+        from utils.analysis_image_validation import validate_chart_image
+        try:validate_chart_image(card.image)
+        except ValueError:return False
         if card.dataset_id != dataset_id: return False
         expected_kind = current.get('count_rate_layout') or current.get('kind')
         if expected_kind and card.kind != expected_kind: return False
+        if current.get('histogram_bins') is not None and (
+                card.kind != 'histogram' or card.render_spec.get('bins') != current['histogram_bins']):
+            return False
         if current.get('count_rate_layout') and current.get('count_rate_group_column'):
             ratio = current.get('scope', {}).get('ratio') or {}
             expected = [current['count_rate_group_column'], ratio.get('column')]
@@ -1879,6 +1976,15 @@ class RecoveryMiddleware(AgentMiddleware):
             operations = {node.sql_name() for node in tree.find_all(exp.AggFunc)}
             requested_operations = set(current.get('operations', []))
             if not (requested_operations - {'RATIO'}).issubset(operations): return False
+            if current.get('scalar_grouping'):
+                from core.analysis_agent.eda_contract import group_columns
+                expected_groups = group_columns(current.get('request_text',''), current.get('required_columns',[]))
+                if expected_groups:
+                    group = tree.args.get('group')
+                    if (group is None or any(not isinstance(c, exp.Column) for c in group.expressions)
+                            or {c.name for c in group.expressions} != set(expected_groups)
+                            or not set(expected_groups).issubset(info.columns)):
+                        return False
             if current.get('frequency_column'):
                 group = tree.args.get('group')
                 if (group is None or len(group.expressions) != 1
@@ -1965,6 +2071,16 @@ class RecoveryMiddleware(AgentMiddleware):
         remote_block = remote_blocked(current)
         current['status'] = 'complete' if success else ('blocked' if remote_block else 'exhausted')
         current['stop_reason'] = reason
+        if success and not current.get('explanation_only') and active_contracts(current):
+            if not current.get('required_sources') and self.context:
+                ids = list(current.get('evidence_ids', []))
+                ids += [self.artifacts[c].dataset_id for c in current.get('artifact_ids', [])]
+                sources = {self.context.datasets.metadata[i].source for i in ids
+                           if i in self.context.datasets.metadata}
+                if len(sources) == 1: current['required_sources'] = list(sources)
+            from core.analysis_agent.conversation_context import snapshot
+            current['selection_at_confirmation'] = self.context.selected_dataset_id if self.context else ''
+            current['confirmed_analysis'] = snapshot(current, self.context)
         text = rendered if success else remote_failure_message([current['failed'].get('query_databricks', {})], current.get('remote_rejected', False))
         if not success and not remote_block and reason not in {'missing_evidence', 'unresolved_failure'}:
             text = '반복 실행 한도에 도달해 분석을 중단했습니다. 검증된 완료 결과가 없으며 기존 데이터는 보존했습니다.'
@@ -1977,14 +2093,14 @@ class RecoveryMiddleware(AgentMiddleware):
         if not success and current.get('metadata_kind') and reason == 'schema_refresh_unavailable':
             current['status'] = 'blocked'
             text = ('저장된 테이블 스키마가 오래되어 현재 항목을 확인할 수 없습니다. '
-                    '스키마 조회 연결을 확인한 뒤 0행 조회 승인을 요청해주세요. 기존 데이터는 보존했습니다.')
+                    '스키마 조회 연결을 확인한 뒤 0행 조회를 실행해주세요. 기존 데이터는 보존했습니다.')
         if not success and reason == 'schema_probe_dtype_unknown':
             current['status'] = 'blocked'
             text = ('0행 스키마 조회로 현재 컬럼명은 확인했지만 데이터 타입은 확인되지 않았습니다. '
-                    '타입 확인용 조회가 필요하며 승인 없이 추가 조회하지 않았습니다. 기존 데이터는 보존했습니다.')
+                    '타입 확인용 조회가 필요하며 검증되지 않은 추가 조회는 실행하지 않았습니다. 기존 데이터는 보존했습니다.')
         if not success and reason == 'proposal_validation_failed':
             current['status'] = 'blocked'
-            text = ('생성된 SQL이 승인 전 문법·출처·실행 가능성 검사에 반복해서 실패했습니다 '
+            text = ('생성된 SQL이 실행 전 문법·출처·실행 가능성 검사에 반복해서 실패했습니다 '
                     f"({current.get('proposal_error', 'validation_error')}). "
                     '조회는 제안하거나 실행하지 않았고 기존 데이터는 보존했습니다.')
         if not success and current.get('metadata_kind') and current.get('remote_rejected'):
@@ -2004,7 +2120,7 @@ class RecoveryMiddleware(AgentMiddleware):
                 current['status'] = 'blocked'
                 current['stop_reason'] = 'unverified_join_relationship'
                 text = ('조인 관계를 현재 요청 또는 확인된 테이블 관계 정보에서 검증할 수 없습니다. '
-                        '원격 조회를 승인 단계로 넘기지 않았으며 기존 데이터는 보존했습니다.')
+                        '원격 조회를 실행 단계로 넘기지 않았으며 기존 데이터는 보존했습니다.')
             else:
                 current['stop_reason'] = 'request_scope_mismatch'
                 text = '생성된 분석의 기간·필터가 요청 조건과 일치하지 않아 결과를 채택하지 않았습니다. 조건을 유지한 복구가 실행 한도 안에 완료되지 않았습니다. 기존 데이터는 보존했습니다.'
@@ -2030,6 +2146,12 @@ class RecoveryMiddleware(AgentMiddleware):
                     '추측한 수치는 결과로 채택하지 않았으며 기존 데이터는 보존했습니다.')
         if reason == 'completion_output_missing':
             text = '검증된 결과를 표시하는 데 실패했습니다. 완료로 처리하지 않았으며 기존 데이터는 보존했습니다.'
+        if not success and current.get('unverified_execution_claim'):
+            current['status'] = 'blocked'
+            current['stop_reason'] = 'unverified_execution_claim'
+            text = ('조회 결과를 확인하지 못해 요청을 완료하지 못했습니다. '
+                    '백그라운드 조회나 자동 완료 알림은 예약되지 않았습니다. '
+                    '기존 데이터는 보존했으며 실제 조회 실행 상태를 확인해야 합니다.')
         if not success and current.get('operation_pending'):
             current['status'] = 'blocked'
             current['stop_reason'] = 'analysis_operation_unresolved'
@@ -2038,7 +2160,8 @@ class RecoveryMiddleware(AgentMiddleware):
         # Free-form text is allowed only for requests with no analytical obligation.
         if success and not active_contracts(current) and last:
             text = text or last.content
-        kwargs = {'analysis_status': 'answered' if success else current['status']}
+        kwargs = {'analysis_status': 'answered' if success else current['status'],
+                  'analysis_artifact_ids': list(dict.fromkeys(current.get('artifact_ids', []))) if success else []}
         message = (last.model_copy(update={'content': text, 'tool_calls': [],
                    'additional_kwargs': {**last.additional_kwargs, **kwargs}}) if last else
                    AIMessage(content=text, additional_kwargs=kwargs))
@@ -2067,32 +2190,65 @@ class RecoveryMiddleware(AgentMiddleware):
             quote+value+quote in text for quote in ('"', "'", '`')) for value in values)
 
     def _prepared_numeric_call(self,current,calls):
-        # Preparation is an intermediate artifact, not completion. Continue the
-        # original scalar/chart obligations using that verified same-row branch.
+        # Continue all remaining goals on the verified numeric branch, with
+        # the request's row conditions and presentation options intact.
         dataset_id=current.get('numeric_prepared_dataset')
         if (not self.context or dataset_id not in self.context.datasets.metadata
-                or self._has_scope(current) or current.get('fresh_source_required')
-                or current.get('scalar_grouping') or current.get('chart_spec_requested')):
+                or current.get('fresh_source_required')):
+            return None
+        scope=current.get('scope',{})
+        if any(scope.get(k) for k in ('unresolved','any_conditions','measure_conditions','ratio','join_edges')):
             return None
         info=self.context.datasets.metadata[dataset_id]
         columns=current.get('required_columns',[])
-        if len(columns)!=1 or columns[0] not in info.columns:return None
+        from core.analysis_agent.eda_contract import group_columns
+        groups=group_columns(current.get('request_text',''),columns) if current.get('scalar_grouping') else []
+        measures=[c for c in columns if c not in groups]
+        if len(measures)!=1 or not set(columns)<=set(info.columns):return None
+        if current.get('scalar_grouping') and len(groups)!=1:return None
         if not current.get('current_result_only') and (info.coverage!='complete' or not info.predicate_known):return None
+        conditions=scope.get('conditions',[])
+        if conditions:
+            from utils.analysis_datasets import Condition
+            wanted=tuple(Condition(**c) for c in conditions)
+            derived=next((d for d in self.context.datasets.metadata.values()
+                if d.parent_id==dataset_id and d.grain=='raw'
+                and d.conditions==tuple(dict.fromkeys((*info.conditions,*wanted)))
+                and set(columns)<=set(d.columns) and d.snapshot==info.snapshot),None)
+            if derived is None:
+                call={'name':'use_dataset','args':{'dataset_id':dataset_id,'columns':columns,
+                    'conditions':conditions,'current_result_only':bool(current.get('current_result_only'))}}
+                return None if any(self._signature(c)==self._signature(call) for c in calls.values()) else call
+            dataset_id=derived.id
         operations=current.get('operations',[])
         aliases={'AVG':'average','SUM':'sum','MIN':'minimum','MAX':'maximum','MEDIAN':'median'}
         if current.get('calculation') and not current.get('evidence_ids') and operations and set(operations)<=set(aliases):
-            quoted='"'+columns[0].replace('"','""')+'"'
-            projections=', '.join(f'{op}({quoted}) AS {aliases[op]}' for op in operations)
-            call={'name':'local_analysis_sql','args':{'dataset_id':dataset_id,
-                'query':'SELECT '+projections+' FROM data','current_result_only':True}}
-        elif current.get('chart') and current.get('kind')=='histogram' and not current.get('artifact_ids'):
-            call={'name':'render_chart_spec','args':{'dataset_id':dataset_id,'kind':'histogram','x':columns[0]}}
+            quote=lambda c:'"'+c.replace('"','""')+'"'
+            projections=[quote(c) for c in groups]+[f'{op}({quote(measures[0])}) AS {aliases[op]}' for op in operations]
+            query='SELECT '+', '.join(projections)+' FROM data'
+            if groups:query+=' GROUP BY '+', '.join(quote(c) for c in groups)
+            call={'name':'local_analysis_sql','args':{'dataset_id':dataset_id,'query':query,
+                'current_result_only':bool(current.get('current_result_only')),'requested_conditions':conditions}}
+        elif current.get('chart') and current.get('kind')=='histogram' and not current.get('artifact_ids') and not groups:
+            bins=current.get('histogram_bins')
+            # Other customizations require model planning, not silent defaults.
+            if current.get('chart_spec_requested') and bins is None:return None
+            call={'name':'render_chart_spec','args':{'dataset_id':dataset_id,'kind':'histogram','x':measures[0]}}
+            if bins is not None:call['args']['bins']=bins
         else:return None
         return None if any(self._signature(c)==self._signature(call) for c in calls.values()) else call
 
     def _next_local(self, current, calls):
+        if current.get('explanation_only'): return None
         prepared=self._prepared_numeric_call(current,calls)
         if prepared:return prepared
+        if current.get('latest_per_key_spec'):
+            spec=current['latest_per_key_spec']
+            if not spec.get('question') and not current.get('latest_selection_evidence') and not any(
+                    c.get('name')=='analyze_latest_distribution' for c in calls.values()):
+                return {'name':'analyze_latest_distribution','args':{key:spec[key] for key in
+                    ('dataset_id','key_columns','order_column','value_column','categorical')}}
+            return None
         if self.context and current.get('operation_pending'):
             from core.analysis_agent.operation_binding import metadata_for
             if not any(c.get('name') == 'resolve_analysis_operation' for c in calls.values()):
@@ -2692,8 +2848,10 @@ class RecoveryMiddleware(AgentMiddleware):
                 arguments = None
                 if (current['kind'] == 'histogram' and len(columns) == 1
                         and is_numeric_dtype(frame[columns[0]]) and not self._has_scope(current)
-                        and not current.get('chart_spec_requested')):
+                        and (not current.get('chart_spec_requested') or current.get('histogram_bins') is not None)):
                     arguments = {'dataset_id':candidates[0].id,'kind':'histogram','x':columns[0]}
+                    if current.get('histogram_bins') is not None:
+                        arguments['bins'] = current['histogram_bins']
                 elif current['kind'] == 'boxplot' and len(columns) == 1 and is_numeric_dtype(frame[columns[0]]):
                     arguments = {'dataset_id':candidates[0].id,'kind':'boxplot','x':columns[0]}
                 elif current['kind'] == 'boxplot' and len(columns) == 2:
@@ -2957,7 +3115,8 @@ class RecoveryMiddleware(AgentMiddleware):
             len(aggregate_operations) == 1 and not current.get('current_result_only')
             and not current.get('fresh_source_required')
             and not self._has_scope(current) and self.context
-            and self.context.selected_dataset_id)
+            and self.context.selected_dataset_id
+            and self._source_matches(self.context.datasets.metadata[self.context.selected_dataset_id], current))
         deterministic_scalar = not (current.get('fresh_source_required') or current.get('scalar_grouping'))
         if (self.context and current.get('calculation') and deterministic_scalar
                 and len(aggregate_operations) >= 1
@@ -3174,6 +3333,12 @@ class RecoveryMiddleware(AgentMiddleware):
 
     def before_step(self, state):
         current, calls = self._state(state)
+        if current.get('latest_per_key_spec'):
+            from core.analysis_agent.latest_selection import ask
+            question=current.get('latest_question') or current['latest_per_key_spec'].get('question')
+            if question:return ask(current,question)
+            if self._has_scope(current) or current.get('scope',{}).get('unresolved'):
+                return ask(current,'키별 최신 행 선택 전후 중 어느 단계에서 조건을 적용할지 알려주세요.')
         if current.get('operation_pending') and any(
                 c.get('name') == 'resolve_analysis_operation' for c in calls.values()):
             return {**self._finish(current, reason='analysis_operation_unresolved'), 'jump_to':'end'}
@@ -3186,10 +3351,10 @@ class RecoveryMiddleware(AgentMiddleware):
         # the request needs that remote result to identify the current schema
         # or to publish a new dataset. Do not burn the turn budget or suggest
         # an unapproved retry after an OpenSession failure.
-        if ((current.get('metadata_kind') or current.get('data_load'))
+        if ((current.get('metadata_kind') or current.get('data_load') or current.get('remote_query_ids'))
                 and current.get('failed', {}).get('query_databricks', {}).get('status') == 'unavailable'):
             return {**self._finish(current, reason='remote_blocked'), 'jump_to':'end'}
-        if current.get('metadata_kind') and current.get('remote_rejected'):
+        if (current.get('metadata_kind') or current.get('remote_query_ids')) and current.get('remote_rejected'):
             return {**self._finish(current, reason='remote_blocked'), 'jump_to':'end'}
         if (current.get('metadata_kind') and not self.remote_available
                 and current.get('failed', {}).get('inspect_table_context', {}).get('status') == 'needs_refresh'):
@@ -3320,7 +3485,7 @@ class RecoveryMiddleware(AgentMiddleware):
                     'action':'Inspect current table relationships and rewrite the proposal. '
                              'Preserve all requested filters and OR roles; do not repeat the same call.'}
         return {'recovery':current, 'messages':[RemoveMessage(id=last.id),
-            SystemMessage(content='승인 전 범위 검증이 도구 호출을 거절했습니다. '
+            SystemMessage(content='실행 전 범위 검증이 도구 호출을 거절했습니다. '
                 + json.dumps(feedback, ensure_ascii=False) + '\n'
                 + self._scope_instruction(current), additional_kwargs={'lc_source':'recovery_scope'})], 'jump_to':'model'}
 
@@ -3405,11 +3570,18 @@ class RecoveryMiddleware(AgentMiddleware):
                     'action':'Rewrite the SELECT using the current schema and target SQL dialect. '
                              'Keep the original filters and do not repeat the same proposal.'}
         return {'recovery':current, 'messages':[RemoveMessage(id=last.id),
-            SystemMessage(content='승인 전 읽기 전용 SQL 검사 실패: '
+            SystemMessage(content='실행 전 읽기 전용 SQL 검사 실패: '
                 + json.dumps(feedback, ensure_ascii=False),
                 additional_kwargs={'lc_source':'proposal_preflight'})], 'jump_to':'model'}
 
     def _proposed_scope_valid(self, call, current):
+        if current.get('explanation_only'): return False
+        if current.get('histogram_bins') is not None and call.get('name') in {
+                'render_chart_spec','render_histogram','prepare_histogram','recommend_chart_images'}:
+            if (call.get('name') != 'render_chart_spec'
+                    or call.get('args',{}).get('bins',20) != current['histogram_bins']):
+                current['scope_error']='histogram_bins_mismatch'
+                return False
         if call.get('name')=='prepare_numeric_dataset':
             if not self._numeric_missing_policy_valid(call.get('args',{}),current):
                 current['scope_error']='numeric_missing_policy_unverified'
@@ -3570,6 +3742,12 @@ class RecoveryMiddleware(AgentMiddleware):
         if not messages or not isinstance(messages[-1], AIMessage): return None
         last = messages[-1]
         current, calls = self._state(state)
+        from core.analysis_agent.remote_completion import deferred_execution_claim
+        if not last.tool_calls:
+            current['unverified_execution_claim'] = deferred_execution_claim(last.content)
+            if current['unverified_execution_claim']:
+                self.diagnostics.emit('unsupported_deferred_reply_rejected',
+                    request_id=current.get('request_id'))
         current['model_calls'] += 1
         started = current.pop('model_started_at', None)
         if started:
@@ -3639,6 +3817,11 @@ class RecoveryMiddleware(AgentMiddleware):
             attempts=current['attempts'],
             missing_capabilities=[contract.name for contract in missing_contracts(current)])
         instruction = recovery_instruction(current)
+        if current.get('unverified_execution_claim'):
+            instruction += ('\n백그라운드 실행이나 나중에 결과를 알리는 기능은 없습니다. '
+                            '조회 결과가 오면 안내하겠다는 답변으로 종료하지 마세요. '
+                            '확인된 도구 결과를 보여주거나, 필요한 도구를 호출하거나, '
+                            '실제 미실행·실패 상태 또는 꼭 필요한 확인 질문을 답하세요.')
         if self._has_scope(current): instruction += '\n' + self._scope_instruction(current)
         return {'recovery': current, 'messages': [RemoveMessage(id=last.id),
             SystemMessage(content=instruction, additional_kwargs={'lc_source': 'recovery', 'invalidated_message_id': last.id})], 'jump_to': 'model'}

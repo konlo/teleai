@@ -82,8 +82,8 @@ def build_analysis_tools(context: AnalysisToolContext) -> list[ToolDefinition]:
         return {"dataset": asdict(info), "dtypes": frame.dtypes.astype(str).to_dict(),
                 "preview": frame.head(5).to_dict(orient="records")}
 
-    def prepare_numeric_dataset(dataset_id, columns, missing_values=None):
-        return build_numeric_dataset(datasets, dataset_id, columns, missing_values)
+    def prepare_numeric_dataset(dataset_id, columns, missing_values=None, preserve_columns=None):
+        return build_numeric_dataset(datasets, dataset_id, columns, missing_values, preserve_columns)
 
     def profile_dataset(dataset_id, columns=None, offset=0, limit=50):
         return build_dataset_profile(datasets, dataset_id, columns, offset, limit)
@@ -144,7 +144,7 @@ def build_analysis_tools(context: AnalysisToolContext) -> list[ToolDefinition]:
                 'reason': '사용 가능한 테이블 목록을 information_schema에서 조회합니다.',
             },
             'scope': f'{resolved} catalog의 테이블 메타데이터를 최대 {bounded_limit}건 조회하는 계획입니다. 아직 실행되지 않았습니다.',
-            'user_action': '이 계획을 query_databricks로 전달하면 사용자 승인 후에만 실행됩니다.',
+            'user_action': '이 계획을 query_databricks로 전달하여 현재 원격 실행 정책에 따라 실행하세요.',
         }
 
     def use_dataset(dataset_id, columns, conditions=None, current_result_only=False):
@@ -315,6 +315,12 @@ def build_analysis_tools(context: AnalysisToolContext) -> list[ToolDefinition]:
             max_output_rows=max_output_rows,
         )
 
+    def analyze_latest_distribution(dataset_id, key_columns, order_column, value_column,
+                                    categorical=True, tie_break_columns=None):
+        from utils.analysis_latest import latest_distribution
+        return latest_distribution(context,dataset_id,key_columns,order_column,value_column,
+                                   categorical,tie_break_columns)
+
     def propose_query(source, query, reason):
         validate_query(query)
         return context.propose_query(source=source, query=query, reason=reason)
@@ -368,6 +374,9 @@ def build_analysis_tools(context: AnalysisToolContext) -> list[ToolDefinition]:
         sql_column_names = {column.name for column in columns
                             if column.name not in output_aliases
                             or column.find_ancestor(exp.Alias) is not None}
+        if len(list(tree.find_all(exp.Select))) > 1 or tree.args.get('with_'):
+            from core.analysis_sql import local_input_columns
+            sql_column_names = local_input_columns(tree, info.columns)
         # An omitted scope means the SQL's WHERE scope (or the whole source).
         # Never silently inherit a cached subset when the caller asks for all rows.
         scope = requested if requested is not None else (sql_conditions or ())
@@ -676,11 +685,12 @@ def build_analysis_tools(context: AnalysisToolContext) -> list[ToolDefinition]:
     definitions = [
         tool("prepare_numeric_dataset", "숫자가 문자열로 저장되어 수치 계산/히스토그램이 실패할 때 보유 원본에서 필요한 컬럼만 Float64로 변환한 자식 dataset을 만듭니다. 모든 행과 원본을 보존하며 원격 조회하지 않습니다. missing_values는 의미를 확인한 정확한 결측 문자열만 명시하세요. 다른 비수치 값은 거절하며 삭제하지 않습니다. 반환 dataset ID로 후속 분석하고 conversion의 결측 수를 설명하세요.",
              {"dataset_id":string,"columns":{"type":"array","items":string,"minItems":1,"maxItems":8,"uniqueItems":True},
-              "missing_values":{"type":"array","items":{"type":"string","maxLength":64},"maxItems":16}},
+              "missing_values":{"type":"array","items":{"type":"string","maxLength":64},"maxItems":16},
+              "preserve_columns":{"type":"array","items":string,"maxItems":8,"uniqueItems":True,"description":"그룹/필터용으로 타입과 값을 그대로 보존할 컬럼. columns와 겹치면 안 됩니다."}},
              ["dataset_id","columns"], prepare_numeric_dataset),
-        tool("inspect_table_relationships", "조인 전에 DB metadata에서 확인된 외래 키와 참조 키를 읽습니다. 없으면 알려진 catalog.schema.table의 관계 metadata 조회 계획을 반환합니다. 이름만으로 관계를 추측하지 마세요. metadata_plan은 query_databricks로 승인 요청하세요. 여러 관계의 역할·실제 cardinality는 별도 확인이 필요합니다.",
+        tool("inspect_table_relationships", "조인 전에 DB metadata에서 확인된 외래 키와 참조 키를 읽습니다. 없으면 알려진 catalog.schema.table의 관계 metadata 조회 계획을 반환합니다. 이름만으로 관계를 추측하지 마세요. metadata_plan은 query_databricks로 현재 실행 정책에 따라 실행하세요. 여러 관계의 역할·실제 cardinality는 별도 확인이 필요합니다.",
              {"table":string}, ["table"], inspect_table_relationships),
-        tool("inspect_column_definitions", "업무 의미가 부족하면 확인된 catalog.schema.table의 저장된 컬럼 설명을 읽습니다. 없으면 Unity Catalog information_schema.columns의 정확한 조회 계획만 반환합니다. metadata_plan을 query_databricks로 제안하고 사용자 승인을 기다리세요. 원본 행은 로딩하지 않습니다.",
+        tool("inspect_column_definitions", "업무 의미가 부족하면 확인된 catalog.schema.table의 저장된 컬럼 설명을 읽습니다. 없으면 Unity Catalog information_schema.columns의 정확한 조회 계획만 반환합니다. metadata_plan을 query_databricks로 실행해 실제 결과를 확인하세요. 원본 행은 로딩하지 않습니다.",
              {"table":string}, ["table"], inspect_column_definitions),
         tool("search_analysis_tools", "필요한 기능·도구명·오류와 관련된 등록 도구의 실제 입력/출력 schema와 제약·권한·관련 스킬을 검색합니다. 대체 경로 탐색용이며 데이터 조회나 실행은 하지 않습니다.",
              {"query": {"type":"string", "minLength":1, "maxLength":400},
@@ -692,7 +702,7 @@ def build_analysis_tools(context: AnalysisToolContext) -> list[ToolDefinition]:
              {"dataset_id": string}, ["dataset_id"], resolve_analysis_operation),
         tool("list_analysis_context", "현재 보유 데이터와 읽을 수 있는 분석 스킬 목록. 원격 조회 없음.", {}, [], catalog),
         tool("read_analysis_skill", "등록된 분석 스킬을 필요할 때 읽습니다.", {"name": string}, ["name"], registry.read),
-        tool("inspect_table_context", "테이블의 저장된 스키마 스냅샷과 승인 후 로딩된 실제 스키마를 비교합니다. stale 또는 needs_refresh이면 그 컬럼으로 새 SQL을 만들지 말고 반환된 SELECT * LIMIT 0 조회를 사용자에게 승인 요청하세요. 이 도구 자체는 원격 조회하지 않습니다. table은 available_tables의 정확한 테이블명입니다.",
+        tool("inspect_table_context", "테이블의 저장된 스키마 스냅샷과 로딩된 실제 스키마를 비교합니다. stale 또는 needs_refresh이면 그 컬럼으로 새 SQL을 만들지 말고 반환된 SELECT * LIMIT 0 조회를 query_databricks로 실행하세요. 이 도구 자체는 원격 조회하지 않습니다. table은 available_tables의 정확한 테이블명입니다.",
              {"table": string}, ["table"], inspect_table_context),
         tool("inspect_dataset", "로딩된 datasets의 id만 사용하세요. 테이블명은 허용되지 않습니다. 결과 ID의 출처, 컬럼, 관측 단위와 최대 5개 미리보기 행을 확인합니다.",
              {"dataset_id": string}, ["dataset_id"], inspect_dataset),
@@ -702,7 +712,7 @@ def build_analysis_tools(context: AnalysisToolContext) -> list[ToolDefinition]:
               "offset": {"type": "integer", "minimum": 0},
               "limit": {"type": "integer", "minimum": 1, "maximum": 64}},
              ["dataset_id"], profile_dataset),
-        tool("plan_source_discovery", "현재 문맥에서 확인된 Databricks catalog의 테이블 목록을 찾는 읽기 전용 information_schema SQL을 만듭니다. 실행하지 않으며, 반환된 discovery_plan을 query_databricks로 전달할 때 다시 사용자 승인을 받아야 합니다.",
+        tool("plan_source_discovery", "현재 문맥에서 확인된 Databricks catalog의 테이블 목록을 찾는 읽기 전용 information_schema SQL을 만듭니다. 실행하지 않으며, 반환된 discovery_plan을 query_databricks로 전달할 때 현재 원격 실행 정책에 따라 실행합니다.",
              {"catalog": string, "schema": string, "pattern": string,
               "limit": {"type": "integer", "minimum": 1, "maximum": 200}},
              [], plan_source_discovery),
@@ -825,6 +835,11 @@ def build_analysis_tools(context: AnalysisToolContext) -> list[ToolDefinition]:
               "max_output_rows": {"type":"integer","minimum":1,"maximum":1000}},
              ["baseline_dataset_id","cohort_dataset_id","aggregation","group_column"],
              compare_group_aggregates),
+        tool("analyze_latest_distribution", "명시한 키마다 정렬 컬럼이 가장 큰 최신 행 하나를 선택하고 분포와 실제 차트를 생성합니다. 원본은 보존합니다. 정렬 기준은 물리적 행 순서가 아니며 동률/결측값은 확인이 필요합니다. 범주/식별자는 categorical=true, 연속 수치는 false입니다.",
+             {"dataset_id":string,"key_columns":{"type":"array","items":string,"minItems":1},
+              "order_column":string,"value_column":string,"categorical":{"type":"boolean"},
+              "tie_break_columns":{"type":"array","items":string}},
+             ["dataset_id","key_columns","order_column","value_column"],analyze_latest_distribution),
         tool("propose_databricks_query", "Databricks 조회를 사용자에게 제안합니다. 이 도구는 실행하지 않습니다. 정확한 SQL과 이유를 표시하고 승인 대기합니다.",
              {"source": string, "query": string, "reason": string}, ["source", "query", "reason"], propose_query),
         tool("recommend_chart_images", "현재 데이터의 통계로 실제 이미지 후보를 만듭니다. 원격 조회 없음. 반환된 카드 ID의 이미지는 UI가 표시합니다.",
