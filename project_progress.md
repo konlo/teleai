@@ -6,7 +6,7 @@
 - **Latest continuation**: [연속 평가·개선 보고서](docs/evaluation/2026-09-30_continuation/report.md). 동률/결측의 후속 정책과 원격/로컬 실행·완료 계약, 공급자400 분류/제한 재시도, interactive Spider 평가를 보강했다. 제품461 + migration136 PASS, 합성100만행2종 및 실제 웹12행 복구 PASS. Databricks 모델·SQL 리소스 생성400으로 실환경 재평가 차단.
 - **Summary**: [통합 작업 보드](docs/evaluation/2026-09-30_batch/workboard.md)의 6묶음 중 구현·평가 미완료는 4묶음. 원격 최신행 범주/수치 histogram, 복합키·구간 후속 연결, 그룹 정렬, metadata 계획을 보강했다.
 - **Evidence**: 실제 Databricks 75만행→12키→8구간 및 웹 8→6구간·반복0조회 PASS. 제품446 + migration136 + reference/계약217 PASS. 독립 agent200문항102PASS/98UNGRADED. Spider 선정10문항 공식0/10. [종합 보고서](docs/evaluation/2026-09-30_batch/report.md).
-- **Qualification**: DeepEval 도구10/10, judge 통제12+새8 PASS 및 실제답변3개1.0은 보조 점수다. 새로운 실모델 자유계획 전체 성공률이나 범용 GO를 뜻하지 않는다. 별도 서버 배포 제외. draft PR68 미병합.
+- **Qualification**: DeepEval 도구10/10, judge 통제12+새8 PASS 및 실제답변3개1.0은 보조 점수다. 새로운 실모델 자유계획 전체 성공률이나 범용 GO를 뜻하지 않는다. 별도 서버 배포 제외. PR68은 2026-09-28 이미 병합되었음을 API로 확인했다. 현재 후속 변경은 작업 브랜치에 push하며 main 병합/배포를 의미하지 않는다.
 - **Next Session Focus**: 최신행 정책/필터 확장, 역할별·다단계 SQL, D07/D08·J21~24 전체 계약, 미채점98문항. 오늘 완료한 push/CI 근거는 보고서 말미와 validation.json에 기록한다.
 
 ## Next Action Items
@@ -2114,3 +2114,5 @@ Task definitions and acceptance conditions: docs/agent_remaining_tasks_2026-09-1
 ### Daily Wrap-ups — 2026-09-30 continuation
 - 동률·결측 후속 대화 복구와 실제 이미지 표시를 구현·검증했다. 공급자 오류와 agent 결과 실패를 분리했고 읽기 전용 interactive Spider 평가를 만들었다.
 - Next Action Items: 위4개 잔여 묶음 및 외부 서비스 복구 후 동일 실모델/warehouse 평가. 코드·문서 push/CI 확인을 마무리한다.
+
+- **Final follow-up boundary**: 완료된 최신행 histogram의 짧은 bins 변경도 선택한 데이터/스냅샷이 바뀌면 이전 출처에 묶지 않도록 보강. 관련15 PASS(11.513s). 이전 PR68은 이미 병합됨을 확인했으며 후속 코드는 해당 작업 브랜치에 push한다.

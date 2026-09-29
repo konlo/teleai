@@ -116,4 +116,8 @@ class LatestTieContinuationTests(unittest.TestCase):
                 self.assertEqual(proof['chart_spec']['counts'],counts.tolist())
                 self.assertEqual(proof['chart_spec']['edges'],edges.tolist())
                 self.assertEqual(len(calls),1)
+                previous=deepcopy(r.inspect()['recovery'])
+                other=r.datasets.register(frame,source='fixture.changed.selection',coverage='complete',predicate_known=True)
+                r.select_dataset(other.id)
+                self.assertIsNone(continue_order('6개 구간으로 바꿔줘',previous,r.context))
             finally:r.close()

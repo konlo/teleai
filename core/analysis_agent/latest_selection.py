@@ -104,7 +104,10 @@ def bind(text,context, *, sources=(), remote_available=False):
 
 def continue_order(text,previous,context):
     prior=previous.get('latest_per_key_spec') or {}
-    if prior and previous.get('latest_selection_evidence') and not prior.get('categorical',True):
+    anchor=context.datasets.metadata.get(context.selected_dataset_id) if context else None
+    same_anchor=(context is not None and context.selected_dataset_id==prior.get('context_dataset_id',prior.get('dataset_id'))
+        and ('context_snapshot' not in prior or prior['context_snapshot']==(anchor.snapshot if anchor else None)))
+    if prior and same_anchor and previous.get('latest_selection_evidence') and not prior.get('categorical',True):
         from core.analysis_agent.eda_contract import histogram_bins
         bins=histogram_bins(text)
         if bins is not None and re.fullmatch(
