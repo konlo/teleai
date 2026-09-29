@@ -76,6 +76,8 @@ class ProviderServiceUnavailableTests(unittest.TestCase):
                     self.assertEqual(failed['status'],'incomplete')
                     self.assertEqual(failed['error_category'],'model_provider_temporarily_unavailable')
                     self.assertIn('모델 공급자',failed['text'])
+                    self.assertIn('확정할 수 없습니다',failed['text'])
+                    self.assertIn('사용량·계정 상태',failed['text'])
                     self.assertEqual(model.provider_attempts,3)
                     self.assertFalse(runtime.events()[-1].additional_kwargs.get('analysis_complete'))
                     result=runtime.resume()

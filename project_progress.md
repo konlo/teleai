@@ -3,6 +3,7 @@
 ## Current Status
 - **Last Updated**: 2026-09-30
 - **Status**: In Progress — 범용 자율 분석 agent 정식 출시 NO-GO
+- **HTTP400 recheck**: [재진단](docs/evaluation/2026-09-30_provider_recheck/report.md). 08:15 KST까지 지속. warehouse/API200·모델 metadata READY이나 최소 추론/OpenSession 모두400. Free Edition 확인, 한도 초과 여부는 미확인. 재발급·짧은 장애로 단정하지 않으며 실제 호출 사전점검과 사용자 안내 보강.
 - **Latest continuation**: [연속 평가·개선 보고서](docs/evaluation/2026-09-30_continuation/report.md). 동률/결측의 후속 정책과 원격/로컬 실행·완료 계약, 공급자400 분류/제한 재시도, interactive Spider 평가를 보강했다. 최종CI 제품464 + migration136 + reference217 PASS, 합성100만행2종 및 실제 웹12행 복구 PASS. Databricks 모델·SQL 리소스 생성400으로 실환경 재평가 차단.
 - **Summary**: [통합 작업 보드](docs/evaluation/2026-09-30_batch/workboard.md)의 6묶음 중 구현·평가 미완료는 4묶음. 원격 최신행 범주/수치 histogram, 복합키·구간 후속 연결, 그룹 정렬, metadata 계획을 보강했다.
 - **Evidence**: 실제 Databricks 75만행→12키→8구간 및 웹 8→6구간·반복0조회 PASS. 제품446 + migration136 + reference/계약217 PASS. 독립 agent200문항102PASS/98UNGRADED. Spider 선정10문항 공식0/10. [종합 보고서](docs/evaluation/2026-09-30_batch/report.md).
@@ -2120,3 +2121,16 @@ Task definitions and acceptance conditions: docs/agent_remaining_tasks_2026-09-1
 - **Evaluation gate hardening**: 원격/대용량 평가 CLI가 보고서의 BLOCKED/FAIL에도 성공 종료하던 문제 수정. 실제 agent answered+의도적으로 불일치시킨 독립 oracle과 warehouse 연결 실패에서 실패 종료를 검증했다. 관련5검사 PASS; 다른 평가자의 첫 SQL 탐색/최종 계산/공급자 실패 계수도 함께 확인했다.
 
 - **Final push/CI outcome [2026-09-30T07:03:45.085260+09:00]**: 코드4c058175b9ef8987dfe12b918ba16828dc06a1b5 push/원격SHA 일치. CI36636744608 SUCCESS(제품464/136 migration/reference217/58figures/별도recovery/compile). localhost PID15225 health200, 현재 정책 자동읽기, 대화·차트·원본복원 확인. 후속커밋은 이 결과 문서만 갱신. 범용NO-GO·실환경 BLOCKED_PROVIDER·잔여4묶음 유지.
+
+## [2026-09-30T08:11:05.190553+09:00] [Agent: Codex] User Request: 계속 진행하고 HTTP400이 일시적인지 조치가 필요한지 확인
+- **Action**: 실제 모델·SQL·warehouse 상태를 최소 호출로 재검증하고 공급자 문서/관측 증거와 구분해 원인과 후속 조치를 기록한다. 기존 데이터와 평가 이력은 보존한다.
+
+## [2026-09-30T08:17:14.078454+09:00] [Agent: Codex] Action: 공급자400 최소 재현·복구 판정 보강
+- **Evidence**: 직접 모델400, 제품adapter400, SQL OpenSession400; warehouse200/STOPPED, model endpoint200/READY. UI 세션 복원 및 Free Edition 확인. 자동 브라우저 제어 미지원 안내에 따라 추가 UI조작 중단; 사용자에게 한도 안내 확인 요청.
+- **Decision**: 지속 장애/제한 조치 점검 필요. 한도 소진·공급자 장애 중 근본원인은 미확정. 인증 토큰 교체 근거 없음. 장애 중 대량평가를 반복하지 않는다.
+- **Implementation**: bounded availability probe(exit1 onBLOCKED; connectivity != GO), 사용자 안내에 사용량/계정 점검 및 원인 불확실성 명시. 관련19검사 PASS.
+- **Next Action Items**: 한도 안내 확인→최소probe 통과→실모델/SQL 평가. 기존 잔여4묶음 및 범용NO-GO 유지.
+
+### Daily Wrap-ups — 2026-09-30 provider recheck
+- 공급자 최소 재현/제품경로 재현, Free Edition·endpoint상태 확인, 한도/일시 장애 불확실성 안내와 단일 사전점검 도구 보강. 제품467/467, 관련19/19 PASS. 실제모델/SQL은 BLOCKED.
+- Next Action Items: 사용자 한도 안내 확인 및 공급자 복구 뒤 live평가 재개. 기존4묶음은 미완료 유지.

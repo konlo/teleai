@@ -423,6 +423,8 @@ class GraphAnalysisRuntime:
             category = model_error_category(exc)
             message = (f'모델 공급자가 현재 요청을 처리할 수 없다고 응답했습니다 (오류 ID: {error_id}). '
                 '허용된 재시도 한도 안에서 복구하지 못해 분석을 완료하지 않았습니다. 기존 결과는 보존했습니다. '
+                '이 응답만으로 일시 장애인지 사용 한도·계정 제한인지 확정할 수 없습니다. '
+                '반복되면 Databricks 사용량·계정 상태를 확인해야 합니다. '
                 '연결이 복구된 후 미완료 분석 재개를 사용할 수 있습니다.' if category else
                 f'분석 중 오류가 발생했습니다 ({type(exc).__name__}, 오류 ID: {error_id}). 기존 결과는 보존했습니다. 미완료 분석 재개로 다시 시도할 수 있습니다.')
             return {'error_id':error_id, 'status':'incomplete','error_type':type(exc).__name__,
