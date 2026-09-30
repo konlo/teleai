@@ -3,6 +3,7 @@
 ## Current Status
 - **Last Updated**: 2026-09-30
 - **Status**: In Progress — 범용 자율 분석 agent 정식 출시 NO-GO
+- **Offline continuation**: [대용량 이상치 EDA 개선](docs/evaluation/2026-09-30_offline_continuation/report.md). 13:30 KST 공급자 모델/SQL400 지속. 영속 이상치 cohort 전체 프레임 복원을 배치 staging으로 전환, 합성100만행→정답100행/원본/재시작 보존 PASS. 대상 수치1개 컬럼의 임계값 계산은 전체 읽기라는 한계를 명시.
 - **HTTP400 recheck**: [재진단](docs/evaluation/2026-09-30_provider_recheck/report.md). 08:15 KST까지 지속. warehouse/API200·모델 metadata READY이나 최소 추론/OpenSession 모두400. Free Edition 확인, 한도 초과 여부는 미확인. 재발급·짧은 장애로 단정하지 않으며 실제 호출 사전점검과 사용자 안내 보강.
 - **Latest continuation**: [연속 평가·개선 보고서](docs/evaluation/2026-09-30_continuation/report.md). 동률/결측의 후속 정책과 원격/로컬 실행·완료 계약, 공급자400 분류/제한 재시도, interactive Spider 평가를 보강했다. 최종CI 제품464 + migration136 + reference217 PASS, 합성100만행2종 및 실제 웹12행 복구 PASS. Databricks 모델·SQL 리소스 생성400으로 실환경 재평가 차단.
 - **Summary**: [통합 작업 보드](docs/evaluation/2026-09-30_batch/workboard.md)의 6묶음 중 구현·평가 미완료는 4묶음. 원격 최신행 범주/수치 histogram, 복합키·구간 후속 연결, 그룹 정렬, metadata 계획을 보강했다.
@@ -2134,3 +2135,16 @@ Task definitions and acceptance conditions: docs/agent_remaining_tasks_2026-09-1
 ### Daily Wrap-ups — 2026-09-30 provider recheck
 - 공급자 최소 재현/제품경로 재현, Free Edition·endpoint상태 확인, 한도/일시 장애 불확실성 안내와 단일 사전점검 도구 보강. 제품467/467, 관련19/19 PASS. 실제모델/SQL은 BLOCKED.
 - Next Action Items: 사용자 한도 안내 확인 및 공급자 복구 뒤 live평가 재개. 기존4묶음은 미완료 유지.
+
+## [2026-09-30T13:30:12.275190+09:00] [Agent: Codex] User Request: 계속 진행 가능해?
+- **Action**: 공급자 최소probe 재확인 후 가능한 잔여 agent 개선/독립 회귀를 진행한다. 외부 차단과 오프라인 검증을 분리한다.
+
+## [2026-09-30T13:36:09.201053+09:00] [Agent: Codex] Action: 외부 차단 중 영속 이상치 EDA 배치 처리
+- **Finding**: 기존30,000행에서 정답3행만 필요해도 전체 읽기 예산으로 거부. 최초 실패 보존.
+- **Implementation**: 1,024행 배치 선택→staging→정확한 행 수/digest/용량 검사, 원본/선택 유지. 비영속 경로 기존 예산 유지.
+- **Validation**: 관련27 PASS. 합성100만행→정답100행, 977batch, cache0, 추출0.416s/whole-process peakRSS245907456B. 원본·재시작 보존. 중간읽기/조기종료/byte한도 실패시 발행0/staging0.
+- **Limitations**: 대상 수치컬럼 임계값 계산은 전체 읽기. 모델/SQL실평가 차단. 기존잔여4묶음·NO-GO유지.
+
+### Daily Wrap-ups — 2026-09-30 offline continuation
+- 이상치 추출 전체프레임복원을 배치staging으로 전환. 제품469/469(55.308s), 관련27, 합성100만행 독립oracle/원본/재시작 PASS.
+- Next Action Items: 외부 서비스복구 후실평가, 기존4묶음 및 대용량나머지 도구. 공급자400은 아직 BLOCKED.

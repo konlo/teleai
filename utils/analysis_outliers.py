@@ -291,21 +291,18 @@ def select_outlier_rows(
     info = store.metadata[dataset_id]
     output_rows = (result["counts"]["selected"] if selection == "outliers" else
                    result["sample"]["valid_rows"] - result["counts"]["selected"])
-    rejected = full_read_preflight(store, [dataset_id],
-        output_rows=output_rows, output_columns=len(info.columns))
-    if rejected:
-        return {**rejected, 'dataset_id': dataset_id, 'outlier_result': result}
-    frame = store.frames[dataset_id]
-    values = pd.to_numeric(frame[column], errors="coerce")
-    valid = values.notna() & np.isfinite(values)
     lower, upper = result["thresholds"]["lower"], result["thresholds"]["upper"]
-    lower_mask = valid & values.lt(float(lower))
-    upper_mask = valid & values.gt(float(upper))
-    outlier_mask = (lower_mask | upper_mask if tail == "both"
-                    else upper_mask if tail == "upper" else lower_mask)
-    selected_mask = outlier_mask if selection == "outliers" else valid & ~outlier_mask
-    selected = frame.loc[selected_mask].copy()
-    if selected.empty:
+    def selected_rows(frame):
+        values = pd.to_numeric(frame[column], errors="coerce")
+        valid = values.notna() & np.isfinite(values)
+        lower_mask = valid & values.lt(float(lower))
+        upper_mask = valid & values.gt(float(upper))
+        outlier_mask = (lower_mask | upper_mask if tail == "both"
+                        else upper_mask if tail == "upper" else lower_mask)
+        mask = outlier_mask if selection == "outliers" else valid & ~outlier_mask
+        return frame.loc[mask].reset_index(drop=True)
+
+    if not output_rows:
         return {
             "status": "needs_data",
             "dataset_id": dataset_id,
@@ -325,8 +322,7 @@ def select_outlier_rows(
                      if selection == "outliers" else
                      f"({quoted} >= {lower_sql} AND {quoted} <= {upper_sql})")
     query = f"SELECT * FROM data WHERE isfinite({quoted}) AND {predicate}"
-    derived = store.register(
-        selected,
+    provenance = dict(
         source=info.source,
         coverage=info.coverage,
         # The reuse engine represents conjunctions only and cannot safely
@@ -340,11 +336,51 @@ def select_outlier_rows(
         query=query,
         parent_id=dataset_id,
     )
+    streaming = hasattr(store.frames, 'batches') and hasattr(store, 'register_batches')
+    if streaming:
+        # Thresholds above need only the measured column. Read all other columns
+        # in bounded batches and publish the cohort only after exact-count checks.
+        digest = sha256(json.dumps(list(info.columns), ensure_ascii=False).encode())
+        observed_selected = 0
+        def batches():
+            nonlocal observed_selected
+            source = store.frames.batches(dataset_id, info.columns,
+                                          expected_rows=info.rows, batch_size=1024)
+            try:
+                for batch in source:
+                    selected = selected_rows(batch.to_pandas())
+                    if selected.empty:
+                        continue
+                    observed_selected += len(selected)
+                    digest.update(pd.util.hash_pandas_object(selected, index=False).values.tobytes())
+                    yield selected
+                if observed_selected != output_rows:
+                    raise ValueError('이상치 탐지와 실제 추출 행 수가 달라 결과를 발행하지 않았습니다.')
+            finally:
+                source.close()
+        candidates = batches()
+        try:
+            derived = store.register_batches(candidates, columns=info.columns,
+                                              max_rows=output_rows, **provenance)
+        finally:
+            candidates.close()
+        evidence_digest = digest.hexdigest()
+    else:
+        rejected = full_read_preflight(store, [dataset_id],
+            output_rows=output_rows, output_columns=len(info.columns))
+        if rejected:
+            return {**rejected, 'dataset_id': dataset_id, 'outlier_result': result}
+        selected = selected_rows(store.frames[dataset_id])
+        if len(selected) != output_rows:
+            raise ValueError('이상치 탐지와 실제 추출 행 수가 달라 결과를 발행하지 않았습니다.')
+        derived = store.register(selected, **provenance)
+        evidence_digest = dataset_digest(selected)
     selection_summary = {
         "selection": selection,
-        "selected_rows": len(selected),
-        "parent_rows": len(frame),
-        "data_sha256": dataset_digest(selected),
+        "selected_rows": derived.rows,
+        "parent_rows": info.rows,
+        "data_sha256": evidence_digest,
+        "execution_mode": "streamed_batches" if streaming else "in_memory",
         "predicate": predicate,
         "parent_dataset_id": dataset_id,
     }
@@ -354,7 +390,7 @@ def select_outlier_rows(
         "outlier_result": result,
         "selection_summary": selection_summary,
         "scope": (
-            f"{detected['scope']} {selection} 기준 {len(selected):,}행을 부모 {dataset_id}에서 "
+            f"{detected['scope']} {selection} 기준 {derived.rows:,}행을 부모 {dataset_id}에서 "
             f"파생 dataset {derived.id}로 저장했습니다."
         ),
     }

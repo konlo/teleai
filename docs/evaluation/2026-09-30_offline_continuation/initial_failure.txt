@@ -1,0 +1,24 @@
+FF
+======================================================================
+FAIL: test_mid_stream_failure_and_output_limit_do_not_publish_partial_cohorts (tests.test_outlier_streaming.OutlierStreamingTests.test_mid_stream_failure_and_output_limit_do_not_publish_partial_cohorts)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/najongseong/git_repository/teleai/tests/test_outlier_streaming.py", line 70, in test_mid_stream_failure_and_output_limit_do_not_publish_partial_cohorts
+    with self.assertRaises(OSError):
+AssertionError: OSError not raised
+
+======================================================================
+FAIL: test_sparse_cohort_matches_independent_rows_and_survives_restart (tests.test_outlier_streaming.OutlierStreamingTests.test_sparse_cohort_matches_independent_rows_and_survives_restart)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/najongseong/git_repository/teleai/tests/test_outlier_streaming.py", line 31, in test_sparse_cohort_matches_independent_rows_and_survives_restart
+    self.assertEqual(result['status'], 'ready', result)
+AssertionError: 'rejected' != 'ready'
+- rejected
++ ready
+ : {'status': 'rejected', 'error_code': 'full_frame_budget', 'retryable': False, 'user_action': '필요한 컬럼과 조건을 명시하거나, 조인 전 각 데이터를 집계해 규모를 줄여주세요.', 'scope': '원본 전체 복원 전 메모리 예산 검사에서 중단했습니다. 기존 데이터와 분석 기준은 보존됩니다.', 'estimated_bytes': 1440144, 'budget_bytes': 1048576, 'dataset_id': '9a9edbe7-9d88-40c5-856c-7dadfa67d935', 'outlier_result': {'kind': 'outlier_detection', 'method': 'iqr', 'column': 'reading', 'tail': 'both', 'parameters': {'multiplier': 1.5, 'q1': 25, 'q3': 75, 'iqr': 50}, 'thresholds': {'lower': -50, 'upper': 150}, 'sample': {'input_rows': 30000, 'valid_rows': 29999, 'missing_rows': 1}, 'counts': {'selected': 3, 'lower': 1, 'upper': 2, 'selected_percent': 0.010000333344444815}, 'distribution': {'minimum': -1000, 'maximum': 3000, 'center': 50, 'scale': 50}, 'selected_extrema': {'minimum': -1000, 'maximum': 3000}, 'missing_policy': '대상 컬럼의 결측 행을 제외', 'boundary_policy': '경계와 같은 값은 이상치로 분류하지 않고 경계를 초과한 값만 분류', 'source': 'external.sensor', 'coverage': 'complete', 'grain': 'raw', 'snapshot': 'fixed:v1', 'warnings': []}}
+
+----------------------------------------------------------------------
+Ran 2 tests in 0.135s
+
+FAILED (failures=2)
