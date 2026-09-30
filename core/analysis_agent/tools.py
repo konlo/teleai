@@ -17,6 +17,22 @@ def local_tools(context, diagnostics=None):
         def execute(**arguments):
             started = time.monotonic()
             if diagnostics: diagnostics.emit('tool_started', tool=definition.name)
+            # Some tool-calling models serialize omitted optional inputs as
+            # null. Preserve required and explicitly nullable inputs, but let
+            # Python defaults handle optional non-nullable inputs.
+            properties = definition.parameters.get('properties', {})
+            required = set(definition.parameters.get('required', ()))
+            omitted = [key for key, value in arguments.items()
+                       if value is None and key not in required
+                       and key in properties
+                       and 'null' not in (
+                           properties[key].get('type') if isinstance(properties[key].get('type'), list)
+                           else [properties[key].get('type')])]
+            if omitted:
+                arguments = {key: value for key, value in arguments.items() if key not in omitted}
+                if diagnostics:
+                    diagnostics.emit('tool_optional_null_omitted', tool=definition.name,
+                                     fields=omitted)
             # Provider tool schemas are hints, not an execution boundary. Return
             # actionable constraints without echoing arbitrary input or rows.
             errors = list(islice(validator.iter_errors(arguments), 4))

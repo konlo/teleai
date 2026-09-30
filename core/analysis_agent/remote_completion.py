@@ -8,13 +8,25 @@ UNVERIFIED_DELIVERY_NOTICE = (
     '실제 결과 또는 실행 상태를 확인해야 합니다. 기존 데이터는 보존했습니다.')
 
 
+def table_list_requested(text):
+    """Recognize a catalog table inventory, excluding table-column requests."""
+    if not isinstance(text, str):
+        return False
+    if re.search(r'컬럼|필드|항목|\b(?:columns?|fields?|dtypes?|data\s+types?)\b', text, re.I):
+        return False
+    return bool(
+        re.search(r'(?:테이블|\btables?\b).{0,45}(?:목록|리스트|\blist\b|어떤|보여|있(?:어|나요|지))', text, re.I)
+        or re.search(r'(?:목록|리스트|\blist\b|어떤).{0,45}(?:테이블|\btables?\b)', text, re.I)
+    )
+
+
 def catalog_read_requested(current):
     sources = current.get('required_sources') or []
     text = current.get('request_text', '')
     return bool(sources) and all(
         len(parts := str(source).replace('`', '').lower().split('.')) == 3
         and parts[-2] == 'information_schema' for source in sources
-    ) and bool(re.search(r'목록|리스트|\blist\b', text, re.I)) and not re.search(
+    ) and table_list_requested(text) and not re.search(
         r'뜻|의미|정의|설명|\b(?:meaning|definition|explain)\b', text, re.I)
 
 

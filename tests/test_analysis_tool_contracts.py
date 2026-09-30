@@ -3,6 +3,7 @@ from core.analysis_agent.policy import RuntimePolicy
 import json
 import tempfile
 import unittest
+from dataclasses import asdict
 from unittest.mock import Mock
 from uuid import uuid4
 
@@ -16,6 +17,7 @@ from core.analysis_agent.tools import local_tools
 from core.analysis_runtime_tools import build_analysis_tools
 from core.analysis_tool_contract import AnalysisToolContext, COMMON_TOOL_RESULT_SCHEMA
 from core.analysis_sql import validate_query
+from core.analysis_agent.remote_completion import catalog_read_requested, table_list_requested
 from utils.analysis_datasets import DatasetStore
 
 
@@ -138,6 +140,82 @@ class AnalysisToolContractTests(unittest.TestCase):
         self.assertIn("`catalog`.information_schema.tables", plan["query"])
         self.assertIn("LIMIT 25", plan["query"])
         self.remote_proposal.assert_not_called()
+
+    def test_optional_null_tool_arguments_use_declared_defaults(self):
+        tools = {tool.name: tool for tool in local_tools(self.context)}
+        result = tools['plan_source_discovery'].invoke({
+            'catalog': None, 'schema': None, 'pattern': None, 'limit': None})
+        self.assertEqual(result['status'], 'planned', result)
+        self.assertIn('LIMIT 100', result['discovery_plan']['query'])
+        required = tools['inspect_table_context'].invoke({'table': None})
+        self.assertEqual(required['error_code'], 'invalid_tool_arguments')
+        self.assertFalse(table_list_requested('이 테이블의 컬럼 목록을 보여줘'))
+        self.assertTrue(catalog_read_requested({
+            'request_text':'어떤 테이블이 있어?',
+            'required_sources':['catalog.information_schema.tables']}))
+
+    def test_schema_scoped_table_list_proposes_only_named_schema(self):
+        with tempfile.TemporaryDirectory() as root:
+            runtime = GraphAnalysisRuntime(root, 'owner', 'schema-table-list', NoModelCall(),
+                connection_identity='test-connection',
+                remote_factory=lambda _: lambda envelope: self.fail('approval required'),
+                policy=RuntimePolicy(require_remote_approval=True))
+            try:
+                runtime.context.reference_context[:] = [
+                    {'table':SOURCE, 'columns':[]},
+                    {'table':'catalog.other.events', 'columns':[]}]
+                result = runtime.submit('analytics 테이블 목록 보여줘')
+                self.assertEqual(result['status'], 'awaiting_approval', result)
+                self.assertEqual(len(result['requests']), 1)
+                self.assertIn("table_schema = 'analytics'", result['requests'][0]['query'])
+            finally:
+                runtime.close()
+
+    def test_table_list_does_not_guess_between_catalogs(self):
+        with tempfile.TemporaryDirectory() as root:
+            runtime = GraphAnalysisRuntime(root, 'owner', 'ambiguous-table-list', NoModelCall(),
+                connection_identity='test-connection',
+                remote_factory=lambda _: lambda envelope: self.fail('no query expected'))
+            try:
+                runtime.context.reference_context[:] = [
+                    {'table':SOURCE, 'columns':[]},
+                    {'table':'second.analytics.events', 'columns':[]}]
+                result = runtime.submit('table list 보여줘')
+                self.assertEqual(result['status'], 'answered', result)
+                self.assertIn('catalog를 지정', result['text'])
+                self.assertEqual(runtime.inspect()['recovery']['status'], 'needs_context')
+                self.assertEqual(runtime.inspect()['dataset_ids'], [])
+            finally:
+                runtime.close()
+
+    def test_generic_table_list_executes_exact_catalog_plan_without_model(self):
+        remote_calls = []
+
+        def factory(datasets):
+            def execute(envelope):
+                remote_calls.append(envelope)
+                rows = pd.DataFrame([{'table_catalog':'catalog',
+                    'table_schema':'analytics', 'table_name':'bank_loan',
+                    'table_type':'BASE TABLE'}])
+                info = datasets.register(rows, source=envelope['source'],
+                    query=envelope['query'], coverage='complete', predicate_known=True)
+                return {'status':'ready', 'dataset':asdict(info),
+                        'preview':rows.to_dict(orient='records')}
+            return execute
+
+        with tempfile.TemporaryDirectory() as root:
+            runtime = GraphAnalysisRuntime(root, 'owner', 'generic-table-list', NoModelCall(),
+                connection_identity='test-connection', remote_factory=factory)
+            try:
+                runtime.context.reference_context[:] = [{'table':SOURCE, 'columns':[]}]
+                result = runtime.submit('table list 보여줘')
+                self.assertEqual(result['status'], 'answered', result)
+                self.assertIn('bank\\_loan', result['text'])
+                self.assertEqual(len(remote_calls), 1)
+                self.assertEqual(remote_calls[0]['source'], 'catalog.information_schema.tables')
+                self.assertEqual(runtime.inspect()['recovery']['model_calls'], 0)
+            finally:
+                runtime.close()
 
     def test_unknown_or_ambiguous_catalog_is_not_guessed(self):
         unknown = self.tools["plan_source_discovery"](catalog="another")

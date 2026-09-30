@@ -2267,3 +2267,9 @@ Task definitions and acceptance conditions: docs/agent_remaining_tasks_2026-09-1
 - **Action**: 지원 런처에 명시적 8501 포트 선택을 추가하고 잘못된 환경의 안내 문구를 정확한 명령으로 수정한 뒤, 충돌하는 두 프로세스를 단일 지원 프로세스로 정리해 Chrome에서 확인한다.
 - **Outcome**: 구형 PID53769 종료 후 8501 LISTEN은 지원 agent PID52351 한 개만 남음. Chrome `localhost:8501/` 새로고침에서 `Telly · 분석`, Ollama 모델 선택, 자동 Databricks 조회 안내, 진단 메뉴가 표시됨. 구형 오류 화면이 사라졌다.
 - **Artifact Update/Validation**: `scripts/run_telly.py --port 8501`을 지원하고 IPv4/IPv6 loopback 기존 리스너를 확인해 포트 점유 시 명확히 중단. 구형 환경 안내와 README 명령 수정. 관련6 tests PASS, 실제 8501 점유 감지 true, diff check PASS. 기존 대화의 자동 이전이나 분석 내용 검증은 이번 화면 복구 범위에 포함되지 않는다.
+
+## [2026-09-30T23:34:43.255625+09:00] [Agent: /root] User Request: Chrome 8503 대화 0912ea78 동작 실패 확인·진단
+- **Action**: 지정된 화면, 8503 실행 프로세스, 해당 대화의 안전 진단 기록을 대조하고 재현 가능한 원인을 조사한다.
+- **Finding**: 원 요청 `table list 보여줘`의 실행 `9d082ab1ce27481e805febc12158b43d`에서 Ollama는 선택 인자 4개를 모두 null로 보내 `plan_source_discovery`가 `invalid_tool_arguments`로 거절했다. 요청을 원격 테이블 목록 조회 의무로 바인딩하지 않아 4회 모델 호출/2회 재계획 후 `missing_evidence`로 종료했다. 모델 공급자 연결 자체는 정상이었다.
+- **Artifact Update**: 선택적 비-null 인자의 null을 도구 기본값으로 정규화하면서 필수 인자는 검증 유지. 테이블 목록 요청을 확인된 catalog와 선택적 schema에 결합하고, `plan_source_discovery`의 실제 SQL 계획만 원격 조회로 전달해 영수증 기반 완료를 검증하도록 변경했다. 단일 catalog 외에는 임의 선택하지 않는다.
+- **Validation**: 관련 `test_analysis_*.py` 248개 PASS, `git diff --check` PASS. 실제 Databricks 읽기 전용 `workspace.information_schema.tables` 조회에서 37행/4열을 저장했고 0회 모델 호출로 완료. 8503을 지원 런처로 재시작한 후 원래 URL의 같은 대화에서 동일 요청을 재실행하여 테이블·스키마·타입 표와 37행 저장을 화면에서 확인했다. 수정 후 실행은 약 2초, 원 실패는 82초였다. 이전 실패 답변은 대화 기록으로 보존됐다. 여러 catalog가 확인되나 하나를 지정하지 않은 경우에는 조회 대신 catalog 선택을 요청한다.

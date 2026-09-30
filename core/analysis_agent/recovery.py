@@ -592,6 +592,30 @@ class RecoveryMiddleware(AgentMiddleware):
                 key=lambda source: min(
                     (position for position in (text.find(source), text.find(source.split('.')[-1])) if position >= 0),
                     default=len(text)))
+            from core.analysis_agent.remote_completion import table_list_requested
+            catalog_discovery_source = ''
+            catalog_discovery_schema = ''
+            catalog_discovery_question = ''
+            if table_list_requested(text):
+                known = {parts[0] for source in sources
+                         if len(parts := source.replace('`', '').split('.')) == 3 and parts[0]}
+                explicit = {catalog for catalog in known if mentioned(catalog)}
+                catalog = (next(iter(explicit)) if len(explicit) == 1 else
+                           next(iter(known)) if not explicit and len(known) == 1 else '')
+                if catalog:
+                    schemas = {parts[1] for source in sources
+                               if len(parts := source.replace('`', '').split('.')) == 3
+                               and parts[0].casefold() == catalog.casefold()
+                               and parts[1] != 'information_schema'}
+                    named_schemas = {schema for schema in schemas if mentioned(schema)}
+                    if len(named_schemas) == 1:
+                        catalog_discovery_schema = next(iter(named_schemas))
+                    catalog_discovery_source = f'{catalog}.information_schema.tables'
+                    required_sources = [catalog_discovery_source]
+                else:
+                    catalog_discovery_question = (
+                        '조회할 catalog를 지정해주세요. 확인된 catalog: '
+                        + (', '.join(sorted(known)) if known else '없음') + '.')
             if metadata_kind and not required_sources:
                 inferred = _source_from_prior_table_list(text, messages, human.id, sources)
                 if inferred:
@@ -655,6 +679,9 @@ class RecoveryMiddleware(AgentMiddleware):
                 required_columns=mentioned_columns,
                 explicit_columns=explicit_columns,
                 required_sources=required_sources,
+                catalog_discovery_source=catalog_discovery_source,
+                catalog_discovery_schema=catalog_discovery_schema,
+                catalog_discovery_question=catalog_discovery_question,
                 columns=[], failed={}, status='working')
             current['confirmed_analysis'] = deepcopy(previous.get('confirmed_analysis') or (
                 previous if previous.get('status') == 'complete' else {}))
@@ -1157,6 +1184,11 @@ class RecoveryMiddleware(AgentMiddleware):
             observe(current,call,observation,self.context)
             if name in {'inspect_column_definitions', 'inspect_table_relationships'} and observation.get('metadata_plan'):
                 current['metadata_query_plan'] = observation['metadata_plan']
+            if (name == 'plan_source_discovery' and observation.get('status') == 'planned'
+                    and current.get('catalog_discovery_source')):
+                plan = observation.get('discovery_plan') or {}
+                if plan.get('source') == current['catalog_discovery_source']:
+                    current['discovery_plan'] = plan
             if name == 'prepare_numeric_dataset' and observation.get('status') == 'ready' and self.context:
                 parent=self.context.datasets.metadata.get(arguments.get('dataset_id'))
                 child=self.context.datasets.metadata.get(observation.get('dataset',{}).get('id'))
@@ -2279,6 +2311,19 @@ class RecoveryMiddleware(AgentMiddleware):
 
     def _next_local(self, current, calls):
         if current.get('explanation_only'): return None
+        source = current.get('catalog_discovery_source')
+        if source and self.remote_available and not current.get('remote_query_evidence'):
+            plan = current.get('discovery_plan')
+            if plan:
+                call = {'name':'query_databricks', 'args':{key:plan[key]
+                        for key in ('source','query','reason')}}
+            else:
+                call = {'name':'plan_source_discovery', 'args':{
+                    'catalog':source.split('.')[0],
+                    'schema':current.get('catalog_discovery_schema',''),
+                    'limit':100}}
+            return None if any(self._signature(c)==self._signature(call)
+                               for c in calls.values()) else call
         prepared=self._prepared_numeric_call(current,calls)
         if prepared:return prepared
         if current.get('latest_per_key_spec'):
@@ -3401,6 +3446,13 @@ class RecoveryMiddleware(AgentMiddleware):
 
     def before_step(self, state):
         current, calls = self._state(state)
+        if current.get('catalog_discovery_question'):
+            current['status'] = 'needs_context'
+            current['stop_reason'] = 'catalog_ambiguous'
+            return {'recovery':current,'messages':[AIMessage(
+                content=current['catalog_discovery_question'],
+                additional_kwargs={'analysis_status':'answered','analysis_complete':False,
+                                   'analysis_artifact_ids':[]})], 'jump_to':'end'}
         if current.get('latest_per_key_spec'):
             from core.analysis_agent.latest_selection import ask
             question=current.get('latest_question') or current['latest_per_key_spec'].get('question')
@@ -3677,6 +3729,11 @@ class RecoveryMiddleware(AgentMiddleware):
             if not self._numeric_missing_policy_valid(call.get('args',{}),current):
                 current['scope_error']='numeric_missing_policy_unverified'
                 return False
+        if call.get('name') == 'query_databricks' and current.get('catalog_discovery_source'):
+            plan = current.get('discovery_plan') or {}
+            arguments = call.get('args', {})
+            return bool(plan and all(arguments.get(key) == plan.get(key)
+                                     for key in ('source','query','reason')))
         if call.get('name') == 'query_databricks' and current.get('metadata_query_plan'):
             plan = current['metadata_query_plan']
             args = call.get('args', {})
