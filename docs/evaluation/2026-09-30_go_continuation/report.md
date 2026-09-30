@@ -30,3 +30,7 @@
 5. **실환경 재평가**: 설정된 공급자 연결이 회복된 후 동일 고정 여정을 다시 실행해야 한다. 사용자 서버 검증은 [서버 실패 진단 안내](../../server_failure_diagnostics.md)의 공유 가능한 상태만으로 확인한다. 서버 접속 정보나 원본 로그 반출은 요구하지 않는다.
 
 다음 구현은 최신행 선택 전후 조건과 역할별 SQL 의미 검증을 우선한다. 외부 연결 차단은 이 구현 공백을 해결한 근거가 될 수 없다.
+
+## Push와 Linux CI
+
+구현 `5b7c7a3`, float64 정확 정수 범위 초과 경계 테스트 보강 `ac07806`을 작업 브랜치 `codex/agentic-analysis-rc-2026-09-14`에 push했다. [Linux CI 36676855817](https://github.com/konlo/teleai/actions/runs/36676855817)이 `ac0780688dedbd564ecc5f57692254c057bbd25e`의 migration·제품·agentic recovery·reference 전체·compile을 모두 통과했다. 이전 실행은 새 커밋 검증으로 대체됐다. 최종 CI는 승인 정책 수정과 정밀도 경계 검사를 포함한다. [검증 메타데이터](ci.json). 후속 기록 커밋은 문서만 변경하며 main 병합·실제 서버 배포를 의미하지 않는다.

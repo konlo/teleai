@@ -2183,3 +2183,4 @@ Task definitions and acceptance conditions: docs/agent_remaining_tasks_2026-09-1
 - **Action** [Agent: /root]: MemoryError/OutOfMemory를 local_resource_limit 관찰로 변환해 대체 로컬 도구로 복구하고 반복 호출을 차단한다. 복구 prompt의 무조건 승인 규칙을 현재 runtime 정책에 따르도록 교체했다. 기존 제약과 SQL 장부는 유지한다.
 - **Outcome**: 합성100만행/7그룹/8지표 독립 정답, 1024행 배치/원본3컬럼만 읽기/추가SQL0/PNG실물/원본과재시작 보존 PASS. 1.188초, process peak RSS282214400 bytes(운영 SLA가 아님). 관련17, 제품490, migration136 PASS; reference217 PASS.
 - **Remaining**: 최신행 선택 전후 필터·추가 통계, 복합SQL 의미·복구, 대용량 혼합 전체여정, 독립98oracle/실모델 평가. 14:50KST 공급자 최소 추론/OpenSession400 지속. 실제 사용자 서버는 접근불가·미검증이며 전체 로그 반출을 요청하지 않는다.
+- **Outcome**: 구현5b7c7a3·정수 경계 테스트ac07806 push 및 원격SHA 확인. Linux CI36676855817의 ac0780688dedbd564ecc5f57692254c057bbd25e에서 제품/migration/복구/reference/compile 전부 PASS. 근거 docs/evaluation/2026-09-30_go_continuation/ci.json. 범용 NO-GO 및 사용자 서버 미검증 유지.
