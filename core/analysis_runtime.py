@@ -36,7 +36,12 @@ class CurrentAnalysisRuntime:
 
     def events(self):
         # Renderers cannot modify the authoritative transcript through this snapshot.
-        return deepcopy(self.session.history)
+        from core.analysis_agent.remote_completion import deferred_execution_claim, UNVERIFIED_DELIVERY_NOTICE
+        events = deepcopy(self.session.history)
+        for message in events:
+            if message.get('role') == 'assistant' and deferred_execution_claim(message.get('content')):
+                message['content'] = '' if message.get('tool_calls') else UNVERIFIED_DELIVERY_NOTICE
+        return events
 
     def respond(self, request_id, *, approved, execute, model):
         return self.session.resume_after_approval(request_id, approved=approved,

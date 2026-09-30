@@ -4,7 +4,7 @@ import time
 from contextvars import ContextVar
 from typing import NotRequired
 from langchain.agents.middleware import SummarizationMiddleware, AgentMiddleware, AgentState
-from langchain_core.messages import ToolMessage
+from langchain_core.messages import AIMessage, ToolMessage
 from core.analysis_catalog import compact_catalog
 from langchain_core.messages import messages_from_dict, message_to_dict
 from langchain_core.messages.utils import count_tokens_approximately
@@ -148,6 +148,12 @@ class Transcript:
                 rows=[row for row in rows if row[0]!=invalidated]
             if message.additional_kwargs.get('lc_source')in {'summarization','discovery_compaction','recovery','tool_repair'}:continue
             if not message.id:continue
+            safe = self._delivery_message(message)
+            if safe is not message:
+                with self.db.lock,self.db.conn:
+                    self.db.conn.execute('INSERT OR IGNORE INTO rejected_transcript VALUES (?,?)',
+                        (message.id,json.dumps(message_to_dict(message),ensure_ascii=False,default=str)))
+            message = safe
             rows.append((message.id,json.dumps(message_to_dict(message),ensure_ascii=False,default=str)))
         with self.db.lock,self.db.conn:
             self.db.conn.executemany('INSERT INTO transcript VALUES (?,?) ON CONFLICT(id) DO UPDATE SET payload=excluded.payload',rows)
@@ -155,7 +161,25 @@ class Transcript:
     def messages(self):
         with self.db.lock:
             rows=self.db.conn.execute('SELECT payload FROM transcript ORDER BY rowid').fetchall()
-        return messages_from_dict([json.loads(row[0]) for row in rows])
+        messages = messages_from_dict([json.loads(row[0]) for row in rows])
+        # Old unverified replies need no model/SQL replay to be hidden. Keep the
+        # original in rejected_transcript; valid receipts can still repair graph
+        # state and replace the notice with actual results during reconciliation.
+        unsafe = [message for message in messages if self._delivery_message(message) is not message]
+        if unsafe:
+            self.record(unsafe)
+        return [self._delivery_message(message) for message in messages]
+
+    @staticmethod
+    def _delivery_message(message):
+        from core.analysis_agent.remote_completion import deferred_execution_claim, UNVERIFIED_DELIVERY_NOTICE
+        if not isinstance(message, AIMessage) or not deferred_execution_claim(message.content):
+            return message
+        if message.tool_calls:
+            return message.model_copy(update={'content': ''})
+        return message.model_copy(update={'content': UNVERIFIED_DELIVERY_NOTICE,
+            'additional_kwargs': {**message.additional_kwargs, 'analysis_status': 'blocked',
+                                  'analysis_artifact_ids': [], 'delivery_guard': 'deferred_claim'}})
 
 
 class CompactDiscoveryMiddleware(AgentMiddleware):

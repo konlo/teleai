@@ -3,6 +3,7 @@
 ## Current Status
 - **Last Updated**: 2026-09-30
 - **Status**: In Progress — 범용 자율 분석 agent 정식 출시 NO-GO
+- **Deferred reply recurrence**: [응답 검증 누락 수정](docs/evaluation/2026-09-30_deferred_reply_recurrence/report.md). 사용자 원문으로 구조화블록/도구안내/구버전/과거표시 누락 재현·보완. 제품475+migration136/관련27 PASS, localhost8502 재시작 및 실제 화면 정정안내 확인. 실제 사용자 발생환경은 미확인.
 - **Offline continuation**: [대용량 이상치 EDA 개선](docs/evaluation/2026-09-30_offline_continuation/report.md). 13:30 KST 공급자 모델/SQL400 지속. 영속 이상치 cohort 전체 프레임 복원을 배치 staging으로 전환, 합성100만행→정답100행/원본/재시작 보존 PASS. 대상 수치1개 컬럼의 임계값 계산은 전체 읽기라는 한계를 명시.
 - **HTTP400 recheck**: [재진단](docs/evaluation/2026-09-30_provider_recheck/report.md). 08:15 KST까지 지속. warehouse/API200·모델 metadata READY이나 최소 추론/OpenSession 모두400. Free Edition 확인, 한도 초과 여부는 미확인. 재발급·짧은 장애로 단정하지 않으며 실제 호출 사전점검과 사용자 안내 보강.
 - **Latest continuation**: [연속 평가·개선 보고서](docs/evaluation/2026-09-30_continuation/report.md). 동률/결측의 후속 정책과 원격/로컬 실행·완료 계약, 공급자400 분류/제한 재시도, interactive Spider 평가를 보강했다. 최종CI 제품464 + migration136 + reference217 PASS, 합성100만행2종 및 실제 웹12행 복구 PASS. Databricks 모델·SQL 리소스 생성400으로 실환경 재평가 차단.
@@ -2148,3 +2149,15 @@ Task definitions and acceptance conditions: docs/agent_remaining_tasks_2026-09-1
 ### Daily Wrap-ups — 2026-09-30 offline continuation
 - 이상치 추출 전체프레임복원을 배치staging으로 전환. 제품469/469(55.308s), 관련27, 합성100만행 독립oracle/원본/재시작 PASS.
 - Next Action Items: 외부 서비스복구 후실평가, 기존4묶음 및 대용량나머지 도구. 공급자400은 아직 BLOCKED.
+
+## [2026-09-30T13:40:59.089242+09:00] [Agent: Codex] User Request: 승인 감사·결과 도착 후 안내 문구 재발 원인 확인 및 수정
+- **Action**: 실제 대화/실행 버전 및 deferred completion 보호 경로를 확인하고 사용자 원문 회귀와 실행중 앱 검증을 수행한다.
+
+## [2026-09-30T13:49:56.599054+09:00] [Agent: Codex] Action: 미래 결과 안내 재발 경로 보완
+- **Finding**: 원문 일반문자열은 기존guard가 막지만 텍스트블록은 answered 통과; 도구호출 안내/구버전 승인후응답/receipt없는 과거표시 누락. 최초4실패 보존. 로컬38대화에서 사용자원문없어 실제발생환경 확인 요청.
+- **Implementation**: 공통표시텍스트 검사, transcript저장/조회 보호·원문감사보존, 구버전제한재계획 및 표시보호. 완료실행을 재조회하지 않음.
+- **Validation**: 제품475(55.617s), migration136(18.061s), 관련27 PASS. main.py AppTest 자동조회대역1회실제목록/거짓안내미표시. 실제앱 PID28426 health200, 합성과거안내 정정화면 확인(모델0/SQL0).
+
+### Daily Wrap-ups — 2026-09-30 deferred reply recurrence
+- 이전수정이 빠뜨린 응답형식·도구안내·구버전·과거기록 경로를 보강하고 로컬앱에 반영했다.
+- Next Action Items: 사용자 실제발생환경/버전 대조, 공급자복구 후실환경평가. 기존4묶음·범용NO-GO는 유지.

@@ -10,6 +10,7 @@ from dataclasses import dataclass, field
 from typing import Any, Callable
 
 from core.analysis_approval import ApprovalQueue
+from core.analysis_agent.remote_completion import deferred_execution_claim, UNVERIFIED_DELIVERY_NOTICE
 
 
 from core.analysis_tool_contract import ToolDefinition
@@ -26,6 +27,7 @@ class AnalysisSession:
     last_goal: str = ""
     artifacts: dict[str, Any] = field(default_factory=dict, repr=False)
     reference_context: list[dict] = field(default_factory=list)
+    rejected_responses: list[dict] = field(default_factory=list, repr=False)
     context_provider: Callable[[], dict] | None = field(default=None, repr=False)
     approvals: ApprovalQueue = field(init=False)
 
@@ -66,6 +68,7 @@ class AnalysisSession:
     def _drive(self, model: Callable) -> dict:
         self.state = "running"
         tools = {tool.name: tool for tool in self.tools}
+        deferred_attempts = 0
         try:
             for _ in range(self.max_steps):
                 instructions = self.instructions
@@ -80,6 +83,22 @@ class AnalysisSession:
                 ids = [call.get("id") for call in calls]
                 if any(not i for i in ids) or len(set(ids)) != len(ids):
                     raise ValueError("도구 호출 ID가 없거나 중복되었습니다.")
+                if deferred_execution_claim(response.get('content')):
+                    self.rejected_responses.append(response)
+                    if calls:
+                        response = {**response, 'content': ''}
+                    else:
+                        deferred_attempts += 1
+                        if deferred_attempts >= 3:
+                            self.state = 'blocked'
+                            self.history.append({'role':'assistant','content':UNVERIFIED_DELIVERY_NOTICE})
+                            return {'status':'blocked','text':UNVERIFIED_DELIVERY_NOTICE}
+                        self.history.append({'role':'system','content':
+                            '이전 답변은 실제 실행 상태와 맞지 않아 채택하지 않았습니다. '
+                            '조회는 동기 실행이며 자동 알림은 없습니다. 이미 반환된 결과로 답하거나 '
+                            '필요한 도구를 실행하세요. 완료된 조회를 다시 요청하지 마세요. '
+                            '실패·미실행이면 그 상태를 정확히 알려주세요.'})
+                        continue
                 self.history.append(response)
                 if not calls:
                     self.state = "idle"
