@@ -1,3 +1,4 @@
+from core.analysis_agent.policy import RuntimePolicy
 """Production graph tests for false completion, budgets and cached plans."""
 import json
 from pathlib import Path
@@ -123,7 +124,7 @@ class CompletionTests(unittest.TestCase):
             calls = []
             model = PlanOnlyModel()
             r = GraphAnalysisRuntime(root, 'owner', 'cache', model, connection_identity='test',
-                remote_factory=lambda _: lambda request: calls.append(request))
+                remote_factory=lambda _: lambda request: calls.append(request), policy=RuntimePolicy(require_remote_approval=True))
             legacy_source = '.'.join('`' + part + '`' for part in SOURCE.split('.'))
             r.datasets.register(pd.DataFrame(FIXTURE['rows']), source=legacy_source, coverage='complete', predicate_known=True)
             result = r.submit(f'{COLUMN} histogram')
@@ -164,7 +165,7 @@ class CompletionTests(unittest.TestCase):
                                                       'dataset_id': '$dataset'}},
             ])
             r = GraphAnalysisRuntime(root, 'owner', 'ambiguous-chart', model,
-                connection_identity='test', remote_factory=lambda _: lambda request: remote.append(request))
+                connection_identity='test', remote_factory=lambda _: lambda request: remote.append(request), policy=RuntimePolicy(require_remote_approval=True))
             frame = pd.DataFrame(FIXTURE['rows'])
             earlier = r.datasets.register(frame.copy(), source=SOURCE,
                 snapshot='v1', coverage='complete', predicate_known=True)
@@ -430,7 +431,7 @@ class CompletionTests(unittest.TestCase):
                 {'name':'query_databricks', 'args':{'source':SOURCE, 'query':wrong, 'reason':'count'}},
                 {'name':'query_databricks', 'args':{'source':SOURCE, 'query':correct, 'reason':'count'}}])
             r = GraphAnalysisRuntime(root, 'owner', 'remote-scope', model,
-                connection_identity='test', remote_factory=lambda _: lambda envelope: executions.append(envelope))
+                connection_identity='test', remote_factory=lambda _: lambda envelope: executions.append(envelope), policy=RuntimePolicy(require_remote_approval=True))
             r.context.reference_context = self.scope_reference()
             outcome = r.submit('2026-08의 개수를 알려줘')
             self.assertEqual(outcome['status'], 'awaiting_approval', outcome)
@@ -449,7 +450,7 @@ class CompletionTests(unittest.TestCase):
                 {'name':'prepare_histogram', 'args':{'source':SOURCE, 'column':COLUMN,
                     'where_sql':"period='2026-08'"}}])
             r = GraphAnalysisRuntime(root, 'owner', 'chart-scope', model,
-                connection_identity='test', remote_factory=lambda _: lambda envelope: executions.append(envelope))
+                connection_identity='test', remote_factory=lambda _: lambda envelope: executions.append(envelope), policy=RuntimePolicy(require_remote_approval=True))
             r.context.reference_context = self.scope_reference()
             outcome = r.submit(f'2026-08의 {COLUMN} histogram')
             self.assertEqual(outcome['status'], 'awaiting_approval', outcome)
@@ -470,13 +471,13 @@ class CompletionTests(unittest.TestCase):
             model = ScriptModel(calls=[{'name':'query_databricks', 'args':{
                 'source':SOURCE, 'query':query, 'reason':'count'}}])
             r = GraphAnalysisRuntime(root, 'owner', 'scope-restart', model,
-                connection_identity='test', remote_factory=lambda _: lambda envelope: executions.append(envelope))
+                connection_identity='test', remote_factory=lambda _: lambda envelope: executions.append(envelope), policy=RuntimePolicy(require_remote_approval=True))
             r.context.reference_context = self.scope_reference()
             self.assertEqual(r.submit('2026-08의 개수를 알려줘')['status'], 'awaiting_approval')
             expected_scope = r.inspect()['recovery']['scope']
             r.close()
             reopened = GraphAnalysisRuntime(root, 'owner', 'scope-restart', QuietModel(),
-                connection_identity='test', remote_factory=lambda _: lambda envelope: executions.append(envelope))
+                connection_identity='test', remote_factory=lambda _: lambda envelope: executions.append(envelope), policy=RuntimePolicy(require_remote_approval=True))
             reopened.context.reference_context = self.scope_reference()
             self.assertEqual(reopened.inspect()['state'], 'awaiting_approval')
             self.assertEqual(reopened.inspect()['recovery']['scope'], expected_scope)

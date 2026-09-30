@@ -7,12 +7,54 @@ from langchain.agents.middleware import AgentMiddleware
 
 
 SCALAR_OPERATIONS = frozenset({"AVG", "SUM", "MEDIAN", "MIN", "MAX"})
+
+
+class ExplanationToolsMiddleware(AgentMiddleware):
+    """Explicit explanation-only turns cannot execute analysis tools."""
+    def wrap_model_call(self, request, handler):
+        if not (request.state.get('recovery') or {}).get('explanation_only'):
+            return handler(request)
+        from langchain_core.messages import SystemMessage
+        content = (str(request.system_message.content)+'\n' if request.system_message else '')
+        content += '이번 요청은 설명만 합니다. 도구 실행·데이터 계산·차트 생성 없이 질문의 개념을 설명하세요. 실제 분석을 수행했다고 말하지 마세요.'
+        return handler(request.override(tools=[],system_message=SystemMessage(content=content)))
 SCALAR_TOOLS = frozenset({
     "list_analysis_context", "inspect_table_context", "inspect_dataset",
     "profile_dataset", "use_dataset", "aggregate_dataset", "local_analysis_sql",
     "prepare_numeric_dataset",
     "search_analysis_tools", "read_analysis_skill",
 })
+
+
+class FocusedRemoteCatalogToolsMiddleware(AgentMiddleware):
+    """Expose discovery/query tools for a known catalog read, not EDA tools."""
+
+    def __init__(self, context, diagnostics=None):
+        self.context, self.diagnostics = context, diagnostics
+
+    def wrap_model_call(self, request, handler):
+        from core.analysis_agent.remote_completion import catalog_read_requested
+        from core.analysis_catalog import _source_key
+        from langchain_core.messages import SystemMessage
+        current = request.state.get('recovery') or {}
+        if not catalog_read_requested(current):
+            return handler(request)
+        wanted = {_source_key(s) for s in current.get('required_sources', [])}
+        known = {_source_key(c.get('table', '')) for c in self.context.reference_context}
+        loaded = {_source_key(info.source) for info in self.context.datasets.metadata.values()}
+        if not wanted.issubset(known) or wanted & loaded:
+            return handler(request)
+        names = {'query_databricks', 'inspect_table_context', 'list_analysis_context', 'plan_source_discovery'}
+        selected = [t for t in request.tools if getattr(t, 'name', '') in names]
+        if not any(t.name == 'query_databricks' for t in selected):
+            return handler(request)
+        instruction = ('현재 요청은 확인된 catalog의 실제 목록 조회입니다. 로컬 분석 도구는 필요하지 않습니다. '
+            '확인된 출처와 컬럼으로 query_databricks를 호출하여 결과를 얻으세요. '
+            '현재 원격 실행 정책을 따르세요. SQL을 문장으로만 제시하고 종료하지 마세요.')
+        content = (str(request.system_message.content) + '\n' if request.system_message else '') + instruction
+        if self.diagnostics:
+            self.diagnostics.emit('model_tools_focused', mode='remote_catalog', tool_count=len(selected))
+        return handler(request.override(tools=selected, system_message=SystemMessage(content=content)))
 
 REMOTE_JOIN_TOOLS = frozenset({
     'list_analysis_context', 'inspect_table_context', 'inspect_table_relationships',
@@ -58,7 +100,7 @@ class FocusedRemoteJoinToolsMiddleware(AgentMiddleware):
         from langchain_core.messages import SystemMessage
         instruction = ('현재 요청은 여러 테이블의 통계이며 필요한 원본 일부가 로컬에 없습니다. '
             '현재 제공된 도구만 사용하세요. 최신 스키마와 선언된 키 관계, 요청 조건을 확인한 다음 '
-            'query_databricks로 JOIN 집계 SELECT 승인을 요청하세요. 이 도구는 현재 연결된 SQL 엔진에 실행됩니다. '
+            'query_databricks로 JOIN 집계 SELECT를 실행하세요. 이 도구는 현재 연결된 SQL 엔진에 실행됩니다. '
             '이미 확인한 스키마를 반복 탐색하거나 없는 로컬 dataset ID를 만들지 마세요. '
             '키나 업무 역할이 모호하면 해당 정보만 확인하세요.')
         content = (str(request.system_message.content) + '\n' if request.system_message else '') + instruction

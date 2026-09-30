@@ -98,6 +98,11 @@
     "L2_028": {"kind": "pivot", "variable": "pivot_pe_fare", "index_columns": ["Pclass"], "column_columns": ["Embarked"], "aggregation": "mean", "value_column": "Fare", "atol": 0.01},
     "L2_029": {"kind": "pivot", "variable": "crosstab_em", "index_columns": ["education"], "column_columns": ["marital"], "aggregation": "success_rate", "value_column": "y", "success_value": "yes", "atol": 0.01},
     "L2_031": {"kind": "pivot", "variable": "pivot_mh", "index_columns": ["month"], "column_columns": ["housing"], "aggregation": "count", "sort": "calendar_month"},
-    "L2_034": {"kind": "pivot", "variable": "ct_pct", "index_columns": ["poutcome"], "column_columns": ["y"], "aggregation": "overall_percent", "atol": 0.01}
+    "L2_034": {"kind": "pivot", "variable": "ct_pct", "index_columns": ["poutcome"], "column_columns": ["y"], "aggregation": "overall_percent", "atol": 0.01},
+    "L1_051": {"kind": "group_table", "variable": "job_agg", "groups": ["job"], "reference_groups": ["job"], "metrics": [{"reference": "고객수", "aggregation": "count", "column": "", "round": 2}, {"reference": "평균잔액", "aggregation": "mean", "column": "balance", "round": 2}], "nonnull_count_columns": ["id"], "sort_metric": "평균잔액", "ascending": false},
+    "L1_052": {"kind": "group_table", "variable": "edu_stats", "groups": ["education"], "reference_groups": ["교육수준"], "metrics": [{"reference": "평균잔액", "aggregation": "mean", "column": "balance", "round": 2}, {"reference": "중앙값잔액", "aggregation": "median", "column": "balance", "round": 2}], "nonnull_count_columns": ["id"]},
+    "L1_053": {"kind": "group_table", "variable": "m_stats", "groups": ["marital"], "reference_groups": ["marital"], "metrics": [{"reference": "고객수", "aggregation": "count", "column": "", "round": 1}, {"reference": "평균연령", "aggregation": "mean", "column": "age", "round": 1}], "nonnull_count_columns": ["id"]},
+    "L1_056": {"kind": "group_table", "variable": "month_stats", "groups": ["month"], "reference_groups": ["month"], "metrics": [{"reference": "접촉수", "aggregation": "count", "column": "", "round": 1}, {"reference": "평균시간", "aggregation": "mean", "column": "duration", "round": 1}], "nonnull_count_columns": ["id"]},
+    "L1_061": {"kind": "group_table", "variable": "emb_stats", "groups": ["Embarked"], "reference_groups": ["Embarked"], "metrics": [{"reference": "승객수", "aggregation": "count", "column": "", "round": 2}, {"reference": "평균요금", "aggregation": "mean", "column": "Fare", "round": 2}], "nonnull_count_columns": ["PassengerId"]}
   }
 }

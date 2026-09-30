@@ -1,0 +1,187 @@
+{
+  "mode": "real Databricks model; synthetic local SQL executor; production graph",
+  "status": "PASS",
+  "prompt": "eval_catalog.information_schema.tables에서 table_name, table_type을 조회해서 실제 결과 목록을 보여줘.",
+  "model": "databricks-qwen3-next-80b-a3b-instruct",
+  "warehouse_sql_executions": 0,
+  "synthetic_sql_executions": 1,
+  "executions_before_approval": 1,
+  "queries": [
+    "SELECT table_name, table_type FROM eval_catalog.information_schema.tables"
+  ],
+  "proposal_status": "answered",
+  "result": {
+    "status": "answered",
+    "text": "조회가 완료되었습니다. 출처: eval\\_catalog.information\\_schema.tables · 저장된 결과 2행.\n\n| table\\_name | table\\_type |\n| --- | --- |\n| sample\\_events | MANAGED |\n| sample\\_summary | VIEW |\n\n범위: 조회 범위 전체. 실행한 SQL의 조건과 행 제한이 적용된 결과입니다.",
+    "elapsed_seconds": 3.048
+  },
+  "messages": [
+    {
+      "type": "human",
+      "content": "eval_catalog.information_schema.tables에서 table_name, table_type을 조회해서 실제 결과 목록을 보여줘.",
+      "tool_calls": []
+    },
+    {
+      "type": "ai",
+      "content": "",
+      "tool_calls": [
+        {
+          "name": "query_databricks",
+          "args": {
+            "source": "eval_catalog.information_schema.tables",
+            "query": "SELECT table_name, table_type FROM eval_catalog.information_schema.tables",
+            "reason": "사용자가 요청한 eval_catalog.information_schema.tables에서 table_name과 table_type 컬럼의 실제 결과를 조회하기 위함."
+          },
+          "id": "call_82b64990-8ebf-4722-8b8c-46accd20a34e",
+          "type": "tool_call"
+        }
+      ]
+    },
+    {
+      "type": "tool",
+      "content": "{\"status\": \"ready\", \"dataset\": {\"id\": \"97cd78ff-164c-489c-b197-351da97d200e\", \"source\": \"eval_catalog.information_schema.tables\", \"columns\": [\"table_name\", \"table_type\"], \"rows\": 2, \"coverage\": \"complete\", \"conditions\": [], \"predicate_known\": true, \"grain\": \"raw\", \"aggregation\": \"\", \"snapshot\": \"2026-09-28T13:49:16.195478+00:00\", \"query\": \"SELECT table_name, table_type FROM eval_catalog.information_schema.tables\", \"parent_id\": \"\", \"parent_ids\": [], \"role\": \"root\", \"root_id\": \"97cd78ff-164c-489c-b197-351da97d200e\"}, \"evidence_ids\": [\"97cd78ff-164c-489c-b197-351da97d200e\"], \"error_code\": null, \"retryable\": false, \"user_action\": \"\", \"scope\": \"도구가 반환한 구조화 결과 범위입니다.\"}",
+      "tool_calls": []
+    },
+    {
+      "type": "ai",
+      "content": "조회가 완료되었습니다. 출처: eval\\_catalog.information\\_schema.tables · 저장된 결과 2행.\n\n| table\\_name | table\\_type |\n| --- | --- |\n| sample\\_events | MANAGED |\n| sample\\_summary | VIEW |\n\n범위: 조회 범위 전체. 실행한 SQL의 조건과 행 제한이 적용된 결과입니다.",
+      "tool_calls": []
+    }
+  ],
+  "recovery": {
+    "request_id": "389c8c9c-dfe9-40f9-b126-0491dc5fcb02",
+    "request_text": "eval_catalog.information_schema.tables에서 table_name, table_type을 조회해서 실제 결과 목록을 보여줘.",
+    "attempts": 0,
+    "chart": false,
+    "kind": null,
+    "join": false,
+    "requested_join": false,
+    "join_how": null,
+    "statistical_kind": null,
+    "pivot_requested": false,
+    "pivot_aggregation": null,
+    "pivot_value_column": null,
+    "pivot_success_value": null,
+    "pivot_index_columns": [],
+    "pivot_column_columns": [],
+    "pivot_conditions": [],
+    "pivot_derived_bins": [],
+    "pivot_margins": false,
+    "pivot_sort": "ascending",
+    "pivot_margins_name": "전체",
+    "winsor_spec": null,
+    "winsor_column": null,
+    "outlier_spec": null,
+    "outlier_column": null,
+    "outlier_followup": false,
+    "outlier_selection": "outliers",
+    "outlier_group_column": null,
+    "outlier_metric_column": null,
+    "outlier_metric_aggregation": null,
+    "outlier_aggregate_mode": null,
+    "outlier_aggregate_requested": false,
+    "outlier_top_n": 0,
+    "group_summary_requested": false,
+    "group_summary_columns": [],
+    "group_summary_metrics": [],
+    "group_summary_conditions": [],
+    "calculation": false,
+    "operations": [],
+    "metadata_kind": null,
+    "scalar_grouping": false,
+    "profile_kind": null,
+    "preview_limit": 0,
+    "chart_spec_requested": false,
+    "count_rate_layout": null,
+    "chart_cumulative": false,
+    "time_series_frequency": null,
+    "time_series_aggregation": null,
+    "time_series_gap_policy": "omit",
+    "time_series_timezone": "",
+    "data_load": false,
+    "expected_load_source": "",
+    "expected_load_query": "",
+    "whole_row_count": false,
+    "current_result_only": false,
+    "requested_result_rows": null,
+    "fresh_source_required": false,
+    "request_started_at": 1790603353.167825,
+    "required_columns": [
+      "table_name",
+      "table_type"
+    ],
+    "explicit_columns": [
+      "table_name",
+      "table_type"
+    ],
+    "required_sources": [
+      "eval_catalog.information_schema.tables"
+    ],
+    "columns": [],
+    "failed": {},
+    "status": "complete",
+    "previous_scope": {},
+    "scope": {
+      "conditions": [],
+      "any_conditions": [],
+      "join_edges": [],
+      "measure_conditions": [],
+      "ratio": null,
+      "unresolved": [],
+      "columns": [
+        "table_name",
+        "table_type"
+      ]
+    },
+    "named_measure_columns": [],
+    "processed": [
+      "call_82b64990-8ebf-4722-8b8c-46accd20a34e"
+    ],
+    "sent_calls": [
+      "call_82b64990-8ebf-4722-8b8c-46accd20a34e"
+    ],
+    "failed_signatures": {},
+    "evidence_ids": [
+      "97cd78ff-164c-489c-b197-351da97d200e"
+    ],
+    "artifact_ids": [],
+    "model_calls": 1,
+    "model_seconds": 2.975228786468506,
+    "preview_evidence": null,
+    "outlier_aggregate_evidence": {},
+    "count_rate_evidence": null,
+    "count_rate_group_column": null,
+    "winsor_evidence": null,
+    "pivot_evidence": null,
+    "group_summary_evidence": null,
+    "remote_query_ids": [
+      "call_82b64990-8ebf-4722-8b8c-46accd20a34e"
+    ],
+    "remote_query_evidence": {
+      "call_82b64990-8ebf-4722-8b8c-46accd20a34e": {
+        "dataset_id": "97cd78ff-164c-489c-b197-351da97d200e",
+        "source": "eval_catalog.information_schema.tables",
+        "query": "SELECT table_name, table_type FROM eval_catalog.information_schema.tables",
+        "rows": 2,
+        "columns": [
+          "table_name",
+          "table_type"
+        ],
+        "coverage": "complete"
+      }
+    },
+    "remote_result_requested": true,
+    "accounted_model_failures": 0,
+    "accounted_model_failure_seconds": 0.0,
+    "model_retries": 0,
+    "accounted_aux_calls": 0,
+    "accounted_aux_seconds": 0.0,
+    "repair_notified": [],
+    "progress_notified": [],
+    "_new_model_failure_seconds": 0.0,
+    "stop_reason": null
+  },
+  "limitations": [
+    "Synthetic table listing only; not a live Databricks SQL connection test."
+  ]
+}

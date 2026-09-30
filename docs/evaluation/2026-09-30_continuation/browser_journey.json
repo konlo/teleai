@@ -1,0 +1,226 @@
+{
+  "conversation_id": "0dfbdd47-46ac-46c7-aa27-4e5dcdc240f0",
+  "dataset_id": "c67e7fa1-4d58-45cc-ac26-23c8089b43d7",
+  "rows": 12,
+  "before_digest": "eb9bfbb4c7b893663251320ef5aeaddd3a9d55a6a1065d84d3f050eb7fca2291",
+  "synthetic": true,
+  "url": "http://127.0.0.1:8502/?conversation=0dfbdd47-46ac-46c7-aa27-4e5dcdc240f0",
+  "state": "idle",
+  "status": "complete",
+  "policy": {
+    "dataset_id": "c67e7fa1-4d58-45cc-ac26-23c8089b43d7",
+    "key_columns": [
+      "adapterserial"
+    ],
+    "value_column": "DriveProductID",
+    "order_column": "event_time",
+    "categorical": true,
+    "context_dataset_id": "c67e7fa1-4d58-45cc-ac26-23c8089b43d7",
+    "context_snapshot": "",
+    "tie_break_columns": [
+      "ingested_at"
+    ],
+    "null_policy": "drop_before_selection"
+  },
+  "proof": {
+    "status": "ready",
+    "dataset": {
+      "id": "08a6aef5-7087-4690-8490-351ee3ce2440",
+      "source": "fixture.telemetry.device_events",
+      "columns": [
+        "adapterserial",
+        "event_time",
+        "ingested_at",
+        "DriveProductID"
+      ],
+      "rows": 5,
+      "coverage": "complete",
+      "conditions": [],
+      "predicate_known": true,
+      "grain": "raw",
+      "aggregation": "",
+      "snapshot": "",
+      "query": "",
+      "parent_id": "c67e7fa1-4d58-45cc-ac26-23c8089b43d7",
+      "parent_ids": [],
+      "role": "derived",
+      "root_id": "c67e7fa1-4d58-45cc-ac26-23c8089b43d7",
+      "row_selection": {
+        "kind": "latest_per_key",
+        "key_columns": [
+          "adapterserial"
+        ],
+        "order_columns": [
+          "event_time",
+          "ingested_at"
+        ],
+        "descending": true,
+        "null_policy": "drop_before_selection",
+        "tie_policy": "reject",
+        "input_dataset_id": "c67e7fa1-4d58-45cc-ac26-23c8089b43d7",
+        "input_snapshot": ""
+      }
+    },
+    "distribution": {
+      "id": "0abcbe34-2bfd-4644-9e8a-9b5eb3611d5a",
+      "source": "fixture.telemetry.device_events",
+      "columns": [
+        "DriveProductID",
+        "__key_count"
+      ],
+      "rows": 4,
+      "coverage": "complete",
+      "conditions": [],
+      "predicate_known": true,
+      "grain": "aggregate",
+      "aggregation": "count_by_value_after_latest_per_key",
+      "snapshot": "",
+      "query": "",
+      "parent_id": "08a6aef5-7087-4690-8490-351ee3ce2440",
+      "parent_ids": [],
+      "role": "derived",
+      "root_id": "c67e7fa1-4d58-45cc-ac26-23c8089b43d7",
+      "row_selection": {
+        "kind": "latest_per_key",
+        "key_columns": [
+          "adapterserial"
+        ],
+        "order_columns": [
+          "event_time",
+          "ingested_at"
+        ],
+        "descending": true,
+        "null_policy": "drop_before_selection",
+        "tie_policy": "reject",
+        "input_dataset_id": "c67e7fa1-4d58-45cc-ac26-23c8089b43d7",
+        "input_snapshot": ""
+      }
+    },
+    "latest_selection": {
+      "kind": "latest_per_key",
+      "key_columns": [
+        "adapterserial"
+      ],
+      "order_columns": [
+        "event_time",
+        "ingested_at"
+      ],
+      "descending": true,
+      "null_policy": "drop_before_selection",
+      "tie_policy": "reject",
+      "input_dataset_id": "c67e7fa1-4d58-45cc-ac26-23c8089b43d7",
+      "input_snapshot": ""
+    },
+    "selected_keys": 5,
+    "input_rows": 12,
+    "excluded_rows": 1,
+    "count_column": "__key_count",
+    "value_column": "DriveProductID",
+    "execution_mode": "pandas_projection",
+    "counts": [
+      {
+        "DriveProductID": "P100",
+        "__key_count": 1
+      },
+      {
+        "DriveProductID": "P200",
+        "__key_count": 2
+      },
+      {
+        "DriveProductID": "P300",
+        "__key_count": 1
+      },
+      {
+        "DriveProductID": "replacement",
+        "__key_count": 1
+      }
+    ],
+    "counts_truncated": false,
+    "chart_spec": {
+      "kind": "bar",
+      "x": "DriveProductID",
+      "y": "__key_count",
+      "category": "",
+      "aggregation": "none",
+      "sort": "none",
+      "cumulative": false,
+      "top_n": 50,
+      "bins": 20,
+      "title": "DriveProductID · 키별 최신 행 분포",
+      "x_label": "DriveProductID",
+      "y_label": "Unique keys",
+      "orientation": "vertical"
+    },
+    "render_summary": {
+      "source_rows": 4,
+      "rendered_rows": 4,
+      "data_sha256": "d4ae21f186d74fecc2b8467ffeca3c33954b9b8339111d96d5a2eccbfebf4dc4",
+      "sampled": false,
+      "aggregation": "none",
+      "points": [
+        {
+          "x": "P100",
+          "value": 1
+        },
+        {
+          "x": "P200",
+          "value": 2
+        },
+        {
+          "x": "P300",
+          "value": 1
+        },
+        {
+          "x": "replacement",
+          "value": 1
+        }
+      ]
+    },
+    "cards": [
+      {
+        "id": "502b3a07-5cbd-439b-876d-e60d9fd8f19d",
+        "kind": "bar",
+        "title": "DriveProductID · 키별 최신 행 분포",
+        "dataset_id": "0abcbe34-2bfd-4644-9e8a-9b5eb3611d5a"
+      }
+    ],
+    "evidence_ids": [
+      "08a6aef5-7087-4690-8490-351ee3ce2440",
+      "502b3a07-5cbd-439b-876d-e60d9fd8f19d"
+    ],
+    "error_code": null,
+    "retryable": false,
+    "user_action": "",
+    "scope": "도구가 반환한 구조화 결과 범위입니다."
+  },
+  "raw_preserved": true,
+  "original_rows": 12,
+  "selected_dataset_id": "c67e7fa1-4d58-45cc-ac26-23c8089b43d7",
+  "warehouse_queries": 0,
+  "model_calls": 0,
+  "observed_browser": {
+    "chart_loaded": true,
+    "natural_width": 660,
+    "natural_height": 385,
+    "visually_verified_counts": [
+      1,
+      2,
+      1,
+      1
+    ]
+  },
+  "messages": [
+    "현재 로딩된 데이터에서 adapterserial 기준 unique한 마지막 event_time 행으로 DriveProductID에 대한 histogram을 그려줘. DriveProductID는 제품 식별자야.",
+    "",
+    "키·정렬·분포 컬럼에 결측값이 있습니다. 어떤 결측 행을 제외하거나 별도 범주로 처리할지 알려주세요. 키·정렬·분포 컬럼의 결측행을 최신행 선택 전에 제외하려면 “결측행을 최신행 선택 전에 제외해줘”라고 지정할 수 있습니다. 원본은 보존됩니다.",
+    "결측행을 최신행 선택 전에 제외해줘",
+    "",
+    "같은 키에 최신 정렬값이 동일한 행이 여러 개입니다. 동률일 때 사용할 추가 정렬 컬럼을 알려주세요. 추가 컬럼의 가장 큰 값(내림차순)을 선택하려면 컬럼명을 알려주세요.",
+    "ingested_at 기준으로 해줘",
+    "",
+    "키 adapterserial마다 event_time이 가장 큰 행을 선택했습니다. 동률은 ingested_at의 큰 값 순서로 해소했습니다. 최신행 선택 전에 키·정렬·분포 컬럼의 결측 행 1개를 제외했습니다. 원본 12행 중 5개의 키를 각각 한 번 계산했습니다. 원본은 보존했습니다. 식별자·범주 값은 값별 빈도 막대그래프로 표시합니다.\n\nDriveProductID · 키별 최신 행 분포 이미지를 생성했습니다.\n분석 범위: 보유 4행 기준 · complete · aggregate · 표시 데이터 4개 · 집계 none"
+  ],
+  "restart_restored": true,
+  "raw_preserved_after_restart": true,
+  "query_tool_observations": 0
+}

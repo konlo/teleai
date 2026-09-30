@@ -1,0 +1,53 @@
+{
+  "application": {
+    "passed": 461,
+    "failed": 0,
+    "seconds": 55.794,
+    "command": "python -m unittest discover -s tests -p 'test_*.py'",
+    "note": "Full run before one additional evaluator test; see evaluator_tests.txt and subsequent CI."
+  },
+  "migration": {
+    "passed": 136,
+    "failed": 0,
+    "seconds": 17.9
+  },
+  "reference_and_recovery": {
+    "passed": 217,
+    "failed": 0,
+    "figures": 58,
+    "command": "python test_set/run_test_set.py --all --quiet",
+    "note": "Before final missing/infinity boundary and evaluator additions; final CI reruns this suite."
+  },
+  "status": "NO_GO",
+  "actual_model_and_warehouse": "BLOCKED_PROVIDER",
+  "large_latest": "large_latest/result.json",
+  "streaming_scale": "streaming_scale.json",
+  "browser": "browser_journey.json",
+  "focused_final_evaluator": {
+    "passed": 7,
+    "failed": 0,
+    "note": "Exact duration in evaluator_tests.txt; includes new failed-attempt counting contract."
+  },
+  "source_continuation": {
+    "passed": 15,
+    "failed": 0,
+    "seconds": 11.513
+  },
+  "evaluator_failure_exits": {
+    "passed": 5,
+    "failed": 0,
+    "coverage": "warehouse BLOCKED and incorrect-oracle FAIL return nonzero"
+  },
+  "final_ci": {
+    "status": "completed",
+    "conclusion": "success",
+    "headSha": "4c058175b9ef8987dfe12b918ba16828dc06a1b5",
+    "url": "https://github.com/konlo/teleai/actions/runs/36636744608",
+    "test_counts": {
+      "application": 464,
+      "migration": 136,
+      "reference_and_recovery": 217,
+      "figures": 58
+    }
+  }
+}

@@ -8,6 +8,9 @@ def remote_failure_message(observations, rejected=False):
     failures=[o for o in observations if o.get('status')=='unavailable']
     if failures:
         failure=failures[-1]
+        if failure.get('error_code') == 'remote_receipt_unverified':
+            return ('조회 실행 기록과 저장된 결과의 일치를 확인하지 못해 완료로 처리하지 않았습니다. '
+                    '기존 데이터는 보존했으며 중복 실행을 막기 위해 자동 재조회하지 않습니다.')
         not_submitted=failure.get('error_type')=='QueryNotSubmitted'
         if failure.get('http_status')==403:
             text='사용자 승인은 정상 처리됐지만 Databricks가 접근을 거부했습니다(HTTP 403). '

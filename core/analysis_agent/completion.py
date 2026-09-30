@@ -7,6 +7,7 @@ from dataclasses import dataclass
 from typing import Callable
 
 from core.analysis_agent import completion_renderers as renderers
+from core.analysis_agent.remote_completion import remote_queries_ready
 
 
 @dataclass(frozen=True)
@@ -44,7 +45,13 @@ def _count_rate_ready(current):
 
 # Adding a capability makes it participate in all four consumers automatically:
 # early completion, final exit validation, rendering and missing-evidence repair.
+from core.analysis_agent.latest_selection import render as render_latest_selection
+
 CONTRACTS = (
+    CompletionContract('latest_per_key', 'latest_per_key_spec', 'latest_selection_evidence',
+                       ('analyze_latest_distribution', 'prepare_remote_latest_distribution'), render_latest_selection),
+    CompletionContract('remote_query', 'remote_result_requested', 'remote_query_evidence',
+                       ('query_databricks',), renderers.render_remote_query, remote_queries_ready),
     CompletionContract('preview', 'preview_limit', 'preview_evidence', ('inspect_dataset',), renderers.render_preview),
     CompletionContract('data_load', 'data_load', 'load_evidence_id', ('query_databricks',), renderers.render_data_load),
     CompletionContract('metadata', 'metadata_kind', 'metadata_evidence', ('inspect_table_context',), renderers.render_metadata),
@@ -75,6 +82,8 @@ def missing_contracts(current):
 
 
 def completion_ready(current):
+    if current.get('unverified_execution_claim'):
+        return False
     active = active_contracts(current)
     return all(contract.satisfied(current) for contract in active) if active else not current.get('failed')
 
@@ -112,6 +121,6 @@ def recovery_instruction(current):
             '도구의 ready 표시만으로 완료하지 말고 요청 출처·컬럼·조건·집계·범위에 맞는 결과를 확인하세요. '
             '이미 검증된 결과와 원본을 보존하고 미완료 작업만 복구하세요. '
             '컬럼이나 관계 정보가 부족하면 inspect_table_context 또는 inspect_dataset으로 확인하세요. '
-            '원격 데이터가 필요한 경우 query_databricks로 정확한 SQL 승인을 요청하고 사용자 승인을 기다리세요. '
+            '원격 데이터가 필요한 경우 query_databricks로 필요한 읽기 전용 SQL을 현재 원격 실행 정책에 따라 실행하세요. '
             '대체 도구나 올바른 인자 schema가 필요하면 search_analysis_tools로 기능 또는 도구명을 검색하세요. '
             '같은 실패 호출을 반복하거나 검증되지 않은 수치·차트를 완료했다고 말하지 마세요.')

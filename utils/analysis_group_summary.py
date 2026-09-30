@@ -88,6 +88,7 @@ def summarize_groups(
     metrics: list[dict[str, Any]],
     conditions: list[dict[str, Any]] | None = None,
     sort: str = "group_ascending",
+    sort_by: str = "",
     max_groups: int = 1_000,
     max_output_rows: int = 1_000,
 ) -> dict[str, Any]:
@@ -95,8 +96,8 @@ def summarize_groups(
     group_columns = list(group_columns)
     if not 1 <= len(group_columns) <= 3 or len(group_columns) != len(set(group_columns)):
         raise ValueError("그룹 컬럼은 중복 없이 1~3개여야 합니다.")
-    if sort not in {"group_ascending", "group_descending", "none"}:
-        raise ValueError("sort는 group_ascending, group_descending, none 중 하나여야 합니다.")
+    if sort not in {"group_ascending", "group_descending", "metric_ascending", "metric_descending", "none"}:
+        raise ValueError("sort는 group_ascending, group_descending, metric_ascending, metric_descending, none 중 하나여야 합니다.")
     if not 1 <= int(max_groups) <= 1_000 or not 1 <= int(max_output_rows) <= 1_000:
         raise ValueError("그룹과 출력 행 한도가 허용 범위를 벗어났습니다.")
 
@@ -178,9 +179,15 @@ def summarize_groups(
         elif aggregation == "conditional_mean" and metric["empty_value"] is not None:
             result[name] = result[name].fillna(metric["empty_value"])
 
-    if sort != "none":
-        result = result.sort_values(
-            group_columns, ascending=sort == "group_ascending", kind="mergesort")
+    if sort.startswith('metric_'):
+        if sort_by not in {metric['name'] for metric in normalized_metrics}:
+            raise ValueError('정렬 지표는 계산한 지표 중 하나여야 합니다.')
+        result=result.sort_values([sort_by,*group_columns],
+            ascending=[sort=='metric_ascending',*[True]*len(group_columns)],kind='mergesort',na_position='last')
+    elif sort_by:
+        raise ValueError('지표 정렬에만 sort_by를 지정할 수 있습니다.')
+    elif sort != "none":
+        result = result.sort_values(group_columns, ascending=sort == "group_ascending", kind="mergesort")
     result = result.reset_index(drop=True).replace([np.inf, -np.inf], np.nan)
     if len(result) > int(max_output_rows):
         raise ValueError("그룹 요약 결과가 출력 행 한도를 넘습니다.")
@@ -191,6 +198,7 @@ def summarize_groups(
         "metrics": normalized_metrics,
         "conditions": [asdict(condition) for condition in condition_objects],
         "sort": sort,
+        "sort_by": sort_by,
     }
     derived = store.register(
         result,

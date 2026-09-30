@@ -3,6 +3,7 @@ from dataclasses import asdict
 from datetime import datetime, timezone
 
 import pandas as pd
+from sqlglot import exp
 
 from core.analysis_sql import validate_query
 from core.analysis_load_plan import source_plan
@@ -42,8 +43,21 @@ def execute_approved(request, config, datasets, *, max_rows=100_000, connect=Non
             estimated_bytes = 0
             max_bytes = getattr(datasets, 'max_frame_bytes', None)
             preview = []
+            # Preserve the connector's actual Arrow schema for LIMIT 0 probes.
+            # An untyped empty DataFrame erases integer/time types on persistence.
+            schema_frame = None
+            limit = tree.args.get('limit')
+            if (limit and isinstance(limit.expression, exp.Literal) and limit.expression.is_int
+                    and int(limit.expression.this) == 0 and callable(getattr(cursor, 'fetchmany_arrow', None))):
+                arrow = cursor.fetchmany_arrow(1)
+                if arrow.num_rows != 0 or list(arrow.column_names) != columns:
+                    raise ValueError('0행 스키마 조회의 실제 결과 구조가 일치하지 않습니다.')
+                schema_frame = arrow.to_pandas(types_mapper=pd.ArrowDtype)
             def read_batches():
                 nonlocal row_count, estimated_bytes
+                if schema_frame is not None:
+                    yield schema_frame
+                    return
                 while row_count <= max_rows:
                     # Bound one conversion independently of the total row cap.
                     batch = cursor.fetchmany(min(1024, max_rows + 1 - row_count))

@@ -1,0 +1,812 @@
+{
+  "mode": "actual Databricks model; production recovery; synthetic local data",
+  "generated_at": "2026-09-28T21:22:32.338769+00:00",
+  "warehouse_sql_executions": 0,
+  "limitations": [
+    "Known fixture, not a population success estimate; deterministic paths may call no model.",
+    "Summary journey lowers trigger to 1200 tokens to exercise compaction.",
+    "Explanation turn checks topic terms and absence of actions; prose quality requires human review.",
+    "No manual resume or state correction between turns. Unfinished checkpoints block later turns."
+  ],
+  "results": [
+    {
+      "id": "selective_filter",
+      "repeat": 1,
+      "status": "PASS",
+      "summary_required": false,
+      "summary_seen": false,
+      "summary_events": [
+        {
+          "time": "2026-09-28T21:21:58.515883+00:00",
+          "event": "summarization_started",
+          "run_id": "a1b90946dba44850a15e814f1fc577f0",
+          "span_id": "7526961abcb1",
+          "message_count": 2
+        },
+        {
+          "time": "2026-09-28T21:21:58.515967+00:00",
+          "event": "summarization_finished",
+          "run_id": "a1b90946dba44850a15e814f1fc577f0",
+          "span_id": "7526961abcb1",
+          "status": "ok",
+          "elapsed_seconds": 0.0,
+          "message_count": 2,
+          "summarized": false
+        }
+      ],
+      "turns": [
+        {
+          "turn": 1,
+          "prompt": "segment가 'blue'이고 score >= 15인 행의 score 평균을 알려줘.",
+          "oracle": {
+            "prompt": "segment가 'blue'이고 score >= 15인 행의 score 평균을 알려줘.",
+            "kind": "scalar",
+            "expected": 20,
+            "column": "score",
+            "operation": "AVG",
+            "source": "synthetic.phase_a"
+          },
+          "status": "PASS",
+          "agent_status": "answered",
+          "false_completion": false,
+          "error_type": null,
+          "answer": "보유 데이터로 계산한 결과입니다. 출처: synthetic.phase_a\n분석 범위: 요청 조건에 포함된 보유 데이터 전체\n\n적용 조건: score ≥ 15 AND segment = blue\n\n평균: 20.0",
+          "evidence": [
+            {
+              "source": "synthetic.phase_a",
+              "query": "SELECT AVG(score) AS avg_score FROM data WHERE segment = 'blue' AND score >= 15",
+              "rows": [
+                {
+                  "avg_score": 20.0
+                }
+              ]
+            }
+          ],
+          "observations": [
+            {
+              "tool": "local_analysis_sql",
+              "status": "ready",
+              "error_code": null,
+              "chart_spec": null,
+              "cards": []
+            }
+          ],
+          "tools": [
+            "local_analysis_sql"
+          ],
+          "state": {
+            "scope": {
+              "conditions": [
+                {
+                  "column": "score",
+                  "op": "ge",
+                  "value": 15
+                },
+                {
+                  "column": "segment",
+                  "op": "eq",
+                  "value": "blue"
+                }
+              ],
+              "any_conditions": [],
+              "join_edges": [],
+              "measure_conditions": [],
+              "ratio": null,
+              "unresolved": [],
+              "columns": [
+                "score",
+                "segment"
+              ]
+            },
+            "required_columns": [
+              "segment",
+              "score"
+            ],
+            "operations": [
+              "AVG"
+            ],
+            "kind": null,
+            "profile_kind": null,
+            "stop_reason": null
+          },
+          "model_calls": 1,
+          "raw_preserved": true,
+          "elapsed_seconds": 8.706
+        },
+        {
+          "turn": 2,
+          "prompt": "score 조건만 제거하고 segment 조건은 유지해서 score 평균을 알려줘.",
+          "oracle": {
+            "prompt": "score 조건만 제거하고 segment 조건은 유지해서 score 평균을 알려줘.",
+            "kind": "scalar",
+            "expected": 15,
+            "column": "score",
+            "operation": "AVG",
+            "source": "synthetic.phase_a"
+          },
+          "status": "PASS",
+          "agent_status": "answered",
+          "false_completion": false,
+          "error_type": null,
+          "answer": "보유 데이터로 계산한 결과입니다. 출처: synthetic.phase_a\n분석 범위: 요청 조건에 포함된 보유 데이터 전체\n\n적용 조건: segment = blue\n\n평균: 15.0",
+          "evidence": [
+            {
+              "source": "synthetic.phase_a",
+              "query": "SELECT AVG(\"score\") AS average FROM data",
+              "rows": [
+                {
+                  "average": 15.0
+                }
+              ]
+            }
+          ],
+          "observations": [
+            {
+              "tool": "local_analysis_sql",
+              "status": "ready",
+              "error_code": null,
+              "chart_spec": null,
+              "cards": []
+            }
+          ],
+          "tools": [
+            "local_analysis_sql"
+          ],
+          "state": {
+            "scope": {
+              "conditions": [
+                {
+                  "column": "segment",
+                  "op": "eq",
+                  "value": "blue"
+                }
+              ],
+              "any_conditions": [],
+              "join_edges": [],
+              "measure_conditions": [],
+              "ratio": null,
+              "unresolved": [],
+              "columns": [
+                "score",
+                "segment"
+              ]
+            },
+            "required_columns": [
+              "score"
+            ],
+            "operations": [
+              "AVG"
+            ],
+            "kind": null,
+            "profile_kind": null,
+            "stop_reason": null
+          },
+          "model_calls": 0,
+          "raw_preserved": true,
+          "elapsed_seconds": 0.031
+        },
+        {
+          "turn": 3,
+          "prompt": "이번에는 segment가 'red'인 행의 score 평균을 알려줘. 이전 blue 조건은 대체해.",
+          "oracle": {
+            "prompt": "이번에는 segment가 'red'인 행의 score 평균을 알려줘. 이전 blue 조건은 대체해.",
+            "kind": "scalar",
+            "expected": 3,
+            "column": "score",
+            "operation": "AVG",
+            "source": "synthetic.phase_a"
+          },
+          "status": "PASS",
+          "agent_status": "answered",
+          "false_completion": false,
+          "error_type": null,
+          "answer": "보유 데이터로 계산한 결과입니다. 출처: synthetic.phase_a\n분석 범위: 요청 조건에 포함된 보유 데이터 전체\n\n적용 조건: segment = red\n\n평균: 3.0",
+          "evidence": [
+            {
+              "source": "synthetic.phase_a",
+              "query": "SELECT AVG(\"score\") AS average FROM data",
+              "rows": [
+                {
+                  "average": 3.0
+                }
+              ]
+            }
+          ],
+          "observations": [
+            {
+              "tool": "local_analysis_sql",
+              "status": "ready",
+              "error_code": null,
+              "chart_spec": null,
+              "cards": []
+            }
+          ],
+          "tools": [
+            "local_analysis_sql"
+          ],
+          "state": {
+            "scope": {
+              "conditions": [
+                {
+                  "column": "segment",
+                  "op": "eq",
+                  "value": "red"
+                }
+              ],
+              "any_conditions": [],
+              "join_edges": [],
+              "measure_conditions": [],
+              "ratio": null,
+              "unresolved": [],
+              "columns": [
+                "score",
+                "segment"
+              ]
+            },
+            "required_columns": [
+              "segment",
+              "score"
+            ],
+            "operations": [
+              "AVG"
+            ],
+            "kind": null,
+            "profile_kind": null,
+            "stop_reason": null
+          },
+          "model_calls": 0,
+          "raw_preserved": true,
+          "elapsed_seconds": 0.027
+        }
+      ]
+    },
+    {
+      "id": "topic_pause_return",
+      "repeat": 1,
+      "status": "PASS",
+      "summary_required": false,
+      "summary_seen": false,
+      "summary_events": [
+        {
+          "time": "2026-09-28T21:22:07.201703+00:00",
+          "event": "summarization_started",
+          "run_id": "c5589410d18946f493d6f3a7e58b42e9",
+          "span_id": "55a81e3cc341",
+          "message_count": 2
+        },
+        {
+          "time": "2026-09-28T21:22:07.201759+00:00",
+          "event": "summarization_finished",
+          "run_id": "c5589410d18946f493d6f3a7e58b42e9",
+          "span_id": "55a81e3cc341",
+          "status": "ok",
+          "elapsed_seconds": 0.0,
+          "message_count": 2,
+          "summarized": false
+        },
+        {
+          "time": "2026-09-28T21:22:13.751740+00:00",
+          "event": "summarization_started",
+          "run_id": "03c3224f96eb4f5392a1f5caae0cbd93",
+          "span_id": "73eefc049c3a",
+          "message_count": 6
+        },
+        {
+          "time": "2026-09-28T21:22:13.751846+00:00",
+          "event": "summarization_finished",
+          "run_id": "03c3224f96eb4f5392a1f5caae0cbd93",
+          "span_id": "73eefc049c3a",
+          "status": "ok",
+          "elapsed_seconds": 0.0,
+          "message_count": 6,
+          "summarized": false
+        }
+      ],
+      "turns": [
+        {
+          "turn": 1,
+          "prompt": "segment가 'blue'인 행의 score 평균을 알려줘.",
+          "oracle": {
+            "prompt": "segment가 'blue'인 행의 score 평균을 알려줘.",
+            "kind": "scalar",
+            "expected": 15,
+            "column": "score",
+            "operation": "AVG",
+            "source": "synthetic.phase_a"
+          },
+          "status": "PASS",
+          "agent_status": "answered",
+          "false_completion": false,
+          "error_type": null,
+          "answer": "보유 데이터로 계산한 결과입니다. 출처: synthetic.phase_a\n분석 범위: 요청 조건에 포함된 보유 데이터 전체\n\n적용 조건: segment = blue\n\n평균: 15.0",
+          "evidence": [
+            {
+              "source": "synthetic.phase_a",
+              "query": "SELECT AVG(score) AS avg_score FROM data WHERE segment = 'blue'",
+              "rows": [
+                {
+                  "avg_score": 15.0
+                }
+              ]
+            }
+          ],
+          "observations": [
+            {
+              "tool": "local_analysis_sql",
+              "status": "ready",
+              "error_code": null,
+              "chart_spec": null,
+              "cards": []
+            }
+          ],
+          "tools": [
+            "local_analysis_sql"
+          ],
+          "state": {
+            "scope": {
+              "conditions": [
+                {
+                  "column": "segment",
+                  "op": "eq",
+                  "value": "blue"
+                }
+              ],
+              "any_conditions": [],
+              "join_edges": [],
+              "measure_conditions": [],
+              "ratio": null,
+              "unresolved": [],
+              "columns": [
+                "score",
+                "segment"
+              ]
+            },
+            "required_columns": [
+              "segment",
+              "score"
+            ],
+            "operations": [
+              "AVG"
+            ],
+            "kind": null,
+            "profile_kind": null,
+            "stop_reason": null
+          },
+          "model_calls": 1,
+          "raw_preserved": true,
+          "elapsed_seconds": 6.55
+        },
+        {
+          "turn": 2,
+          "prompt": "데이터 분석은 잠시 멈춰. 히스토그램과 막대그래프의 차이만 설명하고 계산이나 차트 생성은 하지 마.",
+          "oracle": {
+            "kind": "explanation",
+            "prompt": "데이터 분석은 잠시 멈춰. 히스토그램과 막대그래프의 차이만 설명하고 계산이나 차트 생성은 하지 마.",
+            "must_contain": [
+              "히스토그램",
+              "막대"
+            ],
+            "no_tools": true
+          },
+          "status": "PASS",
+          "agent_status": "answered",
+          "false_completion": false,
+          "error_type": null,
+          "answer": "물론입니다. 히스토그램과 막대그래프의 주요 차이를 간단히 설명드리겠습니다.\n\n- **히스토그램(Histogram)**:  \n  수치형 데이터(예: 점수, 시간, 온도 등)의 **분포**를 보여줍니다. 데이터를 일정한 구간(빈, bin)으로 나누고, 각 구간에 속하는 데이터의 **빈도(개수)**를 막대의 높이로 표현합니다. 막대끼리 붙어 있으며, 축은 연속적인 수치 범위입니다.  \n  → *“어떤 값이 얼마나 자주 나오는가?”* 를 확인할 때 사용합니다.\n\n- **막대그래프(Bar Chart)**:  \n  범주형 데이터(예: 성별, 지역, 제품 카테고리 등)의 **각 카테고리별 값**을 비교합니다. 막대는 떨어져 있으며, 축은 명확히 구분된 범주입니다. 막대의 높이는 해당 범주의 합계, 평균, 개수 등 집계값을 나타냅니다.  \n  → *“어떤 카테고리가 더 큰가?”* 를 비교할 때 사용합니다.\n\n요약하면:  \n**히스토그램 = 수치의 분포**,  \n**막대그래프 = 범주의 비교**입니다.  \n\n계산이나 차트 생성은 하지 않겠습니다.",
+          "evidence": [],
+          "observations": [],
+          "tools": [],
+          "state": {
+            "scope": {
+              "conditions": [],
+              "any_conditions": [],
+              "unresolved": [],
+              "columns": []
+            },
+            "required_columns": [],
+            "operations": [],
+            "kind": null,
+            "profile_kind": null,
+            "stop_reason": null
+          },
+          "model_calls": 1,
+          "raw_preserved": true,
+          "elapsed_seconds": 8.517
+        },
+        {
+          "turn": 3,
+          "prompt": "아까 분석하던 같은 그룹으로 돌아가서 score 최댓값을 알려줘.",
+          "oracle": {
+            "prompt": "아까 분석하던 같은 그룹으로 돌아가서 score 최댓값을 알려줘.",
+            "kind": "scalar",
+            "expected": 20,
+            "column": "score",
+            "operation": "MAX",
+            "source": "synthetic.phase_a"
+          },
+          "status": "PASS",
+          "agent_status": "answered",
+          "false_completion": false,
+          "error_type": null,
+          "answer": "보유 데이터로 계산한 결과입니다. 출처: synthetic.phase_a\n분석 범위: 요청 조건에 포함된 보유 데이터 전체\n\n적용 조건: segment = blue\n\n최댓값: 20",
+          "evidence": [
+            {
+              "source": "synthetic.phase_a",
+              "query": "SELECT MAX(\"score\") AS maximum FROM data",
+              "rows": [
+                {
+                  "maximum": 20
+                }
+              ]
+            }
+          ],
+          "observations": [
+            {
+              "tool": "local_analysis_sql",
+              "status": "ready",
+              "error_code": null,
+              "chart_spec": null,
+              "cards": []
+            }
+          ],
+          "tools": [
+            "local_analysis_sql"
+          ],
+          "state": {
+            "scope": {
+              "conditions": [
+                {
+                  "column": "segment",
+                  "op": "eq",
+                  "value": "blue"
+                }
+              ],
+              "any_conditions": [],
+              "join_edges": [],
+              "measure_conditions": [],
+              "ratio": null,
+              "unresolved": [],
+              "columns": [
+                "score"
+              ]
+            },
+            "required_columns": [
+              "score"
+            ],
+            "operations": [
+              "MAX"
+            ],
+            "kind": null,
+            "profile_kind": null,
+            "stop_reason": null
+          },
+          "model_calls": 0,
+          "raw_preserved": true,
+          "elapsed_seconds": 0.029
+        }
+      ]
+    },
+    {
+      "id": "language_source_switch",
+      "repeat": 1,
+      "status": "PASS",
+      "summary_required": false,
+      "summary_seen": false,
+      "summary_events": [
+        {
+          "time": "2026-09-28T21:22:22.320077+00:00",
+          "event": "summarization_started",
+          "run_id": "6cf29c710f4143faa08a2130603bedb2",
+          "span_id": "ecbc002fcfcf",
+          "message_count": 2
+        },
+        {
+          "time": "2026-09-28T21:22:22.320154+00:00",
+          "event": "summarization_finished",
+          "run_id": "6cf29c710f4143faa08a2130603bedb2",
+          "span_id": "ecbc002fcfcf",
+          "status": "ok",
+          "elapsed_seconds": 0.0,
+          "message_count": 2,
+          "summarized": false
+        },
+        {
+          "time": "2026-09-28T21:22:29.287183+00:00",
+          "event": "summarization_started",
+          "run_id": "dcd34b1307f549e687705bd08c01888d",
+          "span_id": "5d91aa7c7877",
+          "message_count": 6
+        },
+        {
+          "time": "2026-09-28T21:22:29.287304+00:00",
+          "event": "summarization_finished",
+          "run_id": "dcd34b1307f549e687705bd08c01888d",
+          "span_id": "5d91aa7c7877",
+          "status": "ok",
+          "elapsed_seconds": 0.0,
+          "message_count": 6,
+          "summarized": false
+        }
+      ],
+      "turns": [
+        {
+          "turn": 1,
+          "prompt": "segment가 'blue'인 행의 score 평균을 알려줘.",
+          "oracle": {
+            "prompt": "segment가 'blue'인 행의 score 평균을 알려줘.",
+            "kind": "scalar",
+            "expected": 15,
+            "column": "score",
+            "operation": "AVG",
+            "source": "synthetic.phase_a"
+          },
+          "status": "PASS",
+          "agent_status": "answered",
+          "false_completion": false,
+          "error_type": null,
+          "answer": "보유 데이터로 계산한 결과입니다. 출처: synthetic.phase_a\n분석 범위: 요청 조건에 포함된 보유 데이터 전체\n\n적용 조건: segment = blue\n\n평균: 15.0",
+          "evidence": [
+            {
+              "source": "synthetic.phase_a",
+              "query": "SELECT AVG(score) AS avg_score FROM data WHERE segment = 'blue'",
+              "rows": [
+                {
+                  "avg_score": 15.0
+                }
+              ]
+            }
+          ],
+          "observations": [
+            {
+              "tool": "local_analysis_sql",
+              "status": "ready",
+              "error_code": null,
+              "chart_spec": null,
+              "cards": []
+            }
+          ],
+          "tools": [
+            "local_analysis_sql"
+          ],
+          "state": {
+            "scope": {
+              "conditions": [
+                {
+                  "column": "segment",
+                  "op": "eq",
+                  "value": "blue"
+                }
+              ],
+              "any_conditions": [],
+              "join_edges": [],
+              "measure_conditions": [],
+              "ratio": null,
+              "unresolved": [],
+              "columns": [
+                "score",
+                "segment"
+              ]
+            },
+            "required_columns": [
+              "segment",
+              "score"
+            ],
+            "operations": [
+              "AVG"
+            ],
+            "kind": null,
+            "profile_kind": null,
+            "stop_reason": null
+          },
+          "model_calls": 1,
+          "raw_preserved": true,
+          "elapsed_seconds": 6.966
+        },
+        {
+          "turn": 2,
+          "prompt": "이제 synthetic.phase_b 데이터로 바꿔서 score 평균을 알려줘. 앞의 조건은 적용하지 마.",
+          "oracle": {
+            "prompt": "이제 synthetic.phase_b 데이터로 바꿔서 score 평균을 알려줘. 앞의 조건은 적용하지 마.",
+            "kind": "scalar",
+            "expected": 200,
+            "column": "score",
+            "operation": "AVG",
+            "source": "synthetic.phase_b"
+          },
+          "status": "PASS",
+          "agent_status": "answered",
+          "false_completion": false,
+          "error_type": null,
+          "answer": "보유 데이터로 계산한 결과입니다. 출처: synthetic.phase_b\n분석 범위: 요청 조건에 포함된 보유 데이터 전체\n\n평균: 200.0",
+          "evidence": [
+            {
+              "source": "synthetic.phase_b",
+              "query": "SELECT AVG(score) AS avg_score FROM data",
+              "rows": [
+                {
+                  "avg_score": 200.0
+                }
+              ]
+            }
+          ],
+          "observations": [
+            {
+              "tool": "local_analysis_sql",
+              "status": "ready",
+              "error_code": null,
+              "chart_spec": null,
+              "cards": []
+            }
+          ],
+          "tools": [
+            "local_analysis_sql"
+          ],
+          "state": {
+            "scope": {
+              "conditions": [],
+              "any_conditions": [],
+              "join_edges": [],
+              "measure_conditions": [],
+              "ratio": null,
+              "unresolved": [],
+              "columns": [
+                "score"
+              ]
+            },
+            "required_columns": [
+              "score"
+            ],
+            "operations": [
+              "AVG"
+            ],
+            "kind": null,
+            "profile_kind": null,
+            "stop_reason": null
+          },
+          "model_calls": 1,
+          "raw_preserved": true,
+          "elapsed_seconds": 3.006
+        },
+        {
+          "turn": 3,
+          "prompt": "그 데이터에서 segment가 'blue'인 행의 score 평균은?",
+          "oracle": {
+            "prompt": "그 데이터에서 segment가 'blue'인 행의 score 평균은?",
+            "kind": "scalar",
+            "expected": 250,
+            "column": "score",
+            "operation": "AVG",
+            "source": "synthetic.phase_b"
+          },
+          "status": "PASS",
+          "agent_status": "answered",
+          "false_completion": false,
+          "error_type": null,
+          "answer": "보유 데이터로 계산한 결과입니다. 출처: synthetic.phase_b\n분석 범위: 요청 조건에 포함된 보유 데이터 전체\n\n적용 조건: segment = blue\n\n평균: 250.0",
+          "evidence": [
+            {
+              "source": "synthetic.phase_b",
+              "query": "SELECT AVG(\"score\") AS average FROM data",
+              "rows": [
+                {
+                  "average": 250.0
+                }
+              ]
+            }
+          ],
+          "observations": [
+            {
+              "tool": "local_analysis_sql",
+              "status": "ready",
+              "error_code": null,
+              "chart_spec": null,
+              "cards": []
+            }
+          ],
+          "tools": [
+            "local_analysis_sql"
+          ],
+          "state": {
+            "scope": {
+              "conditions": [
+                {
+                  "column": "segment",
+                  "op": "eq",
+                  "value": "blue"
+                }
+              ],
+              "any_conditions": [],
+              "join_edges": [],
+              "measure_conditions": [],
+              "ratio": null,
+              "unresolved": [],
+              "columns": [
+                "score",
+                "segment"
+              ]
+            },
+            "required_columns": [
+              "score"
+            ],
+            "operations": [
+              "AVG"
+            ],
+            "kind": null,
+            "profile_kind": null,
+            "stop_reason": null
+          },
+          "model_calls": 0,
+          "raw_preserved": true,
+          "elapsed_seconds": 0.027
+        },
+        {
+          "turn": 4,
+          "prompt": "처음 synthetic.phase_a 원본으로 돌아가서 모든 행의 score 평균을 알려줘. 이전 segment 조건은 적용하지 마.",
+          "oracle": {
+            "prompt": "처음 synthetic.phase_a 원본으로 돌아가서 모든 행의 score 평균을 알려줘. 이전 segment 조건은 적용하지 마.",
+            "kind": "scalar",
+            "expected": 15.2,
+            "column": "score",
+            "operation": "AVG",
+            "source": "synthetic.phase_a"
+          },
+          "status": "PASS",
+          "agent_status": "answered",
+          "false_completion": false,
+          "error_type": null,
+          "answer": "보유 데이터로 계산한 결과입니다. 출처: synthetic.phase_a\n분석 범위: 요청 조건에 포함된 보유 데이터 전체\n\n평균: 15.2",
+          "evidence": [
+            {
+              "source": "synthetic.phase_a",
+              "query": "SELECT AVG(\"score\") AS average FROM data",
+              "rows": [
+                {
+                  "average": 15.2
+                }
+              ]
+            }
+          ],
+          "observations": [
+            {
+              "tool": "local_analysis_sql",
+              "status": "ready",
+              "error_code": null,
+              "chart_spec": null,
+              "cards": []
+            }
+          ],
+          "tools": [
+            "local_analysis_sql"
+          ],
+          "state": {
+            "scope": {
+              "conditions": [],
+              "any_conditions": [],
+              "join_edges": [],
+              "measure_conditions": [],
+              "ratio": null,
+              "unresolved": [],
+              "columns": [
+                "score",
+                "segment"
+              ]
+            },
+            "required_columns": [
+              "score",
+              "segment"
+            ],
+            "operations": [
+              "AVG"
+            ],
+            "kind": null,
+            "profile_kind": null,
+            "stop_reason": null
+          },
+          "model_calls": 0,
+          "raw_preserved": true,
+          "elapsed_seconds": 0.024
+        }
+      ]
+    }
+  ]
+}

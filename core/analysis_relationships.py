@@ -63,7 +63,7 @@ def relationship_plan(table):
     return {'status': 'planned', 'metadata_plan': {'source': ' | '.join(sorted([rc, ku])),
         'query': query, 'reason': '선택 테이블에 선언된 외래 키와 참조 키를 확인합니다.'},
         'target_table': _source_key(table), 'scope': '같은 catalog의 참조 키 관계 metadata 최대 65행. 다른 catalog 참조와 원본 행은 포함하지 않습니다.',
-        'user_action': '정확한 SQL을 query_databricks로 제안하고 승인 후 실행하세요.'}
+        'user_action': '정확한 SQL을 query_databricks로 현재 원격 실행 정책에 따라 실행하세요.'}
 
 
 def stored_relationships(datasets, table):
@@ -141,11 +141,11 @@ def inspect_relationships(context, table):
             'observed_at': item['observed_at'],
             'version': sha256(json.dumps(keys, sort_keys=True).encode()).hexdigest(),
             'scope': 'DB에 선언된 관계입니다. 실제 행의 유일성·누락·업무 역할을 보증하지 않습니다.',
-            'message': '여러 키가 같은 테이블을 가리키면 역할을 확인하세요. 새 SQL은 별도 승인이 필요합니다.',
+            'message': '여러 키가 같은 테이블을 가리키면 역할을 확인하세요. 새 SQL은 현재 원격 실행 정책과 범위 검증을 따릅니다.',
             'next_steps': [
                 '사용자가 지정한 테이블·조건의 실제 컬럼을 inspect_table_context에서 확인하세요.',
                 '양쪽 raw dataset이 이미 로딩되어 있으면 보유 dataset ID로 로컬 조인을 검토하세요.',
-                '일부 테이블이 로딩되지 않은 통계 요청은 연결된 SQL 엔진에서 JOIN/집계 SELECT를 query_databricks로 승인 요청할 수 있습니다. 전체 raw 로딩은 필수가 아닙니다.',
+                '일부 테이블이 로딩되지 않은 통계 요청은 연결된 SQL 엔진에서 JOIN/집계 SELECT를 query_databricks로 실행할 수 있습니다. 전체 raw 로딩은 필수가 아닙니다.',
                 '명시된 컬럼·리터럴 조건과 최신 스키마로 의미가 확정됐으면 추가 설명이나 catalog 탐색 없이 계산 계획으로 진행하세요.'
             ]}
     return relationship_plan(table)

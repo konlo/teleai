@@ -1,0 +1,11 @@
+{
+  "source": "workspace.default.bank_loan",
+  "status": "BLOCKED",
+  "queries": [
+    "SELECT column_name, data_type FROM `workspace`.`information_schema`.`columns` WHERE table_schema = 'default' AND table_name = 'bank_loan' ORDER BY ordinal_position"
+  ],
+  "stage": "schema",
+  "error_type": "RequestError",
+  "http_status": 400,
+  "query_count": 1
+}

@@ -1,0 +1,14 @@
+# Python 3.11; install in a separate evaluation venv, not the app venv.
+# Direct dependency versions used for the 2026-09-28 evaluation runs.
+# Agent execution uses requirements.txt; these tools score exported reports/SQL.
+deepeval==4.2.3
+openai==3.17.0
+pytest==9.1.1
+
+# Spider2-lite's official scorer imports BigQuery even for SQLite-only scoring.
+google-cloud-bigquery==3.45.2
+pandas==3.0.6
+tqdm==4.70.1
+
+# Download utility for public benchmark assets; installing does not download data.
+gdown==5.2.2

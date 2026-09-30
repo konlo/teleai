@@ -1,0 +1,107 @@
+{
+  "source": "fixture.telemetry.device_events",
+  "columns": [
+    "adapterserial",
+    "DriveProductID",
+    "event_time",
+    "ingested_at"
+  ],
+  "rows": [
+    [
+      "A",
+      "P200",
+      "2026-09-28T10:00:00",
+      "2026-09-28T10:01:00"
+    ],
+    [
+      "B",
+      "P200",
+      "2026-09-28T11:00:00",
+      "2026-09-28T11:01:00"
+    ],
+    [
+      "C",
+      "P200",
+      "2026-09-28T12:00:00",
+      "2026-09-28T12:01:00"
+    ],
+    [
+      "D",
+      "P100",
+      "2026-09-28T13:00:00",
+      "2026-09-28T13:01:00"
+    ],
+    [
+      "E",
+      "P300",
+      "2026-09-28T14:00:00",
+      "2026-09-28T14:01:00"
+    ],
+    [
+      "A",
+      "P100",
+      "2026-09-27T10:00:00",
+      "2026-09-29T10:01:00"
+    ],
+    [
+      "B",
+      "P100",
+      "2026-09-27T11:00:00",
+      "2026-09-29T11:01:00"
+    ],
+    [
+      "C",
+      "P100",
+      "2026-09-27T12:00:00",
+      "2026-09-29T12:01:00"
+    ],
+    [
+      "D",
+      "P300",
+      "2026-09-27T13:00:00",
+      "2026-09-29T13:01:00"
+    ],
+    [
+      "E",
+      "P100",
+      "2026-09-27T14:00:00",
+      "2026-09-29T14:01:00"
+    ]
+  ],
+  "expected_counts": {
+    "P100": 1,
+    "P200": 3,
+    "P300": 1
+  },
+  "expected_latest": {
+    "A": "P200",
+    "B": "P200",
+    "C": "P200",
+    "D": "P100",
+    "E": "P300"
+  },
+  "cases": [
+    {
+      "id": "ambiguous_last",
+      "clarification": true,
+      "prompt": "현재 로딩된 테이블의 DriveProductID에 대한 histogram데이타를 확인하고 싶어, 대신에 adapterserial 컬럼을 기준으로 unique한 값으로 통계를 보고 싶고. 여러 개인 경우는 마지막에 있는 데이타를 활용해줘 그려줘."
+    },
+    {
+      "id": "explicit_latest",
+      "prompt": "현재 로딩된 데이터에서 adapterserial별 event_time이 가장 늦은 행 하나만 사용해서 DriveProductID별 장치 수 분포를 그려줘. DriveProductID는 제품 식별자야. 원본은 보존해."
+    },
+    {
+      "id": "histogram_wording",
+      "prompt": "DriveProductID histogram을 그려줘. adapterserial 기준으로 unique하게 집계하고 중복이면 event_time 기준 마지막 데이터만 활용해줘. DriveProductID는 연속 수치가 아니라 제품 식별자야."
+    },
+    {
+      "id": "renamed_schema",
+      "rename": {
+        "adapterserial": "unit_key",
+        "DriveProductID": "product_code",
+        "event_time": "observed_at"
+      },
+      "prompt": "unit_key마다 observed_at이 가장 늦은 기록을 하나 선택하고 product_code별 장치 수 분포를 그려줘. product_code는 제품 식별자야."
+    }
+  ]
+}

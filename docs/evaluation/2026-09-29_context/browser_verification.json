@@ -1,0 +1,68 @@
+{
+  "status": "PASS",
+  "conversation": "3430d0c4-c398-4a4c-b621-d3dba948ab4d",
+  "input_method": "actual browser chat input",
+  "model": "Databricks",
+  "warehouse_sql_executions": 0,
+  "turns": [
+    {
+      "prompt": "segment가 'blue'이고 score >= 15인 행의 score 평균을 알려줘.",
+      "tools": [
+        "local_analysis_sql"
+      ],
+      "answer": "보유 데이터로 계산한 결과입니다. 출처: synthetic.phase_a\n분석 범위: 요청 조건에 포함된 보유 데이터 전체\n\n적용 조건: score ≥ 15 AND segment = blue\n\n평균: 20.0"
+    },
+    {
+      "prompt": "score 조건만 제거하고 segment 조건은 유지해서 score 평균을 알려줘.",
+      "tools": [
+        "local_analysis_sql"
+      ],
+      "answer": "보유 데이터로 계산한 결과입니다. 출처: synthetic.phase_a\n분석 범위: 요청 조건에 포함된 보유 데이터 전체\n\n적용 조건: segment = blue\n\n평균: 15.0"
+    },
+    {
+      "prompt": "데이터 분석은 잠시 멈춰. 히스토그램과 막대그래프의 차이만 설명하고 계산이나 차트 생성은 하지 마.",
+      "tools": [],
+      "answer": "히스토그램과 막대그래프는 데이터 시각화에서 서로 다른 목적을 가집니다.\n\n- **히스토그램**은 **수치형 데이터**(예: 점수, 시간, 온도)의 **분포**를 보여줍니다. 데이터를 일정한 간격(빈)으로 나누고, 각 구간에 속하는 데이터의 **빈도**(개수)를 막대로 표현합니다. 막대 사이에 간격이 없으며, 연속적인 값을 나타냅니다. 예: \"score가 10~15 사이에 몇 개의 데이터가 있는지\"를 보고 싶을 때 사용합니다.\n\n- **막대그래프**는 **범주형 데이터**(예: 부서, 색상, 지역)의 **값을 비교**할 때 사용합니다. 각 막대는 서로 다른 범주를 나타내고, 막대의 높이는 해당 범주의 수치(예: 평균, 합계, 개수)를 의미합니다. 막대 사이에 명확한 간격이 있으며, 순서가 중요하지 않거나 고정된 순서로 정렬됩니다. 예: \"blue, red, green 세 그룹의 평균 점수를 비교\"할 때 사용합니다.\n\n요약하면:  \n**히스토그램 = 수치의 분포 보기**,  \n**막대그래프 = 범주의 값 비교하기**입니다."
+    },
+    {
+      "prompt": "아까 분석하던 같은 그룹으로 돌아가서 score 최댓값을 알려줘.",
+      "tools": [
+        "local_analysis_sql"
+      ],
+      "answer": "보유 데이터로 계산한 결과입니다. 출처: synthetic.phase_a\n분석 범위: 요청 조건에 포함된 보유 데이터 전체\n\n적용 조건: segment = blue\n\n최댓값: 20"
+    },
+    {
+      "prompt": "이제 synthetic.phase_b 데이터로 바꿔서 score 평균을 알려줘. 앞의 조건은 적용하지 마.",
+      "tools": [
+        "local_analysis_sql"
+      ],
+      "answer": "보유 데이터로 계산한 결과입니다. 출처: synthetic.phase_b\n분석 범위: 요청 조건에 포함된 보유 데이터 전체\n\n평균: 200.0"
+    },
+    {
+      "prompt": "그 데이터에서 segment가 'blue'인 행의 score 평균은?",
+      "tools": [
+        "local_analysis_sql"
+      ],
+      "answer": "보유 데이터로 계산한 결과입니다. 출처: synthetic.phase_b\n분석 범위: 요청 조건에 포함된 보유 데이터 전체\n\n적용 조건: segment = blue\n\n평균: 250.0"
+    }
+  ],
+  "final_evidence": [
+    {
+      "source": "synthetic.phase_b",
+      "rows": [
+        {
+          "average": 250.0
+        }
+      ]
+    }
+  ],
+  "model_calls_final_turn": 0,
+  "ui_observed_results": [
+    20,
+    15,
+    "explanation only",
+    20,
+    200,
+    250
+  ]
+}

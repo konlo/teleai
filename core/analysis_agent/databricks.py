@@ -32,7 +32,7 @@ def make_executor(config,datasets,*,max_rows=100_000):
     def execute(envelope):
         if not config.server_hostname or not config.http_path or not config.access_token:
             raise QueryNotSubmitted()
-        if envelope['connection']!=config.identity():raise PermissionError('연결 설정 변경: 재승인이 필요합니다.')
+        if envelope['connection']!=config.identity():raise PermissionError('연결 설정이 변경되어 기존 조회를 실행할 수 없습니다.')
         request=SimpleNamespace(status='executing',query=envelope['query'],source=envelope['source'])
         try:
             return execute_approved(request,config,datasets,max_rows=max_rows)

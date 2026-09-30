@@ -23,7 +23,8 @@ from core.analysis_agent.assets import AssetDB, PersistentDatasets, PersistentCh
 from core.analysis_agent.tools import local_tools
 from core.analysis_agent.progress import tool_progress
 from core.analysis_agent.policy import RuntimePolicy
-from core.analysis_agent.tool_focus import FocusedScalarToolsMiddleware, FocusedRemoteJoinToolsMiddleware
+from core.analysis_agent.tool_focus import (FocusedScalarToolsMiddleware, FocusedRemoteJoinToolsMiddleware,
+                                             FocusedRemoteCatalogToolsMiddleware, ExplanationToolsMiddleware)
 from core.analysis_agent.model_recovery import ModelAttemptLedger, ModelRecoveryMiddleware
 
 
@@ -67,6 +68,9 @@ class GraphAnalysisRuntime:
         def prompt(request):
             self._refresh_reference_context()
             instructions=self.agent_instructions.replace('propose_databricks_query','query_databricks')
+            instructions += ('\n현재 원격 실행 정책: 정확한 SQL마다 사용자 승인 카드에서 승인 후 실행합니다.'
+                             if self.policy.require_remote_approval else
+                             '\n현재 원격 실행 정책: 필요한 읽기 전용 SQL은 사용자 승인 없이 query_databricks로 즉시 실행하세요. 승인 여부를 묻거나 기다리지 마세요.')
             rendered=instructions+'\n현재 분석 환경:\n'+json.dumps(catalog(),ensure_ascii=False,default=str)
             rendered += '\n연결된 SQL 엔진: ' + self.sql_dialect + '. 실제 관측된 테이블 이름을 그대로 사용하세요.'
             if self.reference_document:
@@ -97,7 +101,7 @@ class GraphAnalysisRuntime:
         recovery=RecoveryMiddleware(self.artifacts,self.diagnostics,context=self.context,
             transcript=self.transcript,max_model_seconds=self.policy.turn_slo_seconds,
             remote_available=self.remote_execute is not None, sql_dialect=self.sql_dialect,
-            proposal_validator=proposal_validator)
+            proposal_validator=proposal_validator, approval_ledger=self.ledger)
         self.recovery=recovery
         self.model_attempts = ModelAttemptLedger(self.db)
         recovery.model_attempts = self.model_attempts
@@ -112,22 +116,36 @@ class GraphAnalysisRuntime:
                                       model_recovery=model_recovery),
                     ModelTimingMiddleware(self.diagnostics),prompt,
                     FocusedRemoteJoinToolsMiddleware(self.context,self.diagnostics),
+                    FocusedRemoteCatalogToolsMiddleware(self.context,self.diagnostics),
+                    ExplanationToolsMiddleware(),
                     model_recovery]
         if self.remote_execute is not None:
             if not connection_identity:raise ValueError('Connection identity required')
             @tool
             def query_databricks(source: str, query: str, reason: str, runtime: ToolRuntime) -> dict:
-                """추가 원격 데이터 조회. 정확한 SQL을 제시하고 매번 사용자 승인 후 실행합니다."""
+                """필요한 읽기 전용 SQL을 실행하고 저장된 결과를 반환합니다.
+
+                기본 정책은 승인 없이 즉시 실행입니다. 명시적으로 수동 승인 모드를
+                설정한 환경에서만 실행기가 승인 카드를 표시합니다.
+                """
                 envelope=self.ledger.envelope(source,query,reason,self.connection_identity)
                 # A controller-authored tool call can enter the tools node
                 # without passing HumanInTheLoopMiddleware.after_model. Enforce
-                # the same durable approval at the execution boundary too.
+                # the durable execution policy at the tool boundary too.
                 try:
                     recorded=self.ledger.get(runtime.tool_call_id)
                 except KeyError:
                     recorded=self.ledger.propose(runtime.tool_call_id,envelope)
                 if self.ledger.fingerprint({key:recorded[key] for key in envelope}) != self.ledger.fingerprint(envelope):
-                    raise PermissionError('조회 내용 또는 연결이 변경되었습니다. 재승인이 필요합니다.')
+                    self.ledger.invalidate(runtime.tool_call_id)
+                    return normalize_tool_result({'status':'unavailable', 'retryable':False,
+                        'error_code':'remote_connection_changed',
+                        'message':'조회 내용 또는 연결이 변경되어 기존 실행 기록을 사용할 수 없습니다.'})
+                if recorded['status']=='proposed' and not self.policy.require_remote_approval:
+                    if self.ledger.authorize_automatic(runtime.tool_call_id, envelope):
+                        self.diagnostics.emit('remote_query_authorized', tool_call_id=runtime.tool_call_id,
+                                              authorization='automatic_read_policy')
+                    recorded=self.ledger.get(runtime.tool_call_id)
                 if recorded['status']=='proposed':
                     interrupt({'kind':'databricks_approval_required',
                                'tool_call_id':runtime.tool_call_id})
@@ -145,15 +163,56 @@ class GraphAnalysisRuntime:
                             'error_code':'databricks_forbidden' if getattr(exc,'http_status',None)==403 else 'databricks_unavailable',
                             'retryable':False,
                             'user_action':'Databricks 연결 권한과 설정을 확인해주세요.',
-                            'message':('Databricks 접근이 거부되었습니다(403). 연결 권한과 설정을 확인해주세요. 조회는 제출되지 않았습니다.' if getattr(exc,'http_status',None)==403 else '조회가 완료되지 않았습니다. 임의로 재시도하거나 수치를 추정하지 마세요. 실행 기록과 연결 상태를 확인하고, 새 조회는 새 승인을 받아야 합니다.')})
+                            'message':('Databricks 접근이 거부되었습니다(403). 연결 권한과 설정을 확인해주세요. 조회는 제출되지 않았습니다.' if getattr(exc,'http_status',None)==403 else '조회가 완료되지 않았습니다. 임의로 재시도하거나 수치를 추정하지 마세요. 실행 기록과 연결 상태를 확인하고, 제출 여부가 불명확한 조회는 자동 재실행하지 않습니다.')})
             if tool_allowlist is None or 'query_databricks' in tool_allowlist:
                 registered.append(query_databricks)
+                # Preserve the node name so legacy interrupted checkpoints can resume.
                 middleware.append(HumanInTheLoopMiddleware(interrupt_on={
-                    'query_databricks':{'allowed_decisions':['approve','reject']}}))
+                    'query_databricks':{'allowed_decisions':['approve','reject']}}
+                    if self.policy.require_remote_approval else {}))
         self.context.allowed_tool_names = frozenset(entry.name for entry in registered)
         middleware.append(recovery)
         self.agent=create_agent(model,tools=registered,checkpointer=self.saver,middleware=middleware)
         self._reconcile_completed_controller_load()
+        self._reconcile_deferred_query_reply()
+
+    def _reconcile_deferred_query_reply(self):
+        """Repair an old deferred final reply only from already completed receipts.
+
+        No graph invocation, model call, or SQL replay is allowed during repair.
+        """
+        from core.analysis_agent.remote_completion import deferred_execution_claim
+        from langchain_core.messages import RemoveMessage
+        try:
+            with self._exclusive():
+                state = self.agent.get_state(self.config)
+                values = state.values or {}
+                messages = values.get('messages') or []
+                if state.next or not messages or not isinstance(messages[-1], AIMessage):
+                    return False
+                last = messages[-1]
+                if last.tool_calls or not deferred_execution_claim(last.content):
+                    return False
+                current, _ = self.recovery._state(values)
+                if not current.get('remote_query_ids') or not self.recovery._complete(current):
+                    return False
+                finished = self.recovery._finish(current)
+                marker = SystemMessage(content='저장된 실행 결과로 잘못된 대기 안내를 정정했습니다.',
+                    additional_kwargs={'lc_source':'recovery', 'invalidated_message_id':last.id})
+                final_node = ('HumanInTheLoopMiddleware.after_model'
+                    if 'query_databricks' in self.context.allowed_tool_names
+                    else 'RecoveryMiddleware.after_model')
+                self.agent.update_state(self.config, {'recovery':finished['recovery'],
+                    'messages':[RemoveMessage(id=last.id), marker, *finished['messages']]},
+                    as_node=final_node)
+                self.transcript.record([marker, *self.agent.get_state(self.config).values.get('messages', [])])
+                self.diagnostics.emit('completed_query_reply_reconciled',
+                    request_id=current.get('request_id'), remote_reexecuted=False)
+                return True
+        except RuntimeError as error:
+            if str(error) != '현재 대화가 실행 중입니다.':
+                raise
+            return False
 
     def _reconcile_completed_controller_load(self):
         """Repair a saved load whose dataset exists but final verdict failed.
@@ -360,8 +419,16 @@ class GraphAnalysisRuntime:
                 status='violation' if elapsed>self.policy.turn_slo_seconds else 'error',
                 process_peak_rss_bytes=process_peak_rss_bytes(),
                 frame_cache_bytes=self.datasets.frames.bytes)
+            from core.analysis_agent.model_errors import model_error_category
+            category = model_error_category(exc)
+            message = (f'모델 공급자가 현재 요청을 처리할 수 없다고 응답했습니다 (오류 ID: {error_id}). '
+                '허용된 재시도 한도 안에서 복구하지 못해 분석을 완료하지 않았습니다. 기존 결과는 보존했습니다. '
+                '이 응답만으로 일시 장애인지 사용 한도·계정 제한인지 확정할 수 없습니다. '
+                '반복되면 Databricks 사용량·계정 상태를 확인해야 합니다. '
+                '연결이 복구된 후 미완료 분석 재개를 사용할 수 있습니다.' if category else
+                f'분석 중 오류가 발생했습니다 ({type(exc).__name__}, 오류 ID: {error_id}). 기존 결과는 보존했습니다. 미완료 분석 재개로 다시 시도할 수 있습니다.')
             return {'error_id':error_id, 'status':'incomplete','error_type':type(exc).__name__,
-                    'text':f'분석 중 오류가 발생했습니다 ({type(exc).__name__}, 오류 ID: {error_id}). 기존 결과는 보존했습니다. 미완료 분석 재개로 다시 시도할 수 있습니다.',
+                    'error_category':category, 'text':message,
                     'elapsed_seconds':elapsed}
 
     @staticmethod
@@ -382,6 +449,11 @@ class GraphAnalysisRuntime:
         if not text.strip():raise ValueError('요청을 입력해주세요.')
         with self._exclusive():
             pending=self._pending()
+            if pending and not self.policy.require_remote_approval:
+                for item in pending:
+                    self.ledger.invalidate(item['id'])
+                self._resume_automatic_pending_locked()
+                pending=[]
             if pending:
                 normalized=text.strip().rstrip('.!').strip()
                 approve_words={'승인','조회 승인','승인해줘','불러와','불러와줘','네','응','진행해','진행해줘'}
@@ -403,6 +475,22 @@ class GraphAnalysisRuntime:
             if self.agent.get_state(self.config).next:
                 raise ValueError('미완료 분석이 있습니다. 먼저 resume()로 재개해주세요.')
             return self._invoke({'messages':[HumanMessage(content=text)]})
+
+    def _resume_automatic_pending_locked(self):
+        """Continue legacy approval checkpoints with the current read policy.
+
+        Keep the HITL graph node for checkpoint compatibility; tool execution
+        still verifies the fingerprint and durable terminal states.
+        """
+        if self.ledger.uncertain():
+            raise PermissionError('원격 제출 상태가 불명확합니다. 자동 재개할 수 없습니다.')
+        pending = self._pending()
+        self.diagnostics.emit('remote_approval_checkpoint_resumed', count=len(pending),
+                              authorization='automatic_read_policy')
+        return self._invoke(Command(resume={'decisions':[
+            {'type':'approve'} if p['status'] in {'proposed','approved','auto_authorized','completed'}
+            else {'type':'reject','message':'취소되거나 유효하지 않은 조회입니다.'}
+            for p in pending]}))
 
     def _recover_completed_observations(self, checkpoint):
         """Repair legacy non-JSON receipts from the durable ledger, never SQL.
@@ -448,7 +536,10 @@ class GraphAnalysisRuntime:
 
     def resume(self):
         with self._exclusive():
-            if self._pending():raise ValueError('대기 중인 조회는 먼저 승인 또는 거절해주세요.')
+            if self._pending():
+                if self.policy.require_remote_approval:
+                    raise ValueError('대기 중인 조회는 먼저 승인 또는 거절해주세요.')
+                return self._resume_automatic_pending_locked()
             if self.ledger.uncertain():raise PermissionError('원격 제출 상태가 불명확합니다. 자동 재개할 수 없습니다.')
             checkpoint=self.agent.get_state(self.config)
             if not checkpoint.next:raise ValueError('재개할 작업이 없습니다.')

@@ -162,6 +162,24 @@ class FrameCache(Mapping):
             return pd.read_parquet(BytesIO(payload), columns=list(columns))
         return pd.read_parquet(path, columns=list(columns))
 
+    def batches(self, key, columns, *, expected_rows, batch_size=8192):
+        """Stream declared columns without filling the full-frame pandas cache."""
+        path = self.db.dataset_file(key)
+        if path is None:
+            _, payload = self.db.get(key, 'dataset')
+            source = BytesIO(payload)
+        else:
+            source = path
+        with pq.ParquetFile(source) as parquet:
+            if parquet.metadata.num_rows != expected_rows:
+                raise ValueError('저장된 데이터의 행 수가 메타데이터와 다릅니다.')
+            observed = 0
+            for batch in parquet.iter_batches(batch_size=batch_size, columns=list(columns)):
+                observed += batch.num_rows
+                yield batch
+            if observed != expected_rows:
+                raise ValueError('저장된 데이터의 행 수가 메타데이터와 다릅니다.')
+
     def head(self, key, columns, *, expected_rows, limit=15):
         """Decode at most one bounded Parquet batch for answer previews."""
         if limit < 1:
@@ -306,6 +324,9 @@ class PersistentDatasets(DatasetStore):
         dtypes = {}
         for field in schema:
             if field.name in info.columns:
+                if pa.types.is_decimal(field.type) or pa.types.is_nested(field.type):
+                    dtypes[field.name] = str(field.type)
+                    continue
                 try:
                     dtypes[field.name] = str(pd.Series(dtype=field.type.to_pandas_dtype()).dtype)
                 except (TypeError, NotImplementedError):
@@ -407,6 +428,8 @@ class PersistentCharts(MutableMapping):
     def __setitem__(self,key,card):
         if key!=card.id:raise ValueError('Chart ID mismatch')
         self.db.require(card.dataset_id,'dataset')
+        from utils.analysis_image_validation import validate_chart_image
+        validate_chart_image(card.image)
         value=asdict(card);value.pop('image')
         self.db.put(key,'chart',value,card.image)
     def __delitem__(self,key):raise TypeError('Immutable chart assets')

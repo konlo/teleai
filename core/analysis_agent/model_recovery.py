@@ -10,6 +10,7 @@ import time
 
 from langchain.agents.middleware import AgentMiddleware
 from langgraph.errors import GraphBubbleUp
+from core.analysis_agent.model_errors import model_error_category
 
 
 class ModelCoolingDown(RuntimeError):
@@ -23,7 +24,7 @@ class ModelAttemptBudgetExceeded(RuntimeError):
 def transient_model_error(error):
     status = getattr(error, 'status_code', getattr(error, 'http_status', None))
     if status is not None:
-        return status in {408, 429, 500, 502, 503, 504}
+        return status in {408, 429, 500, 502, 503, 504} or model_error_category(error) is not None
     from httpx import TimeoutException, NetworkError
     from openai import APIConnectionError
     return isinstance(error, (TimeoutError, TimeoutException, NetworkError, APIConnectionError))
@@ -160,7 +161,8 @@ class ModelRecoveryMiddleware(AgentMiddleware):
                 raise
             except Exception as error:
                 # Interrupts/cancellation and programming errors are never
-                # classified by a message substring or retried as network I/O.
+                # retried as network I/O. Only a precise structured provider outage
+                # response is an exception to the normal HTTP400 classification.
                 transient = transient_model_error(error)
                 cooldown = retry_after(error) if transient else 0.
                 self.ledger.failure(request_id, time.monotonic()-started, cooldown)
@@ -172,6 +174,7 @@ class ModelRecoveryMiddleware(AgentMiddleware):
                     and self.ledger.reserve_retry(request_id, delay, self.max_retries))
                 self.diagnostics.emit('model_inference_failed', request_id=request_id,
                     error_type=type(error).__name__, http_status=getattr(error,'status_code',None),
+                    error_category=model_error_category(error),
                     retry_scheduled=can_retry, retry_delay_seconds=delay if can_retry else None)
                 if not can_retry:
                     raise

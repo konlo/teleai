@@ -1,0 +1,78 @@
+{
+  "mode": "synthetic labelled judge calibration; not agent runs",
+  "controls": "tests/fixtures/judge_heldout_controls.json",
+  "expected_controls": 8,
+  "judge": "databricks-qwen3-next-80b-a3b-instruct",
+  "provider": "databricks",
+  "threshold": 0.8,
+  "results": [
+    {
+      "id": "heldout_count",
+      "expected_pass": true,
+      "score": 1.0,
+      "reason": "The actual output correctly states the total count as 48, which matches the expected value in Expected Output. The request was in Korean ('몇 건인지 알려줘') and the response is in Korean, satisfying language and semantic equivalence requirements. Although the format differs (prose vs. key=value), no presentation format was mandated in the input, so this is acceptable under evaluation step 3.",
+      "classification_correct": true,
+      "elapsed_seconds": 3.474
+    },
+    {
+      "id": "heldout_fraction",
+      "expected_pass": true,
+      "score": 1.0,
+      "reason": "The actual output correctly states the missing ratio as 12.5%, which is the decimal equivalent of 1/8 from the expected output. The request asked for the missing ratio, and the answer matches the authoritative value numerically, even though presented in prose instead of fraction form. No factual error exists, and all requirements are satisfied.",
+      "classification_correct": true,
+      "elapsed_seconds": 3.845
+    },
+    {
+      "id": "heldout_negative",
+      "expected_pass": true,
+      "score": 1.0,
+      "reason": "The actual output correctly identifies the minimum value as -7, which matches the expected value of -7.0. The request was for the minimum value in Korean, and the response delivers it in Korean with the correct numerical result. The format difference (prose vs. key=value) is acceptable under semantic equivalence rules, and no factual error or unmet requirement exists.",
+      "classification_correct": true,
+      "elapsed_seconds": 3.81
+    },
+    {
+      "id": "heldout_lists",
+      "expected_pass": true,
+      "score": 1.0,
+      "reason": "The actual output correctly identifies the two tables ('events' and 'devices') as requested, matching the expected factual content. The phrasing differs slightly but conveys the same information without imposing an order, which aligns with 'No requested order' in the expected output. All input requirements are satisfied and no factual errors exist.",
+      "classification_correct": true,
+      "elapsed_seconds": 4.106
+    },
+    {
+      "id": "heldout_decimal",
+      "expected_pass": false,
+      "score": 0.2,
+      "reason": "The actual output states the mean as 0.08, but the expected output specifies 0.8, which is a factual discrepancy. This numerical error violates the requirement to match authoritative values exactly, regardless of input phrasing.",
+      "classification_correct": true,
+      "elapsed_seconds": 2.062
+    },
+    {
+      "id": "heldout_missing_group",
+      "expected_pass": false,
+      "score": 0.4,
+      "reason": "The actual output only provides the sum for A (3), but fails to include the sum for B (7) as explicitly requested in the input and specified in the expected output. This is a missing requested result, which constitutes a factual omission and violates the requirement to report both A and B sums.",
+      "classification_correct": true,
+      "elapsed_seconds": 2.596
+    },
+    {
+      "id": "heldout_wrong_order",
+      "expected_pass": false,
+      "score": 0.2,
+      "reason": "The actual output 'A 2, B 5' is in ascending order, but the input explicitly requested descending order ('평균 내림차순으로 나열해줘'). The expected output 'B 5, A 2' correctly reflects descending order by value, and the actual output fails to meet this fundamental requirement, resulting in a factual error.",
+      "classification_correct": true,
+      "elapsed_seconds": 2.962
+    },
+    {
+      "id": "heldout_wrong_population",
+      "expected_pass": false,
+      "score": 0.2,
+      "reason": "The actual output incorrectly reports frequency counts of 150 and 50 for devices X and Y, which contradict the expected output's authoritative values of X=3 and Y=2. It also fails to mention the total number of unique devices (5), as required. The response misrepresents the data as 'original 200 rows' instead of the latest row per unique device, violating the core request to show deduplicated latest values.",
+      "classification_correct": true,
+      "elapsed_seconds": 3.487
+    }
+  ],
+  "calibration_passed": true,
+  "limitations": [
+    "Small labelled control set only; passing does not establish broad judge reliability."
+  ]
+}

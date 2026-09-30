@@ -1,3 +1,4 @@
+from dataclasses import asdict
 import json
 from pathlib import Path
 import tempfile
@@ -159,13 +160,13 @@ class ModelRecoveryTests(unittest.TestCase):
                 raw=datasets.register(pd.DataFrame({'measurement':[2.,4.,9.]}),
                     source='custom.trials',query=envelope['query'],coverage='complete',predicate_known=True)
                 model.evaluation_dataset_id=raw.id
-                return {'status':'ready','dataset_id':raw.id}
+                return {'status':'ready','dataset':asdict(raw)}
             return execute
         refs=[{'table':'custom.trials','observed_at':datetime.now(timezone.utc).isoformat(),
                'columns':[{'name':'measurement','dtype':'double'}]}]
         with tempfile.TemporaryDirectory() as root,patch('core.analysis_agent.model_recovery.time.sleep'):
             r=GraphAnalysisRuntime(root,'owner','approved-retry',model,remote_factory=factory,
-                connection_identity='synthetic-test-only',reference_context_loader=lambda:refs)
+                connection_identity='synthetic-test-only',reference_context_loader=lambda:refs, policy=RuntimePolicy(require_remote_approval=True))
             try:
                 with patch.object(r.recovery,'_next_local',return_value=None):
                     proposed=r.submit('measurement 평균을 알려줘')

@@ -1,16 +1,32 @@
 # Project Progress Log
 
 ## Current Status
-- **Last Updated**: 2026-09-28
+- **Last Updated**: 2026-09-30
 - **Status**: In Progress — 범용 자율 분석 agent 정식 출시 NO-GO
-- **Summary**: 9/28 후속 평가: 기존200문항97PASS/103UNGRADED, 자연어10여정PASS, 지정장애복구3/3PASS, 실제보유10만행EDA PASS. 복합EDA4종×3회는3PASS/9FAIL이며 잘못된 완료6건. 새 Spider5문항정답0/5, DeepEval judge 보정실패/실제응답4건채점오류. [최신 결과](docs/evaluation/2026-09-28_remaining/report.md). 범용 NO-GO 유지.
-- **Latest Audit**: 9/28 대화맥락 실제8종×2회에서9/16여정·51/62턴PASS, 잘못된완료6건. 부분조건해제/설명복귀/출처전환 실패가2회씩재현됐다. 원본보존·재시작·세션격리는PASS. [최신 맥락평가](docs/evaluation/2026-09-28_context/report.md).
-- **Next Session Focus**: 복합 부정/NULL·암묵적 다중 출처·역할별 조인·CTE/HAVING 계획, 103 oracle 및 judge calibration, 승인형 대규모 신규 적재·RSS·격리 코드 실행. 별도 서버 배포 제외.
-- **Current qualification**: 이번 실모델 7/8여정 결과와 모델 timeout 미완료를 함께 유지한다. 이전 고정 200문항 97 PASS/103 UNGRADED 및 Spider 0/5는 재평가하지 않았다. 범용 GO/동등 성능은 미입증이다. 이번 검증 warehouse SQL 1회 완료, 추가 재조회 0회. draft PR #68 미병합.
+- **HTTP400 recheck**: [재진단](docs/evaluation/2026-09-30_provider_recheck/report.md). 08:15 KST까지 지속. warehouse/API200·모델 metadata READY이나 최소 추론/OpenSession 모두400. Free Edition 확인, 한도 초과 여부는 미확인. 재발급·짧은 장애로 단정하지 않으며 실제 호출 사전점검과 사용자 안내 보강.
+- **Latest continuation**: [연속 평가·개선 보고서](docs/evaluation/2026-09-30_continuation/report.md). 동률/결측의 후속 정책과 원격/로컬 실행·완료 계약, 공급자400 분류/제한 재시도, interactive Spider 평가를 보강했다. 최종CI 제품464 + migration136 + reference217 PASS, 합성100만행2종 및 실제 웹12행 복구 PASS. Databricks 모델·SQL 리소스 생성400으로 실환경 재평가 차단.
+- **Summary**: [통합 작업 보드](docs/evaluation/2026-09-30_batch/workboard.md)의 6묶음 중 구현·평가 미완료는 4묶음. 원격 최신행 범주/수치 histogram, 복합키·구간 후속 연결, 그룹 정렬, metadata 계획을 보강했다.
+- **Evidence**: 실제 Databricks 75만행→12키→8구간 및 웹 8→6구간·반복0조회 PASS. 제품446 + migration136 + reference/계약217 PASS. 독립 agent200문항102PASS/98UNGRADED. Spider 선정10문항 공식0/10. [종합 보고서](docs/evaluation/2026-09-30_batch/report.md).
+- **Qualification**: DeepEval 도구10/10, judge 통제12+새8 PASS 및 실제답변3개1.0은 보조 점수다. 새로운 실모델 자유계획 전체 성공률이나 범용 GO를 뜻하지 않는다. 별도 서버 배포 제외. PR68은 2026-09-28 이미 병합되었음을 API로 확인했다. 현재 후속 변경은 작업 브랜치에 push하며 main 병합/배포를 의미하지 않는다.
+- **Next Session Focus**: 최신행 정책/필터 확장, 역할별·다단계 SQL, D07/D08·J21~24 전체 계약, 미채점98문항. 오늘 완료한 push/CI 근거는 보고서 말미와 validation.json에 기록한다.
 
 ## Next Action Items
-- [ ] 대화 맥락 P0: 부분 조건 해제 시 유지 조건 소실, 설명 후 분석 복귀 차단, 자연어 데이터 전환 후 이전 source 재참조를 공통 context 전환 계약으로 수정한다. 실제8종×2회는9/16여정·51/62턴 통과, 잘못된 완료6건. 요약 stress1/2여정 통과. [근거](docs/evaluation/2026-09-28_context/report.md).
-- [ ] 자율 복구 감사 P0: 결측 처리 정책이 그룹 평균 목표를 지우는 의도 충돌, “구간 수 5개”를 기본20 bins로 완료하는 설정 누락을 공통 요청/완료 계약으로 해결한다. 필터 평균 후 남은 차트 continuation과 역할별 SQL 검증을 함께 보강한다. [재현·우선순위·acceptance](docs/evaluation/2026-09-27_agent_self_recovery_audit.md).
+- [ ] 1. 최신행 EDA 확장: 일반 선택 전후 필터, 추가 통계·비균등 구간, 기타 정책. 추가 내림차순 동률 기준/선택 전 결측 제외의 후속 연결과 기본 복합키·수치 구간·재사용은 완료.
+- [ ] 2. 복합 SQL: 역할별 조인·JSON·OR/NOT/NULL·CTE/HAVING·DISTINCT 의미 계약 및 복구. 현재 Spider 공식0/10 개선 필수.
+- [ ] 3. 대용량: D07/D08·J21~J24 전체 여정/한도/출처 계약, 남은 도구의 부분 scan·보존·재사용. 100만행 합성 및 실제10만행/75만행 증거를 범위에 맞게 연결.
+- [ ] 4. 독립 평가: 미채점98문항 oracle, 새 schema·표현·다회 대화·실패 복구·지연 검증. 기존102PASS를 전체200PASS로 해석하지 않음.
+- [x] 이번 평가 도구 보정과 실제 화면 검증: 정당한 대체 도구, judge 양성/음성 calibration, 공식 Spider 분모 구분, 이미지/후속/재사용 검증. [근거](docs/evaluation/2026-09-30_batch/report.md).
+
+## 이전 작업 목록 (2026-09-30 통합 전 이력)
+- [x] Remote latest-row categorical distribution: schema-grounded single SQL, quality checks, receipt-bound chart, preserved originals and repeat reuse. Actual Databricks normal/stale-schema journeys PASS. [Evidence](docs/evaluation/2026-09-29_remote_latest/report.md).
+- [x] Large retained-data latest selection: Arrow batches -> bounded local SQL -> validated winners/chart. Million-row independent oracle and cold-cache checks PASS. [Evidence](docs/evaluation/2026-09-29_large_latest/report.md). Remote pushdown remains below.
+- [x] 시각화 표시 검증 보강: 이미지 decode/빈 이미지 검사, 최종 답변 이미지 연결, 검증된 차트만 표시, 막대/bin 검사와 실제 브라우저 로딩 확인. 전체549 PASS. [근거](docs/evaluation/2026-09-28_chart_delivery/report.md). 사용자 원래 요청/환경은 미확인.
+- [x] 2026-09-28 제품 기본값을 Databricks 읽기 전용 자동 조회로 변경했다. 기존 승인 대기 자동 재개, 거절/불확실 실행 보존, 543개 회귀, 실제 모델 합성 SQL 및 실제 SELECT 1, 앱 재시작을 검증했다. [증거](docs/evaluation/2026-09-28_automatic_reads/report.md).
+- [x] 조회 상태 응답 P0: 완료 receipt와 저장 결과 대조, 실제 목록 렌더링, 근거 없는 미래 안내 차단, 구버전 완료 응답 정정을 구현했다. 관련 109회귀 및 실제 모델+합성SQL 2/2 통과. localhost:8502 재시작/health 200. [증거](docs/evaluation/2026-09-28_remote_completion/report.md).
+- [x] 로컬 최신행 분포 P0: 키/정렬 선택 계약, window/CTE alias 검증, 파생 모집단 유지, 검증된 차트 완료를 구현했다. 기존 0/8 → 8/8, 모델 계획 진단2/2, 실제 웹 PASS. [수정 검증](docs/evaluation/2026-09-28_latest_per_key/post_fix/report.md).
+- [ ] 최신행 분포 확장: 자연어 복합키/동률/결측 정책의 후속 연결, 최신행 선택 전후 필터, 추가 통계·맞춤 구간 통합. 로컬 및 원격 기본 범주 집계는 검증했으며 원격 연속 히스토그램은 아직 지원하지 않는다.
+- [x] Context P0: partial predicate removal, explanation-return, and source switch fixed. Existing 62/62 turns + actual-summary 18/18 turns PASS; renamed schema/restart/UI selection regressions PASS. [Evidence](docs/evaluation/2026-09-29_context/report.md). Broader open-ended context generalization is not established.
+- [x] Compound numeric EDA P0: preserve analysis goals through missing-value preparation, filtering, grouping and explicit histogram bins. 12/12 real-model repeats and browser verified. [Evidence](docs/evaluation/2026-09-29_compound_eda/report.md). Advanced role-specific SQL remains pending below.
 - [x] 지원 통계·조인·시계열 독립 oracle, 최신 실제 모델 Spider 고정5문항 공식 scorer, 합성100만행 staging/EDA/RSS/중단·byte제한/재시작 검증을 수행했다. 검증 통과와 고급 분석 실패를 구분했다.
 - [x] 실제 Databricks 100,000행·21컬럼 적재 1회, 원본 보존/재시작/EDA 및 실모델 변환→평균→차트 검증을 완료했다. 추가 SQL 0회. 이번 검증 SQL의 추가 승인은 사용자 지시로 면제했다.
 - [ ] 고급 분석 P0: JSON/OR와 테이블 역할 조건을 독립 요청 계약에 표현하고 검증 가능한 다단계 집계를 계획한다. 정답 차단(local009), 홈/원정 누락, 임의 연도, DISTINCT/중앙값 누락을 이번 고정 실패로 회귀 검증한다.
@@ -457,7 +473,7 @@
 - **Diagnosis correction**: 체크포인트에 도구 호출 인자는 보존됨. 실제 결함은 summarization HumanMessage를 사용자 요청으로 오인하여 필수 컬럼과 재시도 예산을 재설정하는 것. 이전 인자 유실 가설은 기각.
 
 ## Current Status
-- **Last Updated**: 2026-09-23
+- **Last Updated**: 2026-09-29
 - **Status**: Limited-scope Release Candidate Validation
 - **Summary**: R14의 공통 tool 결과 계약, dataset profile, 승인형 source discovery, 제한된 chart spec, bounded multi-dataset join, 구조화 statistical test, outlier/cohort 분석, datetime 시계열, count/rate 복합 차트와 winsorization을 완료했다. application 160 + migration 126 = 286/286, actual-agent evaluation harness 44/44, 참고 코드 217/217, agentic recovery 17/17 PASS다. 실제 agent 독립 채점은 74/200이므로 전체 기능 출시는 계속 NO-GO다.
 - **Next Session Focus**: 배포 대상·실제 호스트 검증 → 남은 126문항 oracle와 범용 다중 패널·피벗·소계. Canonical list: docs/agent_remaining_tasks_2026-09-13.md.
@@ -1955,3 +1971,166 @@ Task definitions and acceptance conditions: docs/agent_remaining_tasks_2026-09-1
 
 - **Validation**: 변경/신규168파일 약4MB를포함했다. Python평가스크립트compile통과, 추가파일의credential패턴검출0. staged검사에서공식평가용SQL복사본2개의후행공백을발견해정리했다. SQL원문은proposals.json에보존되어있고의미는변경하지않았다.
 - **Outcome**: 평가·맥락진단·fixture·실행증거·출시기준·작업기록을현재브랜치에커밋했다. origin push 및원격SHA대조로마무리한다.
+
+## [2026-09-28T15:44:03] [Agent: Codex] User Request: pip 설치 패키지를 requirement.txt에 추가
+- **Action**: 기존 requirements 진입점·runtime lock·평가 환경의 직접 의존성을 비교하고 설치 가능한 dependency 파일과 안내를 보강한다.
+
+- **Artifact Update**: requirements.txt에 앱/평가 설치 경로를 명시하고 requirements-agent.in의 직접 의존성 11종을 보완했다. requirements-eval.txt에 검증 환경의 DeepEval 4.2.3, OpenAI SDK 3.17.0, pytest 9.1.1, google-cloud-bigquery 3.45.2, pandas 3.0.6, tqdm 4.70.1, gdown 5.2.2를 기록했다. README에 별도 평가 venv 설치법을 추가했다.
+- **Decision**: DeepEval click<8.4와 앱 click==8.5.0 충돌 때문에 평가 의존성을 앱 requirements에 합치지 않았다. 기존 런타임 lock·실행 환경은 변경하지 않았다. Spider2 저장소/데이터는 별도 준비 대상이다.
+- **Outcome**: 기존 앱·평가 환경에서 requirements 설치 dry-run, 직접 의존성 dry-run, pip check 및 주요 import smoke가 모두 통과했다. 신규 빈 환경 전체 재설치나 모델/SQL 평가는 수행하지 않았으며 GO 판정은 변경하지 않는다.
+
+## [2026-09-28T15:49:33+09:00] [Agent: Codex] User Request: push 해둬
+- **Action**: requirements 및 평가 도구 설치 안내 변경 5개 파일을 확인했다. 기존 환경의 설치 dry-run·pip check·import 검증 통과 결과를 포함하여 커밋하고 현재 브랜치를 origin에 push한다.
+
+## [2026-09-28T15:52:45+09:00] [Agent: Codex] User Request: No module named sqlglot 오류
+- **Action**: 앱 requirements의 sqlglot 선언, 실행 launcher, 로컬 Python 환경별 설치 상태를 비교하여 원인을 확인한다.
+- **Finding**: requirements-agent.txt에 sqlglot==30.18.0이 이미 선언되어 있고 앱 v1-venv에서 import가 성공했다. 구형 .venv에도 모듈이 존재하지만 별도 ai_agent_eval/.venv에서는 find_spec 결과가 None이다. 사용자가 오류를 본 실행 환경과 traceback은 아직 확인되지 않아 원인을 확정하지 않았다.
+- **Artifact Update**: README에 설치·실행 Python 일치 확인, 앱 requirements 재설치, sqlglot import 검사 및 launcher 사용법을 추가했다. 기존 환경을 임의 변경하지 않았다.
+- **Outcome**: 로컬 앱 sqlglot import 확인 통과, git diff --check 통과. 사용자 오류 환경의 해결 여부는 실행 명령/traceback 확인이 필요하다.
+
+## [2026-09-28T16:13:31+09:00] [Agent: Codex] User Request: adapterserial별 마지막 행의 DriveProductID 분포 요청을 유사 데이터로 검증
+- **Action**: 외부 synthetic fixture로 중복키·시간정렬·ID 범주 분포의 독립 정답을 구성하고 실제 agent 실행 및 도구 계약을 검증한다. 원본 보존과 정렬 기준 불명확성도 점검한다.
+
+- **Finding**: 합성 10행/5장치/2시각 컬럼에서 자연어4종×2회 실제 Databricks 모델 및 production graph 검증 0/8 PASS. 7건 반복한도, 1건 도구0회/이미지0개 상태에서 불필요한 로컬 승인 요청 후 answered. 원본 digest 8/8 보존, warehouse SQL0, 모델71회.
+- **Diagnosis**: 장치·제품별 MAX는 장치별 최신행이 아니다. 정상 ROW_NUMBER 중첩 query의 alias를 원본 컬럼으로 오인하는 BinderException을 독립 도구 호출로 재현했다. 후속 집계가 ancestor 원본10행으로 복귀한 기록과 “분포를 그려줘” 실행 의도 누락도 확인했다.
+- **Artifact Update**: tests/fixtures/latest_per_key.json, scripts/evaluate_latest_per_key.py, docs/evaluation/2026-09-28_latest_per_key/에 합성 CSV·독립 정답·실행 원자료·비교 PNG·진단 보고서 저장. Next Action Items에 P0 통합 수정 추가.
+- **Validation**: 사람이 지정한 QUALIFY→current_result_only 집계→bar 도구 pipeline은 정답 P100=1/P200=3/P300=1 및 PNG/원본 보존 통과. 자율 agent 성공으로 합산하지 않았다. evaluator compile 및 diff 검사 통과. 실제 사용자 table/schema·대용량 warehouse 경로는 이번 시험에서 미검증이며 production 코드는 변경하지 않았다.
+
+## [2026-09-28T16:41:55+09:00] [Agent: Codex] User Request: 승인 후 조회 결과가 도착하면 안내한다는 응답이 설계상 가능한지 확인
+- **Action**: 승인→실행→결과 반환 및 비동기 알림 지원 여부를 코드와 최근 로컬 기록으로 확인한다.
+
+- **Finding**: runtime._respond_locked→_invoke(Command(resume))→ApprovalLedger.execute→executor→execute_approved의 cursor.execute/fetchmany는 동기 경로다. 실행 결과가 ledger에 completed로 저장된 뒤 도구 결과가 반환된다. Streamlit action은 fn() 반환 후 rerun하며 별도 결과 polling/background worker/알림 callback은 없다. submitting/unknown은 불명확 제출 상태로 자동 재실행을 막는 기록이지 자동 알림 작업이 아니다.
+- **Evidence**: core/analysis_agent/runtime.py:530, core/analysis_agent/approvals.py:63, core/analysis_databricks.py:12, ui/analysis_page.py:67 및 :190. 로컬 v1 transcript 보유 scope32개를 read-only 검색했으나 사용자가 인용한 문구와 telly_schema.tables는 발견하지 못했다. 따라서 해당 실행의 실제 승인·실패 여부는 확정하지 않는다.
+- **Outcome**: 현재 구조에서 최종 답변으로 “조회 결과가 도착하면 바로 안내”하는 것은 지원되지 않는 동작을 약속하는 부적절한 응답이다. 결과/receipt 확인 및 검증된 상태 기반 응답이 필요하며 관련 P0를 작업 목록에 추가했다. SQL 실행·production 코드 변경 없음.
+
+## [2026-09-28T16:44:45+09:00] [Agent: Codex] User Request: 실제 출력된 조회 대기 안내의 원인을 찾아 수정
+- **Action**: 사용자 보고를 실제 결함으로 취급하고 조회 receipt/완료 계약 누락을 재현하여 결과 기반 완료 및 무근거 비동기 안내 방지 회귀를 추가한다.
+
+- **Root cause**: 분석 capability 미분류 요청의 빈 완료 계약이 ready 원격 실행 후에도 자유 LLM 문구를 그대로 answered로 허용했다. fixture 모델이 사용자 보고와 같은 대기 문구를 반환하는 production graph 회귀2건이 수정 전에 모두 실패했다.
+- **Changes**: 원격 호출/명시적 catalog 목록에 실행 receipt 완료 계약 추가. ledger·관찰·저장 dataset의 정확한 SQL/출처/행·컬럼 일치를 확인해 목록을 직접 렌더링한다. 미실행 미래 안내를 차단하고 조회 실패·취소/unknown 상태를 분리한다. 기존 잘못된 대기 답변은 검증된 저장 결과가 있을 때만 모델/SQL 호출 없이 정정하고 원문 보존.
+- **Prompt decision**: 기존의 모호한 승인 문장을 교체해 도구 호출=승인 카드 생성, 사용자 승인 후 실행을 명시했다. 승인 우회 금지는 유지했다. 실제 모델 검증에서 드러난 catalog 목록의 수치 연산 오분류와 도구 미호출을 목록 완료 계약/도구 집중 노출로 함께 보강했다.
+- **Validation**: 최종 관련 회귀109개 PASS(실제 Streamlit 페이지 AppTest 포함), 실제 Databricks 모델+합성 SQL 실행기2/2 PASS, 승인 전0/승인 후각1회. 중간 실패4개 보고서는 보존했다. 실제 warehouse SQL0회.
+- **Deployment**: 로컬 active runtime lock0 확인 후 기존8502서버를 정상 종료/재기동, PID50503, / 및 health HTTP200. 다른 호스트에는 반영 여부 미확인.
+- **Artifact Update**: core/analysis_agent/{remote_completion,completion,completion_renderers,recovery,runtime,failure_messages,operation_binding,tool_focus}.py, core/analysis_instructions.py, 신규회귀/fixture/실모델 평가script, docs/evaluation/2026-09-28_remote_completion/. 전체 agent NO-GO 및 별도 최신행 분포 결함은 유지한다.
+
+## [2026-09-28 22:43:24] [Agent: /root] User Request: Databricks 접근 시 필수 승인을 제거하고 agent가 필요할 때 자유롭게 조회하도록 변경
+- **Decision**: 최신 사용자 지시로 기존 매 조회 승인 정책을 대체한다. 읽기 전용 SQL 검증, 실행 영수증, 불확실 실행 중복 방지, 자원 한도 및 원본 보존은 유지한다.
+
+- **Action** [Agent: /root]: 기본 자동 read 정책과 영속 auto_authorized 전이, HITL checkpoint 호환 재개, 화면 자동 재개 및 prompt/tool/skill 지시를 일관되게 변경했다.
+- **Validation**: migration 136 + tests 407 = 543 PASS. 신규 자동 실행 계약 13개 포함. 실제 Qwen 모델+합성 SQL 1회 PASS; 실제 Databricks SELECT 1 1회 answered, 1행 저장, 승인 0회. compileall/diff check PASS.
+- **Outcome** [2026-09-28 22:56:04]: 실행 중 대화가 없음을 확인 후 앱 재시작, PID 55666, health 200, require_remote_approval=false. 읽기 전용 검증·중복 방지·예산·원본 보존 유지. 업무 테이블/고급 분석 전체 GO와 구분. 이번 변경은 미커밋/미push.
+- **Artifact Update**: docs/evaluation/2026-09-28_automatic_reads/report.md 및 실행 JSON/검사 결과, README/.env.example/출시 기준/분석 skills 갱신.
+
+## [2026-09-28 22:56:28] [Agent: /root] User Request: histogram viz에서 막대 이미지 대신 bar chart 텍스트가 출력됨. 실제 시각화 표시와 검증 보강
+- **Action**: 차트 생성/완료 계약/저장/화면 렌더 경로와 실제 대화 증거를 확인하고 재현 및 UI 회귀를 수행한다.
+
+- **Diagnosis**: 원래 bar chart 출력과 일치하는 로컬 기록은 미확인. PNG header만 검사하던 완료 조건, 중간 도구 메시지에만 의존한 이미지 전달, 최종 검증과 무관한 중간 차트 표시를 확인했다.
+- **Action**: 저장/완료/UI의 실제 이미지 디코딩·빈 이미지 검사, 최종 artifact 연결, 턴별 검증된 차트 필터, generic viz 의도 인식 및 막대 histogram 명시. Streamlit/Browser 스킬에 따라 AppTest와 실제 브라우저를 모두 검증했다.
+- **Validation**: tests413 + migration136 PASS. 강화한 차트 계약6 PASS. 실제 브라우저 합성7행 histogram 이미지 660x385 완전 로딩과 막대 확인; warehouse0. 현재 앱 PID56491, health200.
+- **Outcome** [2026-09-28 23:08:30]: 로컬 적용 완료. docs/evaluation/2026-09-28_chart_delivery/에 보고서·PNG·검사 근거 저장. 사용자 원래 실행의 단일 원인은 아직 확정하지 않으며 기존 agent 미완료 과제는 보존한다. 미커밋/미push.
+
+## [2026-09-28 23:09:14] [Agent: /root] User Request: GO를 위한 미완료 과제를 계속 진행
+- **Action**: 현재 출시 차단 평가를 재확인하고 최신행 선택·분포 분석의 공통 agent 계약과 실제 평가부터 개선한다.
+
+- **Action**: 최신행 분포 도구와 완료 계약, 영속 row_selection 모집단, window/CTE alias 검증을 통합했다. 다중 시간 후보는 확인하며 기준 답변/재시작을 연결한다. 외부 source·명시 재조회·복합 목표를 로컬 분포로 축소해 완료하지 않는다.
+- **Validation**: 기존 합성4종×2회 8/8 PASS(모델0회), 별도 자동 로컬 실행 비활성화 진단2/2 PASS(실제 모델5/2회). 전체 tests420 + migration136 PASS. 실제 웹 기준확인→event_time 답변→PNG 660×385, 막대 빈도1/3/1 확인. warehouse0.
+- **Remaining**: 원격/대규모 최신행 처리, 맥락 전환, 복합EDA 목표·bins, 고급SQL 및 oracle/judge가 출시 차단이다. 전체 NO-GO 유지.
+- **Artifact Update** [2026-09-28T23:28:40+09:00]: docs/evaluation/2026-09-28_latest_per_key/post_fix/report.md, model_planning/results.json, 회귀7개와 브라우저 PNG. 미커밋/미push.
+- **Deployment** [2026-09-28T23:29:30+09:00]: 최종 방어 보강 회귀7 PASS 및 compile/diff PASS 후 localhost 재시작(PID57985, health200). 저장된 검증 대화/차트의 브라우저 복원 확인.
+
+## [2026-09-29T05:32:20+09:00] [Agent: /root] User Request: 계속 진행 — GO 차단 복합 EDA 수정
+- **Action**: 기존 평가의 목표 누락·필터 이후 차트 미완료·bins 불일치를 공통 요청 및 완료 계약으로 수정하고 독립 oracle로 재검증한다.
+
+- **Diagnosis**: Missing-value policy replaced AVG with profiling; filters/groups/custom bins disabled numeric continuation; chart completion did not check requested bins.
+- **Action**: Separate preprocessing from objectives; preserve group columns; continue filter/aggregate/chart on the verified numeric branch; validate grouped output and persist/verify chart render specs. Replaced the existing numeric instruction consistently.
+- **Validation**: Real model 4 cases x 3 repeats = 12/12 PASS, one model call each, raw preserved 12/12. Tests422 + migration136 PASS. Original/renamed schema regressions compare actual Matplotlib bins/counts with independent NumPy results. Browser: actual Databricks model, mean2.5, five bins, PNG660x385. Warehouse SQL0.
+- **Outcome** [2026-09-29T05:44:38+09:00]: localhost PID71247 / health200. Saved intermediate failures and final evidence in docs/evaluation/2026-09-29_compound_eda/report.md. Context/advanced SQL/oracle/judge blockers remain; general NO-GO. Uncommitted/unpushed.
+
+## [2026-09-29T06:19:24+09:00] [Agent: /root] User Request: Continue GO work: conversation context failures
+- **Action**: Reproduce partial filter release, explanation-return, and source-switch failures; preserve independently specified scope across turns.
+
+- **Action**: Preserve confirmed analysis independently of explanatory turns; enforce explicit UI selection precedence and verified source continuity; correct selective reset/negation and histogram-bin follow-ups.
+- **Validation**: Tests424 + migration136 PASS. Existing 8x2 oracle: 62/62 turns, 14 journeys PASS + 2 NOT_EXERCISED (no summary). Added production summary-pause-return: 18/18 turns, one actual model summary each. Original raw preserved throughout; warehouse SQL0.
+- **Outcome**: localhost restarted at PID73405, health200, no active analysis interrupted. General NO-GO remains; uncommitted/unpushed.
+- **Browser validation**: Six actual chat inputs: 20 -> 15 -> explanation (no tools) -> 20 -> source B 200 -> source B blue 250. Stored evidence and displayed source/value agree. Saved browser_verification.json and browser.png in docs/evaluation/2026-09-29_context/.
+
+### Daily Wrap-up — 2026-09-29
+- **Completed**: Compound EDA goal/filter/group/bin verification and context transition repairs. Compound EDA actual model 12/12; context existing 62/62 turns, additional actual-summary 18/18; latest full regression 560 PASS. Actual browser journeys verified and localhost app updated.
+- **Remaining**: Remote large latest-per-key execution, advanced SQL role/OR/NULL contracts, 103 ungraded independent oracles and judge calibration. General GO is not established. Changes remain uncommitted/unpushed.
+
+## [2026-09-29T09:56:24.177934+09:00] [Agent: /root] User Request: Push accumulated changes, then continue next GO task
+- **Action**: Verify staged artifacts and prior test evidence, commit/push current branch, then implement and evaluate bounded large-data latest-row processing.
+- **Push**: Commit 6a419a99c054dcf9439634f0d2351e15799d54c9 pushed to origin/codex/agentic-analysis-rc-2026-09-14; ls-remote SHA matched.
+- **Finding**: Latest-row selection projects all input rows into pandas then sorts/copies; large retained Parquet inputs still expand into memory. Next bounded change moves this selection into resource-limited local SQL over Arrow batches; remote warehouse pushdown remains a separate gate.
+
+- **Implementation**: File-backed latest selection uses Arrow batches and bounded DuckDB for inputs over 20,000 rows. NULL/tie/type/output/resource errors do not publish a successful chart. SQL uses runtime schema only.
+- **Validation**: Application428 + migration136 PASS; compile/diff PASS. Two isolated-process million-row graph evaluations PASS; 10,000 winners match independent row/category/time oracle, file hash/restart preserved, raw full pandas reads0, cache0. Final elapsed8.156s, whole-process peak RSS427900928 bytes. Model0/warehouse0.
+- **Remaining**: This improves already retained data; remote latest-row pushdown, complex policies, advanced SQL and oracle/judge work remain.
+- **Remote outcome**: Code commit 3dda6777c287c2f0447316f7dea367679dd8afc5 pushed and remote SHA verified. GitHub release gate36506208883 succeeded in2m34s across migration/application/recovery/reference/compile. App PID80287 health200, active work not interrupted. General agent remains NO-GO for explicitly listed unsupported/evaluation gaps.
+
+## [2026-09-29T23:27:14.699590+09:00] [Agent: /root] User Request: Continue remaining GO work
+- **Action**: Implement schema-grounded remote latest-row distribution planning, single-query quality checks, receipt-bound chart completion and independent regression/live verification.
+
+- **Implementation**: Added schema-grounded remote latest distribution planner/renderer and exact plan/receipt completion. One bounded SQL computes null/tie/row/key/category checks and counts; no full raw transfer. Explicit cached-only scope cannot become a remote query. Verified previous result reused across restart and repeated turns.
+- **Actual validation**: Databricks750000 rows ->12 keys ->4 result rows, counts7/4/1 match independent ROW_NUMBER SQL. Normal23.071s and stale-schema11.879s PASS; repeat query0; model0. Total warehouse SELECT8 including schema and independent-oracle checks. First LONG type rejection preserved then repaired.
+- **Schema fix**: Preserve zero-row connector Arrow types through persistence; retain decimal/nested type metadata. First decimal regression failure preserved; final application437 + migration136 PASS, focused schema/remote9 PASS, existing-raw-preservation focused1 PASS. Compile/diff PASS.
+- **Artifact Update**: docs/evaluation/2026-09-29_remote_latest/report.md, live JSON/PNG, new remote/Arrow contract tests and live evaluator. General release remains NO-GO; complex latest policies and advanced SQL/oracle/judge work remain.
+- **Final gate**: Level3 17/17 and combined reference/contracts217/217 (58 figures) PASS. These are not live LLM general success scores. App restarted idle, health200; current change remains uncommitted/unpushed.
+- **Final hardening**: Reject duplicate remote latest SQL once its verified result is present, even if the model changes the reason text. Related22 regressions PASS. Final localhost PID1212 health200; no active work interrupted.
+
+### Daily Wrap-up — 2026-09-29 remote latest distribution
+- Completed schema-grounded remote categorical latest-row planning, receipt/quality completion, cached-result reuse and zero-row Arrow type preservation. Actual warehouse750000-row normal/stale-schema journeys matched independent SQL; no raw transfer, repeat query0.
+- Remaining: complex latest-row policies and continuous histogram, advanced SQL and independent oracle/judge coverage. General NO-GO. Current changes are local and unpushed.
+
+## [2026-09-29T23:56:00.973903+09:00] [Agent: /root] User Request: 남은 작업 개수를 정리하고 한번에 끝까지 모두 수행
+- **Action**: 중복된 과거 목록을 증거 기준으로 통합하고 기능·평가·통합 작업 묶음별 완료 조건을 고정하여 연속 수행한다.
+
+## [2026-09-30 00:37:24 KST] [Agent: Codex] Action: 통합 보강·실제 검증 결과
+- **Action**: 원격 최신행 수치 histogram·복합키·구간 후속 변경, group metric 정렬 계약, Parquet metadata 기반 숫자 판별을 구현했다. 그룹 독립 oracle 5개를 추가했고 평균 내림차순 누락을 수정했다.
+- **Outcome**: 제품446, migration136, reference/계약217, 최종 관련21 검사 PASS. 실제 agent200문항102PASS/98UNGRADED, 새그룹 최종5PASS. 실제 Databricks CLI3 SQL + 웹3 SQL에서75만행을 DB집계하고 기존 집계 재사용을 검증했다.
+- **Evaluation**: DeepEval 대체 경로10/10; 초기 judge 오감점·시간초과·오답 통과를 기록하고 기준을 분리, 마지막 통제12+새8 모두 정확히 판정. 실제답변3건1.0. Spider10개 공식정답0개로 범용 NO-GO 유지.
+- **Artifact Update**: docs/evaluation/2026-09-30_batch/report.md, workboard.md, 실제PNG·장부·독립정답·최초실패 및수정후평가 보존. 오래된 미완료 항목은 이력으로 유지하고 현재 4개 묶음으로 통합했다.
+
+## Daily Wrap-ups — 2026-09-30
+- **Key Accomplishments**: 원격 원본 전체 적재 없이 키별 최신 수치 분포를 계산·표시하고 후속 요청과 재사용을 실제 웹에서 확인했다. 통합 회귀와 독립 평가/채점기 보정을 수행했다.
+- **Major Issues**: 그룹 정렬 누락 수정. DeepEval 출력 형식 오감점/수치 오답 허용 수정 후 새 통제8개 검증. Spider 복잡한 SQL은 여전히0/10이며 남은 필수 기능을 완료로 숨기지 않았다.
+- **Next Action Items**: 상단의 미완료4묶음. 별도 서버 배포는 제외한다.
+
+- **추가 발견/수정 (2026-09-30 00:40 KST)**: 실제 앱 재시작 시 모델 선택이 Ollama로 초기화됨을 발견했다. 대화별 SQLite 선호 설정과 명시적 변경 callback을 추가해 재시작/대화 전환/다른 열린 탭의 오래된 상태를 분리했다. AppTest2개 PASS, 전체 최종 회귀 재실행 중.
+
+- **Final local result**: 제품 전체446/446(53.225초) PASS. 실제 웹에서 Databricks 모델 선택 후 reload해 같은 선택 복원. 앱 PID4735/health200, 저장 parquet hash 및 SQL 장부3건 불변.
+
+- **Push/CI outcome (2026-09-30)**: `836b331` 구현 + `4ab1bcf` 공백정리 push 및 원격SHA 확인. GitHub Actions36592344313 SUCCESS(제품446/migration136/Level3/reference/compile). 테스트 코드 hash 일치 검증. 후속 커밋은 결과 기록 문서만 변경한다. 미완료4묶음/독립98미채점/Spider0of10, 범용NO-GO 유지.
+
+## [2026-09-30 06:18:25 KST] [Agent: Codex] User Request: 나머지 끝까지 평가 하고 개선해줘
+- **Action**: 네 잔여 묶음을 계속 수행. Spider 공개 SQL 실패를 모델 계획/범위 계약/평가 한계로 나누고 공통 수정·독립 회귀 후 실제 재평가한다. 기존 성공/실패 근거와 자동 읽기·원본 보존 정책을 유지한다.
+
+## [2026-09-30 06:49 KST] [Agent: Codex] Action: 남은 평가·복구 보강의 검증 결과
+- **Diagnosis**: Spider의 첫 SQL 제안만 평가하면 탐색 미리보기를 최종 답으로 오인할 수 있어 production graph interactive SQLite 실행을 추가했다. 실제 모델은 구조화된 일시 서비스 오류400으로 중단됐다. SQL warehouse도 schema 연결 시 리소스 생성400; 상태 API200/STOPPED. 자격 증명 실패로 단정하지 않는다.
+- **Implementation**: 특정400만 모델 호출 재시도 대상으로 분류(기존2회/시간/횟수 한도 유지). 원본 보존/재개와 오류 분류/로그 검증. 최신행 null→tie 후속 답변·재시작·source변경·실행인자/결과계약을 연결. 동률을 비율로 오인하는 의도 파싱 수정. 원격/배치SQL/작은pandas의 명시적 선택 전 결측 제외와 무한대 별도 거부를 맞췄다.
+- **Validation**: 제품461/461(55.794s), migration136/136(17.900s). reference217/217(경계 추가 전; 최종CI 재실행). 합성100만행 최신행10,000키 정답/보존/cache0(8.884s,418234368B peakRSS), 적재/EDA/중단/byte한도/재시작 PASS(467451904B peakRSS). 실제 웹 합성12행에서 결측→동률→5키 4범주 이미지660x385, counts1/2/1/1, 원본 digest보존, 모델0/SQL0.
+- **Remaining**: 범용 NO-GO. 실제 모델/warehouse 차단은 BLOCKED_PROVIDER로 기록하며 이전 Spider0/10·독립98미채점을 지우지 않는다. 최신행 일반 필터/통계/비균등 구간, 고급SQL, 대용량 전체여정, 독립oracle의4묶음은 계속 미완료다.
+- **Artifacts**: docs/evaluation/2026-09-30_continuation/에 최초실패, 재시도, 전체로그, 큰데이터결과, 실제웹 차트/보존, D07/D08·J21~J24 근거 매핑과 보고서 저장.
+
+### Daily Wrap-ups — 2026-09-30 continuation
+- 동률·결측 후속 대화 복구와 실제 이미지 표시를 구현·검증했다. 공급자 오류와 agent 결과 실패를 분리했고 읽기 전용 interactive Spider 평가를 만들었다.
+- Next Action Items: 위4개 잔여 묶음 및 외부 서비스 복구 후 동일 실모델/warehouse 평가. 코드·문서 push/CI 확인을 마무리한다.
+
+- **Final follow-up boundary**: 완료된 최신행 histogram의 짧은 bins 변경도 선택한 데이터/스냅샷이 바뀌면 이전 출처에 묶지 않도록 보강. 관련15 PASS(11.513s). 이전 PR68은 이미 병합됨을 확인했으며 후속 코드는 해당 작업 브랜치에 push한다.
+
+- **Evaluation gate hardening**: 원격/대용량 평가 CLI가 보고서의 BLOCKED/FAIL에도 성공 종료하던 문제 수정. 실제 agent answered+의도적으로 불일치시킨 독립 oracle과 warehouse 연결 실패에서 실패 종료를 검증했다. 관련5검사 PASS; 다른 평가자의 첫 SQL 탐색/최종 계산/공급자 실패 계수도 함께 확인했다.
+
+- **Final push/CI outcome [2026-09-30T07:03:45.085260+09:00]**: 코드4c058175b9ef8987dfe12b918ba16828dc06a1b5 push/원격SHA 일치. CI36636744608 SUCCESS(제품464/136 migration/reference217/58figures/별도recovery/compile). localhost PID15225 health200, 현재 정책 자동읽기, 대화·차트·원본복원 확인. 후속커밋은 이 결과 문서만 갱신. 범용NO-GO·실환경 BLOCKED_PROVIDER·잔여4묶음 유지.
+
+## [2026-09-30T08:11:05.190553+09:00] [Agent: Codex] User Request: 계속 진행하고 HTTP400이 일시적인지 조치가 필요한지 확인
+- **Action**: 실제 모델·SQL·warehouse 상태를 최소 호출로 재검증하고 공급자 문서/관측 증거와 구분해 원인과 후속 조치를 기록한다. 기존 데이터와 평가 이력은 보존한다.
+
+## [2026-09-30T08:17:14.078454+09:00] [Agent: Codex] Action: 공급자400 최소 재현·복구 판정 보강
+- **Evidence**: 직접 모델400, 제품adapter400, SQL OpenSession400; warehouse200/STOPPED, model endpoint200/READY. UI 세션 복원 및 Free Edition 확인. 자동 브라우저 제어 미지원 안내에 따라 추가 UI조작 중단; 사용자에게 한도 안내 확인 요청.
+- **Decision**: 지속 장애/제한 조치 점검 필요. 한도 소진·공급자 장애 중 근본원인은 미확정. 인증 토큰 교체 근거 없음. 장애 중 대량평가를 반복하지 않는다.
+- **Implementation**: bounded availability probe(exit1 onBLOCKED; connectivity != GO), 사용자 안내에 사용량/계정 점검 및 원인 불확실성 명시. 관련19검사 PASS.
+- **Next Action Items**: 한도 안내 확인→최소probe 통과→실모델/SQL 평가. 기존 잔여4묶음 및 범용NO-GO 유지.
+
+### Daily Wrap-ups — 2026-09-30 provider recheck
+- 공급자 최소 재현/제품경로 재현, Free Edition·endpoint상태 확인, 한도/일시 장애 불확실성 안내와 단일 사전점검 도구 보강. 제품467/467, 관련19/19 PASS. 실제모델/SQL은 BLOCKED.
+- Next Action Items: 사용자 한도 안내 확인 및 공급자 복구 뒤 live평가 재개. 기존4묶음은 미완료 유지.

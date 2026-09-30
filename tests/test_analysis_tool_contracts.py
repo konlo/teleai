@@ -1,3 +1,4 @@
+from core.analysis_agent.policy import RuntimePolicy
 """Common tool envelopes, profiling and approval-safe source discovery."""
 import json
 import tempfile
@@ -182,6 +183,7 @@ class AnalysisToolContractTests(unittest.TestCase):
                 DiscoveryModel(),
                 connection_identity="test-connection",
                 remote_factory=factory,
+                policy=RuntimePolicy(require_remote_approval=True),
             )
             runtime.context.reference_context[:] = [{"table": SOURCE, "columns": []}]
             result = runtime.submit("loan 이름이 포함된 테이블을 찾아줘")

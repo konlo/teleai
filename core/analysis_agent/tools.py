@@ -47,13 +47,13 @@ def local_tools(context, diagnostics=None):
             if missing_ids:
                 if diagnostics: diagnostics.emit('tool_rejected', tool=definition.name, reason='dataset_not_loaded')
                 recovery_hint = ({'available_dataset_ids': list(context.datasets.metadata)[:20],
-                    'alternative': '조인할 두 dataset이 모두 로딩된 경우에만 join_datasets를 사용하세요. 필요한 테이블의 schema와 관계가 확인되어 있고 원격 조회 도구가 있으면, 통계 요청은 원본 전체 로딩 대신 DB JOIN/집계 SELECT를 query_databricks로 승인 요청할 수 있습니다. 테이블 이름을 dataset ID로 재시도하지 마세요.'}
+                    'alternative': '조인할 두 dataset이 모두 로딩된 경우에만 join_datasets를 사용하세요. 필요한 테이블의 schema와 관계가 확인되어 있고 원격 조회 도구가 있으면, 통계 요청은 원본 전체 로딩 대신 DB JOIN/집계 SELECT를 query_databricks로 실행할 수 있습니다. 테이블 이름을 dataset ID로 재시도하지 마세요.'}
                     if definition.name == 'join_datasets' else {})
                 return normalize_tool_result({'status': 'error', 'error_code': 'dataset_not_loaded',
                         'retryable': False,
                         **recovery_hint,
                         'missing_dataset_arguments': sorted(missing_ids),
-                        'message': '이 ID의 로딩된 결과가 없습니다. 테이블명과 dataset ID는 다릅니다. 테이블 컬럼/설명은 inspect_table_context로 확인하세요. 실제 행이 필요하면 승인형 조회를 제안하세요.'}
+                        'message': '이 ID의 로딩된 결과가 없습니다. 테이블명과 dataset ID는 다릅니다. 테이블 컬럼/설명은 inspect_table_context로 확인하세요. 실제 행이 필요하면 필요한 읽기 전용 조회를 실행하세요.'}
                 )
             try:
                 result = definition.run(**arguments)
@@ -72,7 +72,7 @@ def local_tools(context, diagnostics=None):
                             'retryable':False,
                             'message':'로컬 도구가 제한 시간 안에 완료되지 않았습니다. 결과는 검증되지 않았습니다. '
                                       '원래 조건과 보유 데이터를 유지하며 다른 로컬 도구를 선택하세요. '
-                                      '이 실패는 원격 데이터 재조회 승인이나 동일 호출 재실행의 근거가 아닙니다.'})
+                                      '이 실패는 원격 데이터 재조회나 동일 호출 재실행의 근거가 아닙니다.'})
                 if isinstance(exc, (duckdb.Error, SqlglotError)):
                     return normalize_tool_result({'status':'error','error_code':'local_sql_error',
                             'retryable': False,

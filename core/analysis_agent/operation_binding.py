@@ -18,6 +18,11 @@ OPERATIONS = {'AVG', 'MEDIAN', 'MIN', 'MAX', 'SUM'}
 
 def candidate(current):
     text = current.get('request_text', '')
+    from core.analysis_agent.remote_completion import catalog_read_requested
+    if catalog_read_requested(current):
+        # Names/types read from a discovered catalog are records to display,
+        # not an unspecified scalar statistic needing AVG/MIN/MAX binding.
+        return False
     # Direct value inspection is a preview, not an unknown statistic. Keep its
     # existing bounded inspection/tool-recovery path. Modifiers between the
     # column and "value" (e.g. "largest value") are deliberately not skipped.

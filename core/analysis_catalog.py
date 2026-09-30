@@ -151,14 +151,14 @@ def resolve_table_context(reference_context, datasets, table):
         return {'status':'ready', 'table_context':current,
                 'schema_changed':schema_changed,
                 'authority':'approved_select_star_result',
-                'scope':('승인된 0행 조회의 실제 컬럼명입니다. 일부 데이터 타입은 확인되지 않았습니다.'
+                'scope':('실행된 0행 조회의 실제 컬럼명입니다. 일부 데이터 타입은 확인되지 않았습니다.'
                          if schema_only and any(not column['dtype'] for column in columns) else
-                         '승인된 0행 결과 스키마의 실제 컬럼명과 데이터 타입입니다.'
+                         '실행된 0행 결과 스키마의 실제 컬럼명과 데이터 타입입니다.'
                          if schema_only else
-                         '승인 후 로딩된 SELECT * 결과의 실제 컬럼입니다. 해당 결과의 생성 시점 스키마를 나타냅니다.')}
+                         '로딩된 SELECT * 결과의 실제 컬럼입니다. 해당 결과의 생성 시점 스키마를 나타냅니다.')}
     if saved is None:
         return {'status':'needs_context',
-                'message':'저장되거나 승인 후 확인된 테이블 정보가 없습니다. 정확한 테이블명을 확인한 뒤 스키마 조회 승인을 받아야 합니다.'}
+                'message':'저장되거나 조회로 확인된 테이블 정보가 없습니다. 정확한 테이블명을 확인한 뒤 읽기 전용 스키마 조회로 확인하세요.'}
     if saved['freshness'] == 'stale':
         try:
             refresh_query = 'SELECT * FROM ' + _quoted_table(saved.get('table', table)) + ' LIMIT 0'
@@ -166,7 +166,7 @@ def resolve_table_context(reference_context, datasets, table):
             refresh_query = ''
         return {'status':'needs_refresh', 'table_context':saved,
                 'refresh_query':refresh_query,
-                'message':'저장된 스키마 스냅샷이 오래되어 현재 컬럼이라고 보장할 수 없습니다. 이 목록으로 새 분석 SQL을 만들지 말고 스키마 조회 승인을 받아 갱신하세요.',
+                'message':'저장된 스키마 스냅샷이 오래되어 현재 컬럼이라고 보장할 수 없습니다. 이 목록으로 새 분석 SQL을 만들지 말고 읽기 전용 스키마 조회로 갱신하세요.',
                 'scope':'과거 스키마 스냅샷이며 현재 테이블 구조를 보장하지 않습니다.'}
     return {'status':'ready', 'table_context':saved, 'schema_changed':False,
             'authority':'saved_snapshot',

@@ -6,6 +6,7 @@ import time
 from pathlib import Path
 import sys
 import tempfile
+import subprocess
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
@@ -49,10 +50,11 @@ def main():
                 started = time.monotonic()
                 result = runtime.submit(prompt)
                 state = runtime.inspect()['recovery']
-                calls, observations, chart_specs = [], [], []
+                calls, observations, chart_specs, call_details = [], [], [], []
                 for message in runtime.events():
                     if isinstance(message, AIMessage):
                         calls.extend(c['name'] for c in message.tool_calls)
+                        call_details.extend(message.tool_calls)
                     if isinstance(message, ToolMessage):
                         try:
                             value = json.loads(message.content)
@@ -79,7 +81,7 @@ def main():
                     'oracle_pass': oracle_pass,
                     'status': result['status'], 'error_type': result.get('error_type'),
                     'model_calls': state.get('model_calls'), 'elapsed_seconds': round(time.monotonic()-started, 3), 'tools': calls, 'observations': observations,
-                    'chart_count': len(state.get('artifact_ids', [])),
+                    'chart_count': len(state.get('artifact_ids', [])), 'call_details':call_details,
                     'chart_specs': chart_specs,
                     'chart_reasons': [runtime.artifacts[i].reason for i in state.get('artifact_ids', [])],
                     'intent': {k: state.get(k) for k in ('profile_kind', 'calculation',
@@ -97,7 +99,9 @@ def main():
                 'final_output': row['answer'], 'reference_facts': row['oracle'],
                 'runtime_metadata': {'recovery_model_calls':row['model_calls']},
                 'tool_calls':[{'tool':t} for t in row['tools']]})
-        report = {'mode':'live-databricks-model', 'git_baseline':'89effbb',
+        report = {'mode':'live-databricks-model',
+            'git_baseline':subprocess.check_output(['git','rev-parse','HEAD'],cwd=ROOT,text=True).strip(),
+            'working_tree_dirty':bool(subprocess.check_output(['git','status','--porcelain'],cwd=ROOT,text=True).strip()),
             'data':'synthetic five-row fixture; production recovery enabled',
             'warehouse_sql_executions':0, 'results':records,
             'limitations':['Fixed four audit cases; not unseen questions or an overall quality estimate.',

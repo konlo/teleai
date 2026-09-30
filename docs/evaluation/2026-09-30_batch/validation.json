@@ -1,0 +1,122 @@
+{
+  "generated_at": "2026-09-29T15:38:26.751631+00:00",
+  "checks": [
+    {
+      "command": ".telly_runtime/v1-venv/bin/python -m unittest discover -s tests -p test_*.py -q",
+      "tests": 446,
+      "status": "PASS",
+      "evidence_log": "/tmp/batch-final-all.log",
+      "log_sha256": "5025f282ffb80dbe49365e27b98e1161e03c6c657cec34e4bb96868da089b57b"
+    },
+    {
+      "command": ".telly_runtime/v1-venv/bin/python -m unittest discover -s migration -p test_*.py -q",
+      "tests": 136,
+      "status": "PASS",
+      "evidence_log": "/tmp/batch-all-migration.log",
+      "log_sha256": "cdcff4410ade2eb75db5e9157d5c44465892f618ee3e72faacf2602c495025a9"
+    },
+    {
+      "command": ".telly_runtime/v1-venv/bin/python test_set/run_test_set.py --all --quiet",
+      "tests": 217,
+      "figures": 58,
+      "status": "PASS",
+      "evidence_log": "/tmp/batch-reference-all.log",
+      "log_sha256": "8c0db4e35140a0b1a507a7e7e4e52410529b5dee1757b3150b7571c815f765d4"
+    },
+    {
+      "command": ".telly_runtime/v1-venv/bin/python -m unittest tests.test_remote_latest tests.test_remote_latest_histogram tests.test_zero_row_arrow_schema tests.test_batch_evaluation_contracts tests.test_analysis_group_summary tests.test_metadata_planning -q",
+      "tests": 21,
+      "status": "PASS",
+      "evidence_log": "/tmp/batch-closed-contracts.log",
+      "log_sha256": "7003d7dac1899cc4a9637d13da1645bfe163306bef5da08f750d2b6d1284f0d3"
+    },
+    {
+      "command": ".telly_runtime/v1-venv/bin/python -m compileall -q core migration scripts tests test_set ui utils",
+      "status": "PASS"
+    },
+    {
+      "command": "git diff --check",
+      "status": "PASS"
+    }
+  ],
+  "code_sha256": {
+    "scripts/evaluate_remote_latest_live.py": "2ab8445ed726aa84c4ac4291368d6c5f9e9cdda029e781ece2b82ee641018ef7",
+    "scripts/evaluation_judge.py": "80a6445a8f28d7177900cc906daa9c8b933de32fe04c8978cfb53fbead69ade5",
+    "scripts/group_table_oracle.py": "6de08caae44a3a9676867edad703e85ad839a3b1bccde9033ba8418e0113563c",
+    "tests/fixtures/judge_heldout_controls.json": "d972def683bf9ca15e42b78eef9c41661df0606518c409aae78fd8fb570adba0",
+    "tests/fixtures/remote_latest_per_key.json": "35579ae85426fb3e9ea87ca8a1305e6c7c1daa5d30d381ea23fb0286f2894180",
+    "tests/test_analysis_preferences.py": "9d2bdd43236bc22b32d8ce4495e7f8232134ebc0bda7c5b8c74001453645967f",
+    "tests/test_batch_evaluation_contracts.py": "ccac62b9d3372dc6a7790a084ec91ec8f899807bf267a86505985336500a8376",
+    "tests/test_metadata_planning.py": "4c139843ae1f701e6ecf8b5c94848527356475930c62103d6b94446adc7d4323",
+    "tests/test_remote_latest.py": "09d5fd1f7bf07d1eecec1fea732a14bb429a5db0a0b8bc457a56464762967cc9",
+    "tests/test_remote_latest_histogram.py": "6f55d29b25edae4dd8934e078d94275ffa241bb92506abee52da6f2f03d252ba",
+    "tests/test_zero_row_arrow_schema.py": "6eb61f5a587a12f794c9126fc255ed8fd2f800c1deaf4c3ce061f3055cdc963b",
+    "ui/analysis_preferences.py": "63d2b333d7f51d37c04271240afdbda0df463033d4ff64668b2f74d1ef812f33",
+    "utils/analysis_remote_latest.py": "cb8ff3bc0a0ae0bebb184e163cbe291c7b9c583529fd0ae3561c9fbaec4eef13",
+    "core/analysis_agent/assets.py": "7d9d26b9869f8fa0899ae8cd0fafa56efbf70e7d7edfabcf918bb10985568a99",
+    "core/analysis_agent/completion.py": "ce2c779af1d362283998b280b37b6c5a9d2bc67e51dfc0d9ab9dee5a2ab4e3be",
+    "core/analysis_agent/eda_contract.py": "7af0b06870698824a2a6c2c46f3f8c601959ce46932c36e12c263aec9b858da6",
+    "core/analysis_agent/latest_selection.py": "1db690ad19b570cd10a7ec7e4fd2db3ee31228037452331844bbdf854f0b749f",
+    "core/analysis_agent/recovery.py": "12a8bb1b34b38f49a06d8612ed660a1abe3c5f98cbfb52ecd59e166350613d66",
+    "core/analysis_databricks.py": "cb6cfbfdd31da7f44ce9fdabb47229692dadfdea134a0f491cbfad4f6b3af1f7",
+    "core/analysis_runtime_tools.py": "3dbe736b7e38816c0f5126fe47fb793351ec29186eaa7477e920d706bc890fb1",
+    "scripts/calibrate_deepeval_judge.py": "a6ac73d0a5db5befedfbe59b168db15190f9f4ddb3f8434917aeaafd7696da39",
+    "scripts/evaluate_analysis_agent.py": "f7d894986ac4303f2da8bc01b0c55221184088ee12de9745f6dc3bbb9753aad1",
+    "scripts/evaluate_deepeval_real_report.py": "6d952ca15ab70d847d62ea11ec5613c83ceca906fe5b326a571ee3cd06bbb88d",
+    "scripts/evaluate_spider2_teleai.py": "319a120f61e782da50ccaa1b91907ceeb74f95ead0711af0434b43dc16044091",
+    "tests/fixtures/agent_readiness_manifest.json": "5a9af24900116fcae081209a845afbb4ebaa6b9d83b3dab416f61344c84d9bca",
+    "tests/fixtures/analysis_agent_grading.json": "dfc674525c7ce05add70a41c9e031ecb2850053f681eb71d6f88fa7e9185af57",
+    "tests/test_actual_agent_evaluation.py": "a485b80bd51a988f1ecf999755cf417b526c46b25fe19157669cc925e4073b3e",
+    "ui/analysis_page.py": "88a3d6c218ae7439810be7819e7120fb96ae253b56e6d7ab0c5552d5741f1e99",
+    "utils/analysis_group_summary.py": "7eedeeea9fcdbf1bbd59c2c7baa22e22ca8fde48104312103ee293040d130eb0",
+    "utils/analysis_latest.py": "ccbd45c9870f684c0001e18703aa9736ea3d6ac46c14d135eaba17fb90e945d6"
+  },
+  "actual_agent_200": {
+    "pass": 102,
+    "ungraded": 98,
+    "warehouse_calls": 0,
+    "actual_model_calls": 11
+  },
+  "spider_selected10": {
+    "proposed": 2,
+    "official_correct": 0,
+    "denominator": 10
+  },
+  "deepeval": {
+    "tool_correctness": "10/10",
+    "calibration": "12/12",
+    "new_controls": "8/8",
+    "actual_answers_judged": 3,
+    "scores": [
+      1.0,
+      1.0,
+      1.0
+    ],
+    "supplementary_only": true
+  },
+  "warehouse_queries_this_batch": 6,
+  "release_verdict": "NO_GO_GENERAL_AGENT",
+  "remaining_work_packages": [
+    1,
+    2,
+    3,
+    4
+  ],
+  "limitations": [
+    "No separate deployment host is in scope.",
+    "No oracle for98 reference cases; zero Spider selected-task successes.",
+    "Judge calibrated on small controls; same generator model family."
+  ],
+  "ci": {
+    "run_id": 36592344313,
+    "url": "https://github.com/konlo/teleai/actions/runs/36592344313",
+    "head_sha": "4ab1bcf76e4118583ee68d4e6e4b6356bdf6fe80",
+    "conclusion": "success",
+    "scope": "Linux full product/migration/Level3/reference/compile; final documentation-only commit does not change tested code"
+  },
+  "push": {
+    "branch": "codex/agentic-analysis-rc-2026-09-14",
+    "code_sha": "4ab1bcf76e4118583ee68d4e6e4b6356bdf6fe80",
+    "remote_verified": true
+  }
+}

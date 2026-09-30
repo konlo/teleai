@@ -3,6 +3,8 @@ langchain>=1,<2
 langgraph>=1,<2
 langgraph-checkpoint-sqlite>=3,<4
 langchain-ollama>=1,<2
+langchain-openai>=1,<2
+langchain-core>=1,<2
 pandas>=2,<3
 matplotlib>=3.7,<4
 duckdb>=1,<2
@@ -13,3 +15,13 @@ pyarrow>=20,<24
 
 streamlit>=1.33,<2
 databricks-sql-connector>=4,<5
+
+# Direct imports and file/statistics backends already present in the runtime lock.
+httpx>=0.28,<1
+jsonschema>=4,<5
+numpy>=2,<3
+openai>=2,<3
+openpyxl>=3.1,<4
+pillow>=12,<13
+pydantic>=2,<3
+scipy>=1.16,<2

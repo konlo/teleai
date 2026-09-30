@@ -1,0 +1,74 @@
+{
+  "source": "fixture.unseen_audit",
+  "measure": "sensor reading",
+  "group": "cohort",
+  "missing": "missing",
+  "rows": [
+    {
+      "sensor reading": "1",
+      "cohort": "A"
+    },
+    {
+      "sensor reading": "2",
+      "cohort": "A"
+    },
+    {
+      "sensor reading": "3",
+      "cohort": "B"
+    },
+    {
+      "sensor reading": "4",
+      "cohort": "B"
+    },
+    {
+      "sensor reading": "missing",
+      "cohort": "B"
+    }
+  ],
+  "cases": [
+    {
+      "id": "scalar_chart",
+      "request": "`sensor reading` 평균과 히스토그램을 보여줘.",
+      "mean": 2.5,
+      "values": [
+        1,
+        2,
+        3,
+        4
+      ]
+    },
+    {
+      "id": "filtered_scalar_chart",
+      "request": "`sensor reading` >= 3인 행의 `sensor reading` 평균과 히스토그램을 보여줘.",
+      "mean": 3.5,
+      "values": [
+        3,
+        4
+      ]
+    },
+    {
+      "id": "grouped_scalar",
+      "request": "`cohort`별로 `sensor reading` 평균을 알려줘.",
+      "groups": {
+        "A": 1.5,
+        "B": 3.5
+      }
+    },
+    {
+      "id": "custom_chart",
+      "request": "`sensor reading` 평균과 구간 수 5개인 히스토그램을 보여줘.",
+      "mean": 2.5,
+      "values": [
+        1,
+        2,
+        3,
+        4
+      ],
+      "bins": 5
+    }
+  ],
+  "renamed_columns": {
+    "sensor reading": "thermal value",
+    "cohort": "batch_key"
+  }
+}

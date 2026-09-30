@@ -1,4 +1,5 @@
 """Table-neutral schema drift contracts for the production analysis runtime."""
+from core.analysis_agent.policy import RuntimePolicy
 import tempfile
 import unittest
 
@@ -134,7 +135,7 @@ class DynamicTableContextTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as root:
             runtime = GraphAnalysisRuntime(root, 'owner', 'stale-approval', RefreshModel(),
                 connection_identity='connection',
-                remote_factory=lambda _:lambda envelope:remote_calls.append(envelope))
+                remote_factory=lambda _:lambda envelope:remote_calls.append(envelope), policy=RuntimePolicy(require_remote_approval=True))
             runtime.context.reference_context = [stale_context(['removed_column'])]
 
             result = runtime.submit(f'{SOURCE}의 컬럼 목록을 알려줘')
@@ -166,7 +167,7 @@ class DynamicTableContextTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as root:
             runtime = GraphAnalysisRuntime(root, 'owner', 'fresh-histogram', FreshHistogramModel(),
                 connection_identity='connection',
-                remote_factory=lambda _:lambda envelope:remote_calls.append(envelope))
+                remote_factory=lambda _:lambda envelope:remote_calls.append(envelope), policy=RuntimePolicy(require_remote_approval=True))
             runtime.context.reference_context = [{
                 'table':SOURCE, 'columns':[{'name':'metric_dynamic', 'dtype':'int64'}]}]
             query = (f'SELECT metric_dynamic, COUNT(*) AS __frequency FROM {SOURCE} '

@@ -2,6 +2,48 @@
 from utils.analysis_datasets import preview_dataset
 
 
+def render_remote_query(runtime, current):
+    from html import escape
+    from core.analysis_agent.completion import active_contracts
+    from core.analysis_load_plan import query_sources
+    def cell(value):
+        text = escape(str(value)[:256]).replace('\n', ' ').replace('\r', ' ')
+        for symbol in ('\\', '|', '`', '[', ']', '*', '_'):
+            text = text.replace(symbol, '\\' + symbol)
+        return text
+    parts = []
+    others = [c for c in active_contracts(current) if c.name != 'remote_query']
+    for key in current['remote_query_ids']:
+        evidence = current['remote_query_evidence'][key]
+        info = runtime.context.datasets.metadata[evidence['dataset_id']]
+        sources = query_sources(info.query)
+        catalog_result = bool(sources) and all(
+            len(pieces := source.replace('`', '').split('.')) == 3
+            and pieces[-2].casefold() == 'information_schema' for source in sources)
+        if others and not catalog_result:
+            # The existing chart/statistic/load renderer owns its actual output.
+            parts.append(f'원격 조회가 완료되어 결과 {info.rows:,}행을 저장했습니다.')
+            continue
+        limit = 200 if catalog_result else 10
+        frame = preview_dataset(runtime.context.datasets, info.id, limit=limit)
+        parts.append(f'조회가 완료되었습니다. 출처: {cell(info.source)} · 저장된 결과 {info.rows:,}행.')
+        if info.rows == 0:
+            parts.append('이번 조회 조건에 해당하는 결과가 없습니다 (0행).')
+        else:
+            columns = list(frame.columns[:20])
+            table = ['| ' + ' | '.join(cell(c) for c in columns) + ' |',
+                     '| ' + ' | '.join('---' for _ in columns) + ' |']
+            table.extend('| ' + ' | '.join(cell(v) for v in row) + ' |'
+                         for row in frame[columns].itertuples(index=False, name=None))
+            parts.append('\n'.join(table))
+            if len(frame) < info.rows or len(columns) < len(info.columns):
+                parts.append(f'화면에는 {len(frame):,}/{info.rows:,}행, {len(columns)}/{len(info.columns)}열을 표시했습니다.')
+        scope = {'complete':'조회 범위 전체', 'truncated':'행 한도로 잘린 결과',
+                 'sampled':'표본 결과', 'unknown':'전체 범위 미확인'}.get(info.coverage, '전체 범위 미확인')
+        parts.append(f'범위: {scope}. 실행한 SQL의 조건과 행 제한이 적용된 결과입니다.')
+    return '\n\n'.join(parts)
+
+
 def render_preview(runtime, current):
     parts = []
     if current.get('preview_evidence'):
@@ -20,7 +62,7 @@ def render_data_load(runtime, current):
     parts = []
     if current.get('data_load') and current.get('load_evidence_id') and runtime.context:
         info=runtime.context.datasets.metadata[current['load_evidence_id']]
-        parts.append(f'승인한 조회로 {info.source} 데이터 {info.rows:,}행, {len(info.columns):,}열을 불러와 저장했습니다. '
+        parts.append(f'조회로 {info.source} 데이터 {info.rows:,}행, {len(info.columns):,}열을 불러와 저장했습니다. '
             '이 결과는 구조와 예시 확인용 범위이며 전체 통계로 간주하지 않습니다.\n'
             +'컬럼: '+', '.join(info.columns))
     return '\n\n'.join(parts)
@@ -30,7 +72,7 @@ def render_metadata(runtime, current):
     parts = []
     if current.get('metadata_evidence'):
         metadata = current['metadata_evidence']
-        origin = ('승인 후 로딩된 실제 결과' if metadata.get('authority') == 'approved_select_star_result'
+        origin = ('로딩된 실제 결과' if metadata.get('authority') == 'approved_select_star_result'
                   else '확인된 스키마 스냅샷')
         changed = ' 이전 스냅샷과 컬럼 구성이 달라 새 스키마를 사용했습니다.' if metadata.get('schema_changed') else ''
         kind = metadata.get('kind', 'columns')
@@ -85,7 +127,7 @@ def render_join(runtime, current):
     parts = []
     if current.get('join_query_evidence') and not current.get('join_evidence'):
         evidence = current['join_query_evidence']
-        return (f"{evidence['source']}를 승인된 SQL에서 조인하여 요청한 통계를 계산했습니다. "
+        return (f"{evidence['source']}를 실행된 SQL에서 조인하여 요청한 통계를 계산했습니다. "
                 '결과는 해당 조인 조건으로 결합된 행 기준입니다. 키의 실제 유일성·미일치 행 수는 별도로 측정하지 않았습니다.')
     if current.get('join_evidence') and runtime.context:
         evidence = current['join_evidence']
@@ -289,6 +331,8 @@ def render_chart(runtime, current):
     parts = []
     for card_id in current.get('artifact_ids', []):
         card = runtime.artifacts[card_id]
+        from utils.analysis_image_validation import validate_chart_image
+        validate_chart_image(card.image)
         parts.append(f'{card.title} 이미지를 생성했습니다.\n분석 범위: {card.scope}')
     return '\n\n'.join(parts)
 

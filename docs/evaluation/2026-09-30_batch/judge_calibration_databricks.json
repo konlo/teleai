@@ -1,0 +1,108 @@
+{
+  "mode": "synthetic labelled judge calibration; not agent runs",
+  "judge": "databricks-qwen3-next-80b-a3b-instruct",
+  "provider": "databricks",
+  "threshold": 0.8,
+  "results": [
+    {
+      "id": "correct_groups",
+      "expected_pass": true,
+      "score": 0.3,
+      "reason": "The actual output correctly calculates and states the group averages (A: 1.5, B: 3.5), matching the expected values, but uses an informal format ('A 평균 1.5, B 평균 3.5입니다.') instead of the requested structured format 'A=1.5; B=3.5'. Since the evaluation steps require strict adherence to requested formatting and the output does not meet this explicit requirement, it fails despite correct values.",
+      "classification_correct": false,
+      "elapsed_seconds": 3.972
+    },
+    {
+      "id": "missing_goal",
+      "expected_pass": false,
+      "score": 0.0,
+      "reason": "The actual output fails to provide the requested group-wise averages (A=1.5; B=3.5) and instead reports missing values and a generic completion message, directly violating the requirement to show group means.",
+      "classification_correct": true,
+      "elapsed_seconds": 2.75
+    },
+    {
+      "id": "wrong_number",
+      "expected_pass": false,
+      "score": 0.2,
+      "reason": "The actual output claims the mean is 25.0, but the expected value is 2.5, indicating a critical calculation error. Additionally, the expected output specifies the format 'mean=2.5', which the actual output does not follow, violating the requirement to match the requested format and value.",
+      "classification_correct": true,
+      "elapsed_seconds": 2.872
+    },
+    {
+      "id": "wrong_bins",
+      "expected_pass": false,
+      "score": 0.0,
+      "reason": "The actual output specifies bins=20, which directly contradicts the requested requirement of 5 bins for the histogram. The response fails to meet the explicit calculation requirement, despite claiming completion.",
+      "classification_correct": true,
+      "elapsed_seconds": 3.48
+    },
+    {
+      "id": "correct_scalar",
+      "expected_pass": true,
+      "score": 0.3,
+      "reason": "The actual output provides the correct numerical value (2.5) but fails to meet the requirement of matching the expected output's English language and phrasing ('The arithmetic mean is 2.5.') while the input was in Korean, indicating a mismatch in language and format expectation.",
+      "classification_correct": false,
+      "elapsed_seconds": 2.971
+    },
+    {
+      "id": "correct_percent",
+      "expected_pass": true,
+      "score": 0.6,
+      "reason": "The actual output correctly states the conversion rate as 25%, which matches the expected value, but fails to include the requested ratio (0.25) as specified in the expected output. The requirement to provide both the percentage and the ratio was not fully met, violating evaluation step 1.",
+      "classification_correct": false,
+      "elapsed_seconds": 3.144
+    },
+    {
+      "id": "correct_equivalent_format",
+      "expected_pass": true,
+      "score": 0.4,
+      "reason": "The actual output correctly provides the group averages (B: 3.5, A: 1.5) matching the expected values, but uses a colon and space format instead of the requested semicolon format (A=1.5; B=3.5). Since the evaluation steps require strict adherence to requested formatting and the output does not match the specified format, it fails despite correct values.",
+      "classification_correct": false,
+      "elapsed_seconds": 3.643
+    },
+    {
+      "id": "correct_rounded",
+      "expected_pass": true,
+      "score": 1.0,
+      "reason": "The actual output correctly rounds the mean to two decimal places as requested (1.23), and the expected output confirms that 1.234 rounded to two decimal places is 1.23, so the calculation and formatting align with all requirements.",
+      "classification_correct": true,
+      "elapsed_seconds": 2.737
+    },
+    {
+      "id": "wrong_scope",
+      "expected_pass": false,
+      "score": 0.0,
+      "reason": "The actual output incorrectly provides the average for 2024 instead of the requested 2025, and uses an incorrect value (2.5 vs. 8.5). It also fails to match the expected format or content, despite no formatting being required.",
+      "classification_correct": true,
+      "elapsed_seconds": 2.556
+    },
+    {
+      "id": "wrong_denominator",
+      "expected_pass": false,
+      "score": 0.0,
+      "reason": "The actual output incorrectly states the success rate as 100%, while the input clearly specifies 25 successes out of 100, requiring a calculation of 25/100 = 25%. The response fails to perform the correct calculation and provides a factually wrong value, violating the requirement to accurately compute and report the success rate.",
+      "classification_correct": true,
+      "elapsed_seconds": 3.438
+    },
+    {
+      "id": "future_promise",
+      "expected_pass": false,
+      "score": 0.0,
+      "reason": "The actual output does not list any tables as required by the expected output, which explicitly demands 'Available tables: A, B.' The response avoids providing the requested information entirely, failing to meet the core requirement of listing the tables.",
+      "classification_correct": true,
+      "elapsed_seconds": 2.948
+    },
+    {
+      "id": "false_chart",
+      "expected_pass": false,
+      "score": 0.0,
+      "reason": "The actual output fails to provide the requested five-bin histogram, instead claiming a technical issue and completion without any visual or numerical representation of the distribution, directly violating the requirement to render the histogram.",
+      "classification_correct": true,
+      "elapsed_seconds": 2.413
+    }
+  ],
+  "calibration_passed": false,
+  "limitations": [
+    "Twelve labelled controls only; passing does not establish broad judge reliability."
+  ]
+}

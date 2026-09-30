@@ -1,0 +1,164 @@
+{
+  "conversation": "3a87ac59-aa1f-44c5-a03d-e10a2eedf711",
+  "mode": "Actual Streamlit UI + actual Databricks, no seeded results",
+  "charts": [
+    {
+      "id": "e4833d84-92b4-4f97-a883-e1f94336f492",
+      "dataset_id": "db9a7e3d-0330-4b91-aacf-f09275089c9a",
+      "title": "age · 키별 최신행 분포",
+      "kind": "histogram",
+      "render_spec": {
+        "kind": "histogram",
+        "bins": 8,
+        "edges": [
+          23.0,
+          28.75,
+          34.5,
+          40.25,
+          46.0,
+          51.75,
+          57.5,
+          63.25,
+          69.0
+        ],
+        "counts": [
+          2,
+          2,
+          1,
+          4,
+          2,
+          0,
+          0,
+          1
+        ],
+        "aggregation": "prebinned",
+        "closed": "left; final bin includes right edge",
+        "data_digest": "61b75d3f6d0c2f8349f5682b1a6c49989a6028337ae73ed187663531b81f4238"
+      }
+    },
+    {
+      "id": "0b570a4e-9857-41fc-b162-e6896900da3e",
+      "dataset_id": "777c3978-aba4-492b-9a81-79b4fbfc8e9a",
+      "title": "age · 키별 최신행 분포",
+      "kind": "histogram",
+      "render_spec": {
+        "kind": "histogram",
+        "bins": 6,
+        "edges": [
+          23.0,
+          30.666666666666668,
+          38.333333333333336,
+          46.0,
+          53.66666666666667,
+          61.333333333333336,
+          69.0
+        ],
+        "counts": [
+          3,
+          2,
+          4,
+          2,
+          0,
+          1
+        ],
+        "aggregation": "prebinned",
+        "closed": "left; final bin includes right edge",
+        "data_digest": "09f3b9283eedc48bd699160e9bf751d535a78f8274aa3d689f0a35f013ccbe37"
+      }
+    }
+  ],
+  "datasets": [
+    {
+      "id": "44b242a8-9a1e-4b68-92d2-51fad22d5bad",
+      "source": "workspace.default.bank_loan",
+      "rows": 0,
+      "coverage": "unknown",
+      "snapshot": "2026-09-29T15:25:22.041790+00:00",
+      "parent_id": "",
+      "row_selection": {}
+    },
+    {
+      "id": "a725773f-3d03-4ad4-8907-45062cb3ad45",
+      "source": "workspace.default.bank_loan",
+      "rows": 9,
+      "coverage": "unknown",
+      "snapshot": "2026-09-29T15:25:34.984604+00:00",
+      "parent_id": "",
+      "row_selection": {}
+    },
+    {
+      "id": "db9a7e3d-0330-4b91-aacf-f09275089c9a",
+      "source": "workspace.default.bank_loan",
+      "rows": 8,
+      "coverage": "complete",
+      "snapshot": "2026-09-29T15:25:34.984604+00:00",
+      "parent_id": "a725773f-3d03-4ad4-8907-45062cb3ad45",
+      "row_selection": {
+        "kind": "remote_latest_per_key_distribution",
+        "key_columns": [
+          "job"
+        ],
+        "order_columns": [
+          "id"
+        ],
+        "descending": true,
+        "null_policy": "reject",
+        "tie_policy": "reject",
+        "input_result_id": "a725773f-3d03-4ad4-8907-45062cb3ad45",
+        "input_snapshot": "2026-09-29T15:25:34.984604+00:00"
+      }
+    },
+    {
+      "id": "c368a2e8-959e-444a-b94a-77a22ca61da3",
+      "source": "workspace.default.bank_loan",
+      "rows": 7,
+      "coverage": "unknown",
+      "snapshot": "2026-09-29T15:26:09.052868+00:00",
+      "parent_id": "",
+      "row_selection": {}
+    },
+    {
+      "id": "777c3978-aba4-492b-9a81-79b4fbfc8e9a",
+      "source": "workspace.default.bank_loan",
+      "rows": 6,
+      "coverage": "complete",
+      "snapshot": "2026-09-29T15:26:09.052868+00:00",
+      "parent_id": "c368a2e8-959e-444a-b94a-77a22ca61da3",
+      "row_selection": {
+        "kind": "remote_latest_per_key_distribution",
+        "key_columns": [
+          "job"
+        ],
+        "order_columns": [
+          "id"
+        ],
+        "descending": true,
+        "null_policy": "reject",
+        "tie_policy": "reject",
+        "input_result_id": "c368a2e8-959e-444a-b94a-77a22ca61da3",
+        "input_snapshot": "2026-09-29T15:26:09.052868+00:00"
+      }
+    }
+  ],
+  "remote_status_counts": {
+    "completed": 3
+  },
+  "sql_digests": [
+    "ec25e5690b665172f6f67a1f6b12c40bddf271ce3ecd0abb423324b4bf7655fa",
+    "dde9f79e9c8d227b661803ad04cd46f9393906cbd180189ce080ae579c570e3c",
+    "0ada929ef98d0c659469c06bdb6255e09d33329847a2f235e8b117f9e10bef96"
+  ],
+  "parquet_hashes": {
+    "c368a2e8-959e-444a-b94a-77a22ca61da3.parquet": "04d93ff81e0a1d09be370242e14c4cf52e1fb765fa2616e9e5571ec583eb3a70",
+    "a725773f-3d03-4ad4-8907-45062cb3ad45.parquet": "ed36ac1d945b53828c39fd9b536070a204293f0004c5296e7829e8840860c8ba",
+    "44b242a8-9a1e-4b68-92d2-51fad22d5bad.parquet": "3933192480108dbca076450e6e6a9013402052e79e2e8831f476686c64815fcb"
+  },
+  "checks": {
+    "fresh_schema_then_remote_8_bins": true,
+    "six_bin_followup_preserved_latest_12_keys": true,
+    "same_followup_reuses_without_sql": true,
+    "actual_images_visually_checked": true,
+    "selected_databricks_model_survives_browser_reload": true
+  },
+  "after_restart_preserved": true
+}

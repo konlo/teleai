@@ -1,0 +1,1630 @@
+{
+  "mode": "live-databricks-model",
+  "git_baseline": "8202d9e6bc479d4e3d3f315f49a6cc57fec5e998",
+  "data": "synthetic five-row fixture; production recovery enabled",
+  "warehouse_sql_executions": 0,
+  "results": [
+    {
+      "case": "scalar_chart",
+      "repeat": 1,
+      "prompt": "현재 로딩된 표본에서 `sensor reading` 평균과 히스토그램을 보여줘. \"missing\" 문자열만 결측값으로 처리해.",
+      "oracle": "mean=2.5; histogram",
+      "oracle_pass": true,
+      "status": "PASS",
+      "error_type": null,
+      "model_calls": 1,
+      "elapsed_seconds": 11.19,
+      "tools": [
+        "prepare_numeric_dataset",
+        "local_analysis_sql",
+        "render_chart_spec"
+      ],
+      "observations": [
+        {
+          "tool": "prepare_numeric_dataset",
+          "status": "ready",
+          "error_code": null
+        },
+        {
+          "tool": "local_analysis_sql",
+          "status": "ready",
+          "error_code": null
+        },
+        {
+          "tool": "render_chart_spec",
+          "status": "ready",
+          "error_code": null
+        }
+      ],
+      "chart_count": 1,
+      "call_details": [
+        {
+          "name": "prepare_numeric_dataset",
+          "args": {
+            "dataset_id": "f0bd4e44-dc11-43bc-ba26-c2bbc2fc44bc",
+            "columns": [
+              "sensor reading"
+            ],
+            "missing_values": [
+              "missing"
+            ],
+            "preserve_columns": [
+              "cohort"
+            ]
+          },
+          "id": "call_a5bcd905-eb6e-4b38-9aff-6b7d71b3e0bb",
+          "type": "tool_call"
+        },
+        {
+          "name": "local_analysis_sql",
+          "args": {
+            "dataset_id": "ba6a80a2-f96a-4490-9882-41f94a1bfc5b",
+            "query": "SELECT AVG(\"sensor reading\") AS average FROM data",
+            "current_result_only": true,
+            "requested_conditions": []
+          },
+          "id": "0833a73d-d3e5-4fb7-af86-5db721f12bca",
+          "type": "tool_call"
+        },
+        {
+          "name": "render_chart_spec",
+          "args": {
+            "dataset_id": "ba6a80a2-f96a-4490-9882-41f94a1bfc5b",
+            "kind": "histogram",
+            "x": "sensor reading"
+          },
+          "id": "061756df-9204-4830-a331-6827fb1cc726",
+          "type": "tool_call"
+        }
+      ],
+      "chart_specs": [
+        {
+          "kind": "histogram",
+          "x": "sensor reading",
+          "y": "",
+          "category": "",
+          "aggregation": "none",
+          "sort": "none",
+          "cumulative": false,
+          "top_n": 50,
+          "bins": 20,
+          "title": "sensor reading 분포",
+          "x_label": "sensor reading",
+          "y_label": "Count",
+          "orientation": "vertical"
+        }
+      ],
+      "chart_reasons": [
+        "유효값 4개를 20개 bin으로 표시했습니다."
+      ],
+      "intent": {
+        "profile_kind": null,
+        "calculation": true,
+        "operations": [
+          "AVG"
+        ],
+        "scalar_grouping": false,
+        "chart_spec_requested": false,
+        "required_columns": [
+          "sensor reading"
+        ]
+      },
+      "evidence": [
+        [
+          {
+            "average": 2.5
+          }
+        ]
+      ],
+      "raw_preserved": true,
+      "numeric_branch_bound": true,
+      "answer": "sensor reading 분포 이미지를 생성했습니다.\n분석 범위: 보유 5행 기준 · unknown · raw · 표시 데이터 4개 · 집계 none\n\n보유 데이터로 계산한 결과입니다. 출처: fixture.unseen_audit\n분석 범위: 현재 보유한 일부 데이터\n\n평균: 2.5\n\n수치 변환: sensor reading · 전체 5행 중 유효 값 4개 · 기존 결측 0개 · 명시한 문자열 결측 1개. Float64로 계산했으며 원본과 모든 행은 보존했습니다.",
+      "id": "scalar_chart:1",
+      "agent_status": "answered",
+      "final_output": "sensor reading 분포 이미지를 생성했습니다.\n분석 범위: 보유 5행 기준 · unknown · raw · 표시 데이터 4개 · 집계 none\n\n보유 데이터로 계산한 결과입니다. 출처: fixture.unseen_audit\n분석 범위: 현재 보유한 일부 데이터\n\n평균: 2.5\n\n수치 변환: sensor reading · 전체 5행 중 유효 값 4개 · 기존 결측 0개 · 명시한 문자열 결측 1개. Float64로 계산했으며 원본과 모든 행은 보존했습니다.",
+      "reference_facts": "mean=2.5; histogram",
+      "runtime_metadata": {
+        "recovery_model_calls": 1
+      },
+      "tool_calls": [
+        {
+          "tool": "prepare_numeric_dataset"
+        },
+        {
+          "tool": "local_analysis_sql"
+        },
+        {
+          "tool": "render_chart_spec"
+        }
+      ]
+    },
+    {
+      "case": "filtered_scalar_chart",
+      "repeat": 1,
+      "prompt": "현재 로딩된 표본에서 `sensor reading` >= 3인 행의 `sensor reading` 평균과 히스토그램을 보여줘. \"missing\" 문자열만 결측값으로 처리해.",
+      "oracle": "mean=3.5; histogram of 3,4",
+      "oracle_pass": true,
+      "status": "PASS",
+      "error_type": null,
+      "model_calls": 1,
+      "elapsed_seconds": 4.389,
+      "tools": [
+        "prepare_numeric_dataset",
+        "use_dataset",
+        "local_analysis_sql",
+        "render_chart_spec"
+      ],
+      "observations": [
+        {
+          "tool": "prepare_numeric_dataset",
+          "status": "ready",
+          "error_code": null
+        },
+        {
+          "tool": "use_dataset",
+          "status": "ready",
+          "error_code": null
+        },
+        {
+          "tool": "local_analysis_sql",
+          "status": "ready",
+          "error_code": null
+        },
+        {
+          "tool": "render_chart_spec",
+          "status": "ready",
+          "error_code": null
+        }
+      ],
+      "chart_count": 1,
+      "call_details": [
+        {
+          "name": "prepare_numeric_dataset",
+          "args": {
+            "dataset_id": "6ff23818-00b4-49a2-b93b-516769d68881",
+            "columns": [
+              "sensor reading"
+            ],
+            "missing_values": [
+              "missing"
+            ],
+            "preserve_columns": [
+              "cohort"
+            ]
+          },
+          "id": "call_730674d9-92a9-4203-9b26-4b2a9b8edcce",
+          "type": "tool_call"
+        },
+        {
+          "name": "use_dataset",
+          "args": {
+            "dataset_id": "e46a3259-4e99-48b9-ae20-93b149bf5a7f",
+            "columns": [
+              "sensor reading"
+            ],
+            "conditions": [
+              {
+                "column": "sensor reading",
+                "op": "ge",
+                "value": 3
+              }
+            ],
+            "current_result_only": true
+          },
+          "id": "aff546d9-3139-49c1-9241-0060ae4b3443",
+          "type": "tool_call"
+        },
+        {
+          "name": "local_analysis_sql",
+          "args": {
+            "dataset_id": "432c9292-96a1-42cc-8160-130d0f7ff27c",
+            "query": "SELECT AVG(\"sensor reading\") AS average FROM data",
+            "current_result_only": true,
+            "requested_conditions": [
+              {
+                "column": "sensor reading",
+                "op": "ge",
+                "value": 3
+              }
+            ]
+          },
+          "id": "3e661ca6-bc7e-49f7-9883-8cfd374e067f",
+          "type": "tool_call"
+        },
+        {
+          "name": "render_chart_spec",
+          "args": {
+            "dataset_id": "432c9292-96a1-42cc-8160-130d0f7ff27c",
+            "kind": "histogram",
+            "x": "sensor reading"
+          },
+          "id": "7120dd38-8bff-492c-bdd7-329d9f784e92",
+          "type": "tool_call"
+        }
+      ],
+      "chart_specs": [
+        {
+          "kind": "histogram",
+          "x": "sensor reading",
+          "y": "",
+          "category": "",
+          "aggregation": "none",
+          "sort": "none",
+          "cumulative": false,
+          "top_n": 50,
+          "bins": 20,
+          "title": "sensor reading 분포",
+          "x_label": "sensor reading",
+          "y_label": "Count",
+          "orientation": "vertical"
+        }
+      ],
+      "chart_reasons": [
+        "유효값 2개를 20개 bin으로 표시했습니다."
+      ],
+      "intent": {
+        "profile_kind": null,
+        "calculation": true,
+        "operations": [
+          "AVG"
+        ],
+        "scalar_grouping": false,
+        "chart_spec_requested": false,
+        "required_columns": [
+          "sensor reading"
+        ]
+      },
+      "evidence": [
+        [
+          {
+            "average": 3.5
+          }
+        ]
+      ],
+      "raw_preserved": true,
+      "numeric_branch_bound": true,
+      "answer": "sensor reading 분포 이미지를 생성했습니다.\n분석 범위: 보유 2행 기준 · unknown · raw · 표시 데이터 2개 · 집계 none\n\n보유 데이터로 계산한 결과입니다. 출처: fixture.unseen_audit\n분석 범위: 현재 보유한 일부 데이터\n\n적용 조건: sensor reading ≥ 3\n\n평균: 3.5\n\n수치 변환: sensor reading · 전체 5행 중 유효 값 4개 · 기존 결측 0개 · 명시한 문자열 결측 1개. Float64로 계산했으며 원본과 모든 행은 보존했습니다.",
+      "id": "filtered_scalar_chart:1",
+      "agent_status": "answered",
+      "final_output": "sensor reading 분포 이미지를 생성했습니다.\n분석 범위: 보유 2행 기준 · unknown · raw · 표시 데이터 2개 · 집계 none\n\n보유 데이터로 계산한 결과입니다. 출처: fixture.unseen_audit\n분석 범위: 현재 보유한 일부 데이터\n\n적용 조건: sensor reading ≥ 3\n\n평균: 3.5\n\n수치 변환: sensor reading · 전체 5행 중 유효 값 4개 · 기존 결측 0개 · 명시한 문자열 결측 1개. Float64로 계산했으며 원본과 모든 행은 보존했습니다.",
+      "reference_facts": "mean=3.5; histogram of 3,4",
+      "runtime_metadata": {
+        "recovery_model_calls": 1
+      },
+      "tool_calls": [
+        {
+          "tool": "prepare_numeric_dataset"
+        },
+        {
+          "tool": "use_dataset"
+        },
+        {
+          "tool": "local_analysis_sql"
+        },
+        {
+          "tool": "render_chart_spec"
+        }
+      ]
+    },
+    {
+      "case": "grouped_scalar",
+      "repeat": 1,
+      "prompt": "현재 로딩된 표본에서 `cohort`별로 `sensor reading` 평균을 알려줘. \"missing\" 문자열만 결측값으로 처리해.",
+      "oracle": "A=1.5; B=3.5",
+      "oracle_pass": true,
+      "status": "PASS",
+      "error_type": null,
+      "model_calls": 1,
+      "elapsed_seconds": 2.234,
+      "tools": [
+        "prepare_numeric_dataset",
+        "local_analysis_sql"
+      ],
+      "observations": [
+        {
+          "tool": "prepare_numeric_dataset",
+          "status": "ready",
+          "error_code": null
+        },
+        {
+          "tool": "local_analysis_sql",
+          "status": "ready",
+          "error_code": null
+        }
+      ],
+      "chart_count": 0,
+      "call_details": [
+        {
+          "name": "prepare_numeric_dataset",
+          "args": {
+            "dataset_id": "8d027653-ee18-4204-88d8-a17e559f6728",
+            "columns": [
+              "sensor reading"
+            ],
+            "missing_values": [
+              "missing"
+            ],
+            "preserve_columns": [
+              "cohort"
+            ]
+          },
+          "id": "call_f894e437-d704-4d15-b414-5eb20c70869c",
+          "type": "tool_call"
+        },
+        {
+          "name": "local_analysis_sql",
+          "args": {
+            "dataset_id": "6960904b-821b-4609-aa39-05e049077298",
+            "query": "SELECT \"cohort\", AVG(\"sensor reading\") AS average FROM data GROUP BY \"cohort\"",
+            "current_result_only": true,
+            "requested_conditions": []
+          },
+          "id": "9506c096-8037-489f-a09a-efc1a99feb49",
+          "type": "tool_call"
+        }
+      ],
+      "chart_specs": [],
+      "chart_reasons": [],
+      "intent": {
+        "profile_kind": null,
+        "calculation": true,
+        "operations": [
+          "AVG"
+        ],
+        "scalar_grouping": true,
+        "chart_spec_requested": false,
+        "required_columns": [
+          "cohort",
+          "sensor reading"
+        ]
+      },
+      "evidence": [
+        [
+          {
+            "cohort": "A",
+            "average": 1.5
+          },
+          {
+            "cohort": "B",
+            "average": 3.5
+          }
+        ]
+      ],
+      "raw_preserved": true,
+      "numeric_branch_bound": true,
+      "answer": "보유 데이터로 계산한 결과입니다. 출처: fixture.unseen_audit\n분석 범위: 현재 보유한 일부 데이터\n\n```csv\ncohort,average\nA,1.5\nB,3.5\n```\n\n수치 변환: sensor reading · 전체 5행 중 유효 값 4개 · 기존 결측 0개 · 명시한 문자열 결측 1개. Float64로 계산했으며 원본과 모든 행은 보존했습니다.",
+      "id": "grouped_scalar:1",
+      "agent_status": "answered",
+      "final_output": "보유 데이터로 계산한 결과입니다. 출처: fixture.unseen_audit\n분석 범위: 현재 보유한 일부 데이터\n\n```csv\ncohort,average\nA,1.5\nB,3.5\n```\n\n수치 변환: sensor reading · 전체 5행 중 유효 값 4개 · 기존 결측 0개 · 명시한 문자열 결측 1개. Float64로 계산했으며 원본과 모든 행은 보존했습니다.",
+      "reference_facts": "A=1.5; B=3.5",
+      "runtime_metadata": {
+        "recovery_model_calls": 1
+      },
+      "tool_calls": [
+        {
+          "tool": "prepare_numeric_dataset"
+        },
+        {
+          "tool": "local_analysis_sql"
+        }
+      ]
+    },
+    {
+      "case": "custom_chart",
+      "repeat": 1,
+      "prompt": "현재 로딩된 표본에서 `sensor reading` 평균과 구간 수 5개인 히스토그램을 보여줘. \"missing\" 문자열만 결측값으로 처리해.",
+      "oracle": "mean=2.5; histogram with 5 bins",
+      "oracle_pass": true,
+      "status": "PASS",
+      "error_type": null,
+      "model_calls": 1,
+      "elapsed_seconds": 1.849,
+      "tools": [
+        "prepare_numeric_dataset",
+        "local_analysis_sql",
+        "render_chart_spec"
+      ],
+      "observations": [
+        {
+          "tool": "prepare_numeric_dataset",
+          "status": "ready",
+          "error_code": null
+        },
+        {
+          "tool": "local_analysis_sql",
+          "status": "ready",
+          "error_code": null
+        },
+        {
+          "tool": "render_chart_spec",
+          "status": "ready",
+          "error_code": null
+        }
+      ],
+      "chart_count": 1,
+      "call_details": [
+        {
+          "name": "prepare_numeric_dataset",
+          "args": {
+            "dataset_id": "f388d2f1-c42f-4579-ae92-eb7beab9ea07",
+            "columns": [
+              "sensor reading"
+            ],
+            "missing_values": [
+              "missing"
+            ]
+          },
+          "id": "call_bf31c21f-4edb-4c05-9e20-ecf72eb89fa3",
+          "type": "tool_call"
+        },
+        {
+          "name": "local_analysis_sql",
+          "args": {
+            "dataset_id": "512fc190-54ba-4833-93b7-c08679cc03a8",
+            "query": "SELECT AVG(\"sensor reading\") AS average FROM data",
+            "current_result_only": true,
+            "requested_conditions": []
+          },
+          "id": "6a7dd7ec-02e4-459f-860e-3fa9382c083a",
+          "type": "tool_call"
+        },
+        {
+          "name": "render_chart_spec",
+          "args": {
+            "dataset_id": "512fc190-54ba-4833-93b7-c08679cc03a8",
+            "kind": "histogram",
+            "x": "sensor reading",
+            "bins": 5
+          },
+          "id": "5a5e565b-4513-4c9b-af09-80524b99bc79",
+          "type": "tool_call"
+        }
+      ],
+      "chart_specs": [
+        {
+          "kind": "histogram",
+          "x": "sensor reading",
+          "y": "",
+          "category": "",
+          "aggregation": "none",
+          "sort": "none",
+          "cumulative": false,
+          "top_n": 50,
+          "bins": 5,
+          "title": "sensor reading 분포",
+          "x_label": "sensor reading",
+          "y_label": "Count",
+          "orientation": "vertical"
+        }
+      ],
+      "chart_reasons": [
+        "유효값 4개를 5개 bin으로 표시했습니다."
+      ],
+      "intent": {
+        "profile_kind": null,
+        "calculation": true,
+        "operations": [
+          "AVG"
+        ],
+        "scalar_grouping": false,
+        "chart_spec_requested": true,
+        "required_columns": [
+          "sensor reading"
+        ]
+      },
+      "evidence": [
+        [
+          {
+            "average": 2.5
+          }
+        ]
+      ],
+      "raw_preserved": true,
+      "numeric_branch_bound": true,
+      "answer": "sensor reading 분포 이미지를 생성했습니다.\n분석 범위: 보유 5행 기준 · unknown · raw · 표시 데이터 4개 · 집계 none\n\n보유 데이터로 계산한 결과입니다. 출처: fixture.unseen_audit\n분석 범위: 현재 보유한 일부 데이터\n\n평균: 2.5\n\n수치 변환: sensor reading · 전체 5행 중 유효 값 4개 · 기존 결측 0개 · 명시한 문자열 결측 1개. Float64로 계산했으며 원본과 모든 행은 보존했습니다.",
+      "id": "custom_chart:1",
+      "agent_status": "answered",
+      "final_output": "sensor reading 분포 이미지를 생성했습니다.\n분석 범위: 보유 5행 기준 · unknown · raw · 표시 데이터 4개 · 집계 none\n\n보유 데이터로 계산한 결과입니다. 출처: fixture.unseen_audit\n분석 범위: 현재 보유한 일부 데이터\n\n평균: 2.5\n\n수치 변환: sensor reading · 전체 5행 중 유효 값 4개 · 기존 결측 0개 · 명시한 문자열 결측 1개. Float64로 계산했으며 원본과 모든 행은 보존했습니다.",
+      "reference_facts": "mean=2.5; histogram with 5 bins",
+      "runtime_metadata": {
+        "recovery_model_calls": 1
+      },
+      "tool_calls": [
+        {
+          "tool": "prepare_numeric_dataset"
+        },
+        {
+          "tool": "local_analysis_sql"
+        },
+        {
+          "tool": "render_chart_spec"
+        }
+      ]
+    },
+    {
+      "case": "scalar_chart",
+      "repeat": 2,
+      "prompt": "현재 로딩된 표본에서 `sensor reading` 평균과 히스토그램을 보여줘. \"missing\" 문자열만 결측값으로 처리해.",
+      "oracle": "mean=2.5; histogram",
+      "oracle_pass": true,
+      "status": "PASS",
+      "error_type": null,
+      "model_calls": 1,
+      "elapsed_seconds": 2.157,
+      "tools": [
+        "prepare_numeric_dataset",
+        "local_analysis_sql",
+        "render_chart_spec"
+      ],
+      "observations": [
+        {
+          "tool": "prepare_numeric_dataset",
+          "status": "ready",
+          "error_code": null
+        },
+        {
+          "tool": "local_analysis_sql",
+          "status": "ready",
+          "error_code": null
+        },
+        {
+          "tool": "render_chart_spec",
+          "status": "ready",
+          "error_code": null
+        }
+      ],
+      "chart_count": 1,
+      "call_details": [
+        {
+          "name": "prepare_numeric_dataset",
+          "args": {
+            "dataset_id": "eb1c396e-e64f-43c4-86cb-c84bb4974968",
+            "columns": [
+              "sensor reading"
+            ],
+            "missing_values": [
+              "missing"
+            ],
+            "preserve_columns": [
+              "cohort"
+            ]
+          },
+          "id": "call_c5a3c0e8-b777-4f0f-85cf-dba2f5531b91",
+          "type": "tool_call"
+        },
+        {
+          "name": "local_analysis_sql",
+          "args": {
+            "dataset_id": "91faf3b6-cfdd-46ee-8804-470fb16c8cbc",
+            "query": "SELECT AVG(\"sensor reading\") AS average FROM data",
+            "current_result_only": true,
+            "requested_conditions": []
+          },
+          "id": "cbb07195-6e60-47ea-ac20-c1fd7cb807ab",
+          "type": "tool_call"
+        },
+        {
+          "name": "render_chart_spec",
+          "args": {
+            "dataset_id": "91faf3b6-cfdd-46ee-8804-470fb16c8cbc",
+            "kind": "histogram",
+            "x": "sensor reading"
+          },
+          "id": "ac213063-8793-4251-ba07-36012b0dce8e",
+          "type": "tool_call"
+        }
+      ],
+      "chart_specs": [
+        {
+          "kind": "histogram",
+          "x": "sensor reading",
+          "y": "",
+          "category": "",
+          "aggregation": "none",
+          "sort": "none",
+          "cumulative": false,
+          "top_n": 50,
+          "bins": 20,
+          "title": "sensor reading 분포",
+          "x_label": "sensor reading",
+          "y_label": "Count",
+          "orientation": "vertical"
+        }
+      ],
+      "chart_reasons": [
+        "유효값 4개를 20개 bin으로 표시했습니다."
+      ],
+      "intent": {
+        "profile_kind": null,
+        "calculation": true,
+        "operations": [
+          "AVG"
+        ],
+        "scalar_grouping": false,
+        "chart_spec_requested": false,
+        "required_columns": [
+          "sensor reading"
+        ]
+      },
+      "evidence": [
+        [
+          {
+            "average": 2.5
+          }
+        ]
+      ],
+      "raw_preserved": true,
+      "numeric_branch_bound": true,
+      "answer": "sensor reading 분포 이미지를 생성했습니다.\n분석 범위: 보유 5행 기준 · unknown · raw · 표시 데이터 4개 · 집계 none\n\n보유 데이터로 계산한 결과입니다. 출처: fixture.unseen_audit\n분석 범위: 현재 보유한 일부 데이터\n\n평균: 2.5\n\n수치 변환: sensor reading · 전체 5행 중 유효 값 4개 · 기존 결측 0개 · 명시한 문자열 결측 1개. Float64로 계산했으며 원본과 모든 행은 보존했습니다.",
+      "id": "scalar_chart:2",
+      "agent_status": "answered",
+      "final_output": "sensor reading 분포 이미지를 생성했습니다.\n분석 범위: 보유 5행 기준 · unknown · raw · 표시 데이터 4개 · 집계 none\n\n보유 데이터로 계산한 결과입니다. 출처: fixture.unseen_audit\n분석 범위: 현재 보유한 일부 데이터\n\n평균: 2.5\n\n수치 변환: sensor reading · 전체 5행 중 유효 값 4개 · 기존 결측 0개 · 명시한 문자열 결측 1개. Float64로 계산했으며 원본과 모든 행은 보존했습니다.",
+      "reference_facts": "mean=2.5; histogram",
+      "runtime_metadata": {
+        "recovery_model_calls": 1
+      },
+      "tool_calls": [
+        {
+          "tool": "prepare_numeric_dataset"
+        },
+        {
+          "tool": "local_analysis_sql"
+        },
+        {
+          "tool": "render_chart_spec"
+        }
+      ]
+    },
+    {
+      "case": "filtered_scalar_chart",
+      "repeat": 2,
+      "prompt": "현재 로딩된 표본에서 `sensor reading` >= 3인 행의 `sensor reading` 평균과 히스토그램을 보여줘. \"missing\" 문자열만 결측값으로 처리해.",
+      "oracle": "mean=3.5; histogram of 3,4",
+      "oracle_pass": true,
+      "status": "PASS",
+      "error_type": null,
+      "model_calls": 1,
+      "elapsed_seconds": 2.937,
+      "tools": [
+        "prepare_numeric_dataset",
+        "use_dataset",
+        "local_analysis_sql",
+        "render_chart_spec"
+      ],
+      "observations": [
+        {
+          "tool": "prepare_numeric_dataset",
+          "status": "ready",
+          "error_code": null
+        },
+        {
+          "tool": "use_dataset",
+          "status": "ready",
+          "error_code": null
+        },
+        {
+          "tool": "local_analysis_sql",
+          "status": "ready",
+          "error_code": null
+        },
+        {
+          "tool": "render_chart_spec",
+          "status": "ready",
+          "error_code": null
+        }
+      ],
+      "chart_count": 1,
+      "call_details": [
+        {
+          "name": "prepare_numeric_dataset",
+          "args": {
+            "dataset_id": "4dacc772-f20a-42ea-bb83-b201fc6fcbb1",
+            "columns": [
+              "sensor reading"
+            ],
+            "missing_values": [
+              "missing"
+            ],
+            "preserve_columns": [
+              "cohort"
+            ]
+          },
+          "id": "call_02724d18-edfb-4049-82a9-0f6cd99a08c0",
+          "type": "tool_call"
+        },
+        {
+          "name": "use_dataset",
+          "args": {
+            "dataset_id": "5b03fbd3-2455-42d4-be9f-2944b1fe5d51",
+            "columns": [
+              "sensor reading"
+            ],
+            "conditions": [
+              {
+                "column": "sensor reading",
+                "op": "ge",
+                "value": 3
+              }
+            ],
+            "current_result_only": true
+          },
+          "id": "2be1f616-fc96-4459-bf2d-3780748acf6a",
+          "type": "tool_call"
+        },
+        {
+          "name": "local_analysis_sql",
+          "args": {
+            "dataset_id": "1f156dad-666d-451e-864b-e92119b37d5f",
+            "query": "SELECT AVG(\"sensor reading\") AS average FROM data",
+            "current_result_only": true,
+            "requested_conditions": [
+              {
+                "column": "sensor reading",
+                "op": "ge",
+                "value": 3
+              }
+            ]
+          },
+          "id": "a78b2eae-f1b8-4704-8939-69e1d0da3aa8",
+          "type": "tool_call"
+        },
+        {
+          "name": "render_chart_spec",
+          "args": {
+            "dataset_id": "1f156dad-666d-451e-864b-e92119b37d5f",
+            "kind": "histogram",
+            "x": "sensor reading"
+          },
+          "id": "1b91a6bd-9db2-4de4-893e-d563a83d0f2d",
+          "type": "tool_call"
+        }
+      ],
+      "chart_specs": [
+        {
+          "kind": "histogram",
+          "x": "sensor reading",
+          "y": "",
+          "category": "",
+          "aggregation": "none",
+          "sort": "none",
+          "cumulative": false,
+          "top_n": 50,
+          "bins": 20,
+          "title": "sensor reading 분포",
+          "x_label": "sensor reading",
+          "y_label": "Count",
+          "orientation": "vertical"
+        }
+      ],
+      "chart_reasons": [
+        "유효값 2개를 20개 bin으로 표시했습니다."
+      ],
+      "intent": {
+        "profile_kind": null,
+        "calculation": true,
+        "operations": [
+          "AVG"
+        ],
+        "scalar_grouping": false,
+        "chart_spec_requested": false,
+        "required_columns": [
+          "sensor reading"
+        ]
+      },
+      "evidence": [
+        [
+          {
+            "average": 3.5
+          }
+        ]
+      ],
+      "raw_preserved": true,
+      "numeric_branch_bound": true,
+      "answer": "sensor reading 분포 이미지를 생성했습니다.\n분석 범위: 보유 2행 기준 · unknown · raw · 표시 데이터 2개 · 집계 none\n\n보유 데이터로 계산한 결과입니다. 출처: fixture.unseen_audit\n분석 범위: 현재 보유한 일부 데이터\n\n적용 조건: sensor reading ≥ 3\n\n평균: 3.5\n\n수치 변환: sensor reading · 전체 5행 중 유효 값 4개 · 기존 결측 0개 · 명시한 문자열 결측 1개. Float64로 계산했으며 원본과 모든 행은 보존했습니다.",
+      "id": "filtered_scalar_chart:2",
+      "agent_status": "answered",
+      "final_output": "sensor reading 분포 이미지를 생성했습니다.\n분석 범위: 보유 2행 기준 · unknown · raw · 표시 데이터 2개 · 집계 none\n\n보유 데이터로 계산한 결과입니다. 출처: fixture.unseen_audit\n분석 범위: 현재 보유한 일부 데이터\n\n적용 조건: sensor reading ≥ 3\n\n평균: 3.5\n\n수치 변환: sensor reading · 전체 5행 중 유효 값 4개 · 기존 결측 0개 · 명시한 문자열 결측 1개. Float64로 계산했으며 원본과 모든 행은 보존했습니다.",
+      "reference_facts": "mean=3.5; histogram of 3,4",
+      "runtime_metadata": {
+        "recovery_model_calls": 1
+      },
+      "tool_calls": [
+        {
+          "tool": "prepare_numeric_dataset"
+        },
+        {
+          "tool": "use_dataset"
+        },
+        {
+          "tool": "local_analysis_sql"
+        },
+        {
+          "tool": "render_chart_spec"
+        }
+      ]
+    },
+    {
+      "case": "grouped_scalar",
+      "repeat": 2,
+      "prompt": "현재 로딩된 표본에서 `cohort`별로 `sensor reading` 평균을 알려줘. \"missing\" 문자열만 결측값으로 처리해.",
+      "oracle": "A=1.5; B=3.5",
+      "oracle_pass": true,
+      "status": "PASS",
+      "error_type": null,
+      "model_calls": 1,
+      "elapsed_seconds": 2.216,
+      "tools": [
+        "prepare_numeric_dataset",
+        "local_analysis_sql"
+      ],
+      "observations": [
+        {
+          "tool": "prepare_numeric_dataset",
+          "status": "ready",
+          "error_code": null
+        },
+        {
+          "tool": "local_analysis_sql",
+          "status": "ready",
+          "error_code": null
+        }
+      ],
+      "chart_count": 0,
+      "call_details": [
+        {
+          "name": "prepare_numeric_dataset",
+          "args": {
+            "dataset_id": "d99ab05d-26e1-4623-a323-e37a7c71a0d1",
+            "columns": [
+              "sensor reading"
+            ],
+            "missing_values": [
+              "missing"
+            ],
+            "preserve_columns": [
+              "cohort"
+            ]
+          },
+          "id": "call_e4ec5c97-46fb-46e8-a174-31f18eff463d",
+          "type": "tool_call"
+        },
+        {
+          "name": "local_analysis_sql",
+          "args": {
+            "dataset_id": "29ad1e98-c16a-462b-b1aa-e8db79870bb8",
+            "query": "SELECT \"cohort\", AVG(\"sensor reading\") AS average FROM data GROUP BY \"cohort\"",
+            "current_result_only": true,
+            "requested_conditions": []
+          },
+          "id": "b69b0d69-a2e9-45c6-aa34-e2622a430f9c",
+          "type": "tool_call"
+        }
+      ],
+      "chart_specs": [],
+      "chart_reasons": [],
+      "intent": {
+        "profile_kind": null,
+        "calculation": true,
+        "operations": [
+          "AVG"
+        ],
+        "scalar_grouping": true,
+        "chart_spec_requested": false,
+        "required_columns": [
+          "cohort",
+          "sensor reading"
+        ]
+      },
+      "evidence": [
+        [
+          {
+            "cohort": "A",
+            "average": 1.5
+          },
+          {
+            "cohort": "B",
+            "average": 3.5
+          }
+        ]
+      ],
+      "raw_preserved": true,
+      "numeric_branch_bound": true,
+      "answer": "보유 데이터로 계산한 결과입니다. 출처: fixture.unseen_audit\n분석 범위: 현재 보유한 일부 데이터\n\n```csv\ncohort,average\nA,1.5\nB,3.5\n```\n\n수치 변환: sensor reading · 전체 5행 중 유효 값 4개 · 기존 결측 0개 · 명시한 문자열 결측 1개. Float64로 계산했으며 원본과 모든 행은 보존했습니다.",
+      "id": "grouped_scalar:2",
+      "agent_status": "answered",
+      "final_output": "보유 데이터로 계산한 결과입니다. 출처: fixture.unseen_audit\n분석 범위: 현재 보유한 일부 데이터\n\n```csv\ncohort,average\nA,1.5\nB,3.5\n```\n\n수치 변환: sensor reading · 전체 5행 중 유효 값 4개 · 기존 결측 0개 · 명시한 문자열 결측 1개. Float64로 계산했으며 원본과 모든 행은 보존했습니다.",
+      "reference_facts": "A=1.5; B=3.5",
+      "runtime_metadata": {
+        "recovery_model_calls": 1
+      },
+      "tool_calls": [
+        {
+          "tool": "prepare_numeric_dataset"
+        },
+        {
+          "tool": "local_analysis_sql"
+        }
+      ]
+    },
+    {
+      "case": "custom_chart",
+      "repeat": 2,
+      "prompt": "현재 로딩된 표본에서 `sensor reading` 평균과 구간 수 5개인 히스토그램을 보여줘. \"missing\" 문자열만 결측값으로 처리해.",
+      "oracle": "mean=2.5; histogram with 5 bins",
+      "oracle_pass": true,
+      "status": "PASS",
+      "error_type": null,
+      "model_calls": 1,
+      "elapsed_seconds": 2.283,
+      "tools": [
+        "prepare_numeric_dataset",
+        "local_analysis_sql",
+        "render_chart_spec"
+      ],
+      "observations": [
+        {
+          "tool": "prepare_numeric_dataset",
+          "status": "ready",
+          "error_code": null
+        },
+        {
+          "tool": "local_analysis_sql",
+          "status": "ready",
+          "error_code": null
+        },
+        {
+          "tool": "render_chart_spec",
+          "status": "ready",
+          "error_code": null
+        }
+      ],
+      "chart_count": 1,
+      "call_details": [
+        {
+          "name": "prepare_numeric_dataset",
+          "args": {
+            "dataset_id": "efb55427-ec52-4846-9c09-6541f7d9d24d",
+            "columns": [
+              "sensor reading"
+            ],
+            "missing_values": [
+              "missing"
+            ],
+            "preserve_columns": [
+              "cohort"
+            ]
+          },
+          "id": "call_fbf1d8f8-bddb-4422-b003-b6b3f3c0dc09",
+          "type": "tool_call"
+        },
+        {
+          "name": "local_analysis_sql",
+          "args": {
+            "dataset_id": "d2fc1a4a-10f1-4bd1-9756-8a5c4d8d9f66",
+            "query": "SELECT AVG(\"sensor reading\") AS average FROM data",
+            "current_result_only": true,
+            "requested_conditions": []
+          },
+          "id": "e18e3855-2155-4915-8907-974c3742d567",
+          "type": "tool_call"
+        },
+        {
+          "name": "render_chart_spec",
+          "args": {
+            "dataset_id": "d2fc1a4a-10f1-4bd1-9756-8a5c4d8d9f66",
+            "kind": "histogram",
+            "x": "sensor reading",
+            "bins": 5
+          },
+          "id": "0bdb6eee-5778-498f-8142-e2255b058562",
+          "type": "tool_call"
+        }
+      ],
+      "chart_specs": [
+        {
+          "kind": "histogram",
+          "x": "sensor reading",
+          "y": "",
+          "category": "",
+          "aggregation": "none",
+          "sort": "none",
+          "cumulative": false,
+          "top_n": 50,
+          "bins": 5,
+          "title": "sensor reading 분포",
+          "x_label": "sensor reading",
+          "y_label": "Count",
+          "orientation": "vertical"
+        }
+      ],
+      "chart_reasons": [
+        "유효값 4개를 5개 bin으로 표시했습니다."
+      ],
+      "intent": {
+        "profile_kind": null,
+        "calculation": true,
+        "operations": [
+          "AVG"
+        ],
+        "scalar_grouping": false,
+        "chart_spec_requested": true,
+        "required_columns": [
+          "sensor reading"
+        ]
+      },
+      "evidence": [
+        [
+          {
+            "average": 2.5
+          }
+        ]
+      ],
+      "raw_preserved": true,
+      "numeric_branch_bound": true,
+      "answer": "sensor reading 분포 이미지를 생성했습니다.\n분석 범위: 보유 5행 기준 · unknown · raw · 표시 데이터 4개 · 집계 none\n\n보유 데이터로 계산한 결과입니다. 출처: fixture.unseen_audit\n분석 범위: 현재 보유한 일부 데이터\n\n평균: 2.5\n\n수치 변환: sensor reading · 전체 5행 중 유효 값 4개 · 기존 결측 0개 · 명시한 문자열 결측 1개. Float64로 계산했으며 원본과 모든 행은 보존했습니다.",
+      "id": "custom_chart:2",
+      "agent_status": "answered",
+      "final_output": "sensor reading 분포 이미지를 생성했습니다.\n분석 범위: 보유 5행 기준 · unknown · raw · 표시 데이터 4개 · 집계 none\n\n보유 데이터로 계산한 결과입니다. 출처: fixture.unseen_audit\n분석 범위: 현재 보유한 일부 데이터\n\n평균: 2.5\n\n수치 변환: sensor reading · 전체 5행 중 유효 값 4개 · 기존 결측 0개 · 명시한 문자열 결측 1개. Float64로 계산했으며 원본과 모든 행은 보존했습니다.",
+      "reference_facts": "mean=2.5; histogram with 5 bins",
+      "runtime_metadata": {
+        "recovery_model_calls": 1
+      },
+      "tool_calls": [
+        {
+          "tool": "prepare_numeric_dataset"
+        },
+        {
+          "tool": "local_analysis_sql"
+        },
+        {
+          "tool": "render_chart_spec"
+        }
+      ]
+    },
+    {
+      "case": "scalar_chart",
+      "repeat": 3,
+      "prompt": "현재 로딩된 표본에서 `sensor reading` 평균과 히스토그램을 보여줘. \"missing\" 문자열만 결측값으로 처리해.",
+      "oracle": "mean=2.5; histogram",
+      "oracle_pass": true,
+      "status": "PASS",
+      "error_type": null,
+      "model_calls": 1,
+      "elapsed_seconds": 2.576,
+      "tools": [
+        "prepare_numeric_dataset",
+        "local_analysis_sql",
+        "render_chart_spec"
+      ],
+      "observations": [
+        {
+          "tool": "prepare_numeric_dataset",
+          "status": "ready",
+          "error_code": null
+        },
+        {
+          "tool": "local_analysis_sql",
+          "status": "ready",
+          "error_code": null
+        },
+        {
+          "tool": "render_chart_spec",
+          "status": "ready",
+          "error_code": null
+        }
+      ],
+      "chart_count": 1,
+      "call_details": [
+        {
+          "name": "prepare_numeric_dataset",
+          "args": {
+            "dataset_id": "d5cf34ac-3200-41e0-a045-19d229e07b20",
+            "columns": [
+              "sensor reading"
+            ],
+            "missing_values": [
+              "missing"
+            ]
+          },
+          "id": "call_cc1569f0-e278-4789-afdd-ad61d043e00a",
+          "type": "tool_call"
+        },
+        {
+          "name": "local_analysis_sql",
+          "args": {
+            "dataset_id": "d2d2c383-ba91-4655-a37d-36ff13718a34",
+            "query": "SELECT AVG(\"sensor reading\") AS average FROM data",
+            "current_result_only": true,
+            "requested_conditions": []
+          },
+          "id": "5c5fc0be-c1aa-47cc-8776-3cba625eed11",
+          "type": "tool_call"
+        },
+        {
+          "name": "render_chart_spec",
+          "args": {
+            "dataset_id": "d2d2c383-ba91-4655-a37d-36ff13718a34",
+            "kind": "histogram",
+            "x": "sensor reading"
+          },
+          "id": "33d2d8d1-1c4e-454c-95a7-d6aede12f488",
+          "type": "tool_call"
+        }
+      ],
+      "chart_specs": [
+        {
+          "kind": "histogram",
+          "x": "sensor reading",
+          "y": "",
+          "category": "",
+          "aggregation": "none",
+          "sort": "none",
+          "cumulative": false,
+          "top_n": 50,
+          "bins": 20,
+          "title": "sensor reading 분포",
+          "x_label": "sensor reading",
+          "y_label": "Count",
+          "orientation": "vertical"
+        }
+      ],
+      "chart_reasons": [
+        "유효값 4개를 20개 bin으로 표시했습니다."
+      ],
+      "intent": {
+        "profile_kind": null,
+        "calculation": true,
+        "operations": [
+          "AVG"
+        ],
+        "scalar_grouping": false,
+        "chart_spec_requested": false,
+        "required_columns": [
+          "sensor reading"
+        ]
+      },
+      "evidence": [
+        [
+          {
+            "average": 2.5
+          }
+        ]
+      ],
+      "raw_preserved": true,
+      "numeric_branch_bound": true,
+      "answer": "sensor reading 분포 이미지를 생성했습니다.\n분석 범위: 보유 5행 기준 · unknown · raw · 표시 데이터 4개 · 집계 none\n\n보유 데이터로 계산한 결과입니다. 출처: fixture.unseen_audit\n분석 범위: 현재 보유한 일부 데이터\n\n평균: 2.5\n\n수치 변환: sensor reading · 전체 5행 중 유효 값 4개 · 기존 결측 0개 · 명시한 문자열 결측 1개. Float64로 계산했으며 원본과 모든 행은 보존했습니다.",
+      "id": "scalar_chart:3",
+      "agent_status": "answered",
+      "final_output": "sensor reading 분포 이미지를 생성했습니다.\n분석 범위: 보유 5행 기준 · unknown · raw · 표시 데이터 4개 · 집계 none\n\n보유 데이터로 계산한 결과입니다. 출처: fixture.unseen_audit\n분석 범위: 현재 보유한 일부 데이터\n\n평균: 2.5\n\n수치 변환: sensor reading · 전체 5행 중 유효 값 4개 · 기존 결측 0개 · 명시한 문자열 결측 1개. Float64로 계산했으며 원본과 모든 행은 보존했습니다.",
+      "reference_facts": "mean=2.5; histogram",
+      "runtime_metadata": {
+        "recovery_model_calls": 1
+      },
+      "tool_calls": [
+        {
+          "tool": "prepare_numeric_dataset"
+        },
+        {
+          "tool": "local_analysis_sql"
+        },
+        {
+          "tool": "render_chart_spec"
+        }
+      ]
+    },
+    {
+      "case": "filtered_scalar_chart",
+      "repeat": 3,
+      "prompt": "현재 로딩된 표본에서 `sensor reading` >= 3인 행의 `sensor reading` 평균과 히스토그램을 보여줘. \"missing\" 문자열만 결측값으로 처리해.",
+      "oracle": "mean=3.5; histogram of 3,4",
+      "oracle_pass": true,
+      "status": "PASS",
+      "error_type": null,
+      "model_calls": 1,
+      "elapsed_seconds": 3.347,
+      "tools": [
+        "prepare_numeric_dataset",
+        "use_dataset",
+        "local_analysis_sql",
+        "render_chart_spec"
+      ],
+      "observations": [
+        {
+          "tool": "prepare_numeric_dataset",
+          "status": "ready",
+          "error_code": null
+        },
+        {
+          "tool": "use_dataset",
+          "status": "ready",
+          "error_code": null
+        },
+        {
+          "tool": "local_analysis_sql",
+          "status": "ready",
+          "error_code": null
+        },
+        {
+          "tool": "render_chart_spec",
+          "status": "ready",
+          "error_code": null
+        }
+      ],
+      "chart_count": 1,
+      "call_details": [
+        {
+          "name": "prepare_numeric_dataset",
+          "args": {
+            "dataset_id": "7aca6cf1-dd3a-4951-979f-7b571eeda6a6",
+            "columns": [
+              "sensor reading"
+            ],
+            "missing_values": [
+              "missing"
+            ],
+            "preserve_columns": [
+              "cohort"
+            ]
+          },
+          "id": "call_83c2d210-ef78-4747-a4e5-d488ece5e57e",
+          "type": "tool_call"
+        },
+        {
+          "name": "use_dataset",
+          "args": {
+            "dataset_id": "917e050c-c557-4575-8119-06fdd75f6ad0",
+            "columns": [
+              "sensor reading"
+            ],
+            "conditions": [
+              {
+                "column": "sensor reading",
+                "op": "ge",
+                "value": 3
+              }
+            ],
+            "current_result_only": true
+          },
+          "id": "f0583438-5c71-4555-8b2e-da882037cc6a",
+          "type": "tool_call"
+        },
+        {
+          "name": "local_analysis_sql",
+          "args": {
+            "dataset_id": "2e5cf3ca-5d23-4fbe-9a07-dd6971182f07",
+            "query": "SELECT AVG(\"sensor reading\") AS average FROM data",
+            "current_result_only": true,
+            "requested_conditions": [
+              {
+                "column": "sensor reading",
+                "op": "ge",
+                "value": 3
+              }
+            ]
+          },
+          "id": "c4eeafb5-aaef-49d6-be19-de849cc90793",
+          "type": "tool_call"
+        },
+        {
+          "name": "render_chart_spec",
+          "args": {
+            "dataset_id": "2e5cf3ca-5d23-4fbe-9a07-dd6971182f07",
+            "kind": "histogram",
+            "x": "sensor reading"
+          },
+          "id": "bb9db681-301e-4af9-a9f5-0863a74cbf98",
+          "type": "tool_call"
+        }
+      ],
+      "chart_specs": [
+        {
+          "kind": "histogram",
+          "x": "sensor reading",
+          "y": "",
+          "category": "",
+          "aggregation": "none",
+          "sort": "none",
+          "cumulative": false,
+          "top_n": 50,
+          "bins": 20,
+          "title": "sensor reading 분포",
+          "x_label": "sensor reading",
+          "y_label": "Count",
+          "orientation": "vertical"
+        }
+      ],
+      "chart_reasons": [
+        "유효값 2개를 20개 bin으로 표시했습니다."
+      ],
+      "intent": {
+        "profile_kind": null,
+        "calculation": true,
+        "operations": [
+          "AVG"
+        ],
+        "scalar_grouping": false,
+        "chart_spec_requested": false,
+        "required_columns": [
+          "sensor reading"
+        ]
+      },
+      "evidence": [
+        [
+          {
+            "average": 3.5
+          }
+        ]
+      ],
+      "raw_preserved": true,
+      "numeric_branch_bound": true,
+      "answer": "sensor reading 분포 이미지를 생성했습니다.\n분석 범위: 보유 2행 기준 · unknown · raw · 표시 데이터 2개 · 집계 none\n\n보유 데이터로 계산한 결과입니다. 출처: fixture.unseen_audit\n분석 범위: 현재 보유한 일부 데이터\n\n적용 조건: sensor reading ≥ 3\n\n평균: 3.5\n\n수치 변환: sensor reading · 전체 5행 중 유효 값 4개 · 기존 결측 0개 · 명시한 문자열 결측 1개. Float64로 계산했으며 원본과 모든 행은 보존했습니다.",
+      "id": "filtered_scalar_chart:3",
+      "agent_status": "answered",
+      "final_output": "sensor reading 분포 이미지를 생성했습니다.\n분석 범위: 보유 2행 기준 · unknown · raw · 표시 데이터 2개 · 집계 none\n\n보유 데이터로 계산한 결과입니다. 출처: fixture.unseen_audit\n분석 범위: 현재 보유한 일부 데이터\n\n적용 조건: sensor reading ≥ 3\n\n평균: 3.5\n\n수치 변환: sensor reading · 전체 5행 중 유효 값 4개 · 기존 결측 0개 · 명시한 문자열 결측 1개. Float64로 계산했으며 원본과 모든 행은 보존했습니다.",
+      "reference_facts": "mean=3.5; histogram of 3,4",
+      "runtime_metadata": {
+        "recovery_model_calls": 1
+      },
+      "tool_calls": [
+        {
+          "tool": "prepare_numeric_dataset"
+        },
+        {
+          "tool": "use_dataset"
+        },
+        {
+          "tool": "local_analysis_sql"
+        },
+        {
+          "tool": "render_chart_spec"
+        }
+      ]
+    },
+    {
+      "case": "grouped_scalar",
+      "repeat": 3,
+      "prompt": "현재 로딩된 표본에서 `cohort`별로 `sensor reading` 평균을 알려줘. \"missing\" 문자열만 결측값으로 처리해.",
+      "oracle": "A=1.5; B=3.5",
+      "oracle_pass": true,
+      "status": "PASS",
+      "error_type": null,
+      "model_calls": 1,
+      "elapsed_seconds": 2.219,
+      "tools": [
+        "prepare_numeric_dataset",
+        "local_analysis_sql"
+      ],
+      "observations": [
+        {
+          "tool": "prepare_numeric_dataset",
+          "status": "ready",
+          "error_code": null
+        },
+        {
+          "tool": "local_analysis_sql",
+          "status": "ready",
+          "error_code": null
+        }
+      ],
+      "chart_count": 0,
+      "call_details": [
+        {
+          "name": "prepare_numeric_dataset",
+          "args": {
+            "dataset_id": "9577cec0-0aa7-4f1b-93f9-e68055320c76",
+            "columns": [
+              "sensor reading"
+            ],
+            "missing_values": [
+              "missing"
+            ],
+            "preserve_columns": [
+              "cohort"
+            ]
+          },
+          "id": "call_e8544ca5-5e09-4a6f-9d54-3b7261caa554",
+          "type": "tool_call"
+        },
+        {
+          "name": "local_analysis_sql",
+          "args": {
+            "dataset_id": "1553a282-9b6b-46db-a324-199f418bc688",
+            "query": "SELECT \"cohort\", AVG(\"sensor reading\") AS average FROM data GROUP BY \"cohort\"",
+            "current_result_only": true,
+            "requested_conditions": []
+          },
+          "id": "2f0f0745-94ce-4c05-b375-6fa7aefc7e20",
+          "type": "tool_call"
+        }
+      ],
+      "chart_specs": [],
+      "chart_reasons": [],
+      "intent": {
+        "profile_kind": null,
+        "calculation": true,
+        "operations": [
+          "AVG"
+        ],
+        "scalar_grouping": true,
+        "chart_spec_requested": false,
+        "required_columns": [
+          "cohort",
+          "sensor reading"
+        ]
+      },
+      "evidence": [
+        [
+          {
+            "cohort": "A",
+            "average": 1.5
+          },
+          {
+            "cohort": "B",
+            "average": 3.5
+          }
+        ]
+      ],
+      "raw_preserved": true,
+      "numeric_branch_bound": true,
+      "answer": "보유 데이터로 계산한 결과입니다. 출처: fixture.unseen_audit\n분석 범위: 현재 보유한 일부 데이터\n\n```csv\ncohort,average\nA,1.5\nB,3.5\n```\n\n수치 변환: sensor reading · 전체 5행 중 유효 값 4개 · 기존 결측 0개 · 명시한 문자열 결측 1개. Float64로 계산했으며 원본과 모든 행은 보존했습니다.",
+      "id": "grouped_scalar:3",
+      "agent_status": "answered",
+      "final_output": "보유 데이터로 계산한 결과입니다. 출처: fixture.unseen_audit\n분석 범위: 현재 보유한 일부 데이터\n\n```csv\ncohort,average\nA,1.5\nB,3.5\n```\n\n수치 변환: sensor reading · 전체 5행 중 유효 값 4개 · 기존 결측 0개 · 명시한 문자열 결측 1개. Float64로 계산했으며 원본과 모든 행은 보존했습니다.",
+      "reference_facts": "A=1.5; B=3.5",
+      "runtime_metadata": {
+        "recovery_model_calls": 1
+      },
+      "tool_calls": [
+        {
+          "tool": "prepare_numeric_dataset"
+        },
+        {
+          "tool": "local_analysis_sql"
+        }
+      ]
+    },
+    {
+      "case": "custom_chart",
+      "repeat": 3,
+      "prompt": "현재 로딩된 표본에서 `sensor reading` 평균과 구간 수 5개인 히스토그램을 보여줘. \"missing\" 문자열만 결측값으로 처리해.",
+      "oracle": "mean=2.5; histogram with 5 bins",
+      "oracle_pass": true,
+      "status": "PASS",
+      "error_type": null,
+      "model_calls": 1,
+      "elapsed_seconds": 2.454,
+      "tools": [
+        "prepare_numeric_dataset",
+        "local_analysis_sql",
+        "render_chart_spec"
+      ],
+      "observations": [
+        {
+          "tool": "prepare_numeric_dataset",
+          "status": "ready",
+          "error_code": null
+        },
+        {
+          "tool": "local_analysis_sql",
+          "status": "ready",
+          "error_code": null
+        },
+        {
+          "tool": "render_chart_spec",
+          "status": "ready",
+          "error_code": null
+        }
+      ],
+      "chart_count": 1,
+      "call_details": [
+        {
+          "name": "prepare_numeric_dataset",
+          "args": {
+            "dataset_id": "08ecf078-9da7-4f69-839e-4895bceda8c9",
+            "columns": [
+              "sensor reading"
+            ],
+            "missing_values": [
+              "missing"
+            ],
+            "preserve_columns": [
+              "cohort"
+            ]
+          },
+          "id": "call_21813fd5-03e2-4bee-87c2-90852b4d2ec7",
+          "type": "tool_call"
+        },
+        {
+          "name": "local_analysis_sql",
+          "args": {
+            "dataset_id": "91881e72-fabd-4f98-b081-571d60993c5e",
+            "query": "SELECT AVG(\"sensor reading\") AS average FROM data",
+            "current_result_only": true,
+            "requested_conditions": []
+          },
+          "id": "fd37736c-f7aa-4625-83d1-19f1c6775853",
+          "type": "tool_call"
+        },
+        {
+          "name": "render_chart_spec",
+          "args": {
+            "dataset_id": "91881e72-fabd-4f98-b081-571d60993c5e",
+            "kind": "histogram",
+            "x": "sensor reading",
+            "bins": 5
+          },
+          "id": "e4784eae-6e4a-480f-af76-f5856310beed",
+          "type": "tool_call"
+        }
+      ],
+      "chart_specs": [
+        {
+          "kind": "histogram",
+          "x": "sensor reading",
+          "y": "",
+          "category": "",
+          "aggregation": "none",
+          "sort": "none",
+          "cumulative": false,
+          "top_n": 50,
+          "bins": 5,
+          "title": "sensor reading 분포",
+          "x_label": "sensor reading",
+          "y_label": "Count",
+          "orientation": "vertical"
+        }
+      ],
+      "chart_reasons": [
+        "유효값 4개를 5개 bin으로 표시했습니다."
+      ],
+      "intent": {
+        "profile_kind": null,
+        "calculation": true,
+        "operations": [
+          "AVG"
+        ],
+        "scalar_grouping": false,
+        "chart_spec_requested": true,
+        "required_columns": [
+          "sensor reading"
+        ]
+      },
+      "evidence": [
+        [
+          {
+            "average": 2.5
+          }
+        ]
+      ],
+      "raw_preserved": true,
+      "numeric_branch_bound": true,
+      "answer": "sensor reading 분포 이미지를 생성했습니다.\n분석 범위: 보유 5행 기준 · unknown · raw · 표시 데이터 4개 · 집계 none\n\n보유 데이터로 계산한 결과입니다. 출처: fixture.unseen_audit\n분석 범위: 현재 보유한 일부 데이터\n\n평균: 2.5\n\n수치 변환: sensor reading · 전체 5행 중 유효 값 4개 · 기존 결측 0개 · 명시한 문자열 결측 1개. Float64로 계산했으며 원본과 모든 행은 보존했습니다.",
+      "id": "custom_chart:3",
+      "agent_status": "answered",
+      "final_output": "sensor reading 분포 이미지를 생성했습니다.\n분석 범위: 보유 5행 기준 · unknown · raw · 표시 데이터 4개 · 집계 none\n\n보유 데이터로 계산한 결과입니다. 출처: fixture.unseen_audit\n분석 범위: 현재 보유한 일부 데이터\n\n평균: 2.5\n\n수치 변환: sensor reading · 전체 5행 중 유효 값 4개 · 기존 결측 0개 · 명시한 문자열 결측 1개. Float64로 계산했으며 원본과 모든 행은 보존했습니다.",
+      "reference_facts": "mean=2.5; histogram with 5 bins",
+      "runtime_metadata": {
+        "recovery_model_calls": 1
+      },
+      "tool_calls": [
+        {
+          "tool": "prepare_numeric_dataset"
+        },
+        {
+          "tool": "local_analysis_sql"
+        },
+        {
+          "tool": "render_chart_spec"
+        }
+      ]
+    }
+  ],
+  "limitations": [
+    "Fixed four audit cases; not unseen questions or an overall quality estimate.",
+    "Model configured but deterministic paths may make zero model calls.",
+    "No injected errors; failures are preserved without manual retry."
+  ],
+  "original_harness_baseline": "89effbb",
+  "working_tree_dirty": true,
+  "code_note": "Uncommitted implementation at each evaluation phase; first/second are intermediate failures, final is the fixed repeat."
+}

@@ -1,7 +1,7 @@
 """Data-backed previews; no network, model calls or remote profiling."""
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from functools import lru_cache
 from hashlib import sha256
 from io import BytesIO
@@ -29,6 +29,7 @@ class ChartPreview:
     columns: tuple[str, ...]
     scope: str
     image: bytes
+    render_spec: dict = field(default_factory=dict)
 
 
 @lru_cache(maxsize=1)
@@ -101,7 +102,7 @@ def recommend_charts(store: DatasetStore, dataset_id: str,
         if len(values) >= 2:
             fig = Figure(figsize=(6, 3.5))
             ax = fig.subplots()
-            ax.hist(values, bins=min(60, max(8, int(len(values) ** 0.5))), color="#3278b9", edgecolor="white")
+            ax.hist(values, histtype="bar", bins=min(60, max(8, int(len(values) ** 0.5))), color="#3278b9", edgecolor="white")
             ax.set(xlabel=column, ylabel="Count")
             save(fig, "histogram", [column], f"{column} 분포",
                  f"유효값 {len(values):,}개에서 중앙값은 {values.median():.4g}입니다.")
@@ -204,7 +205,7 @@ def histogram_from_counts(store, dataset_id, value_column, weight_column):
     if (counts < 0).any() or (counts % 1 != 0).any() or counts.sum() <= 0:
         raise ValueError('빈도는 0 이상의 정수이며 총합은 양수여야 합니다.')
     fig = Figure(figsize=(6, 3.5)); ax = fig.subplots()
-    ax.hist(values, weights=counts, bins=min(60, max(8, int(len(values)**0.5))),
+    ax.hist(values, weights=counts, histtype="bar", bins=min(60, max(8, int(len(values)**0.5))),
             color='#3278b9', edgecolor='white')
     ax.set(xlabel=value_column, ylabel='Count')
     buffer = BytesIO(); FigureCanvasAgg(fig); _apply_unicode_font(fig); fig.tight_layout(); fig.savefig(buffer,format='png',dpi=110)
@@ -284,7 +285,7 @@ def render_chart_spec(store: DatasetStore, dataset_id: str, *, kind: str, x: str
         if len(values) < 2:
             raise ValueError("히스토그램에는 유효한 수치가 2개 이상 필요합니다.")
         plotted = values.to_frame(name=x)
-        ax.hist(values, bins=int(bins), color="#3278b9", edgecolor="white")
+        ax.hist(values, histtype="bar", bins=int(bins), color="#3278b9", edgecolor="white")
         ax.set(xlabel=x_label or x, ylabel=y_label or "Count")
         default_title = f"{x} 분포"
         reason = f"유효값 {len(values):,}개를 {int(bins)}개 bin으로 표시했습니다."
@@ -502,6 +503,8 @@ def render_chart_spec(store: DatasetStore, dataset_id: str, *, kind: str, x: str
             "top_n": int(top_n), "bins": int(bins), "title": final_title,
             "x_label": ax.get_xlabel(), "y_label": ax.get_ylabel(),
             "orientation": orientation}
+    from dataclasses import replace
+    card = replace(card, render_spec=spec)
     return card, summary, spec
 
 

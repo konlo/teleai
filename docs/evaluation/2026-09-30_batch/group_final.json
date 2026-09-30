@@ -1,0 +1,2727 @@
+{
+  "generated_at": "2026-09-29T15:33:56.351260+00:00",
+  "mode": "live-databricks-model",
+  "runtime": "core.analysis_agent.runtime.GraphAnalysisRuntime",
+  "model": "databricks-qwen3-next-80b-a3b-instruct",
+  "data_scope": "preloaded complete local test_set fixtures in temporary per-case scope",
+  "coverage": {
+    "total_reference_cases": 200,
+    "supported_oracles": 102,
+    "selected": 5,
+    "statuses": {
+      "PASS": 5
+    },
+    "all_selected_passed": true,
+    "ungraded_is_never_pass": true
+  },
+  "latency_seconds": {
+    "total": 1.193,
+    "max": 0.339
+  },
+  "remote_executions": 0,
+  "results": [
+    {
+      "id": "L1_051",
+      "prompt": "직업(job)별 고객 수와 평균 잔액(balance)을 계산하고 평균 잔액 내림차순으로 정렬해줘.",
+      "target_table": "bank_loan",
+      "reference_sha256": "5f893ccbbdbdfc55305383304562c07d68abe9be594e4bfd409d86d66b56b23e",
+      "status": "PASS",
+      "reason": "Independent grouped metrics/order comparison",
+      "evidence": {
+        "result_dataset_id": "f94ab55d-3fdd-4ef6-9f91-bf6f3850c834",
+        "expected": [
+          {
+            "job": "unemployed",
+            "고객수": 47,
+            "평균잔액": 5314.09
+          },
+          {
+            "job": "technician",
+            "고객수": 325,
+            "평균잔액": 4030.88
+          },
+          {
+            "job": "entrepreneur",
+            "고객수": 55,
+            "평균잔액": 3565.67
+          },
+          {
+            "job": "blue-collar",
+            "고객수": 426,
+            "평균잔액": 3029.34
+          },
+          {
+            "job": "admin.",
+            "고객수": 261,
+            "평균잔액": 2718.51
+          },
+          {
+            "job": "services",
+            "고객수": 165,
+            "평균잔액": 2615.0
+          },
+          {
+            "job": "retired",
+            "고객수": 117,
+            "평균잔액": 2257.33
+          },
+          {
+            "job": "management",
+            "고객수": 425,
+            "평균잔액": 1964.06
+          },
+          {
+            "job": "student",
+            "고객수": 33,
+            "평균잔액": 1907.33
+          },
+          {
+            "job": "self-employed",
+            "고객수": 62,
+            "평균잔액": 1241.1
+          },
+          {
+            "job": "unknown",
+            "고객수": 20,
+            "평균잔액": 1224.6
+          },
+          {
+            "job": "housemaid",
+            "고객수": 64,
+            "평균잔액": 1086.05
+          }
+        ],
+        "counterfactual_probes": 2
+      },
+      "agent_status": "answered",
+      "runtime_state": "idle",
+      "elapsed_seconds": 0.339,
+      "tools": {
+        "summarize_groups": 1
+      },
+      "tool_calls": [
+        {
+          "id": "1edae340-2e03-40ce-9800-4ecc90303075",
+          "tool": "summarize_groups",
+          "arguments": {
+            "dataset_id": "18fe7b53-fbc5-4721-8c6a-fab236f2448f",
+            "group_columns": [
+              "job"
+            ],
+            "metrics": [
+              {
+                "name": "count",
+                "aggregation": "count"
+              },
+              {
+                "name": "mean_balance",
+                "aggregation": "mean",
+                "value_column": "balance"
+              }
+            ],
+            "conditions": [],
+            "sort": "metric_descending",
+            "sort_by": "mean_balance"
+          }
+        }
+      ],
+      "queries": [],
+      "observations": [
+        {
+          "tool": "summarize_groups",
+          "status": "ready",
+          "error_code": null
+        }
+      ],
+      "remote_executions": 0,
+      "forbidden_executor_invocations": 0,
+      "error_type": null,
+      "error_id": null,
+      "final_output": "job별 2개 지표를 계산했습니다. 원본 2,000행, 조건 적용 2,000행, 그룹 키 결측 제외 2,000행, 결과 12행입니다.\n```csv\njob,count,mean_balance\nunemployed,47,5314.085106382979\ntechnician,325,4030.8830769230767\nentrepreneur,55,3565.672727272727\nblue-collar,426,3029.3356807511736\nadmin.,261,2718.5057471264367\nservices,165,2615.0\nretired,117,2257.3333333333335\nmanagement,425,1964.0588235294117\nstudent,33,1907.3333333333333\nself-employed,62,1241.0967741935483\nunknown,20,1224.6\nhousemaid,64,1086.046875\n```\n분석 범위: bank_loan의 보유 raw dataset 2,000행에서 조건 적용 2,000행, 그룹 키가 있는 2,000행을 2개 지표로 요약한 12행 · coverage=complete · snapshot=fixture:6fd6aefae0385fe96f9884c3154048e19641fc9ae55f872378551b8c1e268c25",
+      "runtime_metadata": {
+        "case_id": "L1_051",
+        "run_id": "6d12b580c794490fb2468021333dcff7",
+        "state": "idle",
+        "message_count": 4,
+        "pending_requests": 0,
+        "recovery_status": "complete",
+        "recovery_attempts": 0,
+        "recovery_model_calls": 0,
+        "reference_context": [
+          {
+            "table": "bank_loan",
+            "training_status": "fixture_profile",
+            "columns": [
+              {
+                "name": "id",
+                "dtype": "int64",
+                "distinct_count": 2000,
+                "description": "고객 ID",
+                "null_count": 0,
+                "top_values": [],
+                "aliases": [
+                  "아이디"
+                ]
+              },
+              {
+                "name": "age",
+                "dtype": "int64",
+                "distinct_count": 57,
+                "description": "고객 나이",
+                "null_count": 0,
+                "top_values": [],
+                "aliases": [
+                  "나이",
+                  "연령",
+                  "20대",
+                  "30대",
+                  "40대",
+                  "50대"
+                ]
+              },
+              {
+                "name": "job",
+                "dtype": "object",
+                "distinct_count": 12,
+                "description": "직업",
+                "null_count": 0,
+                "top_values": [],
+                "aliases": [
+                  "직업",
+                  "직종",
+                  "일"
+                ]
+              },
+              {
+                "name": "marital",
+                "dtype": "object",
+                "distinct_count": 3,
+                "description": "결혼 여부 (married/single/divorced)",
+                "null_count": 0,
+                "top_values": [
+                  {
+                    "value": "married",
+                    "count": 1207
+                  },
+                  {
+                    "value": "single",
+                    "count": 547
+                  },
+                  {
+                    "value": "divorced",
+                    "count": 246
+                  }
+                ],
+                "aliases": [
+                  "결혼",
+                  "혼인",
+                  "혼인 상태",
+                  "기혼",
+                  "미혼",
+                  "이혼",
+                  "배우자"
+                ]
+              },
+              {
+                "name": "education",
+                "dtype": "object",
+                "distinct_count": 4,
+                "description": "학력 (primary/secondary/tertiary/unknown)",
+                "null_count": 0,
+                "top_values": [
+                  {
+                    "value": "secondary",
+                    "count": 1075
+                  },
+                  {
+                    "value": "tertiary",
+                    "count": 571
+                  },
+                  {
+                    "value": "primary",
+                    "count": 291
+                  },
+                  {
+                    "value": "unknown",
+                    "count": 63
+                  }
+                ],
+                "aliases": [
+                  "학력",
+                  "교육",
+                  "학교"
+                ]
+              },
+              {
+                "name": "default",
+                "dtype": "object",
+                "distinct_count": 2,
+                "description": "채무 불이행 여부 (yes/no)",
+                "null_count": 0,
+                "top_values": [
+                  {
+                    "value": "no",
+                    "count": 1970
+                  },
+                  {
+                    "value": "yes",
+                    "count": 30
+                  }
+                ],
+                "aliases": [
+                  "연체",
+                  "불이행",
+                  "디폴트"
+                ]
+              },
+              {
+                "name": "balance",
+                "dtype": "int64",
+                "distinct_count": 1565,
+                "description": "계좌 잔액",
+                "null_count": 0,
+                "top_values": [],
+                "aliases": [
+                  "잔액",
+                  "잔고",
+                  "예금액",
+                  "통장 잔액"
+                ]
+              },
+              {
+                "name": "housing",
+                "dtype": "object",
+                "distinct_count": 2,
+                "description": "주택 담보 대출 여부 (yes/no)",
+                "null_count": 0,
+                "top_values": [
+                  {
+                    "value": "yes",
+                    "count": 1055
+                  },
+                  {
+                    "value": "no",
+                    "count": 945
+                  }
+                ],
+                "aliases": [
+                  "주택 대출",
+                  "집 대출",
+                  "부동산 대출"
+                ]
+              },
+              {
+                "name": "loan",
+                "dtype": "object",
+                "distinct_count": 2,
+                "description": "개인 신용 대출 여부 (yes/no)",
+                "null_count": 0,
+                "top_values": [
+                  {
+                    "value": "no",
+                    "count": 1652
+                  },
+                  {
+                    "value": "yes",
+                    "count": 348
+                  }
+                ],
+                "aliases": [
+                  "개인 대출",
+                  "신용 대출"
+                ]
+              },
+              {
+                "name": "contact",
+                "dtype": "object",
+                "distinct_count": 3,
+                "description": "통신 수단 (cellular/telephone/unknown)",
+                "null_count": 0,
+                "top_values": [
+                  {
+                    "value": "cellular",
+                    "count": 1232
+                  },
+                  {
+                    "value": "unknown",
+                    "count": 636
+                  },
+                  {
+                    "value": "telephone",
+                    "count": 132
+                  }
+                ],
+                "aliases": [
+                  "연락 방법",
+                  "통신 수단"
+                ]
+              },
+              {
+                "name": "day",
+                "dtype": "int64",
+                "distinct_count": 31,
+                "description": "마지막 접촉 일 (월중)",
+                "null_count": 0,
+                "top_values": [],
+                "aliases": [
+                  "접촉 날짜"
+                ]
+              },
+              {
+                "name": "month",
+                "dtype": "object",
+                "distinct_count": 12,
+                "description": "마지막 접촉 월",
+                "null_count": 0,
+                "top_values": [],
+                "aliases": [
+                  "월",
+                  "달"
+                ]
+              },
+              {
+                "name": "duration",
+                "dtype": "int64",
+                "distinct_count": 692,
+                "description": "통화 지속 시간 (초)",
+                "null_count": 0,
+                "top_values": [],
+                "aliases": [
+                  "상담 시간",
+                  "통화 시간",
+                  "상담 길이"
+                ]
+              },
+              {
+                "name": "campaign",
+                "dtype": "int64",
+                "distinct_count": 13,
+                "description": "이번 캠페인 접촉 횟수",
+                "null_count": 0,
+                "top_values": [],
+                "aliases": [
+                  "접촉 횟수",
+                  "캠페인 횟수"
+                ]
+              },
+              {
+                "name": "pdays",
+                "dtype": "int64",
+                "distinct_count": 326,
+                "description": "이전 캠페인 후 경과 일 수 (-1=없음)",
+                "null_count": 0,
+                "top_values": [],
+                "aliases": [
+                  "경과일"
+                ]
+              },
+              {
+                "name": "previous",
+                "dtype": "int64",
+                "distinct_count": 13,
+                "description": "이전 캠페인 접촉 횟수",
+                "null_count": 0,
+                "top_values": [],
+                "aliases": [
+                  "이전 접촉 횟수"
+                ]
+              },
+              {
+                "name": "poutcome",
+                "dtype": "object",
+                "distinct_count": 4,
+                "description": "이전 캠페인 결과 (success/failure/other/unknown)",
+                "null_count": 0,
+                "top_values": [
+                  {
+                    "value": "unknown",
+                    "count": 1596
+                  },
+                  {
+                    "value": "failure",
+                    "count": 241
+                  },
+                  {
+                    "value": "other",
+                    "count": 109
+                  },
+                  {
+                    "value": "success",
+                    "count": 54
+                  }
+                ],
+                "aliases": [
+                  "이전 결과",
+                  "이전 마케팅 결과"
+                ]
+              },
+              {
+                "name": "y",
+                "dtype": "object",
+                "distinct_count": 2,
+                "description": "정기예금 가입 여부 (yes/no)",
+                "null_count": 0,
+                "top_values": [
+                  {
+                    "value": "no",
+                    "count": 1730
+                  },
+                  {
+                    "value": "yes",
+                    "count": 270
+                  }
+                ],
+                "aliases": [
+                  "가입",
+                  "가입 여부",
+                  "정기예금",
+                  "예금 가입"
+                ]
+              }
+            ],
+            "alias_source": "test_set/README.md > 데이터 스키마 > workspace.default.bank_loan; complete table-level aliases, not question-specific synonym_mapping",
+            "source": "local test_set fixture; not a live Databricks table"
+          }
+        ],
+        "datasets": [
+          {
+            "id": "18fe7b53-fbc5-4721-8c6a-fab236f2448f",
+            "source": "bank_loan",
+            "columns": [
+              "id",
+              "age",
+              "job",
+              "marital",
+              "education",
+              "default",
+              "balance",
+              "housing",
+              "loan",
+              "contact",
+              "day",
+              "month",
+              "duration",
+              "campaign",
+              "pdays",
+              "previous",
+              "poutcome",
+              "y"
+            ],
+            "rows": 2000,
+            "coverage": "complete",
+            "conditions": [],
+            "predicate_known": true,
+            "grain": "raw",
+            "aggregation": "",
+            "snapshot": "fixture:6fd6aefae0385fe96f9884c3154048e19641fc9ae55f872378551b8c1e268c25",
+            "query": "",
+            "parent_id": "",
+            "parent_ids": [],
+            "role": "root",
+            "root_id": "18fe7b53-fbc5-4721-8c6a-fab236f2448f",
+            "row_selection": {}
+          },
+          {
+            "id": "f94ab55d-3fdd-4ef6-9f91-bf6f3850c834",
+            "source": "bank_loan",
+            "columns": [
+              "job",
+              "count",
+              "mean_balance"
+            ],
+            "rows": 12,
+            "coverage": "complete",
+            "conditions": [],
+            "predicate_known": true,
+            "grain": "aggregate",
+            "aggregation": "group_summary:{\"conditions\": [], \"group_columns\": [\"job\"], \"metrics\": [{\"aggregation\": \"count\", \"condition\": null, \"empty_value\": null, \"name\": \"count\", \"value_column\": \"\"}, {\"aggregation\": \"mean\", \"condition\": null, \"empty_value\": null, \"name\": \"mean_balance\", \"value_column\": \"balance\"}], \"sort\": \"metric_descending\", \"sort_by\": \"mean_balance\"}",
+            "snapshot": "fixture:6fd6aefae0385fe96f9884c3154048e19641fc9ae55f872378551b8c1e268c25",
+            "query": "GROUP SUMMARY {\"conditions\": [], \"group_columns\": [\"job\"], \"metrics\": [{\"aggregation\": \"count\", \"condition\": null, \"empty_value\": null, \"name\": \"count\", \"value_column\": \"\"}, {\"aggregation\": \"mean\", \"condition\": null, \"empty_value\": null, \"name\": \"mean_balance\", \"value_column\": \"balance\"}], \"sort\": \"metric_descending\", \"sort_by\": \"mean_balance\"}",
+            "parent_id": "18fe7b53-fbc5-4721-8c6a-fab236f2448f",
+            "parent_ids": [],
+            "role": "derived",
+            "root_id": "18fe7b53-fbc5-4721-8c6a-fab236f2448f",
+            "row_selection": {}
+          }
+        ],
+        "charts": [],
+        "diagnostics": [
+          {
+            "time": "2026-09-29T15:33:55.230124+00:00",
+            "event": "run_started",
+            "run_id": "6d12b580c794490fb2468021333dcff7",
+            "operation": "submit"
+          },
+          {
+            "time": "2026-09-29T15:33:55.420433+00:00",
+            "event": "recovery_transition",
+            "run_id": "6d12b580c794490fb2468021333dcff7",
+            "tool": "summarize_groups"
+          },
+          {
+            "time": "2026-09-29T15:33:55.421869+00:00",
+            "event": "tool_started",
+            "run_id": "6d12b580c794490fb2468021333dcff7",
+            "tool": "summarize_groups"
+          },
+          {
+            "time": "2026-09-29T15:33:55.457178+00:00",
+            "event": "tool_completed",
+            "run_id": "6d12b580c794490fb2468021333dcff7",
+            "tool": "summarize_groups",
+            "status": "ready",
+            "elapsed_seconds": 0.035
+          },
+          {
+            "time": "2026-09-29T15:33:55.461073+00:00",
+            "event": "completion_checked",
+            "run_id": "6d12b580c794490fb2468021333dcff7",
+            "status": "complete",
+            "attempts": 0,
+            "required_capabilities": [
+              "group_summary"
+            ],
+            "missing_capabilities": []
+          },
+          {
+            "time": "2026-09-29T15:33:55.462337+00:00",
+            "event": "run_completed",
+            "run_id": "6d12b580c794490fb2468021333dcff7",
+            "status": "answered",
+            "elapsed_seconds": 0.232
+          },
+          {
+            "time": "2026-09-29T15:33:55.462374+00:00",
+            "event": "turn_slo",
+            "run_id": "6d12b580c794490fb2468021333dcff7",
+            "elapsed_seconds": 0.232,
+            "limit": 180.0,
+            "status": "ok"
+          }
+        ],
+        "path": "/Users/najongseong/git_repository/teleai/docs/evaluation/2026-09-30_batch/actual_agent_eval_artifacts/L1_051-6d12b580c794-metadata.json"
+      }
+    },
+    {
+      "id": "L1_052",
+      "prompt": "교육 수준(education)별 평균 잔액과 중앙값 잔액을 비교해줘.",
+      "target_table": "bank_loan",
+      "reference_sha256": "43f77adfdd0116e250abb896b2c6e36bd7d108b1238cc62eda1a12b56acbf222",
+      "status": "PASS",
+      "reason": "Independent grouped metrics/order comparison",
+      "evidence": {
+        "result_dataset_id": "15786e54-705b-4533-9d5c-05520cd68f5c",
+        "expected": [
+          {
+            "교육수준": "primary",
+            "평균잔액": 3651.95,
+            "중앙값잔액": 1045.0
+          },
+          {
+            "교육수준": "secondary",
+            "평균잔액": 2371.89,
+            "중앙값잔액": 632.0
+          },
+          {
+            "교육수준": "tertiary",
+            "평균잔액": 3030.49,
+            "중앙값잔액": 644.0
+          },
+          {
+            "교육수준": "unknown",
+            "평균잔액": 2813.13,
+            "중앙값잔액": 640.0
+          }
+        ],
+        "counterfactual_probes": 2
+      },
+      "agent_status": "answered",
+      "runtime_state": "idle",
+      "elapsed_seconds": 0.234,
+      "tools": {
+        "summarize_groups": 1
+      },
+      "tool_calls": [
+        {
+          "id": "10f21c05-7a22-4e9c-8e04-0be732cf1478",
+          "tool": "summarize_groups",
+          "arguments": {
+            "dataset_id": "fc667ad0-3181-4147-a656-3acf16cb81d2",
+            "group_columns": [
+              "education"
+            ],
+            "metrics": [
+              {
+                "name": "mean_balance",
+                "aggregation": "mean",
+                "value_column": "balance"
+              },
+              {
+                "name": "median_balance",
+                "aggregation": "median",
+                "value_column": "balance"
+              }
+            ],
+            "conditions": [],
+            "sort": "group_ascending",
+            "sort_by": ""
+          }
+        }
+      ],
+      "queries": [],
+      "observations": [
+        {
+          "tool": "summarize_groups",
+          "status": "ready",
+          "error_code": null
+        }
+      ],
+      "remote_executions": 0,
+      "forbidden_executor_invocations": 0,
+      "error_type": null,
+      "error_id": null,
+      "final_output": "education별 2개 지표를 계산했습니다. 원본 2,000행, 조건 적용 2,000행, 그룹 키 결측 제외 2,000행, 결과 4행입니다.\n```csv\neducation,mean_balance,median_balance\nprimary,3651.9450171821304,1045.0\nsecondary,2371.8902325581394,632.0\ntertiary,3030.490367775832,644.0\nunknown,2813.126984126984,640.0\n```\n분석 범위: bank_loan의 보유 raw dataset 2,000행에서 조건 적용 2,000행, 그룹 키가 있는 2,000행을 2개 지표로 요약한 4행 · coverage=complete · snapshot=fixture:6fd6aefae0385fe96f9884c3154048e19641fc9ae55f872378551b8c1e268c25",
+      "runtime_metadata": {
+        "case_id": "L1_052",
+        "run_id": "4f6f746736e24fb1bb7292ffb3c38a14",
+        "state": "idle",
+        "message_count": 4,
+        "pending_requests": 0,
+        "recovery_status": "complete",
+        "recovery_attempts": 0,
+        "recovery_model_calls": 0,
+        "reference_context": [
+          {
+            "table": "bank_loan",
+            "training_status": "fixture_profile",
+            "columns": [
+              {
+                "name": "id",
+                "dtype": "int64",
+                "distinct_count": 2000,
+                "description": "고객 ID",
+                "null_count": 0,
+                "top_values": [],
+                "aliases": [
+                  "아이디"
+                ]
+              },
+              {
+                "name": "age",
+                "dtype": "int64",
+                "distinct_count": 57,
+                "description": "고객 나이",
+                "null_count": 0,
+                "top_values": [],
+                "aliases": [
+                  "나이",
+                  "연령",
+                  "20대",
+                  "30대",
+                  "40대",
+                  "50대"
+                ]
+              },
+              {
+                "name": "job",
+                "dtype": "object",
+                "distinct_count": 12,
+                "description": "직업",
+                "null_count": 0,
+                "top_values": [],
+                "aliases": [
+                  "직업",
+                  "직종",
+                  "일"
+                ]
+              },
+              {
+                "name": "marital",
+                "dtype": "object",
+                "distinct_count": 3,
+                "description": "결혼 여부 (married/single/divorced)",
+                "null_count": 0,
+                "top_values": [
+                  {
+                    "value": "married",
+                    "count": 1207
+                  },
+                  {
+                    "value": "single",
+                    "count": 547
+                  },
+                  {
+                    "value": "divorced",
+                    "count": 246
+                  }
+                ],
+                "aliases": [
+                  "결혼",
+                  "혼인",
+                  "혼인 상태",
+                  "기혼",
+                  "미혼",
+                  "이혼",
+                  "배우자"
+                ]
+              },
+              {
+                "name": "education",
+                "dtype": "object",
+                "distinct_count": 4,
+                "description": "학력 (primary/secondary/tertiary/unknown)",
+                "null_count": 0,
+                "top_values": [
+                  {
+                    "value": "secondary",
+                    "count": 1075
+                  },
+                  {
+                    "value": "tertiary",
+                    "count": 571
+                  },
+                  {
+                    "value": "primary",
+                    "count": 291
+                  },
+                  {
+                    "value": "unknown",
+                    "count": 63
+                  }
+                ],
+                "aliases": [
+                  "학력",
+                  "교육",
+                  "학교"
+                ]
+              },
+              {
+                "name": "default",
+                "dtype": "object",
+                "distinct_count": 2,
+                "description": "채무 불이행 여부 (yes/no)",
+                "null_count": 0,
+                "top_values": [
+                  {
+                    "value": "no",
+                    "count": 1970
+                  },
+                  {
+                    "value": "yes",
+                    "count": 30
+                  }
+                ],
+                "aliases": [
+                  "연체",
+                  "불이행",
+                  "디폴트"
+                ]
+              },
+              {
+                "name": "balance",
+                "dtype": "int64",
+                "distinct_count": 1565,
+                "description": "계좌 잔액",
+                "null_count": 0,
+                "top_values": [],
+                "aliases": [
+                  "잔액",
+                  "잔고",
+                  "예금액",
+                  "통장 잔액"
+                ]
+              },
+              {
+                "name": "housing",
+                "dtype": "object",
+                "distinct_count": 2,
+                "description": "주택 담보 대출 여부 (yes/no)",
+                "null_count": 0,
+                "top_values": [
+                  {
+                    "value": "yes",
+                    "count": 1055
+                  },
+                  {
+                    "value": "no",
+                    "count": 945
+                  }
+                ],
+                "aliases": [
+                  "주택 대출",
+                  "집 대출",
+                  "부동산 대출"
+                ]
+              },
+              {
+                "name": "loan",
+                "dtype": "object",
+                "distinct_count": 2,
+                "description": "개인 신용 대출 여부 (yes/no)",
+                "null_count": 0,
+                "top_values": [
+                  {
+                    "value": "no",
+                    "count": 1652
+                  },
+                  {
+                    "value": "yes",
+                    "count": 348
+                  }
+                ],
+                "aliases": [
+                  "개인 대출",
+                  "신용 대출"
+                ]
+              },
+              {
+                "name": "contact",
+                "dtype": "object",
+                "distinct_count": 3,
+                "description": "통신 수단 (cellular/telephone/unknown)",
+                "null_count": 0,
+                "top_values": [
+                  {
+                    "value": "cellular",
+                    "count": 1232
+                  },
+                  {
+                    "value": "unknown",
+                    "count": 636
+                  },
+                  {
+                    "value": "telephone",
+                    "count": 132
+                  }
+                ],
+                "aliases": [
+                  "연락 방법",
+                  "통신 수단"
+                ]
+              },
+              {
+                "name": "day",
+                "dtype": "int64",
+                "distinct_count": 31,
+                "description": "마지막 접촉 일 (월중)",
+                "null_count": 0,
+                "top_values": [],
+                "aliases": [
+                  "접촉 날짜"
+                ]
+              },
+              {
+                "name": "month",
+                "dtype": "object",
+                "distinct_count": 12,
+                "description": "마지막 접촉 월",
+                "null_count": 0,
+                "top_values": [],
+                "aliases": [
+                  "월",
+                  "달"
+                ]
+              },
+              {
+                "name": "duration",
+                "dtype": "int64",
+                "distinct_count": 692,
+                "description": "통화 지속 시간 (초)",
+                "null_count": 0,
+                "top_values": [],
+                "aliases": [
+                  "상담 시간",
+                  "통화 시간",
+                  "상담 길이"
+                ]
+              },
+              {
+                "name": "campaign",
+                "dtype": "int64",
+                "distinct_count": 13,
+                "description": "이번 캠페인 접촉 횟수",
+                "null_count": 0,
+                "top_values": [],
+                "aliases": [
+                  "접촉 횟수",
+                  "캠페인 횟수"
+                ]
+              },
+              {
+                "name": "pdays",
+                "dtype": "int64",
+                "distinct_count": 326,
+                "description": "이전 캠페인 후 경과 일 수 (-1=없음)",
+                "null_count": 0,
+                "top_values": [],
+                "aliases": [
+                  "경과일"
+                ]
+              },
+              {
+                "name": "previous",
+                "dtype": "int64",
+                "distinct_count": 13,
+                "description": "이전 캠페인 접촉 횟수",
+                "null_count": 0,
+                "top_values": [],
+                "aliases": [
+                  "이전 접촉 횟수"
+                ]
+              },
+              {
+                "name": "poutcome",
+                "dtype": "object",
+                "distinct_count": 4,
+                "description": "이전 캠페인 결과 (success/failure/other/unknown)",
+                "null_count": 0,
+                "top_values": [
+                  {
+                    "value": "unknown",
+                    "count": 1596
+                  },
+                  {
+                    "value": "failure",
+                    "count": 241
+                  },
+                  {
+                    "value": "other",
+                    "count": 109
+                  },
+                  {
+                    "value": "success",
+                    "count": 54
+                  }
+                ],
+                "aliases": [
+                  "이전 결과",
+                  "이전 마케팅 결과"
+                ]
+              },
+              {
+                "name": "y",
+                "dtype": "object",
+                "distinct_count": 2,
+                "description": "정기예금 가입 여부 (yes/no)",
+                "null_count": 0,
+                "top_values": [
+                  {
+                    "value": "no",
+                    "count": 1730
+                  },
+                  {
+                    "value": "yes",
+                    "count": 270
+                  }
+                ],
+                "aliases": [
+                  "가입",
+                  "가입 여부",
+                  "정기예금",
+                  "예금 가입"
+                ]
+              }
+            ],
+            "alias_source": "test_set/README.md > 데이터 스키마 > workspace.default.bank_loan; complete table-level aliases, not question-specific synonym_mapping",
+            "source": "local test_set fixture; not a live Databricks table"
+          }
+        ],
+        "datasets": [
+          {
+            "id": "fc667ad0-3181-4147-a656-3acf16cb81d2",
+            "source": "bank_loan",
+            "columns": [
+              "id",
+              "age",
+              "job",
+              "marital",
+              "education",
+              "default",
+              "balance",
+              "housing",
+              "loan",
+              "contact",
+              "day",
+              "month",
+              "duration",
+              "campaign",
+              "pdays",
+              "previous",
+              "poutcome",
+              "y"
+            ],
+            "rows": 2000,
+            "coverage": "complete",
+            "conditions": [],
+            "predicate_known": true,
+            "grain": "raw",
+            "aggregation": "",
+            "snapshot": "fixture:6fd6aefae0385fe96f9884c3154048e19641fc9ae55f872378551b8c1e268c25",
+            "query": "",
+            "parent_id": "",
+            "parent_ids": [],
+            "role": "root",
+            "root_id": "fc667ad0-3181-4147-a656-3acf16cb81d2",
+            "row_selection": {}
+          },
+          {
+            "id": "15786e54-705b-4533-9d5c-05520cd68f5c",
+            "source": "bank_loan",
+            "columns": [
+              "education",
+              "mean_balance",
+              "median_balance"
+            ],
+            "rows": 4,
+            "coverage": "complete",
+            "conditions": [],
+            "predicate_known": true,
+            "grain": "aggregate",
+            "aggregation": "group_summary:{\"conditions\": [], \"group_columns\": [\"education\"], \"metrics\": [{\"aggregation\": \"mean\", \"condition\": null, \"empty_value\": null, \"name\": \"mean_balance\", \"value_column\": \"balance\"}, {\"aggregation\": \"median\", \"condition\": null, \"empty_value\": null, \"name\": \"median_balance\", \"value_column\": \"balance\"}], \"sort\": \"group_ascending\", \"sort_by\": \"\"}",
+            "snapshot": "fixture:6fd6aefae0385fe96f9884c3154048e19641fc9ae55f872378551b8c1e268c25",
+            "query": "GROUP SUMMARY {\"conditions\": [], \"group_columns\": [\"education\"], \"metrics\": [{\"aggregation\": \"mean\", \"condition\": null, \"empty_value\": null, \"name\": \"mean_balance\", \"value_column\": \"balance\"}, {\"aggregation\": \"median\", \"condition\": null, \"empty_value\": null, \"name\": \"median_balance\", \"value_column\": \"balance\"}], \"sort\": \"group_ascending\", \"sort_by\": \"\"}",
+            "parent_id": "fc667ad0-3181-4147-a656-3acf16cb81d2",
+            "parent_ids": [],
+            "role": "derived",
+            "root_id": "fc667ad0-3181-4147-a656-3acf16cb81d2",
+            "row_selection": {}
+          }
+        ],
+        "charts": [],
+        "diagnostics": [
+          {
+            "time": "2026-09-29T15:33:55.505884+00:00",
+            "event": "run_started",
+            "run_id": "4f6f746736e24fb1bb7292ffb3c38a14",
+            "operation": "submit"
+          },
+          {
+            "time": "2026-09-29T15:33:55.690677+00:00",
+            "event": "recovery_transition",
+            "run_id": "4f6f746736e24fb1bb7292ffb3c38a14",
+            "tool": "summarize_groups"
+          },
+          {
+            "time": "2026-09-29T15:33:55.692167+00:00",
+            "event": "tool_started",
+            "run_id": "4f6f746736e24fb1bb7292ffb3c38a14",
+            "tool": "summarize_groups"
+          },
+          {
+            "time": "2026-09-29T15:33:55.697527+00:00",
+            "event": "tool_completed",
+            "run_id": "4f6f746736e24fb1bb7292ffb3c38a14",
+            "tool": "summarize_groups",
+            "status": "ready",
+            "elapsed_seconds": 0.005
+          },
+          {
+            "time": "2026-09-29T15:33:55.700699+00:00",
+            "event": "completion_checked",
+            "run_id": "4f6f746736e24fb1bb7292ffb3c38a14",
+            "status": "complete",
+            "attempts": 0,
+            "required_capabilities": [
+              "group_summary"
+            ],
+            "missing_capabilities": []
+          },
+          {
+            "time": "2026-09-29T15:33:55.701823+00:00",
+            "event": "run_completed",
+            "run_id": "4f6f746736e24fb1bb7292ffb3c38a14",
+            "status": "answered",
+            "elapsed_seconds": 0.196
+          },
+          {
+            "time": "2026-09-29T15:33:55.701861+00:00",
+            "event": "turn_slo",
+            "run_id": "4f6f746736e24fb1bb7292ffb3c38a14",
+            "elapsed_seconds": 0.196,
+            "limit": 180.0,
+            "status": "ok"
+          }
+        ],
+        "path": "/Users/najongseong/git_repository/teleai/docs/evaluation/2026-09-30_batch/actual_agent_eval_artifacts/L1_052-4f6f746736e2-metadata.json"
+      }
+    },
+    {
+      "id": "L1_053",
+      "prompt": "결혼 상태(marital)별 평균 연령과 고객 수를 표로 보여줘.",
+      "target_table": "bank_loan",
+      "reference_sha256": "ffe9fbf6e14c763fac2595f6bf57d3c695f04cfb2d95bb4c5efe8dd976b72ab8",
+      "status": "PASS",
+      "reason": "Independent grouped metrics/order comparison",
+      "evidence": {
+        "result_dataset_id": "3b7767da-ccbd-4a74-8d39-d22023a5b055",
+        "expected": [
+          {
+            "marital": "divorced",
+            "고객수": 246,
+            "평균연령": 41.1
+          },
+          {
+            "marital": "married",
+            "고객수": 1207,
+            "평균연령": 41.0
+          },
+          {
+            "marital": "single",
+            "고객수": 547,
+            "평균연령": 41.2
+          }
+        ],
+        "counterfactual_probes": 2
+      },
+      "agent_status": "answered",
+      "runtime_state": "idle",
+      "elapsed_seconds": 0.232,
+      "tools": {
+        "summarize_groups": 1
+      },
+      "tool_calls": [
+        {
+          "id": "7c80b02c-fa82-43a3-a4c7-cc4e09092dd7",
+          "tool": "summarize_groups",
+          "arguments": {
+            "dataset_id": "7e9830d5-79ac-4c56-8bea-6c5ab9247e22",
+            "group_columns": [
+              "marital"
+            ],
+            "metrics": [
+              {
+                "name": "count",
+                "aggregation": "count"
+              },
+              {
+                "name": "mean_age",
+                "aggregation": "mean",
+                "value_column": "age"
+              }
+            ],
+            "conditions": [],
+            "sort": "group_ascending",
+            "sort_by": ""
+          }
+        }
+      ],
+      "queries": [],
+      "observations": [
+        {
+          "tool": "summarize_groups",
+          "status": "ready",
+          "error_code": null
+        }
+      ],
+      "remote_executions": 0,
+      "forbidden_executor_invocations": 0,
+      "error_type": null,
+      "error_id": null,
+      "final_output": "marital별 2개 지표를 계산했습니다. 원본 2,000행, 조건 적용 2,000행, 그룹 키 결측 제외 2,000행, 결과 3행입니다.\n```csv\nmarital,count,mean_age\ndivorced,246,41.13008130081301\nmarried,1207,40.97514498757249\nsingle,547,41.23034734917733\n```\n분석 범위: bank_loan의 보유 raw dataset 2,000행에서 조건 적용 2,000행, 그룹 키가 있는 2,000행을 2개 지표로 요약한 3행 · coverage=complete · snapshot=fixture:6fd6aefae0385fe96f9884c3154048e19641fc9ae55f872378551b8c1e268c25",
+      "runtime_metadata": {
+        "case_id": "L1_053",
+        "run_id": "cb64fa54c4e24571a7920caa2d749cca",
+        "state": "idle",
+        "message_count": 4,
+        "pending_requests": 0,
+        "recovery_status": "complete",
+        "recovery_attempts": 0,
+        "recovery_model_calls": 0,
+        "reference_context": [
+          {
+            "table": "bank_loan",
+            "training_status": "fixture_profile",
+            "columns": [
+              {
+                "name": "id",
+                "dtype": "int64",
+                "distinct_count": 2000,
+                "description": "고객 ID",
+                "null_count": 0,
+                "top_values": [],
+                "aliases": [
+                  "아이디"
+                ]
+              },
+              {
+                "name": "age",
+                "dtype": "int64",
+                "distinct_count": 57,
+                "description": "고객 나이",
+                "null_count": 0,
+                "top_values": [],
+                "aliases": [
+                  "나이",
+                  "연령",
+                  "20대",
+                  "30대",
+                  "40대",
+                  "50대"
+                ]
+              },
+              {
+                "name": "job",
+                "dtype": "object",
+                "distinct_count": 12,
+                "description": "직업",
+                "null_count": 0,
+                "top_values": [],
+                "aliases": [
+                  "직업",
+                  "직종",
+                  "일"
+                ]
+              },
+              {
+                "name": "marital",
+                "dtype": "object",
+                "distinct_count": 3,
+                "description": "결혼 여부 (married/single/divorced)",
+                "null_count": 0,
+                "top_values": [
+                  {
+                    "value": "married",
+                    "count": 1207
+                  },
+                  {
+                    "value": "single",
+                    "count": 547
+                  },
+                  {
+                    "value": "divorced",
+                    "count": 246
+                  }
+                ],
+                "aliases": [
+                  "결혼",
+                  "혼인",
+                  "혼인 상태",
+                  "기혼",
+                  "미혼",
+                  "이혼",
+                  "배우자"
+                ]
+              },
+              {
+                "name": "education",
+                "dtype": "object",
+                "distinct_count": 4,
+                "description": "학력 (primary/secondary/tertiary/unknown)",
+                "null_count": 0,
+                "top_values": [
+                  {
+                    "value": "secondary",
+                    "count": 1075
+                  },
+                  {
+                    "value": "tertiary",
+                    "count": 571
+                  },
+                  {
+                    "value": "primary",
+                    "count": 291
+                  },
+                  {
+                    "value": "unknown",
+                    "count": 63
+                  }
+                ],
+                "aliases": [
+                  "학력",
+                  "교육",
+                  "학교"
+                ]
+              },
+              {
+                "name": "default",
+                "dtype": "object",
+                "distinct_count": 2,
+                "description": "채무 불이행 여부 (yes/no)",
+                "null_count": 0,
+                "top_values": [
+                  {
+                    "value": "no",
+                    "count": 1970
+                  },
+                  {
+                    "value": "yes",
+                    "count": 30
+                  }
+                ],
+                "aliases": [
+                  "연체",
+                  "불이행",
+                  "디폴트"
+                ]
+              },
+              {
+                "name": "balance",
+                "dtype": "int64",
+                "distinct_count": 1565,
+                "description": "계좌 잔액",
+                "null_count": 0,
+                "top_values": [],
+                "aliases": [
+                  "잔액",
+                  "잔고",
+                  "예금액",
+                  "통장 잔액"
+                ]
+              },
+              {
+                "name": "housing",
+                "dtype": "object",
+                "distinct_count": 2,
+                "description": "주택 담보 대출 여부 (yes/no)",
+                "null_count": 0,
+                "top_values": [
+                  {
+                    "value": "yes",
+                    "count": 1055
+                  },
+                  {
+                    "value": "no",
+                    "count": 945
+                  }
+                ],
+                "aliases": [
+                  "주택 대출",
+                  "집 대출",
+                  "부동산 대출"
+                ]
+              },
+              {
+                "name": "loan",
+                "dtype": "object",
+                "distinct_count": 2,
+                "description": "개인 신용 대출 여부 (yes/no)",
+                "null_count": 0,
+                "top_values": [
+                  {
+                    "value": "no",
+                    "count": 1652
+                  },
+                  {
+                    "value": "yes",
+                    "count": 348
+                  }
+                ],
+                "aliases": [
+                  "개인 대출",
+                  "신용 대출"
+                ]
+              },
+              {
+                "name": "contact",
+                "dtype": "object",
+                "distinct_count": 3,
+                "description": "통신 수단 (cellular/telephone/unknown)",
+                "null_count": 0,
+                "top_values": [
+                  {
+                    "value": "cellular",
+                    "count": 1232
+                  },
+                  {
+                    "value": "unknown",
+                    "count": 636
+                  },
+                  {
+                    "value": "telephone",
+                    "count": 132
+                  }
+                ],
+                "aliases": [
+                  "연락 방법",
+                  "통신 수단"
+                ]
+              },
+              {
+                "name": "day",
+                "dtype": "int64",
+                "distinct_count": 31,
+                "description": "마지막 접촉 일 (월중)",
+                "null_count": 0,
+                "top_values": [],
+                "aliases": [
+                  "접촉 날짜"
+                ]
+              },
+              {
+                "name": "month",
+                "dtype": "object",
+                "distinct_count": 12,
+                "description": "마지막 접촉 월",
+                "null_count": 0,
+                "top_values": [],
+                "aliases": [
+                  "월",
+                  "달"
+                ]
+              },
+              {
+                "name": "duration",
+                "dtype": "int64",
+                "distinct_count": 692,
+                "description": "통화 지속 시간 (초)",
+                "null_count": 0,
+                "top_values": [],
+                "aliases": [
+                  "상담 시간",
+                  "통화 시간",
+                  "상담 길이"
+                ]
+              },
+              {
+                "name": "campaign",
+                "dtype": "int64",
+                "distinct_count": 13,
+                "description": "이번 캠페인 접촉 횟수",
+                "null_count": 0,
+                "top_values": [],
+                "aliases": [
+                  "접촉 횟수",
+                  "캠페인 횟수"
+                ]
+              },
+              {
+                "name": "pdays",
+                "dtype": "int64",
+                "distinct_count": 326,
+                "description": "이전 캠페인 후 경과 일 수 (-1=없음)",
+                "null_count": 0,
+                "top_values": [],
+                "aliases": [
+                  "경과일"
+                ]
+              },
+              {
+                "name": "previous",
+                "dtype": "int64",
+                "distinct_count": 13,
+                "description": "이전 캠페인 접촉 횟수",
+                "null_count": 0,
+                "top_values": [],
+                "aliases": [
+                  "이전 접촉 횟수"
+                ]
+              },
+              {
+                "name": "poutcome",
+                "dtype": "object",
+                "distinct_count": 4,
+                "description": "이전 캠페인 결과 (success/failure/other/unknown)",
+                "null_count": 0,
+                "top_values": [
+                  {
+                    "value": "unknown",
+                    "count": 1596
+                  },
+                  {
+                    "value": "failure",
+                    "count": 241
+                  },
+                  {
+                    "value": "other",
+                    "count": 109
+                  },
+                  {
+                    "value": "success",
+                    "count": 54
+                  }
+                ],
+                "aliases": [
+                  "이전 결과",
+                  "이전 마케팅 결과"
+                ]
+              },
+              {
+                "name": "y",
+                "dtype": "object",
+                "distinct_count": 2,
+                "description": "정기예금 가입 여부 (yes/no)",
+                "null_count": 0,
+                "top_values": [
+                  {
+                    "value": "no",
+                    "count": 1730
+                  },
+                  {
+                    "value": "yes",
+                    "count": 270
+                  }
+                ],
+                "aliases": [
+                  "가입",
+                  "가입 여부",
+                  "정기예금",
+                  "예금 가입"
+                ]
+              }
+            ],
+            "alias_source": "test_set/README.md > 데이터 스키마 > workspace.default.bank_loan; complete table-level aliases, not question-specific synonym_mapping",
+            "source": "local test_set fixture; not a live Databricks table"
+          }
+        ],
+        "datasets": [
+          {
+            "id": "7e9830d5-79ac-4c56-8bea-6c5ab9247e22",
+            "source": "bank_loan",
+            "columns": [
+              "id",
+              "age",
+              "job",
+              "marital",
+              "education",
+              "default",
+              "balance",
+              "housing",
+              "loan",
+              "contact",
+              "day",
+              "month",
+              "duration",
+              "campaign",
+              "pdays",
+              "previous",
+              "poutcome",
+              "y"
+            ],
+            "rows": 2000,
+            "coverage": "complete",
+            "conditions": [],
+            "predicate_known": true,
+            "grain": "raw",
+            "aggregation": "",
+            "snapshot": "fixture:6fd6aefae0385fe96f9884c3154048e19641fc9ae55f872378551b8c1e268c25",
+            "query": "",
+            "parent_id": "",
+            "parent_ids": [],
+            "role": "root",
+            "root_id": "7e9830d5-79ac-4c56-8bea-6c5ab9247e22",
+            "row_selection": {}
+          },
+          {
+            "id": "3b7767da-ccbd-4a74-8d39-d22023a5b055",
+            "source": "bank_loan",
+            "columns": [
+              "marital",
+              "count",
+              "mean_age"
+            ],
+            "rows": 3,
+            "coverage": "complete",
+            "conditions": [],
+            "predicate_known": true,
+            "grain": "aggregate",
+            "aggregation": "group_summary:{\"conditions\": [], \"group_columns\": [\"marital\"], \"metrics\": [{\"aggregation\": \"count\", \"condition\": null, \"empty_value\": null, \"name\": \"count\", \"value_column\": \"\"}, {\"aggregation\": \"mean\", \"condition\": null, \"empty_value\": null, \"name\": \"mean_age\", \"value_column\": \"age\"}], \"sort\": \"group_ascending\", \"sort_by\": \"\"}",
+            "snapshot": "fixture:6fd6aefae0385fe96f9884c3154048e19641fc9ae55f872378551b8c1e268c25",
+            "query": "GROUP SUMMARY {\"conditions\": [], \"group_columns\": [\"marital\"], \"metrics\": [{\"aggregation\": \"count\", \"condition\": null, \"empty_value\": null, \"name\": \"count\", \"value_column\": \"\"}, {\"aggregation\": \"mean\", \"condition\": null, \"empty_value\": null, \"name\": \"mean_age\", \"value_column\": \"age\"}], \"sort\": \"group_ascending\", \"sort_by\": \"\"}",
+            "parent_id": "7e9830d5-79ac-4c56-8bea-6c5ab9247e22",
+            "parent_ids": [],
+            "role": "derived",
+            "root_id": "7e9830d5-79ac-4c56-8bea-6c5ab9247e22",
+            "row_selection": {}
+          }
+        ],
+        "charts": [],
+        "diagnostics": [
+          {
+            "time": "2026-09-29T15:33:55.744279+00:00",
+            "event": "run_started",
+            "run_id": "cb64fa54c4e24571a7920caa2d749cca",
+            "operation": "submit"
+          },
+          {
+            "time": "2026-09-29T15:33:55.926111+00:00",
+            "event": "recovery_transition",
+            "run_id": "cb64fa54c4e24571a7920caa2d749cca",
+            "tool": "summarize_groups"
+          },
+          {
+            "time": "2026-09-29T15:33:55.927341+00:00",
+            "event": "tool_started",
+            "run_id": "cb64fa54c4e24571a7920caa2d749cca",
+            "tool": "summarize_groups"
+          },
+          {
+            "time": "2026-09-29T15:33:55.932459+00:00",
+            "event": "tool_completed",
+            "run_id": "cb64fa54c4e24571a7920caa2d749cca",
+            "tool": "summarize_groups",
+            "status": "ready",
+            "elapsed_seconds": 0.005
+          },
+          {
+            "time": "2026-09-29T15:33:55.935748+00:00",
+            "event": "completion_checked",
+            "run_id": "cb64fa54c4e24571a7920caa2d749cca",
+            "status": "complete",
+            "attempts": 0,
+            "required_capabilities": [
+              "group_summary"
+            ],
+            "missing_capabilities": []
+          },
+          {
+            "time": "2026-09-29T15:33:55.936904+00:00",
+            "event": "run_completed",
+            "run_id": "cb64fa54c4e24571a7920caa2d749cca",
+            "status": "answered",
+            "elapsed_seconds": 0.193
+          },
+          {
+            "time": "2026-09-29T15:33:55.936933+00:00",
+            "event": "turn_slo",
+            "run_id": "cb64fa54c4e24571a7920caa2d749cca",
+            "elapsed_seconds": 0.193,
+            "limit": 180.0,
+            "status": "ok"
+          }
+        ],
+        "path": "/Users/najongseong/git_repository/teleai/docs/evaluation/2026-09-30_batch/actual_agent_eval_artifacts/L1_053-cb64fa54c4e2-metadata.json"
+      }
+    },
+    {
+      "id": "L1_056",
+      "prompt": "월(month)별 고객 접촉 건수와 평균 상담 시간(duration)을 집계해줘.",
+      "target_table": "bank_loan",
+      "reference_sha256": "8bbc96e1187114fadfc653bf0a809fd41b36726bf922b9a297e2f86951b8b25a",
+      "status": "PASS",
+      "reason": "Independent grouped metrics/order comparison",
+      "evidence": {
+        "result_dataset_id": "58c03d58-3f82-443c-852b-393f7f986d7f",
+        "expected": [
+          {
+            "month": "apr",
+            "접촉수": 100,
+            "평균시간": 251.8
+          },
+          {
+            "month": "aug",
+            "접촉수": 298,
+            "평균시간": 273.7
+          },
+          {
+            "month": "dec",
+            "접촉수": 34,
+            "평균시간": 199.2
+          },
+          {
+            "month": "feb",
+            "접촉수": 128,
+            "평균시간": 286.0
+          },
+          {
+            "month": "jan",
+            "접촉수": 69,
+            "평균시간": 235.0
+          },
+          {
+            "month": "jul",
+            "접촉수": 297,
+            "평균시간": 275.2
+          },
+          {
+            "month": "jun",
+            "접촉수": 204,
+            "평균시간": 263.2
+          },
+          {
+            "month": "mar",
+            "접촉수": 19,
+            "평균시간": 243.2
+          },
+          {
+            "month": "may",
+            "접촉수": 625,
+            "평균시간": 254.7
+          },
+          {
+            "month": "nov",
+            "접촉수": 168,
+            "평균시간": 259.7
+          },
+          {
+            "month": "oct",
+            "접촉수": 41,
+            "평균시간": 254.9
+          },
+          {
+            "month": "sep",
+            "접촉수": 17,
+            "평균시간": 235.8
+          }
+        ],
+        "counterfactual_probes": 2
+      },
+      "agent_status": "answered",
+      "runtime_state": "idle",
+      "elapsed_seconds": 0.235,
+      "tools": {
+        "summarize_groups": 1
+      },
+      "tool_calls": [
+        {
+          "id": "afb41cdf-19d6-4f20-83f7-ce16a9381f80",
+          "tool": "summarize_groups",
+          "arguments": {
+            "dataset_id": "56fe2f7c-82c1-4a40-9d23-0c658ed3dd31",
+            "group_columns": [
+              "month"
+            ],
+            "metrics": [
+              {
+                "name": "count",
+                "aggregation": "count"
+              },
+              {
+                "name": "mean_duration",
+                "aggregation": "mean",
+                "value_column": "duration"
+              }
+            ],
+            "conditions": [],
+            "sort": "group_ascending",
+            "sort_by": ""
+          }
+        }
+      ],
+      "queries": [],
+      "observations": [
+        {
+          "tool": "summarize_groups",
+          "status": "ready",
+          "error_code": null
+        }
+      ],
+      "remote_executions": 0,
+      "forbidden_executor_invocations": 0,
+      "error_type": null,
+      "error_id": null,
+      "final_output": "month별 2개 지표를 계산했습니다. 원본 2,000행, 조건 적용 2,000행, 그룹 키 결측 제외 2,000행, 결과 12행입니다.\n```csv\nmonth,count,mean_duration\napr,100,251.82\naug,298,273.748322147651\ndec,34,199.23529411764707\nfeb,128,285.9921875\njan,69,234.97101449275362\njul,297,275.22895622895624\njun,204,263.1862745098039\nmar,19,243.1578947368421\nmay,625,254.6544\nnov,168,259.67857142857144\noct,41,254.8780487804878\nsep,17,235.8235294117647\n```\n분석 범위: bank_loan의 보유 raw dataset 2,000행에서 조건 적용 2,000행, 그룹 키가 있는 2,000행을 2개 지표로 요약한 12행 · coverage=complete · snapshot=fixture:6fd6aefae0385fe96f9884c3154048e19641fc9ae55f872378551b8c1e268c25",
+      "runtime_metadata": {
+        "case_id": "L1_056",
+        "run_id": "f4b79142d8ff4bfc9e3aead0186b7cf1",
+        "state": "idle",
+        "message_count": 4,
+        "pending_requests": 0,
+        "recovery_status": "complete",
+        "recovery_attempts": 0,
+        "recovery_model_calls": 0,
+        "reference_context": [
+          {
+            "table": "bank_loan",
+            "training_status": "fixture_profile",
+            "columns": [
+              {
+                "name": "id",
+                "dtype": "int64",
+                "distinct_count": 2000,
+                "description": "고객 ID",
+                "null_count": 0,
+                "top_values": [],
+                "aliases": [
+                  "아이디"
+                ]
+              },
+              {
+                "name": "age",
+                "dtype": "int64",
+                "distinct_count": 57,
+                "description": "고객 나이",
+                "null_count": 0,
+                "top_values": [],
+                "aliases": [
+                  "나이",
+                  "연령",
+                  "20대",
+                  "30대",
+                  "40대",
+                  "50대"
+                ]
+              },
+              {
+                "name": "job",
+                "dtype": "object",
+                "distinct_count": 12,
+                "description": "직업",
+                "null_count": 0,
+                "top_values": [],
+                "aliases": [
+                  "직업",
+                  "직종",
+                  "일"
+                ]
+              },
+              {
+                "name": "marital",
+                "dtype": "object",
+                "distinct_count": 3,
+                "description": "결혼 여부 (married/single/divorced)",
+                "null_count": 0,
+                "top_values": [
+                  {
+                    "value": "married",
+                    "count": 1207
+                  },
+                  {
+                    "value": "single",
+                    "count": 547
+                  },
+                  {
+                    "value": "divorced",
+                    "count": 246
+                  }
+                ],
+                "aliases": [
+                  "결혼",
+                  "혼인",
+                  "혼인 상태",
+                  "기혼",
+                  "미혼",
+                  "이혼",
+                  "배우자"
+                ]
+              },
+              {
+                "name": "education",
+                "dtype": "object",
+                "distinct_count": 4,
+                "description": "학력 (primary/secondary/tertiary/unknown)",
+                "null_count": 0,
+                "top_values": [
+                  {
+                    "value": "secondary",
+                    "count": 1075
+                  },
+                  {
+                    "value": "tertiary",
+                    "count": 571
+                  },
+                  {
+                    "value": "primary",
+                    "count": 291
+                  },
+                  {
+                    "value": "unknown",
+                    "count": 63
+                  }
+                ],
+                "aliases": [
+                  "학력",
+                  "교육",
+                  "학교"
+                ]
+              },
+              {
+                "name": "default",
+                "dtype": "object",
+                "distinct_count": 2,
+                "description": "채무 불이행 여부 (yes/no)",
+                "null_count": 0,
+                "top_values": [
+                  {
+                    "value": "no",
+                    "count": 1970
+                  },
+                  {
+                    "value": "yes",
+                    "count": 30
+                  }
+                ],
+                "aliases": [
+                  "연체",
+                  "불이행",
+                  "디폴트"
+                ]
+              },
+              {
+                "name": "balance",
+                "dtype": "int64",
+                "distinct_count": 1565,
+                "description": "계좌 잔액",
+                "null_count": 0,
+                "top_values": [],
+                "aliases": [
+                  "잔액",
+                  "잔고",
+                  "예금액",
+                  "통장 잔액"
+                ]
+              },
+              {
+                "name": "housing",
+                "dtype": "object",
+                "distinct_count": 2,
+                "description": "주택 담보 대출 여부 (yes/no)",
+                "null_count": 0,
+                "top_values": [
+                  {
+                    "value": "yes",
+                    "count": 1055
+                  },
+                  {
+                    "value": "no",
+                    "count": 945
+                  }
+                ],
+                "aliases": [
+                  "주택 대출",
+                  "집 대출",
+                  "부동산 대출"
+                ]
+              },
+              {
+                "name": "loan",
+                "dtype": "object",
+                "distinct_count": 2,
+                "description": "개인 신용 대출 여부 (yes/no)",
+                "null_count": 0,
+                "top_values": [
+                  {
+                    "value": "no",
+                    "count": 1652
+                  },
+                  {
+                    "value": "yes",
+                    "count": 348
+                  }
+                ],
+                "aliases": [
+                  "개인 대출",
+                  "신용 대출"
+                ]
+              },
+              {
+                "name": "contact",
+                "dtype": "object",
+                "distinct_count": 3,
+                "description": "통신 수단 (cellular/telephone/unknown)",
+                "null_count": 0,
+                "top_values": [
+                  {
+                    "value": "cellular",
+                    "count": 1232
+                  },
+                  {
+                    "value": "unknown",
+                    "count": 636
+                  },
+                  {
+                    "value": "telephone",
+                    "count": 132
+                  }
+                ],
+                "aliases": [
+                  "연락 방법",
+                  "통신 수단"
+                ]
+              },
+              {
+                "name": "day",
+                "dtype": "int64",
+                "distinct_count": 31,
+                "description": "마지막 접촉 일 (월중)",
+                "null_count": 0,
+                "top_values": [],
+                "aliases": [
+                  "접촉 날짜"
+                ]
+              },
+              {
+                "name": "month",
+                "dtype": "object",
+                "distinct_count": 12,
+                "description": "마지막 접촉 월",
+                "null_count": 0,
+                "top_values": [],
+                "aliases": [
+                  "월",
+                  "달"
+                ]
+              },
+              {
+                "name": "duration",
+                "dtype": "int64",
+                "distinct_count": 692,
+                "description": "통화 지속 시간 (초)",
+                "null_count": 0,
+                "top_values": [],
+                "aliases": [
+                  "상담 시간",
+                  "통화 시간",
+                  "상담 길이"
+                ]
+              },
+              {
+                "name": "campaign",
+                "dtype": "int64",
+                "distinct_count": 13,
+                "description": "이번 캠페인 접촉 횟수",
+                "null_count": 0,
+                "top_values": [],
+                "aliases": [
+                  "접촉 횟수",
+                  "캠페인 횟수"
+                ]
+              },
+              {
+                "name": "pdays",
+                "dtype": "int64",
+                "distinct_count": 326,
+                "description": "이전 캠페인 후 경과 일 수 (-1=없음)",
+                "null_count": 0,
+                "top_values": [],
+                "aliases": [
+                  "경과일"
+                ]
+              },
+              {
+                "name": "previous",
+                "dtype": "int64",
+                "distinct_count": 13,
+                "description": "이전 캠페인 접촉 횟수",
+                "null_count": 0,
+                "top_values": [],
+                "aliases": [
+                  "이전 접촉 횟수"
+                ]
+              },
+              {
+                "name": "poutcome",
+                "dtype": "object",
+                "distinct_count": 4,
+                "description": "이전 캠페인 결과 (success/failure/other/unknown)",
+                "null_count": 0,
+                "top_values": [
+                  {
+                    "value": "unknown",
+                    "count": 1596
+                  },
+                  {
+                    "value": "failure",
+                    "count": 241
+                  },
+                  {
+                    "value": "other",
+                    "count": 109
+                  },
+                  {
+                    "value": "success",
+                    "count": 54
+                  }
+                ],
+                "aliases": [
+                  "이전 결과",
+                  "이전 마케팅 결과"
+                ]
+              },
+              {
+                "name": "y",
+                "dtype": "object",
+                "distinct_count": 2,
+                "description": "정기예금 가입 여부 (yes/no)",
+                "null_count": 0,
+                "top_values": [
+                  {
+                    "value": "no",
+                    "count": 1730
+                  },
+                  {
+                    "value": "yes",
+                    "count": 270
+                  }
+                ],
+                "aliases": [
+                  "가입",
+                  "가입 여부",
+                  "정기예금",
+                  "예금 가입"
+                ]
+              }
+            ],
+            "alias_source": "test_set/README.md > 데이터 스키마 > workspace.default.bank_loan; complete table-level aliases, not question-specific synonym_mapping",
+            "source": "local test_set fixture; not a live Databricks table"
+          }
+        ],
+        "datasets": [
+          {
+            "id": "56fe2f7c-82c1-4a40-9d23-0c658ed3dd31",
+            "source": "bank_loan",
+            "columns": [
+              "id",
+              "age",
+              "job",
+              "marital",
+              "education",
+              "default",
+              "balance",
+              "housing",
+              "loan",
+              "contact",
+              "day",
+              "month",
+              "duration",
+              "campaign",
+              "pdays",
+              "previous",
+              "poutcome",
+              "y"
+            ],
+            "rows": 2000,
+            "coverage": "complete",
+            "conditions": [],
+            "predicate_known": true,
+            "grain": "raw",
+            "aggregation": "",
+            "snapshot": "fixture:6fd6aefae0385fe96f9884c3154048e19641fc9ae55f872378551b8c1e268c25",
+            "query": "",
+            "parent_id": "",
+            "parent_ids": [],
+            "role": "root",
+            "root_id": "56fe2f7c-82c1-4a40-9d23-0c658ed3dd31",
+            "row_selection": {}
+          },
+          {
+            "id": "58c03d58-3f82-443c-852b-393f7f986d7f",
+            "source": "bank_loan",
+            "columns": [
+              "month",
+              "count",
+              "mean_duration"
+            ],
+            "rows": 12,
+            "coverage": "complete",
+            "conditions": [],
+            "predicate_known": true,
+            "grain": "aggregate",
+            "aggregation": "group_summary:{\"conditions\": [], \"group_columns\": [\"month\"], \"metrics\": [{\"aggregation\": \"count\", \"condition\": null, \"empty_value\": null, \"name\": \"count\", \"value_column\": \"\"}, {\"aggregation\": \"mean\", \"condition\": null, \"empty_value\": null, \"name\": \"mean_duration\", \"value_column\": \"duration\"}], \"sort\": \"group_ascending\", \"sort_by\": \"\"}",
+            "snapshot": "fixture:6fd6aefae0385fe96f9884c3154048e19641fc9ae55f872378551b8c1e268c25",
+            "query": "GROUP SUMMARY {\"conditions\": [], \"group_columns\": [\"month\"], \"metrics\": [{\"aggregation\": \"count\", \"condition\": null, \"empty_value\": null, \"name\": \"count\", \"value_column\": \"\"}, {\"aggregation\": \"mean\", \"condition\": null, \"empty_value\": null, \"name\": \"mean_duration\", \"value_column\": \"duration\"}], \"sort\": \"group_ascending\", \"sort_by\": \"\"}",
+            "parent_id": "56fe2f7c-82c1-4a40-9d23-0c658ed3dd31",
+            "parent_ids": [],
+            "role": "derived",
+            "root_id": "56fe2f7c-82c1-4a40-9d23-0c658ed3dd31",
+            "row_selection": {}
+          }
+        ],
+        "charts": [],
+        "diagnostics": [
+          {
+            "time": "2026-09-29T15:33:55.980438+00:00",
+            "event": "run_started",
+            "run_id": "f4b79142d8ff4bfc9e3aead0186b7cf1",
+            "operation": "submit"
+          },
+          {
+            "time": "2026-09-29T15:33:56.165231+00:00",
+            "event": "recovery_transition",
+            "run_id": "f4b79142d8ff4bfc9e3aead0186b7cf1",
+            "tool": "summarize_groups"
+          },
+          {
+            "time": "2026-09-29T15:33:56.166481+00:00",
+            "event": "tool_started",
+            "run_id": "f4b79142d8ff4bfc9e3aead0186b7cf1",
+            "tool": "summarize_groups"
+          },
+          {
+            "time": "2026-09-29T15:33:56.171847+00:00",
+            "event": "tool_completed",
+            "run_id": "f4b79142d8ff4bfc9e3aead0186b7cf1",
+            "tool": "summarize_groups",
+            "status": "ready",
+            "elapsed_seconds": 0.005
+          },
+          {
+            "time": "2026-09-29T15:33:56.175622+00:00",
+            "event": "completion_checked",
+            "run_id": "f4b79142d8ff4bfc9e3aead0186b7cf1",
+            "status": "complete",
+            "attempts": 0,
+            "required_capabilities": [
+              "group_summary"
+            ],
+            "missing_capabilities": []
+          },
+          {
+            "time": "2026-09-29T15:33:56.176835+00:00",
+            "event": "run_completed",
+            "run_id": "f4b79142d8ff4bfc9e3aead0186b7cf1",
+            "status": "answered",
+            "elapsed_seconds": 0.196
+          },
+          {
+            "time": "2026-09-29T15:33:56.176868+00:00",
+            "event": "turn_slo",
+            "run_id": "f4b79142d8ff4bfc9e3aead0186b7cf1",
+            "elapsed_seconds": 0.196,
+            "limit": 180.0,
+            "status": "ok"
+          }
+        ],
+        "path": "/Users/najongseong/git_repository/teleai/docs/evaluation/2026-09-30_batch/actual_agent_eval_artifacts/L1_056-f4b79142d8ff-metadata.json"
+      }
+    },
+    {
+      "id": "L1_061",
+      "prompt": "타이타닉 탑승지(Embarked)별 승객 수와 평균 요금(Fare)을 계산해줘.",
+      "target_table": "titanic",
+      "reference_sha256": "64ca5706079cfa59f50d24507ae0818073d121696618cc499a11e6decdd0207c",
+      "status": "PASS",
+      "reason": "Independent grouped metrics/order comparison",
+      "evidence": {
+        "result_dataset_id": "2075d2dd-6774-4a1e-b53f-6937fd934264",
+        "expected": [
+          {
+            "Embarked": "C",
+            "승객수": 181,
+            "평균요금": 32.98
+          },
+          {
+            "Embarked": "Q",
+            "승객수": 59,
+            "평균요금": 35.25
+          },
+          {
+            "Embarked": "S",
+            "승객수": 639,
+            "평균요금": 34.19
+          }
+        ],
+        "counterfactual_probes": 2
+      },
+      "agent_status": "answered",
+      "runtime_state": "idle",
+      "elapsed_seconds": 0.153,
+      "tools": {
+        "summarize_groups": 1
+      },
+      "tool_calls": [
+        {
+          "id": "6847f104-5225-4345-92e6-06304f775449",
+          "tool": "summarize_groups",
+          "arguments": {
+            "dataset_id": "176ff069-3923-40da-9ba1-68c480739ea9",
+            "group_columns": [
+              "Embarked"
+            ],
+            "metrics": [
+              {
+                "name": "count",
+                "aggregation": "count"
+              },
+              {
+                "name": "mean_Fare",
+                "aggregation": "mean",
+                "value_column": "Fare"
+              }
+            ],
+            "conditions": [],
+            "sort": "group_ascending",
+            "sort_by": ""
+          }
+        }
+      ],
+      "queries": [],
+      "observations": [
+        {
+          "tool": "summarize_groups",
+          "status": "ready",
+          "error_code": null
+        }
+      ],
+      "remote_executions": 0,
+      "forbidden_executor_invocations": 0,
+      "error_type": null,
+      "error_id": null,
+      "final_output": "Embarked별 2개 지표를 계산했습니다. 원본 891행, 조건 적용 891행, 그룹 키 결측 제외 879행, 결과 3행입니다.\n```csv\nEmbarked,count,mean_Fare\nC,181,32.98486187845304\nQ,59,35.25474576271187\nS,639,34.1860406885759\n```\n분석 범위: titanic의 보유 raw dataset 891행에서 조건 적용 891행, 그룹 키가 있는 879행을 2개 지표로 요약한 3행 · coverage=complete · snapshot=fixture:261728c6b4aefb97391c652943bd7af2acea038e39d35f98779a975f900e0688",
+      "runtime_metadata": {
+        "case_id": "L1_061",
+        "run_id": "dd20a9a77c5c4bf685611d65060a4b26",
+        "state": "idle",
+        "message_count": 4,
+        "pending_requests": 0,
+        "recovery_status": "complete",
+        "recovery_attempts": 0,
+        "recovery_model_calls": 0,
+        "reference_context": [
+          {
+            "table": "titanic",
+            "training_status": "fixture_profile",
+            "columns": [
+              {
+                "name": "PassengerId",
+                "dtype": "int64",
+                "distinct_count": 891,
+                "description": "승객 ID",
+                "null_count": 0,
+                "top_values": [],
+                "aliases": [
+                  "승객 번호"
+                ]
+              },
+              {
+                "name": "Survived",
+                "dtype": "int64",
+                "distinct_count": 2,
+                "description": "생존 여부 (1=생존, 0=사망)",
+                "null_count": 0,
+                "top_values": [
+                  {
+                    "value": 0,
+                    "count": 564
+                  },
+                  {
+                    "value": 1,
+                    "count": 327
+                  }
+                ],
+                "aliases": [
+                  "생존율",
+                  "생존 여부"
+                ]
+              },
+              {
+                "name": "Pclass",
+                "dtype": "int64",
+                "distinct_count": 3,
+                "description": "객실 등급 (1/2/3)",
+                "null_count": 0,
+                "top_values": [
+                  {
+                    "value": 3,
+                    "count": 490
+                  },
+                  {
+                    "value": 1,
+                    "count": 223
+                  },
+                  {
+                    "value": 2,
+                    "count": 178
+                  }
+                ],
+                "aliases": [
+                  "등급",
+                  "좌석 등급",
+                  "객실 등급"
+                ]
+              },
+              {
+                "name": "Name",
+                "dtype": "object",
+                "distinct_count": 891,
+                "description": "승객 이름",
+                "null_count": 0,
+                "top_values": [],
+                "aliases": [
+                  "이름"
+                ]
+              },
+              {
+                "name": "Sex",
+                "dtype": "object",
+                "distinct_count": 2,
+                "description": "성별 (male/female)",
+                "null_count": 0,
+                "top_values": [
+                  {
+                    "value": "male",
+                    "count": 583
+                  },
+                  {
+                    "value": "female",
+                    "count": 308
+                  }
+                ],
+                "aliases": [
+                  "성별",
+                  "남성",
+                  "여성"
+                ]
+              },
+              {
+                "name": "Age",
+                "dtype": "float64",
+                "distinct_count": 382,
+                "description": "나이 (결측치 있음)",
+                "null_count": 193,
+                "top_values": [],
+                "aliases": [
+                  "나이",
+                  "연령"
+                ]
+              },
+              {
+                "name": "SibSp",
+                "dtype": "int64",
+                "distinct_count": 7,
+                "description": "동반 형제자매/배우자 수",
+                "null_count": 0,
+                "top_values": [
+                  {
+                    "value": 0,
+                    "count": 621
+                  },
+                  {
+                    "value": 1,
+                    "count": 185
+                  },
+                  {
+                    "value": 2,
+                    "count": 48
+                  },
+                  {
+                    "value": 4,
+                    "count": 16
+                  },
+                  {
+                    "value": 3,
+                    "count": 14
+                  },
+                  {
+                    "value": 8,
+                    "count": 5
+                  },
+                  {
+                    "value": 5,
+                    "count": 2
+                  }
+                ],
+                "aliases": [
+                  "형제자매",
+                  "배우자"
+                ]
+              },
+              {
+                "name": "Parch",
+                "dtype": "int64",
+                "distinct_count": 7,
+                "description": "동반 부모/자녀 수",
+                "null_count": 0,
+                "top_values": [
+                  {
+                    "value": 0,
+                    "count": 652
+                  },
+                  {
+                    "value": 1,
+                    "count": 119
+                  },
+                  {
+                    "value": 2,
+                    "count": 103
+                  },
+                  {
+                    "value": 4,
+                    "count": 6
+                  },
+                  {
+                    "value": 3,
+                    "count": 5
+                  },
+                  {
+                    "value": 5,
+                    "count": 5
+                  },
+                  {
+                    "value": 6,
+                    "count": 1
+                  }
+                ],
+                "aliases": [
+                  "부모",
+                  "자녀"
+                ]
+              },
+              {
+                "name": "Ticket",
+                "dtype": "object",
+                "distinct_count": 891,
+                "description": "티켓 번호",
+                "null_count": 0,
+                "top_values": [],
+                "aliases": [
+                  "티켓"
+                ]
+              },
+              {
+                "name": "Fare",
+                "dtype": "float64",
+                "distinct_count": 798,
+                "description": "운임료",
+                "null_count": 0,
+                "top_values": [],
+                "aliases": [
+                  "요금",
+                  "운임",
+                  "승선료"
+                ]
+              },
+              {
+                "name": "Cabin",
+                "dtype": "object",
+                "distinct_count": 50,
+                "description": "객실 번호 (결측치 많음)",
+                "null_count": 672,
+                "top_values": [],
+                "aliases": [
+                  "객실 번호",
+                  "객실"
+                ]
+              },
+              {
+                "name": "Embarked",
+                "dtype": "object",
+                "distinct_count": 3,
+                "description": "승선 항구 (C/Q/S)",
+                "null_count": 12,
+                "top_values": [
+                  {
+                    "value": "S",
+                    "count": 639
+                  },
+                  {
+                    "value": "C",
+                    "count": 181
+                  },
+                  {
+                    "value": "Q",
+                    "count": 59
+                  }
+                ],
+                "aliases": [
+                  "승선 항구",
+                  "출발지"
+                ]
+              }
+            ],
+            "alias_source": "test_set/README.md > 데이터 스키마 > workspace.default.titanic; complete table-level aliases, not question-specific synonym_mapping",
+            "source": "local test_set fixture; not a live Databricks table"
+          }
+        ],
+        "datasets": [
+          {
+            "id": "176ff069-3923-40da-9ba1-68c480739ea9",
+            "source": "titanic",
+            "columns": [
+              "PassengerId",
+              "Survived",
+              "Pclass",
+              "Name",
+              "Sex",
+              "Age",
+              "SibSp",
+              "Parch",
+              "Ticket",
+              "Fare",
+              "Cabin",
+              "Embarked"
+            ],
+            "rows": 891,
+            "coverage": "complete",
+            "conditions": [],
+            "predicate_known": true,
+            "grain": "raw",
+            "aggregation": "",
+            "snapshot": "fixture:261728c6b4aefb97391c652943bd7af2acea038e39d35f98779a975f900e0688",
+            "query": "",
+            "parent_id": "",
+            "parent_ids": [],
+            "role": "root",
+            "root_id": "176ff069-3923-40da-9ba1-68c480739ea9",
+            "row_selection": {}
+          },
+          {
+            "id": "2075d2dd-6774-4a1e-b53f-6937fd934264",
+            "source": "titanic",
+            "columns": [
+              "Embarked",
+              "count",
+              "mean_Fare"
+            ],
+            "rows": 3,
+            "coverage": "complete",
+            "conditions": [],
+            "predicate_known": true,
+            "grain": "aggregate",
+            "aggregation": "group_summary:{\"conditions\": [], \"group_columns\": [\"Embarked\"], \"metrics\": [{\"aggregation\": \"count\", \"condition\": null, \"empty_value\": null, \"name\": \"count\", \"value_column\": \"\"}, {\"aggregation\": \"mean\", \"condition\": null, \"empty_value\": null, \"name\": \"mean_Fare\", \"value_column\": \"Fare\"}], \"sort\": \"group_ascending\", \"sort_by\": \"\"}",
+            "snapshot": "fixture:261728c6b4aefb97391c652943bd7af2acea038e39d35f98779a975f900e0688",
+            "query": "GROUP SUMMARY {\"conditions\": [], \"group_columns\": [\"Embarked\"], \"metrics\": [{\"aggregation\": \"count\", \"condition\": null, \"empty_value\": null, \"name\": \"count\", \"value_column\": \"\"}, {\"aggregation\": \"mean\", \"condition\": null, \"empty_value\": null, \"name\": \"mean_Fare\", \"value_column\": \"Fare\"}], \"sort\": \"group_ascending\", \"sort_by\": \"\"}",
+            "parent_id": "176ff069-3923-40da-9ba1-68c480739ea9",
+            "parent_ids": [],
+            "role": "derived",
+            "root_id": "176ff069-3923-40da-9ba1-68c480739ea9",
+            "row_selection": {}
+          }
+        ],
+        "charts": [],
+        "diagnostics": [
+          {
+            "time": "2026-09-29T15:33:56.215018+00:00",
+            "event": "run_started",
+            "run_id": "dd20a9a77c5c4bf685611d65060a4b26",
+            "operation": "submit"
+          },
+          {
+            "time": "2026-09-29T15:33:56.326141+00:00",
+            "event": "recovery_transition",
+            "run_id": "dd20a9a77c5c4bf685611d65060a4b26",
+            "tool": "summarize_groups"
+          },
+          {
+            "time": "2026-09-29T15:33:56.327400+00:00",
+            "event": "tool_started",
+            "run_id": "dd20a9a77c5c4bf685611d65060a4b26",
+            "tool": "summarize_groups"
+          },
+          {
+            "time": "2026-09-29T15:33:56.331948+00:00",
+            "event": "tool_completed",
+            "run_id": "dd20a9a77c5c4bf685611d65060a4b26",
+            "tool": "summarize_groups",
+            "status": "ready",
+            "elapsed_seconds": 0.005
+          },
+          {
+            "time": "2026-09-29T15:33:56.334171+00:00",
+            "event": "completion_checked",
+            "run_id": "dd20a9a77c5c4bf685611d65060a4b26",
+            "status": "complete",
+            "attempts": 0,
+            "required_capabilities": [
+              "group_summary"
+            ],
+            "missing_capabilities": []
+          },
+          {
+            "time": "2026-09-29T15:33:56.335301+00:00",
+            "event": "run_completed",
+            "run_id": "dd20a9a77c5c4bf685611d65060a4b26",
+            "status": "answered",
+            "elapsed_seconds": 0.12
+          },
+          {
+            "time": "2026-09-29T15:33:56.335338+00:00",
+            "event": "turn_slo",
+            "run_id": "dd20a9a77c5c4bf685611d65060a4b26",
+            "elapsed_seconds": 0.12,
+            "limit": 180.0,
+            "status": "ok"
+          }
+        ],
+        "path": "/Users/najongseong/git_repository/teleai/docs/evaluation/2026-09-30_batch/actual_agent_eval_artifacts/L1_061-dd20a9a77c5c-metadata.json"
+      }
+    }
+  ],
+  "limitations": [
+    "Not a Databricks or browser end-to-end test",
+    "Single-turn questions; follow-up journeys require separate evaluation",
+    "Final prose is not graded; PASS establishes tool-result/artifact accuracy only",
+    "Unsupported reference cases stay UNGRADED and are excluded from success claims",
+    "Scripted-model tests validate the harness, not natural-language model quality"
+  ],
+  "semantic_context": "table_wide_readme_descriptions"
+}

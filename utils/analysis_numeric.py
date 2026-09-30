@@ -6,15 +6,20 @@ import pandas as pd
 from utils.analysis_datasets import project_dataset
 
 
-def prepare_numeric_dataset(store, dataset_id, columns, missing_values=None):
+def prepare_numeric_dataset(store, dataset_id, columns, missing_values=None, preserve_columns=None):
     info=store.metadata[dataset_id]
     missing_values=[] if missing_values is None else missing_values
+    preserve_columns=[] if preserve_columns is None else preserve_columns
     if (not isinstance(columns,list) or not 1<=len(columns)<=8
             or len(set(columns))!=len(columns) or not set(columns)<=set(info.columns)
             or not isinstance(missing_values,list) or len(missing_values)>16
             or any(not isinstance(v,str) or len(v)>64 for v in missing_values)):
         raise ValueError('Use 1–8 known columns and at most 16 explicit missing strings')
-    source=project_dataset(store,dataset_id,columns)
+    if (not isinstance(preserve_columns,list) or len(preserve_columns)>8
+            or len(set(preserve_columns))!=len(preserve_columns)
+            or set(preserve_columns)&set(columns) or not set(preserve_columns)<=set(info.columns)):
+        raise ValueError('Preserved columns must be known, unique and separate from numeric measures')
+    source=project_dataset(store,dataset_id,[*columns,*preserve_columns])
     output=pd.DataFrame(index=source.index);audit=[];projections=[]
     for column in columns:
         series=source[column]
@@ -45,6 +50,9 @@ def prepare_numeric_dataset(store, dataset_id, columns, missing_values=None):
             literals=','.join("'"+v.replace("'","''")+"'" for v in missing_values)
             expression=f'CASE WHEN CAST({quoted} AS VARCHAR) IN ({literals}) THEN NULL ELSE {quoted} END'
         projections.append(f'CAST({expression} AS DOUBLE) AS {quoted}')
+    for column in preserve_columns:
+        output[column]=source[column]
+        projections.append('"'+column.replace('"','""')+'"')
     query='SELECT '+', '.join(projections)+' FROM data'
     # Reuse the same immutable branch for repeated preparation of one snapshot.
     existing=next((d for d in store.metadata.values() if d.parent_id==dataset_id
