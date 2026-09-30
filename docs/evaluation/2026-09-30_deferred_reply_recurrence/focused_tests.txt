@@ -1,0 +1,199 @@
+..EEEEFEE..F.E2026-09-30 13:45:34.328 WARNING streamlit.runtime.scriptrunner_utils.script_run_context: Thread 'MainThread': missing ScriptRunContext! This warning can be ignored when running in bare mode.
+2026-09-30 13:45:34.673 Uncaught app execution
+Traceback (most recent call last):
+  File "/Users/najongseong/git_repository/teleai/.telly_runtime/v1-venv/lib/python3.11/site-packages/streamlit/runtime/scriptrunner/exec_code.py", line 136, in exec_func_with_error_handling
+    result = func()
+             ^^^^^^
+  File "/Users/najongseong/git_repository/teleai/.telly_runtime/v1-venv/lib/python3.11/site-packages/streamlit/runtime/scriptrunner/script_runner.py", line 827, in code_to_exec
+    exec(code, module.__dict__)  # noqa: S102
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/najongseong/git_repository/teleai/ui/analysis_page.py", line 124, in <module>
+    policy=runtime.inspect()['operational_policy']
+           ^^^^^^^^^^^^^^^^^
+  File "/Users/najongseong/git_repository/teleai/core/analysis_agent/runtime.py", line 302, in inspect
+    'message_count':len(self.events()),
+                        ^^^^^^^^^^^^^
+  File "/Users/najongseong/git_repository/teleai/core/analysis_agent/runtime.py", line 272, in events
+    self.transcript.record(self.agent.get_state(self.config).values.get('messages',[]))
+  File "/Users/najongseong/git_repository/teleai/core/analysis_agent/memory.py", line 151, in record
+    safe = self._delivery_message(message)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/najongseong/git_repository/teleai/core/analysis_agent/memory.py", line 176, in _delivery_message
+    if not isinstance(message, AIMessage) or not deferred_execution_claim(message.content):
+                               ^^^^^^^^^
+NameError: name 'AIMessage' is not defined
+FEEEE.E.....
+======================================================================
+ERROR: test_tool_narration_and_historical_unverified_promises_are_not_rendered (tests.test_deferred_reply_delivery.DeferredReplyDeliveryTests.test_tool_narration_and_historical_unverified_promises_are_not_rendered)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/najongseong/git_repository/teleai/tests/test_deferred_reply_delivery.py", line 30, in test_tool_narration_and_historical_unverified_promises_are_not_rendered
+    transcript.record([message])
+  File "/Users/najongseong/git_repository/teleai/core/analysis_agent/memory.py", line 151, in record
+    safe = self._delivery_message(message)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/najongseong/git_repository/teleai/core/analysis_agent/memory.py", line 176, in _delivery_message
+    if not isinstance(message, AIMessage) or not deferred_execution_claim(message.content):
+                               ^^^^^^^^^
+NameError: name 'AIMessage' is not defined
+
+======================================================================
+ERROR: test_exact_reported_reply_string_and_blocks_cannot_complete_without_execution (tests.test_deferred_reply_delivery.ExactGraphReplyTests.test_exact_reported_reply_string_and_blocks_cannot_complete_without_execution) (content_type='str')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/najongseong/git_repository/teleai/tests/test_deferred_reply_delivery.py", line 73, in test_exact_reported_reply_string_and_blocks_cannot_complete_without_execution
+    self.assertFalse(any(deferred_execution_claim(m.content) for m in runtime.events()
+                                                                      ^^^^^^^^^^^^^^^^
+  File "/Users/najongseong/git_repository/teleai/core/analysis_agent/runtime.py", line 272, in events
+    self.transcript.record(self.agent.get_state(self.config).values.get('messages',[]))
+  File "/Users/najongseong/git_repository/teleai/core/analysis_agent/memory.py", line 151, in record
+    safe = self._delivery_message(message)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/najongseong/git_repository/teleai/core/analysis_agent/memory.py", line 176, in _delivery_message
+    if not isinstance(message, AIMessage) or not deferred_execution_claim(message.content):
+                               ^^^^^^^^^
+NameError: name 'AIMessage' is not defined
+
+======================================================================
+ERROR: test_exact_reported_reply_string_and_blocks_cannot_complete_without_execution (tests.test_deferred_reply_delivery.ExactGraphReplyTests.test_exact_reported_reply_string_and_blocks_cannot_complete_without_execution) (content_type='list')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/najongseong/git_repository/teleai/tests/test_deferred_reply_delivery.py", line 73, in test_exact_reported_reply_string_and_blocks_cannot_complete_without_execution
+    self.assertFalse(any(deferred_execution_claim(m.content) for m in runtime.events()
+                                                                      ^^^^^^^^^^^^^^^^
+  File "/Users/najongseong/git_repository/teleai/core/analysis_agent/runtime.py", line 272, in events
+    self.transcript.record(self.agent.get_state(self.config).values.get('messages',[]))
+  File "/Users/najongseong/git_repository/teleai/core/analysis_agent/memory.py", line 151, in record
+    safe = self._delivery_message(message)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/najongseong/git_repository/teleai/core/analysis_agent/memory.py", line 176, in _delivery_message
+    if not isinstance(message, AIMessage) or not deferred_execution_claim(message.content):
+                               ^^^^^^^^^
+NameError: name 'AIMessage' is not defined
+
+======================================================================
+ERROR: test_catalog_query_plan_without_tool_is_not_completion (tests.test_remote_result_completion.RemoteResultCompletionTests.test_catalog_query_plan_without_tool_is_not_completion)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/najongseong/git_repository/teleai/tests/test_remote_result_completion.py", line 224, in test_catalog_query_plan_without_tool_is_not_completion
+    self.assertTrue(runtime.inspect()['recovery']['remote_result_requested'])
+                    ^^^^^^^^^^^^^^^^^
+  File "/Users/najongseong/git_repository/teleai/core/analysis_agent/runtime.py", line 302, in inspect
+    'message_count':len(self.events()),
+                        ^^^^^^^^^^^^^
+  File "/Users/najongseong/git_repository/teleai/core/analysis_agent/runtime.py", line 272, in events
+    self.transcript.record(self.agent.get_state(self.config).values.get('messages',[]))
+  File "/Users/najongseong/git_repository/teleai/core/analysis_agent/memory.py", line 151, in record
+    safe = self._delivery_message(message)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/najongseong/git_repository/teleai/core/analysis_agent/memory.py", line 176, in _delivery_message
+    if not isinstance(message, AIMessage) or not deferred_execution_claim(message.content):
+                               ^^^^^^^^^
+NameError: name 'AIMessage' is not defined
+
+======================================================================
+ERROR: test_completed_receipt_for_mismatched_result_is_not_published (tests.test_remote_result_completion.RemoteResultCompletionTests.test_completed_receipt_for_mismatched_result_is_not_published)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/najongseong/git_repository/teleai/tests/test_remote_result_completion.py", line 183, in test_completed_receipt_for_mismatched_result_is_not_published
+    result = runtime.respond(proposal['requests'][0]['id'], approved=True)
+                             ~~~~~~~~^^^^^^^^^^^^
+KeyError: 'requests'
+
+======================================================================
+ERROR: test_empty_result_is_completed_zero_rows_not_waiting (tests.test_remote_result_completion.RemoteResultCompletionTests.test_empty_result_is_completed_zero_rows_not_waiting)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/najongseong/git_repository/teleai/tests/test_remote_result_completion.py", line 87, in test_empty_result_is_completed_zero_rows_not_waiting
+    result = runtime.respond(proposal['requests'][0]['id'], approved=True)
+                             ~~~~~~~~^^^^^^^^^^^^
+KeyError: 'requests'
+
+======================================================================
+ERROR: test_proven_connection_failure_reports_no_submission (tests.test_remote_result_completion.RemoteResultCompletionTests.test_proven_connection_failure_reports_no_submission)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/najongseong/git_repository/teleai/tests/test_remote_result_completion.py", line 119, in test_proven_connection_failure_reports_no_submission
+    result = runtime.respond(proposal['requests'][0]['id'], approved=True)
+                             ~~~~~~~~^^^^^^^^^^^^
+KeyError: 'requests'
+
+======================================================================
+ERROR: test_rejected_query_never_runs_or_promises_future_results (tests.test_remote_result_completion.RemoteResultCompletionTests.test_rejected_query_never_runs_or_promises_future_results)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/najongseong/git_repository/teleai/tests/test_remote_result_completion.py", line 97, in test_rejected_query_never_runs_or_promises_future_results
+    result = runtime.respond(proposal['requests'][0]['id'], approved=False)
+                             ~~~~~~~~^^^^^^^^^^^^
+KeyError: 'requests'
+
+======================================================================
+ERROR: test_rendering_bound_does_not_claim_an_entire_large_listing (tests.test_remote_result_completion.RemoteResultCompletionTests.test_rendering_bound_does_not_claim_an_entire_large_listing)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/najongseong/git_repository/teleai/tests/test_remote_result_completion.py", line 194, in test_rendering_bound_does_not_claim_an_entire_large_listing
+    result = runtime.respond(proposal['requests'][0]['id'], approved=True)
+                             ~~~~~~~~^^^^^^^^^^^^
+KeyError: 'requests'
+
+======================================================================
+ERROR: test_reopen_repairs_old_deferred_reply_using_existing_receipt_only (tests.test_remote_result_completion.RemoteResultCompletionTests.test_reopen_repairs_old_deferred_reply_using_existing_receipt_only)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/najongseong/git_repository/teleai/tests/test_remote_result_completion.py", line 144, in test_reopen_repairs_old_deferred_reply_using_existing_receipt_only
+    runtime.respond(proposal['requests'][0]['id'], approved=True)
+                    ~~~~~~~~^^^^^^^^^^^^
+KeyError: 'requests'
+
+======================================================================
+ERROR: test_restart_and_duplicate_approval_do_not_resubmit (tests.test_remote_result_completion.RemoteResultCompletionTests.test_restart_and_duplicate_approval_do_not_resubmit)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/najongseong/git_repository/teleai/tests/test_remote_result_completion.py", line 129, in test_restart_and_duplicate_approval_do_not_resubmit
+    request = proposal['requests'][0]['id']
+              ~~~~~~~~^^^^^^^^^^^^
+KeyError: 'requests'
+
+======================================================================
+ERROR: test_unknown_submission_stops_without_an_automatic_retry (tests.test_remote_result_completion.RemoteResultCompletionTests.test_unknown_submission_stops_without_an_automatic_retry)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/najongseong/git_repository/teleai/tests/test_remote_result_completion.py", line 107, in test_unknown_submission_stops_without_an_automatic_retry
+    result = runtime.respond(proposal['requests'][0]['id'], approved=True)
+                             ~~~~~~~~^^^^^^^^^^^^
+KeyError: 'requests'
+
+======================================================================
+FAIL: test_completed_listing_is_rendered_from_receipt_not_model_promise (tests.test_remote_result_completion.RemoteResultCompletionTests.test_completed_listing_is_rendered_from_receipt_not_model_promise)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/najongseong/git_repository/teleai/tests/test_remote_result_completion.py", line 62, in test_completed_listing_is_rendered_from_receipt_not_model_promise
+    self.assertEqual(proposal['status'], 'awaiting_approval', proposal)
+AssertionError: 'incomplete' != 'awaiting_approval'
+- incomplete
++ awaiting_approval
+ : {'error_id': '5daed07fa01b', 'status': 'incomplete', 'error_type': 'NameError', 'error_category': None, 'text': '분석 중 오류가 발생했습니다 (NameError, 오류 ID: 5daed07fa01b). 기존 결과는 보존했습니다. 미완료 분석 재개로 다시 시도할 수 있습니다.', 'elapsed_seconds': 0.001}
+
+======================================================================
+FAIL: test_general_explanation_stays_allowed (tests.test_remote_result_completion.RemoteResultCompletionTests.test_general_explanation_stays_allowed)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/najongseong/git_repository/teleai/tests/test_remote_result_completion.py", line 165, in test_general_explanation_stays_allowed
+    self.assertEqual(result['status'], 'answered', result)
+AssertionError: 'incomplete' != 'answered'
+- incomplete
++ answered
+ : {'error_id': '9f692e3e15f0', 'status': 'incomplete', 'error_type': 'NameError', 'error_category': None, 'text': '분석 중 오류가 발생했습니다 (NameError, 오류 ID: 9f692e3e15f0). 기존 결과는 보존했습니다. 미완료 분석 재개로 다시 시도할 수 있습니다.', 'elapsed_seconds': 0.001}
+
+======================================================================
+FAIL: test_real_page_shows_listing_after_approval_button (tests.test_remote_result_completion.RemoteResultCompletionTests.test_real_page_shows_listing_after_approval_button)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/najongseong/git_repository/teleai/tests/test_remote_result_completion.py", line 247, in test_real_page_shows_listing_after_approval_button
+    self.assertEqual(len(app.exception), 0)
+AssertionError: 1 != 0
+
+----------------------------------------------------------------------
+Ran 25 tests in 9.021s
+
+FAILED (failures=3, errors=12)

@@ -3,6 +3,11 @@
 ## Current Status
 - **Last Updated**: 2026-09-30
 - **Status**: In Progress — 범용 자율 분석 agent 정식 출시 NO-GO
+- **Latest filter stage**: [최신행 필터 후속](docs/evaluation/2026-09-30_latest_filters/report.md). 명시적 AND 필터의 선택 전/후 실행·계보·후속·재시작·receipt 재사용, 수치1개 histogram·실제 구간/빈도 기록 보강. 102만행 독립 정답/원본·차트 재시작 보존, 제품498+migration136/reference217 PASS 후 NaN 관련23 PASS. 19:00 KST 모델/SQL400 지속. 구현485c5fa push, 최종 Linux CI36700170026에서 제품499/migration136/agentic17/reference217/compile PASS.
+- **GO continuation**: [후속 보강](docs/evaluation/2026-09-30_go_continuation/report.md). 그룹 통계 배치 처리, 자원 실패의 대체 도구 복구, 복구 prompt 승인 정책 충돌 수정. 합성100만행×8지표·PNG·원본/재시작 보존 PASS. 제품490+migration136/reference217 PASS. 설정된 모델/SQL400 및 미완료 네 묶음 때문에 범용 NO-GO 유지.
+- **Server diagnostics**: [서버 실패 진단 안내](docs/server_failure_diagnostics.md). 직접 접속·로그 반출 없이 12줄 진단 요약을 확인하도록 UI/CLI/관측을 보강했다. 제품484 + migration136 PASS. 실제 서버 적용은 미검증이며 서버 접속/전체 로그 공유를 요청하지 않는다.
+- **Deferred reply recurrence**: [응답 검증 누락 수정](docs/evaluation/2026-09-30_deferred_reply_recurrence/report.md). 사용자 원문으로 구조화블록/도구안내/구버전/과거표시 누락 재현·보완. 제품475+migration136/관련27 PASS, localhost8502 재시작 및 실제 화면 정정안내 확인. 사용자가 실제 사용 서버에서 재발했음을 확인함. 서버 revision·실행 프로세스는 미확인.
+- **Offline continuation**: [대용량 이상치 EDA 개선](docs/evaluation/2026-09-30_offline_continuation/report.md). 13:30 KST 공급자 모델/SQL400 지속. 영속 이상치 cohort 전체 프레임 복원을 배치 staging으로 전환, 합성100만행→정답100행/원본/재시작 보존 PASS. 대상 수치1개 컬럼의 임계값 계산은 전체 읽기라는 한계를 명시.
 - **HTTP400 recheck**: [재진단](docs/evaluation/2026-09-30_provider_recheck/report.md). 08:15 KST까지 지속. warehouse/API200·모델 metadata READY이나 최소 추론/OpenSession 모두400. Free Edition 확인, 한도 초과 여부는 미확인. 재발급·짧은 장애로 단정하지 않으며 실제 호출 사전점검과 사용자 안내 보강.
 - **Latest continuation**: [연속 평가·개선 보고서](docs/evaluation/2026-09-30_continuation/report.md). 동률/결측의 후속 정책과 원격/로컬 실행·완료 계약, 공급자400 분류/제한 재시도, interactive Spider 평가를 보강했다. 최종CI 제품464 + migration136 + reference217 PASS, 합성100만행2종 및 실제 웹12행 복구 PASS. Databricks 모델·SQL 리소스 생성400으로 실환경 재평가 차단.
 - **Summary**: [통합 작업 보드](docs/evaluation/2026-09-30_batch/workboard.md)의 6묶음 중 구현·평가 미완료는 4묶음. 원격 최신행 범주/수치 histogram, 복합키·구간 후속 연결, 그룹 정렬, metadata 계획을 보강했다.
@@ -11,7 +16,7 @@
 - **Next Session Focus**: 최신행 정책/필터 확장, 역할별·다단계 SQL, D07/D08·J21~24 전체 계약, 미채점98문항. 오늘 완료한 push/CI 근거는 보고서 말미와 validation.json에 기록한다.
 
 ## Next Action Items
-- [ ] 1. 최신행 EDA 확장: 일반 선택 전후 필터, 추가 통계·비균등 구간, 기타 정책. 추가 내림차순 동률 기준/선택 전 결측 제외의 후속 연결과 기본 복합키·수치 구간·재사용은 완료.
+- [ ] 1. 최신행 EDA 확장: 추가 통계·비균등 구간·혼합 단계/복합 조건, 기타 정책. 명시된 단일 단계 AND 선택 전후 필터는 로컬 회귀 완료·실모델 미검증. 추가 내림차순 동률 기준/선택 전 결측 제외의 후속 연결과 기본 복합키·수치 구간·재사용은 완료.
 - [ ] 2. 복합 SQL: 역할별 조인·JSON·OR/NOT/NULL·CTE/HAVING·DISTINCT 의미 계약 및 복구. 현재 Spider 공식0/10 개선 필수.
 - [ ] 3. 대용량: D07/D08·J21~J24 전체 여정/한도/출처 계약, 남은 도구의 부분 scan·보존·재사용. 100만행 합성 및 실제10만행/75만행 증거를 범위에 맞게 연결.
 - [ ] 4. 독립 평가: 미채점98문항 oracle, 새 schema·표현·다회 대화·실패 복구·지연 검증. 기존102PASS를 전체200PASS로 해석하지 않음.
@@ -2134,3 +2139,74 @@ Task definitions and acceptance conditions: docs/agent_remaining_tasks_2026-09-1
 ### Daily Wrap-ups — 2026-09-30 provider recheck
 - 공급자 최소 재현/제품경로 재현, Free Edition·endpoint상태 확인, 한도/일시 장애 불확실성 안내와 단일 사전점검 도구 보강. 제품467/467, 관련19/19 PASS. 실제모델/SQL은 BLOCKED.
 - Next Action Items: 사용자 한도 안내 확인 및 공급자 복구 뒤 live평가 재개. 기존4묶음은 미완료 유지.
+
+## [2026-09-30T13:30:12.275190+09:00] [Agent: Codex] User Request: 계속 진행 가능해?
+- **Action**: 공급자 최소probe 재확인 후 가능한 잔여 agent 개선/독립 회귀를 진행한다. 외부 차단과 오프라인 검증을 분리한다.
+
+## [2026-09-30T13:36:09.201053+09:00] [Agent: Codex] Action: 외부 차단 중 영속 이상치 EDA 배치 처리
+- **Finding**: 기존30,000행에서 정답3행만 필요해도 전체 읽기 예산으로 거부. 최초 실패 보존.
+- **Implementation**: 1,024행 배치 선택→staging→정확한 행 수/digest/용량 검사, 원본/선택 유지. 비영속 경로 기존 예산 유지.
+- **Validation**: 관련27 PASS. 합성100만행→정답100행, 977batch, cache0, 추출0.416s/whole-process peakRSS245907456B. 원본·재시작 보존. 중간읽기/조기종료/byte한도 실패시 발행0/staging0.
+- **Limitations**: 대상 수치컬럼 임계값 계산은 전체 읽기. 모델/SQL실평가 차단. 기존잔여4묶음·NO-GO유지.
+
+### Daily Wrap-ups — 2026-09-30 offline continuation
+- 이상치 추출 전체프레임복원을 배치staging으로 전환. 제품469/469(55.308s), 관련27, 합성100만행 독립oracle/원본/재시작 PASS.
+- Next Action Items: 외부 서비스복구 후실평가, 기존4묶음 및 대용량나머지 도구. 공급자400은 아직 BLOCKED.
+
+## [2026-09-30T13:40:59.089242+09:00] [Agent: Codex] User Request: 승인 감사·결과 도착 후 안내 문구 재발 원인 확인 및 수정
+- **Action**: 실제 대화/실행 버전 및 deferred completion 보호 경로를 확인하고 사용자 원문 회귀와 실행중 앱 검증을 수행한다.
+
+## [2026-09-30T13:49:56.599054+09:00] [Agent: Codex] Action: 미래 결과 안내 재발 경로 보완
+- **Finding**: 원문 일반문자열은 기존guard가 막지만 텍스트블록은 answered 통과; 도구호출 안내/구버전 승인후응답/receipt없는 과거표시 누락. 최초4실패 보존. 로컬38대화에서 사용자원문없어 실제발생환경 확인 요청.
+- **Implementation**: 공통표시텍스트 검사, transcript저장/조회 보호·원문감사보존, 구버전제한재계획 및 표시보호. 완료실행을 재조회하지 않음.
+- **Validation**: 제품475(55.617s), migration136(18.061s), 관련27 PASS. main.py AppTest 자동조회대역1회실제목록/거짓안내미표시. 실제앱 PID28426 health200, 합성과거안내 정정화면 확인(모델0/SQL0).
+
+### Daily Wrap-ups — 2026-09-30 deferred reply recurrence
+- 이전수정이 빠뜨린 응답형식·도구안내·구버전·과거기록 경로를 보강하고 로컬앱에 반영했다.
+- Next Action Items: 사용자 실제발생환경/버전 대조, 공급자복구 후실환경평가. 기존4묶음·범용NO-GO는 유지.
+
+## [2026-09-30 13:53:42] [Agent: /root] User Request: 실제 사용 서버에 코드를 업데이트한 상태에서도 결과 도착 안내가 재발함
+- **Action** [Agent: /root]: 로컬 검증과 실제 서버 검증을 구분한다. 서버 실행 revision·Python 환경·응답 경로 확인을 우선하며, 서버 접속 정보가 없는 상태에서 구버전 실행을 원인으로 단정하지 않는다.
+- **Action** [Agent: /root]: 원격 main을 fetch하여 확인: main=6f5edac(PR #70), 최신 수정59355b6은 main의 ancestor가 아님. 작업 브랜치에는 포함됨. 사용 서버의 branch는 아직 미확인이라 배포 누락을 확정 원인으로 단정하지 않는다.
+- **Artifact Update**: scripts/diagnose_checkout.py 추가. 서비스와 같은 Python으로 checkout·revision·의존성별 진입 경로·관련 파일 hash를 수집한다. 비밀정보/대화/데이터를 읽지 않고 원격 호출도 하지 않는다. 별도 프로세스 검사라 실행 중 서버의 로딩 코드 검증과 명확히 구분한다.
+- **Outcome**: 관련 진단 테스트3 PASS. 서버 접속 주소/SSH 별칭이 없어 실제 서버 로그와 프로세스 검증은 아직 수행하지 못함.
+
+## [2026-09-30 14:29:12] [Agent: /root] User Request: 접속·전체 로그 공유 불가능한 서버의 실패 진단 로그와 사용자가 확인해 전달할 항목/절차 보강
+- **Action** [Agent: /root]: 기존 관측 이벤트와 표시 경로를 점검하고, 민감정보를 제외한 실행별 진단 요약 및 운영 안내를 구현·검증한다. 서버 접속/전체 로그 전달은 요청하지 않는다.
+- **Artifact Update**: core/analysis_agent/support_report.py, scripts/diagnose_agent_run.py, ui/analysis_diagnostics.py 구현. 실행별 버전/의존성/실제 로딩 guard 지문·도구/SQL 장부·완료 계약·오류 단계/프레임을 허용 항목으로 요약한다. 프롬프트·SQL·행·응답·접속정보는 요약에 포함하지 않는다.
+- **Action** [Agent: /root]: 원격 실행 시작/종료·receipt 재사용·불확실 상태 및 표시 단계 guard를 계측했다. 예외 종료에도 run_completed=incomplete를 기록한다. 차트 표시 오류 ID를 화면에 노출한다. 진단 ID 입력/버튼 rerun에서는 자동 SQL 재개를 차단한다.
+- **Outcome**: 제품484/484, migration136/136, 관련32 PASS. 최초 migration 실패는 입력창 순번 의존 테스트여서 라벨 선택으로 수정했다. 원격 DB/실모델 호출0, 실제 서버 검증 아님. 검증 기록 docs/evaluation/2026-09-30_support_diagnostics/validation.json.
+- **Next Action**: 사용자는 수정 배포 및 유휴 시 서비스 프로세스 재시작 후 같은 대화의 '문제 진단'에서 공유 가능한 상태/단계/ID만 확인한다. 서버 주소나 원본 로그는 필요하지 않다.
+
+## [2026-09-30 14:50:40] [Agent: /root] User Request: GO를 위한 잔여 작업 계속 수행
+- **Action** [Agent: /root]: 통합 작업 보드의 네 미완료 묶음을 다시 확인하고 실제 평가 실패 계약을 중심으로 구현·재검증한다. 사용자 서버 접속/로그 반출은 불가능하므로 요구하지 않으며 로컬 실서비스 검증과 구분한다.
+- **Artifact Update**: utils/analysis_group_streaming.py와 그룹 도구 연결. 실제 필요한 컬럼만 배치로 읽고 제한된 로컬 SQL에서 정확한 다중 지표를 계산한다. 원본 행 수·그룹/출력 한도·정수 합계 정밀도·조건부 분모·후보 발행 원자성을 검증했다.
+- **Action** [Agent: /root]: MemoryError/OutOfMemory를 local_resource_limit 관찰로 변환해 대체 로컬 도구로 복구하고 반복 호출을 차단한다. 복구 prompt의 무조건 승인 규칙을 현재 runtime 정책에 따르도록 교체했다. 기존 제약과 SQL 장부는 유지한다.
+- **Outcome**: 합성100만행/7그룹/8지표 독립 정답, 1024행 배치/원본3컬럼만 읽기/추가SQL0/PNG실물/원본과재시작 보존 PASS. 1.188초, process peak RSS282214400 bytes(운영 SLA가 아님). 관련17, 제품490, migration136 PASS; reference217 PASS.
+- **Remaining**: 최신행 선택 전후 필터·추가 통계, 복합SQL 의미·복구, 대용량 혼합 전체여정, 독립98oracle/실모델 평가. 14:50KST 공급자 최소 추론/OpenSession400 지속. 실제 사용자 서버는 접근불가·미검증이며 전체 로그 반출을 요청하지 않는다.
+- **Outcome**: 구현5b7c7a3·정수 경계 테스트ac07806 push 및 원격SHA 확인. Linux CI36676855817의 ac0780688dedbd564ecc5f57692254c057bbd25e에서 제품/migration/복구/reference/compile 전부 PASS. 근거 docs/evaluation/2026-09-30_go_continuation/ci.json. 범용 NO-GO 및 사용자 서버 미검증 유지.
+
+## [2026-09-30 18:24:09] [Agent: /root] User Request: 테이블 목록 조회 결과가 실제로 도착하는지 확인
+- **Action** [Agent: /root]: 테이블 목록의 실행 receipt·결과 표시 회귀를 다시 확인한다. 접속 불가능한 사용자 서버와 개발 환경의 실서비스 연결 상태를 구분한다.
+- **Outcome**: 테이블 결과 완료/표시 및 미래 안내 차단 회귀 22개 PASS(1.666s). Streamlit main.py 경로도 포함하지만 합성 SQL 결과/대역 모델 검증이며 실제 DB 목록 수신 근거는 아니다.
+- **Live Check**: 18:27 KST 개발 환경에서 warehouse 상태 API200(STOPPED), 모델 요청400, SQL OpenSession400. 실제 테이블 목록 조회 단계에 도달하지 못했다. 근거 docs/evaluation/2026-09-30_go_continuation/table_delivery_provider_probe.json. 사용자 서버는 접속 불가로 여전히 미확인; 일시 장애/토큰/LLM 원인으로 단정하지 않는다.
+
+## [2026-09-30T18:31:12.734803+09:00] [Agent: /root] User Request: Databricks 사이트에서 400 원인 확인
+- **Action**: Chrome의 Databricks 설정 화면 확인. 자동 브라우저 제어 미지원 안내가 있어 추가 UI 조작 중단; 지원 API로 진단한다. Verify identity 버튼만으로 원인 단정하지 않는다.
+- **Outcome**: 18:32 KST 공식 API 직접 검사. Warehouse GET200 및 HTTP path 일치; SELECT1 Statement API400(The request could not be processed by the warehouse.); Warehouse start1회400(Cannot create the resource, please try again later.), 상태STOPPED 유지; 최소 모델 요청400(Cannot create or query foundation model endpoints). 앱/agent를 거치지 않아도 재현. 토큰 전체 만료/테이블명/LLM 해석이 이번 공통 장애의 원인이라는 근거는 없으며 자원 시작/호출 단계 장애로 범위를 좁힘.
+- **Evidence**: docs/evaluation/2026-09-30_go_continuation/site_api_400_diagnosis.json에 비밀정보를 제외한 상태/일반 오류 문구 저장. Free Edition quota 제한은 공식 문서상 가능한 설명이지만 계정별 quota 초과는 확인되지 않아 확정하지 않음. Verify identity는 기능한도 확장용이며 버튼 존재만으로 접근 차단 판단하지 않음. 추가 반복 요청 중단.
+
+## [2026-09-30T18:46:28.727242+09:00] [Agent: /root] User Request: GO를 위한 남은 일 정리
+- **Action/Outcome**: 최신 결과와 통합 보드를 대조. 구현·평가 4묶음(최신행 EDA, 복합 SQL, 대용량 혼합 여정, 독립 oracle98개) 및 외부 연결 복구 후 실환경 재평가가 남음. Databricks400과 독립적인 로컬 구현은 계속 가능. 별도 서버 구축은 범위에서 제외하며, 실제 사용자 서버 배포 확인과 개발 환경 성공을 구분. NO-GO 유지.
+
+## [2026-09-30T18:47:35.930993+09:00] [Agent: /root] User Request: 계속해 400개 끝날 때까지
+- **Action**: 앞선 맥락에 따라 HTTP400 차단이 있는 동안에도 독립적인 GO 잔여 기능 구현·검증을 계속한다. 최신행 선택 전후 필터와 후속 조건 보존부터 현재 계약/실패를 확인한다.
+- **Artifact Update** [2026-09-30T19:02:41.860522+09:00]: 최신행 conditions/filter_stage 공통 계약과 로컬/원격 실행, 명시적 단계 후속·재시작·receipt 재사용 검증 구현. 일반 OR/혼합 단계는 임의 실행하지 않는다. 수치1개 histogram 실패를 수정하고 실제 counts/edges 기록.
+- **Outcome**: 제품498(60.252s)/migration136(18.957s)/reference217(58그림) PASS. 102만행 독립 oracle와 실제 PNG, 원본 해시·선택·계보·재시작 차트 보존 PASS. 대역 모델/합성 데이터이며 실모델 성공으로 계산하지 않는다. docs/evaluation/2026-09-30_latest_filters/report.md.
+- **Remaining**: 19:00KST 모델400/OpenSession400 지속. 기능 잔여(최신행 추가통계·비균등 구간·혼합필터, 복합SQL, 대용량 혼합여정, 독립98oracle) 및 실제 서버 검증이 남아 범용NO-GO 유지.
+- **Action**: 최종 검토에서 SQL NaN 비교가 pandas 결측 처리와 달라질 수 있는 경로를 차단. 실제 NaN SQL 행으로 ne/gt/lt 두 dialect 독립 검증 추가; 관련23 PASS. 원격 서비스 재시도를 반복하지 않는다.
+- **UI Validation**: main.py Streamlit AppTest에서 선택 후 수치1개 histogram→6구간 후속2턴 이미지 표시·원본 선택 유지·예외0·원격0. 처음 검사 selector imgs는 설치 버전에서 image로 변경되어 수정; 제품 표시 결함은 아님. ui_delivery.json에 대역 범위 명시.
+- **Outcome**: 구현485c5fa의 Linux CI36700170026 성공(제품499/migration136/agentic17/reference217/compile). 작업 브랜치 push 완료, main 병합/사용자 서버 배포 아님. 문서와 UI 근거를 후속 기록한다.
+
+## [2026-09-30T19:21:31.879122+09:00] [Agent: /root] User Request: push 해줘
+- **Action**: 현재 작업 브랜치 변경/커밋 상태를 확인하고 원격에 push한 뒤 원격 SHA 일치를 확인한다.

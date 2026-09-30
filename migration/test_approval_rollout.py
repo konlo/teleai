@@ -230,7 +230,7 @@ class RolloutPageTests(unittest.TestCase):
             self.assertEqual(len(app.exception),0)
             next(b for b in app.button if b.label=='예제 데이터로 시작').click().run()
             self.assertEqual(len(app.session_state.v1_runtime.datasets.metadata),1)
-            app.text_input[0].set_value('catalog.schema.events').run()
+            next(field for field in app.text_input if field.label=='Databricks 테이블').set_value('catalog.schema.events').run()
             next(b for b in app.button if b.label=='데이터 불러오기 제안').click().run()
             self.assertEqual(len(app.exception),0)
             self.assertEqual(len(app.session_state.v1_runtime.inspect()['requests']),1)

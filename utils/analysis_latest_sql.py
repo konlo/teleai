@@ -19,9 +19,12 @@ def _issue(code, message):
     return None, {'status': 'needs_context', 'error_code': code, 'message': message}, 0
 
 
-def select_latest(store, info, columns, keys, order, *, null_policy='reject'):
+def select_latest(store, info, columns, keys, order, *, null_policy='reject', conditions=None, filter_stage='', role_columns=None):
     if null_policy not in {'reject','drop_before_selection'}:
         raise ValueError('Unsupported latest-row null policy')
+    from utils.analysis_latest_filters import validate, sql
+    conditions=validate(conditions,filter_stage,info.columns)
+    role_columns=role_columns or columns
     batches = iter(store.frames.batches(info.id, columns, expected_rows=info.rows))
     try:
         first = next(batches, None)
@@ -37,6 +40,7 @@ def select_latest(store, info, columns, keys, order, *, null_policy='reject'):
                 return _issue('latest_order_type', '저장된 정렬 컬럼을 시간 또는 수치 자료형으로 변환한 뒤 선택해주세요.')
         if any(pa.types.is_nested(field.type) for field in first.schema):
             return _issue('latest_column_type', '키·정렬·분포 컬럼은 단일 값 자료형이어야 합니다.')
+        where=sql(conditions,types={field.name:str(field.type) for field in first.schema})
         names = ', '.join(map(_quote, columns))
         partition = ', '.join(map(_quote, keys))
         ordering = ', '.join(_quote(c) + ' DESC' for c in order)
@@ -51,9 +55,13 @@ def select_latest(store, info, columns, keys, order, *, null_policy='reject'):
                     reader = pa.RecordBatchReader.from_batches(first.schema, chain([first], batches))
                     conn.register('input_batches', reader)
                     conn.execute('CREATE TEMP TABLE data AS SELECT ' + names + ' FROM input_batches')
-                    null_test = ' OR '.join(_quote(c) + ' IS NULL' for c in columns)
+                    if conn.execute('SELECT COUNT(*) FROM data').fetchone()[0]!=info.rows:
+                        raise ValueError('최신행 입력 stream이 완전하지 않습니다.')
+                    if filter_stage=='before_selection':
+                        conn.execute('DELETE FROM data WHERE NOT COALESCE(('+where+'), FALSE)')
+                    null_test = ' OR '.join(_quote(c) + ' IS NULL' for c in role_columns)
                     # NaN is a missing value in the pandas path; preserve parity.
-                    floats = [f.name for f in first.schema if pa.types.is_floating(f.type)]
+                    floats = [f.name for f in first.schema if f.name in role_columns and pa.types.is_floating(f.type)]
                     if floats:
                         if conn.execute('SELECT EXISTS(SELECT 1 FROM data WHERE '+ ' OR '.join('isinf('+_quote(c)+')' for c in floats)+')').fetchone()[0]:
                             return _issue('latest_nonfinite_policy','키·정렬·분포 컬럼에 무한대가 있습니다. 결측 행 제외와 다른 처리 기준이 필요합니다.')
@@ -78,6 +86,9 @@ def select_latest(store, info, columns, keys, order, *, null_policy='reject'):
                         return _issue('latest_empty','결측 행을 제외한 뒤 분석할 행이 없습니다.')
                     if selected.duplicated(keys, keep=False).any():
                         return _issue('latest_order_tie', '같은 키에 최신 정렬값이 동일한 행이 여러 개입니다. 추가 정렬 컬럼을 알려주세요.')
+                    if filter_stage=='after_selection':
+                        from utils.analysis_datasets import filter_frame, Condition
+                        selected=filter_frame(selected,tuple(Condition(**c) for c in conditions))
                     return selected, None, excluded
                 finally:
                     timer.cancel()

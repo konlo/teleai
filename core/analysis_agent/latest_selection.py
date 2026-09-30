@@ -107,6 +107,10 @@ def continue_order(text,previous,context):
     anchor=context.datasets.metadata.get(context.selected_dataset_id) if context else None
     same_anchor=(context is not None and context.selected_dataset_id==prior.get('context_dataset_id',prior.get('dataset_id'))
         and ('context_snapshot' not in prior or prior['context_snapshot']==(anchor.snapshot if anchor else None)))
+    if prior and same_anchor:
+        from core.analysis_agent.latest_filter_scope import continue_stage
+        continued=continue_stage(text,previous)
+        if continued:return continued
     if prior and same_anchor and previous.get('latest_selection_evidence') and not prior.get('categorical',True):
         from core.analysis_agent.eda_contract import histogram_bins
         bins=histogram_bins(text)
@@ -160,6 +164,8 @@ def ask(current, question):
 
 
 def accepted(context,artifacts,spec,args,observation):
+    from utils.analysis_latest_filters import matches, lineage
+    if not matches(args,spec):return False
     if observation.get('status')!='ready':return False
     if any(args.get(k)!=spec.get(k) for k in ('dataset_id','key_columns','order_column','value_column','categorical')):return False
     if args.get('bins', 20) != spec.get('bins', 20):return False
@@ -170,7 +176,7 @@ def accepted(context,artifacts,spec,args,observation):
     if chosen is None or distribution is None or chosen.parent_id!=spec['dataset_id'] or distribution.parent_id!=chosen.id:return False
     expected={'kind':'latest_per_key','key_columns':spec['key_columns'],
         'order_columns':[spec['order_column'],*spec.get('tie_break_columns',[])],'descending':True,'null_policy':spec.get('null_policy','reject'),'tie_policy':'reject',
-        'input_dataset_id':spec['dataset_id'],'input_snapshot':context.datasets.metadata[spec['dataset_id']].snapshot}
+        'input_dataset_id':spec['dataset_id'],'input_snapshot':context.datasets.metadata[spec['dataset_id']].snapshot,**lineage(spec.get('conditions'),spec.get('filter_stage'))}
     if chosen.row_selection!=expected or distribution.row_selection!=expected:return False
     if chosen.rows!=observation.get('selected_keys') or chosen.rows<1:return False
     from utils.analysis_image_validation import validate_chart_image
@@ -187,6 +193,8 @@ def accepted(context,artifacts,spec,args,observation):
 
 
 def accepted_remote(context, artifacts, spec, args, observation, receipts):
+    from utils.analysis_latest_filters import matches, lineage
+    if not matches(args,spec) or not matches(observation.get('remote_latest_plan',{}),spec):return False
     if observation.get('status') != 'ready' or any(args.get(k) != spec.get(k)
             for k in ('source', 'key_columns', 'order_column', 'value_column')):
         return False
@@ -209,7 +217,7 @@ def accepted_remote(context, artifacts, spec, args, observation, receipts):
         parent=context.datasets.metadata[result_id]
         expected={'kind':'remote_latest_per_key_distribution','key_columns':spec['key_columns'],
             'order_columns':[spec['order_column'],*spec.get('tie_break_columns',[])],'descending':True,'null_policy':spec.get('null_policy','reject'),'tie_policy':'reject',
-            'input_result_id':result_id,'input_snapshot':parent.snapshot}
+            'input_result_id':result_id,'input_snapshot':parent.snapshot,**lineage(spec.get('conditions'),spec.get('filter_stage'))}
         if info.parent_id != result_id or info.row_selection != expected or info.snapshot != parent.snapshot:
             return False
         card = artifacts[observation['cards'][0]['id']]
@@ -230,7 +238,7 @@ def reuse_verified(context, artifacts, ledger, spec, previous, text):
     old = previous.get('latest_per_key_spec') or {}
     proof = previous.get('latest_selection_evidence') or {}
     if not old.get('remote') or any(old.get(k) != spec.get(k) for k in
-            ('source', 'key_columns', 'order_column', 'value_column', 'categorical', 'bins', 'tie_break_columns', 'null_policy')):
+            ('source', 'key_columns', 'order_column', 'value_column', 'categorical', 'bins', 'tie_break_columns', 'null_policy', 'conditions', 'filter_stage')):
         return None
     from core.analysis_agent.remote_completion import verified_receipt
     verified = {}
@@ -247,6 +255,7 @@ def reuse_verified(context, artifacts, ledger, spec, previous, text):
     arguments.update(categorical=spec.get('categorical',True),bins=spec.get('bins',20))
     arguments['tie_break_columns']=spec.get('tie_break_columns',[])
     arguments['null_policy']=spec.get('null_policy','reject')
+    arguments.update(conditions=spec.get('conditions',[]),filter_stage=spec.get('filter_stage',''))
     arguments['result_dataset_id'] = proof.get('input_result_id')
     return proof if accepted_remote(context, artifacts, spec, arguments, proof, verified) else None
 
@@ -255,6 +264,9 @@ def render(runtime,current):
     proof=current['latest_selection_evidence']
     spec=current['latest_per_key_spec']
     tie_note=('동률은 '+', '.join(spec['tie_break_columns'])+'의 큰 값 순서로 해소했습니다. ' if spec.get('tie_break_columns') else '')
+    if spec.get('conditions'):
+        stage='전' if spec['filter_stage']=='before_selection' else '후'
+        tie_note+=f'필터 조건을 최신행 선택 {stage}에 적용했습니다. '
     if spec.get('null_policy')=='drop_before_selection':
         tie_note+=f"최신행 선택 전에 키·정렬·분포 컬럼의 결측 행 {proof['excluded_rows']:,}개를 제외했습니다. "
     if spec.get('remote'):

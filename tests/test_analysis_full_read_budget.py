@@ -268,7 +268,7 @@ class FullReadBudgetTests(unittest.TestCase):
         self.assertIn("필요한 컬럼과 조건", result["messages"][0].content)
         self.assertIn("기존 데이터는 보존", result["messages"][0].content)
 
-    def test_complex_sql_join_and_row_cohort_reject_before_full_decode(self):
+    def test_complex_sql_and_join_reject_while_row_cohort_streams_without_full_decode(self):
         with tempfile.TemporaryDirectory() as root:
             db = AssetDB(root, "owner", "full-read-budget")
             store = PersistentDatasets(db, budget=0, max_full_read_bytes=5_000)
@@ -293,18 +293,21 @@ class FullReadBudgetTests(unittest.TestCase):
                     first.id, second.id, ["key"], ["key"], "inner")
                 cohort = tools["select_outlier_rows"](
                     first.id, "measure", "iqr", selection="inliers")
-            for result in (wildcard, joined, cohort):
+            for result in (wildcard, joined):
                 self.assertEqual(result["status"], "rejected", result)
                 self.assertEqual(result["error_code"], "full_frame_budget")
                 self.assertFalse(result["retryable"])
                 self.assertGreater(result["estimated_bytes"], result["budget_bytes"])
             self.assertEqual(narrow["status"], "ready", narrow)
             self.assertEqual(narrow["dataset"]["rows"], 2)
+            self.assertEqual(cohort["status"], "ready", cohort)
+            self.assertEqual(cohort["selection_summary"]["execution_mode"], "streamed_batches")
+            self.assertEqual(cohort["dataset"]["rows"], 300)
             self.assertEqual(db.selected_dataset_id(), first.id)
             self.assertEqual({info.id: db.dataset_file(info.id).read_bytes()
                               for info in (first, second)}, originals)
             self.assertEqual(set(store.metadata) - {first.id, second.id},
-                             {narrow["dataset"]["id"]})
+                             {narrow["dataset"]["id"], cohort["dataset"]["id"]})
             db.close()
 
 

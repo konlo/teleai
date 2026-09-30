@@ -282,10 +282,10 @@ def render_chart_spec(store: DatasetStore, dataset_id: str, *, kind: str, x: str
         if y or category or aggregation != "none":
             raise ValueError("히스토그램은 수치 x와 bins만 사용합니다.")
         values = numeric(source[x], x).dropna()
-        if len(values) < 2:
-            raise ValueError("히스토그램에는 유효한 수치가 2개 이상 필요합니다.")
+        if len(values) < 1:
+            raise ValueError("히스토그램에는 유효한 수치가 1개 이상 필요합니다.")
         plotted = values.to_frame(name=x)
-        ax.hist(values, histtype="bar", bins=int(bins), color="#3278b9", edgecolor="white")
+        hist_counts, hist_edges, _ = ax.hist(values, histtype="bar", bins=int(bins), color="#3278b9", edgecolor="white")
         ax.set(xlabel=x_label or x, ylabel=y_label or "Count")
         default_title = f"{x} 분포"
         reason = f"유효값 {len(values):,}개를 {int(bins)}개 bin으로 표시했습니다."
@@ -504,6 +504,10 @@ def render_chart_spec(store: DatasetStore, dataset_id: str, *, kind: str, x: str
             "x_label": ax.get_xlabel(), "y_label": ax.get_ylabel(),
             "orientation": orientation}
     from dataclasses import replace
+    if kind == 'histogram':
+        # Store what was actually rendered so follow-up validation can compare
+        # bin counts and boundaries instead of trusting a chart label.
+        spec.update(counts=hist_counts.astype(int).tolist(), edges=hist_edges.tolist())
     card = replace(card, render_spec=spec)
     return card, summary, spec
 

@@ -1,0 +1,48 @@
+test_grouped_metrics_stream_only_needed_columns_and_preserve_root (tests.test_group_streaming.GroupStreamingTests.test_grouped_metrics_stream_only_needed_columns_and_preserve_root) ... FAIL
+test_interrupted_or_incomplete_batches_never_publish (tests.test_group_streaming.GroupStreamingTests.test_interrupted_or_incomplete_batches_never_publish) ... 
+  test_interrupted_or_incomplete_batches_never_publish (tests.test_group_streaming.GroupStreamingTests.test_interrupted_or_incomplete_batches_never_publish) (mode='interrupted') ... FAIL
+  test_interrupted_or_incomplete_batches_never_publish (tests.test_group_streaming.GroupStreamingTests.test_interrupted_or_incomplete_batches_never_publish) (mode='truncated') ... FAIL
+
+======================================================================
+FAIL: test_grouped_metrics_stream_only_needed_columns_and_preserve_root (tests.test_group_streaming.GroupStreamingTests.test_grouped_metrics_stream_only_needed_columns_and_preserve_root)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/najongseong/git_repository/teleai/tests/test_group_streaming.py", line 51, in test_grouped_metrics_stream_only_needed_columns_and_preserve_root
+    output=summarize_groups(store,raw.id,group_columns=[GROUP],metrics=metrics(),
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/najongseong/git_repository/teleai/utils/analysis_group_summary.py", line 122, in summarize_groups
+    source = project_dataset(store, dataset_id,
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/najongseong/git_repository/teleai/utils/analysis_datasets.py", line 92, in project_dataset
+    return store.frames.project(dataset_id, selected)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.11/3.11.13/Frameworks/Python.framework/Versions/3.11/lib/python3.11/unittest/mock.py", line 1124, in __call__
+    return self._mock_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.11/3.11.13/Frameworks/Python.framework/Versions/3.11/lib/python3.11/unittest/mock.py", line 1128, in _mock_call
+    return self._execute_mock_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.11/3.11.13/Frameworks/Python.framework/Versions/3.11/lib/python3.11/unittest/mock.py", line 1183, in _execute_mock_call
+    raise effect
+AssertionError: whole-column decode
+
+======================================================================
+FAIL: test_interrupted_or_incomplete_batches_never_publish (tests.test_group_streaming.GroupStreamingTests.test_interrupted_or_incomplete_batches_never_publish) (mode='interrupted')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/najongseong/git_repository/teleai/tests/test_group_streaming.py", line 100, in test_interrupted_or_incomplete_batches_never_publish
+    with self.assertRaises(Exception):
+AssertionError: Exception not raised
+
+======================================================================
+FAIL: test_interrupted_or_incomplete_batches_never_publish (tests.test_group_streaming.GroupStreamingTests.test_interrupted_or_incomplete_batches_never_publish) (mode='truncated')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/najongseong/git_repository/teleai/tests/test_group_streaming.py", line 100, in test_interrupted_or_incomplete_batches_never_publish
+    with self.assertRaises(Exception):
+AssertionError: Exception not raised
+
+----------------------------------------------------------------------
+Ran 2 tests in 0.106s
+
+FAILED (failures=3)

@@ -1,0 +1,22 @@
+EF
+======================================================================
+ERROR: test_numeric_histogram_bins_followup_keeps_filter_stage (tests.test_latest_filters.LatestFilterTests.test_numeric_histogram_bins_followup_keeps_filter_stage) (mode='local', stage='before')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/najongseong/git_repository/teleai/tests/test_latest_filters.py", line 53, in test_numeric_histogram_bins_followup_keeps_filter_stage
+    self.assertEqual(proof['chart_spec']['counts'],expected.tolist())
+                     ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^
+KeyError: 'counts'
+
+======================================================================
+FAIL: test_numeric_histogram_bins_followup_keeps_filter_stage (tests.test_latest_filters.LatestFilterTests.test_numeric_histogram_bins_followup_keeps_filter_stage) (mode='local', stage='after')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/najongseong/git_repository/teleai/tests/test_latest_filters.py", line 51, in test_numeric_histogram_bins_followup_keeps_filter_stage
+    self.assertTrue(proof)
+AssertionError: None is not true
+
+----------------------------------------------------------------------
+Ran 1 test in 8.687s
+
+FAILED (failures=1, errors=1)

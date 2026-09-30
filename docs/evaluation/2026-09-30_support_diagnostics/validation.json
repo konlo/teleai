@@ -1,0 +1,36 @@
+{
+  "date": "2026-09-30",
+  "scope": "LangChain v1 server diagnostics; offline regression and Streamlit AppTest",
+  "application_tests": {
+    "passed": 484,
+    "seconds": 56.076
+  },
+  "migration_tests": {
+    "passed": 136,
+    "seconds": 17.706
+  },
+  "focused_tests": {
+    "passed": 32
+  },
+  "evidence": [
+    "exception ID selects original run, not latest run",
+    "missing evidence/deferred reply without exception",
+    "rotated and partial JSONL",
+    "raw SQL/prompt/error-body omission",
+    "real Graph runtime with synthetic SQL executor receipt logging",
+    "diagnostic input/button does not resume automatic SQL in main.py AppTest"
+  ],
+  "initial_failure": "Migration UI test selected text_input[0]; new diagnostic field changed traversal order. Changed test selector to actual Databricks table field label, reran all migration tests.",
+  "external_calls": {
+    "databricks_sql": 0,
+    "live_model": 0
+  },
+  "limitations": [
+    "Actual user server inaccessible and unverified",
+    "Legacy Streamlit route has no new diagnostic UI",
+    "Log retention is size-based, not days",
+    "Revision captured at first runtime is not proof of every loaded module",
+    "Counts and flags do not prove semantic/numeric correctness"
+  ],
+  "guide": "docs/server_failure_diagnostics.md"
+}

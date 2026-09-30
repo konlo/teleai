@@ -119,65 +119,76 @@ def summarize_groups(
     condition_objects = tuple(Condition(**item) for item in (conditions or []))
     filter_columns = [condition.column for condition in condition_objects
                       if condition.column in info.columns]
-    source = project_dataset(store, dataset_id,
-        dict.fromkeys([*group_columns, *metric_columns, *filter_columns]))
-    normalized_metrics = _validated_metrics(source, list(metrics))
-    if set(group_columns) & {metric["name"] for metric in normalized_metrics}:
-        raise ValueError("지표 이름은 그룹 컬럼명과 달라야 합니다.")
+    projected_columns=list(dict.fromkeys([*group_columns, *metric_columns, *filter_columns]))
+    execution_mode='pandas_projection'
+    if hasattr(store.frames,'batches') and info.rows>20_000:
+        from utils.analysis_group_streaming import reduce_groups
+        result,normalized_metrics,metric_counts,counters=reduce_groups(
+            store,info,projected_columns,group_columns,metrics,condition_objects,int(max_groups))
+        group_count=len(result)
+        execution_mode='streamed_local_sql'
+    else:
+        source = project_dataset(store, dataset_id,
+            dict.fromkeys([*group_columns, *metric_columns, *filter_columns]))
+        normalized_metrics = _validated_metrics(source, list(metrics))
+        if set(group_columns) & {metric["name"] for metric in normalized_metrics}:
+            raise ValueError("지표 이름은 그룹 컬럼명과 달라야 합니다.")
 
-    if any(condition.column not in source.columns for condition in condition_objects):
-        raise ValueError("전체 필터 컬럼은 현재 dataset의 실제 컬럼이어야 합니다.")
-    filtered = filter_frame(source, condition_objects) if condition_objects else source.copy()
-    grouped_input = filtered.dropna(subset=group_columns)
-    if grouped_input.empty:
-        raise ValueError("조건 적용 후 그룹 요약할 행이 없습니다.")
-    group_count = int(grouped_input.groupby(group_columns, observed=True, dropna=True).ngroups)
-    if not 1 <= group_count <= int(max_groups):
-        raise ValueError("그룹 수가 허용 범위를 벗어났습니다.")
+        if any(condition.column not in source.columns for condition in condition_objects):
+            raise ValueError("전체 필터 컬럼은 현재 dataset의 실제 컬럼이어야 합니다.")
+        filtered = filter_frame(source, condition_objects) if condition_objects else source.copy()
+        grouped_input = filtered.dropna(subset=group_columns)
+        if grouped_input.empty:
+            raise ValueError("조건 적용 후 그룹 요약할 행이 없습니다.")
+        group_count = int(grouped_input.groupby(group_columns, observed=True, dropna=True).ngroups)
+        if not 1 <= group_count <= int(max_groups):
+            raise ValueError("그룹 수가 허용 범위를 벗어났습니다.")
 
-    # Start from every observed group so conditional metrics cannot silently
-    # remove groups whose numerator is zero.
-    result = grouped_input[group_columns].drop_duplicates().reset_index(drop=True)
-    metric_counts: dict[str, dict[str, int]] = {}
-    for metric in normalized_metrics:
-        name, aggregation = metric["name"], metric["aggregation"]
-        value_column = metric["value_column"]
-        condition = metric["condition"]
-        if condition is not None:
-            condition_object = Condition(**condition)
-            selected = filter_frame(grouped_input, (condition_object,))
-            metric_counts[name] = {
-                "denominator_rows": len(grouped_input),
-                "selected_rows": len(selected),
-            }
-            if aggregation == "conditional_percent":
-                denominator = grouped_input.groupby(
-                    group_columns, observed=True, dropna=True).size().rename("__denominator")
-                numerator = selected.groupby(
-                    group_columns, observed=True, dropna=True).size().rename("__numerator")
-                values = (100.0 * numerator / denominator).fillna(0.0).rename(name).reset_index()
-            elif aggregation == "conditional_count":
-                values = selected.groupby(
+        # Start from every observed group so conditional metrics cannot silently
+        # remove groups whose numerator is zero.
+        result = grouped_input[group_columns].drop_duplicates().reset_index(drop=True)
+        metric_counts: dict[str, dict[str, int]] = {}
+        for metric in normalized_metrics:
+            name, aggregation = metric["name"], metric["aggregation"]
+            value_column = metric["value_column"]
+            condition = metric["condition"]
+            if condition is not None:
+                condition_object = Condition(**condition)
+                selected = filter_frame(grouped_input, (condition_object,))
+                metric_counts[name] = {
+                    "denominator_rows": len(grouped_input),
+                    "selected_rows": len(selected),
+                }
+                if aggregation == "conditional_percent":
+                    denominator = grouped_input.groupby(
+                        group_columns, observed=True, dropna=True).size().rename("__denominator")
+                    numerator = selected.groupby(
+                        group_columns, observed=True, dropna=True).size().rename("__numerator")
+                    values = (100.0 * numerator / denominator).fillna(0.0).rename(name).reset_index()
+                elif aggregation == "conditional_count":
+                    values = selected.groupby(
+                        group_columns, observed=True, dropna=True).size().rename(name).reset_index()
+                else:
+                    values = selected.groupby(group_columns, observed=True, dropna=True)[
+                        value_column].mean().rename(name).reset_index()
+            elif aggregation == "count":
+                values = grouped_input.groupby(
                     group_columns, observed=True, dropna=True).size().rename(name).reset_index()
+                metric_counts[name] = {"input_rows": len(grouped_input), "non_null_rows": len(grouped_input)}
             else:
-                values = selected.groupby(group_columns, observed=True, dropna=True)[
-                    value_column].mean().rename(name).reset_index()
-        elif aggregation == "count":
-            values = grouped_input.groupby(
-                group_columns, observed=True, dropna=True).size().rename(name).reset_index()
-            metric_counts[name] = {"input_rows": len(grouped_input), "non_null_rows": len(grouped_input)}
-        else:
-            values = grouped_input.groupby(group_columns, observed=True, dropna=True)[
-                value_column].agg(aggregation).rename(name).reset_index()
-            metric_counts[name] = {
-                "input_rows": len(grouped_input),
-                "non_null_rows": int(grouped_input[value_column].notna().sum()),
-            }
-        result = result.merge(values, on=group_columns, how="left", validate="one_to_one")
-        if aggregation in {"conditional_count", "conditional_percent"}:
-            result[name] = result[name].fillna(0)
-        elif aggregation == "conditional_mean" and metric["empty_value"] is not None:
-            result[name] = result[name].fillna(metric["empty_value"])
+                values = grouped_input.groupby(group_columns, observed=True, dropna=True)[
+                    value_column].agg(aggregation).rename(name).reset_index()
+                metric_counts[name] = {
+                    "input_rows": len(grouped_input),
+                    "non_null_rows": int(grouped_input[value_column].notna().sum()),
+                }
+            result = result.merge(values, on=group_columns, how="left", validate="one_to_one")
+            if aggregation in {"conditional_count", "conditional_percent"}:
+                result[name] = result[name].fillna(0)
+            elif aggregation == "conditional_mean" and metric["empty_value"] is not None:
+                result[name] = result[name].fillna(metric["empty_value"])
+
+        counters={'source_rows':len(source),'filtered_rows':len(filtered),'group_input_rows':len(grouped_input)}
 
     if sort.startswith('metric_'):
         if sort_by not in {metric['name'] for metric in normalized_metrics}:
@@ -216,12 +227,13 @@ def summarize_groups(
     )
     summary = {
         "kind": "dataset_group_summary",
+        "execution_mode": execution_mode,
         "parent_dataset_id": dataset_id,
         **specification,
-        "source_rows": len(source),
-        "filtered_rows": len(filtered),
-        "group_input_rows": len(grouped_input),
-        "dropped_group_rows": len(filtered) - len(grouped_input),
+        "source_rows": counters["source_rows"],
+        "filtered_rows": counters["filtered_rows"],
+        "group_input_rows": counters["group_input_rows"],
+        "dropped_group_rows": counters["filtered_rows"] - counters["group_input_rows"],
         "group_count": group_count,
         "output_rows": len(result),
         "output_columns": len(result.columns),
@@ -234,8 +246,8 @@ def summarize_groups(
         "group_summary_result": summary,
         "preview": json.loads(result.head(15).to_json(orient="records")),
         "scope": (
-            f"{info.source}의 보유 raw dataset {len(source):,}행에서 조건 적용 {len(filtered):,}행, "
-            f"그룹 키가 있는 {len(grouped_input):,}행을 {len(normalized_metrics):,}개 지표로 요약한 "
+            f"{info.source}의 보유 raw dataset {counters['source_rows']:,}행에서 조건 적용 {counters['filtered_rows']:,}행, "
+            f"그룹 키가 있는 {counters['group_input_rows']:,}행을 {len(normalized_metrics):,}개 지표로 요약한 "
             f"{len(result):,}행 · coverage={info.coverage} · snapshot={info.snapshot or 'unknown'}"
         ),
     }

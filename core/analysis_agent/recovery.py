@@ -1009,6 +1009,8 @@ class RecoveryMiddleware(AgentMiddleware):
             from core.analysis_agent.latest_selection import bind
             latest_spec = bind(text, self.context, sources=current.get('required_sources', []),
                                remote_available=self.remote_available and not current.get('current_result_only'))
+            from core.analysis_agent.latest_filter_scope import bind_scope
+            bind_scope(latest_spec,current.get('scope',{}),text,self.context)
             current['latest_per_key_spec'] = latest_spec
             current['latest_selection_evidence'] = None
             if latest_spec:
@@ -2286,6 +2288,7 @@ class RecoveryMiddleware(AgentMiddleware):
                 arguments.update(categorical=spec.get('categorical',True),bins=spec.get('bins',20))
                 arguments['tie_break_columns']=spec.get('tie_break_columns',[])
                 arguments['null_policy']=spec.get('null_policy','reject')
+                arguments.update(conditions=spec.get('conditions',[]),filter_stage=spec.get('filter_stage',''))
                 plan = current.get('remote_latest_plan')
                 refresh = current.get('remote_latest_refresh')
                 receipts = current.get('remote_query_evidence', {})
@@ -2309,7 +2312,7 @@ class RecoveryMiddleware(AgentMiddleware):
             if not spec.get('question') and not current.get('latest_selection_evidence') and not any(
                     c.get('name')=='analyze_latest_distribution' for c in calls.values()):
                 return {'name':'analyze_latest_distribution','args':{key:spec[key] for key in
-                    ('dataset_id','key_columns','order_column','value_column','categorical')} | {'bins':spec.get('bins',20),'tie_break_columns':spec.get('tie_break_columns',[]),'null_policy':spec.get('null_policy','reject')}}
+                    ('dataset_id','key_columns','order_column','value_column','categorical')} | {'bins':spec.get('bins',20),'tie_break_columns':spec.get('tie_break_columns',[]),'null_policy':spec.get('null_policy','reject'),'conditions':spec.get('conditions',[]),'filter_stage':spec.get('filter_stage','')}}
             return None
         if self.context and current.get('operation_pending'):
             from core.analysis_agent.operation_binding import metadata_for
@@ -3400,7 +3403,7 @@ class RecoveryMiddleware(AgentMiddleware):
             from core.analysis_agent.latest_selection import ask
             question=current.get('latest_question') or current['latest_per_key_spec'].get('question')
             if question:return ask(current,question)
-            if self._has_scope(current) or current.get('scope',{}).get('unresolved'):
+            if not current['latest_per_key_spec'].get('filter_scope_bound') and (self._has_scope(current) or current.get('scope',{}).get('unresolved')):
                 return ask(current,'키별 최신 행 선택 전후 중 어느 단계에서 조건을 적용할지 알려주세요.')
         if current.get('operation_pending') and any(
                 c.get('name') == 'resolve_analysis_operation' for c in calls.values()):
@@ -3640,6 +3643,8 @@ class RecoveryMiddleware(AgentMiddleware):
     def _proposed_scope_valid(self, call, current):
         if current.get('explanation_only'): return False
         spec = current.get('latest_per_key_spec') or {}
+        from utils.analysis_latest_filters import matches as latest_filters_match
+        if spec and call.get('name') in {'analyze_latest_distribution','prepare_remote_latest_distribution'} and not latest_filters_match(call.get('args',{}),spec):return False
         if spec and not spec.get('remote') and call.get('name')=='analyze_latest_distribution':
             arguments=call.get('args',{})
             return (all(arguments.get(k)==spec.get(k) for k in ('dataset_id','key_columns','order_column','value_column'))
@@ -3660,7 +3665,7 @@ class RecoveryMiddleware(AgentMiddleware):
                     current['scope_error'] = 'remote_result_already_available'
                     return False
                 allowed = [(current.get('remote_latest_plan') or {}).get('query'), current.get('remote_latest_refresh')]
-                return (not self._has_scope(current) and arguments.get('source') == spec['source']
+                return ((not self._has_scope(current) or spec.get('filter_scope_bound')) and arguments.get('source') == spec['source']
                     and bool(arguments.get('query')) and arguments['query'] in allowed)
             return call.get('name') in {'list_analysis_context', 'inspect_table_context', 'search_analysis_tools'}
         if current.get('histogram_bins') is not None and call.get('name') in {

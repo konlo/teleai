@@ -1,0 +1,35 @@
+{
+  "status": "BLOCKED",
+  "checks": {
+    "warehouse": {
+      "status": "PASS",
+      "http_status": 200,
+      "state": "STOPPED",
+      "timestamp": "2026-09-30T10:00:57.821573+00:00",
+      "elapsed_seconds": 1.085
+    },
+    "model": {
+      "status": "BLOCKED",
+      "stage": "model",
+      "error_type": "BadRequestError",
+      "http_status": 400,
+      "category": "model_provider_temporarily_unavailable",
+      "temporary_confirmed": false,
+      "timestamp": "2026-09-30T10:00:58.896632+00:00",
+      "elapsed_seconds": 1.075
+    },
+    "sql": {
+      "status": "BLOCKED",
+      "stage": "OpenSession",
+      "error_type": "RequestError",
+      "http_status": 400,
+      "category": null,
+      "temporary_confirmed": false,
+      "timestamp": "2026-09-30T10:00:59.764023+00:00",
+      "elapsed_seconds": 0.867
+    }
+  },
+  "scope": "connectivity_only_not_agent_quality_or_release",
+  "temporary_confirmed": false,
+  "next_action": "inspect_provider_usage_account_and_service_status"
+}

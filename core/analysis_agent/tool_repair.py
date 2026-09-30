@@ -31,9 +31,9 @@ def diagnosis(failure, available):
         category='numeric_representation_unresolved'
         tools=['inspect_dataset','profile_dataset']
         action='Verify the meaning of nonnumeric values before declaring missing strings. Never silently drop rows or reload the source.'
-    elif code=='full_frame_budget':
+    elif code in {'full_frame_budget','local_resource_limit'}:
         category='local_resource_limit'
-        tools=['search_analysis_tools','local_analysis_sql']
+        tools=['search_analysis_tools','local_analysis_sql','summarize_groups']
         action='Choose a bounded projection/filter/aggregate path. Do not replace the requested population with a sample.'
     elif failure.get('status')=='unavailable':
         category='local_tool_unavailable'
@@ -57,5 +57,7 @@ def repair_instruction(current, available, signatures):
         +'\nInspect → revise → execute → verify. Search candidate tool schemas before choosing a compatible alternative. '
          'Do not repeat an unchanged failed call. Preserve the original source, filters, denominator and coverage. '
          'Keep completed results and repair only missing obligations. Never reload data to bypass a local tool failure. '
-         'Remote SQL still requires exact-query approval. If no valid alternative exists, explain the specific unmet requirement. '
+         'Remote SQL must follow the current runtime authorization policy, read-only checks and execution ledger. '
+         'Do not ask for approval when automatic reads are enabled. '
+         'If no valid alternative exists, explain the specific unmet requirement. '
          'A diagnosis or plan is not completion evidence.')

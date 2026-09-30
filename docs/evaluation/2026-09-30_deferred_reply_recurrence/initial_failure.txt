@@ -1,0 +1,39 @@
+FFF....F.....2026-09-30 13:44:06.543 WARNING streamlit.runtime.scriptrunner_utils.script_run_context: Thread 'MainThread': missing ScriptRunContext! This warning can be ignored when running in bare mode.
+................2026-09-30 13:44:07.356 Thread 'MainThread': missing ScriptRunContext! This warning can be ignored when running in bare mode.
+.......
+======================================================================
+FAIL: test_legacy_approval_reply_is_bounded_and_never_successful_promise (tests.test_deferred_reply_delivery.DeferredReplyDeliveryTests.test_legacy_approval_reply_is_bounded_and_never_successful_promise)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/najongseong/git_repository/teleai/tests/test_deferred_reply_delivery.py", line 56, in test_legacy_approval_reply_is_bounded_and_never_successful_promise
+    self.assertNotEqual(result['status'], 'answered')
+AssertionError: 'answered' == 'answered'
+
+======================================================================
+FAIL: test_structured_text_blocks_are_checked_but_reasoning_is_not_display_text (tests.test_deferred_reply_delivery.DeferredReplyDeliveryTests.test_structured_text_blocks_are_checked_but_reasoning_is_not_display_text)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/najongseong/git_repository/teleai/tests/test_deferred_reply_delivery.py", line 18, in test_structured_text_blocks_are_checked_but_reasoning_is_not_display_text
+    self.assertTrue(deferred_execution_claim([{'type':'text', 'text':FIXTURE['reported_reply']}]))
+AssertionError: False is not true
+
+======================================================================
+FAIL: test_tool_narration_and_historical_unverified_promises_are_not_rendered (tests.test_deferred_reply_delivery.DeferredReplyDeliveryTests.test_tool_narration_and_historical_unverified_promises_are_not_rendered)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/najongseong/git_repository/teleai/tests/test_deferred_reply_delivery.py", line 31, in test_tool_narration_and_historical_unverified_promises_are_not_rendered
+    self.assertFalse(deferred_execution_claim(displayed.content))
+AssertionError: True is not false
+
+======================================================================
+FAIL: test_exact_reported_reply_string_and_blocks_cannot_complete_without_execution (tests.test_deferred_reply_delivery.ExactGraphReplyTests.test_exact_reported_reply_string_and_blocks_cannot_complete_without_execution) (content_type='list')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/najongseong/git_repository/teleai/tests/test_deferred_reply_delivery.py", line 71, in test_exact_reported_reply_string_and_blocks_cannot_complete_without_execution
+    self.assertNotEqual(result['status'], 'answered', result)
+AssertionError: 'answered' == 'answered' : {'status': 'answered', 'text': [{'type': 'text', 'text': '승인해주셔서 감사합니다. 곧 유갸찬_ㅅ디듣ㅅ교.ㅅ디ㅣㅛ_ㄴ초드믜 테이블 목록을 확인해 안내드리겠습니다. 결과가 도착하면 바로 알려드리겠습니다.'}], 'elapsed_seconds': 0.005}
+
+----------------------------------------------------------------------
+Ran 36 tests in 2.085s
+
+FAILED (failures=4)

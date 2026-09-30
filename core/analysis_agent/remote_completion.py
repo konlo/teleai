@@ -2,6 +2,12 @@
 import re
 
 
+UNVERIFIED_DELIVERY_NOTICE = (
+    '확인되지 않은 결과 대기 안내를 차단했습니다. '
+    '백그라운드 조회나 자동 완료 알림은 예약되지 않았습니다. '
+    '실제 결과 또는 실행 상태를 확인해야 합니다. 기존 데이터는 보존했습니다.')
+
+
 def catalog_read_requested(current):
     sources = current.get('required_sources') or []
     text = current.get('request_text', '')
@@ -43,6 +49,13 @@ def remote_queries_ready(current):
 
 def deferred_execution_claim(content):
     """Defense for unclassified requests; execution receipts remain the primary gate."""
+    if isinstance(content, list):
+        # Providers may return visible text as blocks instead of a plain string.
+        # Reasoning/image/tool blocks are not user-visible answer text.
+        content = ''.join(block if isinstance(block, str) else block.get('text', '')
+            for block in content if isinstance(block, str) or
+            (isinstance(block, dict) and block.get('type') in {'text', 'output_text'}
+             and isinstance(block.get('text'), str)))
     if not isinstance(content, str):
         return False
     # An explanation that explicitly denies the capability is not a promise.
