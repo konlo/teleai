@@ -3,6 +3,7 @@
 ## Current Status
 - **Last Updated**: 2026-09-30
 - **Status**: In Progress — 범용 자율 분석 agent 정식 출시 NO-GO
+- **Latest filter stage**: [최신행 필터 후속](docs/evaluation/2026-09-30_latest_filters/report.md). 명시적 AND 필터의 선택 전/후 실행·계보·후속·재시작·receipt 재사용, 수치1개 histogram·실제 구간/빈도 기록 보강. 102만행 독립 정답/원본·차트 재시작 보존, 제품498+migration136/reference217 PASS 후 NaN 관련23 PASS. 19:00 KST 모델/SQL400 지속. 구현485c5fa push, 최종 Linux CI36700170026에서 제품499/migration136/agentic17/reference217/compile PASS.
 - **GO continuation**: [후속 보강](docs/evaluation/2026-09-30_go_continuation/report.md). 그룹 통계 배치 처리, 자원 실패의 대체 도구 복구, 복구 prompt 승인 정책 충돌 수정. 합성100만행×8지표·PNG·원본/재시작 보존 PASS. 제품490+migration136/reference217 PASS. 설정된 모델/SQL400 및 미완료 네 묶음 때문에 범용 NO-GO 유지.
 - **Server diagnostics**: [서버 실패 진단 안내](docs/server_failure_diagnostics.md). 직접 접속·로그 반출 없이 12줄 진단 요약을 확인하도록 UI/CLI/관측을 보강했다. 제품484 + migration136 PASS. 실제 서버 적용은 미검증이며 서버 접속/전체 로그 공유를 요청하지 않는다.
 - **Deferred reply recurrence**: [응답 검증 누락 수정](docs/evaluation/2026-09-30_deferred_reply_recurrence/report.md). 사용자 원문으로 구조화블록/도구안내/구버전/과거표시 누락 재현·보완. 제품475+migration136/관련27 PASS, localhost8502 재시작 및 실제 화면 정정안내 확인. 사용자가 실제 사용 서버에서 재발했음을 확인함. 서버 revision·실행 프로세스는 미확인.
@@ -15,7 +16,7 @@
 - **Next Session Focus**: 최신행 정책/필터 확장, 역할별·다단계 SQL, D07/D08·J21~24 전체 계약, 미채점98문항. 오늘 완료한 push/CI 근거는 보고서 말미와 validation.json에 기록한다.
 
 ## Next Action Items
-- [ ] 1. 최신행 EDA 확장: 일반 선택 전후 필터, 추가 통계·비균등 구간, 기타 정책. 추가 내림차순 동률 기준/선택 전 결측 제외의 후속 연결과 기본 복합키·수치 구간·재사용은 완료.
+- [ ] 1. 최신행 EDA 확장: 추가 통계·비균등 구간·혼합 단계/복합 조건, 기타 정책. 명시된 단일 단계 AND 선택 전후 필터는 로컬 회귀 완료·실모델 미검증. 추가 내림차순 동률 기준/선택 전 결측 제외의 후속 연결과 기본 복합키·수치 구간·재사용은 완료.
 - [ ] 2. 복합 SQL: 역할별 조인·JSON·OR/NOT/NULL·CTE/HAVING·DISTINCT 의미 계약 및 복구. 현재 Spider 공식0/10 개선 필수.
 - [ ] 3. 대용량: D07/D08·J21~J24 전체 여정/한도/출처 계약, 남은 도구의 부분 scan·보존·재사용. 100만행 합성 및 실제10만행/75만행 증거를 범위에 맞게 연결.
 - [ ] 4. 독립 평가: 미채점98문항 oracle, 새 schema·표현·다회 대화·실패 복구·지연 검증. 기존102PASS를 전체200PASS로 해석하지 않음.
@@ -2204,3 +2205,5 @@ Task definitions and acceptance conditions: docs/agent_remaining_tasks_2026-09-1
 - **Outcome**: 제품498(60.252s)/migration136(18.957s)/reference217(58그림) PASS. 102만행 독립 oracle와 실제 PNG, 원본 해시·선택·계보·재시작 차트 보존 PASS. 대역 모델/합성 데이터이며 실모델 성공으로 계산하지 않는다. docs/evaluation/2026-09-30_latest_filters/report.md.
 - **Remaining**: 19:00KST 모델400/OpenSession400 지속. 기능 잔여(최신행 추가통계·비균등 구간·혼합필터, 복합SQL, 대용량 혼합여정, 독립98oracle) 및 실제 서버 검증이 남아 범용NO-GO 유지.
 - **Action**: 최종 검토에서 SQL NaN 비교가 pandas 결측 처리와 달라질 수 있는 경로를 차단. 실제 NaN SQL 행으로 ne/gt/lt 두 dialect 독립 검증 추가; 관련23 PASS. 원격 서비스 재시도를 반복하지 않는다.
+- **UI Validation**: main.py Streamlit AppTest에서 선택 후 수치1개 histogram→6구간 후속2턴 이미지 표시·원본 선택 유지·예외0·원격0. 처음 검사 selector imgs는 설치 버전에서 image로 변경되어 수정; 제품 표시 결함은 아님. ui_delivery.json에 대역 범위 명시.
+- **Outcome**: 구현485c5fa의 Linux CI36700170026 성공(제품499/migration136/agentic17/reference217/compile). 작업 브랜치 push 완료, main 병합/사용자 서버 배포 아님. 문서와 UI 근거를 후속 기록한다.

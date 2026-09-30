@@ -23,6 +23,7 @@
 |reference/agentic|[217 PASS, 58그림](reference_final.txt). 독립98문항의 실모델 재채점이 아님|
 |대용량 전체 경로|[102만행](million_rows.json): 필터 선택 전 20,000키(new10,000+old10,000), 선택 후 10,000키(new10,000). 외부 fixture 독립 정답과 일치|
 |자원·보존|대용량 원본 전체 projection/get 차단 하에 성공. frame cache0, 원본 파일 hash·선택·계보·재시작 후 차트 보존. 프로세스 peak RSS486,850,560 bytes. SQL 엔진128MB 제한은 Python 전체 RSS 제한이 아님|
+|실제 진입 UI|[main.py AppTest](ui_delivery.json): 합성 보유 데이터/대역 모델, 선택 후 수치1개 histogram→6구간 변경2턴, 이미지 요소 표시·예외0·원본 선택 보존·원격0. 브라우저 CSS/실모델 검증은 아님|
 |실물 이미지|[선택 전](before.png), [선택 후](after.png), [수치1개 히스토그램](single_value_histogram.png)을 실제 이미지로 확인|
 
 합성 대용량 경로는 production graph의 결정적 도구 계획이며 실모델 호출0·원격 쿼리0이다. 첫 실행7.981초, 다음 실행0.181초는 한 프로세스의 측정으로, 워밍업/캐시 조건이 달라 속도 비교나 운영 SLA로 해석하지 않는다. 원격 SQL 의미는 합성 데이터에서 SQLGlot 변환 후 DuckDB로 검증했다. 실제 Databricks 실행 검증이 아니다.
@@ -39,3 +40,7 @@ python scripts/evaluate_latest_filters.py --output /tmp/latest-filters/result.js
 [19:00 KST 점검](provider_final.json): Warehouse 조회200/STOPPED, 모델400, OpenSession400. 일시 장애/사용량 제한/계정 제한의 정확한 원인은 아직 미확인이다. 자동 브라우저 제어 차단을 우회하지 않았으며 새 토큰 생성이나 계정 설정 변경도 하지 않았다.
 
 남은 기능은 최신행 추가 통계·비균등 구간·혼합 단계/조건, 복합 SQL 의미 및 실제 복구, 대용량 혼합 raw/집계 여정, 독립98개 정답 비교기와 실제 모델 평가다. 사용자 서버는 외부 접근·원본 로그 반출 없이 진단 상태로 확인해야 한다. 이번 변경을 사용자 서버에 배포한 것은 아니다.
+
+## Push 및 최종 CI
+
+구현 커밋 `485c5fa2670b78594808c0b123de7debe96238fa`를 작업 브랜치 `codex/agentic-analysis-rc-2026-09-14`에 push했다. [Linux CI36700170026](https://github.com/konlo/teleai/actions/runs/36700170026)의 migration136·제품499·agentic17·reference217 및 compile이 모두 PASS했다. [상태](ci.json), [실제 로그 개수](ci_counts.txt). NaN 필터 보강까지 포함한 최종 코드 검증이다. 후속 기록 커밋은 문서/검증 근거만 변경하며 사용자 서버 배포나 main 병합이 아니다.
