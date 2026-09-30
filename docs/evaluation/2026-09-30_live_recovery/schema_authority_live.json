@@ -1,0 +1,14 @@
+{
+  "status": "FAIL",
+  "agent_status": "incomplete",
+  "data": "actual Databricks",
+  "model": "scripted probe then aggregate; no LLM inference",
+  "queries": [
+    "SELECT COUNT(*) AS n FROM `workspace`.`default`.`bank_loan`",
+    "SELECT AVG(`age`) AS average FROM `workspace`.`default`.`bank_loan`"
+  ],
+  "source_schema_preserved": true,
+  "source_column_count": 18,
+  "schema_authority": "saved_snapshot",
+  "error_type": "AssertionError"
+}

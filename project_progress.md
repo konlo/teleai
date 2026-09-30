@@ -1,6 +1,8 @@
 # Project Progress Log
 
 ## Current Status
+- **Live GO evaluation**: [연결 복구 후 평가](docs/evaluation/2026-09-30_live_recovery/report.md). 실제75만행 최신행/이미지/재사용 PASS. 스키마 오염과 qualified table 주소/컬럼 충돌, 영어 그룹 개수 해석 수정. 자연어10여정12턴 PASS, 200문항105PASS/95미채점. Spider10 최종완료0, 진단 초안 공식1/10(local004 정답을 agent가 차단). 범용 NO-GO이며 현재 API400이 원인은 아님.
+- **Connectivity recovered (21:48 KST)**: Warehouse RUNNING/API200, 최소 모델 응답 및 SELECT1 각1회 PASS. 이전400은 이번 점검에서 재현되지 않음. 원인/영구 해결은 확정하지 않음. 실제 agent 종단평가 및 잔여 기능 기준이 남아 범용 NO-GO 유지. 근거 docs/evaluation/2026-09-30_connection_recovered/provider_probe.json.
 - **Last Updated**: 2026-09-30
 - **Status**: In Progress — 범용 자율 분석 agent 정식 출시 NO-GO
 - **Latest filter stage**: [최신행 필터 후속](docs/evaluation/2026-09-30_latest_filters/report.md). 명시적 AND 필터의 선택 전/후 실행·계보·후속·재시작·receipt 재사용, 수치1개 histogram·실제 구간/빈도 기록 보강. 102만행 독립 정답/원본·차트 재시작 보존, 제품498+migration136/reference217 PASS 후 NaN 관련23 PASS. 19:00 KST 모델/SQL400 지속. 구현485c5fa push, 최종 Linux CI36700170026에서 제품499/migration136/agentic17/reference217/compile PASS.
@@ -19,7 +21,7 @@
 - [ ] 1. 최신행 EDA 확장: 추가 통계·비균등 구간·혼합 단계/복합 조건, 기타 정책. 명시된 단일 단계 AND 선택 전후 필터는 로컬 회귀 완료·실모델 미검증. 추가 내림차순 동률 기준/선택 전 결측 제외의 후속 연결과 기본 복합키·수치 구간·재사용은 완료.
 - [ ] 2. 복합 SQL: 역할별 조인·JSON·OR/NOT/NULL·CTE/HAVING·DISTINCT 의미 계약 및 복구. 현재 Spider 공식0/10 개선 필수.
 - [ ] 3. 대용량: D07/D08·J21~J24 전체 여정/한도/출처 계약, 남은 도구의 부분 scan·보존·재사용. 100만행 합성 및 실제10만행/75만행 증거를 범위에 맞게 연결.
-- [ ] 4. 독립 평가: 미채점98문항 oracle, 새 schema·표현·다회 대화·실패 복구·지연 검증. 기존102PASS를 전체200PASS로 해석하지 않음.
+- [ ] 4. 독립 평가: 미채점95문항 oracle, 새 schema·표현·다회 대화·실패 복구·지연 검증. 현재105PASS를 전체200PASS로 해석하지 않음.
 - [x] 이번 평가 도구 보정과 실제 화면 검증: 정당한 대체 도구, judge 양성/음성 calibration, 공식 Spider 분모 구분, 이미지/후속/재사용 검증. [근거](docs/evaluation/2026-09-30_batch/report.md).
 
 ## 이전 작업 목록 (2026-09-30 통합 전 이력)
@@ -2210,3 +2212,21 @@ Task definitions and acceptance conditions: docs/agent_remaining_tasks_2026-09-1
 
 ## [2026-09-30T19:21:31.879122+09:00] [Agent: /root] User Request: push 해줘
 - **Action**: 현재 작업 브랜치 변경/커밋 상태를 확인하고 원격에 push한 뒤 원격 SHA 일치를 확인한다.
+
+## [2026-09-30T21:46:03.796949+09:00] [Agent: /root] User Request: 지금 Databricks 연결되는지 확인
+- **Action**: 현재 설정으로 Warehouse 상태·최소 모델 호출·SQL SELECT1 연결을 각1회 점검한다. 원문 오류/토큰은 기록하지 않는다.
+- **Outcome**: 점검 도중 사용자 중단으로 프로세스85088을 더 이상 조회할 수 없고 결과 JSON도 생성되지 않음. 이번 연결 상태는 미확인. 중복 요청은 실행하지 않았으며 마지막 완료 근거는19:00KST 모델/SQL400이다.
+
+## [2026-09-30T21:48:42.677425+09:00] [Agent: /root] User Request: 화면에서 Databricks 연결 후 API 정상 여부 확인
+- **Action**: 브라우저 로그인 상태와 별개로 현재 API 설정의 상태 조회·최소 모델 요청·SELECT1을 각1회 재검증한다.
+- **Outcome**: 21:48KST Warehouse200/RUNNING, 모델 응답1.524초, SELECT1 실행 및 결과1 확인3.085초 모두 PASS. HTTP400 미재현; 연결 복구 확인으로 실환경 평가 재개 가능. 로그인 자체가 복구 원인이라는 근거는 없음. agent 전체 GO 판정과는 구분.
+
+## [2026-09-30T21:50:07.858509+09:00] [Agent: /root] User Request: GO 판정을 위한 나머지 작업 수행
+- **Action**: 21:48 연결 복구를 근거로 실모델/실SQL 평가를 재개한다. 남은 기능·독립 oracle·사용자 여정의 기존 기준을 유지하며 실패 원인을 구현/환경/평가기로 구분해 수정·재검증한다.
+
+- **Action** [Agent: /root]: 집계 SELECT의 wildcard 스키마 권한, qualified source/컬럼 충돌, 영어 개수·그룹 계약을 수정했다. 실제 모델 Spider10 전후, 자연어10여정12턴, reference200을 실행하고 독립 차트 oracle3개를 추가했다.
+- **Outcome**: 실제75만행 최신행 분포 PASS; source schema 회귀 실DB COUNT→AVG2회 PASS. 첫 live regression 하네스 실패와 FQN 충돌 진단도 보존. 초기 제품503/migration136 및 새 oracle50검사 PASS. 최종 schema mask 변경의 제품 재검증 진행.
+- **Decision**: Spider 최종완료0/10, 공식 진단 초안1/10. local004는 올바른 SQL을 agent가 차단함을 확인. provider400을 현재 원인으로 돌리지 않는다. 범용 GO에는 의미/관계/계산식 계약 보강과 기존 나머지 기준이 필요.
+
+- **Live follow-up**: 추가 실DB COUNT→AVG 회귀에서 schema 이름 `default`를 컬럼으로 오인하는 결함을 발견했다. 관측 qualified source span을 컬럼/조건 해석에서 구분하고 별도 컬럼·문자열 조건은 보존. scripted 실DB2회 answered 및 실제 모델3회/SQL1회 평균 answered 확인.
+- **Validation**: 최종 제품504개 중503통과/1개 readiness manifest oracle105 대102 불일치. 생성기로 manifest를 갱신하고 관련 검사를 재실행. 이 실행의 실제SQL은총10회(최신행3,회귀6,실모델평균1), 공개SQLite와분리. 모든근거는 docs/evaluation/2026-09-30_live_recovery/.

@@ -1,0 +1,38 @@
+{
+  "decision": "NO-GO",
+  "scope": "Local single-user general autonomous data analysis; separate server deployment excluded by user",
+  "connectivity": "Recovered; actual SQL and model calls succeeded",
+  "reference_evaluation": {
+    "total_reference_cases": 200,
+    "supported_oracles": 105,
+    "selected": 200,
+    "statuses": {
+      "PASS": 105,
+      "UNGRADED": 95
+    },
+    "all_selected_passed": false,
+    "ungraded_is_never_pass": true
+  },
+  "reference_model_calls": 14,
+  "spider_fixed_selection": {
+    "completed": 0,
+    "total": 10,
+    "model_calls": 77,
+    "official_final_answer_score": null,
+    "diagnostic_last_draft_score": {
+      "correct": 1,
+      "total": 10,
+      "correct_ids": [
+        "local004"
+      ],
+      "counts_as_agent_success": false
+    }
+  },
+  "blockers": [
+    "Open-ended semantic task binding and computed expressions",
+    "Grounded join discovery and recovery beyond explicit user join syntax",
+    "Latest-row extended statistics/nonuniform bins/mixed filter stages",
+    "Remaining large-data mixed journey and resource coverage",
+    "95 independently ungraded reference cases"
+  ]
+}

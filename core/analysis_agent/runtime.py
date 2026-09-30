@@ -448,17 +448,8 @@ class GraphAnalysisRuntime:
 
     @staticmethod
     def is_schema_probe(query):
-        from sqlglot import exp, parse_one
-        from sqlglot.errors import SqlglotError
-        try:
-            tree = parse_one(query, read='databricks')
-            limit = tree.args.get('limit') if isinstance(tree, exp.Select) else None
-            return bool(limit and isinstance(limit.expression, exp.Literal)
-                        and limit.expression.is_int and int(limit.expression.this) == 0
-                        and any(isinstance(node, exp.Star) for expression in tree.expressions
-                                for node in expression.walk()))
-        except (TypeError, ValueError, AttributeError, SqlglotError):
-            return False
+        from core.analysis_catalog import _is_zero_row_schema_probe
+        return _is_zero_row_schema_probe(query)
 
     def submit(self,text,model=None):
         if not text.strip():raise ValueError('요청을 입력해주세요.')

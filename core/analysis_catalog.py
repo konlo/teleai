@@ -59,21 +59,43 @@ def enrich_reference_context(item):
     return enriched
 
 
-def _is_full_schema_observation(info):
-    """A SELECT * result proves the returned schema, even when it has zero rows."""
-    if not info.query:
-        return False
+def full_schema_source(query, *, dialect='databricks'):
+    """Return the base table only for a sole, unmodified identity wildcard.
+
+    COUNT(*), wildcard EXCEPT/REPLACE, joined schemas and computed projections
+    describe a result, not the full source schema. Never give them authority
+    to remove or invent columns in the table context.
+    """
+    from utils.analysis_provenance import single_table
     try:
-        tree = parse_one(info.query, read='databricks')
+        tree = parse_one(query, read=dialect)
     except (TypeError, ValueError, SqlglotError):
+        return None
+    table = single_table(tree)
+    if table is None or len(tree.expressions) != 1:
+        return None
+    projection = tree.expressions[0]
+    if isinstance(projection, exp.Column):
+        if projection.table.casefold() != table.alias_or_name.casefold():
+            return None
+        projection = projection.this
+    if not isinstance(projection, exp.Star) or any(projection.args.values()):
+        return None
+    return table
+
+
+def _is_full_schema_observation(info):
+    """Only a matching remote identity projection can refresh source schema."""
+    from utils.analysis_provenance import table_identity
+    if getattr(info, 'parent_id', ''):
         return False
-    if not isinstance(tree, exp.Select) or len(list(tree.find_all(exp.Select))) != 1:
-        return False
-    return any(isinstance(node, exp.Star) for expression in tree.expressions
-               for node in expression.walk())
+    table = full_schema_source(info.query)
+    return bool(table is not None and _source_key(table_identity(table)) == _source_key(info.source))
 
 
 def _is_zero_row_schema_probe(query):
+    if full_schema_source(query) is None:
+        return False
     try:
         tree = parse_one(query, read='databricks')
     except (TypeError, ValueError, SqlglotError):

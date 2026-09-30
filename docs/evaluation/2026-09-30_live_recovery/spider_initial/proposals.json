@@ -1,0 +1,1297 @@
+{
+  "provider": "databricks",
+  "model": "databricks-qwen3-next-80b-a3b-instruct",
+  "model_timeout_seconds": 60.0,
+  "results": [
+    {
+      "id": "local007",
+      "db": "Baseball",
+      "benchmark": "Spider2-Lite SQLite",
+      "mode": "Interactive production graph with bounded read-only public SQLite execution; no gold access",
+      "remote_executions": 0,
+      "local_sql_executions": [
+        {
+          "query": "SELECT debut, final_game FROM player WHERE debut IS NOT NULL AND final_game IS NOT NULL LIMIT 5",
+          "status": "completed",
+          "rows": 5,
+          "coverage": "unknown",
+          "dataset_id": "247e91d6-8d73-457a-923c-9d5de1bdb0cc",
+          "elapsed_seconds": 0.024
+        },
+        {
+          "query": "SELECT COUNT(*) as total_players, COUNT(CASE WHEN debut IS NOT NULL AND final_game IS NOT NULL THEN 1 END) as players_with_dates FROM player",
+          "status": "completed",
+          "rows": 1,
+          "coverage": "complete",
+          "dataset_id": "417abe6f-5336-4c99-84f5-c6993cadb643",
+          "elapsed_seconds": 0.005
+        },
+        {
+          "query": "SELECT * FROM player LIMIT 1",
+          "status": "completed",
+          "rows": 1,
+          "coverage": "unknown",
+          "dataset_id": "98b2d64a-fb70-49b8-8faf-b681a19a3477",
+          "elapsed_seconds": 0.004
+        },
+        {
+          "query": "SELECT debut, final_game FROM player WHERE debut IS NOT NULL AND final_game IS NOT NULL",
+          "status": "completed",
+          "rows": 1000,
+          "coverage": "truncated",
+          "dataset_id": "76518dd3-d1ee-4667-b19e-3c47f3db6f38",
+          "elapsed_seconds": 0.004
+        },
+        {
+          "query": "SELECT CAST(strftime('%Y', final_game) AS INTEGER) - CAST(strftime('%Y', debut) AS INTEGER) AS years_diff, CAST(strftime('%m', final_game) AS INTEGER) - CAST(strftime('%m', debut) AS INTEGER) AS months_diff, CAST(strftime('%d', final_game) AS INTEGER) - CAST(strftime('%d', debut) AS INTEGER) AS days_diff FROM player WHERE debut IS NOT NULL AND final_game IS NOT NULL LIMIT 5",
+          "status": "completed",
+          "rows": 5,
+          "coverage": "unknown",
+          "dataset_id": "ffff91d1-46e7-4078-afd5-2f6c2b66e292",
+          "elapsed_seconds": 0.003
+        }
+      ],
+      "local_sql_probes": [
+        {
+          "query": "SELECT debut, final_game FROM player WHERE debut IS NOT NULL AND final_game IS NOT NULL LIMIT 5",
+          "status": "executable",
+          "elapsed_seconds": 0.002
+        },
+        {
+          "query": "SELECT COUNT(*) as total_players, COUNT(CASE WHEN debut IS NOT NULL AND final_game IS NOT NULL THEN 1 END) as players_with_dates FROM player",
+          "status": "executable",
+          "elapsed_seconds": 0.006
+        },
+        {
+          "query": "SELECT * FROM player LIMIT 1",
+          "status": "executable",
+          "elapsed_seconds": 0.002
+        },
+        {
+          "query": "SELECT debut, final_game FROM player WHERE debut IS NOT NULL AND final_game IS NOT NULL",
+          "status": "executable",
+          "elapsed_seconds": 0.0
+        },
+        {
+          "query": "SELECT CAST(strftime('%Y', final_game) AS INTEGER) - CAST(strftime('%Y', debut) AS INTEGER) AS years_diff, CAST(strftime('%m', final_game) AS INTEGER) - CAST(strftime('%m', debut) AS INTEGER) AS months_diff, CAST(strftime('%d', final_game) AS INTEGER) - CAST(strftime('%d', debut) AS INTEGER) AS days_diff FROM player WHERE debut IS NOT NULL AND final_game IS NOT NULL LIMIT 5",
+          "status": "executable",
+          "elapsed_seconds": 0.002
+        }
+      ],
+      "agent_status": "exhausted",
+      "final_output": "반복 실행 한도에 도달해 분석을 중단했습니다. 검증된 완료 결과가 없으며 기존 데이터는 보존했습니다.",
+      "model_calls": 10,
+      "model_retries": 0,
+      "recovery_status": "exhausted",
+      "scope_error": null,
+      "stop_reason": "model_call_budget",
+      "error_type": null,
+      "error_category": null,
+      "diagnostics": [
+        {
+          "time": "2026-09-30T12:53:15.096474+00:00",
+          "event": "run_started",
+          "run_id": "3aa7d03eb4694eeabe4528bd35ec60fb",
+          "instance_id": "3f69bcd088b3",
+          "pid": 47938,
+          "runtime": {
+            "revision_at_first_runtime": "5133c930259d9819c674e83340ea091d3a2bdffb",
+            "packages": {
+              "langchain": "1.4.0",
+              "langchain-core": "1.6.2",
+              "langgraph": "1.2.11",
+              "streamlit": "1.63.0",
+              "sqlglot": "30.18.0"
+            },
+            "python_version": "3.11.13",
+            "identity_captured_at": "2026-09-30T12:53:15.070270+00:00",
+            "route": "langgraph-v1",
+            "model_class": "DatabricksChatModel",
+            "require_remote_approval": false,
+            "loaded_delivery_guard": "66da8d34cbab0e06"
+          },
+          "operation": "submit",
+          "process_peak_rss_bytes": 303235072
+        },
+        {
+          "time": "2026-09-30T12:53:15.212547+00:00",
+          "event": "summarization_started",
+          "run_id": "3aa7d03eb4694eeabe4528bd35ec60fb",
+          "instance_id": "3f69bcd088b3",
+          "pid": 47938,
+          "span_id": "0708d4f3aaa0",
+          "message_count": 1
+        },
+        {
+          "time": "2026-09-30T12:53:15.212639+00:00",
+          "event": "summarization_finished",
+          "run_id": "3aa7d03eb4694eeabe4528bd35ec60fb",
+          "instance_id": "3f69bcd088b3",
+          "pid": 47938,
+          "span_id": "0708d4f3aaa0",
+          "status": "ok",
+          "elapsed_seconds": 0.0,
+          "message_count": 1,
+          "summarized": false
+        },
+        {
+          "time": "2026-09-30T12:53:15.213030+00:00",
+          "event": "model_call_started",
+          "run_id": "3aa7d03eb4694eeabe4528bd35ec60fb",
+          "instance_id": "3f69bcd088b3",
+          "pid": 47938,
+          "span_id": "98c1673d6a28",
+          "message_count": 1
+        },
+        {
+          "time": "2026-09-30T12:53:15.214908+00:00",
+          "event": "context_budget",
+          "run_id": "3aa7d03eb4694eeabe4528bd35ec60fb",
+          "instance_id": "3f69bcd088b3",
+          "pid": 47938,
+          "characters": 9814,
+          "limit": 32000
+        },
+        {
+          "time": "2026-09-30T12:53:18.971115+00:00",
+          "event": "model_call_finished",
+          "run_id": "3aa7d03eb4694eeabe4528bd35ec60fb",
+          "instance_id": "3f69bcd088b3",
+          "pid": 47938,
+          "span_id": "98c1673d6a28",
+          "status": "ok",
+          "elapsed_seconds": 3.758,
+          "message_count": 1,
+          "tool_call_count": 1
+        },
+        {
+          "time": "2026-09-30T12:53:18.974442+00:00",
+          "event": "tool_started",
+          "run_id": "3aa7d03eb4694eeabe4528bd35ec60fb",
+          "instance_id": "3f69bcd088b3",
+          "pid": 47938,
+          "tool": "inspect_table_context"
+        },
+        {
+          "time": "2026-09-30T12:53:18.977937+00:00",
+          "event": "tool_completed",
+          "run_id": "3aa7d03eb4694eeabe4528bd35ec60fb",
+          "instance_id": "3f69bcd088b3",
+          "pid": 47938,
+          "tool": "inspect_table_context",
+          "status": "ready",
+          "error_code": null,
+          "elapsed_seconds": 0.003,
+          "applied_corrections": []
+        },
+        {
+          "time": "2026-09-30T12:53:18.979964+00:00",
+          "event": "summarization_started",
+          "run_id": "3aa7d03eb4694eeabe4528bd35ec60fb",
+          "instance_id": "3f69bcd088b3",
+          "pid": 47938,
+          "span_id": "655d5a6e62ef",
+          "message_count": 3
+        },
+        {
+          "time": "2026-09-30T12:53:18.980034+00:00",
+          "event": "summarization_finished",
+          "run_id": "3aa7d03eb4694eeabe4528bd35ec60fb",
+          "instance_id": "3f69bcd088b3",
+          "pid": 47938,
+          "span_id": "655d5a6e62ef",
+          "status": "ok",
+          "elapsed_seconds": 0.0,
+          "message_count": 3,
+          "summarized": false
+        },
+        {
+          "time": "2026-09-30T12:53:18.980394+00:00",
+          "event": "model_call_started",
+          "run_id": "3aa7d03eb4694eeabe4528bd35ec60fb",
+          "instance_id": "3f69bcd088b3",
+          "pid": 47938,
+          "span_id": "becd24cbcc21",
+          "message_count": 3
+        },
+        {
+          "time": "2026-09-30T12:53:18.981691+00:00",
+          "event": "context_budget",
+          "run_id": "3aa7d03eb4694eeabe4528bd35ec60fb",
+          "instance_id": "3f69bcd088b3",
+          "pid": 47938,
+          "characters": 11553,
+          "limit": 32000
+        },
+        {
+          "time": "2026-09-30T12:53:21.124741+00:00",
+          "event": "model_call_finished",
+          "run_id": "3aa7d03eb4694eeabe4528bd35ec60fb",
+          "instance_id": "3f69bcd088b3",
+          "pid": 47938,
+          "span_id": "becd24cbcc21",
+          "status": "ok",
+          "elapsed_seconds": 2.144,
+          "message_count": 3,
+          "tool_call_count": 1
+        },
+        {
+          "time": "2026-09-30T12:53:21.146767+00:00",
+          "event": "remote_query_authorized",
+          "run_id": "3aa7d03eb4694eeabe4528bd35ec60fb",
+          "instance_id": "3f69bcd088b3",
+          "pid": 47938,
+          "tool_call_id": "call_8531bda4-07ec-4c08-9d32-9cf50a38528c",
+          "authorization": "automatic_read_policy"
+        },
+        {
+          "time": "2026-09-30T12:53:21.146926+00:00",
+          "event": "remote_query_started",
+          "run_id": "3aa7d03eb4694eeabe4528bd35ec60fb",
+          "instance_id": "3f69bcd088b3",
+          "pid": 47938,
+          "ledger_status": "auto_authorized",
+          "cached_receipt": false
+        },
+        {
+          "time": "2026-09-30T12:53:21.171883+00:00",
+          "event": "remote_query_finished",
+          "run_id": "3aa7d03eb4694eeabe4528bd35ec60fb",
+          "instance_id": "3f69bcd088b3",
+          "pid": 47938,
+          "ledger_status": "completed",
+          "status": "ready",
+          "cached_receipt": false
+        },
+        {
+          "time": "2026-09-30T12:53:21.173400+00:00",
+          "event": "remote_result_verified",
+          "run_id": "3aa7d03eb4694eeabe4528bd35ec60fb",
+          "instance_id": "3f69bcd088b3",
+          "pid": 47938,
+          "request_id": "d7bc93a0-2227-481a-8eb9-fa6a4d98f76f",
+          "tool_call_id": "call_8531bda4-07ec-4c08-9d32-9cf50a38528c",
+          "dataset_id": "247e91d6-8d73-457a-923c-9d5de1bdb0cc",
+          "rows": 5
+        },
+        {
+          "time": "2026-09-30T12:53:21.175155+00:00",
+          "event": "summarization_started",
+          "run_id": "3aa7d03eb4694eeabe4528bd35ec60fb",
+          "instance_id": "3f69bcd088b3",
+          "pid": 47938,
+          "span_id": "8cdf5f204fb4",
+          "message_count": 5
+        },
+        {
+          "time": "2026-09-30T12:53:21.175229+00:00",
+          "event": "summarization_finished",
+          "run_id": "3aa7d03eb4694eeabe4528bd35ec60fb",
+          "instance_id": "3f69bcd088b3",
+          "pid": 47938,
+          "span_id": "8cdf5f204fb4",
+          "status": "ok",
+          "elapsed_seconds": 0.0,
+          "message_count": 5,
+          "summarized": false
+        },
+        {
+          "time": "2026-09-30T12:53:21.175601+00:00",
+          "event": "model_call_started",
+          "run_id": "3aa7d03eb4694eeabe4528bd35ec60fb",
+          "instance_id": "3f69bcd088b3",
+          "pid": 47938,
+          "span_id": "a96bb9060c07",
+          "message_count": 5
+        },
+        {
+          "time": "2026-09-30T12:53:21.176925+00:00",
+          "event": "context_budget",
+          "run_id": "3aa7d03eb4694eeabe4528bd35ec60fb",
+          "instance_id": "3f69bcd088b3",
+          "pid": 47938,
+          "characters": 13340,
+          "limit": 32000
+        },
+        {
+          "time": "2026-09-30T12:53:23.095326+00:00",
+          "event": "model_call_finished",
+          "run_id": "3aa7d03eb4694eeabe4528bd35ec60fb",
+          "instance_id": "3f69bcd088b3",
+          "pid": 47938,
+          "span_id": "a96bb9060c07",
+          "status": "ok",
+          "elapsed_seconds": 1.92,
+          "message_count": 5,
+          "tool_call_count": 1
+        },
+        {
+          "time": "2026-09-30T12:53:23.120710+00:00",
+          "event": "remote_query_authorized",
+          "run_id": "3aa7d03eb4694eeabe4528bd35ec60fb",
+          "instance_id": "3f69bcd088b3",
+          "pid": 47938,
+          "tool_call_id": "call_7d6ed6c3-7eee-4391-b670-26d7dc99fa85",
+          "authorization": "automatic_read_policy"
+        },
+        {
+          "time": "2026-09-30T12:53:23.120875+00:00",
+          "event": "remote_query_started",
+          "run_id": "3aa7d03eb4694eeabe4528bd35ec60fb",
+          "instance_id": "3f69bcd088b3",
+          "pid": 47938,
+          "ledger_status": "auto_authorized",
+          "cached_receipt": false
+        },
+        {
+          "time": "2026-09-30T12:53:23.127525+00:00",
+          "event": "remote_query_finished",
+          "run_id": "3aa7d03eb4694eeabe4528bd35ec60fb",
+          "instance_id": "3f69bcd088b3",
+          "pid": 47938,
+          "ledger_status": "completed",
+          "status": "ready",
+          "cached_receipt": false
+        },
+        {
+          "time": "2026-09-30T12:53:23.129096+00:00",
+          "event": "remote_result_verified",
+          "run_id": "3aa7d03eb4694eeabe4528bd35ec60fb",
+          "instance_id": "3f69bcd088b3",
+          "pid": 47938,
+          "request_id": "d7bc93a0-2227-481a-8eb9-fa6a4d98f76f",
+          "tool_call_id": "call_7d6ed6c3-7eee-4391-b670-26d7dc99fa85",
+          "dataset_id": "417abe6f-5336-4c99-84f5-c6993cadb643",
+          "rows": 1
+        },
+        {
+          "time": "2026-09-30T12:53:23.131070+00:00",
+          "event": "summarization_started",
+          "run_id": "3aa7d03eb4694eeabe4528bd35ec60fb",
+          "instance_id": "3f69bcd088b3",
+          "pid": 47938,
+          "span_id": "0c061e0bae08",
+          "message_count": 7
+        },
+        {
+          "time": "2026-09-30T12:53:23.131190+00:00",
+          "event": "summarization_finished",
+          "run_id": "3aa7d03eb4694eeabe4528bd35ec60fb",
+          "instance_id": "3f69bcd088b3",
+          "pid": 47938,
+          "span_id": "0c061e0bae08",
+          "status": "ok",
+          "elapsed_seconds": 0.0,
+          "message_count": 7,
+          "summarized": false
+        },
+        {
+          "time": "2026-09-30T12:53:23.131591+00:00",
+          "event": "model_call_started",
+          "run_id": "3aa7d03eb4694eeabe4528bd35ec60fb",
+          "instance_id": "3f69bcd088b3",
+          "pid": 47938,
+          "span_id": "9b6fceff2c39",
+          "message_count": 7
+        },
+        {
+          "time": "2026-09-30T12:53:23.133023+00:00",
+          "event": "context_budget",
+          "run_id": "3aa7d03eb4694eeabe4528bd35ec60fb",
+          "instance_id": "3f69bcd088b3",
+          "pid": 47938,
+          "characters": 15321,
+          "limit": 32000
+        },
+        {
+          "time": "2026-09-30T12:53:24.978088+00:00",
+          "event": "model_call_finished",
+          "run_id": "3aa7d03eb4694eeabe4528bd35ec60fb",
+          "instance_id": "3f69bcd088b3",
+          "pid": 47938,
+          "span_id": "9b6fceff2c39",
+          "status": "ok",
+          "elapsed_seconds": 1.847,
+          "message_count": 7,
+          "tool_call_count": 1
+        },
+        {
+          "time": "2026-09-30T12:53:24.996743+00:00",
+          "event": "proposal_preflight_rejected",
+          "run_id": "3aa7d03eb4694eeabe4528bd35ec60fb",
+          "instance_id": "3f69bcd088b3",
+          "pid": 47938,
+          "request_id": "d7bc93a0-2227-481a-8eb9-fa6a4d98f76f",
+          "error_code": "unknown_column",
+          "signature": "6f24d309f7f2"
+        },
+        {
+          "time": "2026-09-30T12:53:24.999894+00:00",
+          "event": "summarization_started",
+          "run_id": "3aa7d03eb4694eeabe4528bd35ec60fb",
+          "instance_id": "3f69bcd088b3",
+          "pid": 47938,
+          "span_id": "c63d83952e86",
+          "message_count": 8
+        },
+        {
+          "time": "2026-09-30T12:53:25.000026+00:00",
+          "event": "summarization_finished",
+          "run_id": "3aa7d03eb4694eeabe4528bd35ec60fb",
+          "instance_id": "3f69bcd088b3",
+          "pid": 47938,
+          "span_id": "c63d83952e86",
+          "status": "ok",
+          "elapsed_seconds": 0.0,
+          "message_count": 8,
+          "summarized": false
+        },
+        {
+          "time": "2026-09-30T12:53:25.000419+00:00",
+          "event": "model_call_started",
+          "run_id": "3aa7d03eb4694eeabe4528bd35ec60fb",
+          "instance_id": "3f69bcd088b3",
+          "pid": 47938,
+          "span_id": "5d7ca4e47a59",
+          "message_count": 8
+        },
+        {
+          "time": "2026-09-30T12:53:25.001615+00:00",
+          "event": "context_budget",
+          "run_id": "3aa7d03eb4694eeabe4528bd35ec60fb",
+          "instance_id": "3f69bcd088b3",
+          "pid": 47938,
+          "characters": 15843,
+          "limit": 32000
+        },
+        {
+          "time": "2026-09-30T12:53:27.114867+00:00",
+          "event": "model_call_finished",
+          "run_id": "3aa7d03eb4694eeabe4528bd35ec60fb",
+          "instance_id": "3f69bcd088b3",
+          "pid": 47938,
+          "span_id": "5d7ca4e47a59",
+          "status": "ok",
+          "elapsed_seconds": 2.114,
+          "message_count": 8,
+          "tool_call_count": 1
+        },
+        {
+          "time": "2026-09-30T12:53:27.137437+00:00",
+          "event": "remote_query_authorized",
+          "run_id": "3aa7d03eb4694eeabe4528bd35ec60fb",
+          "instance_id": "3f69bcd088b3",
+          "pid": 47938,
+          "tool_call_id": "call_a5dc5a84-18cb-4bf6-a706-ae7ef39dc981",
+          "authorization": "automatic_read_policy"
+        },
+        {
+          "time": "2026-09-30T12:53:27.137601+00:00",
+          "event": "remote_query_started",
+          "run_id": "3aa7d03eb4694eeabe4528bd35ec60fb",
+          "instance_id": "3f69bcd088b3",
+          "pid": 47938,
+          "ledger_status": "auto_authorized",
+          "cached_receipt": false
+        },
+        {
+          "time": "2026-09-30T12:53:27.143307+00:00",
+          "event": "remote_query_finished",
+          "run_id": "3aa7d03eb4694eeabe4528bd35ec60fb",
+          "instance_id": "3f69bcd088b3",
+          "pid": 47938,
+          "ledger_status": "completed",
+          "status": "ready",
+          "cached_receipt": false
+        },
+        {
+          "time": "2026-09-30T12:53:27.145114+00:00",
+          "event": "remote_result_verified",
+          "run_id": "3aa7d03eb4694eeabe4528bd35ec60fb",
+          "instance_id": "3f69bcd088b3",
+          "pid": 47938,
+          "request_id": "d7bc93a0-2227-481a-8eb9-fa6a4d98f76f",
+          "tool_call_id": "call_a5dc5a84-18cb-4bf6-a706-ae7ef39dc981",
+          "dataset_id": "98b2d64a-fb70-49b8-8faf-b681a19a3477",
+          "rows": 1
+        },
+        {
+          "time": "2026-09-30T12:53:27.146310+00:00",
+          "event": "summarization_started",
+          "run_id": "3aa7d03eb4694eeabe4528bd35ec60fb",
+          "instance_id": "3f69bcd088b3",
+          "pid": 47938,
+          "span_id": "ee8e721b49af",
+          "message_count": 10
+        },
+        {
+          "time": "2026-09-30T12:53:32.080427+00:00",
+          "event": "summarization_finished",
+          "run_id": "3aa7d03eb4694eeabe4528bd35ec60fb",
+          "instance_id": "3f69bcd088b3",
+          "pid": 47938,
+          "span_id": "ee8e721b49af",
+          "status": "ok",
+          "elapsed_seconds": 4.934,
+          "message_count": 10,
+          "summarized": true
+        },
+        {
+          "time": "2026-09-30T12:53:32.084100+00:00",
+          "event": "model_call_started",
+          "run_id": "3aa7d03eb4694eeabe4528bd35ec60fb",
+          "instance_id": "3f69bcd088b3",
+          "pid": 47938,
+          "span_id": "84d430beaeed",
+          "message_count": 10
+        },
+        {
+          "time": "2026-09-30T12:53:32.087942+00:00",
+          "event": "context_budget",
+          "run_id": "3aa7d03eb4694eeabe4528bd35ec60fb",
+          "instance_id": "3f69bcd088b3",
+          "pid": 47938,
+          "characters": 18287,
+          "limit": 32000
+        },
+        {
+          "time": "2026-09-30T12:53:34.247877+00:00",
+          "event": "model_call_finished",
+          "run_id": "3aa7d03eb4694eeabe4528bd35ec60fb",
+          "instance_id": "3f69bcd088b3",
+          "pid": 47938,
+          "span_id": "84d430beaeed",
+          "status": "ok",
+          "elapsed_seconds": 2.164,
+          "message_count": 10,
+          "tool_call_count": 1
+        },
+        {
+          "time": "2026-09-30T12:53:34.269603+00:00",
+          "event": "remote_query_authorized",
+          "run_id": "3aa7d03eb4694eeabe4528bd35ec60fb",
+          "instance_id": "3f69bcd088b3",
+          "pid": 47938,
+          "tool_call_id": "call_12f1c16a-72fe-46c0-a5db-33f4a7edcc70",
+          "authorization": "automatic_read_policy"
+        },
+        {
+          "time": "2026-09-30T12:53:34.269789+00:00",
+          "event": "remote_query_started",
+          "run_id": "3aa7d03eb4694eeabe4528bd35ec60fb",
+          "instance_id": "3f69bcd088b3",
+          "pid": 47938,
+          "ledger_status": "auto_authorized",
+          "cached_receipt": false
+        },
+        {
+          "time": "2026-09-30T12:53:34.275408+00:00",
+          "event": "remote_query_finished",
+          "run_id": "3aa7d03eb4694eeabe4528bd35ec60fb",
+          "instance_id": "3f69bcd088b3",
+          "pid": 47938,
+          "ledger_status": "completed",
+          "status": "ready",
+          "cached_receipt": false
+        },
+        {
+          "time": "2026-09-30T12:53:34.277630+00:00",
+          "event": "remote_result_verified",
+          "run_id": "3aa7d03eb4694eeabe4528bd35ec60fb",
+          "instance_id": "3f69bcd088b3",
+          "pid": 47938,
+          "request_id": "d7bc93a0-2227-481a-8eb9-fa6a4d98f76f",
+          "tool_call_id": "call_12f1c16a-72fe-46c0-a5db-33f4a7edcc70",
+          "dataset_id": "76518dd3-d1ee-4667-b19e-3c47f3db6f38",
+          "rows": 1000
+        },
+        {
+          "time": "2026-09-30T12:53:34.278856+00:00",
+          "event": "summarization_started",
+          "run_id": "3aa7d03eb4694eeabe4528bd35ec60fb",
+          "instance_id": "3f69bcd088b3",
+          "pid": 47938,
+          "span_id": "5f5187fcdfaf",
+          "message_count": 12
+        },
+        {
+          "time": "2026-09-30T12:53:39.473049+00:00",
+          "event": "summarization_finished",
+          "run_id": "3aa7d03eb4694eeabe4528bd35ec60fb",
+          "instance_id": "3f69bcd088b3",
+          "pid": 47938,
+          "span_id": "5f5187fcdfaf",
+          "status": "ok",
+          "elapsed_seconds": 5.194,
+          "message_count": 12,
+          "summarized": true
+        },
+        {
+          "time": "2026-09-30T12:53:39.474335+00:00",
+          "event": "model_call_started",
+          "run_id": "3aa7d03eb4694eeabe4528bd35ec60fb",
+          "instance_id": "3f69bcd088b3",
+          "pid": 47938,
+          "span_id": "1e8855f81c8f",
+          "message_count": 10
+        },
+        {
+          "time": "2026-09-30T12:53:39.476418+00:00",
+          "event": "context_budget",
+          "run_id": "3aa7d03eb4694eeabe4528bd35ec60fb",
+          "instance_id": "3f69bcd088b3",
+          "pid": 47938,
+          "characters": 18610,
+          "limit": 32000
+        },
+        {
+          "time": "2026-09-30T12:53:43.161940+00:00",
+          "event": "model_call_finished",
+          "run_id": "3aa7d03eb4694eeabe4528bd35ec60fb",
+          "instance_id": "3f69bcd088b3",
+          "pid": 47938,
+          "span_id": "1e8855f81c8f",
+          "status": "ok",
+          "elapsed_seconds": 3.688,
+          "message_count": 10,
+          "tool_call_count": 1
+        },
+        {
+          "time": "2026-09-30T12:53:43.192427+00:00",
+          "event": "remote_query_authorized",
+          "run_id": "3aa7d03eb4694eeabe4528bd35ec60fb",
+          "instance_id": "3f69bcd088b3",
+          "pid": 47938,
+          "tool_call_id": "call_a4829a79-a4ea-4f3b-ac09-02f33891d50a",
+          "authorization": "automatic_read_policy"
+        },
+        {
+          "time": "2026-09-30T12:53:43.192578+00:00",
+          "event": "remote_query_started",
+          "run_id": "3aa7d03eb4694eeabe4528bd35ec60fb",
+          "instance_id": "3f69bcd088b3",
+          "pid": 47938,
+          "ledger_status": "auto_authorized",
+          "cached_receipt": false
+        },
+        {
+          "time": "2026-09-30T12:53:43.198016+00:00",
+          "event": "remote_query_finished",
+          "run_id": "3aa7d03eb4694eeabe4528bd35ec60fb",
+          "instance_id": "3f69bcd088b3",
+          "pid": 47938,
+          "ledger_status": "completed",
+          "status": "ready",
+          "cached_receipt": false
+        },
+        {
+          "time": "2026-09-30T12:53:43.200978+00:00",
+          "event": "remote_result_verified",
+          "run_id": "3aa7d03eb4694eeabe4528bd35ec60fb",
+          "instance_id": "3f69bcd088b3",
+          "pid": 47938,
+          "request_id": "d7bc93a0-2227-481a-8eb9-fa6a4d98f76f",
+          "tool_call_id": "call_a4829a79-a4ea-4f3b-ac09-02f33891d50a",
+          "dataset_id": "ffff91d1-46e7-4078-afd5-2f6c2b66e292",
+          "rows": 5
+        },
+        {
+          "time": "2026-09-30T12:53:43.203703+00:00",
+          "event": "model_call_started",
+          "run_id": "3aa7d03eb4694eeabe4528bd35ec60fb",
+          "instance_id": "3f69bcd088b3",
+          "pid": 47938,
+          "span_id": "3d03ef35b3c2",
+          "message_count": 12
+        },
+        {
+          "time": "2026-09-30T12:53:43.205712+00:00",
+          "event": "context_budget",
+          "run_id": "3aa7d03eb4694eeabe4528bd35ec60fb",
+          "instance_id": "3f69bcd088b3",
+          "pid": 47938,
+          "characters": 21288,
+          "limit": 32000
+        },
+        {
+          "time": "2026-09-30T12:53:46.111811+00:00",
+          "event": "model_call_finished",
+          "run_id": "3aa7d03eb4694eeabe4528bd35ec60fb",
+          "instance_id": "3f69bcd088b3",
+          "pid": 47938,
+          "span_id": "3d03ef35b3c2",
+          "status": "ok",
+          "elapsed_seconds": 2.908,
+          "message_count": 12,
+          "tool_call_count": 1
+        },
+        {
+          "time": "2026-09-30T12:53:46.118710+00:00",
+          "event": "completion_checked",
+          "run_id": "3aa7d03eb4694eeabe4528bd35ec60fb",
+          "instance_id": "3f69bcd088b3",
+          "pid": 47938,
+          "request_id": "d7bc93a0-2227-481a-8eb9-fa6a4d98f76f",
+          "status": "exhausted",
+          "reason": "model_call_budget",
+          "attempts": 1,
+          "required_capabilities": [
+            "remote_query",
+            "calculation"
+          ],
+          "missing_capabilities": [
+            "remote_query",
+            "calculation"
+          ],
+          "model_calls": 10,
+          "tool_calls": 6,
+          "model_seconds": 30.725,
+          "dataset_ids": [],
+          "artifact_ids": []
+        },
+        {
+          "time": "2026-09-30T12:53:46.128089+00:00",
+          "event": "run_completed",
+          "run_id": "3aa7d03eb4694eeabe4528bd35ec60fb",
+          "instance_id": "3f69bcd088b3",
+          "pid": 47938,
+          "status": "exhausted",
+          "elapsed_seconds": 31.032,
+          "process_peak_rss_bytes": 305037312,
+          "frame_cache_bytes": 0
+        },
+        {
+          "time": "2026-09-30T12:53:46.128250+00:00",
+          "event": "turn_slo",
+          "run_id": "3aa7d03eb4694eeabe4528bd35ec60fb",
+          "instance_id": "3f69bcd088b3",
+          "pid": 47938,
+          "elapsed_seconds": 31.032,
+          "limit": 180.0,
+          "status": "ok"
+        }
+      ],
+      "sql_drafts": [
+        {
+          "source": "player",
+          "query": "SELECT debut, final_game FROM player WHERE debut IS NOT NULL AND final_game IS NOT NULL LIMIT 5",
+          "reason": "확인: player 테이블의 debut과 final_game 컬럼의 데이터 형식과 예시 값을 확인합니다."
+        },
+        {
+          "source": "player",
+          "query": "SELECT COUNT(*) as total_players, COUNT(CASE WHEN debut IS NOT NULL AND final_game IS NOT NULL THEN 1 END) as players_with_dates FROM player",
+          "reason": "debut과 final_game가 모두 존재하는 플레이어의 전체 비율을 확인하여 분석 대상 집합을 평가합니다."
+        },
+        {
+          "source": "player",
+          "query": "SELECT debut, final_game FROM player WHERE debut IS NOT NULL AND final_game IS NOT NULL",
+          "reason": "모든 유효한 플레이어의 debut과 final_game 날짜를 가져와서 경력 기간을 계산합니다."
+        },
+        {
+          "source": "player",
+          "query": "SELECT * FROM player LIMIT 1",
+          "reason": "player 테이블의 실제 컬럼 구조를 다시 확인하여 debut과 final_game 컬럼이 존재하는지 확인합니다."
+        },
+        {
+          "source": "player",
+          "query": "SELECT debut, final_game FROM player WHERE debut IS NOT NULL AND final_game IS NOT NULL",
+          "reason": "모든 유효한 선수의 데뷔일과 최종 경기일을 가져와서 경력 기간을 계산합니다."
+        },
+        {
+          "source": "player",
+          "query": "SELECT CAST(strftime('%Y', final_game) AS INTEGER) - CAST(strftime('%Y', debut) AS INTEGER) AS years_diff, CAST(strftime('%m', final_game) AS INTEGER) - CAST(strftime('%m', debut) AS INTEGER) AS months_diff, CAST(strftime('%d', final_game) AS INTEGER) - CAST(strftime('%d', debut) AS INTEGER) AS days_diff FROM player WHERE debut IS NOT NULL AND final_game IS NOT NULL LIMIT 5",
+          "reason": "debut과 final_game의 연, 월, 일 차이를 계산하여 경력 기간을 구성 요소로 분해합니다."
+        }
+      ],
+      "observations": [
+        {
+          "tool": "inspect_table_context",
+          "content": "{\"status\": \"ready\", \"table_context\": {\"table\": \"player\", \"training_status\": \"runtime_schema\", \"observed_at\": \"2026-09-30T12:53:15.049411+00:00\", \"columns\": [{\"name\": \"player_id\", \"dtype\": \"TEXT\"}, {\"name\": \"birth_year\", \"dtype\": \"NUMERIC\"}, {\"name\": \"birth_month\", \"dtype\": \"NUMERIC\"}, {\"name\": \"birth_day\", \"dtype\": \"NUMERIC\"}, {\"name\": \"birth_country\", \"dtype\": \"TEXT\"}, {\"name\": \"birth_state\", \"dtype\": \"TEXT\"}, {\"name\": \"birth_city\", \"dtype\": \"TEXT\"}, {\"name\": \"death_year\", \"dtype\": \"NUMERIC\"}, {\"name\": \"death_month\", \"dtype\": \"NUMERIC\"}, {\"name\": \"death_day\", \"dtype\": \"NUMERIC\"}, {\"name\": \"death_country\", \"dtype\": \"TEXT\"}, {\"name\": \"death_state\", \"dtype\": \"TEXT\"}, {\"name\": \"death_city\", \"dtype\": \"TEXT\"}, {\"name\": \"name_first\", \"dtype\": \"TEXT\"}, {\"name\": \"name_last\", \"dtype\": \"TEXT\"}, {\"name\": \"name_given\", \"dtype\": \"TEXT\"}, {\"name\": \"weight\", \"dtype\": \"NUMERIC\"}, {\"name\": \"height\", \"dtype\": \"NUMERIC\"}, {\"name\": \"bats\", \"dtype\": \"TEXT\"}, {\"name\": \"throws\", \"dtype\": \"TEXT\"}, {\"name\": \"debut\", \"dtype\": \"TEXT\"}, {\"name\": \"final_game\", \"dtype\": \"TEXT\"}, {\"name\": \"retro_id\", \"dtype\": \"TEXT\"}, {\"name\": \"bbref_id\", \"dtype\": \"TEXT\"}], \"relationship_authority\": \"database_catalog\", \"foreign_keys\": [], \"source\": \"read-only public Spider2 SQLite schema and bounded type examples\", \"freshness\": \"fresh\", \"schema_fingerprint\": \"43649e56e652cb31597e795cf5acf939bf70f1fbe9bce1a36b1dc3d58ba34d64\"}, \"schema_changed\": false, \"authority\": \"saved_snapshot\", \"scope\": \"저장된 스키마 스냅샷입니다. observed_at과 freshness를 함께 확인해야 합니다.\", \"evidence_ids\": [], \"error_code\": null, \"retryable\": false, \"user_action\": \"\"}"
+        },
+        {
+          "tool": "query_databricks",
+          "content": "{\"status\": \"ready\", \"dataset\": {\"id\": \"247e91d6-8d73-457a-923c-9d5de1bdb0cc\", \"source\": \"player\", \"columns\": [\"debut\", \"final_game\"], \"rows\": 5, \"coverage\": \"unknown\", \"conditions\": [], \"predicate_known\": false, \"grain\": \"raw\", \"aggregation\": \"\", \"snapshot\": \"2026-09-30T12:53:21.151534+00:00\", \"query\": \"SELECT debut, final_game FROM player WHERE debut IS NOT NULL AND final_game IS NOT NULL LIMIT 5\", \"parent_id\": \"\", \"parent_ids\": [], \"role\": \"root\", \"root_id\": \"247e91d6-8d73-457a-923c-9d5de1bdb0cc\", \"row_selection\": {}}, \"preview\": [{\"debut\": \"2004-04-06\", \"final_game\": \"2015-08-23\"}, {\"debut\": \"1954-04-13\", \"final_game\": \"1976-10-03\"}, {\"debut\": \"1962-04-10\", \"final_game\": \"1971-09-26\"}, {\"debut\": \"1977-07-26\", \"final_game\": \"1990-10-03\"}, {\"debut\": \"2001-09-10\", \"final_game\": \"2006-04-13\"}], \"evidence_ids\": [\"247e91d6-8d73-457a-923c-9d5de1bdb0cc\"], \"error_code\": null, \"retryable\": false, \"user_action\": \"\", \"scope\": \"도구가 반환한 구조화 결과 범위입니다.\"}"
+        },
+        {
+          "tool": "query_databricks",
+          "content": "{\"status\": \"ready\", \"dataset\": {\"id\": \"417abe6f-5336-4c99-84f5-c6993cadb643\", \"source\": \"player\", \"columns\": [\"total_players\", \"players_with_dates\"], \"rows\": 1, \"coverage\": \"complete\", \"conditions\": [], \"predicate_known\": false, \"grain\": \"aggregate\", \"aggregation\": \"SELECT COUNT(*) AS total_players, COUNT(CASE WHEN NOT debut IS NULL AND NOT final_game IS NULL THEN 1 END) AS players_with_dates FROM player\", \"snapshot\": \"2026-09-30T12:53:23.125497+00:00\", \"query\": \"SELECT COUNT(*) as total_players, COUNT(CASE WHEN debut IS NOT NULL AND final_game IS NOT NULL THEN 1 END) as players_with_dates FROM player\", \"parent_id\": \"\", \"parent_ids\": [], \"role\": \"aggregate\", \"root_id\": \"\", \"row_selection\": {}}, \"preview\": [{\"total_players\": 18846, \"players_with_dates\": 18846}], \"evidence_ids\": [\"417abe6f-5336-4c99-84f5-c6993cadb643\"], \"error_code\": null, \"retryable\": false, \"user_action\": \"\", \"scope\": \"도구가 반환한 구조화 결과 범위입니다.\"}"
+        },
+        {
+          "tool": "query_databricks",
+          "content": "{\"status\": \"ready\", \"dataset\": {\"id\": \"98b2d64a-fb70-49b8-8faf-b681a19a3477\", \"source\": \"player\", \"columns\": [\"player_id\", \"birth_year\", \"birth_month\", \"birth_day\", \"birth_country\", \"birth_state\", \"birth_city\", \"death_year\", \"death_month\", \"death_day\", \"death_country\", \"death_state\", \"death_city\", \"name_first\", \"name_last\", \"name_given\", \"weight\", \"height\", \"bats\", \"throws\", \"debut\", \"final_game\", \"retro_id\", \"bbref_id\"], \"rows\": 1, \"coverage\": \"unknown\", \"conditions\": [], \"predicate_known\": false, \"grain\": \"raw\", \"aggregation\": \"\", \"snapshot\": \"2026-09-30T12:53:27.139654+00:00\", \"query\": \"SELECT * FROM player LIMIT 1\", \"parent_id\": \"\", \"parent_ids\": [], \"role\": \"root\", \"root_id\": \"98b2d64a-fb70-49b8-8faf-b681a19a3477\", \"row_selection\": {}}, \"preview\": [{\"player_id\": \"aardsda01\", \"birth_year\": 1981, \"birth_month\": 12, \"birth_day\": 27, \"birth_country\": \"USA\", \"birth_state\": \"CO\", \"birth_city\": \"Denver\", \"death_year\": \"\", \"death_month\": \"\", \"death_day\": \"\", \"death_country\": \"\", \"death_state\": \"\", \"death_city\": \"\", \"name_first\": \"David\", \"name_last\": \"Aardsma\", \"name_given\": \"David Allan\", \"weight\": 220, \"height\": 75, \"bats\": \"R\", \"throws\": \"R\", \"debut\": \"2004-04-06\", \"final_game\": \"2015-08-23\", \"retro_id\": \"aardd001\", \"bbref_id\": \"aardsda01\"}], \"evidence_ids\": [\"98b2d64a-fb70-49b8-8faf-b681a19a3477\"], \"error_code\": null, \"retryable\": false, \"user_action\": \"\", \"scope\": \"도구가 반환한 구조화 결과 범위입니다.\"}"
+        },
+        {
+          "tool": "query_databricks",
+          "content": "{\"status\": \"ready\", \"dataset\": {\"id\": \"76518dd3-d1ee-4667-b19e-3c47f3db6f38\", \"source\": \"player\", \"columns\": [\"debut\", \"final_game\"], \"rows\": 1000, \"coverage\": \"truncated\", \"conditions\": [], \"predicate_known\": false, \"grain\": \"raw\", \"aggregation\": \"\", \"snapshot\": \"2026-09-30T12:53:34.272476+00:00\", \"query\": \"SELECT debut, final_game FROM player WHERE debut IS NOT NULL AND final_game IS NOT NULL\", \"parent_id\": \"\", \"parent_ids\": [], \"role\": \"root\", \"root_id\": \"76518dd3-d1ee-4667-b19e-3c47f3db6f38\", \"row_selection\": {}}, \"preview\": [{\"debut\": \"2004-04-06\", \"final_game\": \"2015-08-23\"}, {\"debut\": \"1954-04-13\", \"final_game\": \"1976-10-03\"}, {\"debut\": \"1962-04-10\", \"final_game\": \"1971-09-26\"}, {\"debut\": \"1977-07-26\", \"final_game\": \"1990-10-03\"}, {\"debut\": \"2001-09-10\", \"final_game\": \"2006-04-13\"}, {\"debut\": \"2010-07-28\", \"final_game\": \"2015-10-03\"}, {\"debut\": \"1875-04-26\", \"final_game\": \"1875-06-10\"}, {\"debut\": \"1897-09-04\", \"final_game\": \"1910-09-15\"}, {\"debut\": \"1892-06-14\", \"final_game\": \"1896-09-23\"}, {\"debut\": \"1893-08-16\", \"final_game\": \"1897-08-19\"}], \"evidence_ids\": [\"76518dd3-d1ee-4667-b19e-3c47f3db6f38\"], \"error_code\": null, \"retryable\": false, \"user_action\": \"\", \"scope\": \"도구가 반환한 구조화 결과 범위입니다.\"}"
+        },
+        {
+          "tool": "query_databricks",
+          "content": "{\"status\": \"ready\", \"dataset\": {\"id\": \"ffff91d1-46e7-4078-afd5-2f6c2b66e292\", \"source\": \"player\", \"columns\": [\"years_diff\", \"months_diff\", \"days_diff\"], \"rows\": 5, \"coverage\": \"unknown\", \"conditions\": [], \"predicate_known\": false, \"grain\": \"raw\", \"aggregation\": \"\", \"snapshot\": \"2026-09-30T12:53:43.195406+00:00\", \"query\": \"SELECT CAST(strftime('%Y', final_game) AS INTEGER) - CAST(strftime('%Y', debut) AS INTEGER) AS years_diff, CAST(strftime('%m', final_game) AS INTEGER) - CAST(strftime('%m', debut) AS INTEGER) AS months_diff, CAST(strftime('%d', final_game) AS INTEGER) - CAST(strftime('%d', debut) AS INTEGER) AS days_diff FROM player WHERE debut IS NOT NULL AND final_game IS NOT NULL LIMIT 5\", \"parent_id\": \"\", \"parent_ids\": [], \"role\": \"root\", \"root_id\": \"ffff91d1-46e7-4078-afd5-2f6c2b66e292\", \"row_selection\": {}}, \"preview\": [{\"years_diff\": 11, \"months_diff\": 4, \"days_diff\": 17}, {\"years_diff\": 22, \"months_diff\": 6, \"days_diff\": -10}, {\"years_diff\": 9, \"months_diff\": 5, \"days_diff\": 16}, {\"years_diff\": 13, \"months_diff\": 3, \"days_diff\": -23}, {\"years_diff\": 5, \"months_diff\": -5, \"days_diff\": 3}], \"evidence_ids\": [\"ffff91d1-46e7-4078-afd5-2f6c2b66e292\"], \"error_code\": null, \"retryable\": false, \"user_action\": \"\", \"scope\": \"도구가 반환한 구조화 결과 범위입니다.\"}"
+        }
+      ],
+      "status": "NO_VERIFIED_FINAL_SQL",
+      "elapsed_seconds": 31.091
+    },
+    {
+      "id": "local358",
+      "db": "log",
+      "benchmark": "Spider2-Lite SQLite",
+      "mode": "Interactive production graph with bounded read-only public SQLite execution; no gold access",
+      "remote_executions": 0,
+      "local_sql_executions": [
+        {
+          "query": "SELECT CASE \n         WHEN strftime('%Y', 'now') - CAST(substr(birth_date, 1, 4) AS INTEGER) BETWEEN 20 AND 29 THEN '20s'\n         WHEN strftime('%Y', 'now') - CAST(substr(birth_date, 1, 4) AS INTEGER) BETWEEN 30 AND 39 THEN '30s'\n         WHEN strftime('%Y', 'now') - CAST(substr(birth_date, 1, 4) AS INTEGER) BETWEEN 40 AND 49 THEN '40s'\n         WHEN strftime('%Y', 'now') - CAST(substr(birth_date, 1, 4) AS INTEGER) BETWEEN 50 AND 59 THEN '50s'\n         ELSE 'others'\n       END AS age_category, \n       COUNT(*) AS user_count\nFROM mst_users\nWHERE birth_date IS NOT NULL AND length(birth_date) >= 4\nGROUP BY age_category\nORDER BY age_category",
+          "status": "completed",
+          "rows": 5,
+          "coverage": "complete",
+          "dataset_id": "ff72661d-398b-44f4-bdfb-36588eec9c67",
+          "elapsed_seconds": 0.015
+        }
+      ],
+      "local_sql_probes": [
+        {
+          "query": "SELECT CASE \n         WHEN strftime('%Y', 'now') - CAST(substr(birth_date, 1, 4) AS INTEGER) BETWEEN 20 AND 29 THEN '20s'\n         WHEN strftime('%Y', 'now') - CAST(substr(birth_date, 1, 4) AS INTEGER) BETWEEN 30 AND 39 THEN '30s'\n         WHEN strftime('%Y', 'now') - CAST(substr(birth_date, 1, 4) AS INTEGER) BETWEEN 40 AND 49 THEN '40s'\n         WHEN strftime('%Y', 'now') - CAST(substr(birth_date, 1, 4) AS INTEGER) BETWEEN 50 AND 59 THEN '50s'\n         ELSE 'others'\n       END AS age_category, \n       COUNT(*) AS user_count\nFROM mst_users\nWHERE birth_date IS NOT NULL AND length(birth_date) >= 4\nGROUP BY age_category\nORDER BY age_category",
+          "status": "executable",
+          "elapsed_seconds": 0.001
+        }
+      ],
+      "agent_status": "blocked",
+      "final_output": "요청하신 계산 방법을 확정하지 못했습니다. 평균·중앙값·최솟값·최댓값·합계 중 원하시는 연산을 알려주세요. 검증하지 않은 수치는 표시하지 않았으며 기존 데이터는 보존했습니다.",
+      "model_calls": 5,
+      "model_retries": 0,
+      "recovery_status": "blocked",
+      "scope_error": null,
+      "stop_reason": "analysis_operation_unresolved",
+      "error_type": null,
+      "error_category": null,
+      "diagnostics": [
+        {
+          "time": "2026-09-30T12:53:46.167871+00:00",
+          "event": "run_started",
+          "run_id": "8c0e66678ef04f20830b11b36b43dedb",
+          "instance_id": "3c7b0b481ca0",
+          "pid": 47938,
+          "runtime": {
+            "revision_at_first_runtime": "5133c930259d9819c674e83340ea091d3a2bdffb",
+            "packages": {
+              "langchain": "1.4.0",
+              "langchain-core": "1.6.2",
+              "langgraph": "1.2.11",
+              "streamlit": "1.63.0",
+              "sqlglot": "30.18.0"
+            },
+            "python_version": "3.11.13",
+            "identity_captured_at": "2026-09-30T12:53:15.070270+00:00",
+            "route": "langgraph-v1",
+            "model_class": "DatabricksChatModel",
+            "require_remote_approval": false,
+            "loaded_delivery_guard": "629f9f34c254b040"
+          },
+          "operation": "submit",
+          "process_peak_rss_bytes": 305037312
+        },
+        {
+          "time": "2026-09-30T12:53:46.455959+00:00",
+          "event": "summarization_started",
+          "run_id": "8c0e66678ef04f20830b11b36b43dedb",
+          "instance_id": "3c7b0b481ca0",
+          "pid": 47938,
+          "span_id": "7db068a5b4df",
+          "message_count": 1
+        },
+        {
+          "time": "2026-09-30T12:53:46.456078+00:00",
+          "event": "summarization_finished",
+          "run_id": "8c0e66678ef04f20830b11b36b43dedb",
+          "instance_id": "3c7b0b481ca0",
+          "pid": 47938,
+          "span_id": "7db068a5b4df",
+          "status": "ok",
+          "elapsed_seconds": 0.0,
+          "message_count": 1,
+          "summarized": false
+        },
+        {
+          "time": "2026-09-30T12:53:46.456579+00:00",
+          "event": "model_call_started",
+          "run_id": "8c0e66678ef04f20830b11b36b43dedb",
+          "instance_id": "3c7b0b481ca0",
+          "pid": 47938,
+          "span_id": "21dd5f264090",
+          "message_count": 1
+        },
+        {
+          "time": "2026-09-30T12:53:46.458393+00:00",
+          "event": "context_budget",
+          "run_id": "8c0e66678ef04f20830b11b36b43dedb",
+          "instance_id": "3c7b0b481ca0",
+          "pid": 47938,
+          "characters": 7192,
+          "limit": 32000
+        },
+        {
+          "time": "2026-09-30T12:53:48.312439+00:00",
+          "event": "model_call_finished",
+          "run_id": "8c0e66678ef04f20830b11b36b43dedb",
+          "instance_id": "3c7b0b481ca0",
+          "pid": 47938,
+          "span_id": "21dd5f264090",
+          "status": "ok",
+          "elapsed_seconds": 1.856,
+          "message_count": 1,
+          "tool_call_count": 1
+        },
+        {
+          "time": "2026-09-30T12:53:48.320478+00:00",
+          "event": "tool_started",
+          "run_id": "8c0e66678ef04f20830b11b36b43dedb",
+          "instance_id": "3c7b0b481ca0",
+          "pid": 47938,
+          "tool": "inspect_table_context"
+        },
+        {
+          "time": "2026-09-30T12:53:48.326445+00:00",
+          "event": "tool_completed",
+          "run_id": "8c0e66678ef04f20830b11b36b43dedb",
+          "instance_id": "3c7b0b481ca0",
+          "pid": 47938,
+          "tool": "inspect_table_context",
+          "status": "ready",
+          "error_code": null,
+          "elapsed_seconds": 0.006,
+          "applied_corrections": []
+        },
+        {
+          "time": "2026-09-30T12:53:48.329704+00:00",
+          "event": "summarization_started",
+          "run_id": "8c0e66678ef04f20830b11b36b43dedb",
+          "instance_id": "3c7b0b481ca0",
+          "pid": 47938,
+          "span_id": "5b2c0152e0ba",
+          "message_count": 3
+        },
+        {
+          "time": "2026-09-30T12:53:48.329877+00:00",
+          "event": "summarization_finished",
+          "run_id": "8c0e66678ef04f20830b11b36b43dedb",
+          "instance_id": "3c7b0b481ca0",
+          "pid": 47938,
+          "span_id": "5b2c0152e0ba",
+          "status": "ok",
+          "elapsed_seconds": 0.0,
+          "message_count": 3,
+          "summarized": false
+        },
+        {
+          "time": "2026-09-30T12:53:48.330350+00:00",
+          "event": "model_call_started",
+          "run_id": "8c0e66678ef04f20830b11b36b43dedb",
+          "instance_id": "3c7b0b481ca0",
+          "pid": 47938,
+          "span_id": "e6757a96f263",
+          "message_count": 3
+        },
+        {
+          "time": "2026-09-30T12:53:48.331385+00:00",
+          "event": "context_budget",
+          "run_id": "8c0e66678ef04f20830b11b36b43dedb",
+          "instance_id": "3c7b0b481ca0",
+          "pid": 47938,
+          "characters": 8245,
+          "limit": 32000
+        },
+        {
+          "time": "2026-09-30T12:53:54.841022+00:00",
+          "event": "model_call_finished",
+          "run_id": "8c0e66678ef04f20830b11b36b43dedb",
+          "instance_id": "3c7b0b481ca0",
+          "pid": 47938,
+          "span_id": "e6757a96f263",
+          "status": "ok",
+          "elapsed_seconds": 6.511,
+          "message_count": 3,
+          "tool_call_count": 1
+        },
+        {
+          "time": "2026-09-30T12:53:54.868626+00:00",
+          "event": "remote_query_authorized",
+          "run_id": "8c0e66678ef04f20830b11b36b43dedb",
+          "instance_id": "3c7b0b481ca0",
+          "pid": 47938,
+          "tool_call_id": "call_1f1545e2-f8cd-4040-a32a-8d528284d1ab",
+          "authorization": "automatic_read_policy"
+        },
+        {
+          "time": "2026-09-30T12:53:54.868793+00:00",
+          "event": "remote_query_started",
+          "run_id": "8c0e66678ef04f20830b11b36b43dedb",
+          "instance_id": "3c7b0b481ca0",
+          "pid": 47938,
+          "ledger_status": "auto_authorized",
+          "cached_receipt": false
+        },
+        {
+          "time": "2026-09-30T12:53:54.886238+00:00",
+          "event": "remote_query_finished",
+          "run_id": "8c0e66678ef04f20830b11b36b43dedb",
+          "instance_id": "3c7b0b481ca0",
+          "pid": 47938,
+          "ledger_status": "completed",
+          "status": "ready",
+          "cached_receipt": false
+        },
+        {
+          "time": "2026-09-30T12:53:54.887936+00:00",
+          "event": "remote_result_verified",
+          "run_id": "8c0e66678ef04f20830b11b36b43dedb",
+          "instance_id": "3c7b0b481ca0",
+          "pid": 47938,
+          "request_id": "25552da7-9541-4ac7-b000-63a5f1ec6879",
+          "tool_call_id": "call_1f1545e2-f8cd-4040-a32a-8d528284d1ab",
+          "dataset_id": "ff72661d-398b-44f4-bdfb-36588eec9c67",
+          "rows": 5
+        },
+        {
+          "time": "2026-09-30T12:53:54.888907+00:00",
+          "event": "summarization_started",
+          "run_id": "8c0e66678ef04f20830b11b36b43dedb",
+          "instance_id": "3c7b0b481ca0",
+          "pid": 47938,
+          "span_id": "a6af16a824a7",
+          "message_count": 5
+        },
+        {
+          "time": "2026-09-30T12:53:54.889023+00:00",
+          "event": "summarization_finished",
+          "run_id": "8c0e66678ef04f20830b11b36b43dedb",
+          "instance_id": "3c7b0b481ca0",
+          "pid": 47938,
+          "span_id": "a6af16a824a7",
+          "status": "ok",
+          "elapsed_seconds": 0.0,
+          "message_count": 5,
+          "summarized": false
+        },
+        {
+          "time": "2026-09-30T12:53:54.889460+00:00",
+          "event": "model_call_started",
+          "run_id": "8c0e66678ef04f20830b11b36b43dedb",
+          "instance_id": "3c7b0b481ca0",
+          "pid": 47938,
+          "span_id": "bd6eb7bce020",
+          "message_count": 5
+        },
+        {
+          "time": "2026-09-30T12:53:54.890730+00:00",
+          "event": "context_budget",
+          "run_id": "8c0e66678ef04f20830b11b36b43dedb",
+          "instance_id": "3c7b0b481ca0",
+          "pid": 47938,
+          "characters": 13035,
+          "limit": 32000
+        },
+        {
+          "time": "2026-09-30T12:53:57.751694+00:00",
+          "event": "model_call_finished",
+          "run_id": "8c0e66678ef04f20830b11b36b43dedb",
+          "instance_id": "3c7b0b481ca0",
+          "pid": 47938,
+          "span_id": "bd6eb7bce020",
+          "status": "ok",
+          "elapsed_seconds": 2.862,
+          "message_count": 5,
+          "tool_call_count": 0
+        },
+        {
+          "time": "2026-09-30T12:53:57.754673+00:00",
+          "event": "recovery_replan",
+          "run_id": "8c0e66678ef04f20830b11b36b43dedb",
+          "instance_id": "3c7b0b481ca0",
+          "pid": 47938,
+          "request_id": "25552da7-9541-4ac7-b000-63a5f1ec6879",
+          "attempts": 1,
+          "missing_capabilities": [
+            "calculation"
+          ]
+        },
+        {
+          "time": "2026-09-30T12:53:57.756976+00:00",
+          "event": "summarization_started",
+          "run_id": "8c0e66678ef04f20830b11b36b43dedb",
+          "instance_id": "3c7b0b481ca0",
+          "pid": 47938,
+          "span_id": "ba782f143dc4",
+          "message_count": 6
+        },
+        {
+          "time": "2026-09-30T12:53:57.757056+00:00",
+          "event": "summarization_finished",
+          "run_id": "8c0e66678ef04f20830b11b36b43dedb",
+          "instance_id": "3c7b0b481ca0",
+          "pid": 47938,
+          "span_id": "ba782f143dc4",
+          "status": "ok",
+          "elapsed_seconds": 0.0,
+          "message_count": 6,
+          "summarized": false
+        },
+        {
+          "time": "2026-09-30T12:53:57.757482+00:00",
+          "event": "model_call_started",
+          "run_id": "8c0e66678ef04f20830b11b36b43dedb",
+          "instance_id": "3c7b0b481ca0",
+          "pid": 47938,
+          "span_id": "d80d6213f982",
+          "message_count": 6
+        },
+        {
+          "time": "2026-09-30T12:53:57.758605+00:00",
+          "event": "context_budget",
+          "run_id": "8c0e66678ef04f20830b11b36b43dedb",
+          "instance_id": "3c7b0b481ca0",
+          "pid": 47938,
+          "characters": 13534,
+          "limit": 32000
+        },
+        {
+          "time": "2026-09-30T12:54:04.432822+00:00",
+          "event": "model_call_finished",
+          "run_id": "8c0e66678ef04f20830b11b36b43dedb",
+          "instance_id": "3c7b0b481ca0",
+          "pid": 47938,
+          "span_id": "d80d6213f982",
+          "status": "ok",
+          "elapsed_seconds": 6.675,
+          "message_count": 6,
+          "tool_call_count": 0
+        },
+        {
+          "time": "2026-09-30T12:54:04.435474+00:00",
+          "event": "recovery_replan",
+          "run_id": "8c0e66678ef04f20830b11b36b43dedb",
+          "instance_id": "3c7b0b481ca0",
+          "pid": 47938,
+          "request_id": "25552da7-9541-4ac7-b000-63a5f1ec6879",
+          "attempts": 2,
+          "missing_capabilities": [
+            "calculation"
+          ]
+        },
+        {
+          "time": "2026-09-30T12:54:04.438146+00:00",
+          "event": "summarization_started",
+          "run_id": "8c0e66678ef04f20830b11b36b43dedb",
+          "instance_id": "3c7b0b481ca0",
+          "pid": 47938,
+          "span_id": "20d2addd7b55",
+          "message_count": 7
+        },
+        {
+          "time": "2026-09-30T12:54:04.438237+00:00",
+          "event": "summarization_finished",
+          "run_id": "8c0e66678ef04f20830b11b36b43dedb",
+          "instance_id": "3c7b0b481ca0",
+          "pid": 47938,
+          "span_id": "20d2addd7b55",
+          "status": "ok",
+          "elapsed_seconds": 0.0,
+          "message_count": 7,
+          "summarized": false
+        },
+        {
+          "time": "2026-09-30T12:54:04.438674+00:00",
+          "event": "model_call_started",
+          "run_id": "8c0e66678ef04f20830b11b36b43dedb",
+          "instance_id": "3c7b0b481ca0",
+          "pid": 47938,
+          "span_id": "f1893726a1e8",
+          "message_count": 7
+        },
+        {
+          "time": "2026-09-30T12:54:04.439992+00:00",
+          "event": "context_budget",
+          "run_id": "8c0e66678ef04f20830b11b36b43dedb",
+          "instance_id": "3c7b0b481ca0",
+          "pid": 47938,
+          "characters": 14033,
+          "limit": 32000
+        },
+        {
+          "time": "2026-09-30T12:54:10.340056+00:00",
+          "event": "model_call_finished",
+          "run_id": "8c0e66678ef04f20830b11b36b43dedb",
+          "instance_id": "3c7b0b481ca0",
+          "pid": 47938,
+          "span_id": "f1893726a1e8",
+          "status": "ok",
+          "elapsed_seconds": 5.901,
+          "message_count": 7,
+          "tool_call_count": 0
+        },
+        {
+          "time": "2026-09-30T12:54:10.342101+00:00",
+          "event": "completion_checked",
+          "run_id": "8c0e66678ef04f20830b11b36b43dedb",
+          "instance_id": "3c7b0b481ca0",
+          "pid": 47938,
+          "request_id": "25552da7-9541-4ac7-b000-63a5f1ec6879",
+          "status": "blocked",
+          "reason": "missing_evidence",
+          "attempts": 2,
+          "required_capabilities": [
+            "remote_query",
+            "calculation"
+          ],
+          "missing_capabilities": [
+            "calculation"
+          ],
+          "model_calls": 5,
+          "tool_calls": 2,
+          "model_seconds": 23.835,
+          "dataset_ids": [],
+          "artifact_ids": []
+        },
+        {
+          "time": "2026-09-30T12:54:10.343884+00:00",
+          "event": "run_completed",
+          "run_id": "8c0e66678ef04f20830b11b36b43dedb",
+          "instance_id": "3c7b0b481ca0",
+          "pid": 47938,
+          "status": "blocked",
+          "elapsed_seconds": 24.176,
+          "process_peak_rss_bytes": 305037312,
+          "frame_cache_bytes": 0
+        },
+        {
+          "time": "2026-09-30T12:54:10.343924+00:00",
+          "event": "turn_slo",
+          "run_id": "8c0e66678ef04f20830b11b36b43dedb",
+          "instance_id": "3c7b0b481ca0",
+          "pid": 47938,
+          "elapsed_seconds": 24.176,
+          "limit": 180.0,
+          "status": "ok"
+        }
+      ],
+      "sql_drafts": [
+        {
+          "source": "mst_users",
+          "query": "SELECT CASE \n         WHEN strftime('%Y', 'now') - CAST(substr(birth_date, 1, 4) AS INTEGER) BETWEEN 20 AND 29 THEN '20s'\n         WHEN strftime('%Y', 'now') - CAST(substr(birth_date, 1, 4) AS INTEGER) BETWEEN 30 AND 39 THEN '30s'\n         WHEN strftime('%Y', 'now') - CAST(substr(birth_date, 1, 4) AS INTEGER) BETWEEN 40 AND 49 THEN '40s'\n         WHEN strftime('%Y', 'now') - CAST(substr(birth_date, 1, 4) AS INTEGER) BETWEEN 50 AND 59 THEN '50s'\n         ELSE 'others'\n       END AS age_category, \n       COUNT(*) AS user_count\nFROM mst_users\nWHERE birth_date IS NOT NULL AND length(birth_date) >= 4\nGROUP BY age_category\nORDER BY age_category",
+          "reason": "사용자 나이 카테고리(20대, 30대, 40대, 50대, 기타)별 사용자 수를 계산하기 위해 birth_date에서 연도를 추출하여 나이를 계산하고, 그에 따라 카테고리로 그룹화하여 집계합니다."
+        }
+      ],
+      "observations": [
+        {
+          "tool": "inspect_table_context",
+          "content": "{\"status\": \"ready\", \"table_context\": {\"table\": \"mst_users\", \"training_status\": \"runtime_schema\", \"observed_at\": \"2026-09-30T12:53:46.140480+00:00\", \"columns\": [{\"name\": \"user_id\", \"dtype\": \"varchar(255)\"}, {\"name\": \"sex\", \"dtype\": \"varchar(255)\"}, {\"name\": \"birth_date\", \"dtype\": \"varchar(255)\"}, {\"name\": \"register_date\", \"dtype\": \"varchar(255)\"}, {\"name\": \"register_device\", \"dtype\": \"varchar(255)\"}, {\"name\": \"withdraw_date\", \"dtype\": \"varchar(255)\"}], \"relationship_authority\": \"database_catalog\", \"foreign_keys\": [], \"source\": \"read-only public Spider2 SQLite schema and bounded type examples\", \"freshness\": \"fresh\", \"schema_fingerprint\": \"b5cfca25f6d28524d4bf33ea1dc94f8964cc42adf1e857b81979f322e313ff35\"}, \"schema_changed\": false, \"authority\": \"saved_snapshot\", \"scope\": \"저장된 스키마 스냅샷입니다. observed_at과 freshness를 함께 확인해야 합니다.\", \"evidence_ids\": [], \"error_code\": null, \"retryable\": false, \"user_action\": \"\"}"
+        },
+        {
+          "tool": "query_databricks",
+          "content": "{\"status\": \"ready\", \"dataset\": {\"id\": \"ff72661d-398b-44f4-bdfb-36588eec9c67\", \"source\": \"mst_users\", \"columns\": [\"age_category\", \"user_count\"], \"rows\": 5, \"coverage\": \"complete\", \"conditions\": [], \"predicate_known\": false, \"grain\": \"aggregate\", \"aggregation\": \"SELECT CASE WHEN TIME_TO_STR(CAST('now' AS TIMESTAMP), '%Y') - CAST(SUBSTRING(birth_date, 1, 4) AS INT) BETWEEN 20 AND 29 THEN '20s' WHEN TIME_TO_STR(CAST('now' AS TIMESTAMP), '%Y') - CAST(SUBSTRING(birth_date, 1, 4) AS INT) BETWEEN 30 AND 39 THEN '30s' WHEN TIME_TO_STR(CAST('now' AS TIMESTAMP), '%Y') - CAST(SUBSTRING(birth_date, 1, 4) AS INT) BETWEEN 40 AND 49 THEN '40s' WHEN TIME_TO_STR(CAST('now' AS TIMESTAMP), '%Y') - CAST(SUBSTRING(birth_date, 1, 4) AS INT) BETWEEN 50 AND 59 THEN '50s' ELSE 'others' END AS age_category, COUNT(*) AS user_count FROM mst_users WHERE NOT birth_date IS NULL AND LENGTH(birth_date) >= 4 GROUP BY age_category ORDER BY age_category\", \"snapshot\": \"2026-09-30T12:53:54.883067+00:00\", \"query\": \"SELECT CASE \\n         WHEN strftime('%Y', 'now') - CAST(substr(birth_date, 1, 4) AS INTEGER) BETWEEN 20 AND 29 THEN '20s'\\n         WHEN strftime('%Y', 'now') - CAST(substr(birth_date, 1, 4) AS INTEGER) BETWEEN 30 AND 39 THEN '30s'\\n         WHEN strftime('%Y', 'now') - CAST(substr(birth_date, 1, 4) AS INTEGER) BETWEEN 40 AND 49 THEN '40s'\\n         WHEN strftime('%Y', 'now') - CAST(substr(birth_date, 1, 4) AS INTEGER) BETWEEN 50 AND 59 THEN '50s'\\n         ELSE 'others'\\n       END AS age_category, \\n       COUNT(*) AS user_count\\nFROM mst_users\\nWHERE birth_date IS NOT NULL AND length(birth_date) >= 4\\nGROUP BY age_category\\nORDER BY age_category\", \"parent_id\": \"\", \"parent_ids\": [], \"role\": \"aggregate\", \"root_id\": \"\", \"row_selection\": {}}, \"preview\": [{\"age_category\": \"20s\", \"user_count\": 48}, {\"age_category\": \"30s\", \"user_count\": 88}, {\"age_category\": \"40s\", \"user_count\": 24}, {\"age_category\": \"50s\", \"user_count\": 24}, {\"age_category\": \"others\", \"user_count\": 136}], \"evidence_ids\": [\"ff72661d-398b-44f4-bdfb-36588eec9c67\"], \"error_code\": null, \"retryable\": false, \"user_action\": \"\", \"scope\": \"도구가 반환한 구조화 결과 범위입니다.\"}"
+        }
+      ],
+      "status": "NO_VERIFIED_FINAL_SQL",
+      "elapsed_seconds": 24.21
+    }
+  ]
+}

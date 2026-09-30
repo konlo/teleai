@@ -150,6 +150,10 @@ def resolve_request_scope(text, context, previous=None):
     """
     text = str(text)
     grounding, unresolved = _grounding(text, context)
+    if context is not None:
+        from core.analysis_agent.source_mentions import mask_source_mentions
+        text = mask_source_mentions(text, [c.get('table', '') for c in context.reference_context]
+            + [info.source for info in context.datasets.metadata.values()])
     previous = previous or {}
     reset_all, reset_columns = _reset_filter_columns(text, grounding)
     inherited = bool(_REFERENCE.search(text) or _PREVIOUS_MONTH.search(text) or reset_all or reset_columns)

@@ -108,6 +108,9 @@ def evaluate_interactive(spider_root, task, model, predictions):
                 result.update(agent_status=outcome.get('status'),final_output=outcome.get('text',''),
                     model_calls=measured.get('model_calls'),model_retries=measured.get('model_retries'),recovery_status=recovery.get('status'),
                     scope_error=recovery.get('scope_error'),stop_reason=recovery.get('stop_reason'),error_type=outcome.get('error_type'),
+                    request_contract={key:recovery.get(key) for key in (
+                        'required_sources','required_columns','operations','scope','operation_pending',
+                        'scalar_grouping','profile_kind','whole_row_count','calculation')},
                     error_category=outcome.get('error_category'),
                     diagnostics=[json.loads(line) for line in runtime.diagnostics.path.read_text().splitlines()],
                     sql_drafts=[call['args'] for message in events if isinstance(message,AIMessage)

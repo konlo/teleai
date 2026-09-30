@@ -24,7 +24,33 @@ class ExplorationThenAggregate(BaseChatModel):
             {'name':'query_databricks','id':str(uuid4()),'args':{'query':query,'source':'events','reason':'Inspect then calculate'}}]))])
 
 
+class FixedAggregate(ExplorationThenAggregate):
+    query: str
+    def _generate(self,messages,**kwargs):
+        self.calls += 1
+        return ChatResult(generations=[ChatGeneration(message=AIMessage(content='',tool_calls=[
+            {'name':'query_databricks','id':str(uuid4()),'args':{
+                'query':self.query,'source':'events','reason':'Calculate grouped counts'}}]))])
+
+
 class InteractiveSpiderTests(unittest.TestCase):
+    def test_english_each_count_requires_actual_grouped_count(self):
+        with tempfile.TemporaryDirectory() as root:
+            path=Path(root)/'fixture.sqlite'
+            with sqlite3.connect(path) as db:
+                db.executescript('CREATE TABLE events(measurement INTEGER); INSERT INTO events VALUES(1),(1),(8);')
+            for i,(query,valid) in enumerate([
+                ('SELECT measurement, COUNT(*) AS n FROM events GROUP BY measurement',True),
+                ('SELECT COUNT(measurement) AS n FROM events',False),
+                ('SELECT measurement, AVG(measurement) AS n FROM events GROUP BY measurement',False)]):
+                with self.subTest(query=query),patch('scripts.evaluate_spider2_teleai.database_path',return_value=path),patch('scripts.evaluate_spider2_teleai.task_document',return_value=''):
+                    result=evaluate_interactive(Path(root),{'instance_id':f'count_{i}','db':'fixture',
+                        'question':'How many events are there for each measurement?'},
+                        FixedAggregate(query=query),Path(root)/'predictions')
+                    self.assertEqual(result['status']=='SQL_COMPLETED',valid,result)
+                    self.assertEqual(result['request_contract']['operations'],['COUNT'])
+                    self.assertFalse(result['request_contract']['operation_pending'])
+
     def test_readonly_bounded_result_and_source_verification(self):
         with tempfile.TemporaryDirectory() as root:
             path=Path(root)/'fixture.sqlite'

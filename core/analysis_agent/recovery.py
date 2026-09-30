@@ -339,8 +339,8 @@ class RecoveryMiddleware(AgentMiddleware):
             elif not chart and re.search(r'기초\s*통계|요약\s*통계|데이터\s*프로파일|\b(?:describe|profile)\b', text, re.I):
                 profile_kind = 'summary'
             count_request = not chart and not profile_kind and bool(re.search(
-                r'건수|인원\s*수|명수|빈도|결측|고유값|(?:사람|고객|승객|신청자|가입자|사용자|행)[\'\"]*(?:들)?(?:의)?\s*수',
-                profile_text))
+                r'건수|인원\s*수|명수|빈도|결측|고유값|(?:사람|고객|승객|신청자|가입자|사용자|행)[\'\"]*(?:들)?(?:의)?\s*수|\bhow\s+many\b',
+                profile_text, re.I))
             calculation = bool(re.search(
                 r'평균|중앙값|합계|총합|최솟값|최댓값|최소값|최대값|표준편차|상관|비율|성공률|개수|몇\s*(?:명|개|건)|계산|통계|'
                 r'[가-힣A-Za-z]+[율률]|\b(?:mean|average|avg|count|sum|median|std|correlation|ratio|rate|percentage|percent)\b', text, re.I)) or count_request
@@ -361,16 +361,18 @@ class RecoveryMiddleware(AgentMiddleware):
                 for info in self.context.datasets.metadata.values():
                     names.update(info.columns)
                     sources.add(info.source)
-            def mentioned(name):
-                return bool(name and re.search(r'(?<![A-Za-z0-9_])' + re.escape(name) + r'(?![A-Za-z0-9_])', text))
+            from core.analysis_agent.source_mentions import mask_source_mentions
+            column_text = mask_source_mentions(text, sources)
+            def mentioned(name, content=text):
+                return bool(name and re.search(r'(?<![A-Za-z0-9_])' + re.escape(name) + r'(?![A-Za-z0-9_])', content))
             def mentioned_alias(alias):
                 if not alias:
                     return False
                 return bool(re.search(
                     r'(?<![A-Za-z0-9_가-힣])' + re.escape(alias)
-                    + r'(?=(?:은|는|이|가|을|를|의|과|와|별|간|에서|으로|에|도)?(?:[^가-힣]|$))', text))
+                    + r'(?=(?:은|는|이|가|을|를|의|과|와|별|간|에서|으로|에|도)?(?:[^가-힣]|$))', column_text))
             def mentioned_column(name):
-                if mentioned(name) or any(mentioned_alias(alias) for alias in column_aliases.get(name, ())):
+                if mentioned(name, column_text) or any(mentioned_alias(alias) for alias in column_aliases.get(name, ())):
                     return True
                 # A metadata alias such as "생존 여부" also grounds the
                 # ordinary role noun "생존자". Keep this suffix rule tied to
@@ -379,10 +381,10 @@ class RecoveryMiddleware(AgentMiddleware):
                     stem = re.sub(r'\s*(?:여부|유무|상태|율)$', '', alias).strip()
                     if len(stem) >= 2 and re.search(
                             r'(?<![A-Za-z0-9_])' + re.escape(stem)
-                            + r'(?:자|여부|유무|상태|율)(?![A-Za-z0-9_])', text):
+                            + r'(?:자|여부|유무|상태|율)(?![A-Za-z0-9_])', column_text):
                         return True
                 return False
-            explicit_columns = [name for name in names if mentioned(name)]
+            explicit_columns = [name for name in names if mentioned(name, column_text)]
             explicit_columns.sort(
                 key=lambda name: (text.find(name) if text.find(name) >= 0 else len(text), name))
             mentioned_columns = [name for name in names if mentioned_column(name)]
@@ -628,7 +630,7 @@ class RecoveryMiddleware(AgentMiddleware):
                 group_summary_requested=False,group_summary_columns=[],
                 group_summary_metrics=[],group_summary_conditions=[],
                 calculation=calculation, operations=operations, metadata_kind=metadata_kind,
-                scalar_grouping=bool(re.search(r'별|\bgroup\s+by\b|\bby\b', text, re.I)),
+                scalar_grouping=bool(re.search(r'별|\bgroup\s+by\b|\bby\b|\b(?:in|for)\s+each\b', text, re.I)),
                 profile_kind=profile_kind, preview_limit=preview_limit,
                 chart_spec_requested=chart_spec_requested,
                 histogram_bins=requested_bins,
@@ -3575,16 +3577,13 @@ class RecoveryMiddleware(AgentMiddleware):
             return feedback
         effective_contexts = []
         if self.context:
-            from core.analysis_catalog import resolve_table_context
+            from core.analysis_catalog import resolve_table_context, full_schema_source
             from sqlglot import exp, parse_one
-            from utils.analysis_provenance import single_table
             tree = parse_one(arguments['query'], read=self.sql_dialect)
             limit = tree.args.get('limit') if isinstance(tree, exp.Select) else None
-            schema_probe = bool(single_table(tree) is not None
+            schema_probe = bool(full_schema_source(arguments['query'], dialect=self.sql_dialect) is not None
                 and limit and isinstance(limit.expression, exp.Literal)
                 and limit.expression.is_int and int(limit.expression.this) == 0
-                and any(isinstance(node, exp.Star) for item in tree.expressions
-                        for node in item.walk())
                 and tree.args.get('where') is None)
             for source in query_sources(arguments['query'], dialect=self.sql_dialect):
                 observed = resolve_table_context(

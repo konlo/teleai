@@ -21,9 +21,13 @@ def profile_request_text(text):
 
 
 def group_columns(text, columns):
-    return [column for column in columns if re.search(
-        r'(?<![A-Za-z0-9_])[`"\']?' + re.escape(column)
-        + r'[`"\']?\s*(?:별|마다|기준으로)', text, re.I)]
+    result = []
+    for column in columns:
+        name = r'[`"\']?' + re.escape(column) + r'[`"\']?(?![A-Za-z0-9_])'
+        if (re.search(r'(?<![A-Za-z0-9_])' + name + r'\s*(?:별|마다|기준으로)', text, re.I)
+                or re.search(r'\b(?:by|(?:in|for)\s+each)\s+' + name, text, re.I)):
+            result.append(column)
+    return result
 
 
 def group_sort(text, metrics, group, aliases=None):

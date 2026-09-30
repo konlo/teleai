@@ -1,0 +1,511 @@
+{
+  "status": "FAIL",
+  "agent_status": "exhausted",
+  "data": "actual Databricks",
+  "model": "scripted probe then aggregate; no LLM inference",
+  "queries": [
+    "SELECT COUNT(*) AS n FROM `workspace`.`default`.`bank_loan`",
+    "SELECT AVG(`age`) AS average FROM `workspace`.`default`.`bank_loan`"
+  ],
+  "source_schema_preserved": true,
+  "schema_authority": "saved_snapshot",
+  "source_column_count": 18,
+  "contract": {
+    "required_columns": [
+      "default",
+      "age"
+    ],
+    "required_sources": [
+      "workspace.default.bank_loan"
+    ],
+    "scope": {
+      "conditions": [],
+      "any_conditions": [],
+      "join_edges": [],
+      "measure_conditions": [],
+      "ratio": null,
+      "unresolved": [],
+      "columns": [
+        "age",
+        "default"
+      ]
+    },
+    "scope_error": null,
+    "stop_reason": "missing_evidence",
+    "operations": [
+      "AVG"
+    ],
+    "evidence_ids": []
+  },
+  "datasets": [
+    {
+      "id": "320ab895-cf1d-4266-ac32-556593b399a4",
+      "source": "workspace.default.bank_loan",
+      "columns": [
+        "n"
+      ],
+      "rows": 1,
+      "coverage": "complete",
+      "conditions": [],
+      "predicate_known": false,
+      "grain": "aggregate",
+      "aggregation": "SELECT COUNT(*) AS n FROM \"workspace\".\"default\".\"bank_loan\"",
+      "snapshot": "2026-09-30T13:07:57.179755+00:00",
+      "query": "SELECT COUNT(*) AS n FROM `workspace`.`default`.`bank_loan`",
+      "parent_id": "",
+      "parent_ids": [],
+      "role": "aggregate",
+      "root_id": "",
+      "row_selection": {}
+    },
+    {
+      "id": "14979156-be87-4bf5-9ab6-b302925f0897",
+      "source": "workspace.default.bank_loan",
+      "columns": [
+        "average"
+      ],
+      "rows": 1,
+      "coverage": "complete",
+      "conditions": [],
+      "predicate_known": false,
+      "grain": "aggregate",
+      "aggregation": "SELECT AVG(\"age\") AS average FROM \"workspace\".\"default\".\"bank_loan\"",
+      "snapshot": "2026-09-30T13:07:58.813280+00:00",
+      "query": "SELECT AVG(`age`) AS average FROM `workspace`.`default`.`bank_loan`",
+      "parent_id": "",
+      "parent_ids": [],
+      "role": "aggregate",
+      "root_id": "",
+      "row_selection": {}
+    }
+  ],
+  "diagnostics": [
+    {
+      "time": "2026-09-30T13:07:53.925808+00:00",
+      "event": "run_started",
+      "run_id": "0ad582f8d94a423db768d4c0aedb17a8",
+      "instance_id": "675d958b7cff",
+      "pid": 49557,
+      "runtime": {
+        "revision_at_first_runtime": "5133c930259d9819c674e83340ea091d3a2bdffb",
+        "packages": {
+          "langchain": "1.4.0",
+          "langchain-core": "1.6.2",
+          "langgraph": "1.2.11",
+          "streamlit": "1.63.0",
+          "sqlglot": "30.18.0"
+        },
+        "python_version": "3.11.13",
+        "identity_captured_at": "2026-09-30T13:07:53.851165+00:00",
+        "route": "langgraph-v1",
+        "model_class": "ProbeThenAggregate",
+        "require_remote_approval": false,
+        "loaded_delivery_guard": "66da8d34cbab0e06"
+      },
+      "operation": "submit",
+      "process_peak_rss_bytes": 276447232
+    },
+    {
+      "time": "2026-09-30T13:07:54.026875+00:00",
+      "event": "summarization_started",
+      "run_id": "0ad582f8d94a423db768d4c0aedb17a8",
+      "instance_id": "675d958b7cff",
+      "pid": 49557,
+      "span_id": "26f97f248454",
+      "message_count": 1
+    },
+    {
+      "time": "2026-09-30T13:07:54.026982+00:00",
+      "event": "summarization_finished",
+      "run_id": "0ad582f8d94a423db768d4c0aedb17a8",
+      "instance_id": "675d958b7cff",
+      "pid": 49557,
+      "span_id": "26f97f248454",
+      "status": "ok",
+      "elapsed_seconds": 0.0,
+      "message_count": 1,
+      "summarized": false
+    },
+    {
+      "time": "2026-09-30T13:07:54.027422+00:00",
+      "event": "model_call_started",
+      "run_id": "0ad582f8d94a423db768d4c0aedb17a8",
+      "instance_id": "675d958b7cff",
+      "pid": 49557,
+      "span_id": "f623861d430c",
+      "message_count": 1
+    },
+    {
+      "time": "2026-09-30T13:07:54.028343+00:00",
+      "event": "context_budget",
+      "run_id": "0ad582f8d94a423db768d4c0aedb17a8",
+      "instance_id": "675d958b7cff",
+      "pid": 49557,
+      "characters": 7957,
+      "limit": 32000
+    },
+    {
+      "time": "2026-09-30T13:07:54.028916+00:00",
+      "event": "model_call_finished",
+      "run_id": "0ad582f8d94a423db768d4c0aedb17a8",
+      "instance_id": "675d958b7cff",
+      "pid": 49557,
+      "span_id": "f623861d430c",
+      "status": "ok",
+      "elapsed_seconds": 0.001,
+      "message_count": 1,
+      "tool_call_count": 1
+    },
+    {
+      "time": "2026-09-30T13:07:54.034578+00:00",
+      "event": "remote_query_authorized",
+      "run_id": "0ad582f8d94a423db768d4c0aedb17a8",
+      "instance_id": "675d958b7cff",
+      "pid": 49557,
+      "tool_call_id": "595a1fea-9ec5-4506-8660-9e88195afa11",
+      "authorization": "automatic_read_policy"
+    },
+    {
+      "time": "2026-09-30T13:07:54.034796+00:00",
+      "event": "remote_query_started",
+      "run_id": "0ad582f8d94a423db768d4c0aedb17a8",
+      "instance_id": "675d958b7cff",
+      "pid": 49557,
+      "ledger_status": "auto_authorized",
+      "cached_receipt": false
+    },
+    {
+      "time": "2026-09-30T13:07:57.463894+00:00",
+      "event": "remote_query_finished",
+      "run_id": "0ad582f8d94a423db768d4c0aedb17a8",
+      "instance_id": "675d958b7cff",
+      "pid": 49557,
+      "ledger_status": "completed",
+      "status": "ready",
+      "cached_receipt": false
+    },
+    {
+      "time": "2026-09-30T13:07:57.467573+00:00",
+      "event": "remote_result_verified",
+      "run_id": "0ad582f8d94a423db768d4c0aedb17a8",
+      "instance_id": "675d958b7cff",
+      "pid": 49557,
+      "request_id": "5e8a6859-a6dc-45b4-811f-2e733501d611",
+      "tool_call_id": "595a1fea-9ec5-4506-8660-9e88195afa11",
+      "dataset_id": "320ab895-cf1d-4266-ac32-556593b399a4",
+      "rows": 1
+    },
+    {
+      "time": "2026-09-30T13:07:57.470815+00:00",
+      "event": "summarization_started",
+      "run_id": "0ad582f8d94a423db768d4c0aedb17a8",
+      "instance_id": "675d958b7cff",
+      "pid": 49557,
+      "span_id": "ee950e3792df",
+      "message_count": 3
+    },
+    {
+      "time": "2026-09-30T13:07:57.470954+00:00",
+      "event": "summarization_finished",
+      "run_id": "0ad582f8d94a423db768d4c0aedb17a8",
+      "instance_id": "675d958b7cff",
+      "pid": 49557,
+      "span_id": "ee950e3792df",
+      "status": "ok",
+      "elapsed_seconds": 0.0,
+      "message_count": 3,
+      "summarized": false
+    },
+    {
+      "time": "2026-09-30T13:07:57.471693+00:00",
+      "event": "model_call_started",
+      "run_id": "0ad582f8d94a423db768d4c0aedb17a8",
+      "instance_id": "675d958b7cff",
+      "pid": 49557,
+      "span_id": "0d110c27cf45",
+      "message_count": 3
+    },
+    {
+      "time": "2026-09-30T13:07:57.473222+00:00",
+      "event": "context_budget",
+      "run_id": "0ad582f8d94a423db768d4c0aedb17a8",
+      "instance_id": "675d958b7cff",
+      "pid": 49557,
+      "characters": 9475,
+      "limit": 32000
+    },
+    {
+      "time": "2026-09-30T13:07:57.474324+00:00",
+      "event": "model_call_finished",
+      "run_id": "0ad582f8d94a423db768d4c0aedb17a8",
+      "instance_id": "675d958b7cff",
+      "pid": 49557,
+      "span_id": "0d110c27cf45",
+      "status": "ok",
+      "elapsed_seconds": 0.003,
+      "message_count": 3,
+      "tool_call_count": 1
+    },
+    {
+      "time": "2026-09-30T13:07:57.479914+00:00",
+      "event": "remote_query_authorized",
+      "run_id": "0ad582f8d94a423db768d4c0aedb17a8",
+      "instance_id": "675d958b7cff",
+      "pid": 49557,
+      "tool_call_id": "a4507229-082d-4a1e-980e-c4498ad383b4",
+      "authorization": "automatic_read_policy"
+    },
+    {
+      "time": "2026-09-30T13:07:57.480104+00:00",
+      "event": "remote_query_started",
+      "run_id": "0ad582f8d94a423db768d4c0aedb17a8",
+      "instance_id": "675d958b7cff",
+      "pid": 49557,
+      "ledger_status": "auto_authorized",
+      "cached_receipt": false
+    },
+    {
+      "time": "2026-09-30T13:07:59.066501+00:00",
+      "event": "remote_query_finished",
+      "run_id": "0ad582f8d94a423db768d4c0aedb17a8",
+      "instance_id": "675d958b7cff",
+      "pid": 49557,
+      "ledger_status": "completed",
+      "status": "ready",
+      "cached_receipt": false
+    },
+    {
+      "time": "2026-09-30T13:07:59.071067+00:00",
+      "event": "remote_result_verified",
+      "run_id": "0ad582f8d94a423db768d4c0aedb17a8",
+      "instance_id": "675d958b7cff",
+      "pid": 49557,
+      "request_id": "5e8a6859-a6dc-45b4-811f-2e733501d611",
+      "tool_call_id": "a4507229-082d-4a1e-980e-c4498ad383b4",
+      "dataset_id": "14979156-be87-4bf5-9ab6-b302925f0897",
+      "rows": 1
+    },
+    {
+      "time": "2026-09-30T13:07:59.074457+00:00",
+      "event": "summarization_started",
+      "run_id": "0ad582f8d94a423db768d4c0aedb17a8",
+      "instance_id": "675d958b7cff",
+      "pid": 49557,
+      "span_id": "6f0d66f88c0d",
+      "message_count": 5
+    },
+    {
+      "time": "2026-09-30T13:07:59.074623+00:00",
+      "event": "summarization_finished",
+      "run_id": "0ad582f8d94a423db768d4c0aedb17a8",
+      "instance_id": "675d958b7cff",
+      "pid": 49557,
+      "span_id": "6f0d66f88c0d",
+      "status": "ok",
+      "elapsed_seconds": 0.0,
+      "message_count": 5,
+      "summarized": false
+    },
+    {
+      "time": "2026-09-30T13:07:59.075450+00:00",
+      "event": "model_call_started",
+      "run_id": "0ad582f8d94a423db768d4c0aedb17a8",
+      "instance_id": "675d958b7cff",
+      "pid": 49557,
+      "span_id": "86636d155d24",
+      "message_count": 5
+    },
+    {
+      "time": "2026-09-30T13:07:59.076757+00:00",
+      "event": "context_budget",
+      "run_id": "0ad582f8d94a423db768d4c0aedb17a8",
+      "instance_id": "675d958b7cff",
+      "pid": 49557,
+      "characters": 11068,
+      "limit": 32000
+    },
+    {
+      "time": "2026-09-30T13:07:59.077258+00:00",
+      "event": "model_call_finished",
+      "run_id": "0ad582f8d94a423db768d4c0aedb17a8",
+      "instance_id": "675d958b7cff",
+      "pid": 49557,
+      "span_id": "86636d155d24",
+      "status": "ok",
+      "elapsed_seconds": 0.002,
+      "message_count": 5,
+      "tool_call_count": 0
+    },
+    {
+      "time": "2026-09-30T13:07:59.078746+00:00",
+      "event": "recovery_replan",
+      "run_id": "0ad582f8d94a423db768d4c0aedb17a8",
+      "instance_id": "675d958b7cff",
+      "pid": 49557,
+      "request_id": "5e8a6859-a6dc-45b4-811f-2e733501d611",
+      "attempts": 1,
+      "missing_capabilities": [
+        "calculation"
+      ]
+    },
+    {
+      "time": "2026-09-30T13:07:59.080844+00:00",
+      "event": "summarization_started",
+      "run_id": "0ad582f8d94a423db768d4c0aedb17a8",
+      "instance_id": "675d958b7cff",
+      "pid": 49557,
+      "span_id": "6d6629d10afe",
+      "message_count": 6
+    },
+    {
+      "time": "2026-09-30T13:07:59.080913+00:00",
+      "event": "summarization_finished",
+      "run_id": "0ad582f8d94a423db768d4c0aedb17a8",
+      "instance_id": "675d958b7cff",
+      "pid": 49557,
+      "span_id": "6d6629d10afe",
+      "status": "ok",
+      "elapsed_seconds": 0.0,
+      "message_count": 6,
+      "summarized": false
+    },
+    {
+      "time": "2026-09-30T13:07:59.081252+00:00",
+      "event": "model_call_started",
+      "run_id": "0ad582f8d94a423db768d4c0aedb17a8",
+      "instance_id": "675d958b7cff",
+      "pid": 49557,
+      "span_id": "9a2746fda881",
+      "message_count": 6
+    },
+    {
+      "time": "2026-09-30T13:07:59.081988+00:00",
+      "event": "context_budget",
+      "run_id": "0ad582f8d94a423db768d4c0aedb17a8",
+      "instance_id": "675d958b7cff",
+      "pid": 49557,
+      "characters": 11567,
+      "limit": 32000
+    },
+    {
+      "time": "2026-09-30T13:07:59.082309+00:00",
+      "event": "model_call_finished",
+      "run_id": "0ad582f8d94a423db768d4c0aedb17a8",
+      "instance_id": "675d958b7cff",
+      "pid": 49557,
+      "span_id": "9a2746fda881",
+      "status": "ok",
+      "elapsed_seconds": 0.001,
+      "message_count": 6,
+      "tool_call_count": 0
+    },
+    {
+      "time": "2026-09-30T13:07:59.083440+00:00",
+      "event": "recovery_replan",
+      "run_id": "0ad582f8d94a423db768d4c0aedb17a8",
+      "instance_id": "675d958b7cff",
+      "pid": 49557,
+      "request_id": "5e8a6859-a6dc-45b4-811f-2e733501d611",
+      "attempts": 2,
+      "missing_capabilities": [
+        "calculation"
+      ]
+    },
+    {
+      "time": "2026-09-30T13:07:59.087459+00:00",
+      "event": "summarization_started",
+      "run_id": "0ad582f8d94a423db768d4c0aedb17a8",
+      "instance_id": "675d958b7cff",
+      "pid": 49557,
+      "span_id": "ce0b372b61c5",
+      "message_count": 7
+    },
+    {
+      "time": "2026-09-30T13:07:59.087559+00:00",
+      "event": "summarization_finished",
+      "run_id": "0ad582f8d94a423db768d4c0aedb17a8",
+      "instance_id": "675d958b7cff",
+      "pid": 49557,
+      "span_id": "ce0b372b61c5",
+      "status": "ok",
+      "elapsed_seconds": 0.0,
+      "message_count": 7,
+      "summarized": false
+    },
+    {
+      "time": "2026-09-30T13:07:59.088067+00:00",
+      "event": "model_call_started",
+      "run_id": "0ad582f8d94a423db768d4c0aedb17a8",
+      "instance_id": "675d958b7cff",
+      "pid": 49557,
+      "span_id": "696443974ea1",
+      "message_count": 7
+    },
+    {
+      "time": "2026-09-30T13:07:59.088801+00:00",
+      "event": "context_budget",
+      "run_id": "0ad582f8d94a423db768d4c0aedb17a8",
+      "instance_id": "675d958b7cff",
+      "pid": 49557,
+      "characters": 12066,
+      "limit": 32000
+    },
+    {
+      "time": "2026-09-30T13:07:59.089118+00:00",
+      "event": "model_call_finished",
+      "run_id": "0ad582f8d94a423db768d4c0aedb17a8",
+      "instance_id": "675d958b7cff",
+      "pid": 49557,
+      "span_id": "696443974ea1",
+      "status": "ok",
+      "elapsed_seconds": 0.001,
+      "message_count": 7,
+      "tool_call_count": 0
+    },
+    {
+      "time": "2026-09-30T13:07:59.090227+00:00",
+      "event": "completion_checked",
+      "run_id": "0ad582f8d94a423db768d4c0aedb17a8",
+      "instance_id": "675d958b7cff",
+      "pid": 49557,
+      "request_id": "5e8a6859-a6dc-45b4-811f-2e733501d611",
+      "status": "exhausted",
+      "reason": "missing_evidence",
+      "attempts": 2,
+      "required_capabilities": [
+        "remote_query",
+        "calculation"
+      ],
+      "missing_capabilities": [
+        "calculation"
+      ],
+      "model_calls": 5,
+      "tool_calls": 2,
+      "model_seconds": 0.024,
+      "dataset_ids": [],
+      "artifact_ids": []
+    },
+    {
+      "time": "2026-09-30T13:07:59.091779+00:00",
+      "event": "run_completed",
+      "run_id": "0ad582f8d94a423db768d4c0aedb17a8",
+      "instance_id": "675d958b7cff",
+      "pid": 49557,
+      "status": "exhausted",
+      "elapsed_seconds": 5.166,
+      "process_peak_rss_bytes": 301596672,
+      "frame_cache_bytes": 0
+    },
+    {
+      "time": "2026-09-30T13:07:59.091812+00:00",
+      "event": "turn_slo",
+      "run_id": "0ad582f8d94a423db768d4c0aedb17a8",
+      "instance_id": "675d958b7cff",
+      "pid": 49557,
+      "elapsed_seconds": 5.166,
+      "limit": 180.0,
+      "status": "ok"
+    }
+  ],
+  "error_type": null
+}
