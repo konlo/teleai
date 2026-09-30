@@ -2260,3 +2260,10 @@ Task definitions and acceptance conditions: docs/agent_remaining_tasks_2026-09-1
 - **Artifact Update**: 구형 화면 `ui/legacy_telly.py`, 전용 `analysis_loop`/`analysis_runtime`/`analysis_model`/`analysis_approval`, 예전 검증 스크립트·의존성 파일과 호환 브리지를 삭제. 새 agent가 사용하는 `analysis_instructions`, `build_analysis_tools`, SQL 실행·데이터 도구는 보존. 구형 전용 테스트는 제거하고 진입점 차단 회귀 테스트는 유지했다. 과거 검증 문서를 기록용으로 명시하고 현재 대체 검사 명령으로 갱신.
 - **Validation**: 제품 unittest 490/490 PASS(구형 전용 14검사 제거로 이전 504보다 감소), migration 136/136 PASS, compileall 및 diff check PASS. Python 실행 코드의 제거 파일 참조 0건. Chrome 8501 최신 화면 rerun 후 새 agent 정상 표시, health HTTP200. 분석 전체 GO 판정을 변경하는 작업은 아니다.
 - **Delivery**: 변경을 `056b31e`로 커밋하여 `origin/codex/agentic-analysis-rc-2026-09-14`에 push했고 원격 SHA 일치를 확인했다. 8501 새 agent는 계속 실행 중이다.
+
+## [2026-09-30T23:21:01.183273+09:00] [Agent: /root] User Request: Chrome http://localhost:8501/ 재실행 화면 확인
+- **Action**: 사용자 Chrome의 8501 탭을 읽기 전용으로 살펴보고 새 agent 표시와 현재 오류를 확인한다.
+- **Finding**: Chrome `localhost:8501/`은 LangChain0.3.27 지원 불가 화면. 같은 포트에 지원 agent PID52351(127.0.0.1:8501)과 사용자가 다시 시작한 `.venv` PID53769(*:8501, IPv6 포함)가 동시에 LISTEN. localhost가 후자에 연결되어 보인 것이 직접 원인이다. 8502 agent는 별도 정상.
+- **Action**: 지원 런처에 명시적 8501 포트 선택을 추가하고 잘못된 환경의 안내 문구를 정확한 명령으로 수정한 뒤, 충돌하는 두 프로세스를 단일 지원 프로세스로 정리해 Chrome에서 확인한다.
+- **Outcome**: 구형 PID53769 종료 후 8501 LISTEN은 지원 agent PID52351 한 개만 남음. Chrome `localhost:8501/` 새로고침에서 `Telly · 분석`, Ollama 모델 선택, 자동 Databricks 조회 안내, 진단 메뉴가 표시됨. 구형 오류 화면이 사라졌다.
+- **Artifact Update/Validation**: `scripts/run_telly.py --port 8501`을 지원하고 IPv4/IPv6 loopback 기존 리스너를 확인해 포트 점유 시 명확히 중단. 구형 환경 안내와 README 명령 수정. 관련6 tests PASS, 실제 8501 점유 감지 true, diff check PASS. 기존 대화의 자동 이전이나 분석 내용 검증은 이번 화면 복구 범위에 포함되지 않는다.

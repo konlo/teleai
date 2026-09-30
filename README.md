@@ -17,8 +17,10 @@ python3 scripts/run_telly.py
 8501 포트를 사용하려면 같은 지원 환경으로 실행합니다.
 
 ```sh
-.telly_runtime/v1-venv/bin/python -m streamlit run main.py --server.address=127.0.0.1 --server.port=8501
+python3 scripts/run_telly.py --port 8501
 ```
+
+한 포트에는 한 프로세스만 실행하세요. 기존 `.venv/bin/streamlit run main.py`가 8501을 점유 중이면 종료한 뒤 위 명령을 사용합니다.
 
 `ModuleNotFoundError: No module named 'sqlglot'`가 나오면 실행한 Python 환경에 앱 의존성이 설치되어 있는지 확인합니다. `sqlglot`은 이미 `requirements-agent.txt`에 포함되어 있습니다. 저장소 루트에서 아래처럼 설치와 실행에 같은 앱 환경을 사용하세요.
 

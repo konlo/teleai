@@ -15,5 +15,6 @@ def runtime_compatibility_error() -> str:
     return (
         "이 Python 환경은 현재 Telly agent를 실행할 수 없습니다 "
         f"(LangChain {installed}; 1 이상 필요). "
-        "저장소에서 `python3 scripts/run_telly.py`로 지원 환경을 실행하세요."
+        "기존 8501 서버를 종료하고 저장소에서 "
+        "`python3 scripts/run_telly.py --port 8501`로 지원 환경을 실행하세요."
     )
