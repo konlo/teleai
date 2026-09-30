@@ -3,6 +3,7 @@
 ## Current Status
 - **Last Updated**: 2026-09-30
 - **Status**: In Progress — 범용 자율 분석 agent 정식 출시 NO-GO
+- **Server diagnostics**: [서버 실패 진단 안내](docs/server_failure_diagnostics.md). 직접 접속·로그 반출 없이 12줄 진단 요약을 확인하도록 UI/CLI/관측을 보강했다. 제품484 + migration136 PASS. 실제 서버 적용은 미검증이며 서버 접속/전체 로그 공유를 요청하지 않는다.
 - **Deferred reply recurrence**: [응답 검증 누락 수정](docs/evaluation/2026-09-30_deferred_reply_recurrence/report.md). 사용자 원문으로 구조화블록/도구안내/구버전/과거표시 누락 재현·보완. 제품475+migration136/관련27 PASS, localhost8502 재시작 및 실제 화면 정정안내 확인. 사용자가 실제 사용 서버에서 재발했음을 확인함. 서버 revision·실행 프로세스는 미확인.
 - **Offline continuation**: [대용량 이상치 EDA 개선](docs/evaluation/2026-09-30_offline_continuation/report.md). 13:30 KST 공급자 모델/SQL400 지속. 영속 이상치 cohort 전체 프레임 복원을 배치 staging으로 전환, 합성100만행→정답100행/원본/재시작 보존 PASS. 대상 수치1개 컬럼의 임계값 계산은 전체 읽기라는 한계를 명시.
 - **HTTP400 recheck**: [재진단](docs/evaluation/2026-09-30_provider_recheck/report.md). 08:15 KST까지 지속. warehouse/API200·모델 metadata READY이나 최소 추론/OpenSession 모두400. Free Edition 확인, 한도 초과 여부는 미확인. 재발급·짧은 장애로 단정하지 않으며 실제 호출 사전점검과 사용자 안내 보강.
@@ -2167,3 +2168,10 @@ Task definitions and acceptance conditions: docs/agent_remaining_tasks_2026-09-1
 - **Action** [Agent: /root]: 원격 main을 fetch하여 확인: main=6f5edac(PR #70), 최신 수정59355b6은 main의 ancestor가 아님. 작업 브랜치에는 포함됨. 사용 서버의 branch는 아직 미확인이라 배포 누락을 확정 원인으로 단정하지 않는다.
 - **Artifact Update**: scripts/diagnose_checkout.py 추가. 서비스와 같은 Python으로 checkout·revision·의존성별 진입 경로·관련 파일 hash를 수집한다. 비밀정보/대화/데이터를 읽지 않고 원격 호출도 하지 않는다. 별도 프로세스 검사라 실행 중 서버의 로딩 코드 검증과 명확히 구분한다.
 - **Outcome**: 관련 진단 테스트3 PASS. 서버 접속 주소/SSH 별칭이 없어 실제 서버 로그와 프로세스 검증은 아직 수행하지 못함.
+
+## [2026-09-30 14:29:12] [Agent: /root] User Request: 접속·전체 로그 공유 불가능한 서버의 실패 진단 로그와 사용자가 확인해 전달할 항목/절차 보강
+- **Action** [Agent: /root]: 기존 관측 이벤트와 표시 경로를 점검하고, 민감정보를 제외한 실행별 진단 요약 및 운영 안내를 구현·검증한다. 서버 접속/전체 로그 전달은 요청하지 않는다.
+- **Artifact Update**: core/analysis_agent/support_report.py, scripts/diagnose_agent_run.py, ui/analysis_diagnostics.py 구현. 실행별 버전/의존성/실제 로딩 guard 지문·도구/SQL 장부·완료 계약·오류 단계/프레임을 허용 항목으로 요약한다. 프롬프트·SQL·행·응답·접속정보는 요약에 포함하지 않는다.
+- **Action** [Agent: /root]: 원격 실행 시작/종료·receipt 재사용·불확실 상태 및 표시 단계 guard를 계측했다. 예외 종료에도 run_completed=incomplete를 기록한다. 차트 표시 오류 ID를 화면에 노출한다. 진단 ID 입력/버튼 rerun에서는 자동 SQL 재개를 차단한다.
+- **Outcome**: 제품484/484, migration136/136, 관련32 PASS. 최초 migration 실패는 입력창 순번 의존 테스트여서 라벨 선택으로 수정했다. 원격 DB/실모델 호출0, 실제 서버 검증 아님. 검증 기록 docs/evaluation/2026-09-30_support_diagnostics/validation.json.
+- **Next Action**: 사용자는 수정 배포 및 유휴 시 서비스 프로세스 재시작 후 같은 대화의 '문제 진단'에서 공유 가능한 상태/단계/ID만 확인한다. 서버 주소나 원본 로그는 필요하지 않다.

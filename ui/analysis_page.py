@@ -146,8 +146,8 @@ for message in messages:
                     card=displayable_chart(runtime.artifacts,card_id)
                     st.image(card.image,caption=card.title, width='content')
                 except (KeyError,ValueError,OSError,TypeError) as exc:
-                    runtime.diagnostics.failure(exc,stage='chart_display')
-                    st.error('차트 이미지를 표시하지 못했습니다. 생성된 차트의 저장 상태를 확인해야 합니다. 기존 데이터는 보존되어 있습니다.')
+                    error_id=runtime.diagnostics.failure(exc,stage='chart_display')
+                    st.error(f'차트 이미지를 표시하지 못했습니다 (오류 ID: {error_id}). 생성된 차트의 저장 상태를 확인해야 합니다. 기존 데이터는 보존되어 있습니다.')
                     continue
                 shown_chart_ids.add(card_id)
                 st.caption(card.reason+' · '+card.scope)
@@ -164,11 +164,15 @@ if selected in runtime.artifacts:
         card=displayable_chart(runtime.artifacts,selected)
         st.subheader(card.title);st.image(card.image, width='content');st.caption(card.scope)
     except (KeyError,ValueError,OSError,TypeError) as exc:
-        runtime.diagnostics.failure(exc,stage='selected_chart_display')
-        st.error('선택한 차트 이미지를 표시하지 못했습니다. 기존 데이터는 보존되어 있습니다.')
+        error_id=runtime.diagnostics.failure(exc,stage='selected_chart_display')
+        st.error(f'선택한 차트 이미지를 표시하지 못했습니다 (오류 ID: {error_id}). 기존 데이터는 보존되어 있습니다.')
 
 state=runtime.inspect()
-if state['requests'] and not runtime.policy.require_remote_approval and not state.get('uncertain_executions'):
+diagnostic_rerun=st.session_state.pop('diagnostic_readonly_rerun',False)
+if (state['requests'] and not runtime.policy.require_remote_approval
+        and not state.get('uncertain_executions')
+        and not diagnostic_rerun
+        and not st.session_state.get('diagnostic_summary',False)):
     action(runtime.resume)
     state=runtime.inspect()
     if not state['requests']:
@@ -209,6 +213,8 @@ if state['state']=='incomplete' and not state.get('uncertain_executions'):
     if st.button('미완료 분석 재개'):
         action(runtime.resume);st.rerun()
 if st.session_state.get('v1_notice'):st.info(display_analysis_text(st.session_state.v1_notice,runtime.datasets.metadata))
+from ui.analysis_diagnostics import render_diagnostics
+render_diagnostics(runtime)
 prompt=st.chat_input('무엇을 살펴볼까요?')
 if prompt:
     action(lambda:runtime.submit(prompt));st.rerun()

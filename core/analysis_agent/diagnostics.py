@@ -8,6 +8,7 @@ import traceback
 import time
 from contextlib import contextmanager
 from uuid import uuid4
+import os
 
 
 def process_peak_rss_bytes():
@@ -33,19 +34,25 @@ class Diagnostics:
             handler.setFormatter(logging.Formatter('%(message)s'))
             self.logger.addHandler(handler)
         self.path.chmod(0o600)
+        self.instance_id = uuid4().hex[:12]
+        self.last_error_id = None
 
     def emit(self, event, **fields):
         self.logger.info(json.dumps({'time': datetime.now(timezone.utc).isoformat(),
-                                    'event': event, 'run_id': self.run_id, **fields}, ensure_ascii=False))
+                                    'event': event, 'run_id': self.run_id,
+                                    'instance_id': self.instance_id, 'pid': os.getpid(),
+                                    **fields}, ensure_ascii=False))
 
     def failure(self, exc, *, run_id=None, stage='runtime'):
         error_id = uuid4().hex[:12]
+        self.last_error_id = error_id
         frames = [{'file': Path(f.filename).name, 'line': f.lineno, 'function': f.name}
                   for f in traceback.extract_tb(exc.__traceback__)]
         from core.analysis_agent.model_errors import model_error_category
         self.emit('error', error_category=model_error_category(exc), run_id=run_id or self.run_id, error_id=error_id, stage=stage,
             error_type=type(exc).__name__,
-            http_status=getattr(exc,'http_status',getattr(exc,'status_code',None)), frames=frames)
+            http_status=getattr(exc,'http_status',getattr(exc,'status_code',None)) or
+                        getattr(getattr(exc,'response',None),'status_code',None), frames=frames[-12:])
         return error_id
 
     @contextmanager

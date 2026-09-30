@@ -1,0 +1,26 @@
+............2026-09-30 14:40:17.621 WARNING streamlit.runtime.scriptrunner_utils.script_run_context: Thread 'MainThread': missing ScriptRunContext! This warning can be ignored when running in bare mode.
+E2026-09-30 14:40:18.221 Thread 'MainThread': missing ScriptRunContext! This warning can be ignored when running in bare mode.
+...........................................................................................................................
+======================================================================
+ERROR: test_new_page_example_propose_cancel_and_reopen (test_approval_rollout.RolloutPageTests.test_new_page_example_propose_cancel_and_reopen)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/najongseong/git_repository/teleai/migration/test_approval_rollout.py", line 234, in test_new_page_example_propose_cancel_and_reopen
+    next(b for b in app.button if b.label=='데이터 불러오기 제안').click().run()
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/najongseong/git_repository/teleai/.telly_runtime/v1-venv/lib/python3.11/site-packages/streamlit/testing/v1/element_tree.py", line 456, in click
+    return self.set_value(True)
+           ^^^^^^^^^^^^^^^^^^^^
+  File "/Users/najongseong/git_repository/teleai/.telly_runtime/v1-venv/lib/python3.11/site-packages/streamlit/testing/v1/element_tree.py", line 452, in set_value
+    return super().set_value(v)
+           ^^^^^^^^^^^^^^^^^^^^
+  File "/Users/najongseong/git_repository/teleai/.telly_runtime/v1-venv/lib/python3.11/site-packages/streamlit/testing/v1/element_tree.py", line 252, in set_value
+    self._assert_can_interact()
+  File "/Users/najongseong/git_repository/teleai/.telly_runtime/v1-venv/lib/python3.11/site-packages/streamlit/testing/v1/element_tree.py", line 245, in _assert_can_interact
+    raise AppTestError(
+streamlit.testing.v1.errors.AppTestError: Cannot update a disabled button widget. A browser user cannot interact with a disabled widget.
+
+----------------------------------------------------------------------
+Ran 136 tests in 17.364s
+
+FAILED (errors=1)

@@ -35,7 +35,10 @@ class GraphAnalysisRuntime:
         self.policy=policy or RuntimePolicy(frame_cache_bytes=cache_bytes)
         self.db=AssetDB(root,owner,conversation,max_scope_bytes=self.policy.scope_disk_quota_bytes)
         self.diagnostics=Diagnostics(self.db.directory)
-        self.transcript=Transcript(self.db)
+        from core.analysis_agent.support_report import runtime_identity
+        self.diagnostic_identity=runtime_identity(self.version, type(model).__name__,
+                                                 self.policy.require_remote_approval)
+        self.transcript=Transcript(self.db,self.diagnostics)
         self.on_progress=None
         self.datasets=PersistentDatasets(self.db,self.policy.frame_cache_bytes,
             max_columns=self.policy.max_dataset_columns,max_frame_bytes=self.policy.max_dataset_bytes,
@@ -154,10 +157,18 @@ class GraphAnalysisRuntime:
                     return normalize_tool_result({'status':'rejected',
                         'message':'사용자가 조회를 거절했습니다. 원격 조회는 실행하지 않았습니다.'})
                 try:
-                    return normalize_tool_result(
+                    self.diagnostics.emit('remote_query_started',
+                        ledger_status=recorded['status'], cached_receipt=recorded['status']=='completed')
+                    result=normalize_tool_result(
                         self.ledger.execute(runtime.tool_call_id,envelope,self.remote_execute))
+                    self.diagnostics.emit('remote_query_finished',
+                        ledger_status=self.ledger.get(runtime.tool_call_id)['status'],
+                        status=result.get('status'), cached_receipt=recorded['status']=='completed')
+                    return result
                 except Exception as exc:
                     self.diagnostics.failure(exc, stage='query_databricks')
+                    self.diagnostics.emit('remote_query_finished',status='unavailable',
+                        ledger_status=self.ledger.get(runtime.tool_call_id)['status'])
                     return normalize_tool_result({'status':'unavailable','error_type':type(exc).__name__,
                             'http_status':getattr(exc,'http_status',None),
                             'error_code':'databricks_forbidden' if getattr(exc,'http_status',None)==403 else 'databricks_unavailable',
@@ -347,8 +358,10 @@ class GraphAnalysisRuntime:
         started=time.monotonic()
         run_id=uuid4().hex
         self.diagnostics.run_id=run_id
+        self.diagnostics.last_error_id=None
         self.events()
         self.diagnostics.emit('run_started', run_id=run_id,
+            runtime=self.diagnostic_identity,
             operation='resume' if value is None else 'submit',
             process_peak_rss_bytes=process_peak_rss_bytes())
         try:
@@ -414,6 +427,8 @@ class GraphAnalysisRuntime:
         except Exception as exc:
             elapsed=round(time.monotonic()-started,3)
             error_id=self.diagnostics.failure(exc, run_id=run_id, stage='agent_stream')
+            self.diagnostics.emit('run_completed',status='incomplete',elapsed_seconds=elapsed,
+                                  error_id=error_id)
             self.diagnostics.emit('turn_slo', run_id=run_id, elapsed_seconds=elapsed,
                 limit=self.policy.turn_slo_seconds,
                 status='violation' if elapsed>self.policy.turn_slo_seconds else 'error',

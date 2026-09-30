@@ -86,6 +86,7 @@ def local_tools(context, diagnostics=None):
                 raise
             if diagnostics: diagnostics.emit('tool_completed', tool=definition.name,
                 status=result.get('status') if isinstance(result,dict) else None,
+                error_code=result.get('error_code') if isinstance(result,dict) else None,
                 elapsed_seconds=round(time.monotonic()-started, 3),
                 applied_corrections=result.get('applied_corrections',[]) if isinstance(result,dict) else [])
             return result

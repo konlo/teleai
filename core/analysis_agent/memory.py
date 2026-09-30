@@ -131,8 +131,9 @@ def memory_middleware(model,trigger_tokens=6000,keep_messages=8,diagnostics=None
 
 
 class Transcript:
-    def __init__(self,db):
+    def __init__(self,db,diagnostics=None):
         self.db=db
+        self.diagnostics=diagnostics
         with db.lock,db.conn:
             db.conn.execute('CREATE TABLE IF NOT EXISTS transcript (id TEXT PRIMARY KEY, payload TEXT)')
             db.conn.execute('CREATE TABLE IF NOT EXISTS rejected_transcript (id TEXT PRIMARY KEY, payload TEXT)')
@@ -151,8 +152,11 @@ class Transcript:
             safe = self._delivery_message(message)
             if safe is not message:
                 with self.db.lock,self.db.conn:
-                    self.db.conn.execute('INSERT OR IGNORE INTO rejected_transcript VALUES (?,?)',
+                    inserted = self.db.conn.execute('INSERT OR IGNORE INTO rejected_transcript VALUES (?,?)',
                         (message.id,json.dumps(message_to_dict(message),ensure_ascii=False,default=str)))
+                if inserted.rowcount and self.diagnostics:
+                    self.diagnostics.emit('delivery_guard_blocked',
+                        response_kind='tool_narration' if getattr(message,'tool_calls',[]) else 'final')
             message = safe
             rows.append((message.id,json.dumps(message_to_dict(message),ensure_ascii=False,default=str)))
         with self.db.lock,self.db.conn:
