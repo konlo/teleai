@@ -16,9 +16,9 @@ import sys
 
 ROOT = Path(__file__).resolve().parents[1]
 FILES = (
-    'main.py', 'pages/Telly.py', 'ui/analysis_page.py', 'ui/legacy_telly.py',
+    'main.py', 'pages/Telly.py', 'ui/analysis_page.py', 'ui/agent_entry.py',
     'core/analysis_agent/remote_completion.py', 'core/analysis_agent/memory.py',
-    'core/analysis_agent/runtime.py', 'core/analysis_loop.py', 'core/analysis_runtime.py',
+    'core/analysis_agent/runtime.py',
 )
 
 
@@ -43,7 +43,7 @@ def collect(root: Path, expected_revision: str | None = None) -> dict:
                 ('langchain', 'langchain-core', 'langgraph', 'streamlit', 'sqlglot')}
     try:
         modern = int((packages['langchain'] or '').split('.')[0]) >= 1
-        route = 'ui/analysis_page.py' if modern else 'ui/legacy_telly.py'
+        route = 'ui/analysis_page.py' if modern else 'unsupported: langchain>=1 required'
     except ValueError:
         route = 'unavailable: langchain version missing or invalid'
     included = None

@@ -1,14 +1,11 @@
-"""Promises cannot leak through structured content, tool narration or old UI paths."""
+"""Promises cannot leak through structured content or tool narration."""
 import tempfile
 import unittest
-from unittest.mock import Mock
 
 from langchain_core.messages import AIMessage
 from core.analysis_agent.assets import AssetDB
 from core.analysis_agent.memory import Transcript
 from core.analysis_agent.remote_completion import deferred_execution_claim
-from core.analysis_loop import AnalysisSession
-from core.analysis_runtime import CurrentAnalysisRuntime
 from tests import test_remote_result_completion as remote_cases
 FIXTURE = remote_cases.FIXTURE
 
@@ -46,32 +43,6 @@ class DeferredReplyDeliveryTests(unittest.TestCase):
                 self.assertEqual(db.conn.execute('SELECT COUNT(*) FROM rejected_transcript').fetchone()[0],2)
             finally:
                 db.close()
-
-    def test_legacy_approval_reply_is_bounded_and_never_successful_promise(self):
-        session = AnalysisSession('legacy', '', [])
-        runtime = CurrentAnalysisRuntime(session)
-        request = runtime.propose_table('external_schema.objects')
-        execute = Mock(return_value={'status':'ready','rows':[]})
-        model = Mock(return_value={'role':'assistant','content':FIXTURE['reported_reply']})
-        result = runtime.respond(request, approved=True, execute=execute, model=model)
-        self.assertNotEqual(result['status'], 'answered')
-        self.assertFalse(any(deferred_execution_claim(m.get('content')) for m in runtime.events()
-                             if m['role']=='assistant'))
-        self.assertLessEqual(model.call_count, 3)
-        execute.assert_called_once()
-
-    def test_legacy_model_can_recover_using_completed_observation_without_reexecution(self):
-        session = AnalysisSession('legacy-recovery', '', [])
-        runtime = CurrentAnalysisRuntime(session)
-        request = runtime.propose_table('external_schema.objects')
-        execute = Mock(return_value={'status':'ready','rows':[{'table_name':'observed_object'}]})
-        model = Mock(side_effect=[{'role':'assistant','content':FIXTURE['reported_reply']},
-                                  {'role':'assistant','content':'조회된 테이블: observed_object'}])
-        result = runtime.respond(request, approved=True, execute=execute, model=model)
-        self.assertEqual(result['status'], 'answered')
-        self.assertIn('observed_object',result['text'])
-        execute.assert_called_once()
-        self.assertEqual(len(session.rejected_responses),1)
 
     def test_main_entrypoint_hides_tool_narration_and_renders_real_returned_listing(self):
         import os

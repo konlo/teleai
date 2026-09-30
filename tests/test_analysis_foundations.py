@@ -1,79 +1,14 @@
 import tempfile
 import unittest
-from dataclasses import FrozenInstanceError
 from pathlib import Path
-from threading import Event, Thread
 
 import pandas as pd
 
-from core.analysis_approval import ApprovalQueue
-from core.analysis_loop import AnalysisSession
-from core.analysis_runtime_tools import build_analysis_tools, build_runtime_tools
+from core.analysis_runtime_tools import build_analysis_tools
 from core.analysis_tool_contract import AnalysisToolContext
 from utils.analysis_datasets import AnalysisNeed, Condition, DatasetStore, assess_reuse
 from utils.analysis_skill_registry import AnalysisSkillRegistry
 from utils.analysis_charts import recommend_charts
-
-
-class ApprovalTests(unittest.TestCase):
-    def setUp(self):
-        self.queue = ApprovalQueue("session-one")
-        self.request = self.queue.propose(source="table", query="SELECT x FROM table",
-                                         reason="비교 기간 필요", goal="이전 기간 비교")
-
-    def test_no_execution_before_approval_and_no_reuse_afterwards(self):
-        calls = []
-        run = lambda request: calls.append(request.query)
-        with self.assertRaises(PermissionError):
-            self.queue.execute(self.request.id, run)
-        self.assertEqual(calls, [])
-        self.queue.approve(self.request.id)
-        self.queue.execute(self.request.id, run)
-        with self.assertRaises(PermissionError):
-            self.queue.execute(self.request.id, run)
-        self.assertEqual(calls, [self.request.query])
-
-    def test_revision_change_invalidates_previous_approval(self):
-        self.queue.approve(self.request.id)
-        self.queue.advance()
-        with self.assertRaises(PermissionError):
-            self.queue.execute(self.request.id, lambda _: self.fail("executed stale SQL"))
-
-    def test_decline_and_failure_cannot_execute_again(self):
-        self.queue.decline(self.request.id)
-        with self.assertRaises(PermissionError):
-            self.queue.execute(self.request.id, lambda _: self.fail("executed declined SQL"))
-        second = self.queue.propose(source="t", query="SELECT y FROM t", reason="retry", goal="goal")
-        self.queue.approve(second.id)
-        def fail(_):
-            raise RuntimeError("backend failed")
-        with self.assertRaises(RuntimeError):
-            self.queue.execute(second.id, fail)
-        with self.assertRaises(PermissionError):
-            self.queue.execute(second.id, fail)
-
-    def test_double_click_while_running_does_not_resubmit(self):
-        entered, release = Event(), Event()
-        def run(_):
-            entered.set()
-            release.wait(2)
-        self.queue.approve(self.request.id)
-        worker = Thread(target=lambda: self.queue.execute(self.request.id, run))
-        worker.start()
-        try:
-            self.assertTrue(entered.wait(1))
-            with self.assertRaises(PermissionError):
-                self.queue.execute(self.request.id, run)
-        finally:
-            release.set()
-            worker.join()
-
-    def test_query_is_immutable_and_duplicate_proposal_is_one_card(self):
-        with self.assertRaises(FrozenInstanceError):
-            self.request.query = "SELECT changed"
-        duplicate = self.queue.propose(source=self.request.source, query=self.request.query,
-                                      reason="again", goal="again")
-        self.assertEqual(self.request.id, duplicate.id)
 
 
 class DatasetTests(unittest.TestCase):
@@ -151,67 +86,6 @@ class SkillTests(unittest.TestCase):
         recommend = next(tool for tool in build_analysis_tools(context)
                          if tool.name == "recommend_chart_images")
         self.assertEqual(set(recommend.parameters["properties"]), {"dataset_id", "columns"})
-
-
-class LoopTests(unittest.TestCase):
-    def setUp(self):
-        self.store = DatasetStore()
-        self.session = AnalysisSession("session", "Analyze the user's data.", [])
-        self.session.tools = build_runtime_tools(self.session, self.store)
-
-    @staticmethod
-    def call(name, arguments, call_id="call-1"):
-        return {"role": "assistant", "content": "", "tool_calls": [
-            {"id": call_id, "name": name, "arguments": arguments}]}
-
-    def test_skill_observation_and_prior_user_request_reach_next_turn(self):
-        seen = []
-        def first(messages, schemas):
-            seen.append(messages)
-            if messages[-1]["role"] == "user":
-                return self.call("read_analysis_skill", {"name": "period-comparison"})
-            self.assertIn("기간 비교", messages[-1]["content"])
-            return {"role": "assistant", "content": "월별로 비교했습니다."}
-        self.session.submit("월별로 비교해줘", first)
-        def followup(messages, schemas):
-            self.assertTrue(any(m.get("content") == "월별로 비교해줘" for m in messages))
-            self.assertTrue(any(m.get("name") == "read_analysis_skill" for m in messages))
-            self.assertEqual(messages[-1]["content"], "중앙값으로 바꿔줘")
-            return {"role": "assistant", "content": "같은 기간의 중앙값으로 비교합니다."}
-        self.assertEqual(self.session.submit("중앙값으로 바꿔줘", followup)["status"], "answered")
-
-    def test_approval_suspends_then_resumes_with_actual_observation(self):
-        calls = []
-        def propose(messages, schemas):
-            return self.call("propose_databricks_query", {
-                "source": "events", "query": "SELECT count(*) FROM events", "reason": "전체 건수 필요"})
-        result = self.session.submit("전체 건수를 비교해줘", propose)
-        self.assertEqual(result["status"], "awaiting_approval")
-        self.assertEqual(calls, [])
-        def execute(request):
-            calls.append(request.query)
-            return {"rows": [{"count": 42}]}
-        def resumed(messages, schemas):
-            self.assertIn('42', messages[-1]["content"])
-            self.assertTrue(any(m.get("content") == "전체 건수를 비교해줘" for m in messages))
-            return {"role": "assistant", "content": "총 42건입니다."}
-        answer = self.session.resume_after_approval(result["requests"][0], execute=execute,
-            model=resumed, approved=True)
-        self.assertEqual(answer["text"], "총 42건입니다.")
-        self.assertEqual(len(calls), 1)
-
-    def test_decline_never_invokes_remote_executor(self):
-        result = self.session.submit("재조회", lambda *_: self.call("propose_databricks_query", {
-            "source": "events", "query": "SELECT x FROM events", "reason": "필요"}))
-        self.session.resume_after_approval(result["requests"][0],
-            execute=lambda _: self.fail("declined query executed"), approved=False,
-            model=lambda *_: {"role": "assistant", "content": "현재 데이터로 가능한 분석을 안내합니다."})
-
-    def test_endless_tool_calls_stop_at_limit(self):
-        self.session.max_steps = 2
-        result = self.session.submit("목록", lambda *_: self.call("list_analysis_context", {}))
-        self.assertEqual(result["status"], "limit_reached")
-        self.assertEqual(sum(m["role"] == "tool" for m in self.session.history), 2)
 
 
 class ChartTests(unittest.TestCase):

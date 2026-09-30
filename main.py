@@ -1,62 +1,17 @@
-# New installations open the persistent analysis agent directly.
-from importlib.metadata import version as _package_version
-if int(_package_version('langchain').split('.')[0]) >= 1:
-    from pathlib import Path as _Path
-    import runpy as _runpy
-    _runpy.run_path(str(_Path(__file__).resolve().parent/'ui/analysis_page.py'), run_name='__main__')
-    import streamlit as _st
-    _st.stop()
+"""Open the supported persistent analysis agent."""
+
+from pathlib import Path
+import runpy
 
 import streamlit as st
-from ui.style import inject_base_styles
 
-st.set_page_config(
-    page_title="Telly | Telemetry Intelligence",
-    page_icon="✨",
-    layout="wide",
-)
+from ui.agent_entry import runtime_compatibility_error
 
-# Apply global styles
-inject_base_styles()
 
-def landing_page():
-    # Hero Section
-    st.markdown("""
-        <div class="hero-container">
-            <div class="hero-overlay"></div>
-            <div class="hero-content">
-                <h1 class="hero-title">✨ Telemetry Chatbot Telly</h1>
-                <p class="hero-subtitle">Your AI-powered expert for SSD telemetry and data analysis.</p>
-                <div class="hero-buttons">
-                    <a href="/Telly" target="_self" class="primary-button">Launch Dashboard</a>
-                </div>
-            </div>
-        </div>
-        
-        <div class="feature-grid">
-            <div class="feature-card">
-                <h3>🔍 SQL Builder</h3>
-                <p>Generate optimized Databricks SQL queries from natural language.</p>
-            </div>
-            <div class="feature-card">
-                <h3>📊 EDA Analyst</h3>
-                <p>Perform deep exploratory data analysis and anomaly detection with one click.</p>
-            </div>
-            <div class="feature-card">
-                <h3>⚙️ Live Diagnostics</h3>
-                <p>Monitor real-time execution logs and intermediate AI thought processes.</p>
-            </div>
-        </div>
-    """, unsafe_allow_html=True)
+error = runtime_compatibility_error()
+if error:
+    st.set_page_config(page_title="Telly · 실행 환경 확인", page_icon="📊")
+    st.error(error)
+    st.stop()
 
-    # Note about the image: The generated hero image is used via CSS in inject_base_styles or directly here if possible.
-    # Since I cannot easily set a background image via CSS in Streamlit without a hosted URL or base64, 
-    # I will use st.image for the hero background if needed, but a clean gradient often looks better for landing pages.
-    
-    st.markdown("---")
-    st.markdown("### 🚀 Ready to explore your data?")
-    if st.button("Enter Telly Lab", use_container_width=True, type="primary"):
-        st.switch_page("pages/Telly.py")
-
-if __name__ == "__main__":
-    landing_page()
+runpy.run_path(str(Path(__file__).resolve().parent / "ui" / "analysis_page.py"), run_name="__main__")

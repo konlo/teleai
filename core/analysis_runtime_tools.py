@@ -11,7 +11,7 @@ from core.analysis_tool_contract import (
     ToolDefinition,
     normalize_tool_result,
 )
-from utils.analysis_datasets import AnalysisNeed, Condition, DatasetStore, assess_reuse, filter_frame, full_read_preflight, project_dataset, select_reusable_dataset
+from utils.analysis_datasets import AnalysisNeed, Condition, assess_reuse, filter_frame, full_read_preflight, project_dataset, select_reusable_dataset
 from utils.analysis_skill_registry import AnalysisSkillRegistry
 from utils.analysis_charts import (
     histogram_from_counts,
@@ -906,16 +906,3 @@ def build_analysis_tools(context: AnalysisToolContext) -> list[ToolDefinition]:
                   "required":["column","op","value"],"additionalProperties":False}}}, ["dataset_id", "query"], analyze_local),
     ]
     return definitions
-
-
-def build_runtime_tools(session, datasets: DatasetStore) -> list[ToolDefinition]:
-    """Compatibility bridge for the current runtime and existing callers."""
-    def propose(**arguments):
-        request = session.approvals.propose(**arguments, goal=session.last_goal)
-        return {"status": "awaiting_approval", "request": asdict(request)}
-
-    context = AnalysisToolContext(datasets, session.artifacts,
-                                  session.reference_context, propose)
-    tools = build_analysis_tools(context)
-    session.context_provider = next(t.run for t in tools if t.name == "list_analysis_context")
-    return tools

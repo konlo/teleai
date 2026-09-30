@@ -14,6 +14,12 @@ python3 scripts/run_telly.py
 
 이미 환경이 있으면 마지막 명령만 실행합니다. 브라우저에서 http://127.0.0.1:8502 를 엽니다. 새 환경의 `main.py`와 `pages/Telly.py`는 기본 분석 agent를 엽니다.
 
+8501 포트를 사용하려면 같은 지원 환경으로 실행합니다.
+
+```sh
+.telly_runtime/v1-venv/bin/python -m streamlit run main.py --server.address=127.0.0.1 --server.port=8501
+```
+
 `ModuleNotFoundError: No module named 'sqlglot'`가 나오면 실행한 Python 환경에 앱 의존성이 설치되어 있는지 확인합니다. `sqlglot`은 이미 `requirements-agent.txt`에 포함되어 있습니다. 저장소 루트에서 아래처럼 설치와 실행에 같은 앱 환경을 사용하세요.
 
 ```sh
@@ -48,7 +54,7 @@ python3.11 -m venv .telly_runtime/eval-venv
 - 대화, DataFrame(Parquet), 차트 PNG와 실행 권한·결과 기록을 `.telly_runtime/v1`에 보존합니다. 긴 모델 문맥은 요약하고 화면의 원래 대화는 유지합니다.
 - 통계 기반 차트 추천과 이미지 선택, `analysis_skills/`의 스킬 탐색·읽기를 제공합니다.
 
-현재 실행기는 localhost 전용입니다. 기존 `.venv`와 구형 화면은 호환성을 위해 보존했으며 기존 세션을 자동 이전하지 않습니다. 구형 의존성은 `legacy-app-requirements.txt`에 있습니다.
+현재 실행기는 localhost 전용입니다. `main.py`와 `/Telly`는 항상 영속 분석 agent로 연결됩니다. LangChain 1 미만의 기존 `.venv`에서 실행하면 구형 화면으로 전환하지 않고 지원 환경 실행 방법을 표시합니다. 이전 구형 화면의 메모리 내 대화는 자동 이전되지 않습니다.
 
 배포 전에는 다음의 읽기 전용 검사를 실행합니다. 환경 변수 값과 토큰은 출력하지 않으며 Databricks SQL도 실행하지 않습니다.
 

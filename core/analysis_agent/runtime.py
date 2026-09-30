@@ -1,4 +1,4 @@
-"""Persistent analysis runtime with approval-gated Databricks tools."""
+"""Persistent analysis runtime with policy-controlled Databricks tools."""
 from contextlib import contextmanager
 import fcntl
 import json

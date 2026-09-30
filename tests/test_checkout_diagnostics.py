@@ -41,7 +41,7 @@ class CheckoutDiagnosticsTests(unittest.TestCase):
 
     def test_dependency_route_is_interpreter_specific(self):
         with tempfile.TemporaryDirectory() as folder:
-            for version, route in [('0.3.0', 'ui/legacy_telly.py'),
+            for version, route in [('0.3.0', 'unsupported: langchain>=1 required'),
                                    ('1.0.0', 'ui/analysis_page.py')]:
                 with patch('scripts.diagnose_checkout.package_version', return_value=version):
                     self.assertEqual(collect(Path(folder))['telly_page_for_this_interpreter'], route)

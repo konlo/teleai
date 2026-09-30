@@ -1,6 +1,6 @@
 # 전환 전 검증 결과와 후속 작업
 
-대상은 현재 AnalysisSession이다. LangGraph 전환 구현의 통과 보고서가 아니다.
+이 문서는 삭제된 `AnalysisSession` 경로의 전환 전 기록이다. 현재 agent 검증 결과가 아니며, 당시 검증 스크립트는 구형 경로와 함께 제거했다. 현재 판정은 `docs/evaluation/2026-09-30_live_recovery/report.md`를 참고한다.
 
 ## 사용자 대화의 상태 계약
 
@@ -15,15 +15,13 @@
 
 첫 두 턴은 우연히 같은 평균이다. 따라서 수치 통과만으로 그룹 필터 적용을 증명하지 않는다. 보고서 observations의 SQL 및 결과 출처를 함께 확인한다. 답변 문장의 의미 정확성과 불필요한 되묻기 여부는 별도 검토한다.
 
-## 재현 방법
+## 현재 대체 검증
 
 ```sh
-.venv/bin/python -m unittest discover -s tests -q
-.venv/bin/python test_scenario.py --static-only
-.venv/bin/python scripts/validate_analysis_agent.py --live-local-model
+.telly_runtime/v1-venv/bin/python -m unittest tests.test_agent_entry migration.test_approval_rollout tests.test_remote_result_completion -q
 ```
 
-마지막 명령은 localhost Ollama와 합성 데이터만 사용한다. 실 Databricks 연결 도구를 실행하지 않는다. 결과는 `analysis_acceptance_results.json`에 저장한다. 실패 기준이 있으면 exit code 1을 반환한다. `--live-local-model`을 생략하면 결정적 계약 검사만 실행하고 해당 파일을 새 결과로 갱신한다.
+위 명령은 현재 agent의 진입점·승인 정책·조회 결과 전달 계약을 검사한다. 아래 과거 측정값을 새 검증 결과로 대체하지는 않는다.
 
 ## 현재 확인한 구조적 실패와 우선순위
 

@@ -89,7 +89,7 @@ python scripts/diagnose_checkout.py
 
 ## 적용과 보관 범위
 
-- 새 계측은 LangChain v1의 `ui/analysis_page.py` 경로에 적용된다. 구버전 `ui/legacy_telly.py`에는 이 진단 UI가 없다. 메뉴가 없으면 먼저 실제 branch/revision과 서비스 Python의 LangChain 버전을 확인한다.
+- 새 계측은 `ui/analysis_page.py` 경로에 적용된다. 현재 진입점은 LangChain 1 미만에서 구형 화면으로 전환하지 않고 지원 환경 안내를 표시한다. 진단 메뉴가 없으면 실제 branch/revision과 서비스 Python의 LangChain 버전, 실행 포트를 확인한다.
 - 코드를 배포한 뒤 진행 중인 분석이 종료된 것을 확인하고 **서비스 프로세스 전체를 재시작**한다. 파일 갱신/브라우저 새로고침만으로 이미 로딩된 모듈과 세션 객체가 전부 교체되었다고 보장할 수 없다.
 - `revision_at_first_runtime`은 해당 프로세스에서 최초 runtime이 만들어질 때 읽은 Git revision이다. 전체 로딩 코드 일치 보증이 아니다. `loaded_delivery_guard`는 실제 로딩된 두 응답 검증 함수의 지문이며 다른 모듈까지 검증하지 않는다. 지문에는 Python/설치 경로 차이도 영향을 줄 수 있다.
 - 로그는 현재 파일 약 2 MB와 순환 백업 3개다. 일수 보관이 아니므로 사용량이 많으면 빨리 순환한다. 장애 직후 내부 정책에 맞춰 필요한 로그를 서버 안에서 보존한다. 진단기는 이 4개 파일만 제한된 크기로 읽고 잘린 줄/읽기 실패를 `log_integrity`에 표시한다.

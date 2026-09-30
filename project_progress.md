@@ -2238,3 +2238,24 @@ Task definitions and acceptance conditions: docs/agent_remaining_tasks_2026-09-1
 - **완료**: 현재 Databricks 모델/SQL 연결 복구 확인. 스키마 오염·qualified 테이블 주소/컬럼 충돌·영어 그룹 개수 해석 수정. 실제75만행 분포/SQL 재사용, scripted 실DB 원본 스키마 보존, 실제모델+실DB 평균 완료. 자연어10여정12턴과 reference105문항 통과, 독립 oracle3개 추가. 코드 push와 최종 Linux CI 성공.
 - **문제와 한계**: Spider10 최종완료0, 별도 초안 공식1/10. 정답 SQL도 agent 계약이 차단한다는 근거 확보. 단순 LLM/API 장애로 단정하지 않음.
 - **다음 작업**: 출처별 의미 연결·파생 계산식·관계 탐색/검증을 고정 실패10문항으로 통합 보강. 최신행 추가 통계/혼합 단계·대용량 혼합여정·독립95 oracle은 미완료. main 병합/사용자 서버 배포는 수행하지 않음.
+
+## [2026-09-30T22:34:32.510928+09:00] [Agent: /root] User Request: Chrome localhost:8501/Telly 화면에서 사용자 요청 확인
+- **Action**: 기존 Chrome 탭의 표시된 대화를 읽기 전용으로 확인했다. 새 요청 제출·페이지 새로고침·DB 조회는 하지 않았다.
+- **Outcome**: 테이블 목록 → bank_loan 필드 목록 → 표 형태 샘플10행 요청을 확인. 필드 목록은 결과 대신 실행 확인 질문, 샘플 요청은 모델 연결 확인을 권하는 일반 분석 실패 문구로 끝남. 화면의 보유 결과는 없음. 이 화면만으로 실제 실패 원인은 확정하지 않는다.
+
+## [2026-09-30T22:38:28.421940+09:00] [Agent: /root] User Request: Chrome Telly의 컬럼 목록·샘플10행 실패 원인 진단
+- **Action**: 현재 8501 실행 프로세스와 코드, 대화 상태 및 안전 진단 로그를 대조해 재현 가능한 원인을 조사한다. 화면의 일반 오류 문구만으로 모델 장애를 단정하지 않는다.
+- **Evidence**: 8501 PID47908은 저장소 `.venv` Streamlit; LangChain0.3.27이므로 `pages/Telly.py`에서 `ui/legacy_telly.py` 선택. 8502 health200 및 별도 LangChain1.4.0 v1 환경 존재. 구 경로는 모든 원격 제안을 승인 대기로 보낸다. `analysis_instructions`/메타데이터 계획은 없는 `query_databricks` 도구를 참조하나 legacy registry에는 `propose_databricks_query`만 있다. `legacy_telly.py:64-65`가 모든 예외를 같은 모델 연결 문구로 바꾸며 로그/오류 ID를 남기지 않는다.
+- **Reproduction**: 동일 `.venv`/Ollama gemma4:e4b/저장 테이블4개로 동일한 세 발화를 재실행. 첫 발화 answered 59.24초, 두 번째 answered 28.47초(메타데이터 조회 계획 설명만 반환), 세 번째 29.44초 awaiting_approval/propose_databricks_query. Ollama 포트와 모델 설치 확인. 세 번째 화면 오류는 결정적 재현 실패; 당시 실제 예외는 버려져 정확한 원인을 소급 확정할 수 없다. SQL은 재현에서 실행하지 않았다.
+- **Outcome**: 반복되는 잘못된 행동의 구조적 원인은 레거시 런타임 선택, 안내된 도구명 불일치, 완료 검증 부재. 세 번째 일반 오류가 실제 LLM 접속 실패라는 근거는 없으며 일시적 모델/도구/상태 예외 중 무엇이었는지 현재 기록으로 판별 불가. 제품 코드는 이번 진단에서 변경하지 않았다.
+
+## [2026-09-30T22:52:58.210094+09:00] [Agent: /root] User Request: 구형 챗봇 경로 제거 확인 및 실행 경로 단일화
+- **Action**: 8501의 LangChain0.3 레거시 분기를 제거하고 지원 환경에서 새 분석 agent만 열도록 진입점·진단·테스트·문서를 정리한다. 실행 중 사용자 상태 보존 가능성을 확인한 뒤 8501 전환을 검증한다.
+- **Artifact Update**: `main.py`와 `pages/Telly.py`를 LangChain1+ 영속 agent 단일 경로로 변경. `ui/agent_entry.py`에서 구형 환경을 명확히 차단. checkout 진단/회귀 테스트/README/실패 진단 문서를 갱신했다. 구형 소스 파일은 역사적 테스트용으로 남지만 공개 진입점에서 연결되지 않는다.
+- **Runtime**: 기존 8501 `.venv` PID47908을 종료하고 지원 `.telly_runtime/v1-venv`의 agent를 같은 loopback 포트에 실행(PID52351). Chrome `localhost:8501/Telly`에서 `Telly · 분석`, 자동 원격 조회 안내, 문제 진단 메뉴 확인. 새 conversation이 생성됨; 기존 레거시 메모리 대화는 이전되지 않는다.
+- **Validation**: Streamlit AppTest에서 지원 환경의 `main.py`/`pages/Telly.py` 각각 예외0, 구형 환경의 각 경로는 예외0·지원 환경 안내. 관련 unittest29개 PASS, `git diff --check` PASS, local-desktop preflight READY. preflight의 프로젝트 내부 기본 저장소 경고는 별도 운영 호스트 배포가 범위 밖인 현재 loopback에 영향 없음. 실제 DB 분석 품질 GO 판정은 이 진입점 수정만으로 달라지지 않는다.
+
+## [2026-09-30T23:03:14.139269+09:00] [Agent: /root] User Request: 미사용 구형 경로 소스 제거
+- **Action**: 공개 진입점에서 제거한 `ui/legacy_telly.py`의 코드·테스트 참조를 조사하고, 새 agent 실행에 필요한 공용 계약과 구분하여 미사용 화면 파일을 제거한다.
+- **Artifact Update**: 구형 화면 `ui/legacy_telly.py`, 전용 `analysis_loop`/`analysis_runtime`/`analysis_model`/`analysis_approval`, 예전 검증 스크립트·의존성 파일과 호환 브리지를 삭제. 새 agent가 사용하는 `analysis_instructions`, `build_analysis_tools`, SQL 실행·데이터 도구는 보존. 구형 전용 테스트는 제거하고 진입점 차단 회귀 테스트는 유지했다. 과거 검증 문서를 기록용으로 명시하고 현재 대체 검사 명령으로 갱신.
+- **Validation**: 제품 unittest 490/490 PASS(구형 전용 14검사 제거로 이전 504보다 감소), migration 136/136 PASS, compileall 및 diff check PASS. Python 실행 코드의 제거 파일 참조 0건. Chrome 8501 최신 화면 rerun 후 새 agent 정상 표시, health HTTP200. 분석 전체 GO 판정을 변경하는 작업은 아니다.
