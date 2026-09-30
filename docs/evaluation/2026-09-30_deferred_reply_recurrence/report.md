@@ -34,3 +34,23 @@
 ## 적용 범위
 
 현재 작업 브랜치 `codex/agentic-analysis-rc-2026-09-14` 및 로컬8502 앱에 반영했다. 다른PC/서버에서 사용 중이라면 해당 배포의 브랜치·commit과 프로세스 재시작 여부를 확인해야 한다. 사용자 실제 발생 주소/대화가 확인되면 동일 실행 경로인지 대조할 수 있다.
+
+## 실제 사용 서버 확인 후 추가 진단
+
+사용자는 재발 환경이 코드를 업데이트한 실제 사용 서버라고 확인했다. 앞선 로컬 검증은 그 서버의 정상 동작 근거가 아니다. 원격 main을 새로 fetch한 결과 `6f5edac`(PR #70)이며 최근 수정 `59355b6`은 아직 main에 포함되지 않았다. 서버가 어느 branch/revision을 사용하는지는 미확인이다. main 갱신만 했다면 수정이 빠져 있을 수 있으나 이를 실제 원인으로 단정하지 않는다.
+
+서비스가 사용하는 Python 환경에서 다음 진단을 실행할 수 있다. 아래 `python`은 실제 Streamlit 서비스의 Python 경로로 대체한다.
+
+```sh
+python scripts/diagnose_checkout.py --expected-revision 59355b6
+```
+
+진단 스크립트가 아직 없는 checkout에서는 우선 다음 결과로 서버의 revision과 분기 조건을 확인한다. 환경변수나 `.env` 내용을 공유할 필요는 없다.
+
+```sh
+git log -1 --format='%H %s'
+git branch --show-current
+python -c 'import sys; from importlib.metadata import version; print(sys.executable); print(version("langchain")); print(version("streamlit"))'
+```
+
+스크립트는 원격 호출·데이터 조회·환경변수 출력 없이 Git/패키지 버전과 관련 파일 hash를 출력한다. `expected_revision_in_history=null`은 commit을 확인할 수 없음이며 미적용 확정이 아니다. `true`여도 파일이 수정되었거나 서버 프로세스에 이전 코드가 남아 있을 수 있다. LangChain 1 이상은 `ui/analysis_page.py`, 이전 버전의 Telly 페이지는 `ui/legacy_telly.py`로 분기한다. 서비스 실행 경로·재시작 여부·문제 대화의 로그를 추가로 대조해야 한다. 실제 서버 접속 정보가 없어 이 검증은 미완료다.

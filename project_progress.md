@@ -3,7 +3,7 @@
 ## Current Status
 - **Last Updated**: 2026-09-30
 - **Status**: In Progress — 범용 자율 분석 agent 정식 출시 NO-GO
-- **Deferred reply recurrence**: [응답 검증 누락 수정](docs/evaluation/2026-09-30_deferred_reply_recurrence/report.md). 사용자 원문으로 구조화블록/도구안내/구버전/과거표시 누락 재현·보완. 제품475+migration136/관련27 PASS, localhost8502 재시작 및 실제 화면 정정안내 확인. 실제 사용자 발생환경은 미확인.
+- **Deferred reply recurrence**: [응답 검증 누락 수정](docs/evaluation/2026-09-30_deferred_reply_recurrence/report.md). 사용자 원문으로 구조화블록/도구안내/구버전/과거표시 누락 재현·보완. 제품475+migration136/관련27 PASS, localhost8502 재시작 및 실제 화면 정정안내 확인. 사용자가 실제 사용 서버에서 재발했음을 확인함. 서버 revision·실행 프로세스는 미확인.
 - **Offline continuation**: [대용량 이상치 EDA 개선](docs/evaluation/2026-09-30_offline_continuation/report.md). 13:30 KST 공급자 모델/SQL400 지속. 영속 이상치 cohort 전체 프레임 복원을 배치 staging으로 전환, 합성100만행→정답100행/원본/재시작 보존 PASS. 대상 수치1개 컬럼의 임계값 계산은 전체 읽기라는 한계를 명시.
 - **HTTP400 recheck**: [재진단](docs/evaluation/2026-09-30_provider_recheck/report.md). 08:15 KST까지 지속. warehouse/API200·모델 metadata READY이나 최소 추론/OpenSession 모두400. Free Edition 확인, 한도 초과 여부는 미확인. 재발급·짧은 장애로 단정하지 않으며 실제 호출 사전점검과 사용자 안내 보강.
 - **Latest continuation**: [연속 평가·개선 보고서](docs/evaluation/2026-09-30_continuation/report.md). 동률/결측의 후속 정책과 원격/로컬 실행·완료 계약, 공급자400 분류/제한 재시도, interactive Spider 평가를 보강했다. 최종CI 제품464 + migration136 + reference217 PASS, 합성100만행2종 및 실제 웹12행 복구 PASS. Databricks 모델·SQL 리소스 생성400으로 실환경 재평가 차단.
@@ -2161,3 +2161,9 @@ Task definitions and acceptance conditions: docs/agent_remaining_tasks_2026-09-1
 ### Daily Wrap-ups — 2026-09-30 deferred reply recurrence
 - 이전수정이 빠뜨린 응답형식·도구안내·구버전·과거기록 경로를 보강하고 로컬앱에 반영했다.
 - Next Action Items: 사용자 실제발생환경/버전 대조, 공급자복구 후실환경평가. 기존4묶음·범용NO-GO는 유지.
+
+## [2026-09-30 13:53:42] [Agent: /root] User Request: 실제 사용 서버에 코드를 업데이트한 상태에서도 결과 도착 안내가 재발함
+- **Action** [Agent: /root]: 로컬 검증과 실제 서버 검증을 구분한다. 서버 실행 revision·Python 환경·응답 경로 확인을 우선하며, 서버 접속 정보가 없는 상태에서 구버전 실행을 원인으로 단정하지 않는다.
+- **Action** [Agent: /root]: 원격 main을 fetch하여 확인: main=6f5edac(PR #70), 최신 수정59355b6은 main의 ancestor가 아님. 작업 브랜치에는 포함됨. 사용 서버의 branch는 아직 미확인이라 배포 누락을 확정 원인으로 단정하지 않는다.
+- **Artifact Update**: scripts/diagnose_checkout.py 추가. 서비스와 같은 Python으로 checkout·revision·의존성별 진입 경로·관련 파일 hash를 수집한다. 비밀정보/대화/데이터를 읽지 않고 원격 호출도 하지 않는다. 별도 프로세스 검사라 실행 중 서버의 로딩 코드 검증과 명확히 구분한다.
+- **Outcome**: 관련 진단 테스트3 PASS. 서버 접속 주소/SSH 별칭이 없어 실제 서버 로그와 프로세스 검증은 아직 수행하지 못함.
