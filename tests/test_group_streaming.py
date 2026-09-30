@@ -58,14 +58,17 @@ class GroupStreamingTests(unittest.TestCase):
             db=AssetDB(folder,'owner','exact-numbers');store=PersistentDatasets(db,budget=0)
             frame=frame_slice(0,FIXTURE['rows'])
             frame[GROUP]=0
-            frame[VALUE]=pd.Series([300000000001]*len(frame),dtype='int64')
+            frame[VALUE]=pd.Series([400000000001]*len(frame),dtype='int64')
+            frame.loc[0,VALUE]+=1  # Odd total above float64's exact integer range.
             frame[FLAG]=0
             raw=store.register_batches([frame],columns=list(frame),source=FIXTURE['source'],
                 max_rows=len(frame),coverage='complete',predicate_known=True)
             try:
                 output=summarize_groups(store,raw.id,group_columns=[GROUP],metrics=metrics())
                 actual=store.frames.project(output['dataset']['id'],['sum','positive_percent','chosen_mean'])
-                self.assertEqual(actual['sum'].iloc[0],300000000001*len(frame))
+                expected=400000000001*len(frame)+1
+                self.assertGreater(expected,2**53)
+                self.assertEqual(actual['sum'].iloc[0],expected)
                 self.assertTrue(pd.api.types.is_integer_dtype(actual['sum']))
                 self.assertEqual(actual['positive_percent'].iloc[0],0)
                 self.assertEqual(actual['chosen_mean'].iloc[0],-1)
