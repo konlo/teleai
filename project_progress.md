@@ -2184,3 +2184,23 @@ Task definitions and acceptance conditions: docs/agent_remaining_tasks_2026-09-1
 - **Outcome**: 합성100만행/7그룹/8지표 독립 정답, 1024행 배치/원본3컬럼만 읽기/추가SQL0/PNG실물/원본과재시작 보존 PASS. 1.188초, process peak RSS282214400 bytes(운영 SLA가 아님). 관련17, 제품490, migration136 PASS; reference217 PASS.
 - **Remaining**: 최신행 선택 전후 필터·추가 통계, 복합SQL 의미·복구, 대용량 혼합 전체여정, 독립98oracle/실모델 평가. 14:50KST 공급자 최소 추론/OpenSession400 지속. 실제 사용자 서버는 접근불가·미검증이며 전체 로그 반출을 요청하지 않는다.
 - **Outcome**: 구현5b7c7a3·정수 경계 테스트ac07806 push 및 원격SHA 확인. Linux CI36676855817의 ac0780688dedbd564ecc5f57692254c057bbd25e에서 제품/migration/복구/reference/compile 전부 PASS. 근거 docs/evaluation/2026-09-30_go_continuation/ci.json. 범용 NO-GO 및 사용자 서버 미검증 유지.
+
+## [2026-09-30 18:24:09] [Agent: /root] User Request: 테이블 목록 조회 결과가 실제로 도착하는지 확인
+- **Action** [Agent: /root]: 테이블 목록의 실행 receipt·결과 표시 회귀를 다시 확인한다. 접속 불가능한 사용자 서버와 개발 환경의 실서비스 연결 상태를 구분한다.
+- **Outcome**: 테이블 결과 완료/표시 및 미래 안내 차단 회귀 22개 PASS(1.666s). Streamlit main.py 경로도 포함하지만 합성 SQL 결과/대역 모델 검증이며 실제 DB 목록 수신 근거는 아니다.
+- **Live Check**: 18:27 KST 개발 환경에서 warehouse 상태 API200(STOPPED), 모델 요청400, SQL OpenSession400. 실제 테이블 목록 조회 단계에 도달하지 못했다. 근거 docs/evaluation/2026-09-30_go_continuation/table_delivery_provider_probe.json. 사용자 서버는 접속 불가로 여전히 미확인; 일시 장애/토큰/LLM 원인으로 단정하지 않는다.
+
+## [2026-09-30T18:31:12.734803+09:00] [Agent: /root] User Request: Databricks 사이트에서 400 원인 확인
+- **Action**: Chrome의 Databricks 설정 화면 확인. 자동 브라우저 제어 미지원 안내가 있어 추가 UI 조작 중단; 지원 API로 진단한다. Verify identity 버튼만으로 원인 단정하지 않는다.
+- **Outcome**: 18:32 KST 공식 API 직접 검사. Warehouse GET200 및 HTTP path 일치; SELECT1 Statement API400(The request could not be processed by the warehouse.); Warehouse start1회400(Cannot create the resource, please try again later.), 상태STOPPED 유지; 최소 모델 요청400(Cannot create or query foundation model endpoints). 앱/agent를 거치지 않아도 재현. 토큰 전체 만료/테이블명/LLM 해석이 이번 공통 장애의 원인이라는 근거는 없으며 자원 시작/호출 단계 장애로 범위를 좁힘.
+- **Evidence**: docs/evaluation/2026-09-30_go_continuation/site_api_400_diagnosis.json에 비밀정보를 제외한 상태/일반 오류 문구 저장. Free Edition quota 제한은 공식 문서상 가능한 설명이지만 계정별 quota 초과는 확인되지 않아 확정하지 않음. Verify identity는 기능한도 확장용이며 버튼 존재만으로 접근 차단 판단하지 않음. 추가 반복 요청 중단.
+
+## [2026-09-30T18:46:28.727242+09:00] [Agent: /root] User Request: GO를 위한 남은 일 정리
+- **Action/Outcome**: 최신 결과와 통합 보드를 대조. 구현·평가 4묶음(최신행 EDA, 복합 SQL, 대용량 혼합 여정, 독립 oracle98개) 및 외부 연결 복구 후 실환경 재평가가 남음. Databricks400과 독립적인 로컬 구현은 계속 가능. 별도 서버 구축은 범위에서 제외하며, 실제 사용자 서버 배포 확인과 개발 환경 성공을 구분. NO-GO 유지.
+
+## [2026-09-30T18:47:35.930993+09:00] [Agent: /root] User Request: 계속해 400개 끝날 때까지
+- **Action**: 앞선 맥락에 따라 HTTP400 차단이 있는 동안에도 독립적인 GO 잔여 기능 구현·검증을 계속한다. 최신행 선택 전후 필터와 후속 조건 보존부터 현재 계약/실패를 확인한다.
+- **Artifact Update** [2026-09-30T19:02:41.860522+09:00]: 최신행 conditions/filter_stage 공통 계약과 로컬/원격 실행, 명시적 단계 후속·재시작·receipt 재사용 검증 구현. 일반 OR/혼합 단계는 임의 실행하지 않는다. 수치1개 histogram 실패를 수정하고 실제 counts/edges 기록.
+- **Outcome**: 제품498(60.252s)/migration136(18.957s)/reference217(58그림) PASS. 102만행 독립 oracle와 실제 PNG, 원본 해시·선택·계보·재시작 차트 보존 PASS. 대역 모델/합성 데이터이며 실모델 성공으로 계산하지 않는다. docs/evaluation/2026-09-30_latest_filters/report.md.
+- **Remaining**: 19:00KST 모델400/OpenSession400 지속. 기능 잔여(최신행 추가통계·비균등 구간·혼합필터, 복합SQL, 대용량 혼합여정, 독립98oracle) 및 실제 서버 검증이 남아 범용NO-GO 유지.
+- **Action**: 최종 검토에서 SQL NaN 비교가 pandas 결측 처리와 달라질 수 있는 경로를 차단. 실제 NaN SQL 행으로 ne/gt/lt 두 dialect 독립 검증 추가; 관련23 PASS. 원격 서비스 재시도를 반복하지 않는다.

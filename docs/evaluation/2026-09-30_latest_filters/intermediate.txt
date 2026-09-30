@@ -1,0 +1,182 @@
+FF.........FFFE.FFFF....FFFF.EE.E..FF.
+======================================================================
+ERROR: test_cached_only_request_and_wrong_query_are_not_allowed (tests.test_remote_latest.RemoteLatestTests.test_cached_only_request_and_wrong_query_are_not_allowed)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/najongseong/git_repository/teleai/tests/test_remote_latest.py", line 156, in test_cached_only_request_and_wrong_query_are_not_allowed
+    'args': {k: current['remote_latest_plan'][k] for k in ('source', 'query', 'reason')}}, current))
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/najongseong/git_repository/teleai/tests/test_remote_latest.py", line 156, in <dictcomp>
+    'args': {k: current['remote_latest_plan'][k] for k in ('source', 'query', 'reason')}}, current))
+                ~~~~~~~^^^^^^^^^^^^^^^^^^^^^^
+KeyError: 'remote_latest_plan'
+
+======================================================================
+ERROR: test_all_missing_do_not_publish (tests.test_latest_null_continuation.LatestNullContinuationTests.test_all_missing_do_not_publish)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/najongseong/git_repository/teleai/tests/test_latest_null_continuation.py", line 129, in test_all_missing_do_not_publish
+    self.assertFalse(r.events()[-1].additional_kwargs['analysis_complete'])
+                     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^
+KeyError: 'analysis_complete'
+
+======================================================================
+ERROR: test_infinity_is_not_silently_treated_as_missing (tests.test_latest_null_continuation.LatestNullContinuationTests.test_infinity_is_not_silently_treated_as_missing)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/najongseong/git_repository/teleai/tests/test_latest_null_continuation.py", line 109, in test_infinity_is_not_silently_treated_as_missing
+    self.assertEqual(r.inspect()['recovery']['latest_error_code'],'latest_nonfinite_policy')
+                     ~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^
+KeyError: 'latest_error_code'
+
+======================================================================
+ERROR: test_local_and_remote_followup_preserves_fallback_older_valid_record (tests.test_latest_null_continuation.LatestNullContinuationTests.test_local_and_remote_followup_preserves_fallback_older_valid_record) (mode='remote')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/najongseong/git_repository/teleai/tests/test_latest_null_continuation.py", line 37, in test_local_and_remote_followup_preserves_fallback_older_valid_record
+    self.assertEqual(r.inspect()['recovery']['latest_pending']['error_code'],'latest_null_policy')
+                     ~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^
+KeyError: 'latest_pending'
+
+======================================================================
+FAIL: test_explicit_stage_local_and_remote_graph (tests.test_latest_filters.LatestFilterTests.test_explicit_stage_local_and_remote_graph) (mode='remote', stage='before')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/najongseong/git_repository/teleai/tests/test_latest_filters.py", line 51, in test_explicit_stage_local_and_remote_graph
+    self.assertTrue(proof,outcome)
+AssertionError: None is not true : {'status': 'exhausted', 'text': '복구를 시도했지만 요청한 결과를 확인하지 못했습니다. 기존 데이터는 보존했습니다.', 'elapsed_seconds': 0.018}
+
+======================================================================
+FAIL: test_explicit_stage_local_and_remote_graph (tests.test_latest_filters.LatestFilterTests.test_explicit_stage_local_and_remote_graph) (mode='remote', stage='after')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/najongseong/git_repository/teleai/tests/test_latest_filters.py", line 51, in test_explicit_stage_local_and_remote_graph
+    self.assertTrue(proof,outcome)
+AssertionError: None is not true : {'status': 'exhausted', 'text': '복구를 시도했지만 요청한 결과를 확인하지 못했습니다. 기존 데이터는 보존했습니다.', 'elapsed_seconds': 0.016}
+
+======================================================================
+FAIL: test_bad_data_never_publishes_chart (tests.test_remote_latest.RemoteLatestTests.test_bad_data_never_publishes_chart) (rows=11)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/najongseong/git_repository/teleai/tests/test_remote_latest.py", line 110, in test_bad_data_never_publishes_chart
+    self.assertEqual(len(calls), 1)
+AssertionError: 0 != 1
+
+======================================================================
+FAIL: test_bad_data_never_publishes_chart (tests.test_remote_latest.RemoteLatestTests.test_bad_data_never_publishes_chart) (rows=10)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/najongseong/git_repository/teleai/tests/test_remote_latest.py", line 110, in test_bad_data_never_publishes_chart
+    self.assertEqual(len(calls), 1)
+AssertionError: 0 != 1
+
+======================================================================
+FAIL: test_bad_data_never_publishes_chart (tests.test_remote_latest.RemoteLatestTests.test_bad_data_never_publishes_chart) (rows=0)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/najongseong/git_repository/teleai/tests/test_remote_latest.py", line 110, in test_bad_data_never_publishes_chart
+    self.assertEqual(len(calls), 1)
+AssertionError: 0 != 1
+
+======================================================================
+FAIL: test_category_limit_and_corrupt_counts_never_complete (tests.test_remote_latest.RemoteLatestTests.test_category_limit_and_corrupt_counts_never_complete)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/najongseong/git_repository/teleai/tests/test_remote_latest.py", line 221, in test_category_limit_and_corrupt_counts_never_complete
+    self.assertEqual(len(calls), 1)
+AssertionError: 0 != 1
+
+======================================================================
+FAIL: test_manual_approval_and_unknown_execution_preserved (tests.test_remote_latest.RemoteLatestTests.test_manual_approval_and_unknown_execution_preserved)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/najongseong/git_repository/teleai/tests/test_remote_latest.py", line 120, in test_manual_approval_and_unknown_execution_preserved
+    self.assertEqual(result['status'], 'awaiting_approval', result)
+AssertionError: 'exhausted' != 'awaiting_approval'
+- exhausted
++ awaiting_approval
+ : {'status': 'exhausted', 'text': '복구를 시도했지만 요청한 결과를 확인하지 못했습니다. 기존 데이터는 보존했습니다.', 'elapsed_seconds': 0.019}
+
+======================================================================
+FAIL: test_plan_execute_validate_chart_without_loading_raw (tests.test_remote_latest.RemoteLatestTests.test_plan_execute_validate_chart_without_loading_raw)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/najongseong/git_repository/teleai/tests/test_remote_latest.py", line 66, in test_plan_execute_validate_chart_without_loading_raw
+    self.assertEqual(outcome['status'], 'answered', outcome)
+AssertionError: 'exhausted' != 'answered'
+- exhausted
++ answered
+ : {'status': 'exhausted', 'text': '복구를 시도했지만 요청한 결과를 확인하지 못했습니다. 기존 데이터는 보존했습니다.', 'elapsed_seconds': 0.02}
+
+======================================================================
+FAIL: test_stale_schema_refreshes_before_business_query (tests.test_remote_latest.RemoteLatestTests.test_stale_schema_refreshes_before_business_query)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/najongseong/git_repository/teleai/tests/test_remote_latest.py", line 173, in test_stale_schema_refreshes_before_business_query
+    self.assertEqual(result['status'], 'answered', result)
+AssertionError: 'exhausted' != 'answered'
+- exhausted
++ answered
+ : {'status': 'exhausted', 'text': '복구를 시도했지만 요청한 결과를 확인하지 못했습니다. 기존 데이터는 보존했습니다.', 'elapsed_seconds': 0.013}
+
+======================================================================
+FAIL: test_explicit_composite_keys_use_all_key_columns (tests.test_remote_latest_histogram.RemoteLatestHistogramTests.test_explicit_composite_keys_use_all_key_columns)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/najongseong/git_repository/teleai/tests/test_remote_latest_histogram.py", line 101, in test_explicit_composite_keys_use_all_key_columns
+    self.assertIsNotNone(proof,outcome)
+AssertionError: unexpectedly None : {'status': 'exhausted', 'text': '복구를 시도했지만 요청한 결과를 확인하지 못했습니다. 기존 데이터는 보존했습니다.', 'elapsed_seconds': 0.021}
+
+======================================================================
+FAIL: test_negative_boundary_empty_and_constant_bins (tests.test_remote_latest_histogram.RemoteLatestHistogramTests.test_negative_boundary_empty_and_constant_bins) (bins=5)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/najongseong/git_repository/teleai/tests/test_remote_latest_histogram.py", line 66, in test_negative_boundary_empty_and_constant_bins
+    with self.subTest(bins=bins): self.run_histogram(values,bins)
+                                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/najongseong/git_repository/teleai/tests/test_remote_latest_histogram.py", line 36, in run_histogram
+    self.assertIsNotNone(proof, runtime.inspect()['recovery'])
+AssertionError: unexpectedly None : {'request_id': '7aaf8ac7-8c28-4862-847e-c0e45b9bffea', 'request_text': 'fixture.telemetry.device_events 테이블에서 adapterserial별 event_time이 가장 늦은 행 하나만 사용해서 DriveProductID에 대한 histogram을 보여줘. 5개 구간으로 그려줘.', 'attempts': 2, 'chart': True, 'kind': 'histogram', 'join': False, 'requested_join': False, 'join_how': None, 'statistical_kind': None, 'pivot_requested': False, 'pivot_aggregation': None, 'pivot_value_column': None, 'pivot_success_value': None, 'pivot_index_columns': [], 'pivot_column_columns': [], 'pivot_conditions': [], 'pivot_derived_bins': [], 'pivot_margins': False, 'pivot_sort': 'ascending', 'pivot_margins_name': '전체', 'winsor_spec': None, 'winsor_column': None, 'outlier_spec': None, 'outlier_column': None, 'outlier_followup': False, 'outlier_selection': 'outliers', 'outlier_group_column': None, 'outlier_metric_column': None, 'outlier_metric_aggregation': None, 'outlier_aggregate_mode': None, 'outlier_aggregate_requested': False, 'outlier_top_n': 0, 'group_summary_requested': False, 'group_summary_columns': [], 'group_summary_metrics': [], 'group_summary_conditions': [], 'calculation': False, 'operations': [], 'metadata_kind': None, 'scalar_grouping': True, 'profile_kind': None, 'preview_limit': 0, 'chart_spec_requested': True, 'histogram_bins': 5, 'count_rate_layout': None, 'chart_cumulative': False, 'time_series_frequency': None, 'time_series_aggregation': None, 'time_series_gap_policy': 'omit', 'time_series_timezone': '', 'data_load': False, 'expected_load_source': '', 'expected_load_query': '', 'whole_row_count': False, 'current_result_only': False, 'requested_result_rows': None, 'fresh_source_required': False, 'request_started_at': 1790762013.209669, 'required_columns': ['DriveProductID'], 'explicit_columns': ['adapterserial', 'event_time', 'DriveProductID'], 'required_sources': ['fixture.telemetry.device_events'], 'columns': [], 'failed': {'prepare_remote_latest_distribution': {'status': 'error', 'error_code': 'invalid_tool_input', 'retryable': False, 'message': '도구 입력이나 데이터 범위가 유효하지 않습니다. 스키마/범위를 확인하고 다른 유효한 방법을 선택하세요.', 'evidence_ids': [], 'user_action': '', 'scope': '도구가 반환한 구조화 결과 범위입니다.'}}, 'status': 'exhausted', 'confirmed_analysis': {}, 'previous_scope': {}, 'scope': {'conditions': [], 'any_conditions': [], 'join_edges': [], 'measure_conditions': [], 'ratio': None, 'unresolved': [], 'columns': ['DriveProductID', 'adapterserial', 'event_time']}, 'named_measure_columns': [], 'latest_per_key_spec': {'dataset_id': '', 'key_columns': ['adapterserial'], 'value_column': 'DriveProductID', 'order_column': 'event_time', 'categorical': False, 'context_dataset_id': '', 'context_snapshot': None, 'remote': True, 'source': 'fixture.telemetry.device_events', 'bins': 5}, 'latest_selection_evidence': None, 'operation_pending': False, 'processed': ['bf9baaf3-694b-465b-8d9b-10c1419b0b3c'], 'sent_calls': ['bf9baaf3-694b-465b-8d9b-10c1419b0b3c'], 'failed_signatures': {'["prepare_remote_latest_distribution", {"bins": 5, "categorical": false, "conditions": [], "filter_stage": "", "key_columns": ["adapterserial"], "null_policy": "reject", "order_column": "event_time", "source": "fixture.telemetry.device_events", "tie_break_columns": [], "value_column": "DriveProductID"}]': 1}, 'evidence_ids': [], 'artifact_ids': [], 'model_calls': 3, 'model_seconds': 0.006563901901245117, 'preview_evidence': None, 'outlier_aggregate_evidence': {}, 'count_rate_evidence': None, 'count_rate_group_column': None, 'winsor_evidence': None, 'pivot_evidence': None, 'group_summary_evidence': None, 'remote_query_ids': [], 'remote_query_evidence': {}, 'remote_result_requested': False, 'accounted_model_failures': 0, 'accounted_model_failure_seconds': 0.0, 'model_retries': 0, 'accounted_aux_calls': 0, 'accounted_aux_seconds': 0.0, 'tool_failures': {'["prepare_remote_latest_distribution", {"bins": 5, "categorical": false, "conditions": [], "filter_stage": "", "key_columns": ["adapterserial"], "null_policy": "reject", "order_column": "event_time", "source": "fixture.telemetry.device_events", "tie_break_columns": [], "value_column": "DriveProductID"}]': {'tool': 'prepare_remote_latest_distribution', 'status': 'error', 'error_code': 'invalid_tool_input', 'call_id': 'bf9baaf3-694b-465b-8d9b-10c1419b0b3c'}}, 'repair_notified': ['["prepare_remote_latest_distribution", {"bins": 5, "categorical": false, "conditions": [], "filter_stage": "", "key_columns": ["adapterserial"], "null_policy": "reject", "order_column": "event_time", "source": "fixture.telemetry.device_events", "tie_break_columns": [], "value_column": "DriveProductID"}]'], 'progress_notified': [], 'unverified_execution_claim': False, 'stop_reason': 'missing_evidence'}
+
+======================================================================
+FAIL: test_negative_boundary_empty_and_constant_bins (tests.test_remote_latest_histogram.RemoteLatestHistogramTests.test_negative_boundary_empty_and_constant_bins) (bins=4)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/najongseong/git_repository/teleai/tests/test_remote_latest_histogram.py", line 66, in test_negative_boundary_empty_and_constant_bins
+    with self.subTest(bins=bins): self.run_histogram(values,bins)
+                                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/najongseong/git_repository/teleai/tests/test_remote_latest_histogram.py", line 36, in run_histogram
+    self.assertIsNotNone(proof, runtime.inspect()['recovery'])
+AssertionError: unexpectedly None : {'request_id': 'a42a8b14-d239-4301-9ee4-15463c3f243f', 'request_text': 'fixture.telemetry.device_events 테이블에서 adapterserial별 event_time이 가장 늦은 행 하나만 사용해서 DriveProductID에 대한 histogram을 보여줘. 4개 구간으로 그려줘.', 'attempts': 2, 'chart': True, 'kind': 'histogram', 'join': False, 'requested_join': False, 'join_how': None, 'statistical_kind': None, 'pivot_requested': False, 'pivot_aggregation': None, 'pivot_value_column': None, 'pivot_success_value': None, 'pivot_index_columns': [], 'pivot_column_columns': [], 'pivot_conditions': [], 'pivot_derived_bins': [], 'pivot_margins': False, 'pivot_sort': 'ascending', 'pivot_margins_name': '전체', 'winsor_spec': None, 'winsor_column': None, 'outlier_spec': None, 'outlier_column': None, 'outlier_followup': False, 'outlier_selection': 'outliers', 'outlier_group_column': None, 'outlier_metric_column': None, 'outlier_metric_aggregation': None, 'outlier_aggregate_mode': None, 'outlier_aggregate_requested': False, 'outlier_top_n': 0, 'group_summary_requested': False, 'group_summary_columns': [], 'group_summary_metrics': [], 'group_summary_conditions': [], 'calculation': False, 'operations': [], 'metadata_kind': None, 'scalar_grouping': True, 'profile_kind': None, 'preview_limit': 0, 'chart_spec_requested': True, 'histogram_bins': 4, 'count_rate_layout': None, 'chart_cumulative': False, 'time_series_frequency': None, 'time_series_aggregation': None, 'time_series_gap_policy': 'omit', 'time_series_timezone': '', 'data_load': False, 'expected_load_source': '', 'expected_load_query': '', 'whole_row_count': False, 'current_result_only': False, 'requested_result_rows': None, 'fresh_source_required': False, 'request_started_at': 1790762013.24161, 'required_columns': ['DriveProductID'], 'explicit_columns': ['adapterserial', 'event_time', 'DriveProductID'], 'required_sources': ['fixture.telemetry.device_events'], 'columns': [], 'failed': {'prepare_remote_latest_distribution': {'status': 'error', 'error_code': 'invalid_tool_input', 'retryable': False, 'message': '도구 입력이나 데이터 범위가 유효하지 않습니다. 스키마/범위를 확인하고 다른 유효한 방법을 선택하세요.', 'evidence_ids': [], 'user_action': '', 'scope': '도구가 반환한 구조화 결과 범위입니다.'}}, 'status': 'exhausted', 'confirmed_analysis': {}, 'previous_scope': {}, 'scope': {'conditions': [], 'any_conditions': [], 'join_edges': [], 'measure_conditions': [], 'ratio': None, 'unresolved': [], 'columns': ['DriveProductID', 'adapterserial', 'event_time']}, 'named_measure_columns': [], 'latest_per_key_spec': {'dataset_id': '', 'key_columns': ['adapterserial'], 'value_column': 'DriveProductID', 'order_column': 'event_time', 'categorical': False, 'context_dataset_id': '', 'context_snapshot': None, 'remote': True, 'source': 'fixture.telemetry.device_events', 'bins': 4}, 'latest_selection_evidence': None, 'operation_pending': False, 'processed': ['5064be25-ac7a-402f-bf13-80be99174893'], 'sent_calls': ['5064be25-ac7a-402f-bf13-80be99174893'], 'failed_signatures': {'["prepare_remote_latest_distribution", {"bins": 4, "categorical": false, "conditions": [], "filter_stage": "", "key_columns": ["adapterserial"], "null_policy": "reject", "order_column": "event_time", "source": "fixture.telemetry.device_events", "tie_break_columns": [], "value_column": "DriveProductID"}]': 1}, 'evidence_ids': [], 'artifact_ids': [], 'model_calls': 3, 'model_seconds': 0.006623268127441406, 'preview_evidence': None, 'outlier_aggregate_evidence': {}, 'count_rate_evidence': None, 'count_rate_group_column': None, 'winsor_evidence': None, 'pivot_evidence': None, 'group_summary_evidence': None, 'remote_query_ids': [], 'remote_query_evidence': {}, 'remote_result_requested': False, 'accounted_model_failures': 0, 'accounted_model_failure_seconds': 0.0, 'model_retries': 0, 'accounted_aux_calls': 0, 'accounted_aux_seconds': 0.0, 'tool_failures': {'["prepare_remote_latest_distribution", {"bins": 4, "categorical": false, "conditions": [], "filter_stage": "", "key_columns": ["adapterserial"], "null_policy": "reject", "order_column": "event_time", "source": "fixture.telemetry.device_events", "tie_break_columns": [], "value_column": "DriveProductID"}]': {'tool': 'prepare_remote_latest_distribution', 'status': 'error', 'error_code': 'invalid_tool_input', 'call_id': '5064be25-ac7a-402f-bf13-80be99174893'}}, 'repair_notified': ['["prepare_remote_latest_distribution", {"bins": 4, "categorical": false, "conditions": [], "filter_stage": "", "key_columns": ["adapterserial"], "null_policy": "reject", "order_column": "event_time", "source": "fixture.telemetry.device_events", "tie_break_columns": [], "value_column": "DriveProductID"}]'], 'progress_notified': [], 'unverified_execution_claim': False, 'stop_reason': 'missing_evidence'}
+
+======================================================================
+FAIL: test_negative_boundary_empty_and_constant_bins (tests.test_remote_latest_histogram.RemoteLatestHistogramTests.test_negative_boundary_empty_and_constant_bins) (bins=25)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/najongseong/git_repository/teleai/tests/test_remote_latest_histogram.py", line 66, in test_negative_boundary_empty_and_constant_bins
+    with self.subTest(bins=bins): self.run_histogram(values,bins)
+                                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/najongseong/git_repository/teleai/tests/test_remote_latest_histogram.py", line 36, in run_histogram
+    self.assertIsNotNone(proof, runtime.inspect()['recovery'])
+AssertionError: unexpectedly None : {'request_id': '79cb1504-52a4-47dc-8a4e-3f3f254389f2', 'request_text': 'fixture.telemetry.device_events 테이블에서 adapterserial별 event_time이 가장 늦은 행 하나만 사용해서 DriveProductID에 대한 histogram을 보여줘. 25개 구간으로 그려줘.', 'attempts': 2, 'chart': True, 'kind': 'histogram', 'join': False, 'requested_join': False, 'join_how': None, 'statistical_kind': None, 'pivot_requested': False, 'pivot_aggregation': None, 'pivot_value_column': None, 'pivot_success_value': None, 'pivot_index_columns': [], 'pivot_column_columns': [], 'pivot_conditions': [], 'pivot_derived_bins': [], 'pivot_margins': False, 'pivot_sort': 'ascending', 'pivot_margins_name': '전체', 'winsor_spec': None, 'winsor_column': None, 'outlier_spec': None, 'outlier_column': None, 'outlier_followup': False, 'outlier_selection': 'outliers', 'outlier_group_column': None, 'outlier_metric_column': None, 'outlier_metric_aggregation': None, 'outlier_aggregate_mode': None, 'outlier_aggregate_requested': False, 'outlier_top_n': 0, 'group_summary_requested': False, 'group_summary_columns': [], 'group_summary_metrics': [], 'group_summary_conditions': [], 'calculation': False, 'operations': [], 'metadata_kind': None, 'scalar_grouping': True, 'profile_kind': None, 'preview_limit': 0, 'chart_spec_requested': True, 'histogram_bins': 25, 'count_rate_layout': None, 'chart_cumulative': False, 'time_series_frequency': None, 'time_series_aggregation': None, 'time_series_gap_policy': 'omit', 'time_series_timezone': '', 'data_load': False, 'expected_load_source': '', 'expected_load_query': '', 'whole_row_count': False, 'current_result_only': False, 'requested_result_rows': None, 'fresh_source_required': False, 'request_started_at': 1790762013.273706, 'required_columns': ['DriveProductID'], 'explicit_columns': ['adapterserial', 'event_time', 'DriveProductID'], 'required_sources': ['fixture.telemetry.device_events'], 'columns': [], 'failed': {'prepare_remote_latest_distribution': {'status': 'error', 'error_code': 'invalid_tool_input', 'retryable': False, 'message': '도구 입력이나 데이터 범위가 유효하지 않습니다. 스키마/범위를 확인하고 다른 유효한 방법을 선택하세요.', 'evidence_ids': [], 'user_action': '', 'scope': '도구가 반환한 구조화 결과 범위입니다.'}}, 'status': 'exhausted', 'confirmed_analysis': {}, 'previous_scope': {}, 'scope': {'conditions': [], 'any_conditions': [], 'join_edges': [], 'measure_conditions': [], 'ratio': None, 'unresolved': [], 'columns': ['DriveProductID', 'adapterserial', 'event_time']}, 'named_measure_columns': [], 'latest_per_key_spec': {'dataset_id': '', 'key_columns': ['adapterserial'], 'value_column': 'DriveProductID', 'order_column': 'event_time', 'categorical': False, 'context_dataset_id': '', 'context_snapshot': None, 'remote': True, 'source': 'fixture.telemetry.device_events', 'bins': 25}, 'latest_selection_evidence': None, 'operation_pending': False, 'processed': ['729c5a3c-81ef-466d-abff-68b13102cc82'], 'sent_calls': ['729c5a3c-81ef-466d-abff-68b13102cc82'], 'failed_signatures': {'["prepare_remote_latest_distribution", {"bins": 25, "categorical": false, "conditions": [], "filter_stage": "", "key_columns": ["adapterserial"], "null_policy": "reject", "order_column": "event_time", "source": "fixture.telemetry.device_events", "tie_break_columns": [], "value_column": "DriveProductID"}]': 1}, 'evidence_ids': [], 'artifact_ids': [], 'model_calls': 3, 'model_seconds': 0.006549835205078125, 'preview_evidence': None, 'outlier_aggregate_evidence': {}, 'count_rate_evidence': None, 'count_rate_group_column': None, 'winsor_evidence': None, 'pivot_evidence': None, 'group_summary_evidence': None, 'remote_query_ids': [], 'remote_query_evidence': {}, 'remote_result_requested': False, 'accounted_model_failures': 0, 'accounted_model_failure_seconds': 0.0, 'model_retries': 0, 'accounted_aux_calls': 0, 'accounted_aux_seconds': 0.0, 'tool_failures': {'["prepare_remote_latest_distribution", {"bins": 25, "categorical": false, "conditions": [], "filter_stage": "", "key_columns": ["adapterserial"], "null_policy": "reject", "order_column": "event_time", "source": "fixture.telemetry.device_events", "tie_break_columns": [], "value_column": "DriveProductID"}]': {'tool': 'prepare_remote_latest_distribution', 'status': 'error', 'error_code': 'invalid_tool_input', 'call_id': '729c5a3c-81ef-466d-abff-68b13102cc82'}}, 'repair_notified': ['["prepare_remote_latest_distribution", {"bins": 25, "categorical": false, "conditions": [], "filter_stage": "", "key_columns": ["adapterserial"], "null_policy": "reject", "order_column": "event_time", "source": "fixture.telemetry.device_events", "tie_break_columns": [], "value_column": "DriveProductID"}]'], 'progress_notified': [], 'unverified_execution_claim': False, 'stop_reason': 'missing_evidence'}
+
+======================================================================
+FAIL: test_remote_followup_recomputes_once_then_reuses_after_restart (tests.test_latest_tie_continuation.LatestTieContinuationTests.test_remote_followup_recomputes_once_then_reuses_after_restart)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/najongseong/git_repository/teleai/tests/test_latest_tie_continuation.py", line 58, in test_remote_followup_recomputes_once_then_reuses_after_restart
+    self.assertEqual(len(calls),1)
+AssertionError: 0 != 1
+
+======================================================================
+FAIL: test_remote_numeric_bins_with_explicit_tie_order (tests.test_latest_tie_continuation.LatestTieContinuationTests.test_remote_numeric_bins_with_explicit_tie_order)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/najongseong/git_repository/teleai/tests/test_latest_tie_continuation.py", line 112, in test_remote_numeric_bins_with_explicit_tie_order
+    self.assertTrue(proof,outcome)
+AssertionError: None is not true : {'status': 'exhausted', 'text': '복구를 시도했지만 요청한 결과를 확인하지 못했습니다. 기존 데이터는 보존했습니다.', 'elapsed_seconds': 0.014}
+
+----------------------------------------------------------------------
+Ran 33 tests in 11.081s
+
+FAILED (failures=15, errors=4)

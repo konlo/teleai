@@ -6,14 +6,20 @@ from utils.analysis_charts import render_chart_spec
 
 
 def latest_distribution(context, dataset_id, key_columns, order_column, value_column,
-                        categorical=True, tie_break_columns=None, *, bins=20, null_policy='reject'):
+                        categorical=True, tie_break_columns=None, *, bins=20, null_policy='reject', conditions=None, filter_stage=''):
     if null_policy not in {'reject','drop_before_selection'}:
         raise ValueError('지원되는 결측 정책은 reject 또는 drop_before_selection입니다.')
+    from utils.analysis_latest_filters import validate, validate_types, lineage
+    from utils.analysis_datasets import filter_frame, Condition
     store=context.datasets
     info=store.metadata[dataset_id]
+    conditions=validate(conditions,filter_stage,info.columns)
+    if conditions:validate_types(conditions,store.inspect(dataset_id).get('dtypes',{}))
+    predicates=tuple(Condition(**c) for c in conditions)
     tie_break_columns=tie_break_columns or []
     order=[order_column,*tie_break_columns]
-    columns=list(dict.fromkeys([*key_columns,*order,value_column]))
+    role_columns=list(dict.fromkeys([*key_columns,*order,value_column]))
+    columns=list(dict.fromkeys([*role_columns,*(c['column'] for c in conditions)]))
     if not key_columns or len(set(key_columns))!=len(key_columns) or len(set(order))!=len(order):
         raise ValueError('키와 정렬 컬럼은 중복 없이 지정해야 합니다.')
     if set(key_columns)&set(order) or value_column in key_columns or not set(columns)<=set(info.columns):
@@ -25,19 +31,20 @@ def latest_distribution(context, dataset_id, key_columns, order_column, value_co
     excluded_rows=0
     if hasattr(store.frames, 'batches') and info.rows > 20_000:
         from utils.analysis_latest_sql import select_latest
-        selected, issue, excluded_rows = select_latest(store, info, columns, key_columns, order, null_policy=null_policy)
+        selected, issue, excluded_rows = select_latest(store, info, columns, key_columns, order, null_policy=null_policy, conditions=conditions, filter_stage=filter_stage, role_columns=role_columns)
         if issue:
             return issue
         execution_mode = 'bounded_local_sql'
     else:
         frame=project_dataset(store,dataset_id,columns).reset_index(drop=True)
+        if filter_stage=='before_selection':frame=filter_frame(frame,predicates)
         if frame.empty:
             return {'status':'needs_context','message':'조건에 해당하는 행이 없습니다. 최신행 분포를 그릴 데이터가 없습니다.'}
         import numpy as np
-        if any(np.isinf(frame[c].dropna()).any() for c in columns if pd.api.types.is_float_dtype(frame[c])):
+        if any(np.isinf(frame[c].dropna()).any() for c in role_columns if pd.api.types.is_float_dtype(frame[c])):
             return {'status':'needs_context','error_code':'latest_nonfinite_policy',
                 'message':'키·정렬·분포 컬럼에 무한대가 있습니다. 결측 행 제외와 다른 처리 기준이 필요합니다.'}
-        missing=frame[columns].isna().any(axis=1)
+        missing=frame[role_columns].isna().any(axis=1)
         excluded_rows=int(missing.sum())
         if excluded_rows and null_policy=='reject':
             return {'status':'needs_context','error_code':'latest_null_policy',
@@ -60,6 +67,9 @@ def latest_distribution(context, dataset_id, key_columns, order_column, value_co
             return {'status':'needs_context','error_code':'latest_order_tie',
                     'message':'같은 키에 최신 정렬값이 동일한 행이 여러 개입니다. 동률일 때 사용할 추가 정렬 컬럼을 알려주세요.'}
         selected=frame.loc[winners.index].copy()
+        if filter_stage=='after_selection':selected=filter_frame(selected,predicates)
+    if selected.empty:
+        return {'status':'needs_context','error_code':'latest_empty','message':'조건을 적용한 최신행이 0개입니다. 원본은 보존했습니다.'}
     if not selected[key_columns].drop_duplicates().shape[0]==len(selected):
         raise ValueError('최신 행의 키 유일성을 확인하지 못했습니다.')
     if categorical and selected[value_column].nunique()>50:
@@ -67,7 +77,7 @@ def latest_distribution(context, dataset_id, key_columns, order_column, value_co
                 'message':'범주가 50개를 넘습니다. 표시할 상위 범주 수나 묶는 기준을 알려주세요.'}
     contract={'kind':'latest_per_key','key_columns':list(key_columns),
         'order_columns':order,'descending':True,'null_policy':null_policy,'tie_policy':'reject',
-        'input_dataset_id':dataset_id,'input_snapshot':info.snapshot}
+        'input_dataset_id':dataset_id,'input_snapshot':info.snapshot,**lineage(conditions,filter_stage)}
     chosen=store.register(selected,source=info.source,parent_id=info.id,snapshot=info.snapshot,
         coverage='complete',predicate_known=True,conditions=info.conditions,row_selection=contract)
     count_column='__key_count'

@@ -15,7 +15,7 @@ def _quote(name):
     return '`' + name.replace('`', '``') + '`'
 
 
-def plan(context, source, key_columns, order_column, value_column, *, categorical=True, bins=20, tie_break_columns=None, null_policy='reject'):
+def plan(context, source, key_columns, order_column, value_column, *, categorical=True, bins=20, tie_break_columns=None, null_policy='reject', conditions=None, filter_stage=''):
     if null_policy not in {'reject','drop_before_selection'}:
         raise ValueError('지원하지 않는 최신행 결측 정책입니다.')
     if type(categorical) is not bool or type(bins) is not int or not 2 <= bins <= 100:
@@ -26,6 +26,9 @@ def plan(context, source, key_columns, order_column, value_column, *, categorica
         return {'status': 'needs_refresh', 'refresh_query': 'SELECT * FROM '+_quoted_table(source)+' LIMIT 0',
                 'message': '현재 테이블 스키마 확인이 필요합니다.'}
     types = {c['name']: c.get('dtype', '').lower() for c in schema.get('columns', [])}
+    from utils.analysis_latest_filters import validate, validate_types, sql as filter_sql, lineage
+    conditions=validate(conditions,filter_stage,types)
+    validate_types(conditions,types)
     order = [order_column, *(tie_break_columns or [])]
     columns = [*key_columns, *order, value_column]
     if (not 1 <= len(key_columns) <= 4 or len(set(columns)) != len(columns) or not set(columns) <= types.keys()):
@@ -40,28 +43,38 @@ def plan(context, source, key_columns, order_column, value_column, *, categorica
     keys = ['_k'+str(i) for i in range(len(key_columns))]
     order_aliases = ['_order'] + ['_tie'+str(i) for i in range(len(order)-1)]
     aliases = [*keys, *order_aliases, '_value']
+    role_aliases=list(aliases)
+    extras=[c['column'] for c in conditions if c['column'] not in columns]
+    extras=list(dict.fromkeys(extras))
+    columns.extend(extras)
+    aliases.extend('_filter'+str(i) for i in range(len(extras)))
+    predicate=filter_sql(conditions,dialect='databricks',aliases=dict(zip(columns,aliases)),types=types)
     projection = ', '.join(_quote(c)+' AS '+a for c, a in zip(columns, aliases))
-    nulls = ' OR '.join(a+' IS NULL' for a in aliases)
+    nulls = ' OR '.join(a+' IS NULL' for a in role_aliases)
     infinite = []
     for c, a in zip(columns, aliases):
-        if re.search(r'float|double', types[c]):
+        if a in role_aliases and re.search(r'float|double', types[c]):
             nulls += ' OR isnan('+a+')'
             infinite.append('ABS('+a+") = CAST('Infinity' AS DOUBLE)")
     infinite_test=' OR '.join(infinite) or 'FALSE'
     group = ', '.join(keys)
     ordering = ', '.join(a+' DESC' for a in order_aliases)
     valid_rows = (' WHERE NOT ('+nulls+')') if null_policy=='drop_before_selection' else ''
-    query = f'''WITH base AS (SELECT {projection} FROM {_quoted_table(source)}),
-quality AS (SELECT COUNT(*) AS n, COALESCE(SUM(CASE WHEN {nulls} THEN 1 ELSE 0 END), 0) AS missing,
+    before=predicate if filter_stage=='before_selection' else 'TRUE'
+    after=predicate if filter_stage=='after_selection' else 'TRUE'
+    query = f'''WITH original AS (SELECT {projection} FROM {_quoted_table(source)}),
+base AS (SELECT * FROM original WHERE {before}),
+quality AS (SELECT (SELECT COUNT(*) FROM original) AS n, COALESCE(SUM(CASE WHEN {nulls} THEN 1 ELSE 0 END), 0) AS missing,
 COALESCE(SUM(CASE WHEN {infinite_test} THEN 1 ELSE 0 END),0) AS nonfinite FROM base),
 ranked AS (SELECT *, DENSE_RANK() OVER (PARTITION BY {group} ORDER BY {ordering}) AS _rank FROM base{valid_rows}),
-latest AS (SELECT * FROM ranked WHERE _rank = 1),
-key_counts AS (SELECT {group}, COUNT(*) AS n FROM latest GROUP BY {group}),
+winners AS (SELECT * FROM ranked WHERE _rank = 1),
+latest AS (SELECT * FROM winners WHERE {after}),
+key_counts AS (SELECT {group}, COUNT(*) AS n FROM winners GROUP BY {group}),
 frequencies AS (SELECT CAST(_value AS STRING) AS v, COUNT(*) AS n FROM latest GROUP BY _value)
 SELECT 0 AS __kind, CAST(NULL AS STRING) AS __value, 0 AS __frequency,
 n AS __input_rows, missing AS __null_rows,
 (SELECT COUNT(*) FROM key_counts WHERE n > 1) AS __tied_keys,
-(SELECT COUNT(*) FROM key_counts) AS __selected_keys,
+(SELECT COUNT(*) FROM latest) AS __selected_keys,
 (SELECT COUNT(*) FROM frequencies) AS __categories, nonfinite AS __nonfinite_rows FROM quality
 UNION ALL
 SELECT 1, v, n, 0, 0, 0, 0, 0, 0 FROM frequencies
@@ -81,7 +94,7 @@ bin_ids AS (SELECT EXPLODE(SEQUENCE(0,{bins-1})) AS bucket)
 SELECT 0 AS __kind, CAST(NULL AS STRING) AS __value, 0 AS __frequency,
 n AS __input_rows, missing AS __null_rows,
 (SELECT COUNT(*) FROM key_counts WHERE n > 1) AS __tied_keys,
-(SELECT COUNT(*) FROM key_counts) AS __selected_keys,
+(SELECT COUNT(*) FROM latest) AS __selected_keys,
 {bins} AS __categories, nonfinite AS __nonfinite_rows, (SELECT lo FROM ranges) AS __lower, (SELECT hi FROM ranges) AS __upper FROM quality
 UNION ALL
 SELECT 1, CAST(b.bucket AS STRING), COALESCE(f.n,0), 0,0,0,0,0,0,
@@ -93,13 +106,14 @@ ORDER BY __kind, __lower LIMIT {bins+1}"""
         'reason': '키별 최신행과 결측·동률을 동일 조회에서 검증하고 분포 빈도만 가져옵니다.',
         'key_columns': key_columns, 'order_column': order_column, 'value_column': value_column,
         'categorical':categorical, 'bins':bins, 'tie_break_columns':order[1:], 'null_policy':null_policy,
-        'schema_fingerprint': schema.get('schema_fingerprint')}}
+        **lineage(conditions,filter_stage), 'schema_fingerprint': schema.get('schema_fingerprint')}}
 
 
-def prepare(context, source, key_columns, order_column, value_column, result_dataset_id='', *, categorical=True, bins=20, tie_break_columns=None, null_policy='reject'):
-    outcome = plan(context, source, key_columns, order_column, value_column, categorical=categorical, bins=bins, tie_break_columns=tie_break_columns, null_policy=null_policy)
+def prepare(context, source, key_columns, order_column, value_column, result_dataset_id='', *, categorical=True, bins=20, tie_break_columns=None, null_policy='reject', conditions=None, filter_stage=''):
+    outcome = plan(context, source, key_columns, order_column, value_column, categorical=categorical, bins=bins, tie_break_columns=tie_break_columns, null_policy=null_policy, conditions=conditions, filter_stage=filter_stage)
     if outcome['status'] != 'planned' or not result_dataset_id:
         return outcome
+    from utils.analysis_latest_filters import lineage
     spec = outcome['remote_latest_plan']
     store = context.datasets
     fields = FIELDS if categorical else FIELDS + ['__lower','__upper']
@@ -142,6 +156,8 @@ def prepare(context, source, key_columns, order_column, value_column, result_dat
         raise ValueError('결측 행 수가 전체 행 수보다 큽니다.')
     if h.__input_rows == h.__null_rows:
         return {'status': 'needs_context', 'message': '조회 대상에 행이 없습니다.'}
+    if h.__selected_keys==0 and data.empty:
+        return {'status':'needs_context','error_code':'latest_empty','message':'조건을 적용한 최신행이 0개입니다. 원본은 보존했습니다.'}
     if (h.__frequency != 0 or not pd.isna(h.__value) or h.__selected_keys > h.__input_rows-h.__null_rows
             or h.__selected_keys < 1 or h.__categories != len(data)
             or data.__value.isna().any() or data.__value.duplicated().any()
@@ -154,7 +170,7 @@ def prepare(context, source, key_columns, order_column, value_column, result_dat
     counts = data[['__value', '__frequency']].rename(columns={'__value': value_column, '__frequency': count_column})
     selection = {'kind': 'remote_latest_per_key_distribution', 'key_columns': key_columns,
         'order_columns': [order_column, *(tie_break_columns or [])], 'descending': True, 'null_policy': null_policy, 'tie_policy': 'reject',
-        'input_result_id': info.id, 'input_snapshot': info.snapshot}
+        'input_result_id': info.id, 'input_snapshot': info.snapshot,**lineage(spec.get('conditions'),spec.get('filter_stage'))}
     distribution = store.register(counts, source=info.source, parent_id=info.id, snapshot=info.snapshot,
         coverage='complete', predicate_known=True, grain='aggregate',
         aggregation='remote_count_by_value_after_latest_per_key', row_selection=selection)
@@ -170,6 +186,7 @@ def prepare(context, source, key_columns, order_column, value_column, result_dat
 
 def _histogram_result(context, info, spec, header, data, bins):
     """Validate actual edges/counts before rendering pre-binned bars, never bin centers."""
+    from utils.analysis_latest_filters import lineage
     import numpy as np
     from utils.analysis_charts import ChartPreview, _apply_unicode_font
     from matplotlib.figure import Figure
@@ -191,7 +208,7 @@ def _histogram_result(context, info, spec, header, data, bins):
         raise ValueError('원격 히스토그램 구간 경계가 유한하고 연속적인 동일 폭 구간이어야 합니다.')
     selection = {'kind':'remote_latest_per_key_distribution','key_columns':spec['key_columns'],
         'order_columns':[spec['order_column'], *spec.get('tie_break_columns',[])],'descending':True,'null_policy':spec.get('null_policy','reject'),'tie_policy':'reject',
-        'input_result_id':info.id,'input_snapshot':info.snapshot}
+        'input_result_id':info.id,'input_snapshot':info.snapshot,**lineage(spec.get('conditions'),spec.get('filter_stage'))}
     counts = data[['__lower','__upper','__frequency']].copy().reset_index(drop=True)
     distribution = context.datasets.register(counts, source=info.source,parent_id=info.id,snapshot=info.snapshot,
         coverage='complete',predicate_known=True,grain='aggregate',aggregation='remote_histogram_after_latest_per_key',row_selection=selection)

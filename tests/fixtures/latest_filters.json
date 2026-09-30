@@ -1,0 +1,74 @@
+{
+  "source": "fixture.scope.sensor_revisions",
+  "columns": [
+    "entity_63",
+    "version_84",
+    "category_29",
+    "score_51"
+  ],
+  "rows": [
+    [
+      "a",
+      1,
+      "old",
+      10
+    ],
+    [
+      "a",
+      2,
+      "new",
+      90
+    ],
+    [
+      "b",
+      1,
+      "old",
+      20
+    ],
+    [
+      "b",
+      2,
+      "new",
+      30
+    ],
+    [
+      "c",
+      1,
+      "old",
+      80
+    ],
+    [
+      "c",
+      2,
+      "new",
+      100
+    ]
+  ],
+  "condition": {
+    "column": "score_51",
+    "op": "lt",
+    "value": 50
+  },
+  "expected_before": {
+    "old": 1,
+    "new": 1
+  },
+  "expected_after": {
+    "new": 1
+  },
+  "prompt": "entity_63별 version_84이 가장 큰 최신 행 하나로 category_29 분포를 그려줘. score_51 < 50 조건을 적용해줘.",
+  "before": "조건을 최신행 선택 전에 적용해줘",
+  "after": "조건을 최신행 선택 후에 적용해줘",
+  "scale": {
+    "replicas": 10000,
+    "cycles": 17
+  },
+  "numeric_prompt": "entity_63별 version_84이 가장 큰 최신 행 하나로 score_51 histogram을 그려줘. score_51 < 50 조건을 적용해줘. 4개 구간.",
+  "numeric_expected_before": [
+    10,
+    30
+  ],
+  "numeric_expected_after": [
+    30
+  ]
+}
