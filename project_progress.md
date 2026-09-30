@@ -2259,3 +2259,4 @@ Task definitions and acceptance conditions: docs/agent_remaining_tasks_2026-09-1
 - **Action**: 공개 진입점에서 제거한 `ui/legacy_telly.py`의 코드·테스트 참조를 조사하고, 새 agent 실행에 필요한 공용 계약과 구분하여 미사용 화면 파일을 제거한다.
 - **Artifact Update**: 구형 화면 `ui/legacy_telly.py`, 전용 `analysis_loop`/`analysis_runtime`/`analysis_model`/`analysis_approval`, 예전 검증 스크립트·의존성 파일과 호환 브리지를 삭제. 새 agent가 사용하는 `analysis_instructions`, `build_analysis_tools`, SQL 실행·데이터 도구는 보존. 구형 전용 테스트는 제거하고 진입점 차단 회귀 테스트는 유지했다. 과거 검증 문서를 기록용으로 명시하고 현재 대체 검사 명령으로 갱신.
 - **Validation**: 제품 unittest 490/490 PASS(구형 전용 14검사 제거로 이전 504보다 감소), migration 136/136 PASS, compileall 및 diff check PASS. Python 실행 코드의 제거 파일 참조 0건. Chrome 8501 최신 화면 rerun 후 새 agent 정상 표시, health HTTP200. 분석 전체 GO 판정을 변경하는 작업은 아니다.
+- **Delivery**: 변경을 `056b31e`로 커밋하여 `origin/codex/agentic-analysis-rc-2026-09-14`에 push했고 원격 SHA 일치를 확인했다. 8501 새 agent는 계속 실행 중이다.
