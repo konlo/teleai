@@ -17,6 +17,35 @@ GOOD={'name':'local_analysis_sql','args':{'dataset_id':'$fixture','query':'SELEC
 
 
 class ToolRepairTests(unittest.TestCase):
+    def test_memory_failure_changes_tool_once_and_preserves_scope(self):
+        import duckdb
+        for error in (MemoryError('private memory payload'),duckdb.OutOfMemoryException('private memory payload')):
+            with self.subTest(error=type(error).__name__),tempfile.TemporaryDirectory() as root,patch(
+                    'core.analysis_runtime_tools.build_aggregate_dataset',side_effect=error) as worker:
+                model=EvaluationModel(calls=[BAD,BAD,GOOD]);r=self.setup_runtime(root,model)
+                try:
+                    digest=stored_dataset_digest(r.datasets,model.evaluation_dataset_id)
+                    with self.planning_disabled(r):result=r.submit('reading 평균을 알려줘')
+                    self.assertEqual(result['status'],'answered',result)
+                    state=r.inspect()['recovery']
+                    worker.assert_called_once()
+                    self.assertEqual(len(state['repair_rejected']),1)
+                    self.assertIn('local_resource_limit',str(state['tool_failures']))
+                    self.assertEqual(r.datasets.frames[state['evidence_ids'][-1]].iloc[0,0],9.)
+                    self.assertEqual(stored_dataset_digest(r.datasets,model.evaluation_dataset_id),digest)
+                    self.assertFalse(r.inspect()['requests'])
+                    self.assertNotIn('private memory payload',r.diagnostics.path.read_text())
+                finally:r.close()
+
+    def test_resource_repair_guidance_respects_current_read_authorization_policy(self):
+        plan=diagnosis({'tool':'aggregate_dataset','status':'unavailable','error_code':'local_resource_limit'},
+                       {'summarize_groups','local_analysis_sql','search_analysis_tools'})
+        self.assertEqual(plan['category'],'local_resource_limit')
+        self.assertIn('summarize_groups',plan['candidate_tools'])
+        instructions=repair_instruction({'tool_failures':{}},set(),[])
+        self.assertNotIn('requires exact-query approval',instructions)
+        self.assertIn('Do not ask for approval when automatic reads are enabled',instructions)
+
     def setup_runtime(self,root,model):
         r=GraphAnalysisRuntime(root,'owner','repair',model)
         if not r.datasets.metadata:
@@ -127,4 +156,5 @@ class ToolRepairTests(unittest.TestCase):
         self.assertEqual(actual['candidate_tools'],['search_analysis_tools'])
         text=repair_instruction({'tool_failures':{'test':failure}}, {'search_analysis_tools'}, ['test'])
         self.assertNotIn(failure['message'],text)
-        self.assertIn('exact-query approval',text)
+        self.assertIn('current runtime authorization policy',text)
+        self.assertIn('read-only checks and execution ledger',text)

@@ -1,0 +1,30 @@
+test_actual_local_timeout_becomes_observation_and_model_changes_tool (tests.test_tool_repair_loop.ToolRepairTests.test_actual_local_timeout_becomes_observation_and_model_changes_tool) ... ok
+test_alternative_cannot_drop_filter (tests.test_tool_repair_loop.ToolRepairTests.test_alternative_cannot_drop_filter) ... ok
+test_diagnosis_uses_available_tools_and_never_promotes_observation_text (tests.test_tool_repair_loop.ToolRepairTests.test_diagnosis_uses_available_tools_and_never_promotes_observation_text) ... FAIL
+test_duplicate_is_not_executed_and_alternative_finishes (tests.test_tool_repair_loop.ToolRepairTests.test_duplicate_is_not_executed_and_alternative_finishes) ... ok
+test_memory_failure_changes_tool_once_and_preserves_scope (tests.test_tool_repair_loop.ToolRepairTests.test_memory_failure_changes_tool_once_and_preserves_scope) ... ok
+test_new_request_can_retry_tool_but_same_request_is_bounded (tests.test_tool_repair_loop.ToolRepairTests.test_new_request_can_retry_tool_but_same_request_is_bounded) ... ok
+test_resource_repair_guidance_respects_current_read_authorization_policy (tests.test_tool_repair_loop.ToolRepairTests.test_resource_repair_guidance_respects_current_read_authorization_policy) ... ok
+test_restart_preserves_failure_plan_and_resumes_with_alternative (tests.test_tool_repair_loop.ToolRepairTests.test_restart_preserves_failure_plan_and_resumes_with_alternative) ... ok
+test_agent_completes_grouped_eda_from_retained_data_without_reload (tests.test_group_streaming.GroupStreamingTests.test_agent_completes_grouped_eda_from_retained_data_without_reload) ... ok
+test_grouped_metrics_stream_only_needed_columns_and_preserve_root (tests.test_group_streaming.GroupStreamingTests.test_grouped_metrics_stream_only_needed_columns_and_preserve_root) ... ok
+test_interrupted_or_incomplete_batches_never_publish (tests.test_group_streaming.GroupStreamingTests.test_interrupted_or_incomplete_batches_never_publish) ... ok
+test_large_integer_sum_and_zero_numerators_keep_exact_values (tests.test_group_streaming.GroupStreamingTests.test_large_integer_sum_and_zero_numerators_keep_exact_values) ... ok
+test_conditional_percentage_and_mean_keep_zero_groups (tests.test_analysis_group_summary.AnalysisGroupSummaryTests.test_conditional_percentage_and_mean_keep_zero_groups) ... ok
+test_explicit_group_summary_completes_without_model_or_remote_reload (tests.test_analysis_group_summary.AnalysisGroupSummaryTests.test_explicit_group_summary_completes_without_model_or_remote_reload) ... ok
+test_invalid_columns_metric_shapes_and_aggregate_grain_fail_closed (tests.test_analysis_group_summary.AnalysisGroupSummaryTests.test_invalid_columns_metric_shapes_and_aggregate_grain_fail_closed) ... ok
+test_multiple_metrics_and_global_filter_match_independent_pandas (tests.test_analysis_group_summary.AnalysisGroupSummaryTests.test_multiple_metrics_and_global_filter_match_independent_pandas) ... ok
+test_named_group_comparison_filters_only_requested_observed_values (tests.test_analysis_group_summary.AnalysisGroupSummaryTests.test_named_group_comparison_filters_only_requested_observed_values) ... ok
+
+======================================================================
+FAIL: test_diagnosis_uses_available_tools_and_never_promotes_observation_text (tests.test_tool_repair_loop.ToolRepairTests.test_diagnosis_uses_available_tools_and_never_promotes_observation_text)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/najongseong/git_repository/teleai/tests/test_tool_repair_loop.py", line 159, in test_diagnosis_uses_available_tools_and_never_promotes_observation_text
+    self.assertIn('exact-query approval',text)
+AssertionError: 'exact-query approval' not found in '도구 실패를 관찰했습니다. 아래는 실행 권한이 아닌 복구 계획 지침입니다.\n[{"failure_id": "9f86d081884c7d65", "category": "local_tool_unavailable", "failed_tool": "aggregate_dataset", "candidate_tools": ["search_analysis_tools"], "next_action": "Choose a different available local tool for the same outstanding obligation. A local failure does not justify remote reloading."}]\nInspect → revise → execute → verify. Search candidate tool schemas before choosing a compatible alternative. Do not repeat an unchanged failed call. Preserve the original source, filters, denominator and coverage. Keep completed results and repair only missing obligations. Never reload data to bypass a local tool failure. Remote SQL must follow the current runtime authorization policy, read-only checks and execution ledger. Do not ask for approval when automatic reads are enabled. If no valid alternative exists, explain the specific unmet requirement. A diagnosis or plan is not completion evidence.'
+
+----------------------------------------------------------------------
+Ran 17 tests in 1.154s
+
+FAILED (failures=1)

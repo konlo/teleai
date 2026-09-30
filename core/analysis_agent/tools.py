@@ -73,6 +73,12 @@ def local_tools(context, diagnostics=None):
                             'message':'로컬 도구가 제한 시간 안에 완료되지 않았습니다. 결과는 검증되지 않았습니다. '
                                       '원래 조건과 보유 데이터를 유지하며 다른 로컬 도구를 선택하세요. '
                                       '이 실패는 원격 데이터 재조회나 동일 호출 재실행의 근거가 아닙니다.'})
+                if isinstance(exc, (MemoryError, duckdb.OutOfMemoryException)):
+                    return normalize_tool_result({'status':'unavailable','error_code':'local_resource_limit',
+                            'retryable':False,
+                            'message':'로컬 계산이 메모리 또는 batch 크기 한도에 도달했습니다. '
+                                      '같은 호출을 반복하지 말고 필요한 컬럼만 읽는 배치 집계 등 다른 로컬 도구를 검토하세요. '
+                                      '원본 출처·필터·분모·전체 범위를 유지하고 표본으로 바꾸지 마세요.'})
                 if isinstance(exc, (duckdb.Error, SqlglotError)):
                     return normalize_tool_result({'status':'error','error_code':'local_sql_error',
                             'retryable': False,

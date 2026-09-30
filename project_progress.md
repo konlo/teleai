@@ -3,6 +3,7 @@
 ## Current Status
 - **Last Updated**: 2026-09-30
 - **Status**: In Progress — 범용 자율 분석 agent 정식 출시 NO-GO
+- **GO continuation**: [후속 보강](docs/evaluation/2026-09-30_go_continuation/report.md). 그룹 통계 배치 처리, 자원 실패의 대체 도구 복구, 복구 prompt 승인 정책 충돌 수정. 합성100만행×8지표·PNG·원본/재시작 보존 PASS. 제품490+migration136/reference217 PASS. 설정된 모델/SQL400 및 미완료 네 묶음 때문에 범용 NO-GO 유지.
 - **Server diagnostics**: [서버 실패 진단 안내](docs/server_failure_diagnostics.md). 직접 접속·로그 반출 없이 12줄 진단 요약을 확인하도록 UI/CLI/관측을 보강했다. 제품484 + migration136 PASS. 실제 서버 적용은 미검증이며 서버 접속/전체 로그 공유를 요청하지 않는다.
 - **Deferred reply recurrence**: [응답 검증 누락 수정](docs/evaluation/2026-09-30_deferred_reply_recurrence/report.md). 사용자 원문으로 구조화블록/도구안내/구버전/과거표시 누락 재현·보완. 제품475+migration136/관련27 PASS, localhost8502 재시작 및 실제 화면 정정안내 확인. 사용자가 실제 사용 서버에서 재발했음을 확인함. 서버 revision·실행 프로세스는 미확인.
 - **Offline continuation**: [대용량 이상치 EDA 개선](docs/evaluation/2026-09-30_offline_continuation/report.md). 13:30 KST 공급자 모델/SQL400 지속. 영속 이상치 cohort 전체 프레임 복원을 배치 staging으로 전환, 합성100만행→정답100행/원본/재시작 보존 PASS. 대상 수치1개 컬럼의 임계값 계산은 전체 읽기라는 한계를 명시.
@@ -2175,3 +2176,10 @@ Task definitions and acceptance conditions: docs/agent_remaining_tasks_2026-09-1
 - **Action** [Agent: /root]: 원격 실행 시작/종료·receipt 재사용·불확실 상태 및 표시 단계 guard를 계측했다. 예외 종료에도 run_completed=incomplete를 기록한다. 차트 표시 오류 ID를 화면에 노출한다. 진단 ID 입력/버튼 rerun에서는 자동 SQL 재개를 차단한다.
 - **Outcome**: 제품484/484, migration136/136, 관련32 PASS. 최초 migration 실패는 입력창 순번 의존 테스트여서 라벨 선택으로 수정했다. 원격 DB/실모델 호출0, 실제 서버 검증 아님. 검증 기록 docs/evaluation/2026-09-30_support_diagnostics/validation.json.
 - **Next Action**: 사용자는 수정 배포 및 유휴 시 서비스 프로세스 재시작 후 같은 대화의 '문제 진단'에서 공유 가능한 상태/단계/ID만 확인한다. 서버 주소나 원본 로그는 필요하지 않다.
+
+## [2026-09-30 14:50:40] [Agent: /root] User Request: GO를 위한 잔여 작업 계속 수행
+- **Action** [Agent: /root]: 통합 작업 보드의 네 미완료 묶음을 다시 확인하고 실제 평가 실패 계약을 중심으로 구현·재검증한다. 사용자 서버 접속/로그 반출은 불가능하므로 요구하지 않으며 로컬 실서비스 검증과 구분한다.
+- **Artifact Update**: utils/analysis_group_streaming.py와 그룹 도구 연결. 실제 필요한 컬럼만 배치로 읽고 제한된 로컬 SQL에서 정확한 다중 지표를 계산한다. 원본 행 수·그룹/출력 한도·정수 합계 정밀도·조건부 분모·후보 발행 원자성을 검증했다.
+- **Action** [Agent: /root]: MemoryError/OutOfMemory를 local_resource_limit 관찰로 변환해 대체 로컬 도구로 복구하고 반복 호출을 차단한다. 복구 prompt의 무조건 승인 규칙을 현재 runtime 정책에 따르도록 교체했다. 기존 제약과 SQL 장부는 유지한다.
+- **Outcome**: 합성100만행/7그룹/8지표 독립 정답, 1024행 배치/원본3컬럼만 읽기/추가SQL0/PNG실물/원본과재시작 보존 PASS. 1.188초, process peak RSS282214400 bytes(운영 SLA가 아님). 관련17, 제품490, migration136 PASS; reference217 PASS.
+- **Remaining**: 최신행 선택 전후 필터·추가 통계, 복합SQL 의미·복구, 대용량 혼합 전체여정, 독립98oracle/실모델 평가. 14:50KST 공급자 최소 추론/OpenSession400 지속. 실제 사용자 서버는 접근불가·미검증이며 전체 로그 반출을 요청하지 않는다.
