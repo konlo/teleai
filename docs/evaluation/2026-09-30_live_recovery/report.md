@@ -11,7 +11,7 @@
 
 ## 실제 데이터와 자연어 검증
 
-- [최신행 실DB 여정](latest_live.json): 실제 750,000행, 명시적 키/최대 ID/추가 동률 기준/선택 전 결측 제외. 12키의 8구간 빈도·경계가 독립 ROW_NUMBER SQL+NumPy 정답과 일치. 내려받은 결과9행, 25.888초, schema/집계/oracle SQL3회. 반복 요청 추가 조회0회. 이 명시적 여정의 모델 호출은0이며 실제 자연어 모델 평가로 세지 않는다. [실제 PNG](latest_live.png)도 확인했다.
+- [최신행 실DB 여정](latest_live.json): 실제 750,000행, 명시적 키/최대 ID/추가 동률 기준/선택 전 결측 제외. 12키의 8구간 빈도·경계가 독립 ROW_NUMBER SQL+NumPy 정답과 일치. 내려받은 결과9행, 25.888초, schema/집계/oracle SQL3회. 반복 요청 추가 조회0회. 실데이터의 제외행은0이므로 실제 결측 경계가 발생한 실험은 아니다. 이 명시적 여정의 모델 호출은0이며 실제 자연어 모델 평가로 세지 않는다. [실제 PNG](latest_live.png)도 확인했다.
 - [스키마 오염 실DB 회귀](schema_authority_after.json): scripted model이 실제 Databricks COUNT→AVG 두 쿼리를 실행, answered 및 원본18컬럼 보존. 처음 [하네스 중단](schema_authority_live.json)과 [원인 진단](schema_authority_diagnosis.json)은 보존했다. 첫 하네스는 세 번째 모델 요청을 AssertionError로 중단했다. 진단 하네스로 바꿔 실제 결함인 schema 이름/컬럼 충돌을 찾아 수정한 것이다.
 - [자연어·후속 대화](language_journeys.json): 실제 Databricks 모델을 연결한 합성 로컬 데이터10여정/12턴 PASS, 실제 모델 호출6회, warehouse0회. 조건·연산·후속·차트·원본 보존을 독립 기대값과 비교했다.
 - [원래200문항](reference_200.json): **105 PASS / 95 UNGRADED**, 실제 모델 호출14회, warehouse0회. 대부분 결정적 도구 경로다. 원래 reference 계산은 바꾸지 않았으며 새 oracle3개는 L1_096/097/100의 실제 PNG·차트 데이터 검증이다. [신규3개 별도 실행](new_oracles.json)도 PASS. 미채점을 통과 또는 제품 결함으로 단정하지 않는다.
@@ -56,3 +56,9 @@
 이번 warehouse 조회는 최신행3회 + count→평균 회귀 세 번×2회 + 실제 모델 평균1회 = 총10회다. 공개 SQLite 실행 및 모델 API 호출과 구분한다. 앞선 연결 확인 SELECT1은 별도 요청의 근거다.
 
 마지막 전체 제품504검사에서503개 통과,1개는 새 oracle105개와 저장된 readiness manifest102개 불일치였다. manifest 생성기로 갱신하고 해당 검사를 재실행했다. 최초 실패 로그도 보존했다. 이 manifest 갱신은 제품의 통과 기준을 낮추지 않는다.
+
+구현 커밋 `555d2287e6d312b77e3a219a768e80595a34511c`를 작업 브랜치 `codex/agentic-analysis-rc-2026-09-14`에 push하고 원격 SHA 일치를 확인했다. main 병합이나 사용자 서버 배포를 수행한 것은 아니다.
+
+## 최종 CI
+
+[GitHub Actions 36720171438](https://github.com/konlo/teleai/actions/runs/36720171438)은 구현 커밋555d228의 Linux 환경에서 모든 단계 성공. 제품504, migration136, agentic17, reference/계약217, compile PASS. [CI 원본 상태](ci.json)와 [검사 집계](ci_counts.txt). 문서 후속 커밋은 실행 코드를 바꾸지 않는다. CI 통과에도 앞의 범용 NO-GO 판정은 유지한다.

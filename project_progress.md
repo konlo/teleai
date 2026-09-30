@@ -1,6 +1,7 @@
 # Project Progress Log
 
 ## Current Status
+- **CI completed**: 구현555d228 push/SHA 확인. Linux CI36720171438 제품504+migration136+agentic17+reference217+compile PASS. 실모델·실DB qualified 평균 answered. 범용NO-GO는 복합SQL/남은 계약 때문에 유지.
 - **Live GO evaluation**: [연결 복구 후 평가](docs/evaluation/2026-09-30_live_recovery/report.md). 실제75만행 최신행/이미지/재사용 PASS. 스키마 오염과 qualified table 주소/컬럼 충돌, 영어 그룹 개수 해석 수정. 자연어10여정12턴 PASS, 200문항105PASS/95미채점. Spider10 최종완료0, 진단 초안 공식1/10(local004 정답을 agent가 차단). 범용 NO-GO이며 현재 API400이 원인은 아님.
 - **Connectivity recovered (21:48 KST)**: Warehouse RUNNING/API200, 최소 모델 응답 및 SELECT1 각1회 PASS. 이전400은 이번 점검에서 재현되지 않음. 원인/영구 해결은 확정하지 않음. 실제 agent 종단평가 및 잔여 기능 기준이 남아 범용 NO-GO 유지. 근거 docs/evaluation/2026-09-30_connection_recovered/provider_probe.json.
 - **Last Updated**: 2026-09-30
@@ -2230,3 +2231,10 @@ Task definitions and acceptance conditions: docs/agent_remaining_tasks_2026-09-1
 
 - **Live follow-up**: 추가 실DB COUNT→AVG 회귀에서 schema 이름 `default`를 컬럼으로 오인하는 결함을 발견했다. 관측 qualified source span을 컬럼/조건 해석에서 구분하고 별도 컬럼·문자열 조건은 보존. scripted 실DB2회 answered 및 실제 모델3회/SQL1회 평균 answered 확인.
 - **Validation**: 최종 제품504개 중503통과/1개 readiness manifest oracle105 대102 불일치. 생성기로 manifest를 갱신하고 관련 검사를 재실행. 이 실행의 실제SQL은총10회(최신행3,회귀6,실모델평균1), 공개SQLite와분리. 모든근거는 docs/evaluation/2026-09-30_live_recovery/.
+
+- **Final verification**: readiness manifest 관련9개 PASS. 구현555d228 push 후 원격 SHA 일치. Linux CI36720171438에서 제품504/migration136/agentic17/reference217/compile 모두 PASS. report.md·go_gate.json·ci.json에 최종 근거 기록.
+
+## Daily Wrap-ups — 2026-09-30 연결 복구 이후
+- **완료**: 현재 Databricks 모델/SQL 연결 복구 확인. 스키마 오염·qualified 테이블 주소/컬럼 충돌·영어 그룹 개수 해석 수정. 실제75만행 분포/SQL 재사용, scripted 실DB 원본 스키마 보존, 실제모델+실DB 평균 완료. 자연어10여정12턴과 reference105문항 통과, 독립 oracle3개 추가. 코드 push와 최종 Linux CI 성공.
+- **문제와 한계**: Spider10 최종완료0, 별도 초안 공식1/10. 정답 SQL도 agent 계약이 차단한다는 근거 확보. 단순 LLM/API 장애로 단정하지 않음.
+- **다음 작업**: 출처별 의미 연결·파생 계산식·관계 탐색/검증을 고정 실패10문항으로 통합 보강. 최신행 추가 통계/혼합 단계·대용량 혼합여정·독립95 oracle은 미완료. main 병합/사용자 서버 배포는 수행하지 않음.
