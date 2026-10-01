@@ -2304,3 +2304,9 @@ Task definitions and acceptance conditions: docs/agent_remaining_tasks_2026-09-1
 - **Implementation**: `scripts/copy_databricks_default_to_mysql.py`가 Arrow 배치 읽기→MySQL staging 배치 삽입→전체 행 다중집합 지문·행 수 확인→테이블 게시를 수행한다. 접속 정보와 데이터는 무시되는 `.telly_runtime`/Homebrew 데이터 디렉터리에만 둔다. 평가 driver는 `requirements-mysql-eval.txt`에 분리했다.
 - **Validation**: `bank_loan` 750,000/18, `error_test` 9/5, `ncr_ride` 150,000/21, `stormtrooper` 9,524,806/13, `titanic` 891/12 (행/컬럼). 총 10,425,706행. 5개 모두 원본 전후 COUNT·전체 행 지문·대상 COUNT 및 실제 MySQL 컬럼명/순서/타입/NULL 계약이 일치했다. 임시 테이블 0개, 읽기 전용 GRANT와 로컬 bind 확인.
 - **Artifact Update**: `docs/evaluation/2026-10-01_mysql_copy/report.md`에 이관·검증 근거, 재현 명령과 한계를 기록했다. 제품 agent의 MySQL backend adapter는 아직 구현되지 않았고, 실제 chatbot 조회는 계속 Databricks를 사용한다.
+
+## [2026-10-01T21:35:55+09:00] [Agent: /root] User Request: MySQL·Databricks 선택을 .env 또는 config 파일 중 어디서 결정할지 확인
+- **Action**: 실제 UI 진입점과 런타임 생성 경로, `.env.example`, MySQL 평가 계획의 backend 분리 계약을 확인했다.
+- **Finding**: `ui/analysis_page.py`는 현재 `ConnectionConfig.from_env()`와 Databricks `make_executor`를 직접 생성한다. `TELLY_DATA_BACKEND`는 계획 문서에만 있고 제품에는 아직 구현되지 않았다. `.env`에 값만 넣어서는 MySQL로 전환되지 않는다.
+- **Decision**: 제품 환경별 활성 backend는 `.env`의 `TELLY_DATA_BACKEND=databricks|mysql`로 명시하고 기본은 Databricks로 둔다. 공통 코드의 기본 정책·검증은 config 객체로 유지한다. MySQL 선택 시에는 adapter/dialect/schema discovery/상태 분리를 구현·검증한 후에만 시작하며 미구현 상태에서 자동 fallback하지 않는다.
+- **Outcome**: 선택 방식과 현재 미구현 범위를 사용자에게 설명한다. 이번 요청에서 실제 backend adapter나 UI 전환은 수행하지 않는다.
