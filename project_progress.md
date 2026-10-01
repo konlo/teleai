@@ -2291,3 +2291,9 @@ Task definitions and acceptance conditions: docs/agent_remaining_tasks_2026-09-1
 - **Finding**: 실패 실행 c5670d75는 모델 ReadTimeout 2회, 모델 호출 3회, 원격 조회 0회였다. 0행 스키마 결과를 완전한 원본으로 재사용하려는 경로와, 계획 생성 후 이전 모델 시간 한도가 SQL 실행을 막는 경로를 재현했다. 실패 응답 뒤 후속 요청은 `required_sources`가 비어 모델로 되돌아갔다.
 - **Artifact Update**: 수치형 컬럼이 실제 스키마 결과로 확인된 단일 출처 히스토그램을 `prepare_histogram → 집계 SELECT → render_histogram`으로 결정적으로 연결했다. `LIMIT 0` 스키마 결과는 데이터 모집단 재사용에서 제외했다. 시간 초과 체크포인트에서 안전한 계획 재개를 허용하고, 이전 실패 뒤 출처가 비었을 때 관측된 수치 컬럼의 출처가 유일하면 그 출처를 결합한다.
 - **Validation**: 신규 2개 포함 관련 26개 테스트 PASS, `test_analysis_*.py` 248개 PASS, diff check PASS. 별도 자동 정책 전체 묶음 61개 중 5개는 기존 catalog fixture/승인 기대와 불일치하여 실패했고 이번 히스토그램 경로와는 별도로 남긴다. 실제 대화에서 오류 후 재개한 실행 e859e7b7은 Databricks 집계 1회로 값별 빈도 78행, 합계 750,000건을 받고 PNG 히스토그램을 화면에 표시했다. 실행 31.091초, 완료 판정 complete/answered, 모델 추가 호출 없이 원본 전체 재로딩 없음. 8501 지원 서버 재시작 후 계속 실행 중이다.
+
+## [2026-10-01T20:54:21+09:00] [Agent: /root] User Request: agent 개발·평가에 로컬 MySQL을 사용하고 최종 Databricks로 전환하는 방법 검토 및 계획
+- **Action**: 현재 Databricks 의존 경계, SQL dialect, 데이터 저장·평가 경로와 출시 기준을 확인한다. MySQL 평가의 유효 범위와 Databricks 최종 검증 기준을 분리한 실행 계획을 작성한다.
+- **Finding**: MySQL은 실제 SQL 서버를 통한 agent 통합 검증에 유익하지만 최근 `ReadTimeout`은 SQL 제출 전 LLM/agent 흐름이 원인이므로 DB 교체로 해결되지 않는다. 현 런타임은 executor 주입과 `sql_dialect`를 일부 지원하지만 승인 ledger·출처 검사·catalog/schema discovery·히스토그램 SQL 생성에는 Databricks 가정이 남는다. 현재 호스트에서 mysql/mysqld 실행 파일 및 기본 3306 리스너는 발견되지 않았다.
+- **Artifact Update**: `docs/mysql_development_evaluation_plan_2026-10-01.md`에 공통 backend 계약, 안전한 평가 데이터 이관, MySQL 사용자 여정·장애 주입·독립 oracle, Databricks 교차 검증 및 DeepEval/Spider 점수 분리를 기록했다.
+- **Decision**: DuckDB/fixture의 빠른 회귀 + MySQL 실제 서버 통합 + Databricks 최종 수락의 3층 평가를 채택한다. 이번 요청은 설계 검토이며 MySQL 설치, 데이터 복사 또는 제품 코드 변경은 수행하지 않는다.
