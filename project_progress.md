@@ -2285,3 +2285,9 @@ Task definitions and acceptance conditions: docs/agent_remaining_tasks_2026-09-1
 ## [2026-10-01T20:23:16+09:00] [Agent: /root] User Request: 현재 화면의 '문제 진단 · 로그 원문 없이 확인' 설명
 - **Action**: 인앱 브라우저의 현재 대화와 `ui/analysis_diagnostics.py`, `core/analysis_agent/support_report.py`를 확인했다.
 - **Outcome**: 이 메뉴는 오류 조사용 읽기 전용 진단 요약이다. 실행/오류 ID, 모델·도구·원격 조회 상태와 오류 위치만 표시하고 요청 원문·SQL·데이터·토큰은 제외한다. 버튼을 누른 현재 대화에는 보관된 실행 로그가 없어 '실행을 찾지 못했습니다'가 표시됐으며, 이것 자체는 에이전트 오류가 아니다.
+
+## [2026-10-01T20:35:11+09:00] [Agent: /root] User Request: 현재 대화의 분석 오류 재진단
+- **Action**: 8501 대화 47675cf8의 화면에서 `age` 히스토그램 요청 직후 ReadTimeout 오류 ID 5a4ba9f01fde를 확인했다. 실행 기록과 그래프 상태를 조사해 원인 및 안전한 복구 가능성을 판단한다.
+- **Finding**: 실패 실행 c5670d75는 모델 ReadTimeout 2회, 모델 호출 3회, 원격 조회 0회였다. 0행 스키마 결과를 완전한 원본으로 재사용하려는 경로와, 계획 생성 후 이전 모델 시간 한도가 SQL 실행을 막는 경로를 재현했다. 실패 응답 뒤 후속 요청은 `required_sources`가 비어 모델로 되돌아갔다.
+- **Artifact Update**: 수치형 컬럼이 실제 스키마 결과로 확인된 단일 출처 히스토그램을 `prepare_histogram → 집계 SELECT → render_histogram`으로 결정적으로 연결했다. `LIMIT 0` 스키마 결과는 데이터 모집단 재사용에서 제외했다. 시간 초과 체크포인트에서 안전한 계획 재개를 허용하고, 이전 실패 뒤 출처가 비었을 때 관측된 수치 컬럼의 출처가 유일하면 그 출처를 결합한다.
+- **Validation**: 신규 2개 포함 관련 26개 테스트 PASS, `test_analysis_*.py` 248개 PASS, diff check PASS. 별도 자동 정책 전체 묶음 61개 중 5개는 기존 catalog fixture/승인 기대와 불일치하여 실패했고 이번 히스토그램 경로와는 별도로 남긴다. 실제 대화에서 오류 후 재개한 실행 e859e7b7은 Databricks 집계 1회로 값별 빈도 78행, 합계 750,000건을 받고 PNG 히스토그램을 화면에 표시했다. 실행 31.091초, 완료 판정 complete/answered, 모델 추가 호출 없이 원본 전체 재로딩 없음. 8501 지원 서버 재시작 후 계속 실행 중이다.

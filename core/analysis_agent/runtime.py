@@ -558,7 +558,8 @@ class GraphAnalysisRuntime:
                     self.agent.update_state(self.config,self.recovery._finish(current),as_node='model')
                     return self._invoke(None)
             if checkpoint.next == ('model',):
-                local=self.recovery.resume_local_call(checkpoint.values)
+                local=self.recovery.resume_local_call(checkpoint.values,
+                    allow_histogram_plan=not self.policy.require_remote_approval)
                 if local is not None:
                     # The normal model node already timed out. Advance only a
                     # validated local tool call to the tools node, even when

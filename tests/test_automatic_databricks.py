@@ -168,6 +168,93 @@ class AutomaticReadTests(unittest.TestCase):
             self.assertEqual(len(calls),1)
             self.assertTrue(all(r.datasets.metadata[key].snapshot==value for key,value in snapshots.items()))
 
+    def test_zero_row_schema_to_histogram_uses_one_aggregate_without_model(self):
+        from scripts.evaluate_analysis_statistics import ForbiddenModel
+        source='fixture_2026.custom_records'
+        column='reading'
+        calls=[]
+        def factory(datasets):
+            def execute(envelope):
+                query=envelope['query']
+                calls.append(query)
+                if 'LIMIT 0' in query.upper():
+                    frame=pd.DataFrame({column:pd.Series(dtype='int64'),
+                                        'category':pd.Series(dtype='object')})
+                    info=datasets.register(frame,source=source,query=query,
+                        coverage='complete',predicate_known=True)
+                else:
+                    self.assertIn('COUNT(*)',query)
+                    self.assertIn('GROUP BY',query)
+                    self.assertNotIn('SELECT *',query.upper())
+                    frame=pd.DataFrame({column:[10,20,30],'__frequency':[2,3,1]})
+                    info=datasets.register(frame,source=source,query=query,
+                        coverage='complete',predicate_known=True,
+                        grain='aggregate',aggregation=query)
+                return {'status':'ready','dataset':asdict(info)}
+            return execute
+        with tempfile.TemporaryDirectory() as root:
+            runtime=GraphAnalysisRuntime(root,'auto','schema-histogram',ForbiddenModel(),
+                connection_identity='fixture',remote_factory=factory)
+            self.addCleanup(runtime.close)
+            schema=runtime.propose_query(source,f'SELECT * FROM {source} LIMIT 0',
+                '현재 컬럼 확인')
+            self.assertEqual(schema['status'],'answered',schema)
+            schema_ids=set(runtime.datasets.metadata)
+            unbound={'chart':True,'kind':'histogram','required_sources':[],
+                     'required_columns':[column],'scope':{}}
+            inferred=runtime.recovery._next_local(unbound,{})
+            self.assertEqual(inferred['name'],'prepare_histogram')
+            self.assertEqual(unbound['required_sources'],[source])
+            result=runtime.submit(f'그러면 {column}의 히스토그램을 그려줘')
+            self.assertEqual(result['status'],'answered',result)
+            self.assertEqual(len(calls),2)
+            self.assertEqual(runtime.inspect()['recovery']['model_calls'],0)
+            self.assertTrue(schema_ids.issubset(runtime.datasets.metadata))
+            self.assertEqual(runtime.datasets.metadata[next(iter(schema_ids))].rows,0)
+            card=runtime.artifacts[runtime.inspect()['chart_ids'][0]]
+            self.assertEqual(card.kind,'histogram')
+            self.assertTrue(card.image.startswith(b'\x89PNG\r\n\x1a\n'))
+            again=runtime.submit(f'{column} 히스토그램을 다시 보여줘')
+            self.assertEqual(again['status'],'answered',again)
+            self.assertEqual(len(calls),2)
+
+    def test_timed_out_histogram_checkpoint_resumes_from_verified_schema(self):
+        from scripts.evaluate_analysis_statistics import ForbiddenModel
+        source='fixture_2026.sensor_readings'
+        calls=[]
+        def factory(datasets):
+            def execute(envelope):
+                query=envelope['query']
+                calls.append(query)
+                frame=(pd.DataFrame({'reading':pd.Series(dtype='int64')})
+                       if 'LIMIT 0' in query.upper() else
+                       pd.DataFrame({'reading':[1,2],'__frequency':[3,4]}))
+                aggregate={} if 'LIMIT 0' in query.upper() else {
+                    'grain':'aggregate','aggregation':query}
+                info=datasets.register(frame,source=source,query=query,
+                    coverage='complete',predicate_known=True,**aggregate)
+                return {'status':'ready','dataset':asdict(info)}
+            return execute
+        with tempfile.TemporaryDirectory() as root:
+            runtime=GraphAnalysisRuntime(root,'auto','resume-histogram',ForbiddenModel(),
+                connection_identity='fixture',remote_factory=factory)
+            self.addCleanup(runtime.close)
+            runtime.propose_query(source,f'SELECT * FROM {source} LIMIT 0',
+                '현재 컬럼 확인')
+            with patch.object(runtime.recovery,'_next_local',return_value=None):
+                failed=runtime.submit('그러면 reading의 히스토그램을 그려줘')
+            self.assertEqual(failed['status'],'incomplete')
+            self.assertEqual(runtime.agent.get_state(runtime.config).next,('model',))
+            checkpoint=runtime.agent.get_state(runtime.config)
+            recovery=dict(checkpoint.values['recovery'])
+            recovery['model_seconds']=runtime.policy.turn_slo_seconds+1
+            runtime.agent.update_state(runtime.config,{'recovery':recovery})
+            result=runtime.resume()
+            self.assertEqual(result['status'],'answered',result)
+            self.assertEqual(len(calls),2)
+            self.assertEqual(len(runtime.inspect()['chart_ids']),1)
+            self.assertTrue(runtime.artifacts[runtime.inspect()['chart_ids'][0]].image.startswith(b'\x89PNG'))
+
     def test_page_executes_without_approval_button_and_rerun_does_not_reload(self):
         self._assert_page_execution()
 

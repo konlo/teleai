@@ -3,7 +3,8 @@ from dataclasses import asdict
 from duckdb import BinderException
 from sqlglot import exp, parse
 from sqlglot.errors import SqlglotError
-from core.analysis_catalog import compact_catalog, resolve_table_context
+from core.analysis_catalog import (_is_zero_row_schema_probe, compact_catalog,
+                                   resolve_table_context)
 
 from core.analysis_tool_contract import (
     AnalysisToolContext,
@@ -513,6 +514,10 @@ def build_analysis_tools(context: AnalysisToolContext) -> list[ToolDefinition]:
         matching = [info for info in metadata.values()
                     if source_key(info.source) == identity and column in info.columns]
         known = bool(matching)
+        # LIMIT 0 is schema evidence, not a complete population for EDA. Its
+        # zero-row frame must never satisfy a histogram's raw-data reuse check.
+        matching = [info for info in matching
+                    if not _is_zero_row_schema_probe(info.query)]
         if not identity or (not known and (len(matches)!=1 or column not in [c['name'] for c in matches[0].get('columns',[])])):
             return {'status':'needs_context','message':'정확한 테이블과 수치 컬럼을 inspect_table_context에서 확인하세요.'}
 
@@ -531,12 +536,16 @@ def build_analysis_tools(context: AnalysisToolContext) -> list[ToolDefinition]:
         selected_id = dataset_id
         active = metadata.get(context.selected_dataset_id)
         if (not selected_id and not fresh_source_required and active is not None
-                and source_key(active.source) == identity):
+                and source_key(active.source) == identity
+                and not _is_zero_row_schema_probe(active.query)):
             selected_id = active.id
         if selected_id:
             selected = metadata.get(selected_id)
             if selected is None or source_key(selected.source) != identity:
                 return {'status':'needs_context', 'message':'선택한 dataset ID가 이 출처의 보유 데이터와 일치하지 않습니다.'}
+            if _is_zero_row_schema_probe(selected.query):
+                return {'status':'needs_data',
+                        'message':'0행 스키마 결과에는 분석할 데이터가 없습니다.'}
         elif matching and not fresh_source_required:
             roots = {lineage_root(info) for info in matching}
             if None in roots or len(roots) != 1 or (current_result_only and len(matching) != 1):

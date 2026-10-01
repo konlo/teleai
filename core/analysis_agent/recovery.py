@@ -2311,6 +2311,18 @@ class RecoveryMiddleware(AgentMiddleware):
 
     def _next_local(self, current, calls):
         if current.get('explanation_only'): return None
+        # A verified histogram plan has only one safe remote query. Do not
+        # return to the model between planning, executing and rendering it.
+        plan = current.get('plan')
+        if (plan and self.remote_available and not remote_blocked(current)
+                and current.get('query_seen') != current.get('plan_call')
+                and not current.get('failed', {}).get('query_databricks')):
+            call = {'name':'query_databricks', 'args':{
+                key:plan[key] for key in ('source','query','reason')}}
+            if (self._scope_valid(plan['query'], current, plan['value_column'])
+                    and not any(self._signature(c) == self._signature(call)
+                                for c in calls.values())):
+                return call
         source = current.get('catalog_discovery_source')
         if source and self.remote_available and not current.get('remote_query_evidence'):
             plan = current.get('discovery_plan')
@@ -3022,6 +3034,40 @@ class RecoveryMiddleware(AgentMiddleware):
                                     for c in calls.values())):
                     return {'name':'render_chart_spec','args':arguments}
         scope = current.get('scope', {})
+        if (self.context and self.remote_available and current.get('chart')
+                and current.get('kind') == 'histogram'
+                and not current.get('current_result_only')
+                and not current.get('chart_spec_requested')
+                and current.get('histogram_bins') is None
+                and not current.get('plan') and not current.get('artifact_ids')
+                and not scope.get('conditions') and not scope.get('any_conditions')
+                and not scope.get('measure_conditions') and not scope.get('ratio')
+                and not scope.get('unresolved')):
+            sources = current.get('required_sources', [])
+            columns = current.get('required_columns', [])
+            if not sources and len(columns) == 1:
+                # After a failed turn there may be no selected raw baseline.
+                # Bind a short follow-up only when the observed schema has a
+                # single possible source for the requested column.
+                observed = {self._source_key(info.source):info.source
+                    for info in self.context.datasets.metadata.values()
+                    if info.grain == 'raw' and columns[0] in info.columns}
+                if len(observed) == 1:
+                    sources = list(observed.values())
+                    current['required_sources'] = sources
+            if len(sources) == len(columns) == 1:
+                source, column = sources[0], columns[0]
+                verified = [info for info in self.context.datasets.metadata.values()
+                    if self._source_key(info.source) == self._source_key(source)
+                    and column in info.columns and info.grain == 'raw'
+                    and self._numeric_column_known(column, current)]
+                if verified:
+                    call = {'name':'prepare_histogram', 'args':{
+                        'source':source, 'column':column,
+                        'fresh_source_required':bool(current.get('fresh_source_required'))}}
+                    if not any(self._signature(c) == self._signature(call)
+                               for c in calls.values()):
+                        return call
         if (self.context and current.get('outlier_followup')
                 and current.get('outlier_dataset') and current.get('calculation')
                 and set(current.get('operations', [])) in ({'RATIO'}, {'COUNT', 'RATIO'})
@@ -3418,8 +3464,8 @@ class RecoveryMiddleware(AgentMiddleware):
                               tool=proposed['name'])
         return self._dispatch(current, proposed, last)
 
-    def resume_local_call(self, state):
-        """Skip a timed-out model node only for a verified local calculation.
+    def resume_local_call(self, state, *, allow_histogram_plan=False):
+        """Skip a timed-out model node for a grounded deterministic tool.
 
         A graph checkpoint can point directly at ``model``, so its earlier
         before-model middleware will not run again on resume. The runtime can
@@ -3434,9 +3480,15 @@ class RecoveryMiddleware(AgentMiddleware):
                 or any(count >= 2 for count in current['failed_signatures'].values())):
             return None
         proposed = self._next_local(current, calls)
-        if (not proposed or proposed['name'] not in {'local_analysis_sql', 'detect_outliers', 'summarize_groups', 'render_chart_spec'}
+        permitted = {'local_analysis_sql', 'detect_outliers', 'summarize_groups', 'render_chart_spec'}
+        if allow_histogram_plan and self.remote_available:
+            # prepare_histogram only makes a plan. The normal tool/query guards
+            # still validate and execute its read-only aggregate afterwards.
+            permitted.add('prepare_histogram')
+        if (not proposed or proposed['name'] not in permitted
                 or (self.context and proposed['name'] not in self.context.allowed_tool_names)
-                or (self.context and proposed.get('args', {}).get('dataset_id')
+                or (self.context and proposed['name'] != 'prepare_histogram'
+                    and proposed.get('args', {}).get('dataset_id')
                     not in self.context.datasets.metadata)
                 or not self._proposed_scope_valid(proposed, current)):
             return None
@@ -3489,6 +3541,16 @@ class RecoveryMiddleware(AgentMiddleware):
             return {**self._finish(current, reason='local_continuation_unavailable'), 'jump_to':'end'}
         reason = self._limit_reason(current)
         if reason:
+            if (reason in {'model_call_budget','model_time_budget'}
+                    and current.get('plan') and not remote_blocked(current)
+                    and len(current['sent_calls']) < self.max_tool_calls):
+                # The model may have timed out before a verified plan was
+                # executed. Its inference budget must not discard that plan;
+                # query and render still pass the usual scope and tool guards.
+                planned = self._next_local(current, calls)
+                if (planned and planned['name'] in {'query_databricks','render_histogram'}
+                        and self._proposed_scope_valid(planned, current)):
+                    return {**self._dispatch(current, planned), 'jump_to':'tools'}
             rescued = self._budget_local_rescue(current, calls)
             if rescued: return {**rescued, 'jump_to': 'tools'}
             return {**self._finish(current, reason=reason), 'jump_to': 'end'}
