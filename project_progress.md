@@ -2297,3 +2297,10 @@ Task definitions and acceptance conditions: docs/agent_remaining_tasks_2026-09-1
 - **Finding**: MySQL은 실제 SQL 서버를 통한 agent 통합 검증에 유익하지만 최근 `ReadTimeout`은 SQL 제출 전 LLM/agent 흐름이 원인이므로 DB 교체로 해결되지 않는다. 현 런타임은 executor 주입과 `sql_dialect`를 일부 지원하지만 승인 ledger·출처 검사·catalog/schema discovery·히스토그램 SQL 생성에는 Databricks 가정이 남는다. 현재 호스트에서 mysql/mysqld 실행 파일 및 기본 3306 리스너는 발견되지 않았다.
 - **Artifact Update**: `docs/mysql_development_evaluation_plan_2026-10-01.md`에 공통 backend 계약, 안전한 평가 데이터 이관, MySQL 사용자 여정·장애 주입·독립 oracle, Databricks 교차 검증 및 DeepEval/Spider 점수 분리를 기록했다.
 - **Decision**: DuckDB/fixture의 빠른 회귀 + MySQL 실제 서버 통합 + Databricks 최종 수락의 3층 평가를 채택한다. 이번 요청은 설계 검토이며 MySQL 설치, 데이터 복사 또는 제품 코드 변경은 수행하지 않는다.
+
+## [2026-10-01T21:15:59+09:00] [Agent: /root] User Request: 로컬 MySQL 설치와 Databricks default의 5개 테이블 구축·이관
+- **Action**: 실제 테이블명(bank_loan, error_test, ncr_ride, stormtrooper, titianic 오타 여부), 스키마·행 수·용량과 로컬 MySQL 설치 가능 여부를 확인한다. 검증된 원본을 로컬 평가 DB에 배치 이관하고 행 수·스키마·집계를 대조한다.
+- **Finding**: 실제 원본은 `workspace.default.bank_loan`, `error_test`, `ncr_ride`, `stormtrooper`, `titanic`이다. `titianic`은 오타였다. MySQL 8.4.11을 로컬 전용 서비스로 설치하고 `teleai_default` DB와 읽기 전용 `teleai_eval` 계정을 만들었다.
+- **Implementation**: `scripts/copy_databricks_default_to_mysql.py`가 Arrow 배치 읽기→MySQL staging 배치 삽입→전체 행 다중집합 지문·행 수 확인→테이블 게시를 수행한다. 접속 정보와 데이터는 무시되는 `.telly_runtime`/Homebrew 데이터 디렉터리에만 둔다. 평가 driver는 `requirements-mysql-eval.txt`에 분리했다.
+- **Validation**: `bank_loan` 750,000/18, `error_test` 9/5, `ncr_ride` 150,000/21, `stormtrooper` 9,524,806/13, `titanic` 891/12 (행/컬럼). 총 10,425,706행. 5개 모두 원본 전후 COUNT·전체 행 지문·대상 COUNT 및 실제 MySQL 컬럼명/순서/타입/NULL 계약이 일치했다. 임시 테이블 0개, 읽기 전용 GRANT와 로컬 bind 확인.
+- **Artifact Update**: `docs/evaluation/2026-10-01_mysql_copy/report.md`에 이관·검증 근거, 재현 명령과 한계를 기록했다. 제품 agent의 MySQL backend adapter는 아직 구현되지 않았고, 실제 chatbot 조회는 계속 Databricks를 사용한다.
