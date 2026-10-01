@@ -2277,3 +2277,7 @@ Task definitions and acceptance conditions: docs/agent_remaining_tasks_2026-09-1
 ## [2026-10-01T00:01:04+09:00] [Agent: /root] User Request: 코드 Git 푸시
 - **Action**: 작업 트리와 원격 브랜치 SHA를 확인했다. 에이전트 수정 커밋 `ac3bb56`은 이미 원격에 있었고 미커밋 코드 변경은 없었다.
 - **Outcome**: 이 요청 기록을 커밋·푸시하고 원격 SHA를 다시 확인한다.
+
+## [2026-10-01T20:16:08+09:00] [Agent: /root] User Request: 8501 포트의 기존 서버 종료 후 재실행
+- **Action**: 8501 리스너 PID52351을 확인했다. 해당 서버만 종료하고 지원 런처로 8501을 다시 시작해 접속을 확인한다.
+- **Outcome**: PID52351을 TERM으로 종료한 뒤 `python3 scripts/run_telly.py --port 8501 --server.headless=true`로 PID77569를 시작했다. 127.0.0.1:8501 단일 LISTEN, `/_stcore/health` HTTP 200, Chrome `/Telly`에서 `Telly · 분석`과 로컬 Ollama·자동 Databricks 조회·대화 입력 화면을 확인했다. 8502·8503 프로세스는 유지했다.
