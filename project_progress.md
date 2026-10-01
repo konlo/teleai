@@ -2281,3 +2281,7 @@ Task definitions and acceptance conditions: docs/agent_remaining_tasks_2026-09-1
 ## [2026-10-01T20:16:08+09:00] [Agent: /root] User Request: 8501 포트의 기존 서버 종료 후 재실행
 - **Action**: 8501 리스너 PID52351을 확인했다. 해당 서버만 종료하고 지원 런처로 8501을 다시 시작해 접속을 확인한다.
 - **Outcome**: PID52351을 TERM으로 종료한 뒤 `python3 scripts/run_telly.py --port 8501 --server.headless=true`로 PID77569를 시작했다. 127.0.0.1:8501 단일 LISTEN, `/_stcore/health` HTTP 200, Chrome `/Telly`에서 `Telly · 분석`과 로컬 Ollama·자동 Databricks 조회·대화 입력 화면을 확인했다. 8502·8503 프로세스는 유지했다.
+
+## [2026-10-01T20:23:16+09:00] [Agent: /root] User Request: 현재 화면의 '문제 진단 · 로그 원문 없이 확인' 설명
+- **Action**: 인앱 브라우저의 현재 대화와 `ui/analysis_diagnostics.py`, `core/analysis_agent/support_report.py`를 확인했다.
+- **Outcome**: 이 메뉴는 오류 조사용 읽기 전용 진단 요약이다. 실행/오류 ID, 모델·도구·원격 조회 상태와 오류 위치만 표시하고 요청 원문·SQL·데이터·토큰은 제외한다. 버튼을 누른 현재 대화에는 보관된 실행 로그가 없어 '실행을 찾지 못했습니다'가 표시됐으며, 이것 자체는 에이전트 오류가 아니다.
