@@ -4,7 +4,6 @@ The source conversation and approval ledger are never modified. The only remote
 executor raises an error; approvals are never granted by this script.
 """
 import argparse
-import fcntl
 from hashlib import sha256
 import json
 import os
@@ -16,23 +15,22 @@ from urllib.parse import urlparse
 
 ROOT = Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path: sys.path.insert(0, str(ROOT))
+from core.analysis_agent.file_lock import conversation_lock
 
 
 def copy_runtime_snapshot(source, destination):
     """Snapshot under the app's conversation lock; never replay live approvals."""
     copied = []
-    with (source / 'runtime.lock').open('rb') as lock:
-        fcntl.flock(lock, fcntl.LOCK_SH | fcntl.LOCK_NB)
-        try:
-            for name in ('assets.sqlite', 'graph.sqlite', 'approvals.sqlite'):
-                path = source / name
-                if not path.exists(): raise FileNotFoundError(name)
-                with sqlite3.connect(path.resolve().as_uri() + '?mode=ro', uri=True) as original, \
-                        sqlite3.connect(destination / name) as target:
-                    original.backup(target)
-                copied.append(name)
-        finally:
-            fcntl.flock(lock, fcntl.LOCK_UN)
+    # Do not silently create a lock for a nonexistent source conversation.
+    if not (source / 'runtime.lock').exists(): raise FileNotFoundError('runtime.lock')
+    with conversation_lock(source / 'runtime.lock', shared=True):
+        for name in ('assets.sqlite', 'graph.sqlite', 'approvals.sqlite'):
+            path = source / name
+            if not path.exists(): raise FileNotFoundError(name)
+            with sqlite3.connect(path.resolve().as_uri() + '?mode=ro', uri=True) as original, \
+                    sqlite3.connect(destination / name) as target:
+                original.backup(target)
+            copied.append(name)
     return copied
 
 

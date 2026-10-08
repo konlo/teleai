@@ -15,6 +15,31 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  windows-runtime-import-and-lock:
+    runs-on: windows-latest
+    timeout-minutes: 15
+    env:
+      PYTHONUTF8: "1"
+      PYTHONIOENCODING: utf-8
+      TELLY_DATA_BACKEND: databricks
+      DATABRICKS_HOST: example.invalid
+      DATABRICKS_HTTP_PATH: /sql/fixture
+      DATABRICKS_TOKEN: fixture-no-network
+      DATABRICKS_CATALOG: eval_catalog
+      DATABRICKS_SCHEMA: lab
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.11"
+      - name: Install runtime dependencies
+        run: python -m pip install -r requirements.txt
+      - name: Import the agent on Windows without fcntl
+        run: python -c "from core.analysis_agent.runtime import GraphAnalysisRuntime"
+      - name: Check native Windows contention and release
+        run: python -m unittest tests.test_file_lock
+      - name: Render initial Databricks page without executing SQL
+        run: python -c "from streamlit.testing.v1 import AppTest; app = AppTest.from_file('main.py', default_timeout=30).run(); assert not app.exception; assert app.chat_input; runtime = app.session_state['v1_runtime']; assert runtime.context.sql_dialect == 'databricks'; runtime.close()"
   deterministic-validation:
     runs-on: ubuntu-latest
     timeout-minutes: 20

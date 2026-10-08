@@ -1,6 +1,6 @@
 """Persistent analysis runtime with policy-controlled Databricks tools."""
 from contextlib import contextmanager
-import fcntl
+from core.analysis_agent.file_lock import acquire_lock, release_lock
 import json
 import sqlite3
 import time
@@ -337,13 +337,13 @@ class GraphAnalysisRuntime:
 
     @contextmanager
     def _exclusive(self):
-        # Separate descriptor per invocation: flock also excludes concurrent calls
+        # Separate descriptor per invocation: the OS lock excludes concurrent calls
         # using the same runtime instance, not only separate processes.
-        with open(self.db.directory/'runtime.lock','a+') as lock_file:
-            try:fcntl.flock(lock_file,fcntl.LOCK_EX|fcntl.LOCK_NB)
+        with open(self.db.directory/'runtime.lock','a+b') as lock_file:
+            try:acquire_lock(lock_file)
             except BlockingIOError:raise RuntimeError('현재 대화가 실행 중입니다.')
             try:yield
-            finally:fcntl.flock(lock_file,fcntl.LOCK_UN)
+            finally:release_lock(lock_file)
 
     def events(self):
         self.transcript.record(self.agent.get_state(self.config).values.get('messages',[]))

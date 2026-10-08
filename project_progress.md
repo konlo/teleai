@@ -2965,3 +2965,13 @@ Task definitions and acceptance conditions: docs/agent_remaining_tasks_2026-09-1
 - **Action**: README 첫 실행 안내에 pinned launcher/Databricks/8501 명령을 직접 표시하고 우회실행 차이를 명확히 설명한 뒤 docs commit/push 확인.
 - **Artifact Update**: README상단에설치후시작/첫설치/종료후재시작을구분하고Databricks8501launcher명령과접속URL을표시. main.py는정상내부진입점이며직접streamlit실행은환경선택/포트검사를우회한다고설명.
 - **Verification**: 기존launcher계약3PASS·git diff --check PASS. 문서만변경, 실제서버/DB추가호출없음.
+- **Outcome**: README커밋3b437bc0f05d8b9798649978b4703c7a92fbc8a2 push성공. origin/codex/agentic-analysis-rc-2026-09-14의원격SHA와로컬HEAD일치확인.
+
+## [2026-10-08T15:51:12.934086+09:00] [Agent: /root] User Request: 실제Windows서버에서.env설정시 streamlit run main.py 직접실행가능여부
+- **Action**: main.py정상진입/analysis_page.env로딩/runtime버전검사와launcher의POSIX bin/python경로를확인했다.
+- **Outcome**: 동일의존성이설치된Windows환경이면직접실행가능. python -m streamlit run main.py --server.port 8501을권장하여활성Python과Streamlit을일치시킨다. 기존일괄금지설명을정정하며현재launcher의Windows Scripts/python.exe 미지원사실을안내한다. 이번코드/README변경·push없음.
+
+## [2026-10-08T15:57:27.429321+09:00] [Agent: /root] User Request: Windows No module named fcntl 오류
+- **Action**: fcntl 직접import 및파일잠금계약을탐색하고Windows 호환잠금으로수정·독립회귀검증한다. 단순dependency설치로해결되는모듈이아님을구분한다.
+- **Artifact Update**: core/analysis_agent/file_lock.py 공통nonblocking OS잠금, runtime 및snapshot경로교체, tests/test_file_lock.py·Windows CI import/잠금/초기Databricks화면검사추가. README Windows환경/direct main.py 실행및fcntl설치불필요정정.
+- **Verification**: OS잠금/프로세스재시작/스냅샷12PASS, 전체앱651건=647PASS/4SKIP, migration137PASS, compile/diffcheckPASS. WindowsAPI모의검사와macOS실제잠금결과를구분하고nativeWindows CI를추가로실행한다.

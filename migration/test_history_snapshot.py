@@ -1,6 +1,6 @@
 """History replay must not consume an approval or mutate the user's state."""
 from core.analysis_agent.policy import RuntimePolicy
-import fcntl
+from core.analysis_agent.file_lock import conversation_lock
 import tempfile
 import unittest
 from pathlib import Path
@@ -44,11 +44,9 @@ class HistorySnapshotTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as source_root, tempfile.TemporaryDirectory() as clone_root:
             original = GraphAnalysisRuntime(source_root, 'owner', 'original', QuietModel(),intent_mode='contract_fixture')
             original.submit('자료 설명')
-            with (original.db.directory / 'runtime.lock').open('rb') as busy:
-                fcntl.flock(busy, fcntl.LOCK_EX)
+            with conversation_lock(original.db.directory / 'runtime.lock'):
                 with self.assertRaises(BlockingIOError):
                     copy_runtime_snapshot(original.db.directory, Path(clone_root))
-                fcntl.flock(busy, fcntl.LOCK_UN)
             self.assertFalse(list(Path(clone_root).glob('*.sqlite')))
             original.close()
 

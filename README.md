@@ -6,9 +6,22 @@ LangChain `create_agent`와 LangGraph를 사용하는 로컬 Streamlit 분석 �
 
 검증 환경은 Python 3.11 / macOS arm64입니다.
 
-**시작 명령은 `streamlit run main.py`가 아니라 아래 launcher입니다.** 저장소 루트에서 실행하세요. launcher가 설치된 `.telly_runtime/v1-venv/bin/python`을 선택하므로, 현재 활성화된 `.venv`나 PATH의 Streamlit 버전에 영향을 받지 않습니다.
+**저장소 루트에서 실행하세요. Windows는 아래 Windows 명령을, macOS/Linux는 launcher를 사용합니다.** launcher는 macOS/Linux의 `.telly_runtime/v1-venv/bin/python` 경로를 사용합니다.
 
-### 이미 설치되어 있는 경우 — Databricks로 시작
+### Windows — Databricks로 시작
+
+사용하는 가상환경을 활성화하고 `.env`의 Databricks 접속 정보와 `TELLY_DATA_BACKEND=databricks`를 확인한 뒤 실행합니다. `main.py`는 정상 진입 파일이며 `.env`를 자동으로 읽습니다.
+
+```powershell
+python -m pip install -r requirements.txt
+python -m streamlit run main.py --server.port 8501
+```
+
+패키지를 이미 설치했다면 두 번째 명령만 실행하세요. 처음 설치할 때는 `py -3.11 -m venv .venv`로 환경을 만들고 PowerShell에서 `.\.venv\Scripts\Activate.ps1`로 활성화합니다. 브라우저 주소는 http://127.0.0.1:8501/Telly 입니다.
+
+`No module named 'fcntl'`은 Windows에 없는 Unix 모듈을 직접 사용하던 이전 코드의 호환성 오류입니다. `pip install fcntl`로 해결하지 말고 최신 코드를 받으세요. 현재 대화 잠금은 Windows에서 `msvcrt`, macOS/Linux에서 `fcntl`을 사용하며 둘 다 Python 표준 라이브러리입니다.
+
+### macOS/Linux — 이미 설치되어 있는 경우
 
 각 호스트의 `.env`에 Databricks 접속 정보와 Ollama 모델 설정을 준비한 뒤 실행합니다. 자세한 항목은 아래 **데이터 DB 선택**을 참고하세요.
 
@@ -37,7 +50,7 @@ TELLY_DATA_BACKEND=databricks python3 scripts/run_telly.py --port 8501
 
 한 포트에는 한 프로세스만 실행하세요. `8501 포트에서 이미 서버가 실행 중입니다`라는 메시지가 나오면 기존 서버를 종료한 뒤 재실행합니다.
 
-`main.py`는 launcher 내부에서 사용하는 정상 진입 파일입니다. 직접 `streamlit run main.py`를 입력하면 설치 환경 선택과 포트 점검을 우회하므로 위 명령을 사용하세요. 포트 옵션을 생략한 launcher의 기본 포트는 8502입니다.
+`main.py`는 정상 진입 파일입니다. macOS/Linux에서 직접 `streamlit run main.py`를 입력하면 launcher의 환경 선택과 포트 점검을 우회하므로 위 명령을 권장합니다. Windows에서는 앞서 안내한 `python -m streamlit run main.py --server.port 8501`을 사용하세요. launcher의 기본 포트는 8502입니다.
 
 `ModuleNotFoundError: No module named 'sqlglot'`가 나오면 실행한 Python 환경에 앱 의존성이 설치되어 있는지 확인합니다. `sqlglot`은 이미 `requirements-agent.txt`에 포함되어 있습니다. 저장소 루트에서 아래처럼 설치와 실행에 같은 앱 환경을 사용하세요.
 

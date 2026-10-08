@@ -1,0 +1,17 @@
+{
+  "timestamp": "2026-10-08T16:03:49.301515+09:00",
+  "root_cause": "core.analysis_agent.runtime imported Unix-only fcntl at module load on Windows. Snapshot script/test also imported fcntl directly.",
+  "change": "Conditional native Windows msvcrt byte-zero nonblocking exclusive lock; POSIX fcntl remains inside OS-specific functions. Shared snapshots use conservative exclusive lock on Windows. Existing busy-runtime rejection preserved. No new pip dependency.",
+  "tests": {
+    "lock_runtime_history": 12,
+    "application_passed": 647,
+    "application_skipped": 4,
+    "application_failed": 0,
+    "migration_passed": 137,
+    "compile": "PASS",
+    "diff_check": "PASS"
+  },
+  "windows_native_status": "CI_PENDING",
+  "windows_api_documentation": "https://docs.python.org/3.11/library/msvcrt.html",
+  "limits": "Local tests ran on macOS. Windows stub checks are not native execution. Databricks SQL connectivity and full Windows agent journeys are not established by these tests."
+}
