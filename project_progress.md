@@ -2976,3 +2976,30 @@ Task definitions and acceptance conditions: docs/agent_remaining_tasks_2026-09-1
 - **Artifact Update**: core/analysis_agent/file_lock.py 공통nonblocking OS잠금, runtime 및snapshot경로교체, tests/test_file_lock.py·Windows CI import/잠금/초기Databricks화면검사추가. README Windows환경/direct main.py 실행및fcntl설치불필요정정.
 - **Verification**: OS잠금/프로세스재시작/스냅샷12PASS, 전체앱651건=647PASS/4SKIP, migration137PASS, compile/diffcheckPASS. WindowsAPI모의검사와macOS실제잠금결과를구분하고nativeWindows CI를추가로실행한다.
 - **Outcome**: 修正2ee4afd push·원격SHA일치. 실제Windows CI37741165163의runtime import·native파일잠금5검사·가짜설정초기Databricks화면PASS(Windows job success). 실제SQL/회사전체분석여정은미검증. Linux CI전체는별도진행중이며로컬전체회귀통과와구분한다.
+
+## [2026-10-08T16:38:00.688300+09:00] [Agent: /root] User Request: 개발Ollama·실제서비스Azure OpenAI API 고려여부
+- **Action**: 현재제품LLM factory/selector·의도및범위보조모델·Azure환경변수처리와기존경로를검토하여지원범위와누락을확인한다. 회사DB와LLM선택을분리하고키값은출력하지않는다.
+- **Outcome**: 구형core/llm.py만Azure지원하며현재persistent경로core/analysis_agent/model_provider.py는ollama/databricks만지원. UI기본/저장값ollama가factory의명시provider로전달되어LLM_PROVIDER=azure나AZURE_OPENAI_*만으로전환되지않음. Azure서비스적용미완료를명확히보고하고factory·UI설정우선순위·보조추론/실제toolcalling여정검증필요를정리. 이번API호출·제품수정·push없음.
+
+## [2026-10-08T16:41:27.446113+09:00] [Agent: /root] User Request: 현재.env보존하고.env_example의사용설정확인
+- **Decision**: 현재.env수정/내용출력없이공유.env.example의변수이름과Azure설정계약만확인한다. 실제키/API실행없음.
+- **Artifact Update**: .env.example에기존Azure환경변수4종을빈값으로기록. 실제서비스provider는azure/data는databricks라는구분, graph연결아직미구현,기존.env덮어쓰기금지,Windows저장경로참고를명시.
+- **Outcome**: dotenv예제파싱·변수4종/빈비밀값·기존개발기본값확인PASS, diffcheckPASS. 실제.env읽기/변경·Azure API실행·제품구현·push없음.
+
+## [2026-10-08T16:44:57.898814+09:00] [Agent: /root] User Request: Streamlit official skills 설치안내와실행방법
+- **Action**: Streamlit CLI/프로젝트skill문서로개발용AI skills 설치권고임을확인. Windows 실행명령의긴대시가아닌ASCII하이픈2개 --server.port 와활성Python의python -m streamlit을안내.
+- **Outcome**: 앱실행필수dependency오류와구분하고추가skills설치/설정변경없음. 현재.env미수정.
+
+## [2026-10-08 16:49:12] [Agent: /root] User Request: 실행 후 브라우저 분석 모델이 로컬 Ollama로 표시되는 원인 확인
+- **Action** [Agent: /root]: 기존 .env를 읽거나 수정하지 않고 현재 모델 팩토리, UI 기본값 및 저장된 제공자 선택 경로를 점검한다.
+- **Outcome**: 현재 분석 모델 팩토리는 LLM_PROVIDER를 읽지 않고 TELLY_ANALYSIS_MODEL_PROVIDER 또는 Ollama 기본값을 사용한다. UI도 Ollama/Databricks만 지원하고 저장된 대화 선택이 없으면 Ollama를 선택한다. Azure는 구형 core/llm.py에만 구현되어 현재 에이전트에는 연결되지 않았다. 환경 파일 및 실제 서버는 변경하지 않았다.
+- **Next Action**: Azure 모델 팩토리와 UI 제공자 지원, 환경 설정 우선순위 및 저장된 Ollama 선택 충돌을 함께 수정하고 provider별 회귀 검증이 필요하다.
+
+## [2026-10-08 16:52:16] [Agent: /root] User Request: .env_azure_example 파일에 Azure LLM 및 Databricks database 설정 예제 생성
+- **Action** [Agent: /root]: 기존 .env를 읽거나 수정하지 않고 설정 예제와 실제 환경변수 소비 코드를 확인한다.
+- **Artifact Update**: .env_azure_example 생성. Azure LLM 제공자 2개 설정, Azure 필수 항목, Databricks SQL 연결/탐색 설정, 무승인 읽기, Windows 영속 경로 및 로딩 한도를 포함한다.
+- **Outcome**: dotenv 파싱 및 제공자 설정/빈 인증 항목/Ollama·MySQL 설정 미포함 검증 통과. 기존 .env는 읽거나 수정하지 않았다. 현재 Azure 팩토리/UI 미지원과 예제 파일 자동 로드 불가를 명시했다. 실제 Azure 또는 Databricks API 검증은 실행하지 않았다.
+
+## [2026-10-08 16:54:55] [Agent: /root] User Request: git push
+- **Action** [Agent: /root]: Azure/Databricks 설정 예제와 관련 작업 기록만 검토하여 커밋하고 현재 브랜치를 push한다. 실제 .env는 제외한다.
+- **Outcome**: .env.example 및 .env_azure_example 파싱과 빈 인증/접속 항목 확인 통과, git diff --check 통과. 두 예제와 project_progress.md만 커밋 대상으로 선택했다. Azure 실제 에이전트 연결은 미완료임을 예제에 유지한다.
