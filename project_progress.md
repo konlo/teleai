@@ -2956,3 +2956,12 @@ Task definitions and acceptance conditions: docs/agent_remaining_tasks_2026-09-1
 
 ## [2026-10-08T15:05:50.481415+09:00] [Agent: /root] Git push 결과
 - **Outcome**: 제품커밋9f641f6e493f6b204f51189b7b2a1c72579597a5를origin/codex/agentic-analysis-rc-2026-09-14에push 성공. git ls-remote 결과가로컬HEAD와일치. main병합/회사배포/웨어하우스400복구는수행하지않음. 이결과기록도같은브랜치에발행한다.
+
+## [2026-10-08T15:15:49.544873+09:00] [Agent: /root] User Request: 시작 방법 안내
+- **Action**: README와launcher 기준회사Git브랜치갱신·Python3.11 pinned venv·Databricks .env·8501실행절차를확인해안내.
+- **Outcome**: 기존설치시launcher실행, 첫설치시requirements.txt설치로구분. HTTP400은앱실행과구분하며토큰은로컬관리. 이번서버재시작은요청되지않아수행하지않음.
+
+## [2026-10-08T15:17:35.512163+09:00] [Agent: /root] User Request: streamlit run main.py 대신 실행할 명령을 README에 추가하고 git push
+- **Action**: README 첫 실행 안내에 pinned launcher/Databricks/8501 명령을 직접 표시하고 우회실행 차이를 명확히 설명한 뒤 docs commit/push 확인.
+- **Artifact Update**: README상단에설치후시작/첫설치/종료후재시작을구분하고Databricks8501launcher명령과접속URL을표시. main.py는정상내부진입점이며직접streamlit실행은환경선택/포트검사를우회한다고설명.
+- **Verification**: 기존launcher계약3PASS·git diff --check PASS. 문서만변경, 실제서버/DB추가호출없음.

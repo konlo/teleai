@@ -6,28 +6,45 @@ LangChain `create_agent`와 LangGraph를 사용하는 로컬 Streamlit 분석 �
 
 검증 환경은 Python 3.11 / macOS arm64입니다.
 
+**시작 명령은 `streamlit run main.py`가 아니라 아래 launcher입니다.** 저장소 루트에서 실행하세요. launcher가 설치된 `.telly_runtime/v1-venv/bin/python`을 선택하므로, 현재 활성화된 `.venv`나 PATH의 Streamlit 버전에 영향을 받지 않습니다.
+
+### 이미 설치되어 있는 경우 — Databricks로 시작
+
+각 호스트의 `.env`에 Databricks 접속 정보와 Ollama 모델 설정을 준비한 뒤 실행합니다. 자세한 항목은 아래 **데이터 DB 선택**을 참고하세요.
+
+```sh
+TELLY_DATA_BACKEND=databricks python3 scripts/run_telly.py --port 8501
+```
+
+브라우저에서 http://127.0.0.1:8501/Telly 를 엽니다. 화면의 데이터 소스가 **Databricks**인지 확인하세요.
+
+### 처음 설치하는 경우
+
 ```sh
 python3.11 -m venv .telly_runtime/v1-venv
 .telly_runtime/v1-venv/bin/python -m pip install -r requirements.txt
-python3 scripts/run_telly.py
 ```
 
-이미 환경이 있으면 마지막 명령만 실행합니다. 브라우저에서 http://127.0.0.1:8502 를 엽니다. 새 환경의 `main.py`와 `pages/Telly.py`는 기본 분석 agent를 엽니다.
+`.env` 설정을 마친 뒤 위의 Databricks 시작 명령을 실행합니다. 코드를 업데이트한 경우에는 의존성 설치 명령을 다시 실행하고 서버를 재시작하세요.
 
-8501 포트를 사용하려면 같은 지원 환경으로 실행합니다.
+### 서버를 종료하고 다시 시작
+
+실행 중인 서버 터미널에서 `Ctrl+C`를 누르고 다음 명령을 실행합니다.
 
 ```sh
-python3 scripts/run_telly.py --port 8501
+TELLY_DATA_BACKEND=databricks python3 scripts/run_telly.py --port 8501
 ```
 
-한 포트에는 한 프로세스만 실행하세요. 기존 `.venv/bin/streamlit run main.py`가 8501을 점유 중이면 종료한 뒤 위 명령을 사용합니다.
+한 포트에는 한 프로세스만 실행하세요. `8501 포트에서 이미 서버가 실행 중입니다`라는 메시지가 나오면 기존 서버를 종료한 뒤 재실행합니다.
+
+`main.py`는 launcher 내부에서 사용하는 정상 진입 파일입니다. 직접 `streamlit run main.py`를 입력하면 설치 환경 선택과 포트 점검을 우회하므로 위 명령을 사용하세요. 포트 옵션을 생략한 launcher의 기본 포트는 8502입니다.
 
 `ModuleNotFoundError: No module named 'sqlglot'`가 나오면 실행한 Python 환경에 앱 의존성이 설치되어 있는지 확인합니다. `sqlglot`은 이미 `requirements-agent.txt`에 포함되어 있습니다. 저장소 루트에서 아래처럼 설치와 실행에 같은 앱 환경을 사용하세요.
 
 ```sh
 .telly_runtime/v1-venv/bin/python -m pip install -r requirements.txt
 .telly_runtime/v1-venv/bin/python -c "import sys, sqlglot; print(sys.executable); print(sqlglot.__version__)"
-python3 scripts/run_telly.py
+TELLY_DATA_BACKEND=databricks python3 scripts/run_telly.py --port 8501
 ```
 
 앱 환경이 없으면 위의 `python3.11 -m venv .telly_runtime/v1-venv` 단계부터 실행합니다. `pip`나 `streamlit` 명령만 직접 실행하면 PATH에 따라 다른 환경을 사용할 수 있습니다. Agent 평가 스크립트도 `.telly_runtime/v1-venv/bin/python scripts/<평가 스크립트>.py`로 실행합니다.
