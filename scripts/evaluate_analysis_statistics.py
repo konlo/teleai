@@ -47,7 +47,7 @@ def evaluate() -> dict:
     reference = stats.ttest_ind(first, second, equal_var=False)
     started = time.monotonic()
     with tempfile.TemporaryDirectory(prefix="telly-statistics-eval-") as root:
-        runtime = GraphAnalysisRuntime(root, "evaluation", "benchmark-statistics", ForbiddenModel())
+        runtime = GraphAnalysisRuntime(root, "evaluation", "benchmark-statistics", ForbiddenModel(),intent_mode='contract_fixture')
         runtime.datasets.register(
             frame,
             source="bank_loan",
@@ -82,7 +82,7 @@ def evaluate() -> dict:
             frames = load_frames()
             case_ids = [f"L2_{number:03d}" for number in range(51, 61)]
             case_results = [
-                evaluate_case(specs[case_id], grading[case_id], ForbiddenModel(), frames=frames)
+                evaluate_case(specs[case_id], grading[case_id], ForbiddenModel(), frames=frames,intent_mode='contract_fixture')
                 for case_id in case_ids
             ]
             suite_passed = all(

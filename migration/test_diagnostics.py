@@ -27,7 +27,7 @@ class RecoveryModel(QuietModel):
 class DiagnosticsTests(unittest.TestCase):
     def test_wrong_table_id_is_observation_then_recovers_without_database(self):
         with tempfile.TemporaryDirectory() as root:
-            runtime=GraphAnalysisRuntime(root,'owner','conversation',RecoveryModel())
+            runtime=GraphAnalysisRuntime(root,'owner','conversation',RecoveryModel(),intent_mode='contract_fixture')
             runtime.context.reference_context.append({'table':'fixture.table','columns':[]})
             self.assertEqual(runtime.submit('저장된 테이블 구조 확인')['status'],'answered')
             self.assertEqual(runtime.inspect()['state'],'idle')
@@ -63,7 +63,7 @@ class ContextBudgetTests(unittest.TestCase):
     def test_large_legacy_discovery_is_compacted_without_losing_transcript(self):
         from langchain_core.messages import HumanMessage
         with tempfile.TemporaryDirectory() as root:
-            runtime=GraphAnalysisRuntime(root,'owner','context',QuietModel())
+            runtime=GraphAnalysisRuntime(root,'owner','context',QuietModel(),intent_mode='contract_fixture')
             fixture=json.loads(Path('tests/fixtures/analysis_acceptance.json').read_text())
             profile={'table':'fixture.table','columns':[{'name':'field','top_values':fixture['rows']*300}]}
             runtime.context.reference_context.append(profile)

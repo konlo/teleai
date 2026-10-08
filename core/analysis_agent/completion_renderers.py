@@ -5,6 +5,7 @@ from utils.analysis_datasets import preview_dataset
 def render_remote_query(runtime, current):
     from html import escape
     from core.analysis_agent.completion import active_contracts
+    from core.analysis_agent.remote_completion import successful_remote_call_ids
     from core.analysis_load_plan import query_sources
     def cell(value):
         text = escape(str(value)[:256]).replace('\n', ' ').replace('\r', ' ')
@@ -13,12 +14,12 @@ def render_remote_query(runtime, current):
         return text
     parts = []
     others = [c for c in active_contracts(current) if c.name != 'remote_query']
-    for key in current['remote_query_ids']:
+    for key in successful_remote_call_ids(current):
         evidence = current['remote_query_evidence'][key]
         info = runtime.context.datasets.metadata[evidence['dataset_id']]
         sources = query_sources(info.query)
         catalog_result = bool(sources) and all(
-            len(pieces := source.replace('`', '').split('.')) == 3
+            len(pieces := source.replace('`', '').split('.')) in {2, 3}
             and pieces[-2].casefold() == 'information_schema' for source in sources)
         if others and not catalog_result:
             # The existing chart/statistic/load renderer owns its actual output.
@@ -77,7 +78,8 @@ def render_metadata(runtime, current):
         changed = ' 이전 스냅샷과 컬럼 구성이 달라 새 스키마를 사용했습니다.' if metadata.get('schema_changed') else ''
         kind = metadata.get('kind', 'columns')
         if kind == 'dtypes':
-            parts.append(f"{origin} 기준으로 {metadata['table']}의 컬럼별 데이터 타입입니다.{changed}\n"
+            type_origin=('현재 DB 메타데이터' if metadata.get('type_authority')=='current_database_metadata' else origin)
+            parts.append(f"{type_origin} 기준으로 {metadata['table']}의 컬럼별 데이터 타입입니다.{changed}\n"
                          + '\n'.join(f"{column['name']}: {column['dtype']}" for column in metadata['schema']))
         elif kind in {'numeric_columns', 'categorical_columns'}:
             label = '수치형' if kind == 'numeric_columns' else '문자열/범주형'
@@ -333,7 +335,9 @@ def render_chart(runtime, current):
         card = runtime.artifacts[card_id]
         from utils.analysis_image_validation import validate_chart_image
         validate_chart_image(card.image)
-        parts.append(f'{card.title} 이미지를 생성했습니다.\n분석 범위: {card.scope}')
+        action=('저장된 이미지를 표시했습니다.' if current.get('request_kind')=='chart_selection'
+                else '이미지를 생성했습니다.')
+        parts.append(f'{card.title} {action}\n분석 범위: {card.scope}')
     return '\n\n'.join(parts)
 
 

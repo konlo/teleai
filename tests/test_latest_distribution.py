@@ -124,7 +124,7 @@ class LatestDistributionTests(unittest.TestCase):
             with self.assertRaises(Exception): run(dataset_id=raw.id, query=query)
 
     def runtime(self, root, frame=None):
-        runtime = GraphAnalysisRuntime(root, 'test', 'latest', QuietModel())
+        runtime = GraphAnalysisRuntime(root, 'test', 'latest', QuietModel(),intent_mode='contract_fixture')
         if not runtime.datasets.metadata:
             raw = runtime.datasets.register(source_frame() if frame is None else frame,
                 source=FIXTURE['source'], coverage='complete', predicate_known=True)

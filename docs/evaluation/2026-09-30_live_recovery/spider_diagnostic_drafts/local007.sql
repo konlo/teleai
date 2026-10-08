@@ -1,0 +1,1 @@
+SELECT ROUND(ABS(strftime('%Y', final_game) - strftime('%Y', debut))) + ROUND(ABS(strftime('%m', final_game) - strftime('%m', debut)) / 12.0, 2) + ROUND(ABS(strftime('%d', final_game) - strftime('%d', debut)) / 365.0, 2) AS career_span_calculated FROM player WHERE debut IS NOT NULL AND final_game IS NOT NULL LIMIT 5

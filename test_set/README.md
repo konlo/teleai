@@ -4,6 +4,10 @@
 
 > Level 1·2와 `execution_report.md`의 PASS는 준비된 참조 Python 코드가 예외 없이 실행되었다는 뜻입니다. 실제 에이전트 성공률이 아닙니다. Level 3는 production `GraphAnalysisRuntime`의 고장 주입·복구 계약이며 자연어 이해 정확도는 별도 실제 에이전트 평가로 확인합니다.
 
+## 저장한 실제 대화 프롬프트 재사용
+
+화면 재평가 원문31개 `prompt_konlo_test_scenario_#1`과 AI 생성10개 `prompt_ai_test_scenario_#1`은 [prompt_scenarios 사용법](prompt_scenarios/README.md)에서 목록·불러오기·순차 재실행할 수 있습니다. 기존 Level1~3 평가와 별도인 대화 여정이며 agent 완료 응답을 자동으로 정답 처리하지 않습니다.
+
 ## 실제 에이전트 평가
 
 `scripts/evaluate_analysis_agent.py`는 원래 질문을 운영 `GraphAnalysisRuntime.submit()`에 입력하고, 별도로 실행한 참조 코드의 수치·집계 결과 또는 히스토그램 분포와 실제 도구 결과를 비교합니다. 정답 코드와 정답 변수는 모델에 제공하지 않습니다. 참조 정의 파일의 의미를 변경하지 않고 `tests/fixtures/analysis_agent_grading.json`에 명시한 20개 문항을 채점할 수 있습니다. 나머지 180개 문항은 `UNGRADED`이며 성공으로 합산하지 않습니다. 채점 지원 확대는 실제 모델 통과를 뜻하지 않습니다. 새 9문항은 별도 실행 결과가 있어야 성공률에 포함할 수 있습니다.

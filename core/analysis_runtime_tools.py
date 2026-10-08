@@ -3,7 +3,8 @@ from dataclasses import asdict
 from duckdb import BinderException
 from sqlglot import exp, parse
 from sqlglot.errors import SqlglotError
-from core.analysis_catalog import compact_catalog, resolve_table_context
+from core.analysis_catalog import (_is_zero_row_schema_probe, compact_catalog,
+                                   resolve_table_context)
 
 from core.analysis_tool_contract import (
     AnalysisToolContext,
@@ -11,7 +12,7 @@ from core.analysis_tool_contract import (
     ToolDefinition,
     normalize_tool_result,
 )
-from utils.analysis_datasets import AnalysisNeed, Condition, DatasetStore, assess_reuse, filter_frame, full_read_preflight, project_dataset, select_reusable_dataset
+from utils.analysis_datasets import AnalysisNeed, Condition, assess_reuse, filter_frame, full_read_preflight, project_dataset, select_reusable_dataset
 from utils.analysis_skill_registry import AnalysisSkillRegistry
 from utils.analysis_charts import (
     histogram_from_counts,
@@ -41,6 +42,8 @@ from utils.analysis_numeric import prepare_numeric_dataset as build_numeric_data
 def build_analysis_tools(context: AnalysisToolContext) -> list[ToolDefinition]:
     datasets = context.datasets
     registry = AnalysisSkillRegistry()
+    namespace = 'database.table' if context.sql_dialect=='mysql' else 'catalog.schema.table'
+    metadata_catalog = 'MySQL information_schema' if context.sql_dialect=='mysql' else 'Unity Catalog information_schema'
 
     def search_analysis_tools(query, limit=3):
         from core.analysis_tool_discovery import discover_tools
@@ -49,11 +52,24 @@ def build_analysis_tools(context: AnalysisToolContext) -> list[ToolDefinition]:
 
     def catalog():
         return compact_catalog({"datasets": [dict(display_name=f"결과 {index}", **asdict(info)) for index,info in enumerate(datasets.metadata.values(),1)],
-                "skills": registry.list(), "available_tables": context.reference_context})
+                "skills": registry.list(), "available_tables": context.reference_context,
+                "data_backend":context.sql_dialect, "configured_namespace":context.source_namespace})
 
 
     def inspect_table_context(table):
         return resolve_table_context(context.reference_context, datasets, table)
+
+    def inspect_value_list(source,column,conditions=None,current_result_only=False,fresh=False):
+        from core.analysis_agent.value_list import prepare
+        return prepare(context,source,column,conditions,current_result_only,fresh)
+
+    def prepare_row_preview(source,limit=10,where_sql='',current_result_only=False,fresh=False):
+        from core.analysis_agent.row_preview import prepare
+        return prepare(context,source,limit,where_sql,current_result_only,fresh)
+
+    def prepare_source_scatter(source,x,y,fresh=False,dataset_id=''):
+        from core.analysis_agent.source_scatter import prepare
+        return prepare(context,source,x,y,fresh,dataset_id)
 
     def inspect_column_definitions(table):
         from core.analysis_metadata_discovery import inspect_column_definitions as inspect
@@ -89,7 +105,44 @@ def build_analysis_tools(context: AnalysisToolContext) -> list[ToolDefinition]:
         return build_dataset_profile(datasets, dataset_id, columns, offset, limit)
 
     def plan_source_discovery(catalog="", schema="", pattern="", limit=100):
+        if context.sql_dialect == 'mysql':
+            known_databases = {str(item.get('table','')).split('.')[0] for item in context.reference_context
+                if len(str(item.get('table','')).split('.')) == 2}
+            known_databases.discard('information_schema')
+            if context.source_namespace:
+                known_databases.add(context.source_namespace)
+            requested = catalog.strip().strip('`')
+            if requested and requested not in known_databases:
+                return {'status':'needs_context', 'message':'확인된 MySQL database가 아닙니다.',
+                        'known_databases':sorted(known_databases)}
+            if not requested and len(known_databases) != 1:
+                return {'status':'needs_context', 'message':'조회할 MySQL database를 지정해주세요.',
+                        'known_databases':sorted(known_databases)}
+            resolved = requested or next(iter(known_databases))
+            if schema.strip() and schema.strip().strip('`').casefold() != resolved.casefold():
+                return {'status':'needs_context', 'message':'MySQL schema는 선택한 database와 일치해야 합니다.',
+                        'known_databases':sorted(known_databases)}
+            bounded_limit = int(limit)
+            if not 1 <= bounded_limit <= 200:
+                raise ValueError('limit은 1~200이어야 합니다.')
+            query = ('SELECT table_schema, table_name, table_type FROM information_schema.tables '
+                     "WHERE table_schema = '" + resolved.replace("'", "''") + "'")
+            if pattern.strip():
+                term = pattern.strip()
+                if len(term) > 100 or any(char in term for char in '\x00\n\r'):
+                    raise ValueError('검색어가 유효하지 않습니다.')
+                literal = term.replace('\\', '\\\\').replace("'", "''")
+                query += " AND INSTR(LOWER(table_name), LOWER('" + literal + "')) > 0"
+            query += f' ORDER BY table_name LIMIT {bounded_limit}'
+            validate_query(query,dialect='mysql')
+            return {'status':'planned', 'discovery_plan':{
+                'source':'information_schema.tables','query':query,
+                'reason':'현재 MySQL database의 실제 테이블 목록을 조회합니다.'},
+                'scope':f'{resolved} database의 테이블 최대 {bounded_limit}건. 아직 실행되지 않았습니다.',
+                'user_action':'query_databricks 도구에 이 정확한 계획을 전달해 실행하세요.'}
         known_catalogs = {}
+        if context.source_namespace:
+            known_catalogs[context.source_namespace.casefold()] = context.source_namespace
         for item in context.reference_context:
             parts = [part.strip().strip('`') for part in str(item.get('table', '')).split('.')]
             if len(parts) == 3 and parts[0]:
@@ -326,7 +379,7 @@ def build_analysis_tools(context: AnalysisToolContext) -> list[ToolDefinition]:
         return prepare(context, source, key_columns, order_column, value_column, result_dataset_id, categorical=categorical, bins=bins, tie_break_columns=tie_break_columns, null_policy=null_policy, conditions=conditions, filter_stage=filter_stage)
 
     def propose_query(source, query, reason):
-        validate_query(query)
+        validate_query(query,dialect=context.sql_dialect)
         return context.propose_query(source=source, query=query, reason=reason)
 
     def analyze_local(dataset_id, query, current_result_only=False, requested_conditions=None):
@@ -493,7 +546,7 @@ def build_analysis_tools(context: AnalysisToolContext) -> list[ToolDefinition]:
 
     def source_key(source):
         try:
-            table = single_table(validate_query(f'SELECT * FROM {source}'))
+            table = single_table(validate_query(f'SELECT * FROM {source}', dialect=context.sql_dialect))
             return table_identity(table).casefold() if table is not None else ''
         except (ValueError, TypeError, SqlglotError):
             return ''
@@ -503,16 +556,25 @@ def build_analysis_tools(context: AnalysisToolContext) -> list[ToolDefinition]:
         for identifier in tree.find_all(exp.Identifier):
             identifier.set('quoted', False)
             identifier.set('this', identifier.name.casefold())
-        return tree.sql(dialect='databricks')
+        return tree.sql(dialect=context.sql_dialect)
 
     def prepare_histogram(source, column, where_sql="", fresh_source_required=False,
-                          current_result_only=False, dataset_id=""):
+                          current_result_only=False, dataset_id="", categorical=False, category="", bins=8):
+        if category:
+            if categorical:raise ValueError("그룹별 수치 histogram만 지원합니다.")
+            from utils.analysis_grouped_distribution import prepare
+            return prepare(context,source,column,category,where_sql,bins,normalized_query,
+                analyze_local,card_entry,source_key,current_result_only,fresh_source_required)
         identity = source_key(source)
         matches=[t for t in context.reference_context if source_key(t.get('table','')) == identity and identity]
         metadata = datasets.metadata
         matching = [info for info in metadata.values()
                     if source_key(info.source) == identity and column in info.columns]
         known = bool(matching)
+        # LIMIT 0 is schema evidence, not a complete population for EDA. Its
+        # zero-row frame must never satisfy a histogram's raw-data reuse check.
+        matching = [info for info in matching
+                    if not _is_zero_row_schema_probe(info.query)]
         if not identity or (not known and (len(matches)!=1 or column not in [c['name'] for c in matches[0].get('columns',[])])):
             return {'status':'needs_context','message':'정확한 테이블과 수치 컬럼을 inspect_table_context에서 확인하세요.'}
 
@@ -531,23 +593,42 @@ def build_analysis_tools(context: AnalysisToolContext) -> list[ToolDefinition]:
         selected_id = dataset_id
         active = metadata.get(context.selected_dataset_id)
         if (not selected_id and not fresh_source_required and active is not None
-                and source_key(active.source) == identity):
+                and source_key(active.source) == identity
+                and not _is_zero_row_schema_probe(active.query)):
             selected_id = active.id
         if selected_id:
             selected = metadata.get(selected_id)
             if selected is None or source_key(selected.source) != identity:
                 return {'status':'needs_context', 'message':'선택한 dataset ID가 이 출처의 보유 데이터와 일치하지 않습니다.'}
+            if _is_zero_row_schema_probe(selected.query):
+                return {'status':'needs_data',
+                        'message':'0행 스키마 결과에는 분석할 데이터가 없습니다.'}
         elif matching and not fresh_source_required:
             roots = {lineage_root(info) for info in matching}
-            if None in roots or len(roots) != 1 or (current_result_only and len(matching) != 1):
+            source_counts_only = (not current_result_only and
+                all(info.grain == 'aggregate' and not info.parent_id and not info.parent_ids
+                    for info in matching))
+            if source_counts_only:
+                # Independent source aggregates are prior results, not
+                # competing raw populations. Reuse only the exact validated
+                # query below; otherwise return a source plan with all filters.
+                selected_id = ''
+            elif (not current_result_only and not dataset_id and len(roots)>1
+                  and not any(info.grain=='raw' and info.coverage=='complete' for info in matching)):
+                # A source-population request is not tied to an old preview's
+                # root. Exact complete frequency receipts below can be reused
+                # across snapshots; explicit freshness still disables reuse.
+                selected_id = ''
+            elif None in roots or len(roots) != 1 or (current_result_only and len(matching) != 1):
                 return {'status':'needs_context',
                         'message':'같은 출처에 여러 원본 또는 결과가 있습니다. 분석할 dataset ID를 명시해주세요.',
                         'candidate_dataset_ids':[info.id for info in matching]}
-            root_id = next(iter(roots))
-            selected_id = (root_id if (column in metadata[root_id].columns
+            else:
+                root_id = next(iter(roots))
+                selected_id = (root_id if (column in metadata[root_id].columns
                                        and source_key(metadata[root_id].source) == identity) else
-                           matching[0].id if len(matching) == 1 else '')
-            if not selected_id:
+                               matching[0].id if len(matching) == 1 else '')
+            if not selected_id and not source_counts_only and (current_result_only or dataset_id):
                 return {'status':'needs_context',
                         'message':'차트에 사용할 분기를 확정할 수 없습니다. dataset ID를 명시해주세요.',
                         'candidate_dataset_ids':[info.id for info in matching]}
@@ -559,13 +640,15 @@ def build_analysis_tools(context: AnalysisToolContext) -> list[ToolDefinition]:
         query=f'SELECT {quoted}, COUNT(*) AS `__frequency` FROM {table}'
         query+=f' WHERE {quoted} IS NOT NULL'+(' AND ('+where_sql+')' if where_sql.strip() else '')
         query+=f' GROUP BY {quoted}'
-        tree=validate_query(query)
+        tree=validate_query(query,dialect=context.sql_dialect)
         if len(list(tree.find_all(exp.Select)))!=1 or len(list(tree.find_all(exp.Table)))!=1:
             raise ValueError('필터에는 다른 조회나 테이블을 포함할 수 없습니다.')
         plan = {'source':source,'query':query,
             'reason':f'{column} 히스토그램에 필요한 값별 빈도를 조회합니다. 원본 행 전체는 가져오지 않습니다.',
             'value_column':column,'weight_column':'__frequency'}
-        scope_tree = validate_query(f'SELECT * FROM {table}'+(' WHERE '+where_sql if where_sql.strip() else ''))
+        if not categorical:plan['bins']=bins
+        if categorical:plan['kind']='bar'
+        scope_tree = validate_query(f'SELECT * FROM {table}'+(' WHERE '+where_sql if where_sql.strip() else ''),dialect=context.sql_dialect)
         conditions = query_conditions(scope_tree)
         if selected_id and not fresh_source_required and not current_result_only:
             selected = metadata[selected_id]
@@ -577,16 +660,24 @@ def build_analysis_tools(context: AnalysisToolContext) -> list[ToolDefinition]:
         def in_selected_branch(info):
             if not selected_id:
                 return True  # No local assets; only a remote plan can result.
+            if (not current_result_only and not dataset_id and info.grain == 'aggregate'
+                    and not info.parent_id and not info.parent_ids):
+                # Source-level frequency receipts are independent of a selected
+                # preview. The exact query and population are verified below.
+                return True
             return (info.id == selected_id or
                     bool(raw_id and info.parent_id == raw_id))
 
         def ready(info):
             validate_frequency_dataset(datasets, info.id, column, '__frequency')
             card = next((card for card in context.artifacts.values()
-                         if card.dataset_id == info.id and card.kind == 'histogram'
-                         and card.columns == (column,) and card.image.startswith(b'\x89PNG\r\n\x1a\n')), None)
+                         if card.dataset_id == info.id and card.kind == ('bar' if categorical else 'histogram')
+                         and card.columns == (column,) and (categorical or card.render_spec.get('bins')==bins)
+                         and not card.render_spec.get('y_limits')
+                         and card.image.startswith(b'\x89PNG\r\n\x1a\n')), None)
             if card is None:
-                card = histogram_from_counts(datasets, info.id, column, '__frequency')
+                card = histogram_from_counts(datasets, info.id, column, '__frequency',categorical=categorical,
+                                             bins=None if categorical else bins)
                 context.artifacts[card.id] = card
             return {'status':'ready','histogram_plan':plan,'loaded_dataset':info.id,
                     'cards':[card_entry(card)],'reused':True}
@@ -613,7 +704,7 @@ def build_analysis_tools(context: AnalysisToolContext) -> list[ToolDefinition]:
                         return filtered
                     chart_info = datasets.metadata[filtered['dataset']['id']]
                 previews=recommend_charts(datasets,chart_info.id,[column])
-                card=next((item for item in previews if item.kind == 'histogram'
+                card=next((item for item in previews if item.kind == ('bar' if categorical else 'histogram')
                     and item.columns == (column,)),None)
                 if card is None:
                     return {'status':'no_valid_chart',
@@ -633,7 +724,7 @@ def build_analysis_tools(context: AnalysisToolContext) -> list[ToolDefinition]:
                     or not in_selected_branch(info)):
                 continue
             try:
-                candidate = validate_query(info.query, dialect='duckdb' if info.parent_id else 'databricks')
+                candidate = validate_query(info.query, dialect='duckdb' if info.parent_id else context.sql_dialect)
                 if info.parent_id:
                     parent = metadata.get(info.parent_id)
                     if parent is None or not parent.predicate_known:
@@ -666,8 +757,15 @@ def build_analysis_tools(context: AnalysisToolContext) -> list[ToolDefinition]:
                 return ready(datasets.metadata[result['dataset']['id']])
         return {'status':'planned','histogram_plan':plan}
 
-    def render_histogram(dataset_id, value_column, weight_column):
-        card = histogram_from_counts(datasets, dataset_id, value_column, weight_column)
+    def render_histogram(dataset_id, value_column, weight_column, categorical=False, category="", bins=8, y_max=None):
+        if category:
+            if y_max is not None:raise ValueError('그룹 histogram의 Y축 범위 수정은 아직 지원하지 않습니다.')
+            if categorical:raise ValueError("그룹별 수치 histogram만 지원합니다.")
+            from utils.analysis_grouped_distribution import render
+            card=render(datasets,dataset_id,value_column,category,weight_column,bins)
+        else:
+            card = histogram_from_counts(datasets, dataset_id, value_column, weight_column,categorical=categorical,y_max=y_max,
+                                         bins=None if categorical else bins)
         context.artifacts[card.id] = card
         return {'status':'ready', 'cards':[card_entry(card)]}
 
@@ -687,14 +785,25 @@ def build_analysis_tools(context: AnalysisToolContext) -> list[ToolDefinition]:
 
     string = {"type": "string"}
     definitions = [
+        tool('inspect_value_list','실제 컬럼의 고유값 목록을 최대 100개 확인합니다. 저장된 동일 조건의 완료 조회 또는 선택 원본을 우선 재사용하며 직접 원격 조회하지 않습니다. value_list_plan은 query_databricks로 실행합니다. 고유값 개수·빈도 계산과는 별도 기능입니다.',
+             {'source':string,'column':string,'conditions':{'type':'array','items':{'type':'object'}},
+              'current_result_only':{'type':'boolean'},'fresh':{'type':'boolean'}},
+             ['source','column'],inspect_value_list),
         tool("prepare_numeric_dataset", "숫자가 문자열로 저장되어 수치 계산/히스토그램이 실패할 때 보유 원본에서 필요한 컬럼만 Float64로 변환한 자식 dataset을 만듭니다. 모든 행과 원본을 보존하며 원격 조회하지 않습니다. missing_values는 의미를 확인한 정확한 결측 문자열만 명시하세요. 다른 비수치 값은 거절하며 삭제하지 않습니다. 반환 dataset ID로 후속 분석하고 conversion의 결측 수를 설명하세요.",
              {"dataset_id":string,"columns":{"type":"array","items":string,"minItems":1,"maxItems":8,"uniqueItems":True},
               "missing_values":{"type":"array","items":{"type":"string","maxLength":64},"maxItems":16},
               "preserve_columns":{"type":"array","items":string,"maxItems":8,"uniqueItems":True,"description":"그룹/필터용으로 타입과 값을 그대로 보존할 컬럼. columns와 겹치면 안 됩니다."}},
              ["dataset_id","columns"], prepare_numeric_dataset),
-        tool("inspect_table_relationships", "조인 전에 DB metadata에서 확인된 외래 키와 참조 키를 읽습니다. 없으면 알려진 catalog.schema.table의 관계 metadata 조회 계획을 반환합니다. 이름만으로 관계를 추측하지 마세요. metadata_plan은 query_databricks로 현재 실행 정책에 따라 실행하세요. 여러 관계의 역할·실제 cardinality는 별도 확인이 필요합니다.",
+        tool("inspect_table_relationships", f"조인 전에 DB metadata에서 확인된 외래 키와 참조 키를 읽습니다. 없으면 확인된 {namespace}의 관계 metadata 조회 계획을 반환합니다. 이름만으로 관계를 추측하지 마세요. metadata_plan은 query_databricks로 현재 실행 정책에 따라 실행하세요. 여러 관계의 역할·실제 cardinality는 별도 확인이 필요합니다.",
              {"table":string}, ["table"], inspect_table_relationships),
-        tool("inspect_column_definitions", "업무 의미가 부족하면 확인된 catalog.schema.table의 저장된 컬럼 설명을 읽습니다. 없으면 Unity Catalog information_schema.columns의 정확한 조회 계획만 반환합니다. metadata_plan을 query_databricks로 실행해 실제 결과를 확인하세요. 원본 행은 로딩하지 않습니다.",
+        tool("prepare_row_preview", "테이블의 1~200행을 표로 미리봅니다. 검증된 보유 raw 데이터의 bounded prefix를 우선 재사용하고 부족하면 SELECT * LIMIT 조회 계획을 반환합니다. 집계를 원본으로 간주하지 않고 기존 분석 기준을 변경하지 않습니다. row_preview_plan은 query_databricks로 실행하세요.",
+             {"source":string,"limit":{"type":"integer","minimum":1,"maximum":200},
+              "where_sql":string,"current_result_only":{"type":"boolean"},"fresh":{"type":"boolean"}},
+             ["source"],prepare_row_preview),
+        tool("prepare_source_scatter", "전체 원본의 두 수치 축을 정확한 좌표별 빈도로 압축하여 산점도 PNG를 만듭니다. 표본/구간 집계가 아니며 NULL 좌표는 제외합니다. 실제 스키마와 완료된 조회 receipt만 사용합니다. source_scatter_plan은 query_databricks로 실행 후 반환된 dataset_id로 다시 호출하세요. 잘린 결과는 전체 차트로 인정하지 않습니다.",
+             {"source":string,"x":string,"y":string,"fresh":{"type":"boolean"},"dataset_id":string},
+             ["source","x","y"],prepare_source_scatter),
+        tool("inspect_column_definitions", f"업무 의미가 부족하면 확인된 {namespace}의 저장된 컬럼 설명을 읽습니다. 없으면 {metadata_catalog}.columns의 정확한 조회 계획만 반환합니다. metadata_plan을 query_databricks로 실행해 실제 결과를 확인하세요. 원본 행은 로딩하지 않습니다.",
              {"table":string}, ["table"], inspect_column_definitions),
         tool("search_analysis_tools", "필요한 기능·도구명·오류와 관련된 등록 도구의 실제 입력/출력 schema와 제약·권한·관련 스킬을 검색합니다. 대체 경로 탐색용이며 데이터 조회나 실행은 하지 않습니다.",
              {"query": {"type":"string", "minLength":1, "maxLength":400},
@@ -716,7 +825,7 @@ def build_analysis_tools(context: AnalysisToolContext) -> list[ToolDefinition]:
               "offset": {"type": "integer", "minimum": 0},
               "limit": {"type": "integer", "minimum": 1, "maximum": 64}},
              ["dataset_id"], profile_dataset),
-        tool("plan_source_discovery", "현재 문맥에서 확인된 Databricks catalog의 테이블 목록을 찾는 읽기 전용 information_schema SQL을 만듭니다. 실행하지 않으며, 반환된 discovery_plan을 query_databricks로 전달할 때 현재 원격 실행 정책에 따라 실행합니다.",
+        tool("plan_source_discovery", f"현재 문맥에서 확인된 {metadata_catalog}의 테이블 목록을 찾는 읽기 전용 SQL을 만듭니다. 실행하지 않으며, 반환된 discovery_plan을 query_databricks로 전달할 때 현재 원격 실행 정책에 따라 실행합니다.",
              {"catalog": string, "schema": string, "pattern": string,
               "limit": {"type": "integer", "minimum": 1, "maximum": 200}},
              [], plan_source_discovery),
@@ -890,12 +999,12 @@ def build_analysis_tools(context: AnalysisToolContext) -> list[ToolDefinition]:
               "rate_label": {"type":"string","maxLength":120}},
              ["dataset_id","group_column","outcome_column","success_value"],
              render_count_rate_chart),
-        tool("prepare_histogram", "보유한 완전한 빈도·원본 데이터와 이미지를 먼저 재사용하여 히스토그램을 만듭니다. 여러 원본·버전·분기가 있으면 dataset_id로 사용자가 선택한 데이터의 계보를 지정하세요. 명시하지 않아 모호하면 다른 결과를 임의 선택하지 않습니다. source는 정확한 테이블명, column은 수치 컬럼, where_sql은 유지할 사용자 필터 SQL입니다. 최신 데이터 요청에만 fresh_source_required=true를 사용합니다. 직접 원격 조회하지 않습니다.",
-             {"source":string,"column":string,"where_sql":string,"dataset_id":string,
+        tool("prepare_histogram", "보유한 완전한 빈도·원본 데이터와 이미지를 먼저 재사용하여 히스토그램을 만듭니다. 여러 원본·버전·분기가 있으면 dataset_id로 사용자가 선택한 데이터의 계보를 지정하세요. 명시하지 않아 모호하면 다른 결과를 임의 선택하지 않습니다. source는 정확한 테이블명, column은 실제 분석 컬럼, 범주형 분포는 categorical=true로 값별 COUNT(*) 막대를 만듭니다. where_sql은 유지할 사용자 필터 SQL입니다. 최신 데이터 요청에만 fresh_source_required=true를 사용합니다. category를 지정하면 그 컬럼의 그룹별 빈도와 색상·범례를 계획합니다. 직접 원격 조회하지 않습니다.",
+             {"source":string,"column":string,"where_sql":string,"dataset_id":string,"category":string,"bins":{"type":"integer","minimum":2,"maximum":100},
               "current_result_only":{"type":"boolean"},
-              "fresh_source_required":{"type":"boolean"}},["source","column"],prepare_histogram),
-        tool("render_histogram", "완전한 값별 빈도 집계의 히스토그램을 생성합니다. value_column은 실제 수치값, weight_column은 해당 값의 COUNT(*) 빈도입니다. 원본 행이나 빈도 아닌 집계값을 넣지 마세요.",
-             {"dataset_id":string,"value_column":string,"weight_column":string},
+              "fresh_source_required":{"type":"boolean"},"categorical":{"type":"boolean"}},["source","column"],prepare_histogram),
+        tool("render_histogram", "완전한 값별 빈도 집계의 히스토그램을 생성합니다. value_column은 실제 값, weight_column은 해당 값의 COUNT(*) 빈도입니다. categorical=true이면 범주별 빈도 막대, false이면 수치 히스토그램입니다. category를 지정하면 수치·그룹별 COUNT(*)에서 공통 bin과 색상·범례를 렌더링합니다. y_max는 그룹 없는 분포의 Y축 표시 상한만 바꾸며 실제 빈도는 유지합니다. 원본 행이나 빈도 아닌 집계값을 넣지 마세요.",
+            {"dataset_id":string,"value_column":string,"weight_column":string,"categorical":{"type":"boolean"},"category":string,"bins":{"type":"integer","minimum":2,"maximum":100},"y_max":{"type":"number","exclusiveMinimum":0}},
              ["dataset_id","value_column","weight_column"],render_histogram),
         tool("show_chart", "저장된 검증 완료 차트 이미지를 다시 표시합니다. 새 계산이나 원격 조회를 수행하지 않습니다.",
              {"chart_id":string}, ["chart_id"], show_chart),
@@ -906,16 +1015,3 @@ def build_analysis_tools(context: AnalysisToolContext) -> list[ToolDefinition]:
                   "required":["column","op","value"],"additionalProperties":False}}}, ["dataset_id", "query"], analyze_local),
     ]
     return definitions
-
-
-def build_runtime_tools(session, datasets: DatasetStore) -> list[ToolDefinition]:
-    """Compatibility bridge for the current runtime and existing callers."""
-    def propose(**arguments):
-        request = session.approvals.propose(**arguments, goal=session.last_goal)
-        return {"status": "awaiting_approval", "request": asdict(request)}
-
-    context = AnalysisToolContext(datasets, session.artifacts,
-                                  session.reference_context, propose)
-    tools = build_analysis_tools(context)
-    session.context_provider = next(t.run for t in tools if t.name == "list_analysis_context")
-    return tools

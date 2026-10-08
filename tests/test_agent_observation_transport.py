@@ -58,7 +58,7 @@ class ObservationTransportTests(unittest.TestCase):
                 return {'status':'ready','dataset':asdict(info),'preview':frame.to_dict('records')}
             return execute
         return GraphAnalysisRuntime(root,'test','typed',ForbiddenModel(),
-                                    connection_identity='test',remote_factory=factory, policy=RuntimePolicy(require_remote_approval=True))
+                                    connection_identity='test',remote_factory=factory, policy=RuntimePolicy(require_remote_approval=True),intent_mode='contract_fixture')
 
     def test_typed_load_completes_without_model_and_preserves_raw_types(self):
         with tempfile.TemporaryDirectory() as root:

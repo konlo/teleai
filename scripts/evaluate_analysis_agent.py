@@ -1478,7 +1478,7 @@ def preserve_runtime_metadata(runtime, spec, artifact_dir=None):
 
 
 def evaluate_case(spec, grading, model, *, frames=None, artifact_dir=None,
-                  include_final_output=False, include_descriptions=True):
+                  include_final_output=False, include_descriptions=True, intent_mode='llm'):
     from core.analysis_agent.runtime import GraphAnalysisRuntime
     from langchain_core.messages import AIMessage, ToolMessage
     base = {"id": spec["id"], "prompt": spec["prompt"], "target_table": spec["target_table"],
@@ -1500,7 +1500,8 @@ def evaluate_case(spec, grading, model, *, frames=None, artifact_dir=None,
     started = time.monotonic()
     with tempfile.TemporaryDirectory(prefix="telly-agent-eval-") as temporary:
         runtime = GraphAnalysisRuntime(temporary, "evaluation", spec["id"], model,
-            connection_identity="fixture-only:no-databricks", remote_factory=forbidden_factory)
+            connection_identity="fixture-only:no-databricks", remote_factory=forbidden_factory,
+            intent_mode=intent_mode)
         record = {**base, "status": "FAIL", "reason": "Evaluation interrupted before completion"}
         try:
             frame = frames[spec["target_table"]]

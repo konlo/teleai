@@ -115,7 +115,7 @@ class TimeSeriesTests(unittest.TestCase):
 
     def test_production_graph_prepares_and_renders_without_model_or_remote(self):
         with tempfile.TemporaryDirectory() as root:
-            runtime = GraphAnalysisRuntime(root, "owner", "time-series", ForbiddenModel())
+            runtime = GraphAnalysisRuntime(root, "owner", "time-series", ForbiddenModel(),intent_mode='contract_fixture')
             runtime.datasets.register(
                 events(), source=SOURCE, coverage="complete", predicate_known=True,
                 snapshot="2026-01-03T00:00:00+00:00")
@@ -133,7 +133,7 @@ class TimeSeriesTests(unittest.TestCase):
             self.assertEqual(runtime.artifacts[chart_id].dataset_id, child_id)
             runtime.close()
 
-            reopened = GraphAnalysisRuntime(root, "owner", "time-series", ForbiddenModel())
+            reopened = GraphAnalysisRuntime(root, "owner", "time-series", ForbiddenModel(),intent_mode='contract_fixture')
             self.assertIn(child_id, reopened.datasets.metadata)
             self.assertIn(chart_id, reopened.inspect()["chart_ids"])
             self.assertTrue(reopened.artifacts[chart_id].image.startswith(b"\x89PNG\r\n\x1a\n"))

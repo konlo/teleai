@@ -8,13 +8,28 @@ UNVERIFIED_DELIVERY_NOTICE = (
     '실제 결과 또는 실행 상태를 확인해야 합니다. 기존 데이터는 보존했습니다.')
 
 
+def table_list_requested(text):
+    """Recognize table inventory; data rows/schema are distinct requests."""
+    if not isinstance(text, str):
+        return False
+    if re.search(r'컬럼|필드|항목|(?<![A-Za-z0-9_])(?:columns?|fields?|dtypes?|data\s+types?)(?![A-Za-z0-9_])', text, re.I):
+        return False
+    if re.search(r'(?<![A-Za-z0-9_])(?:rows?|records?|레코드|행)(?![A-Za-z_])',text,re.I):
+        return False
+    return bool(
+        re.search(r'(?:테이블|(?<![A-Za-z0-9_])tables?(?![A-Za-z0-9_])).{0,45}(?:목록|리스트|\blist\b|어떤|보여|있(?:어|나요|지))', text, re.I)
+        or re.search(r'(?:목록|리스트|\blist\b|어떤).{0,45}(?:테이블|(?<![A-Za-z0-9_])tables?(?![A-Za-z0-9_]))', text, re.I)
+    )
+
+
 def catalog_read_requested(current):
     sources = current.get('required_sources') or []
     text = current.get('request_text', '')
     return bool(sources) and all(
-        len(parts := str(source).replace('`', '').lower().split('.')) == 3
+        len(parts := str(source).replace('`', '').lower().split('.')) in {2, 3}
         and parts[-2] == 'information_schema' for source in sources
-    ) and bool(re.search(r'목록|리스트|\blist\b', text, re.I)) and not re.search(
+    ) and (table_list_requested(text) or bool(re.search(
+        r'목록|리스트|조회|보여|출력|\b(?:list|show|display|select)\b',text,re.I))) and not re.search(
         r'뜻|의미|정의|설명|\b(?:meaning|definition|explain)\b', text, re.I)
 
 
@@ -42,8 +57,14 @@ def verified_receipt(ledger, context, call, observation):
         return None
 
 
+def successful_remote_call_ids(current):
+    """Exclude confirmed server rejections, never uncertain submissions."""
+    rejected = set(current.get('sql_rejected_call_ids') or [])
+    return [key for key in current.get('remote_query_ids', []) if key not in rejected]
+
+
 def remote_queries_ready(current):
-    calls = current.get('remote_query_ids') or []
+    calls = successful_remote_call_ids(current)
     return bool(calls) and all(key in current.get('remote_query_evidence', {}) for key in calls)
 
 

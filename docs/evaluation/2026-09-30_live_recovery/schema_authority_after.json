@@ -1,0 +1,346 @@
+{
+  "status": "PASS",
+  "agent_status": "answered",
+  "data": "actual Databricks",
+  "model": "scripted probe then aggregate; no LLM inference",
+  "queries": [
+    "SELECT COUNT(*) AS n FROM `workspace`.`default`.`bank_loan`",
+    "SELECT AVG(`age`) AS average FROM `workspace`.`default`.`bank_loan`"
+  ],
+  "source_schema_preserved": true,
+  "schema_authority": "saved_snapshot",
+  "source_column_count": 18,
+  "contract": {
+    "required_columns": [
+      "age"
+    ],
+    "required_sources": [
+      "workspace.default.bank_loan"
+    ],
+    "scope": {
+      "conditions": [],
+      "any_conditions": [],
+      "join_edges": [],
+      "measure_conditions": [],
+      "ratio": null,
+      "unresolved": [],
+      "columns": [
+        "age"
+      ]
+    },
+    "scope_error": null,
+    "stop_reason": null,
+    "operations": [
+      "AVG"
+    ],
+    "evidence_ids": [
+      "bfd4c6d0-7859-409b-9201-6e37b23b5ede"
+    ]
+  },
+  "datasets": [
+    {
+      "id": "7a49d788-86cf-44aa-9121-bbf5c450e4f4",
+      "source": "workspace.default.bank_loan",
+      "columns": [
+        "n"
+      ],
+      "rows": 1,
+      "coverage": "complete",
+      "conditions": [],
+      "predicate_known": false,
+      "grain": "aggregate",
+      "aggregation": "SELECT COUNT(*) AS n FROM \"workspace\".\"default\".\"bank_loan\"",
+      "snapshot": "2026-09-30T13:10:00.670820+00:00",
+      "query": "SELECT COUNT(*) AS n FROM `workspace`.`default`.`bank_loan`",
+      "parent_id": "",
+      "parent_ids": [],
+      "role": "aggregate",
+      "root_id": "",
+      "row_selection": {}
+    },
+    {
+      "id": "bfd4c6d0-7859-409b-9201-6e37b23b5ede",
+      "source": "workspace.default.bank_loan",
+      "columns": [
+        "average"
+      ],
+      "rows": 1,
+      "coverage": "complete",
+      "conditions": [],
+      "predicate_known": false,
+      "grain": "aggregate",
+      "aggregation": "SELECT AVG(\"age\") AS average FROM \"workspace\".\"default\".\"bank_loan\"",
+      "snapshot": "2026-09-30T13:10:02.331699+00:00",
+      "query": "SELECT AVG(`age`) AS average FROM `workspace`.`default`.`bank_loan`",
+      "parent_id": "",
+      "parent_ids": [],
+      "role": "aggregate",
+      "root_id": "",
+      "row_selection": {}
+    }
+  ],
+  "diagnostics": [
+    {
+      "time": "2026-09-30T13:09:57.742529+00:00",
+      "event": "run_started",
+      "run_id": "7872f2db8fa745bdbae334aa82cacf25",
+      "instance_id": "d9d3b395acdc",
+      "pid": 49683,
+      "runtime": {
+        "revision_at_first_runtime": "5133c930259d9819c674e83340ea091d3a2bdffb",
+        "packages": {
+          "langchain": "1.4.0",
+          "langchain-core": "1.6.2",
+          "langgraph": "1.2.11",
+          "streamlit": "1.63.0",
+          "sqlglot": "30.18.0"
+        },
+        "python_version": "3.11.13",
+        "identity_captured_at": "2026-09-30T13:09:57.667746+00:00",
+        "route": "langgraph-v1",
+        "model_class": "ProbeThenAggregate",
+        "require_remote_approval": false,
+        "loaded_delivery_guard": "66da8d34cbab0e06"
+      },
+      "operation": "submit",
+      "process_peak_rss_bytes": 274563072
+    },
+    {
+      "time": "2026-09-30T13:09:57.841183+00:00",
+      "event": "summarization_started",
+      "run_id": "7872f2db8fa745bdbae334aa82cacf25",
+      "instance_id": "d9d3b395acdc",
+      "pid": 49683,
+      "span_id": "9909efedd601",
+      "message_count": 1
+    },
+    {
+      "time": "2026-09-30T13:09:57.841270+00:00",
+      "event": "summarization_finished",
+      "run_id": "7872f2db8fa745bdbae334aa82cacf25",
+      "instance_id": "d9d3b395acdc",
+      "pid": 49683,
+      "span_id": "9909efedd601",
+      "status": "ok",
+      "elapsed_seconds": 0.0,
+      "message_count": 1,
+      "summarized": false
+    },
+    {
+      "time": "2026-09-30T13:09:57.841720+00:00",
+      "event": "model_call_started",
+      "run_id": "7872f2db8fa745bdbae334aa82cacf25",
+      "instance_id": "d9d3b395acdc",
+      "pid": 49683,
+      "span_id": "f624c0cab7b7",
+      "message_count": 1
+    },
+    {
+      "time": "2026-09-30T13:09:57.842642+00:00",
+      "event": "context_budget",
+      "run_id": "7872f2db8fa745bdbae334aa82cacf25",
+      "instance_id": "d9d3b395acdc",
+      "pid": 49683,
+      "characters": 7957,
+      "limit": 32000
+    },
+    {
+      "time": "2026-09-30T13:09:57.843200+00:00",
+      "event": "model_call_finished",
+      "run_id": "7872f2db8fa745bdbae334aa82cacf25",
+      "instance_id": "d9d3b395acdc",
+      "pid": 49683,
+      "span_id": "f624c0cab7b7",
+      "status": "ok",
+      "elapsed_seconds": 0.001,
+      "message_count": 1,
+      "tool_call_count": 1
+    },
+    {
+      "time": "2026-09-30T13:09:57.847880+00:00",
+      "event": "remote_query_authorized",
+      "run_id": "7872f2db8fa745bdbae334aa82cacf25",
+      "instance_id": "d9d3b395acdc",
+      "pid": 49683,
+      "tool_call_id": "cc0a3828-d284-4c27-987a-46e5f1a0a185",
+      "authorization": "automatic_read_policy"
+    },
+    {
+      "time": "2026-09-30T13:09:57.847992+00:00",
+      "event": "remote_query_started",
+      "run_id": "7872f2db8fa745bdbae334aa82cacf25",
+      "instance_id": "d9d3b395acdc",
+      "pid": 49683,
+      "ledger_status": "auto_authorized",
+      "cached_receipt": false
+    },
+    {
+      "time": "2026-09-30T13:10:00.977981+00:00",
+      "event": "remote_query_finished",
+      "run_id": "7872f2db8fa745bdbae334aa82cacf25",
+      "instance_id": "d9d3b395acdc",
+      "pid": 49683,
+      "ledger_status": "completed",
+      "status": "ready",
+      "cached_receipt": false
+    },
+    {
+      "time": "2026-09-30T13:10:00.981714+00:00",
+      "event": "remote_result_verified",
+      "run_id": "7872f2db8fa745bdbae334aa82cacf25",
+      "instance_id": "d9d3b395acdc",
+      "pid": 49683,
+      "request_id": "0179dd86-e805-4746-aba7-b8db4dffed86",
+      "tool_call_id": "cc0a3828-d284-4c27-987a-46e5f1a0a185",
+      "dataset_id": "7a49d788-86cf-44aa-9121-bbf5c450e4f4",
+      "rows": 1
+    },
+    {
+      "time": "2026-09-30T13:10:00.984929+00:00",
+      "event": "summarization_started",
+      "run_id": "7872f2db8fa745bdbae334aa82cacf25",
+      "instance_id": "d9d3b395acdc",
+      "pid": 49683,
+      "span_id": "6d0890f7a9be",
+      "message_count": 3
+    },
+    {
+      "time": "2026-09-30T13:10:00.985144+00:00",
+      "event": "summarization_finished",
+      "run_id": "7872f2db8fa745bdbae334aa82cacf25",
+      "instance_id": "d9d3b395acdc",
+      "pid": 49683,
+      "span_id": "6d0890f7a9be",
+      "status": "ok",
+      "elapsed_seconds": 0.0,
+      "message_count": 3,
+      "summarized": false
+    },
+    {
+      "time": "2026-09-30T13:10:00.985824+00:00",
+      "event": "model_call_started",
+      "run_id": "7872f2db8fa745bdbae334aa82cacf25",
+      "instance_id": "d9d3b395acdc",
+      "pid": 49683,
+      "span_id": "0b05c3635096",
+      "message_count": 3
+    },
+    {
+      "time": "2026-09-30T13:10:00.987289+00:00",
+      "event": "context_budget",
+      "run_id": "7872f2db8fa745bdbae334aa82cacf25",
+      "instance_id": "d9d3b395acdc",
+      "pid": 49683,
+      "characters": 9475,
+      "limit": 32000
+    },
+    {
+      "time": "2026-09-30T13:10:00.988410+00:00",
+      "event": "model_call_finished",
+      "run_id": "7872f2db8fa745bdbae334aa82cacf25",
+      "instance_id": "d9d3b395acdc",
+      "pid": 49683,
+      "span_id": "0b05c3635096",
+      "status": "ok",
+      "elapsed_seconds": 0.003,
+      "message_count": 3,
+      "tool_call_count": 1
+    },
+    {
+      "time": "2026-09-30T13:10:00.995524+00:00",
+      "event": "remote_query_authorized",
+      "run_id": "7872f2db8fa745bdbae334aa82cacf25",
+      "instance_id": "d9d3b395acdc",
+      "pid": 49683,
+      "tool_call_id": "efb350d1-cf6b-4c75-8462-e9580b13cc31",
+      "authorization": "automatic_read_policy"
+    },
+    {
+      "time": "2026-09-30T13:10:00.995680+00:00",
+      "event": "remote_query_started",
+      "run_id": "7872f2db8fa745bdbae334aa82cacf25",
+      "instance_id": "d9d3b395acdc",
+      "pid": 49683,
+      "ledger_status": "auto_authorized",
+      "cached_receipt": false
+    },
+    {
+      "time": "2026-09-30T13:10:02.624576+00:00",
+      "event": "remote_query_finished",
+      "run_id": "7872f2db8fa745bdbae334aa82cacf25",
+      "instance_id": "d9d3b395acdc",
+      "pid": 49683,
+      "ledger_status": "completed",
+      "status": "ready",
+      "cached_receipt": false
+    },
+    {
+      "time": "2026-09-30T13:10:02.628974+00:00",
+      "event": "remote_result_verified",
+      "run_id": "7872f2db8fa745bdbae334aa82cacf25",
+      "instance_id": "d9d3b395acdc",
+      "pid": 49683,
+      "request_id": "0179dd86-e805-4746-aba7-b8db4dffed86",
+      "tool_call_id": "efb350d1-cf6b-4c75-8462-e9580b13cc31",
+      "dataset_id": "bfd4c6d0-7859-409b-9201-6e37b23b5ede",
+      "rows": 1
+    },
+    {
+      "time": "2026-09-30T13:10:02.630838+00:00",
+      "event": "calculation_evidence",
+      "run_id": "7872f2db8fa745bdbae334aa82cacf25",
+      "instance_id": "d9d3b395acdc",
+      "pid": 49683,
+      "request_id": "0179dd86-e805-4746-aba7-b8db4dffed86",
+      "dataset_id": "bfd4c6d0-7859-409b-9201-6e37b23b5ede",
+      "source": "workspace.default.bank_loan",
+      "coverage": "complete",
+      "grain": "aggregate"
+    },
+    {
+      "time": "2026-09-30T13:10:02.634086+00:00",
+      "event": "completion_checked",
+      "run_id": "7872f2db8fa745bdbae334aa82cacf25",
+      "instance_id": "d9d3b395acdc",
+      "pid": 49683,
+      "request_id": "0179dd86-e805-4746-aba7-b8db4dffed86",
+      "status": "complete",
+      "reason": null,
+      "attempts": 0,
+      "required_capabilities": [
+        "remote_query",
+        "calculation"
+      ],
+      "missing_capabilities": [],
+      "model_calls": 2,
+      "tool_calls": 2,
+      "model_seconds": 0.011,
+      "dataset_ids": [
+        "bfd4c6d0-7859-409b-9201-6e37b23b5ede"
+      ],
+      "artifact_ids": []
+    },
+    {
+      "time": "2026-09-30T13:10:02.637333+00:00",
+      "event": "run_completed",
+      "run_id": "7872f2db8fa745bdbae334aa82cacf25",
+      "instance_id": "d9d3b395acdc",
+      "pid": 49683,
+      "status": "answered",
+      "elapsed_seconds": 4.895,
+      "process_peak_rss_bytes": 301514752,
+      "frame_cache_bytes": 0
+    },
+    {
+      "time": "2026-09-30T13:10:02.637397+00:00",
+      "event": "turn_slo",
+      "run_id": "7872f2db8fa745bdbae334aa82cacf25",
+      "instance_id": "d9d3b395acdc",
+      "pid": 49683,
+      "elapsed_seconds": 4.895,
+      "limit": 180.0,
+      "status": "ok"
+    }
+  ],
+  "error_type": null
+}

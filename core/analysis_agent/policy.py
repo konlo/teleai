@@ -26,6 +26,7 @@ def _positive_float(name, default):
 class RuntimePolicy:
     require_remote_approval: bool = False
     max_remote_rows: int = 100_000
+    max_scatter_coordinates: int = 250_000
     max_dataset_columns: int = 256
     max_dataset_bytes: int = 512 * 1024 * 1024
     max_full_read_bytes: int = 128 * 1024 * 1024
@@ -45,6 +46,7 @@ class RuntimePolicy:
         return cls(
             require_remote_approval=approval in {"true", "1"},
             max_remote_rows=_positive_int("TELLY_MAX_REMOTE_ROWS", cls.max_remote_rows),
+            max_scatter_coordinates=_positive_int("TELLY_MAX_SCATTER_COORDINATES", cls.max_scatter_coordinates),
             max_dataset_columns=_positive_int("TELLY_MAX_DATASET_COLUMNS", cls.max_dataset_columns),
             max_dataset_bytes=_positive_int("TELLY_MAX_DATASET_BYTES", cls.max_dataset_bytes),
             max_full_read_bytes=_positive_int("TELLY_MAX_FULL_READ_BYTES", cls.max_full_read_bytes),

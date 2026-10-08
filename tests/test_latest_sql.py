@@ -16,7 +16,7 @@ from utils.analysis_latest_sql import select_latest
 class LatestSQLTests(unittest.TestCase):
     def check(self, frame, expected_error=None, order=None, keys=None):
         with tempfile.TemporaryDirectory() as root:
-            r = GraphAnalysisRuntime(root, 'sql-test', 'latest', QuietModel())
+            r = GraphAnalysisRuntime(root, 'sql-test', 'latest', QuietModel(),intent_mode='contract_fixture')
             try:
                 info = r.datasets.register(frame, source=FIXTURE['source'],
                     coverage='complete', predicate_known=True)
@@ -79,7 +79,7 @@ class LatestSQLTests(unittest.TestCase):
         old[CLOCK] -= pd.Timedelta(days=100)
         frame = pd.concat([base, pd.concat([old] * 20_000)], ignore_index=True)
         with tempfile.TemporaryDirectory() as root:
-            r = GraphAnalysisRuntime(root, 'sql-test', 'large', QuietModel())
+            r = GraphAnalysisRuntime(root, 'sql-test', 'large', QuietModel(),intent_mode='contract_fixture')
             info = r.datasets.register(frame, source=FIXTURE['source'], coverage='complete', predicate_known=True)
             r.select_dataset(info.id)
             try:
@@ -98,7 +98,7 @@ class LatestSQLTests(unittest.TestCase):
                 selected_id = proof['dataset']['id']
             finally:
                 r.close()
-            r = GraphAnalysisRuntime(root, 'sql-test', 'large', QuietModel())
+            r = GraphAnalysisRuntime(root, 'sql-test', 'large', QuietModel(),intent_mode='contract_fixture')
             try:
                 selected = r.datasets.frames[selected_id]
                 self.assertEqual(dict(zip(selected[KEY], selected[VALUE])), FIXTURE['expected_latest'])

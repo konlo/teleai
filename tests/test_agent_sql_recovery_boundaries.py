@@ -152,7 +152,7 @@ class JoinedScopeContractTests(unittest.TestCase):
                      {'name': 'key', 'dtype': 'INTEGER'}]},
             ]
             runtime = GraphAnalysisRuntime(root, 'evaluation', 'qualified-scope', model,
-                reference_context_loader=lambda: context)
+                reference_context_loader=lambda: context,intent_mode='contract_fixture')
             try:
                 request = ("join e.left_key = a.key and e.right_key = b.key; "
                            "a.label = 'target' OR b.label = 'target'")
@@ -193,7 +193,7 @@ class JoinedScopeContractTests(unittest.TestCase):
                     connection_identity='test-connection',
                     remote_factory=lambda _: lambda envelope: remote_calls.append(envelope),
                     reference_context_loader=lambda: context,
-                    sql_dialect='sqlite', policy=RuntimePolicy(require_remote_approval=True))
+                    sql_dialect='sqlite', policy=RuntimePolicy(require_remote_approval=True),intent_mode='contract_fixture')
                 try:
                     result = runtime.submit(
                         "Count records joining e.left_key = a.key and e.right_key = b.key "
@@ -207,7 +207,7 @@ class JoinedScopeContractTests(unittest.TestCase):
             runtime = GraphAnalysisRuntime(root, 'owner', 'missing-relationship',
                 JoinedProposalModel(query=base), connection_identity='test-connection',
                 remote_factory=lambda _: lambda envelope: self.fail('remote execution'),
-                reference_context_loader=lambda: context, sql_dialect='sqlite', policy=RuntimePolicy(require_remote_approval=True))
+                reference_context_loader=lambda: context, sql_dialect='sqlite', policy=RuntimePolicy(require_remote_approval=True),intent_mode='contract_fixture')
             try:
                 result = runtime.submit(
                     "Count records where a.label = 'target' OR b.label = 'target'")
@@ -274,7 +274,7 @@ class PublicSqliteProbeTests(unittest.TestCase):
             model = CapturingModel()
             runtime = GraphAnalysisRuntime(root, 'evaluation', 'separate-document', model,
                 agent_instructions='Read-only proposal instructions.',
-                reference_document='SUPPLIED_DOCUMENT_ONLY OR irrelevant_text')
+                reference_document='SUPPLIED_DOCUMENT_ONLY OR irrelevant_text',intent_mode='contract_fixture')
             try:
                 runtime.submit('What does the current table contain?')
                 self.assertTrue(model.seen)
@@ -291,7 +291,7 @@ class PublicSqliteProbeTests(unittest.TestCase):
 
     def test_rejected_scope_proposal_returns_reason_and_stops_identical_retry(self):
         with tempfile.TemporaryDirectory() as root:
-            runtime = GraphAnalysisRuntime(root, 'evaluation', 'scope-feedback', CapturingModel())
+            runtime = GraphAnalysisRuntime(root, 'evaluation', 'scope-feedback', CapturingModel(),intent_mode='contract_fixture')
             try:
                 current, _ = runtime.recovery._state({'messages': [HumanMessage(
                     content='Use either category A or category B')]})
@@ -314,7 +314,7 @@ class PublicSqliteProbeTests(unittest.TestCase):
 
     def test_preflight_reports_physical_source_instead_of_guessing_label(self):
         with tempfile.TemporaryDirectory() as root:
-            runtime = GraphAnalysisRuntime(root, 'evaluation', 'source-hint', CapturingModel())
+            runtime = GraphAnalysisRuntime(root, 'evaluation', 'source-hint', CapturingModel(),intent_mode='contract_fixture')
             try:
                 error = runtime.recovery._proposal_preflight_error({
                     'name': 'query_databricks', 'args': {
@@ -331,7 +331,7 @@ class PublicSqliteProbeTests(unittest.TestCase):
                       'observed_at': '2000-01-01T00:00:00+00:00',
                       'columns': [{'name': 'value', 'dtype': 'INTEGER'}]}]
             runtime = GraphAnalysisRuntime(root, 'evaluation', 'stale-preflight',
-                CapturingModel(), reference_context_loader=lambda: stale)
+                CapturingModel(), reference_context_loader=lambda: stale,intent_mode='contract_fixture')
             try:
                 error = runtime.recovery._proposal_preflight_error({
                     'name':'query_databricks', 'args':{
@@ -370,7 +370,7 @@ class PublicSqliteProbeTests(unittest.TestCase):
                 remote_factory=lambda _: lambda envelope: remote_calls.append(envelope),
                 sql_dialect='sqlite',
                 proposal_validator=lambda query: check_sqlite_candidate(path, query),
-                agent_instructions='Stage one SQLite SELECT with query_databricks.', policy=RuntimePolicy(require_remote_approval=True))
+                agent_instructions='Stage one SQLite SELECT with query_databricks.', policy=RuntimePolicy(require_remote_approval=True),intent_mode='contract_fixture')
             try:
                 result = runtime.submit('Count records in items.')
                 self.assertEqual(result['status'], 'awaiting_approval', result)

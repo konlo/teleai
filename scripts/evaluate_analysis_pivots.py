@@ -55,7 +55,7 @@ def arbitrary_schema_case(root: str) -> dict:
         "metric_value": [10.0, 20.0, 30.0, 40.0, 50.0, 60.0],
     })
     expected = _flatten(pd.crosstab(frame["segment_code"], frame["channel_code"]))
-    runtime = GraphAnalysisRuntime(root, "evaluation", "pivot-arbitrary", ForbiddenModel())
+    runtime = GraphAnalysisRuntime(root, "evaluation", "pivot-arbitrary", ForbiddenModel(),intent_mode='contract_fixture')
     source_info = runtime.datasets.register(
         frame.copy(), source=SOURCE, coverage="complete", predicate_known=True,
         snapshot="fixture:pivot-arbitrary")
@@ -77,7 +77,7 @@ def arbitrary_schema_case(root: str) -> dict:
     finally:
         runtime.close()
 
-    reopened = GraphAnalysisRuntime(root, "evaluation", "pivot-arbitrary", ForbiddenModel())
+    reopened = GraphAnalysisRuntime(root, "evaluation", "pivot-arbitrary", ForbiddenModel(),intent_mode='contract_fixture')
     try:
         restart_evidence = reopened.inspect().get("recovery", {}).get("pivot_evidence")
     finally:

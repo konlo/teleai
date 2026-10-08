@@ -46,8 +46,15 @@ def _count_rate_ready(current):
 # Adding a capability makes it participate in all four consumers automatically:
 # early completion, final exit validation, rendering and missing-evidence repair.
 from core.analysis_agent.latest_selection import render as render_latest_selection
+from core.analysis_agent.value_list import render as render_value_list
+from core.analysis_agent.row_preview import render as render_row_preview
 
 CONTRACTS = (
+    CompletionContract('row_preview','row_preview_spec','table_preview_evidence',
+                       ('prepare_row_preview','query_databricks'),render_row_preview),
+    CompletionContract('value_list','value_list_requested','value_list_evidence',
+                       ('inspect_value_list','query_databricks'),
+                       render_value_list),
     CompletionContract('latest_per_key', 'latest_per_key_spec', 'latest_selection_evidence',
                        ('analyze_latest_distribution', 'prepare_remote_latest_distribution'), render_latest_selection),
     CompletionContract('remote_query', 'remote_result_requested', 'remote_query_evidence',
@@ -66,7 +73,7 @@ CONTRACTS = (
     CompletionContract('outliers', 'outlier_spec', 'outlier_evidence', ('detect_outliers', 'select_outlier_rows'), renderers.render_outliers),
     CompletionContract('outlier_aggregate', 'outlier_aggregate_requested', 'outlier_aggregate_evidence', ('aggregate_dataset', 'compare_group_aggregates'), renderers.render_outlier_aggregate, _outlier_aggregate_ready),
     CompletionContract('count_rate', 'count_rate_layout', 'count_rate_evidence', ('render_count_rate_chart',), renderers.render_chart, _count_rate_ready),
-    CompletionContract('chart', 'chart', 'artifact_ids', ('render_chart_spec', 'recommend_chart_images', 'render_histogram', 'prepare_histogram', 'show_chart', 'render_count_rate_chart'), renderers.render_chart),
+    CompletionContract('chart', 'chart', 'artifact_ids', ('render_chart_spec', 'recommend_chart_images', 'render_histogram', 'prepare_histogram', 'show_chart', 'render_count_rate_chart','prepare_source_scatter'), renderers.render_chart),
     CompletionContract('calculation', 'calculation', 'evidence_ids', ('local_analysis_sql', 'aggregate_dataset', 'query_databricks'), renderers.render_calculation),
 )
 if len({contract.name for contract in CONTRACTS}) != len(CONTRACTS):
@@ -82,6 +89,10 @@ def missing_contracts(current):
 
 
 def completion_ready(current):
+    if current.get('intent_origin') == 'llm' and (
+            current.get('goal_pending') or not current.get('goal')
+            or current.get('goal_interpretation_error') or current.get('goal_question')):
+        return False
     if current.get('unverified_execution_claim'):
         return False
     active = active_contracts(current)

@@ -66,7 +66,7 @@ def evaluate(rows):
             'Test runtime row policy is set to the synthetic workload size; product defaults are unchanged.']}
     with tempfile.TemporaryDirectory(prefix='teleai-streaming-scale-') as root:
         policy=RuntimePolicy(max_remote_rows=rows)
-        r=GraphAnalysisRuntime(root,'evaluation','streaming',ForbiddenModel(),policy=policy)
+        r=GraphAnalysisRuntime(root,'evaluation','streaming',ForbiddenModel(),policy=policy,intent_mode='contract_fixture')
         try:
             cursor=SyntheticCursor(fixture,rows)
             before=time.monotonic();result=execute_approved(request,config,r.datasets,max_rows=rows,connect=lambda **_:cursor)
@@ -113,7 +113,7 @@ def evaluate(rows):
                 'raw_preserved':stored_dataset_digest(r.datasets,raw_id)==digest,
                 'selected_preserved':r.db.selected_dataset_id()==selected,
                 'staging_clean':not list(r.db.directory.glob('*.staging.parquet'))}
-            r.close();r=GraphAnalysisRuntime(root,'evaluation','streaming',ForbiddenModel(),policy=policy)
+            r.close();r=GraphAnalysisRuntime(root,'evaluation','streaming',ForbiddenModel(),policy=policy,intent_mode='contract_fixture')
             report['reopen']={'raw_preserved':stored_dataset_digest(r.datasets,raw_id)==digest,
                 'rows':r.datasets.metadata[raw_id].rows,'selected_preserved':r.context.selected_dataset_id==selected}
             checks=[report['ingestion']['rows']==rows,report['ingestion']['max_batch']<=1024,

@@ -29,7 +29,7 @@ class ColumnDiscoveryTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as root:
             r=GraphAnalysisRuntime(root,'owner','denial',self.model(),
                 remote_factory=lambda _: lambda request: self.fail('Denied SQL executed'),
-                connection_identity='synthetic', policy=RuntimePolicy(require_remote_approval=True))
+                connection_identity='synthetic', policy=RuntimePolicy(require_remote_approval=True),intent_mode='contract_fixture')
             try:
                 raw=r.datasets.register(pd.DataFrame({'metric_z':[2.,4.]}),source=TARGET,
                     coverage='complete',predicate_known=True)
@@ -62,14 +62,14 @@ class ColumnDiscoveryTests(unittest.TestCase):
                 return {'status':'ready','dataset':asdict(info)}
             return run
         with tempfile.TemporaryDirectory() as root:
-            r=GraphAnalysisRuntime(root,'owner','meaning',self.model(),remote_factory=factory,connection_identity='synthetic', policy=RuntimePolicy(require_remote_approval=True))
+            r=GraphAnalysisRuntime(root,'owner','meaning',self.model(),remote_factory=factory,connection_identity='synthetic', policy=RuntimePolicy(require_remote_approval=True),intent_mode='contract_fixture')
             raw=r.datasets.register(pd.DataFrame({'metric_z':[2.,4.,8.,10.]}),source=TARGET,coverage='complete',predicate_known=True)
             r.select_dataset(raw.id);digest=stored_dataset_digest(r.datasets,raw.id)
             proposal=r.submit('이번 서비스에 소비한 분량의 평균을 알려줘')
             self.assertEqual(proposal['status'],'awaiting_approval',proposal)
             self.assertEqual(calls,[])
             r.close()
-            r=GraphAnalysisRuntime(root,'owner','meaning',self.model(),remote_factory=factory,connection_identity='synthetic', policy=RuntimePolicy(require_remote_approval=True))
+            r=GraphAnalysisRuntime(root,'owner','meaning',self.model(),remote_factory=factory,connection_identity='synthetic', policy=RuntimePolicy(require_remote_approval=True),intent_mode='contract_fixture')
             try:
                 result=r.respond(proposal['requests'][0]['id'],approved=True)
                 self.assertEqual(result['status'],'answered',result)
@@ -84,7 +84,7 @@ class ColumnDiscoveryTests(unittest.TestCase):
     def test_wrong_source_stale_full_page_and_modified_query_do_not_supply_definitions(self):
         for variant in ('wrong_source','stale','full_page','modified_query'):
             with self.subTest(variant=variant),tempfile.TemporaryDirectory() as root:
-                r=GraphAnalysisRuntime(root,'owner','invalid',EvaluationModel())
+                r=GraphAnalysisRuntime(root,'owner','invalid',EvaluationModel(),intent_mode='contract_fixture')
                 try:
                     plan=make_plan(TARGET)['metadata_plan']
                     row={'table_catalog':'catalog','table_schema':'schema','table_name':'measurements',

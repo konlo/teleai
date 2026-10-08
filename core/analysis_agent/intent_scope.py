@@ -12,6 +12,7 @@ import json
 import re
 
 from utils.analysis_datasets import Condition, full_read_preflight, project_dataset
+from core.analysis_agent.numeric_scope import intervals, uncovered_intervals
 
 
 _ISO = re.compile(r'(?<![A-Za-z0-9_-])(\d{4}-\d{2}(?:-\d{2})?)(?![A-Za-z0-9_-])')
@@ -55,10 +56,10 @@ def _literal(value):
     return value
 
 
-def _grounding(text, context):
+def _grounding(text, context, *, with_sources=False, source_hint=None):
     """Read bounded metadata or small raw frames, never sample a large frame."""
     columns, unresolved = {}, []
-    if context is None: return columns, unresolved
+    if context is None: return (columns, unresolved, []) if with_sources else (columns, unresolved)
     reference = list(context.reference_context)
     metadata = list(context.datasets.metadata.values())
     def source_key(value):
@@ -75,6 +76,29 @@ def _grounding(text, context):
     if not selected:
         selected = {source for source in sources if _mentioned(text, source.split('.')[-1])}
     if len(selected) > 1: unresolved.append('ambiguous_source')
+    if not selected and source_hint and source_key(source_hint) in sources:
+        selected = {source_key(source_hint)}
+    if not selected:
+        active = context.datasets.metadata.get(getattr(context, 'selected_dataset_id', None))
+        if active is not None:
+            selected = {source_key(active.source)}
+    if not selected:
+        # Cold-start conversations may have only aggregate results and no
+        # selected raw dataset. Resolve an exact set of schema names to a
+        # unique source; never merge case-colliding columns from all tables.
+        source_columns = {}
+        for table in reference:
+            source_columns.setdefault(source_key(table.get('table','')),set()).update(
+                c.get('name') for c in table.get('columns',[]) if c.get('name'))
+        for info in metadata:
+            source_columns.setdefault(source_key(info.source),set()).update(info.columns)
+        exact = {name for names in source_columns.values() for name in names
+                 if re.search(r'(?<![A-Za-z0-9_])'+re.escape(name)+r'(?![A-Za-z0-9_])',text)}
+        candidates = {source for source,names in source_columns.items() if exact and exact <= names}
+        if len(candidates) == 1:
+            selected = candidates
+        elif len(candidates) > 1 and list(intervals(text)):
+            unresolved.append('ambiguous_column_source')
 
     def add(name, dtype='', aliases=(), values=()):
         if not isinstance(name, str) or not name: return
@@ -120,7 +144,7 @@ def _grounding(text, context):
                     add(name, str(frame[name].dtype), values=frame[name].dropna().tolist())
         except (KeyError, OSError, ValueError, TypeError, MemoryError):
             unresolved.append('small_frame_unavailable')
-    return columns, unresolved
+    return (columns, unresolved, sorted(selected)) if with_sources else (columns, unresolved)
 
 
 def _reset_filter_columns(text, grounding):
@@ -141,7 +165,7 @@ def _reset_filter_columns(text, grounding):
     return all_filters, columns
 
 
-def resolve_request_scope(text, context, previous=None):
+def resolve_request_scope(text, context, previous=None, *, source_hint=None):
     """Return supported request predicates and explicit unresolved reason codes.
 
     ``previous`` is a previous return value of this function. Only reference
@@ -149,7 +173,11 @@ def resolve_request_scope(text, context, previous=None):
     on that column; other inherited predicates remain unchanged.
     """
     text = str(text)
-    grounding, unresolved = _grounding(text, context)
+    grounding, unresolved, sources = _grounding(text, context, with_sources=True, source_hint=source_hint)
+    if context is not None:
+        from core.analysis_agent.source_mentions import mask_source_mentions
+        text = mask_source_mentions(text, [c.get('table', '') for c in context.reference_context]
+            + [info.source for info in context.datasets.metadata.values()])
     previous = previous or {}
     reset_all, reset_columns = _reset_filter_columns(text, grounding)
     inherited = bool(_REFERENCE.search(text) or _PREVIOUS_MONTH.search(text) or reset_all or reset_columns)
@@ -184,45 +212,37 @@ def resolve_request_scope(text, context, previous=None):
                 start = int(decade[1])
                 found.extend([{'column':name, 'op':'ge', 'value':start},
                               {'column':name, 'op':'le', 'value':start + 9}])
-        for match in re.finditer(column_pattern + r'\s*(>=|<=|!=|<>|==|=|>|<)\s*(' + _LITERAL + ')', text, re.I):
-            found.append({'column':name, 'op':_OPS[match[1]], 'value':_literal(match[2])})
-            spans.append(match.span())
-        # Explicit quoted equality does not depend on a capped value profile.
-        # The column is grounded; an absent literal legitimately yields zero
-        # rows. Require the equality particle to avoid interpreting labels.
-        for match in re.finditer(column_pattern
-                + r'''\s+('(?:[^']|'')*'|"(?:[^"]|"")*")\s*(?:인|이고|이며)(?=\s|$)''', text, re.I):
-            found.append({'column':name, 'op':'eq', 'value':_literal(match[1])})
-            spans.append(match.span())
-        # Bind a bounded numeric interval to the explicitly named column.
-        # In a chart follow-up this changes the population, so a cached chart
-        # of the unfiltered source cannot satisfy the request.
-        range_prefix = column_pattern + r'[^0-9+\-\n]{0,32}(' + _NUMBER + r')\s*'
-        intervals = (
-            range_prefix + r'부터\s*(' + _NUMBER + r')\s*까지',
-            range_prefix + r'[~∼–—]\s*(' + _NUMBER + r')\s*(?:범위|구간)',
-        )
-        for interval in intervals:
-            for match in re.finditer(interval, text, re.I):
-                lower, upper = _literal(match[1]), _literal(match[2])
-                if lower > upper:
-                    unresolved.append('invalid_range_bounds')
-                    continue
-                found.extend([{'column':name, 'op':'ge', 'value':lower},
-                              {'column':name, 'op':'le', 'value':upper}])
-                spans.append(match.span())
-                numeric_ranges += 1
-        paired_bounds = (column_pattern + r'\s*(' + _NUMBER
-                         + r')\s*(이상|초과)\s*(' + _NUMBER + r')\s*(이하|미만)')
-        for match in re.finditer(paired_bounds, text, re.I):
-            lower, upper = _literal(match[1]), _literal(match[3])
+        # Interpret intervals before scalar comparisons; `x=1~4` is a
+        # range, not equality to 1 plus a range.
+        for interval in intervals(text, column_pattern):
+            lower, upper = interval['lower'], interval['upper']
+            spans.append(interval['span'])
+            numeric_ranges += 1
             if lower > upper:
                 unresolved.append('invalid_range_bounds')
                 continue
-            found.extend([{'column':name, 'op':'ge' if match[2] == '이상' else 'gt',
-                           'value':lower},
-                          {'column':name, 'op':'le' if match[4] == '이하' else 'lt',
-                           'value':upper}])
+            found.extend([{'column':name, 'op':interval['lower_op'], 'value':lower},
+                          {'column':name, 'op':interval['upper_op'], 'value':upper}])
+        # Values joined beside one column are alternatives within that
+        # column, not separate column predicates. The explicit ending keeps
+        # the list from swallowing the next column or an analysis instruction.
+        for match in re.finditer(column_pattern + r'\s+(' + _LITERAL
+                + r'(?:\s*(?:와|과|및|,)\s*' + _LITERAL + r')+)'
+                + r'\s*(?:인|이고|이며|의)(?=\s|$)', text, re.I):
+            values = [_literal(item.group(0)) for item in re.finditer(_LITERAL, match[1], re.I)]
+            found.append({'column':name, 'op':'in', 'value':values})
+            spans.append(match.span())
+        for match in re.finditer(column_pattern + r'\s*(>=|<=|!=|<>|==|=|>|<)\s*(' + _LITERAL + ')', text, re.I):
+            if any(a <= match.start() and match.end() <= b for a, b in spans): continue
+            found.append({'column':name, 'op':_OPS[match[1]], 'value':_literal(match[2])})
+            spans.append(match.span())
+        # Explicit equality wording is user evidence, even when a capped
+        # profile has never observed that literal. It may legitimately match
+        # zero rows. A range span cannot also become a scalar equality.
+        for match in re.finditer(column_pattern
+                + r'\s+(' + _LITERAL + r')\s*(?:인|이고|이며)(?=\s|$)', text, re.I):
+            if any(a <= match.start() and match.end() <= b for a, b in spans): continue
+            found.append({'column':name, 'op':'eq', 'value':_literal(match[1])})
             spans.append(match.span())
         for match in re.finditer(column_pattern + r'\s*(' + _LITERAL
                                  + r')\s*(?:[A-Za-z가-힣%]+(?:을|를)?\s*)?(이상|이하|초과|미만|넘는|넘은)', text, re.I):
@@ -260,6 +280,13 @@ def resolve_request_scope(text, context, previous=None):
                     if any(a <= match.start() < b for a, b in spans): continue
                     found.append({'column':name, 'op':'eq', 'value':value})
                     spans.append(match.span())
+
+        # Do not accept just the first value of an unfinished/unsupported
+        # categorical list as the whole population contract.
+        for match in re.finditer(column_pattern + r'\s+' + _LITERAL
+                + r'\s*(?:와|과|및|,)\s*' + _LITERAL, text, re.I):
+            if not any(a <= match.start() and match.end() <= b for a, b in spans):
+                unresolved.append('unbound_categorical_list')
 
         # Ground common possession/affirmation wording only when the external
         # context proves this is a two-valued boolean-like column. The words do
@@ -342,6 +369,9 @@ def resolve_request_scope(text, context, previous=None):
                 unresolved.append('exclusion_null_policy_unresolved')
         else:
             unresolved.append('compound_exclusion_unresolved')
+
+    if uncovered_intervals(text, spans):
+        unresolved.append('unbound_numeric_range')
 
     disjunction = bool(re.search(r'\bOR\b|또는|혹은|아니면|이나|거나|중\s*하나라도', text, re.I))
     if found or _ISO.search(text):
@@ -445,6 +475,7 @@ def resolve_request_scope(text, context, previous=None):
             else:
                 unresolved.append('ungrounded_ratio_numerator')
     return {'conditions':unique, 'any_conditions':any_conditions,
+            'sources':sources,
             'join_edges':join_edges,
             'measure_conditions':measure_conditions,
             'ratio':ratio, 'unresolved':sorted(set(unresolved)),

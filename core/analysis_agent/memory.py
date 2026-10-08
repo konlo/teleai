@@ -80,6 +80,20 @@ class ObservedSummarizationMiddleware(SummarizationMiddleware):
         # same model and must not escape the persisted per-turn call budget.
         if recovery and recovery.get('model_calls', 0) >= self.max_model_calls - 1:
             return {'recovery':recovery} if recovery != original else None
+        confirmed = (recovery or {}).get('confirmed_analysis') or {}
+        confirmed_source=confirmed.get('required_sources') or (confirmed.get('metadata_evidence') or {}).get('table')
+        if (confirmed.get('status') == 'complete' and confirmed_source
+                and any(confirmed.get(k) for k in ('table_preview_evidence',
+                    'metadata_evidence','artifact_ids','evidence_ids','value_list_evidence'))):
+            # Verified scope/IDs are already durable. The final model-view
+            # budget compacts old turns using those facts without spending an
+            # extra inference just to rediscover the current table. Transcript
+            # and checkpoint messages stay intact, including current tool pairs.
+            if self.diagnostics:
+                self.diagnostics.emit('summarization_skipped',
+                    reason='verified_context_model_view_compaction',
+                    message_count=len(state['messages']))
+            return {'recovery':recovery} if recovery != original else None
         started = time.monotonic()
         token = self._summary_current.set(recovery)
         try:
@@ -113,6 +127,15 @@ class ModelTimingMiddleware(AgentMiddleware):
         with self.diagnostics.span('model_call', message_count=len(request.messages)) as details:
             response = handler(request)
             details['tool_call_count'] = sum(len(getattr(m, 'tool_calls', [])) for m in response.result)
+            usage=[getattr(m,'usage_metadata',None) or {} for m in response.result]
+            if any(usage):
+                details['actual_input_tokens']=sum(u.get('input_tokens',0) for u in usage)
+                details['actual_output_tokens']=sum(u.get('output_tokens',0) for u in usage)
+            metadata=[getattr(m,'response_metadata',{}) or {} for m in response.result]
+            durations=[m.get('prompt_eval_duration') for m in metadata if isinstance(m.get('prompt_eval_duration'),int)]
+            if durations:details['prompt_eval_seconds']=sum(durations)/1_000_000_000
+            reasons=[m.get('done_reason') or m.get('finish_reason') for m in metadata]
+            if any(reasons):details['finish_reasons']=reasons
             return response
 
 

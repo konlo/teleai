@@ -59,7 +59,7 @@ class OperationalPolicyTests(unittest.TestCase):
     def test_runtime_uses_deployment_turn_budget_between_model_calls(self):
         with tempfile.TemporaryDirectory() as root:
             policy = RuntimePolicy(turn_slo_seconds=17.5)
-            runtime = GraphAnalysisRuntime(root, 'owner', 'budget-policy', QuietModel(), policy=policy)
+            runtime = GraphAnalysisRuntime(root, 'owner', 'budget-policy', QuietModel(), policy=policy,intent_mode='contract_fixture')
             self.assertEqual(runtime.recovery.max_model_seconds, 17.5)
             runtime.close()
 

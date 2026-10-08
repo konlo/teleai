@@ -1,14 +1,11 @@
-"""Promises cannot leak through structured content, tool narration or old UI paths."""
+"""Promises cannot leak through structured content or tool narration."""
 import tempfile
 import unittest
-from unittest.mock import Mock
 
 from langchain_core.messages import AIMessage
 from core.analysis_agent.assets import AssetDB
 from core.analysis_agent.memory import Transcript
 from core.analysis_agent.remote_completion import deferred_execution_claim
-from core.analysis_loop import AnalysisSession
-from core.analysis_runtime import CurrentAnalysisRuntime
 from tests import test_remote_result_completion as remote_cases
 FIXTURE = remote_cases.FIXTURE
 
@@ -47,32 +44,6 @@ class DeferredReplyDeliveryTests(unittest.TestCase):
             finally:
                 db.close()
 
-    def test_legacy_approval_reply_is_bounded_and_never_successful_promise(self):
-        session = AnalysisSession('legacy', '', [])
-        runtime = CurrentAnalysisRuntime(session)
-        request = runtime.propose_table('external_schema.objects')
-        execute = Mock(return_value={'status':'ready','rows':[]})
-        model = Mock(return_value={'role':'assistant','content':FIXTURE['reported_reply']})
-        result = runtime.respond(request, approved=True, execute=execute, model=model)
-        self.assertNotEqual(result['status'], 'answered')
-        self.assertFalse(any(deferred_execution_claim(m.get('content')) for m in runtime.events()
-                             if m['role']=='assistant'))
-        self.assertLessEqual(model.call_count, 3)
-        execute.assert_called_once()
-
-    def test_legacy_model_can_recover_using_completed_observation_without_reexecution(self):
-        session = AnalysisSession('legacy-recovery', '', [])
-        runtime = CurrentAnalysisRuntime(session)
-        request = runtime.propose_table('external_schema.objects')
-        execute = Mock(return_value={'status':'ready','rows':[{'table_name':'observed_object'}]})
-        model = Mock(side_effect=[{'role':'assistant','content':FIXTURE['reported_reply']},
-                                  {'role':'assistant','content':'조회된 테이블: observed_object'}])
-        result = runtime.respond(request, approved=True, execute=execute, model=model)
-        self.assertEqual(result['status'], 'answered')
-        self.assertIn('observed_object',result['text'])
-        execute.assert_called_once()
-        self.assertEqual(len(session.rejected_responses),1)
-
     def test_main_entrypoint_hides_tool_narration_and_renders_real_returned_listing(self):
         import os
         from dataclasses import asdict
@@ -96,10 +67,13 @@ class DeferredReplyDeliveryTests(unittest.TestCase):
                 return {'status':'ready','dataset':asdict(info)}
             return execute
         with tempfile.TemporaryDirectory() as root, \
-                patch.dict(os.environ, {'TELLY_V1_STORAGE':root, 'TELLY_REQUIRE_REMOTE_APPROVAL':'false'}), \
+                patch.dict(os.environ, {'TELLY_V1_STORAGE':root,'TELLY_REQUIRE_REMOTE_APPROVAL':'false',
+                    'TELLY_DATA_BACKEND':'databricks','DATABRICKS_CATALOG':FIXTURE['source'].split('.')[0]}), \
+                patch('core.analysis_agent.recovery.RecoveryMiddleware._next_local',return_value=None), \
                 patch('core.analysis_agent.model_provider.build_analysis_chat_model', return_value=NarratedModel()), \
                 patch('core.analysis_agent.databricks.make_executor', side_effect=factory):
             app = AppTest.from_file(str(Path(__file__).resolve().parents[1]/'main.py'),default_timeout=20).run()
+            app.session_state['v1_runtime'].recovery.intent_mode = 'contract_fixture'  # Render/receipt fixture only.
             app.chat_input[0].set_value(FIXTURE['prompt']).run()
             try:
                 self.assertFalse(app.exception)

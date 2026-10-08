@@ -20,7 +20,7 @@ class AnalysisPivotTests(unittest.TestCase):
         spec, frame = load_fixture()
         measure, row_axis, column_axis = (spec['roles'][key] for key in ('measure', 'group', 'key'))
         with tempfile.TemporaryDirectory() as root:
-            runtime = GraphAnalysisRuntime(root, 'owner', 'multi-pivot', ForbiddenModel())
+            runtime = GraphAnalysisRuntime(root, 'owner', 'multi-pivot', ForbiddenModel(),intent_mode='contract_fixture')
             parent = runtime.datasets.register(frame, source=spec['source'],
                 coverage='complete', predicate_known=True, snapshot=spec['snapshot'])
             runtime.context.reference_context[:] = [fixture_reference_context(spec['source'], frame)]
@@ -173,7 +173,7 @@ class AnalysisPivotTests(unittest.TestCase):
         ]
         for index, (source, prompt) in enumerate(prompts):
             with self.subTest(prompt=prompt), tempfile.TemporaryDirectory() as root:
-                runtime = GraphAnalysisRuntime(root, "owner", f"pivot-{index}", ForbiddenModel())
+                runtime = GraphAnalysisRuntime(root, "owner", f"pivot-{index}", ForbiddenModel(),intent_mode='contract_fixture')
                 runtime.datasets.register(
                     frames[source].copy(), source=source, coverage="complete",
                     predicate_known=True, snapshot="fixture:v1")
@@ -187,7 +187,7 @@ class AnalysisPivotTests(unittest.TestCase):
                     before = recovery["pivot_evidence"]
                 finally:
                     runtime.close()
-                reopened = GraphAnalysisRuntime(root, "owner", f"pivot-{index}", ForbiddenModel())
+                reopened = GraphAnalysisRuntime(root, "owner", f"pivot-{index}", ForbiddenModel(),intent_mode='contract_fixture')
                 try:
                     self.assertEqual(reopened.inspect()["recovery"]["pivot_evidence"], before)
                 finally:
@@ -200,7 +200,7 @@ class AnalysisPivotTests(unittest.TestCase):
             "value": [4.0, 8.0, 20.0, 60.0],
         })
         with tempfile.TemporaryDirectory() as root:
-            runtime = GraphAnalysisRuntime(root, "owner", "pivot-followup", ForbiddenModel())
+            runtime = GraphAnalysisRuntime(root, "owner", "pivot-followup", ForbiddenModel(),intent_mode='contract_fixture')
             source = "acceptance.synthetic_events"
             parent = runtime.datasets.register(
                 frame.copy(), source=source, coverage="complete", predicate_known=True,

@@ -194,7 +194,7 @@ def local_benchmark(frame, metadata, iterations):
     artifact_counts = []
     with tempfile.TemporaryDirectory(prefix='telly-performance-') as scratch:
         for index in range(iterations):
-            runtime = GraphAnalysisRuntime(scratch, 'benchmark', f'cold-{index}', NoModel())
+            runtime = GraphAnalysisRuntime(scratch, 'benchmark', f'cold-{index}', NoModel(),intent_mode='contract_fixture')
             info = runtime.datasets.register(frame, source=metadata['benchmark_source'],
                 coverage='complete', predicate_known=True)
             runtime.select_dataset(info.id)
@@ -245,7 +245,7 @@ def concurrent_local_benchmark(frame, metadata, requests, workers):
     durations, errors = [], []
     with tempfile.TemporaryDirectory(prefix='telly-concurrent-performance-') as scratch:
         def run_one(index):
-            runtime = GraphAnalysisRuntime(scratch, 'benchmark', f'concurrent-{index}', NoModel())
+            runtime = GraphAnalysisRuntime(scratch, 'benchmark', f'concurrent-{index}', NoModel(),intent_mode='contract_fixture')
             try:
                 info = runtime.datasets.register(frame.copy(deep=False),
                     source=metadata['benchmark_source'], coverage='complete', predicate_known=True)
@@ -312,7 +312,7 @@ def local_correlation_benchmark(frame, metadata, iterations):
     durations = []
     with tempfile.TemporaryDirectory(prefix='telly-correlation-performance-') as scratch:
         for index in range(iterations):
-            runtime = GraphAnalysisRuntime(scratch, 'benchmark', f'correlation-{index}', NoModel())
+            runtime = GraphAnalysisRuntime(scratch, 'benchmark', f'correlation-{index}', NoModel(),intent_mode='contract_fixture')
             try:
                 info = runtime.datasets.register(frame, source=metadata['benchmark_source'],
                     coverage='complete', predicate_known=True)

@@ -25,7 +25,7 @@ def references():
         'columns':[{'name':c,'dtype':str(frame()[c].dtype)} for c in FIXTURE['columns']]}]
 
 def runtime(root):
-    r=GraphAnalysisRuntime(root,'test','staged-latest',QuietModel())
+    r=GraphAnalysisRuntime(root,'test','staged-latest',QuietModel(),intent_mode='contract_fixture')
     if not r.datasets.metadata:
         raw=r.datasets.register(frame(),source=FIXTURE['source'],coverage='complete',predicate_known=True)
         r.select_dataset(raw.id)

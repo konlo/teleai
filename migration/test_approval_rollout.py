@@ -101,7 +101,7 @@ class GraphApprovalTests(unittest.TestCase):
                     'preview':frame.to_dict(orient='records')}
             return execute
         return GraphAnalysisRuntime(root,'owner','thread',model,connection_identity=connection,
-            remote_factory=factory, policy=RuntimePolicy(require_remote_approval=True))
+            remote_factory=factory, policy=RuntimePolicy(require_remote_approval=True),intent_mode='contract_fixture')
 
     def test_reopen_status_question_approve_and_duplicate(self):
         with tempfile.TemporaryDirectory() as root:
@@ -128,7 +128,7 @@ class GraphApprovalTests(unittest.TestCase):
                         'preview':frame.to_dict(orient='records')}
                 return execute
             r=GraphAnalysisRuntime(root,'owner','preview',NoUnexpectedModelCall(),
-                connection_identity='conn',remote_factory=factory, policy=RuntimePolicy(require_remote_approval=True))
+                connection_identity='conn',remote_factory=factory, policy=RuntimePolicy(require_remote_approval=True),intent_mode='contract_fixture')
             proposed=r.propose_table('catalog.schema.events')
             pending=proposed['requests'][0]
 
@@ -149,7 +149,7 @@ class GraphApprovalTests(unittest.TestCase):
 
     def test_current_loaded_numbered_sample_histogram_stays_local(self):
         with tempfile.TemporaryDirectory() as root:
-            r=GraphAnalysisRuntime(root,'owner','sample-chart',NoUnexpectedModelCall())
+            r=GraphAnalysisRuntime(root,'owner','sample-chart',NoUnexpectedModelCall(),intent_mode='contract_fixture')
             r.datasets.register(pd.DataFrame([{'age':20},{'age':30},{'age':30}]),
                 source='catalog.schema.events',query='SELECT * FROM catalog.schema.events LIMIT 10000',
                 coverage='unknown',predicate_known=False)
@@ -166,7 +166,7 @@ class GraphApprovalTests(unittest.TestCase):
 
     def test_complete_local_histogram_bypasses_model_and_remote(self):
         with tempfile.TemporaryDirectory() as root:
-            r=GraphAnalysisRuntime(root,'owner','complete-chart',NoUnexpectedModelCall())
+            r=GraphAnalysisRuntime(root,'owner','complete-chart',NoUnexpectedModelCall(),intent_mode='contract_fixture')
             r.datasets.register(pd.DataFrame([{'age':20},{'age':30},{'age':30}]),
                 source='catalog.schema.events',coverage='complete',predicate_known=True)
 
@@ -224,9 +224,10 @@ class RolloutPageTests(unittest.TestCase):
     def test_new_page_example_propose_cancel_and_reopen(self):
         from streamlit.testing.v1 import AppTest
         with tempfile.TemporaryDirectory() as root,patch.dict(os.environ,{'TELLY_V1_STORAGE':root,'TELLY_REQUIRE_REMOTE_APPROVAL':'true'}),\
-             patch('langchain_ollama.ChatOllama',return_value=QuietModel()),\
+             patch('core.analysis_agent.model_provider.build_analysis_chat_model',return_value=QuietModel()),\
              patch('databricks.sql.connect') as connect:
             app=AppTest.from_file(str(Path('main.py').resolve()),default_timeout=20).run()
+            app.session_state['v1_runtime'].recovery.intent_mode = 'contract_fixture'  # UI fixture only.
             self.assertEqual(len(app.exception),0)
             next(b for b in app.button if b.label=='예제 데이터로 시작').click().run()
             self.assertEqual(len(app.session_state.v1_runtime.datasets.metadata),1)

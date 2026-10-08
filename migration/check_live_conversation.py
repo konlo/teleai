@@ -21,11 +21,11 @@ def main():
     results=[]
     path=Path('docs/v1_conversation_evidence.json')
     with tempfile.TemporaryDirectory() as root:
-        r=GraphAnalysisRuntime(root,'test-owner','conversation',model)
+        r=GraphAnalysisRuntime(root,'test-owner','conversation',model,intent_mode='contract_fixture')
         r.datasets.register(pd.DataFrame(fixture['rows']),source=fixture['source'],coverage='complete',predicate_known=True)
         r.close()
         for turn in fixture['turns']:
-            r=GraphAnalysisRuntime(root,'test-owner','conversation',model)
+            r=GraphAnalysisRuntime(root,'test-owner','conversation',model,intent_mode='contract_fixture')
             before=len(r.events())
             result=r.submit(turn['prompt'])
             observations=[json.loads(m.content) for m in r.events()[before:]

@@ -31,7 +31,7 @@ def main():
     from langchain_core.messages import AIMessage,ToolMessage
     load_dotenv(ROOT/'.env');os.environ['LANGSMITH_TRACING']='false';os.environ['LANGCHAIN_TRACING_V2']='false'
     model=build_analysis_chat_model(RuntimePolicy(),provider='databricks',environ=dict(os.environ))
-    source=GraphAnalysisRuntime(a.storage,a.owner,a.conversation,ForbiddenModel())
+    source=GraphAnalysisRuntime(a.storage,a.owner,a.conversation,ForbiddenModel(),intent_mode='contract_fixture')
     try:
         info=source.datasets.metadata[a.dataset_id];before=stored_dataset_digest(source.datasets,info.id)
         values=project_dataset(source.datasets,info.id,[a.column])[a.column]

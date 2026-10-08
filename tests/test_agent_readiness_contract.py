@@ -95,7 +95,7 @@ class ReadinessContractTests(unittest.TestCase):
         case = {'id': 'harness-smoke', 'journeys': ['J21'],
                 'turns': [spec['local_model_cases'][0]['turns'][0]]}
         with tempfile.TemporaryDirectory() as directory:
-            record = run_case(spec, case, ForbiddenModel(), artifact_dir=Path(directory))
+            record = run_case(spec, case, ForbiddenModel(), artifact_dir=Path(directory),intent_mode='contract_fixture')
             self.assertEqual(record['status'], 'PASS', record)
             metadata = record['turns'][0]['runtime_metadata']
             self.assertTrue(Path(metadata['path']).is_file())

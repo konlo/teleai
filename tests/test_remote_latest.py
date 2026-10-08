@@ -47,7 +47,7 @@ class RemoteLatestTests(unittest.TestCase):
                 return {'status': 'ready', 'dataset': asdict(info)}
             return execute
         r = GraphAnalysisRuntime(root, 'test', 'remote-latest', QuietModel(), connection_identity='fixture',
-            remote_factory=factory, reference_context_loader=references, policy=policy)
+            remote_factory=factory, reference_context_loader=references, policy=policy,intent_mode='contract_fixture')
         return r, executions
 
     def prompt(self):

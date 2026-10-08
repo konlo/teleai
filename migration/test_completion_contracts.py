@@ -45,7 +45,7 @@ class CompletionTests(unittest.TestCase):
 
     def test_fabricated_mean_without_calculation_never_completes(self):
         with tempfile.TemporaryDirectory() as root:
-            r = GraphAnalysisRuntime(root, 'owner', 'fake-number', ScriptModel())
+            r = GraphAnalysisRuntime(root, 'owner', 'fake-number', ScriptModel(),intent_mode='contract_fixture')
             result = r.submit('보유 데이터의 평균을 계산해줘')
             self.assertEqual(result['status'], 'blocked')
             self.assertEqual(r.inspect()['recovery']['stop_reason'], 'analysis_target_unresolved')
@@ -57,7 +57,7 @@ class CompletionTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as root:
             model = ScriptModel(calls=[{'name': 'local_analysis_sql', 'args': {
                 'dataset_id': '$dataset', 'query': f'SELECT AVG({COLUMN}) AS result FROM data'}}])
-            r = GraphAnalysisRuntime(root, 'owner', 'real-number', model)
+            r = GraphAnalysisRuntime(root, 'owner', 'real-number', model,intent_mode='contract_fixture')
             frame = pd.DataFrame(FIXTURE['rows'])
             model.dataset_id = r.datasets.register(frame, source=SOURCE, coverage='complete', predicate_known=True).id
             result = r.submit(f'{COLUMN} 평균을 계산해줘')
@@ -71,7 +71,7 @@ class CompletionTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as root:
             model = ScriptModel(calls=[{'name':'aggregate_dataset', 'args':{
                 'dataset_id':'$dataset', 'aggregation':'mean', 'value_column':COLUMN}}])
-            runtime = GraphAnalysisRuntime(root, 'owner', 'aggregate-completion', model)
+            runtime = GraphAnalysisRuntime(root, 'owner', 'aggregate-completion', model,intent_mode='contract_fixture')
             frame = pd.DataFrame(FIXTURE['rows'])
             model.dataset_id = runtime.datasets.register(frame, source=SOURCE,
                 coverage='complete', predicate_known=True).id
@@ -87,7 +87,7 @@ class CompletionTests(unittest.TestCase):
     def test_metadata_and_previous_turn_result_are_not_new_calculation(self):
         with tempfile.TemporaryDirectory() as root:
             model = ScriptModel(calls=[{'name': 'inspect_table_context', 'args': {'table': SOURCE}}])
-            r = GraphAnalysisRuntime(root, 'owner', 'metadata-number', model)
+            r = GraphAnalysisRuntime(root, 'owner', 'metadata-number', model,intent_mode='contract_fixture')
             r.context.reference_context = [{'table': SOURCE, 'columns': [{'name': COLUMN}]}]
             result = r.submit(f'{COLUMN} 평균')
             self.assertEqual(result['status'], 'exhausted')
@@ -97,7 +97,7 @@ class CompletionTests(unittest.TestCase):
     def test_identical_bad_tool_calls_stop_before_graph_recursion(self):
         with tempfile.TemporaryDirectory() as root:
             model = ScriptModel(calls=[{'name': 'inspect_dataset', 'args': {'dataset_id': 'missing'}}], repeat=True)
-            r = GraphAnalysisRuntime(root, 'owner', 'bad-loop', model)
+            r = GraphAnalysisRuntime(root, 'owner', 'bad-loop', model,intent_mode='contract_fixture')
             result = r.submit('histogram')
             self.assertEqual(result['status'], 'exhausted', result)
             self.assertEqual(r.inspect()['recovery']['stop_reason'], 'repeated_failed_tool')
@@ -111,7 +111,7 @@ class CompletionTests(unittest.TestCase):
     def test_successful_but_irrelevant_tool_loop_is_bounded(self):
         with tempfile.TemporaryDirectory() as root:
             model = ScriptModel(calls=[{'name': 'list_analysis_context', 'args': {}}], repeat=True)
-            r = GraphAnalysisRuntime(root, 'owner', 'metadata-loop', model)
+            r = GraphAnalysisRuntime(root, 'owner', 'metadata-loop', model,intent_mode='contract_fixture')
             result = r.submit('histogram')
             self.assertEqual(result['status'], 'exhausted', result)
             self.assertEqual(r.inspect()['recovery']['stop_reason'], 'discovery_stalled')
@@ -124,7 +124,7 @@ class CompletionTests(unittest.TestCase):
             calls = []
             model = PlanOnlyModel()
             r = GraphAnalysisRuntime(root, 'owner', 'cache', model, connection_identity='test',
-                remote_factory=lambda _: lambda request: calls.append(request), policy=RuntimePolicy(require_remote_approval=True))
+                remote_factory=lambda _: lambda request: calls.append(request), policy=RuntimePolicy(require_remote_approval=True),intent_mode='contract_fixture')
             legacy_source = '.'.join('`' + part + '`' for part in SOURCE.split('.'))
             r.datasets.register(pd.DataFrame(FIXTURE['rows']), source=legacy_source, coverage='complete', predicate_known=True)
             result = r.submit(f'{COLUMN} histogram')
@@ -138,7 +138,7 @@ class CompletionTests(unittest.TestCase):
     def test_repeated_histogram_reuses_verified_png_without_model_call(self):
         from utils.analysis_charts import histogram_from_counts
         with tempfile.TemporaryDirectory() as root:
-            r = GraphAnalysisRuntime(root, 'owner', 'cached-chart', QuietModel())
+            r = GraphAnalysisRuntime(root, 'owner', 'cached-chart', QuietModel(),intent_mode='contract_fixture')
             frame = pd.DataFrame(FIXTURE['rows']).groupby(COLUMN).size().reset_index(name='__frequency')
             query = (f'SELECT {COLUMN}, COUNT(*) AS __frequency FROM {SOURCE} '
                      f'WHERE {COLUMN} IS NOT NULL GROUP BY {COLUMN}')
@@ -165,7 +165,7 @@ class CompletionTests(unittest.TestCase):
                                                       'dataset_id': '$dataset'}},
             ])
             r = GraphAnalysisRuntime(root, 'owner', 'ambiguous-chart', model,
-                connection_identity='test', remote_factory=lambda _: lambda request: remote.append(request), policy=RuntimePolicy(require_remote_approval=True))
+                connection_identity='test', remote_factory=lambda _: lambda request: remote.append(request), policy=RuntimePolicy(require_remote_approval=True),intent_mode='contract_fixture')
             frame = pd.DataFrame(FIXTURE['rows'])
             earlier = r.datasets.register(frame.copy(), source=SOURCE,
                 snapshot='v1', coverage='complete', predicate_known=True)
@@ -181,17 +181,21 @@ class CompletionTests(unittest.TestCase):
             observations = [json.loads(message.content) for message in r.events()
                 if isinstance(message, ToolMessage) and message.name == 'prepare_histogram']
             self.assertEqual(observations[0]['status'], 'needs_context')
-            self.assertEqual(observations[1]['status'], 'ready')
-            self.assertEqual(observations[1]['cards'][0]['id'], selected_card['cards'][0]['id'])
-            self.assertEqual(r.datasets.metadata[observations[1]['loaded_dataset']].parent_id, later.id)
-            self.assertNotEqual(r.datasets.metadata[observations[1]['loaded_dataset']].parent_id, earlier.id)
+            # The controller may diagnose ambiguity before the scripted model
+            # proposes the same call. Validate the population and final card,
+            # rather than requiring one specific number of tool observations.
+            self.assertTrue(all(o['status']=='needs_context' for o in observations[:-1]))
+            self.assertEqual(observations[-1]['status'], 'ready')
+            self.assertEqual(observations[-1]['cards'][0]['id'], selected_card['cards'][0]['id'])
+            self.assertEqual(r.datasets.metadata[observations[-1]['loaded_dataset']].parent_id, later.id)
+            self.assertNotEqual(r.datasets.metadata[observations[-1]['loaded_dataset']].parent_id, earlier.id)
             self.assertEqual(remote, [])
             self.assertEqual(r.inspect()['requests'], [])
             r.close()
 
     def test_model_time_budget_is_persistent_not_reset_by_approval(self):
         with tempfile.TemporaryDirectory() as root:
-            r = GraphAnalysisRuntime(root, 'owner', 'budget', QuietModel())
+            r = GraphAnalysisRuntime(root, 'owner', 'budget', QuietModel(),intent_mode='contract_fixture')
             guard = RecoveryMiddleware(r.artifacts, r.diagnostics, max_model_seconds=10)
             state = {'messages': [HumanMessage(content='histogram', id='request')],
                      'recovery': {'request_id': 'request', 'chart': True, 'model_seconds': 10.5}}
@@ -207,7 +211,7 @@ class CompletionTests(unittest.TestCase):
             model = ScriptModel(calls=[
                 {'name': 'local_analysis_sql', 'args': {'dataset_id': '$dataset', 'query': 'SELECT AVG(missing_column) FROM data'}},
                 {'name': 'local_analysis_sql', 'args': {'dataset_id': '$dataset', 'query': f'SELECT AVG({COLUMN}) AS result FROM data'}}])
-            r = GraphAnalysisRuntime(root, 'owner', 'sql-repair', model)
+            r = GraphAnalysisRuntime(root, 'owner', 'sql-repair', model,intent_mode='contract_fixture')
             model.dataset_id = r.datasets.register(pd.DataFrame(FIXTURE['rows']), source=SOURCE,
                 coverage='complete', predicate_known=True).id
             result = r.submit(f'{COLUMN} 평균')
@@ -224,7 +228,7 @@ class CompletionTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as root:
             model = ScriptModel(calls=[{'name': 'local_analysis_sql', 'args': {
                 'dataset_id': '$dataset', 'query': f'SELECT AVG({COLUMN}) AS result FROM data'}}])
-            r = GraphAnalysisRuntime(root, 'owner', 'new-turn', model)
+            r = GraphAnalysisRuntime(root, 'owner', 'new-turn', model,intent_mode='contract_fixture')
             model.dataset_id = r.datasets.register(pd.DataFrame(FIXTURE['rows']), source=SOURCE,
                 coverage='complete', predicate_known=True).id
             self.assertEqual(r.submit(f'{COLUMN} 평균')['status'], 'answered')
@@ -237,7 +241,7 @@ class CompletionTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as root:
             model = ScriptModel(calls=[{'name': 'local_analysis_sql', 'args': {
                 'dataset_id': '$dataset', 'query': turn['sql']}} for turn in FIXTURE['turns']])
-            r = GraphAnalysisRuntime(root, 'owner', 'followup', model)
+            r = GraphAnalysisRuntime(root, 'owner', 'followup', model,intent_mode='contract_fixture')
             model.dataset_id = r.datasets.register(pd.DataFrame(FIXTURE['rows']), source=SOURCE,
                 coverage='complete', predicate_known=True).id
             request_ids = []
@@ -258,7 +262,7 @@ class CompletionTests(unittest.TestCase):
             model = ScriptModel(calls=[{'name':'local_analysis_sql', 'args':{
                 'dataset_id':'$dataset', 'query':f'SELECT AVG({COLUMN}) AS result FROM data',
                 'requested_conditions':[{'column':filter_column, 'op':'eq', 'value':row[filter_column]}]}}])
-            r = GraphAnalysisRuntime(root, 'owner', 'scope-evidence', model)
+            r = GraphAnalysisRuntime(root, 'owner', 'scope-evidence', model,intent_mode='contract_fixture')
             model.dataset_id = r.datasets.register(pd.DataFrame(FIXTURE['rows']), source=SOURCE,
                 coverage='complete', predicate_known=True).id
             result = r.submit(f'{filter_column} {row[filter_column]}의 {COLUMN} 평균')
@@ -274,7 +278,7 @@ class CompletionTests(unittest.TestCase):
             model = ScriptModel(calls=[{'name':'use_dataset', 'args':{
                 'dataset_id':'$dataset', 'columns':list(frame.columns),
                 'conditions':[{'column':category, 'op':'eq', 'value':value}]}}])
-            r = GraphAnalysisRuntime(root, 'owner', 'filtered-count-recovery', model)
+            r = GraphAnalysisRuntime(root, 'owner', 'filtered-count-recovery', model,intent_mode='contract_fixture')
             model.dataset_id = r.datasets.register(frame, source=SOURCE,
                 coverage='complete', predicate_known=True).id
             # Two equivalent source frames make the initial deterministic
@@ -294,7 +298,7 @@ class CompletionTests(unittest.TestCase):
     def test_column_count_uses_metadata_without_loading_or_numeric_sql(self):
         with tempfile.TemporaryDirectory() as root:
             model = ScriptModel(calls=[{'name':'inspect_table_context','args':{'table':SOURCE}}])
-            r = GraphAnalysisRuntime(root, 'owner', 'column-count', model)
+            r = GraphAnalysisRuntime(root, 'owner', 'column-count', model,intent_mode='contract_fixture')
             columns = [{'name':c} for c in FIXTURE['rows'][0]]
             r.context.reference_context = [{'table':SOURCE, 'columns':columns}]
             result = r.submit(f'{SOURCE} 테이블의 컬럼 전체 목록과 총 컬럼 개수를 알려줘')
@@ -314,7 +318,7 @@ class CompletionTests(unittest.TestCase):
                 'flag_delta': [True, False],
             })
             model = ScriptModel()
-            r = GraphAnalysisRuntime(root, 'owner', 'schema-types', model)
+            r = GraphAnalysisRuntime(root, 'owner', 'schema-types', model,intent_mode='contract_fixture')
             r.context.reference_context = [{'table': SOURCE, 'columns': [
                 {'name': name, 'dtype': str(dtype)} for name, dtype in frame.dtypes.items()
             ]}]
@@ -341,7 +345,7 @@ class CompletionTests(unittest.TestCase):
         for prompt in (f'{category} 컬럼의 고유값 개수를 알려줘', '각 컬럼의 결측값 개수를 알려줘'):
             with self.subTest(prompt=prompt), tempfile.TemporaryDirectory() as root:
                 model = ScriptModel(calls=[{'name':'inspect_table_context', 'args':{'table':SOURCE}}])
-                r = GraphAnalysisRuntime(root, 'owner', 'value-stats', model)
+                r = GraphAnalysisRuntime(root, 'owner', 'value-stats', model,intent_mode='contract_fixture')
                 r.context.reference_context = [{'table':SOURCE, 'columns':[{'name':c} for c in FIXTURE['rows'][0]]}]
                 result = r.submit(prompt)
                 self.assertEqual(result['status'], 'exhausted', result)
@@ -355,7 +359,7 @@ class CompletionTests(unittest.TestCase):
             model = ScriptModel(calls=[{'name':'local_analysis_sql', 'args':{
                 'dataset_id':'$dataset', 'query':'SELECT COUNT(*) AS n FROM data',
                 'requested_conditions':[{'column':category, 'op':'eq', 'value':v}]}} for v in (True, value)])
-            r = GraphAnalysisRuntime(root, 'owner', 'categorical-type', model)
+            r = GraphAnalysisRuntime(root, 'owner', 'categorical-type', model,intent_mode='contract_fixture')
             frame = pd.DataFrame(FIXTURE['rows'])
             model.dataset_id = r.datasets.register(frame, source=SOURCE, coverage='complete', predicate_known=True).id
             # Keep this test on the model/tool validation path. A single
@@ -378,7 +382,7 @@ class CompletionTests(unittest.TestCase):
             model = ScriptModel(calls=[
                 {'name':'local_analysis_sql', 'args':{'dataset_id':'$dataset', 'query':wrong}},
                 {'name':'local_analysis_sql', 'args':{'dataset_id':'$dataset', 'query':correct}}])
-            r = GraphAnalysisRuntime(root, 'owner', 'scope-repair', model)
+            r = GraphAnalysisRuntime(root, 'owner', 'scope-repair', model,intent_mode='contract_fixture')
             model.dataset_id = r.datasets.register(pd.DataFrame(FIXTURE['rows']), source=SOURCE,
                 coverage='complete', predicate_known=True).id
             # Keep this fault-injection contract on the model path. Explicit
@@ -407,7 +411,7 @@ class CompletionTests(unittest.TestCase):
             model = ScriptModel(calls=[
                 {'name':'local_analysis_sql', 'args':{'dataset_id':'$dataset', 'query':first['sql']}},
                 {'name':'local_analysis_sql', 'args':{'dataset_id':'$dataset', 'query':missing_month}}])
-            r = GraphAnalysisRuntime(root, 'owner', 'scope-followup', model)
+            r = GraphAnalysisRuntime(root, 'owner', 'scope-followup', model,intent_mode='contract_fixture')
             model.dataset_id = r.datasets.register(pd.DataFrame(FIXTURE['rows']), source=SOURCE,
                 coverage='complete', predicate_known=True).id
             # Keep the first turn on the model path so the second scripted call
@@ -431,7 +435,7 @@ class CompletionTests(unittest.TestCase):
                 {'name':'query_databricks', 'args':{'source':SOURCE, 'query':wrong, 'reason':'count'}},
                 {'name':'query_databricks', 'args':{'source':SOURCE, 'query':correct, 'reason':'count'}}])
             r = GraphAnalysisRuntime(root, 'owner', 'remote-scope', model,
-                connection_identity='test', remote_factory=lambda _: lambda envelope: executions.append(envelope), policy=RuntimePolicy(require_remote_approval=True))
+                connection_identity='test', remote_factory=lambda _: lambda envelope: executions.append(envelope), policy=RuntimePolicy(require_remote_approval=True),intent_mode='contract_fixture')
             r.context.reference_context = self.scope_reference()
             outcome = r.submit('2026-08의 개수를 알려줘')
             self.assertEqual(outcome['status'], 'awaiting_approval', outcome)
@@ -450,7 +454,7 @@ class CompletionTests(unittest.TestCase):
                 {'name':'prepare_histogram', 'args':{'source':SOURCE, 'column':COLUMN,
                     'where_sql':"period='2026-08'"}}])
             r = GraphAnalysisRuntime(root, 'owner', 'chart-scope', model,
-                connection_identity='test', remote_factory=lambda _: lambda envelope: executions.append(envelope), policy=RuntimePolicy(require_remote_approval=True))
+                connection_identity='test', remote_factory=lambda _: lambda envelope: executions.append(envelope), policy=RuntimePolicy(require_remote_approval=True),intent_mode='contract_fixture')
             r.context.reference_context = self.scope_reference()
             outcome = r.submit(f'2026-08의 {COLUMN} histogram')
             self.assertEqual(outcome['status'], 'awaiting_approval', outcome)
@@ -471,13 +475,13 @@ class CompletionTests(unittest.TestCase):
             model = ScriptModel(calls=[{'name':'query_databricks', 'args':{
                 'source':SOURCE, 'query':query, 'reason':'count'}}])
             r = GraphAnalysisRuntime(root, 'owner', 'scope-restart', model,
-                connection_identity='test', remote_factory=lambda _: lambda envelope: executions.append(envelope), policy=RuntimePolicy(require_remote_approval=True))
+                connection_identity='test', remote_factory=lambda _: lambda envelope: executions.append(envelope), policy=RuntimePolicy(require_remote_approval=True),intent_mode='contract_fixture')
             r.context.reference_context = self.scope_reference()
             self.assertEqual(r.submit('2026-08의 개수를 알려줘')['status'], 'awaiting_approval')
             expected_scope = r.inspect()['recovery']['scope']
             r.close()
             reopened = GraphAnalysisRuntime(root, 'owner', 'scope-restart', QuietModel(),
-                connection_identity='test', remote_factory=lambda _: lambda envelope: executions.append(envelope), policy=RuntimePolicy(require_remote_approval=True))
+                connection_identity='test', remote_factory=lambda _: lambda envelope: executions.append(envelope), policy=RuntimePolicy(require_remote_approval=True),intent_mode='contract_fixture')
             reopened.context.reference_context = self.scope_reference()
             self.assertEqual(reopened.inspect()['state'], 'awaiting_approval')
             self.assertEqual(reopened.inspect()['recovery']['scope'], expected_scope)
@@ -504,7 +508,7 @@ class CompletionTests(unittest.TestCase):
                     'requested_conditions':wrong_conditions}},
                 {'name':'local_analysis_sql', 'args':{'dataset_id':'$dataset', 'query':'COUNT(id)',
                     'requested_conditions':correct_conditions}}])
-            r = GraphAnalysisRuntime(root, 'owner', 'boolean-scope', model)
+            r = GraphAnalysisRuntime(root, 'owner', 'boolean-scope', model,intent_mode='contract_fixture')
             r.context.reference_context = reference
             model.dataset_id = r.datasets.register(frame, source=source,
                 coverage='complete', predicate_known=True).id
@@ -530,7 +534,7 @@ class CompletionTests(unittest.TestCase):
              'top_values':[{'value':'yes'}, {'value':'no'}]}]}]
         with tempfile.TemporaryDirectory() as root:
             model = ScriptModel()
-            r = GraphAnalysisRuntime(root, 'owner', 'count-fallback', model)
+            r = GraphAnalysisRuntime(root, 'owner', 'count-fallback', model,intent_mode='contract_fixture')
             r.context.reference_context = reference
             r.datasets.register(frame, source='fixture.flags',
                 coverage='complete', predicate_known=True)
@@ -553,7 +557,7 @@ class CompletionTests(unittest.TestCase):
              'top_values':[{'value':'yes'}, {'value':'no'}]}]}]
         with tempfile.TemporaryDirectory() as root:
             model = ScriptModel()
-            r = GraphAnalysisRuntime(root, 'owner', 'ratio-fallback', model)
+            r = GraphAnalysisRuntime(root, 'owner', 'ratio-fallback', model,intent_mode='contract_fixture')
             r.context.reference_context = reference
             r.datasets.register(frame, source='fixture.calls',
                 coverage='complete', predicate_known=True)
@@ -580,7 +584,7 @@ class CompletionTests(unittest.TestCase):
              'top_values':[{'value':'yes'}, {'value':'no'}]}]}]
         with tempfile.TemporaryDirectory() as root:
             model = ScriptModel()
-            r = GraphAnalysisRuntime(root, 'owner', 'count-ratio-fallback', model)
+            r = GraphAnalysisRuntime(root, 'owner', 'count-ratio-fallback', model,intent_mode='contract_fixture')
             r.context.reference_context = reference
             r.datasets.register(frame, source='fixture.calls',
                 coverage='complete', predicate_known=True)
@@ -602,7 +606,7 @@ class CompletionTests(unittest.TestCase):
             {'name':'metric_b', 'dtype':'float64', 'aliases':['두 번째 지표']}]}]
         with tempfile.TemporaryDirectory() as root:
             model = ScriptModel()
-            r = GraphAnalysisRuntime(root, 'owner', 'correlation-fallback', model)
+            r = GraphAnalysisRuntime(root, 'owner', 'correlation-fallback', model,intent_mode='contract_fixture')
             r.context.reference_context = reference
             r.datasets.register(frame, source=source, coverage='complete', predicate_known=True)
 
@@ -625,7 +629,7 @@ class CompletionTests(unittest.TestCase):
             {'name':'metric_b', 'dtype':'float64'}]}]
         with tempfile.TemporaryDirectory() as root:
             model = ScriptModel()
-            r = GraphAnalysisRuntime(root, 'owner', 'current-correlation-fallback', model)
+            r = GraphAnalysisRuntime(root, 'owner', 'current-correlation-fallback', model,intent_mode='contract_fixture')
             r.context.reference_context = reference
             r.datasets.register(frame, source=source, coverage='sampled', predicate_known=False)
 
@@ -647,7 +651,7 @@ class CompletionTests(unittest.TestCase):
                               'metric_b':[2.0, 3.0, 7.0, 9.0]})
         source = 'fixture.dynamic_metrics'
         with tempfile.TemporaryDirectory() as root:
-            r = GraphAnalysisRuntime(root, 'owner', 'checkpoint-correlation', ScriptModel())
+            r = GraphAnalysisRuntime(root, 'owner', 'checkpoint-correlation', ScriptModel(),intent_mode='contract_fixture')
             info = r.datasets.register(
                 frame, source=source, coverage='sampled', predicate_known=False)
             definition = next(tool for tool in build_analysis_tools(r.context)

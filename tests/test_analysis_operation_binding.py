@@ -21,7 +21,7 @@ class OperationBindingTests(unittest.TestCase):
     def runtime(self, root, replies=None, null=False):
         column=FIXTURE['columns'][0]
         plans=replies or [self.plan()]*2
-        runtime=GraphAnalysisRuntime(root,'owner','operations',SemanticModel(replies=plans))
+        runtime=GraphAnalysisRuntime(root,'owner','operations',SemanticModel(replies=plans),intent_mode='contract_fixture')
         frame=pd.DataFrame(FIXTURE['rows'],columns=FIXTURE['columns'])
         if null:frame.loc[0,column]=None
         raw=runtime.datasets.register(frame,source=FIXTURE['source'],coverage='complete',predicate_known=True)
@@ -46,7 +46,7 @@ class OperationBindingTests(unittest.TestCase):
                 self.assertEqual(r.context.selected_dataset_id,raw.id)
                 self.assertFalse(r.inspect()['requests'])
             finally:r.close()
-            r=GraphAnalysisRuntime(root,'owner','operations',EvaluationModel())
+            r=GraphAnalysisRuntime(root,'owner','operations',EvaluationModel(),intent_mode='contract_fixture')
             try:
                 self.assertEqual(r.inspect()['recovery']['operation_binding']['dataset_id'],raw.id)
                 pd.testing.assert_frame_equal(r.datasets.frames[raw.id],frame)

@@ -17,7 +17,7 @@ class DiscoveryTests(unittest.TestCase):
     def test_predicate_measure_followup_completes_without_model_and_recovers_old_timeout(self):
         for interrupted in (False, True):
             with self.subTest(interrupted=interrupted), tempfile.TemporaryDirectory() as root:
-                r=GraphAnalysisRuntime(root,'owner','local-followup',EvaluationModel())
+                r=GraphAnalysisRuntime(root,'owner','local-followup',EvaluationModel(),intent_mode='contract_fixture')
                 try:
                     raw=r.datasets.register(pd.DataFrame({'reading':[2.,4.,10.,20.]}),
                         source='custom.readings',coverage='unknown',predicate_known=True)
@@ -90,7 +90,7 @@ class DiscoveryTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as root:
             with patch('core.analysis_runtime_tools.build_aggregate_dataset',return_value=normalize_tool_result(
                     {'status':'unavailable','error_code':'local_worker_unavailable','retryable':False})):
-                r = GraphAnalysisRuntime(root,'owner','outage',model)
+                r = GraphAnalysisRuntime(root,'owner','outage',model,intent_mode='contract_fixture')
                 try:
                     raw=r.datasets.register(pd.DataFrame({'reading':[1.,2.,9.]}), source='custom.measurements',coverage='complete',predicate_known=True)
                     model.evaluation_dataset_id=raw.id
@@ -112,7 +112,7 @@ class DiscoveryTests(unittest.TestCase):
 
     def test_followup_measure_may_also_be_the_inherited_predicate_after_restart(self):
         with tempfile.TemporaryDirectory() as root:
-            r=GraphAnalysisRuntime(root,'owner','followup',EvaluationModel())
+            r=GraphAnalysisRuntime(root,'owner','followup',EvaluationModel(),intent_mode='contract_fixture')
             raw=r.datasets.register(pd.DataFrame({'reading':[2.,4.,10.,20.]}),
                 source='custom.readings',coverage='complete',predicate_known=True)
             r.select_dataset(raw.id)
@@ -121,7 +121,7 @@ class DiscoveryTests(unittest.TestCase):
             r.close()
             model=EvaluationModel(calls=[{'name':'local_analysis_sql','args':{
                 'dataset_id':raw.id,'query':'SELECT AVG(reading) AS mean FROM data WHERE reading >= 10'}}])
-            r=GraphAnalysisRuntime(root,'owner','followup',model)
+            r=GraphAnalysisRuntime(root,'owner','followup',model,intent_mode='contract_fixture')
             try:
                 with patch.object(r.recovery,'_next_local',return_value=None),patch.object(r.recovery,'_budget_local_rescue',return_value=None):
                     result=r.submit('그중 reading 평균을 알려줘')

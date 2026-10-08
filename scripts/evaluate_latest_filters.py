@@ -32,7 +32,7 @@ def main():
                 yield pd.DataFrame(rows,columns=fixture['columns'])
     def open_runtime(root):
         return GraphAnalysisRuntime(root,'eval','staged-latest',QuietModel(),
-            policy=RuntimePolicy(frame_cache_bytes=0))
+            policy=RuntimePolicy(frame_cache_bytes=0),intent_mode='contract_fixture')
     report={'mode':'synthetic data; deterministic production graph; no live model or remote SQL',
         'input_rows':len(fixture['rows'])*replicas*cycles,'cases':[]}
     with tempfile.TemporaryDirectory() as root:

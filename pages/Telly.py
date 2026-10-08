@@ -1,9 +1,17 @@
-"""Use the persistent agent in the v1 environment; preserve old sessions."""
-from importlib.metadata import version
+"""Open the supported persistent analysis agent from the Telly page URL."""
+
 from pathlib import Path
 import runpy
+
 import streamlit as st
-root=Path(__file__).resolve().parents[1]
-is_v1=int(version('langchain').split('.')[0])>=1
-page='analysis_page.py' if is_v1 else 'legacy_telly.py'
-runpy.run_path(str(root/'ui'/page),run_name='__main__')
+
+from ui.agent_entry import runtime_compatibility_error
+
+
+error = runtime_compatibility_error()
+if error:
+    st.set_page_config(page_title="Telly · 실행 환경 확인", page_icon="📊")
+    st.error(error)
+    st.stop()
+
+runpy.run_path(str(Path(__file__).resolve().parents[1] / "ui" / "analysis_page.py"), run_name="__main__")

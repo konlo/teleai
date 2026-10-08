@@ -67,7 +67,7 @@ class AuxiliaryRecoveryTests(unittest.TestCase):
         calls=[] if calls is None else calls
         return GraphAnalysisRuntime(root,'owner','auxiliary',model,
             remote_factory=lambda _:lambda envelope:calls.append(envelope),
-            connection_identity='synthetic-only',**kwargs, policy=RuntimePolicy(require_remote_approval=True))
+            connection_identity='synthetic-only',**kwargs, policy=RuntimePolicy(require_remote_approval=True),intent_mode='contract_fixture')
 
     def pending(self, r):
         return r.propose_query('fixture','SELECT 1','fixture verification')['requests'][0]

@@ -188,7 +188,7 @@ class AnalysisJoinTests(unittest.TestCase):
 
     def test_unambiguous_join_completes_without_model_and_survives_restart(self):
         with tempfile.TemporaryDirectory() as root:
-            runtime = GraphAnalysisRuntime(root, "owner", "join", NoModelCall())
+            runtime = GraphAnalysisRuntime(root, "owner", "join", NoModelCall(),intent_mode='contract_fixture')
             left = runtime.datasets.register(
                 pd.DataFrame({"customer_id":[1, 2], "job":["A", "B"]}),
                 source=LEFT_SOURCE, coverage="complete", predicate_known=True, snapshot="left-v1")
@@ -204,7 +204,7 @@ class AnalysisJoinTests(unittest.TestCase):
             joined_id = joined[0].id
             runtime.close()
 
-            reopened = GraphAnalysisRuntime(root, "owner", "join", NoModelCall())
+            reopened = GraphAnalysisRuntime(root, "owner", "join", NoModelCall(),intent_mode='contract_fixture')
             restored = reopened.datasets.metadata[joined_id]
             self.assertEqual(restored.parent_ids, (left.id, right.id))
             self.assertEqual(len(reopened.datasets.frames[joined_id]), 3)
@@ -219,7 +219,7 @@ class AnalysisJoinTests(unittest.TestCase):
 
     def test_joined_dataset_can_feed_grounded_followup_aggregation(self):
         with tempfile.TemporaryDirectory() as root:
-            runtime = GraphAnalysisRuntime(root, "owner", "join-aggregate", JoinAggregateModel())
+            runtime = GraphAnalysisRuntime(root, "owner", "join-aggregate", JoinAggregateModel(),intent_mode='contract_fixture')
             runtime.datasets.register(
                 pd.DataFrame({"customer_id":[1, 2], "job":["A", "B"]}),
                 source=LEFT_SOURCE, coverage="complete", predicate_known=True, snapshot="left-v1")

@@ -54,7 +54,7 @@ def expected_points(frame: pd.DataFrame) -> list[dict]:
 
 def run_arbitrary(root: str) -> dict:
     frame = arbitrary_frame()
-    runtime = GraphAnalysisRuntime(root, "evaluation", "count-rate-arbitrary", ForbiddenModel())
+    runtime = GraphAnalysisRuntime(root, "evaluation", "count-rate-arbitrary", ForbiddenModel(),intent_mode='contract_fixture')
     runtime.datasets.register(
         frame, source=SOURCE, coverage="complete", predicate_known=True,
         snapshot="fixture:count-rate")

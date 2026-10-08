@@ -105,7 +105,7 @@ class DynamicTableContextTests(unittest.TestCase):
         supplied = [[{'table':'catalog.one.initial', 'columns':[]}]]
         with tempfile.TemporaryDirectory() as root:
             runtime = GraphAnalysisRuntime(root, 'owner', 'dynamic-context', QuietModel(),
-                reference_context_loader=lambda:supplied[0])
+                reference_context_loader=lambda:supplied[0],intent_mode='contract_fixture')
             self.assertEqual(runtime.context.reference_context[0]['table'], 'catalog.one.initial')
             supplied[0] = [{'table':'catalog.two.replaced', 'columns':[]}]
 
@@ -135,7 +135,7 @@ class DynamicTableContextTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as root:
             runtime = GraphAnalysisRuntime(root, 'owner', 'stale-approval', RefreshModel(),
                 connection_identity='connection',
-                remote_factory=lambda _:lambda envelope:remote_calls.append(envelope), policy=RuntimePolicy(require_remote_approval=True))
+                remote_factory=lambda _:lambda envelope:remote_calls.append(envelope), policy=RuntimePolicy(require_remote_approval=True),intent_mode='contract_fixture')
             runtime.context.reference_context = [stale_context(['removed_column'])]
 
             result = runtime.submit(f'{SOURCE}의 컬럼 목록을 알려줘')
@@ -167,7 +167,7 @@ class DynamicTableContextTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as root:
             runtime = GraphAnalysisRuntime(root, 'owner', 'fresh-histogram', FreshHistogramModel(),
                 connection_identity='connection',
-                remote_factory=lambda _:lambda envelope:remote_calls.append(envelope), policy=RuntimePolicy(require_remote_approval=True))
+                remote_factory=lambda _:lambda envelope:remote_calls.append(envelope), policy=RuntimePolicy(require_remote_approval=True),intent_mode='contract_fixture')
             runtime.context.reference_context = [{
                 'table':SOURCE, 'columns':[{'name':'metric_dynamic', 'dtype':'int64'}]}]
             query = (f'SELECT metric_dynamic, COUNT(*) AS __frequency FROM {SOURCE} '

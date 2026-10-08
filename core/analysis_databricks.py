@@ -1,4 +1,4 @@
-"""Approved-only remote execution for the new analysis runtime."""
+"""Validated remote execution for the persistent analysis runtime."""
 from dataclasses import asdict
 from datetime import datetime, timezone
 

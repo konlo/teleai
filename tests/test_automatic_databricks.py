@@ -15,20 +15,26 @@ from tests.test_remote_result_completion import DeferredReplyModel, FIXTURE
 
 class AutomaticReadTests(unittest.TestCase):
     def runtime(self, root, *, manual=False, error=None, rows=None, model=None):
+        # Ledger and scripted-model contracts use a known fixture catalog.
+        # Other tests below exercise the production controller planner.
         executions=[]
         def factory(datasets):
             def execute(envelope):
                 executions.append(envelope['query'])
                 if error:raise error
                 frame=pd.DataFrame(FIXTURE['rows'] if rows is None else rows,
-                                   columns=['table_name','table_type'])
+                                   columns=list(FIXTURE['rows'][0]))
                 info=datasets.register(frame,source=envelope['source'],query=envelope['query'],
                     coverage='complete',predicate_known=True,snapshot='auto-fixture')
                 return {'status':'ready','dataset':asdict(info)}
             return execute
         runtime=GraphAnalysisRuntime(root,'auto','conversation',model or DeferredReplyModel(),
             connection_identity='fixture',remote_factory=factory,
-            policy=RuntimePolicy(require_remote_approval=manual))
+            source_namespace=FIXTURE['source'].split('.')[0],
+            policy=RuntimePolicy(require_remote_approval=manual),intent_mode='contract_fixture')
+        planner=patch.object(runtime.recovery,'_next_local',return_value=None)
+        planner.start()
+        self.addCleanup(planner.stop)
         self.addCleanup(runtime.close)
         return runtime,executions
 
@@ -155,7 +161,7 @@ class AutomaticReadTests(unittest.TestCase):
                 return {'status':'ready','dataset':asdict(info)}
             return execute
         with tempfile.TemporaryDirectory() as root:
-            r=GraphAnalysisRuntime(root,'auto','histogram',JourneyModel(),connection_identity='fixture',remote_factory=factory)
+            r=GraphAnalysisRuntime(root,'auto','histogram',JourneyModel(),connection_identity='fixture',remote_factory=factory,intent_mode='contract_fixture')
             self.addCleanup(r.close)
             first=r.submit(f'{COLUMN} histogram을 보여줘')
             self.assertEqual(first['status'],'answered',first)
@@ -167,6 +173,93 @@ class AutomaticReadTests(unittest.TestCase):
             self.assertEqual(followup['status'],'answered',followup)
             self.assertEqual(len(calls),1)
             self.assertTrue(all(r.datasets.metadata[key].snapshot==value for key,value in snapshots.items()))
+
+    def test_zero_row_schema_to_histogram_uses_one_aggregate_without_model(self):
+        from scripts.evaluate_analysis_statistics import ForbiddenModel
+        source='fixture_2026.custom_records'
+        column='reading'
+        calls=[]
+        def factory(datasets):
+            def execute(envelope):
+                query=envelope['query']
+                calls.append(query)
+                if 'LIMIT 0' in query.upper():
+                    frame=pd.DataFrame({column:pd.Series(dtype='int64'),
+                                        'category':pd.Series(dtype='object')})
+                    info=datasets.register(frame,source=source,query=query,
+                        coverage='complete',predicate_known=True)
+                else:
+                    self.assertIn('COUNT(*)',query)
+                    self.assertIn('GROUP BY',query)
+                    self.assertNotIn('SELECT *',query.upper())
+                    frame=pd.DataFrame({column:[10,20,30],'__frequency':[2,3,1]})
+                    info=datasets.register(frame,source=source,query=query,
+                        coverage='complete',predicate_known=True,
+                        grain='aggregate',aggregation=query)
+                return {'status':'ready','dataset':asdict(info)}
+            return execute
+        with tempfile.TemporaryDirectory() as root:
+            runtime=GraphAnalysisRuntime(root,'auto','schema-histogram',ForbiddenModel(),
+                connection_identity='fixture',remote_factory=factory,intent_mode='contract_fixture')
+            self.addCleanup(runtime.close)
+            schema=runtime.propose_query(source,f'SELECT * FROM {source} LIMIT 0',
+                '현재 컬럼 확인')
+            self.assertEqual(schema['status'],'answered',schema)
+            schema_ids=set(runtime.datasets.metadata)
+            unbound={'chart':True,'kind':'histogram','required_sources':[],
+                     'required_columns':[column],'scope':{}}
+            inferred=runtime.recovery._next_local(unbound,{})
+            self.assertEqual(inferred['name'],'prepare_histogram')
+            self.assertEqual(unbound['required_sources'],[source])
+            result=runtime.submit(f'그러면 {column}의 히스토그램을 그려줘')
+            self.assertEqual(result['status'],'answered',result)
+            self.assertEqual(len(calls),2)
+            self.assertEqual(runtime.inspect()['recovery']['model_calls'],0)
+            self.assertTrue(schema_ids.issubset(runtime.datasets.metadata))
+            self.assertEqual(runtime.datasets.metadata[next(iter(schema_ids))].rows,0)
+            card=runtime.artifacts[runtime.inspect()['chart_ids'][0]]
+            self.assertEqual(card.kind,'histogram')
+            self.assertTrue(card.image.startswith(b'\x89PNG\r\n\x1a\n'))
+            again=runtime.submit(f'{column} 히스토그램을 다시 보여줘')
+            self.assertEqual(again['status'],'answered',again)
+            self.assertEqual(len(calls),2)
+
+    def test_timed_out_histogram_checkpoint_resumes_from_verified_schema(self):
+        from scripts.evaluate_analysis_statistics import ForbiddenModel
+        source='fixture_2026.sensor_readings'
+        calls=[]
+        def factory(datasets):
+            def execute(envelope):
+                query=envelope['query']
+                calls.append(query)
+                frame=(pd.DataFrame({'reading':pd.Series(dtype='int64')})
+                       if 'LIMIT 0' in query.upper() else
+                       pd.DataFrame({'reading':[1,2],'__frequency':[3,4]}))
+                aggregate={} if 'LIMIT 0' in query.upper() else {
+                    'grain':'aggregate','aggregation':query}
+                info=datasets.register(frame,source=source,query=query,
+                    coverage='complete',predicate_known=True,**aggregate)
+                return {'status':'ready','dataset':asdict(info)}
+            return execute
+        with tempfile.TemporaryDirectory() as root:
+            runtime=GraphAnalysisRuntime(root,'auto','resume-histogram',ForbiddenModel(),
+                connection_identity='fixture',remote_factory=factory,intent_mode='contract_fixture')
+            self.addCleanup(runtime.close)
+            runtime.propose_query(source,f'SELECT * FROM {source} LIMIT 0',
+                '현재 컬럼 확인')
+            with patch.object(runtime.recovery,'_next_local',return_value=None):
+                failed=runtime.submit('그러면 reading의 히스토그램을 그려줘')
+            self.assertEqual(failed['status'],'incomplete')
+            self.assertEqual(runtime.agent.get_state(runtime.config).next,('model',))
+            checkpoint=runtime.agent.get_state(runtime.config)
+            recovery=dict(checkpoint.values['recovery'])
+            recovery['model_seconds']=runtime.policy.turn_slo_seconds+1
+            runtime.agent.update_state(runtime.config,{'recovery':recovery})
+            result=runtime.resume()
+            self.assertEqual(result['status'],'answered',result)
+            self.assertEqual(len(calls),2)
+            self.assertEqual(len(runtime.inspect()['chart_ids']),1)
+            self.assertTrue(runtime.artifacts[runtime.inspect()['chart_ids'][0]].image.startswith(b'\x89PNG'))
 
     def test_page_executes_without_approval_button_and_rerun_does_not_reload(self):
         self._assert_page_execution()
@@ -187,8 +280,10 @@ class AutomaticReadTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as root, patch.dict(os.environ,{
                 'TELLY_V1_STORAGE':root,'TELLY_REQUIRE_REMOTE_APPROVAL':'true' if initial_manual else 'false'}), \
                 patch('core.analysis_agent.model_provider.build_analysis_chat_model',return_value=DeferredReplyModel()), \
-                patch('core.analysis_agent.databricks.make_executor',side_effect=factory):
+                patch('core.analysis_agent.databricks.make_executor',side_effect=factory), \
+                patch('core.analysis_agent.runtime.GraphAnalysisRuntime',side_effect=lambda *a,**k: GraphAnalysisRuntime(*a,**k,intent_mode='contract_fixture')):
             app=AppTest.from_file(str(Path(__file__).resolve().parents[1]/'ui/analysis_page.py'),default_timeout=20).run()
+            app.session_state['v1_runtime'].recovery.intent_mode = 'contract_fixture'  # Render/receipt fixture only.
             try:
                 app.chat_input[0].set_value(FIXTURE['prompt']).run()
                 self.assertFalse(app.exception)

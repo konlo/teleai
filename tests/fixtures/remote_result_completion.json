@@ -1,16 +1,20 @@
 {
   "source": "eval_catalog.information_schema.tables",
-  "query": "SELECT table_name, table_type FROM eval_catalog.information_schema.tables",
-  "reason": "사용 가능한 테이블 이름과 타입을 확인합니다.",
+  "query": "SELECT table_catalog, table_schema, table_name, table_type FROM `eval_catalog`.information_schema.tables ORDER BY table_catalog, table_schema, table_name LIMIT 100",
+  "reason": "사용 가능한 테이블 목록을 information_schema에서 조회합니다.",
   "prompt": "사용 가능한 테이블 목록을 조회해서 보여줘.",
   "rows": [
     {
       "table_name": "sample_events",
-      "table_type": "MANAGED"
+      "table_type": "MANAGED",
+      "table_catalog": "eval_catalog",
+      "table_schema": "public"
     },
     {
       "table_name": "sample_summary",
-      "table_type": "VIEW"
+      "table_type": "VIEW",
+      "table_catalog": "eval_catalog",
+      "table_schema": "public"
     }
   ],
   "deferred_reply": "현재 전체 목록을 조회하는 계획을 승인해 주셨으나, 실제 조회 결과는 아직 반환되지 않았습니다. 조회 결과가 도착하면 테이블 리스트를 바로 보여드릴 수 있습니다. 조금만 기다려 주시거나, 조회 결과가 도착하면 바로 안내드리겠습니다.",

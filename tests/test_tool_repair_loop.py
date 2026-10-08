@@ -47,7 +47,7 @@ class ToolRepairTests(unittest.TestCase):
         self.assertIn('Do not ask for approval when automatic reads are enabled',instructions)
 
     def setup_runtime(self,root,model):
-        r=GraphAnalysisRuntime(root,'owner','repair',model)
+        r=GraphAnalysisRuntime(root,'owner','repair',model,intent_mode='contract_fixture')
         if not r.datasets.metadata:
             raw=r.datasets.register(pd.DataFrame({'reading':[2.,4.,10.,20.]}),
                 source='custom.observations',coverage='complete',predicate_known=True)

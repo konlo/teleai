@@ -89,7 +89,7 @@ class AnalysisAggregateTests(unittest.TestCase):
 
     def test_outlier_top_group_and_overall_mean_complete_without_model(self):
         with tempfile.TemporaryDirectory() as root:
-            runtime = GraphAnalysisRuntime(root, "owner", "cohort-top", ForbiddenModel())
+            runtime = GraphAnalysisRuntime(root, "owner", "cohort-top", ForbiddenModel(),intent_mode='contract_fixture')
             parent = runtime.datasets.register(
                 self.frame.copy(), source="arbitrary.runtime_observations",
                 coverage="complete", predicate_known=True, snapshot="fixture:v1")
@@ -119,7 +119,7 @@ class AnalysisAggregateTests(unittest.TestCase):
             finally:
                 runtime.close()
 
-            reopened = GraphAnalysisRuntime(root, "owner", "cohort-top", ForbiddenModel())
+            reopened = GraphAnalysisRuntime(root, "owner", "cohort-top", ForbiddenModel(),intent_mode='contract_fixture')
             try:
                 recovery = reopened.inspect()["recovery"]
                 for evidence in recovery["outlier_aggregate_evidence"].values():
@@ -133,7 +133,7 @@ class AnalysisAggregateTests(unittest.TestCase):
 
     def test_inlier_grouped_mean_uses_detector_column_without_guessing(self):
         with tempfile.TemporaryDirectory() as root:
-            runtime = GraphAnalysisRuntime(root, "owner", "cohort-group", ForbiddenModel())
+            runtime = GraphAnalysisRuntime(root, "owner", "cohort-group", ForbiddenModel(),intent_mode='contract_fixture')
             runtime.datasets.register(
                 self.frame.copy(), source="arbitrary.runtime_observations",
                 coverage="complete", predicate_known=True, snapshot="fixture:v1")

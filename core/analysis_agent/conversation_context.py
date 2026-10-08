@@ -17,12 +17,42 @@ def snapshot(current, context):
 
 
 def prior_analysis(current, context):
-    previous = current.get('confirmed_analysis') if current.get('explanation_only') else current
+    previous = (current.get('confirmed_analysis')
+                if (current.get('explanation_only') or current.get('status')=='cancelled'
+                    or (current.get('status')=='blocked' and current.get('goal_interpretation_error')))
+                else current)
     previous = previous or {}
     selected = context.selected_dataset_id if context else ''
     if ('selection_at_confirmation' in previous
             and previous['selection_at_confirmation'] != selected):
         return {}  # An explicit UI selection supersedes the earlier analysis.
+    proof = previous.get('table_preview_evidence') or {}
+    info = context.datasets.metadata.get(proof.get('dataset_id')) if context else None
+    if (previous.get('status') == 'complete' and info is not None
+            and proof.get('source') == info.source and proof.get('snapshot') == info.snapshot
+            and list(proof.get('columns', [])) == list(info.columns)
+            and previous.get('required_sources') == [info.source]
+            and (previous.get('scope') or {}).get('sources') != [info.source]):
+        # Repair older confirmed preview snapshots without changing the saved
+        # analytical selection or trusting an assistant's free-form prose.
+        previous = deepcopy(previous)
+        previous['scope'] = {'sources': [info.source], 'conditions': [],
+            'any_conditions': [], 'measure_conditions': [], 'ratio': None,
+            'unresolved': [], 'columns': []}
+        # Unknown predicates cannot be replaced by invented empty conditions.
+        # An unfiltered wildcard preview has a mechanically checked WHERE-free
+        # query; other older mismatches require explicit scope resolution.
+        from sqlglot import parse_one
+        from sqlglot.errors import SqlglotError
+        from dataclasses import asdict
+        try:
+            tree = parse_one(info.query, read=context.sql_dialect) if info.query else None
+            if tree is not None and tree.args.get('where'):
+                previous['scope']['unresolved'] = ['이전 미리보기의 필터 범위를 확인해야 합니다.']
+            elif tree is None and info.predicate_known:
+                previous['scope']['conditions'] = [asdict(c) for c in info.conditions]
+        except (ValueError,SqlglotError):
+            previous['scope']['unresolved'] = ['이전 미리보기의 필터 범위를 확인해야 합니다.']
     return previous
 
 

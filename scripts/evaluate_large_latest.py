@@ -22,7 +22,7 @@ from utils.analysis_image_validation import validate_chart_image
 
 def runtime(path):
     return GraphAnalysisRuntime(path, 'large-eval', 'latest', QuietModel(),
-        policy=RuntimePolicy(max_dataset_bytes=1024*1024*1024, frame_cache_bytes=0))
+        policy=RuntimePolicy(max_dataset_bytes=1024*1024*1024, frame_cache_bytes=0),intent_mode='contract_fixture')
 
 
 def seed(path, fixture):

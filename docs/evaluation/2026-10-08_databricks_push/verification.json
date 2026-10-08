@@ -1,0 +1,46 @@
+{
+  "timestamp": "2026-10-08T15:05:04.187273+09:00",
+  "scope": "Publish Databricks-default backend and current pending analysis agent implementation. Not a release GO.",
+  "default_backend": "databricks",
+  "local_env_backend": "databricks",
+  "model_provider_unchanged": "ollama",
+  "mysql_imported_in_databricks_mode": false,
+  "tests": {
+    "application": {
+      "run": 646,
+      "passed": 642,
+      "skipped": 4,
+      "failed": 0,
+      "seconds": 89.738
+    },
+    "migration": {
+      "run": 137,
+      "passed": 137,
+      "failed": 0
+    },
+    "reference_and_recovery": {
+      "run": 217,
+      "passed": 217,
+      "failed": 0,
+      "generated_figures": 58
+    },
+    "compile": "PASS",
+    "staged_diff_check": "PASS",
+    "secret_scan": "PASS"
+  },
+  "validation_environment": "Isolated git-index checkout; fake Databricks configuration, mocked remote execution. No developer .env or runtime files copied.",
+  "validation_repairs": [
+    "CI has explicit fake Databricks environment for UI contracts.",
+    "Migration UI fixtures mock model factory rather than replacing the ChatOllama type.",
+    "Launcher unit tests simulate installed/missing pinned interpreter instead of depending on ignored local venv."
+  ],
+  "live_validation": "Previous real Databricks OpenSession/warehouse-start HTTP400 blocker remains; 31-prompt evaluation incomplete.",
+  "excluded": [
+    ".env",
+    "tokens",
+    "MySQL reader credentials",
+    "runtime databases",
+    "raw evaluation datasets"
+  ],
+  "branch": "codex/agentic-analysis-rc-2026-09-14"
+}

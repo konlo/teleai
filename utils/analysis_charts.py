@@ -189,29 +189,54 @@ def validate_frequency_dataset(store, dataset_id, value_column, weight_column):
     return info
 
 
-def histogram_from_counts(store, dataset_id, value_column, weight_column):
+def histogram_from_counts(store, dataset_id, value_column, weight_column, *, categorical=False, y_max=None, bins=None):
     """Render complete value-frequency results without expanding source rows."""
     import numpy as np
+    if y_max is not None and (isinstance(y_max,bool) or not np.isfinite(y_max) or y_max<=0):
+        raise ValueError('y_max는 양의 유한 숫자여야 합니다.')
     info = validate_frequency_dataset(store, dataset_id, value_column, weight_column)
     if value_column == weight_column or not {value_column, weight_column}.issubset(info.columns):
         raise ValueError('값과 빈도 컬럼을 확인해주세요.')
     frame = project_dataset(store, dataset_id, [value_column, weight_column])
-    values = pd.to_numeric(frame[value_column], errors='raise')
+    values = frame[value_column] if categorical else pd.to_numeric(frame[value_column], errors='raise')
     counts = pd.to_numeric(frame[weight_column], errors='raise')
-    if not len(values) or not np.isfinite(values).all() or not np.isfinite(counts).all():
+    if categorical and values.isna().any():
+        raise ValueError('범주 분포의 결측 제외 정책에 맞는 빈도 집계가 필요합니다.')
+    if not len(values) or (not categorical and not np.isfinite(values).all()) or not np.isfinite(counts).all():
         raise ValueError('유효한 수치와 빈도가 필요합니다.')
     if not values.is_unique:
         raise ValueError('값별 빈도에는 같은 값이 중복될 수 없습니다.')
     if (counts < 0).any() or (counts % 1 != 0).any() or counts.sum() <= 0:
         raise ValueError('빈도는 0 이상의 정수이며 총합은 양수여야 합니다.')
     fig = Figure(figsize=(6, 3.5)); ax = fig.subplots()
-    ax.hist(values, weights=counts, histtype="bar", bins=min(60, max(8, int(len(values)**0.5))),
-            color='#3278b9', edgecolor='white')
+    spec={}
+    if categorical:
+        indices=counts.sort_values(ascending=False,kind='stable').index[:50]
+        labels=[str(value)[:120] for value in values.loc[indices]]
+        plotted=counts.loc[indices].astype(int).tolist()
+        ax.bar(range(len(labels)),plotted,color='#3278b9',edgecolor='white')
+        ax.set_xticks(range(len(labels)),labels,rotation=45,ha='right')
+        spec={'aggregation':'count','labels':labels,'counts':plotted,'total_count':int(counts.sum()),
+              'has_more_categories':len(values)>50,'null_policy':'exclude'}
+    else:
+        count_bins=min(60,max(8,int(len(values)**0.5))) if bins is None else bins
+        if type(count_bins) is not int or not 2<=count_bins<=100:raise ValueError('bins는 2~100 정수여야 합니다.')
+        heights,edges,_=ax.hist(values, weights=counts, histtype="bar", bins=count_bins,
+                              color='#3278b9', edgecolor='white')
+        spec={'aggregation':'count','bins':count_bins,'bin_counts':heights.tolist(),
+              'bin_edges':edges.tolist(),'total_count':int(counts.sum()),'null_policy':'exclude'}
     ax.set(xlabel=value_column, ylabel='Count')
+    if y_max is not None:
+        ax.set_ylim(0,float(y_max))
+        spec['y_limits']=[0.0,float(y_max)]
     buffer = BytesIO(); FigureCanvasAgg(fig); _apply_unicode_font(fig); fig.tight_layout(); fig.savefig(buffer,format='png',dpi=110)
     return ChartPreview(str(uuid4()),dataset_id,f'{value_column} 분포',
-        '값별 빈도를 가중치로 사용했습니다. 원본 행을 펼치거나 표본을 만들지 않았습니다.',
-        'histogram',(value_column,),f'빈도 합계 {int(counts.sum()):,} · complete · {info.query}',buffer.getvalue())
+        ('범주별 실제 COUNT(*) 빈도를 표시합니다. 결측은 제외했습니다.'
+         + (' 상위 50개 범주만 표시합니다.' if len(values)>50 else '') if categorical else
+         '값별 빈도를 가중치로 사용했습니다. 원본 행을 펼치거나 표본을 만들지 않았습니다.')
+        + (f' Y축 표시 범위는 0~{y_max:g}이며 이를 넘는 막대는 잘려 보입니다. 실제 빈도는 유지했습니다.' if y_max is not None else ''),
+        'bar' if categorical else 'histogram',(value_column,),
+        f'빈도 합계 {int(counts.sum()):,} · complete · {info.query}',buffer.getvalue(),spec)
 
 
 def render_chart_spec(store: DatasetStore, dataset_id: str, *, kind: str, x: str,

@@ -33,6 +33,7 @@ def candidate(current):
         and not inspection
         and not any(current.get(key) for key in (
             'chart', 'join', 'metadata_kind', 'profile_kind', 'preview_limit',
+            'value_list_requested',
             'outlier_spec', 'fresh_source_required', 'data_load', 'pivot_requested',
             'statistical_kind', 'group_summary_requested', 'time_series_frequency',
             'winsor_spec', 'frequency_column', 'whole_row_count', 'scalar_grouping'))

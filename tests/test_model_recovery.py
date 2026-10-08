@@ -87,7 +87,7 @@ class ModelRecoveryTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as root, patch('core.analysis_agent.model_recovery.time.sleep'):
             model=IntermittentModel(calls=[{'name':'aggregate_dataset','args':{
                 'dataset_id':'$fixture','aggregation':'mean','value_column':'measurement'}}])
-            r=GraphAnalysisRuntime(root,'owner','graph',model)
+            r=GraphAnalysisRuntime(root,'owner','graph',model,intent_mode='contract_fixture')
             try:
                 frame=pd.DataFrame({'measurement':[2.,4.,9.]})
                 raw=r.datasets.register(frame,source='unfamiliar.measurements',coverage='complete',predicate_known=True)
@@ -126,7 +126,7 @@ class ModelRecoveryTests(unittest.TestCase):
                 return super()._generate(*args,**kwargs)
         plan={'uncertain':False,'operation':'MEDIAN','column':'measurement','request_span':'중위수'}
         with tempfile.TemporaryDirectory() as root, patch('core.analysis_agent.model_recovery.time.sleep'):
-            r=GraphAnalysisRuntime(root,'owner','semantic-retry',FlakySemantic(replies=[plan,plan]))
+            r=GraphAnalysisRuntime(root,'owner','semantic-retry',FlakySemantic(replies=[plan,plan]),intent_mode='contract_fixture')
             try:
                 raw=r.datasets.register(pd.DataFrame({'measurement':[2.,4.,9.]}),source='arbitrary.trials',coverage='complete',predicate_known=True)
                 r.select_dataset(raw.id)
@@ -166,7 +166,7 @@ class ModelRecoveryTests(unittest.TestCase):
                'columns':[{'name':'measurement','dtype':'double'}]}]
         with tempfile.TemporaryDirectory() as root,patch('core.analysis_agent.model_recovery.time.sleep'):
             r=GraphAnalysisRuntime(root,'owner','approved-retry',model,remote_factory=factory,
-                connection_identity='synthetic-test-only',reference_context_loader=lambda:refs, policy=RuntimePolicy(require_remote_approval=True))
+                connection_identity='synthetic-test-only',reference_context_loader=lambda:refs, policy=RuntimePolicy(require_remote_approval=True),intent_mode='contract_fixture')
             try:
                 with patch.object(r.recovery,'_next_local',return_value=None):
                     proposed=r.submit('measurement 평균을 알려줘')
@@ -184,7 +184,7 @@ class ModelRecoveryTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as root, patch('core.analysis_agent.model_recovery.time.sleep'):
             model=IntermittentModel(failures_left=3,calls=[{'name':'aggregate_dataset','args':{
                 'dataset_id':'$fixture','aggregation':'mean','value_column':'measurement'}}])
-            r=GraphAnalysisRuntime(root,'owner','paused-retry',model)
+            r=GraphAnalysisRuntime(root,'owner','paused-retry',model,intent_mode='contract_fixture')
             try:
                 raw=r.datasets.register(pd.DataFrame({'measurement':[2.,4.,9.]}),source='custom.trials',coverage='complete',predicate_known=True)
                 r.select_dataset(raw.id);model.evaluation_dataset_id=raw.id

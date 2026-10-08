@@ -40,7 +40,7 @@ class RecoveryJourneyTests(unittest.TestCase):
                 info=datasets.register(frame,source=SOURCE,query=QUERY,coverage='complete',grain='aggregate',aggregation=QUERY)
                 return {'status':'ready','dataset':asdict(info)}
             return execute
-        return GraphAnalysisRuntime(root,'owner','journey',model or JourneyModel(),connection_identity='test',remote_factory=factory, policy=RuntimePolicy(require_remote_approval=True))
+        return GraphAnalysisRuntime(root,'owner','journey',model or JourneyModel(),connection_identity='test',remote_factory=factory, policy=RuntimePolicy(require_remote_approval=True),intent_mode='contract_fixture')
 
     def test_false_completion_replans_approval_reopen_then_png(self):
         with tempfile.TemporaryDirectory() as root:
@@ -87,7 +87,7 @@ class EvidenceTests(unittest.TestCase):
                 assert '현재 사용자 요청 원문(JSON 문자열): "보유 결과 설명"' in prompt
                 return super()._generate(messages,**kwargs)
         with tempfile.TemporaryDirectory() as root:
-            r=GraphAnalysisRuntime(root,'owner','prompt-summary',PromptCheckingModel())
+            r=GraphAnalysisRuntime(root,'owner','prompt-summary',PromptCheckingModel(),intent_mode='contract_fixture')
             r.transcript.record([HumanMessage(content='보유 결과 설명',id='actual'),
                                  HumanMessage(content='추가 데이터 조회를 승인했습니다.',id='receipt')])
             result=r._invoke({'messages':[HumanMessage(content='다른 분석을 실행하자',id='summary',additional_kwargs={'lc_source':'summarization'})]})
@@ -99,7 +99,7 @@ class EvidenceTests(unittest.TestCase):
         from langchain_core.messages import HumanMessage
         from utils.analysis_charts import histogram_from_counts
         with tempfile.TemporaryDirectory() as root:
-            r=GraphAnalysisRuntime(root,'owner','compacted-chart',QuietModel())
+            r=GraphAnalysisRuntime(root,'owner','compacted-chart',QuietModel(),intent_mode='contract_fixture')
             frame=pd.DataFrame(FIXTURE['rows']).groupby(COLUMN).size().reset_index(name='frequency')
             info=r.datasets.register(frame,source=SOURCE,coverage='complete',grain='aggregate',query=QUERY,aggregation=QUERY)
             card=histogram_from_counts(r.datasets,info.id,COLUMN,'frequency')
@@ -123,7 +123,7 @@ class EvidenceTests(unittest.TestCase):
         from langchain_core.messages import HumanMessage
         from core.analysis_agent.recovery import RecoveryMiddleware
         with tempfile.TemporaryDirectory() as root:
-            r=GraphAnalysisRuntime(root,'owner','summary-budget',QuietModel())
+            r=GraphAnalysisRuntime(root,'owner','summary-budget',QuietModel(),intent_mode='contract_fixture')
             r.transcript.record([HumanMessage(content='histogram',id='request')])
             middleware=RecoveryMiddleware(r.artifacts,r.diagnostics,transcript=r.transcript)
             recovery={'request_id':'request','attempts':2,'chart':True,'kind':'histogram','columns':[],'failed':{}}
@@ -136,7 +136,7 @@ class EvidenceTests(unittest.TestCase):
     def test_metadata_after_chart_failure_is_not_completion(self):
         from langchain_core.messages import HumanMessage, ToolMessage
         with tempfile.TemporaryDirectory() as root:
-            r=GraphAnalysisRuntime(root,'owner','evidence',QuietModel())
+            r=GraphAnalysisRuntime(root,'owner','evidence',QuietModel(),intent_mode='contract_fixture')
             middleware=__import__('core.analysis_agent.recovery',fromlist=['RecoveryMiddleware']).RecoveryMiddleware(r.artifacts,r.diagnostics)
             messages=[HumanMessage(content='histogram',id='request'),
                 ToolMessage(content='{"status":"no_valid_chart","cards":[]}',name='recommend_chart_images',tool_call_id='chart'),
@@ -176,14 +176,14 @@ class PlannedJourneyTests(unittest.TestCase):
                     info=datasets.register(frame,source=SOURCE,coverage='complete',grain='aggregate',query=envelope['query'],aggregation=envelope['query'])
                     return {'status':'ready','dataset':asdict(info)}
                 return execute
-            r=GraphAnalysisRuntime(root,'owner','plan',PlanOnlyModel(),connection_identity='test',remote_factory=factory, policy=RuntimePolicy(require_remote_approval=True))
+            r=GraphAnalysisRuntime(root,'owner','plan',PlanOnlyModel(),connection_identity='test',remote_factory=factory, policy=RuntimePolicy(require_remote_approval=True),intent_mode='contract_fixture')
             r.context.reference_context.append({'table':SOURCE,'columns':[{'name':COLUMN,'dtype':'int64'}]})
             result=r.submit(f'{COLUMN} histogram')
             self.assertEqual(result['status'],'awaiting_approval');self.assertEqual(calls,[])
             query=result['requests'][0]['query'];self.assertIn('COUNT(*)',query);self.assertNotIn('LIMIT',query)
             request_id=result['requests'][0]['id']
             r.close()
-            r=GraphAnalysisRuntime(root,'owner','plan',PlanOnlyModel(),connection_identity='test',remote_factory=factory, policy=RuntimePolicy(require_remote_approval=True))
+            r=GraphAnalysisRuntime(root,'owner','plan',PlanOnlyModel(),connection_identity='test',remote_factory=factory, policy=RuntimePolicy(require_remote_approval=True),intent_mode='contract_fixture')
             result=r.respond(request_id,approved=True)
             self.assertEqual(result['status'],'answered',str(result)+r.diagnostics.path.read_text());self.assertEqual(len(calls),1)
             goal=r.agent.get_state(r.config).values['recovery']

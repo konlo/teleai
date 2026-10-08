@@ -34,7 +34,7 @@ class ReplacementModel(QuietModel):
 class ReplacementTurnTests(unittest.TestCase):
     def runtime(self, root, model, calls):
         return GraphAnalysisRuntime(root, 'owner', 'replacement', model,
-            connection_identity='test', remote_factory=lambda _: lambda envelope: calls.append(envelope), policy=RuntimePolicy(require_remote_approval=True))
+            connection_identity='test', remote_factory=lambda _: lambda envelope: calls.append(envelope), policy=RuntimePolicy(require_remote_approval=True),intent_mode='contract_fixture')
 
     def test_change_is_a_new_request_with_new_approval_and_no_old_goal_model_call(self):
         with tempfile.TemporaryDirectory() as root:
@@ -88,7 +88,7 @@ class ReplacementTurnTests(unittest.TestCase):
 
     def test_model_and_summary_timings_do_not_record_user_text(self):
         with tempfile.TemporaryDirectory() as root:
-            runtime = GraphAnalysisRuntime(root, 'owner', 'timings', QuietModel())
+            runtime = GraphAnalysisRuntime(root, 'owner', 'timings', QuietModel(),intent_mode='contract_fixture')
             runtime.submit('private-request-value')
             text = runtime.diagnostics.path.read_text()
             self.assertNotIn('private-request-value', text)
@@ -124,7 +124,7 @@ class ReplacementTurnTests(unittest.TestCase):
             def _generate(self, messages, **kwargs):
                 raise TimeoutError('secret-model-exception')
         with tempfile.TemporaryDirectory() as root:
-            runtime = GraphAnalysisRuntime(root, 'owner', 'model-failure', FailingModel())
+            runtime = GraphAnalysisRuntime(root, 'owner', 'model-failure', FailingModel(),intent_mode='contract_fixture')
             result = runtime.submit('요청 설명')
             self.assertEqual(result['status'], 'incomplete')
             text = runtime.diagnostics.path.read_text()

@@ -11,11 +11,26 @@ def column_metadata_plan(context, table):
     known.update(_source_key(c.source) for c in context.datasets.metadata.values())
     if wanted not in known:
         return {'status':'needs_context','message':'현재 문맥에서 확인된 전체 테이블 이름이 필요합니다.'}
-    return make_plan(wanted)
+    return make_plan(wanted, dialect=context.sql_dialect)
 
 
-def make_plan(table):
+def make_plan(table, *, dialect='databricks'):
     parts=table.split('.')
+    if dialect == 'mysql':
+        if len(parts)!=2 or any(not p or any(ch in p for ch in "`\"'\n;") for p in parts):
+            return {'status':'needs_context','message':'database.table 전체 이름이 필요합니다.'}
+        database,name=parts
+        source='information_schema.columns'
+        # Stable result fields across SQL engines; MySQL has no catalog level.
+        query=("SELECT '' AS table_catalog, table_schema AS table_schema, "
+            "table_name AS table_name, column_name AS column_name, "
+            "data_type AS data_type, column_comment AS comment FROM " + _quoted_table(source)
+            + " WHERE table_schema = '"+database+"' AND table_name = '"+name
+            + "' ORDER BY ordinal_position LIMIT 65")
+        return {'status':'planned','metadata_plan':{'source':source,'query':query,
+            'reason':'분석 대상 테이블의 컬럼 자료형과 업무 설명(comment)을 확인합니다.'},
+            'target_table':table,'scope':'MySQL 컬럼 메타데이터만 최대 65건. 아직 조회하지 않았습니다.',
+            'user_action':'metadata_plan을 query_databricks에 전달하여 현재 실행 정책에 따라 조회하세요.'}
     if len(parts)!=3 or any(not p or any(ch in p for ch in "`\"'\n;") for p in parts):
         return {'status':'needs_context','message':'catalog.schema.table 전체 이름이 필요합니다.'}
     catalog,schema,name=parts
@@ -26,11 +41,11 @@ def make_plan(table):
     return {'status':'planned','metadata_plan':{'source':source,'query':query,
         'reason':'분석 대상 테이블의 컬럼 자료형과 업무 설명(comment)을 확인합니다.'},
         'target_table':table,'scope':'Unity Catalog 컬럼 메타데이터만 최대 65건. 아직 조회하지 않았습니다.',
-        'user_action':'정확한 SQL을 query_databricks로 제안하면 사용자 승인 후에만 실행됩니다.'}
+        'user_action':'metadata_plan을 query_databricks에 전달하여 현재 실행 정책에 따라 조회하세요.'}
 
 
-def stored_column_definitions(datasets, table):
-    plan=make_plan(_source_key(table))
+def stored_column_definitions(datasets, table, *, dialect='databricks'):
+    plan=make_plan(_source_key(table), dialect=dialect)
     if plan['status']!='planned':return None
     query=plan['metadata_plan']['query'];source=plan['metadata_plan']['source']
     candidates=[d for d in datasets.metadata.values() if _source_key(d.source)==source
@@ -43,6 +58,7 @@ def stored_column_definitions(datasets, table):
             or full_read_preflight(datasets,[info.id])):return None
     frame=project_dataset(datasets,info.id,list(FIELDS))
     columns=[];seen=set();parts=_source_key(table).split('.')
+    if dialect == 'mysql':parts=['', *parts]
     for row in frame.to_dict('records'):
         if [str(row[k]).casefold() for k in FIELDS[:3]]!=parts:return None
         name,dtype,comment=row['column_name'],row['data_type'],row['comment']
@@ -58,7 +74,7 @@ def stored_column_definitions(datasets, table):
 def inspect_column_definitions(context, table):
     plan=column_metadata_plan(context,table)
     if plan['status']!='planned':return plan
-    found=stored_column_definitions(context.datasets,table)
+    found=stored_column_definitions(context.datasets,table, dialect=context.sql_dialect)
     if found:return {'status':'ready','table_context':found,
         'scope':'승인 후 저장된 컬럼 메타데이터입니다. 원본 데이터나 계산 결과를 대체하지 않습니다.'}
     return plan

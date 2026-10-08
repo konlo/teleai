@@ -7,6 +7,21 @@ from core.analysis_catalog import table_context_freshness
 from core.analysis_sql import validate_query
 
 
+def dialect_error(query, dialect):
+    """Reject known non-portable constructs, not arbitrary unknown functions.
+
+    A parser recognizing SQL does not prove that the target engine implements
+    it. MySQL's ordered-set percentile functions are not execution primitives.
+    """
+    if dialect!='mysql':return None
+    tree=validate_query(query,dialect=dialect)
+    unsupported=(exp.PercentileCont,exp.PercentileDisc,exp.Median,exp.WithinGroup)
+    if any(isinstance(node,unsupported) for node in tree.walk()):
+        return {'error_code':'unsupported_sql_dialect',
+                'message':'MySQL does not implement ordered-set PERCENTILE_CONT/PERCENTILE_DISC/MEDIAN or WITHIN GROUP. Use a MySQL window-rank implementation, or an existing bounded local dataset for exact quantiles. Do not silently replace a requested quantile with AVG.'}
+    return None
+
+
 def known_column_error(query: str, reference_context: list[dict], *, dialect='databricks'):
     """Return a concrete error for columns disproved by current table metadata.
 

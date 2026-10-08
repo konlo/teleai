@@ -85,7 +85,7 @@ class CountRateChartTests(unittest.TestCase):
 
     def test_production_graph_runs_without_model_and_survives_restart(self):
         with tempfile.TemporaryDirectory() as root:
-            runtime = GraphAnalysisRuntime(root, "owner", "count-rate", NoModelCall())
+            runtime = GraphAnalysisRuntime(root, "owner", "count-rate", NoModelCall(),intent_mode='contract_fixture')
             runtime.datasets.register(
                 frame(), source=SOURCE, coverage="complete", predicate_known=True)
             result = runtime.submit(
@@ -100,14 +100,14 @@ class CountRateChartTests(unittest.TestCase):
             chart_id = card.id
             runtime.close()
 
-            reopened = GraphAnalysisRuntime(root, "owner", "count-rate", NoModelCall())
+            reopened = GraphAnalysisRuntime(root, "owner", "count-rate", NoModelCall(),intent_mode='contract_fixture')
             self.assertIn(chart_id, reopened.inspect()["chart_ids"])
             self.assertTrue(reopened.artifacts[chart_id].image.startswith(b"\x89PNG"))
             reopened.close()
 
     def test_split_panel_request_runs_without_model(self):
         with tempfile.TemporaryDirectory() as root:
-            runtime = GraphAnalysisRuntime(root, "owner", "count-rate-panel", NoModelCall())
+            runtime = GraphAnalysisRuntime(root, "owner", "count-rate-panel", NoModelCall(),intent_mode='contract_fixture')
             runtime.datasets.register(
                 frame(), source=SOURCE, coverage="complete", predicate_known=True)
             result = runtime.submit(

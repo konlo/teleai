@@ -40,7 +40,7 @@ class BatchEvaluationContracts(unittest.TestCase):
                     return result
             with patch('scripts.evaluate_spider2_teleai.database_path',return_value=path),patch('scripts.evaluate_spider2_teleai.task_document',return_value=''):
                 result=evaluate_task(Path(root),{'instance_id':'local_fixture','db':'public','question':'events 전체 행 수를 SQL로 계산해줘'},
-                    SingleProposal(query='SELECT COUNT(*) FROM events'),Path(root)/'predictions',benchmark_instruction=True)
+                    SingleProposal(query='SELECT COUNT(*) FROM events'),Path(root)/'predictions',benchmark_instruction=True,intent_mode='contract_fixture')
             self.assertEqual(result['status'],'SQL_PROPOSED',result)
             self.assertEqual(result['remote_executions'],0)
             self.assertEqual(result['agent_status'],'awaiting_approval')

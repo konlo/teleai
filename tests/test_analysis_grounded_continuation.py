@@ -19,7 +19,7 @@ class GroundedContinuationTests(unittest.TestCase):
         frame = pd.DataFrame({'segment':['s'+str(i % 30) for i in range(300)],
                               'flag':['x','y','z'] * 100})
         with tempfile.TemporaryDirectory() as root:
-            runtime = GraphAnalysisRuntime(root, 'owner', 'quoted', ForbiddenModel())
+            runtime = GraphAnalysisRuntime(root, 'owner', 'quoted', ForbiddenModel(),intent_mode='contract_fixture')
             try:
                 raw = runtime.datasets.register(frame, source='custom.entries',
                     coverage='complete', predicate_known=True)
@@ -44,7 +44,7 @@ class GroundedContinuationTests(unittest.TestCase):
     def test_compound_label_uses_one_numeric_measure_and_preserves_raw(self):
         frame = pd.DataFrame({'tag': ['a', 'b', 'c'], 'cost': [2., 4., 9.]})
         with tempfile.TemporaryDirectory() as root:
-            runtime = GraphAnalysisRuntime(root, 'owner', 'measure', ForbiddenModel())
+            runtime = GraphAnalysisRuntime(root, 'owner', 'measure', ForbiddenModel(),intent_mode='contract_fixture')
             try:
                 raw = runtime.datasets.register(frame, source='custom.observations',
                     coverage='complete', predicate_known=True)
@@ -63,7 +63,7 @@ class GroundedContinuationTests(unittest.TestCase):
     def test_two_measures_or_grouped_request_cannot_become_one_overall_average(self):
         for prompt in ('left_value right_value 평균을 알려줘', 'tag별 left_value 평균을 알려줘'):
             with self.subTest(prompt=prompt), tempfile.TemporaryDirectory() as root:
-                runtime = GraphAnalysisRuntime(root, 'owner', 'ambiguous', EvaluationModel())
+                runtime = GraphAnalysisRuntime(root, 'owner', 'ambiguous', EvaluationModel(),intent_mode='contract_fixture')
                 try:
                     frame = pd.DataFrame({'tag':['a','b'], 'left_value':[2.,8.], 'right_value':[4.,10.]})
                     raw = runtime.datasets.register(frame, source='fixture.measurements',
@@ -83,7 +83,7 @@ class GroundedContinuationTests(unittest.TestCase):
     def test_filtered_frequency_is_table_neutral_includes_null_and_keeps_raw(self):
         frame = pd.DataFrame({'reading':[1,5,6,8,9], 'class_key':['a','a','a','b',None]})
         with tempfile.TemporaryDirectory() as root:
-            runtime = GraphAnalysisRuntime(root, 'owner', 'frequency', ForbiddenModel())
+            runtime = GraphAnalysisRuntime(root, 'owner', 'frequency', ForbiddenModel(),intent_mode='contract_fixture')
             try:
                 raw = runtime.datasets.register(frame, source='custom.events',
                     coverage='complete', predicate_known=True)
@@ -108,7 +108,7 @@ class GroundedContinuationTests(unittest.TestCase):
     def test_qualified_count_clarification_survives_restart_and_reuses_original(self):
         frame = pd.DataFrame({'prior_signal':['ok','bad','bad'], 'current_signal':['ok','ok','bad']})
         with tempfile.TemporaryDirectory() as root:
-            runtime = GraphAnalysisRuntime(root, 'owner', 'clarify', EvaluationModel())
+            runtime = GraphAnalysisRuntime(root, 'owner', 'clarify', EvaluationModel(),intent_mode='contract_fixture')
             raw = runtime.datasets.register(frame, source='custom.events',
                 coverage='complete', predicate_known=True)
             runtime.select_dataset(raw.id)
@@ -119,7 +119,7 @@ class GroundedContinuationTests(unittest.TestCase):
                 self.assertTrue(runtime.inspect()['recovery']['pending_clarification'])
             finally:
                 runtime.close()
-            runtime = GraphAnalysisRuntime(root, 'owner', 'clarify', ForbiddenModel())
+            runtime = GraphAnalysisRuntime(root, 'owner', 'clarify', ForbiddenModel(),intent_mode='contract_fixture')
             try:
                 result = runtime.submit("prior_signal = 'ok'")
                 self.assertEqual(result['status'], 'answered', result)
@@ -134,7 +134,7 @@ class GroundedContinuationTests(unittest.TestCase):
 
     def test_new_request_approval_word_unknown_column_and_selection_change_do_not_bind(self):
         with tempfile.TemporaryDirectory() as root:
-            runtime = GraphAnalysisRuntime(root, 'owner', 'boundary', EvaluationModel())
+            runtime = GraphAnalysisRuntime(root, 'owner', 'boundary', EvaluationModel(),intent_mode='contract_fixture')
             try:
                 raw = runtime.datasets.register(pd.DataFrame({'signal':['ok']}),
                     source='custom.events', coverage='complete', predicate_known=True)

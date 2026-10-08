@@ -74,7 +74,7 @@ def turn_event_count(diagnostics, event):
                for entry in diagnostics)
 
 
-def run_case(spec, case, model, counter=None, artifact_dir=None):
+def run_case(spec, case, model, counter=None, artifact_dir=None, *, intent_mode='llm'):
     frame = pd.DataFrame(spec['rows']).astype(spec['dtypes'])
     expected_digest = fingerprint(frame)
     calls = []
@@ -92,7 +92,7 @@ def run_case(spec, case, model, counter=None, artifact_dir=None):
             return GraphAnalysisRuntime(directory, 'fixture-evaluation', case['id'], model,
                 connection_identity='fixture-only:no-database', remote_factory=forbidden_factory,
                 reference_context_loader=lambda: [context],
-                policy=RuntimePolicy())
+                policy=RuntimePolicy(),intent_mode=intent_mode)
 
         runtime = create()
         info = runtime.datasets.register(frame, source=spec['source'], coverage='complete',
