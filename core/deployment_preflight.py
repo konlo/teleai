@@ -9,6 +9,7 @@ from urllib.parse import urlparse
 
 from core.analysis_agent.policy import RuntimePolicy
 from core.runtime_capacity import CapacityPolicy
+from core.databricks_settings import env_value, normalize_hostname
 
 
 @dataclass(frozen=True)
@@ -114,47 +115,75 @@ def evaluate_deployment(
         '운영 데이터 backend는 Databricks입니다. MySQL 평가 설정을 사용하지 않습니다.'
         if data_backend == 'databricks' else
         '운영 preflight는 TELLY_DATA_BACKEND=databricks가 필요합니다. MySQL은 별도 로컬 평가 모드입니다.'))
-    model = env.get("OLLAMA_MODEL", "").strip()
-    endpoint = env.get("OLLAMA_BASE_URL", "").strip()
-    if not model or not endpoint:
-        checks.append(
-            PreflightCheck(
-                "ollama_configuration",
-                "fail",
-                "OLLAMA_MODEL과 OLLAMA_BASE_URL을 배포 환경에 명시해야 합니다.",
-            )
-        )
-    elif not _check_url(endpoint):
-        checks.append(
-            PreflightCheck(
-                "ollama_configuration", "fail", "OLLAMA_BASE_URL은 유효한 http(s) URL이어야 합니다."
-            )
-        )
-    else:
-        host = (urlparse(endpoint).hostname or "").lower()
-        remote_profile = profile != "local-desktop"
-        if remote_profile and host in {"localhost", "127.0.0.1", "::1"}:
+    from core.analysis_agent.provider_config import configured_provider, azure_options
+    try:
+        provider = configured_provider(env)
+    except ValueError:
+        provider = None
+        checks.append(PreflightCheck('model_provider', 'fail', '분석 모델 제공자 설정이 유효하지 않습니다.'))
+    if provider == 'azure':
+        try:
+            azure_options(env)
+        except ValueError as exc:
+            checks.append(PreflightCheck('azure_configuration', 'fail', str(exc)))
+        else:
+            checks.append(PreflightCheck('azure_configuration', 'pass',
+                'Azure OpenAI 설정을 확인했습니다. 실제 모델 API는 호출하지 않았습니다.'))
+    elif provider == 'databricks':
+        try:
+            host = env_value(env, 'DATABRICKS_HOST')
+            token = env_value(env, 'DATABRICKS_TOKEN', 'DATABRICKS_ACCESS_TOKEN')
+            valid = bool(host and token and normalize_hostname(host)) and not host.startswith('http://')
+        except ValueError:
+            valid = False
+        checks.append(PreflightCheck('databricks_model_configuration', 'pass' if valid else 'fail',
+            'Databricks 모델 endpoint 설정 확인. 실제 모델 API는 호출하지 않았습니다.' if valid else
+            'Databricks 모델 host/token/HTTPS 설정을 확인해주세요.'))
+    elif provider == 'ollama':
+        model = env.get("OLLAMA_MODEL", "").strip()
+        endpoint = env.get("OLLAMA_BASE_URL", "").strip()
+        if not model or not endpoint:
             checks.append(
                 PreflightCheck(
                     "ollama_configuration",
-                    "warn",
-                    "Ollama가 loopback 주소입니다. 앱과 모델 서버가 같은 배포 호스트에서 실행되는지 확인해야 합니다.",
+                    "fail",
+                    "OLLAMA_MODEL과 OLLAMA_BASE_URL을 배포 환경에 명시해야 합니다.",
+                )
+            )
+        elif not _check_url(endpoint):
+            checks.append(
+                PreflightCheck(
+                    "ollama_configuration", "fail", "OLLAMA_BASE_URL은 유효한 http(s) URL이어야 합니다."
                 )
             )
         else:
-            checks.append(
-                PreflightCheck(
-                    "ollama_configuration", "pass", "Ollama 모델과 endpoint가 명시되었습니다."
+            host = (urlparse(endpoint).hostname or "").lower()
+            remote_profile = profile != "local-desktop"
+            if remote_profile and host in {"localhost", "127.0.0.1", "::1"}:
+                checks.append(
+                    PreflightCheck(
+                        "ollama_configuration",
+                        "warn",
+                        "Ollama가 loopback 주소입니다. 앱과 모델 서버가 같은 배포 호스트에서 실행되는지 확인해야 합니다.",
+                    )
                 )
-            )
+            else:
+                checks.append(
+                    PreflightCheck(
+                        "ollama_configuration", "pass", "Ollama 모델과 endpoint가 명시되었습니다."
+                    )
+                )
 
-    required_connection = (
-        _configured(env, "DATABRICKS_HOST"),
-        _configured(env, "DATABRICKS_HTTP_PATH"),
-        _configured(env, "DATABRICKS_TOKEN", "DATABRICKS_ACCESS_TOKEN"),
-        _configured(env, "DATABRICKS_CATALOG"),
-        _configured(env, "DATABRICKS_SCHEMA"),
-    )
+    try:
+        required_connection = (
+            bool(normalize_hostname(env_value(env, "DATABRICKS_HOST"))),
+            bool(env_value(env, "DATABRICKS_HTTP_PATH")),
+            bool(env_value(env, "DATABRICKS_TOKEN", "DATABRICKS_ACCESS_TOKEN")),
+            bool(env_value(env, "DATABRICKS_CATALOG")),
+            bool(env_value(env, "DATABRICKS_SCHEMA")),
+        )
+    except ValueError:
+        required_connection = (False,)
     if all(required_connection):
         checks.append(
             PreflightCheck(
@@ -168,7 +197,7 @@ def evaluate_deployment(
             PreflightCheck(
                 "databricks_configuration",
                 "fail",
-                "Databricks host, HTTP path, token, catalog, schema 설정이 완전하지 않습니다.",
+                "Databricks host, HTTP path, token, catalog, schema 설정이 누락되었거나 형식 또는 대소문자별 값이 충돌합니다.",
             )
         )
 

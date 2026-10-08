@@ -6,6 +6,7 @@ import os
 from types import SimpleNamespace
 from core.analysis_databricks import execute_approved
 from core.analysis_agent.approvals import QueryNotSubmitted
+from core.databricks_settings import env_value, normalize_hostname
 
 
 @dataclass(frozen=True)
@@ -17,14 +18,22 @@ class ConnectionConfig:
     schema: str
 
     @classmethod
-    def from_env(cls):
-        return cls(os.getenv('DATABRICKS_HOST','').removeprefix('https://').rstrip('/'),
-                   os.getenv('DATABRICKS_HTTP_PATH',''),os.getenv('DATABRICKS_TOKEN') or os.getenv('DATABRICKS_ACCESS_TOKEN',''),
-                   os.getenv('DATABRICKS_CATALOG',''),os.getenv('DATABRICKS_SCHEMA',''))
+    def from_env(cls, *, environ=None):
+        config = os.environ if environ is None else environ
+        return cls(normalize_hostname(env_value(config, 'DATABRICKS_HOST')),
+                   env_value(config, 'DATABRICKS_HTTP_PATH'),
+                   env_value(config, 'DATABRICKS_TOKEN', 'DATABRICKS_ACCESS_TOKEN'),
+                   env_value(config, 'DATABRICKS_CATALOG'),
+                   env_value(config, 'DATABRICKS_SCHEMA'))
 
     def validate(self):
-        if not all((self.server_hostname, self.http_path, self.access_token)):
-            raise ValueError('Databricks 설정 DATABRICKS_HOST, DATABRICKS_HTTP_PATH, DATABRICKS_TOKEN(또는 DATABRICKS_ACCESS_TOKEN)을 확인해주세요.')
+        missing = [name for name, value in (
+            ('DATABRICKS_HOST', self.server_hostname),
+            ('DATABRICKS_HTTP_PATH', self.http_path),
+            ('DATABRICKS_TOKEN(또는 DATABRICKS_ACCESS_TOKEN)', self.access_token))
+            if not value or not value.strip()]
+        if missing:
+            raise ValueError('Databricks 설정이 누락되었습니다: ' + ', '.join(missing))
 
     def identity(self):
         # Bind credentials too without writing them to checkpoints or the ledger.

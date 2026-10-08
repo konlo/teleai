@@ -1,0 +1,65 @@
+{
+  "timestamp": "2026-10-08T17:45:57.334239+09:00",
+  "status": "PASS_CONTRACTS_LIVE_SERVER_UNVERIFIED",
+  "scope": "workspace_code_and_fake_provider_SQL_contracts_not_company_server_connectivity",
+  "history_comparison": {
+    "mysql_adapter_change_commit": "9f641f6",
+    "prior_databricks_sql_connection_arguments_unchanged": true,
+    "legacy_azure_supported_in_core_llm": true,
+    "persistent_provider_previously_ignored_LLM_PROVIDER_azure": true,
+    "company_failure_cause_confirmed": false
+  },
+  "fixes": [
+    "legacy_Azure_env_contract_restored_in_current_agent",
+    "Azure_environment_overrides_saved_Ollama_preference",
+    "independent_Azure_goal_reference_population_JSON_roles",
+    "provider_specific_preflight",
+    "secret_safe_model_independent_database_probe_UI_and_CLI"
+  ],
+  "tests": {
+    "targeted": {
+      "run": 73,
+      "pass": 73,
+      "seconds": 5.715
+    },
+    "full_app": {
+      "run": 670,
+      "pass": 666,
+      "skip": 4,
+      "seconds": 92.57
+    },
+    "migration": {
+      "run": 137,
+      "pass": 137,
+      "seconds": 16.694
+    }
+  },
+  "journeys": [
+    "real_Azure_SDK_fake_HTTP_goal_interpretation_to_fake_Databricks_SQL_to_10_row_output",
+    "AppTest_main_Azure_plus_Databricks_startup_without_Ollama_or_MySQL",
+    "SQL_only_UI_SELECT_1_click_and_no_requery_on_redraw",
+    "session_and_execute_HTTP_400_stage_classification_without_exception_or_secret_text"
+  ],
+  "live_azure_api_executed": false,
+  "live_company_databricks_executed": false,
+  "existing_env_modified": false,
+  "pending": [
+    "Actual company server error/probe result",
+    "Deploy updated code and qualify existing Azure deployment/API token parameter",
+    "Confirm historical Blob setting purpose if direct file transfer required"
+  ],
+  "workspace_source_sha256": {
+    "core/analysis_agent/provider_config.py": "9b859c7429055711872f60b4f394c6861efce979050f943a1915f06b7ec18423",
+    "core/analysis_agent/model_provider.py": "86ef15cbcfede18b788917964072b974fe1d30f93743fdf2d7e40754d715467b",
+    "core/analysis_agent/model_roles.py": "8f9e03d5810f1ee5c7c956240c78b23fcd1ce1a7ea8edf290119c6d537fc19cf",
+    "core/analysis_agent/goal_interpreter.py": "1d22894f7804c7399fd1e59c73349f5116d114dfdc1efef33140667549140757",
+    "core/analysis_agent/population_audit.py": "6dbbbd96731acfde7ffd0b1bf15d037b41667e79ab28a5ba388d400833a56be2",
+    "core/analysis_agent/connection_probe.py": "7d2cea33cb9fed43a95ff9a81c9d36e0362eeb75443f6b8757fe00c5afbc9d3c",
+    "ui/analysis_preferences.py": "27b559194daa14d8a0b6a89452de7b2e1f777bf04f299b7825e3f29c9b8fc065",
+    "ui/analysis_connections.py": "76022671cf25a75ee64f9a874a32dbe5de5e30f7fad6b9a586877e5acceadeda",
+    "ui/analysis_page.py": "cfd4f2ee58fe71111bb9dbde6850d7c232bb1b56af2c311d6b7d78d07d155657",
+    "scripts/check_service_connections.py": "08d75fb312c3c274156b2e8550fc6be3f557607735935357e313c3375fe2ef77",
+    "core/deployment_preflight.py": "3bf94d001bb297ed58bc986ecc721d357f414cb2140a953884c7a04bf3686f63",
+    "tests/test_azure_databricks_service.py": "1b99ed7a7f5f13f4e896cecbf2c62e285f8cb8b54d12eb25ac768f9dafd084fd"
+  }
+}

@@ -85,16 +85,16 @@ def needs_semantic_review(goal):
 class GoalInterpreter:
     def __init__(self, model, context, diagnostics, max_context_chars):
         from langchain_ollama import ChatOllama
+        from core.analysis_agent.model_roles import json_role
         # This phase produces a small declarative JSON goal, not SQL/code or a
         # narrative. Bound its output independently of the execution planner.
-        self.model=(model.model_copy(update={'format':response_schema(),'reasoning':False,'num_predict':2048,
-                    'model':os.environ.get('TELLY_GOAL_MODEL') or model.model})
-                    if isinstance(ChatOllama,type) and isinstance(model,ChatOllama) else model)
+        self.model=json_role(model, response_schema(), 2048) or model
+        if isinstance(ChatOllama,type) and isinstance(model,ChatOllama):
+            self.model=self.model.model_copy(update={'model':os.environ.get('TELLY_GOAL_MODEL') or model.model})
         self.context,self.diagnostics=context,diagnostics
-        self.reference_model=(self.model.model_copy(update={'num_predict':128,'format':{
+        self.reference_model=json_role(self.model, {
             'type':'object','additionalProperties':False,'required':['reference'],
-            'properties':{'reference':{'type':'string','enum':['explicit','previous_analysis','selected_dataset']}}}})
-            if isinstance(ChatOllama,type) and isinstance(model,ChatOllama) else None)
+            'properties':{'reference':{'type':'string','enum':['explicit','previous_analysis','selected_dataset']}}}, 128)
         self.budget=ModelContextBudgetMiddleware(self.model,diagnostics,max_context_chars)
         from core.analysis_agent.population_audit import model_for
         self.population_model=model_for(self.model)

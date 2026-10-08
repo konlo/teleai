@@ -1,0 +1,32 @@
+{
+  "timestamp": "2026-10-08T17:15:46.474824+09:00",
+  "status": "PASS",
+  "scope": "workspace_settings_compatibility_and_mocked_sql_regressions_not_live_connectivity",
+  "tests_run": 61,
+  "test_result": "OK",
+  "command": ".telly_runtime/v1-venv/bin/python -m unittest tests.test_databricks_settings tests.test_analysis_model_provider tests.test_data_backend_isolation tests.test_zero_row_arrow_schema tests.test_automatic_databricks migration.test_deployment_preflight migration.test_approval_rollout -q",
+  "checks": [
+    "mixed_case_environment_names",
+    "whitespace_trimming",
+    "empty_primary_token_alias_fallback",
+    "ambiguous_values_blocked_without_secrets",
+    "legacy_and_agent_settings_consistency",
+    "SQL_connector_argument_forwarding",
+    "bounded_result_publication",
+    "connect_failure_no_retry_existing_dataset_preserved",
+    "preflight_and_model_serving_consistency",
+    "dotenv_templates_empty_credentials"
+  ],
+  "live_databricks_executed": false,
+  "azure_llm_support_added": false,
+  "blob_support_added": false,
+  "pending": "Confirm existing Blob credential purpose before implementing a data-transfer path",
+  "workspace_source_sha256": {
+    "core/databricks_settings.py": "97f84c509b0d40cfb75d7270d022b218050be70bfa37ffbff6067f9dde11c212",
+    "core/analysis_agent/databricks.py": "f09205b1462f327d4cef44fcf73b2e4ddd0fad67520efac131f27c40d51406f6",
+    "app_io/databricks.py": "5e39a7e7cc503e4c09d995d2bb9a37c1476417a9cf5ab0319f81f49f91039bfb",
+    "core/analysis_agent/model_provider.py": "0ae7a69db3e3657e96f4a5370da5a3423e7aa88b1db023883e22478859d97b08",
+    "core/deployment_preflight.py": "b47c00a9b83698c4b7c707abb376253aae001ef266d682cc32a8e493995320c0",
+    "tests/test_databricks_settings.py": "778c4b9581774e5507edc4dc9e41074417d51558a007ae103c28b75b2aaf359e"
+  }
+}
