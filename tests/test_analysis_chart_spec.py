@@ -114,7 +114,7 @@ class ChartSpecTests(unittest.TestCase):
 
     def test_english_boxplot_followup_returns_to_raw_rows_without_model(self):
         with tempfile.TemporaryDirectory() as root:
-            runtime = GraphAnalysisRuntime(root, "owner", "english-boxplot-followup", NoModelCall())
+            runtime = GraphAnalysisRuntime(root, "owner", "english-boxplot-followup", NoModelCall(),intent_mode='contract_fixture')
             source = runtime.datasets.register(pd.DataFrame({
                 "period": ["2026-08"] * 4 + ["2026-07"] * 3,
                 "value": [1, 2, 3, 4, 5, 6, 7],
@@ -198,7 +198,7 @@ class ChartSpecTests(unittest.TestCase):
 
     def test_scatter_request_is_completed_deterministically_without_model(self):
         with tempfile.TemporaryDirectory() as root:
-            runtime = GraphAnalysisRuntime(root, "owner", "scatter", NoModelCall())
+            runtime = GraphAnalysisRuntime(root, "owner", "scatter", NoModelCall(),intent_mode='contract_fixture')
             runtime.datasets.register(frame(), source=SOURCE, coverage="complete", predicate_known=True)
             result = runtime.submit("value와 score 산점도를 보여줘")
             self.assertEqual(result["status"], "answered", result)
@@ -211,7 +211,7 @@ class ChartSpecTests(unittest.TestCase):
 
     def test_grouped_boxplot_is_completed_deterministically_without_model(self):
         with tempfile.TemporaryDirectory() as root:
-            runtime = GraphAnalysisRuntime(root, "owner", "grouped-boxplot", NoModelCall())
+            runtime = GraphAnalysisRuntime(root, "owner", "grouped-boxplot", NoModelCall(),intent_mode='contract_fixture')
             runtime.datasets.register(frame(), source=SOURCE, coverage="complete", predicate_known=True)
             result = runtime.submit("segment별 value 분포를 박스플롯으로 보여줘")
             self.assertEqual(result["status"], "answered", result)
@@ -222,7 +222,7 @@ class ChartSpecTests(unittest.TestCase):
 
     def test_ordered_frequency_line_is_completed_without_model(self):
         with tempfile.TemporaryDirectory() as root:
-            runtime = GraphAnalysisRuntime(root, "owner", "frequency-line", NoModelCall())
+            runtime = GraphAnalysisRuntime(root, "owner", "frequency-line", NoModelCall(),intent_mode='contract_fixture')
             runtime.datasets.register(frame(), source=SOURCE, coverage="complete", predicate_known=True)
             result = runtime.submit("value별 건수 추이를 꺾은선 그래프로 보여줘")
             self.assertEqual(result["status"], "answered", result)
@@ -233,7 +233,7 @@ class ChartSpecTests(unittest.TestCase):
 
     def test_calendar_month_cumulative_line_is_completed_without_model(self):
         with tempfile.TemporaryDirectory() as root:
-            runtime = GraphAnalysisRuntime(root, "owner", "cumulative-line", NoModelCall())
+            runtime = GraphAnalysisRuntime(root, "owner", "cumulative-line", NoModelCall(),intent_mode='contract_fixture')
             runtime.datasets.register(frame(), source=SOURCE, coverage="complete", predicate_known=True)
             result = runtime.submit("month별 접촉 건수의 누적합 곡선을 선 그래프로 보여줘")
             self.assertEqual(result["status"], "answered", result)
@@ -244,7 +244,7 @@ class ChartSpecTests(unittest.TestCase):
 
     def test_group_labels_must_cover_every_observed_level_to_avoid_filtering(self):
         with tempfile.TemporaryDirectory() as root:
-            runtime = GraphAnalysisRuntime(root, "owner", "group-label-scope", NoModelCall())
+            runtime = GraphAnalysisRuntime(root, "owner", "group-label-scope", NoModelCall(),intent_mode='contract_fixture')
             info = runtime.datasets.register(
                 frame(), source=SOURCE, coverage="complete", predicate_known=True)
             current = {"scope": {"conditions": [{
@@ -261,7 +261,7 @@ class ChartSpecTests(unittest.TestCase):
     def test_custom_histogram_uses_explicit_spec_instead_of_cached_default(self):
         with tempfile.TemporaryDirectory() as root:
             model = ChartSpecModel()
-            runtime = GraphAnalysisRuntime(root, "owner", "custom-histogram", model)
+            runtime = GraphAnalysisRuntime(root, "owner", "custom-histogram", model,intent_mode='contract_fixture')
             info = runtime.datasets.register(frame(), source=SOURCE,
                                              coverage="complete", predicate_known=True)
             model.dataset_id = info.id
@@ -277,7 +277,7 @@ class ChartSpecTests(unittest.TestCase):
 
     def test_explicit_chart_png_and_lineage_survive_runtime_restart(self):
         with tempfile.TemporaryDirectory() as root:
-            runtime = GraphAnalysisRuntime(root, "owner", "restart-chart", NoModelCall())
+            runtime = GraphAnalysisRuntime(root, "owner", "restart-chart", NoModelCall(),intent_mode='contract_fixture')
             runtime.datasets.register(frame(), source=SOURCE, coverage="complete", predicate_known=True)
             result = runtime.submit("value와 score 산점도를 보여줘")
             self.assertEqual(result["status"], "answered", result)
@@ -285,7 +285,7 @@ class ChartSpecTests(unittest.TestCase):
             dataset_id = runtime.artifacts[chart_id].dataset_id
             runtime.close()
 
-            reopened = GraphAnalysisRuntime(root, "owner", "restart-chart", NoModelCall())
+            reopened = GraphAnalysisRuntime(root, "owner", "restart-chart", NoModelCall(),intent_mode='contract_fixture')
             self.assertIn(chart_id, reopened.inspect()["chart_ids"])
             card = reopened.artifacts[chart_id]
             self.assertEqual(card.dataset_id, dataset_id)

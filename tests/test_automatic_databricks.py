@@ -15,20 +15,26 @@ from tests.test_remote_result_completion import DeferredReplyModel, FIXTURE
 
 class AutomaticReadTests(unittest.TestCase):
     def runtime(self, root, *, manual=False, error=None, rows=None, model=None):
+        # Ledger and scripted-model contracts use a known fixture catalog.
+        # Other tests below exercise the production controller planner.
         executions=[]
         def factory(datasets):
             def execute(envelope):
                 executions.append(envelope['query'])
                 if error:raise error
                 frame=pd.DataFrame(FIXTURE['rows'] if rows is None else rows,
-                                   columns=['table_name','table_type'])
+                                   columns=list(FIXTURE['rows'][0]))
                 info=datasets.register(frame,source=envelope['source'],query=envelope['query'],
                     coverage='complete',predicate_known=True,snapshot='auto-fixture')
                 return {'status':'ready','dataset':asdict(info)}
             return execute
         runtime=GraphAnalysisRuntime(root,'auto','conversation',model or DeferredReplyModel(),
             connection_identity='fixture',remote_factory=factory,
-            policy=RuntimePolicy(require_remote_approval=manual))
+            source_namespace=FIXTURE['source'].split('.')[0],
+            policy=RuntimePolicy(require_remote_approval=manual),intent_mode='contract_fixture')
+        planner=patch.object(runtime.recovery,'_next_local',return_value=None)
+        planner.start()
+        self.addCleanup(planner.stop)
         self.addCleanup(runtime.close)
         return runtime,executions
 
@@ -155,7 +161,7 @@ class AutomaticReadTests(unittest.TestCase):
                 return {'status':'ready','dataset':asdict(info)}
             return execute
         with tempfile.TemporaryDirectory() as root:
-            r=GraphAnalysisRuntime(root,'auto','histogram',JourneyModel(),connection_identity='fixture',remote_factory=factory)
+            r=GraphAnalysisRuntime(root,'auto','histogram',JourneyModel(),connection_identity='fixture',remote_factory=factory,intent_mode='contract_fixture')
             self.addCleanup(r.close)
             first=r.submit(f'{COLUMN} histogram을 보여줘')
             self.assertEqual(first['status'],'answered',first)
@@ -194,7 +200,7 @@ class AutomaticReadTests(unittest.TestCase):
             return execute
         with tempfile.TemporaryDirectory() as root:
             runtime=GraphAnalysisRuntime(root,'auto','schema-histogram',ForbiddenModel(),
-                connection_identity='fixture',remote_factory=factory)
+                connection_identity='fixture',remote_factory=factory,intent_mode='contract_fixture')
             self.addCleanup(runtime.close)
             schema=runtime.propose_query(source,f'SELECT * FROM {source} LIMIT 0',
                 '현재 컬럼 확인')
@@ -237,7 +243,7 @@ class AutomaticReadTests(unittest.TestCase):
             return execute
         with tempfile.TemporaryDirectory() as root:
             runtime=GraphAnalysisRuntime(root,'auto','resume-histogram',ForbiddenModel(),
-                connection_identity='fixture',remote_factory=factory)
+                connection_identity='fixture',remote_factory=factory,intent_mode='contract_fixture')
             self.addCleanup(runtime.close)
             runtime.propose_query(source,f'SELECT * FROM {source} LIMIT 0',
                 '현재 컬럼 확인')
@@ -274,8 +280,10 @@ class AutomaticReadTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as root, patch.dict(os.environ,{
                 'TELLY_V1_STORAGE':root,'TELLY_REQUIRE_REMOTE_APPROVAL':'true' if initial_manual else 'false'}), \
                 patch('core.analysis_agent.model_provider.build_analysis_chat_model',return_value=DeferredReplyModel()), \
-                patch('core.analysis_agent.databricks.make_executor',side_effect=factory):
+                patch('core.analysis_agent.databricks.make_executor',side_effect=factory), \
+                patch('core.analysis_agent.runtime.GraphAnalysisRuntime',side_effect=lambda *a,**k: GraphAnalysisRuntime(*a,**k,intent_mode='contract_fixture')):
             app=AppTest.from_file(str(Path(__file__).resolve().parents[1]/'ui/analysis_page.py'),default_timeout=20).run()
+            app.session_state['v1_runtime'].recovery.intent_mode = 'contract_fixture'  # Render/receipt fixture only.
             try:
                 app.chat_input[0].set_value(FIXTURE['prompt']).run()
                 self.assertFalse(app.exception)

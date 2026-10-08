@@ -29,7 +29,7 @@ class PrepareOnlyModel(BaseChatModel):
 class NumericPreparationTests(unittest.TestCase):
     def test_large_projection_null_policy_lineage_reuse_and_reopen(self):
         with tempfile.TemporaryDirectory() as root:
-            r=GraphAnalysisRuntime(root,'tests','numeric',ForbiddenModel())
+            r=GraphAnalysisRuntime(root,'tests','numeric',ForbiddenModel(),intent_mode='contract_fixture')
             try:
                 frame=pd.DataFrame({'measure':['1.25','missing','3.75']*30000,'keep':['text']*90000})
                 raw=r.datasets.register(frame,source='fixture.changed_schema',coverage='complete',snapshot='snapshot')
@@ -49,7 +49,7 @@ class NumericPreparationTests(unittest.TestCase):
                 self.assertEqual(stored_dataset_digest(r.datasets,raw.id),digest)
                 self.assertEqual(tool.invoke(args)['dataset']['id'],child)
             finally:r.close()
-            r=GraphAnalysisRuntime(root,'tests','numeric',ForbiddenModel())
+            r=GraphAnalysisRuntime(root,'tests','numeric',ForbiddenModel(),intent_mode='contract_fixture')
             try:
                 self.assertEqual(r.datasets.metadata[child].rows,90000)
                 self.assertEqual(stored_dataset_digest(r.datasets,raw.id),digest)
@@ -57,7 +57,7 @@ class NumericPreparationTests(unittest.TestCase):
 
     def test_quoted_measure_used_for_filter_and_average_then_reset_chart(self):
         with tempfile.TemporaryDirectory() as root:
-            r=GraphAnalysisRuntime(root,'tests','quoted',ForbiddenModel())
+            r=GraphAnalysisRuntime(root,'tests','quoted',ForbiddenModel(),intent_mode='contract_fixture')
             try:
                 raw=r.datasets.register(pd.DataFrame({'sensor reading':['1','2','3','4','missing']}),
                     source='fixture.new_source',coverage='unknown')
@@ -77,7 +77,7 @@ class NumericPreparationTests(unittest.TestCase):
 
     def test_model_preparation_continues_both_goals_with_one_model_call(self):
         with tempfile.TemporaryDirectory() as root:
-            model=PrepareOnlyModel();r=GraphAnalysisRuntime(root,'tests','auto',model)
+            model=PrepareOnlyModel();r=GraphAnalysisRuntime(root,'tests','auto',model,intent_mode='contract_fixture')
             try:
                 raw=r.datasets.register(pd.DataFrame({'sensor reading':['1','2','3','missing']}),
                     source='fixture.unseen',coverage='unknown')
@@ -104,7 +104,7 @@ class NumericPreparationTests(unittest.TestCase):
 
     def test_nonfinite_precision_boolean_and_unknown_tokens_not_dropped(self):
         with tempfile.TemporaryDirectory() as root:
-            r=GraphAnalysisRuntime(root,'tests','numeric',ForbiddenModel())
+            r=GraphAnalysisRuntime(root,'tests','numeric',ForbiddenModel(),intent_mode='contract_fixture')
             try:
                 tool=next(t for t in local_tools(r.context) if t.name=='prepare_numeric_dataset')
                 for values,code in [(['1','inf'],'numeric_conversion_unresolved'),

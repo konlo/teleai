@@ -24,7 +24,7 @@ from utils.analysis_timeseries import prepare_time_series
 class ProjectionTests(unittest.TestCase):
     def test_file_backed_scalar_and_correlation_do_not_decode_full_frame(self):
         with tempfile.TemporaryDirectory() as root:
-            runtime = GraphAnalysisRuntime(root, "owner", "projected-scalars", ForbiddenModel())
+            runtime = GraphAnalysisRuntime(root, "owner", "projected-scalars", ForbiddenModel(),intent_mode='contract_fixture')
             frame = pd.DataFrame({"signal": [float(n) for n in range(300)],
                                   "paired": [float(2 * n) for n in range(300)],
                                   "unused": ["wide"] * 300})
@@ -53,7 +53,7 @@ class ProjectionTests(unittest.TestCase):
 
     def test_distribution_wording_produces_histogram_without_model(self):
         with tempfile.TemporaryDirectory() as root:
-            runtime = GraphAnalysisRuntime(root, "owner", "distribution-wording", ForbiddenModel())
+            runtime = GraphAnalysisRuntime(root, "owner", "distribution-wording", ForbiddenModel(),intent_mode='contract_fixture')
             info = runtime.datasets.register_batches(
                 [pd.DataFrame({"signal": [float(n) for n in range(300)],
                                "unused": ["wide"] * 300})],
@@ -122,7 +122,7 @@ class ProjectionTests(unittest.TestCase):
 
     def test_agent_histogram_uses_file_backed_column_without_remote_or_model(self):
         with tempfile.TemporaryDirectory() as root:
-            runtime = GraphAnalysisRuntime(root, "owner", "projected-agent", ForbiddenModel())
+            runtime = GraphAnalysisRuntime(root, "owner", "projected-agent", ForbiddenModel(),intent_mode='contract_fixture')
             info = runtime.datasets.register_batches(
                 [pd.DataFrame({"signal": [float(n) for n in range(300)],
                                "unused": ["wide"] * 300})],
@@ -141,7 +141,7 @@ class ProjectionTests(unittest.TestCase):
 
     def test_agent_boxplot_uses_file_backed_column_without_full_decode(self):
         with tempfile.TemporaryDirectory() as root:
-            runtime = GraphAnalysisRuntime(root, "owner", "projected-boxplot", ForbiddenModel())
+            runtime = GraphAnalysisRuntime(root, "owner", "projected-boxplot", ForbiddenModel(),intent_mode='contract_fixture')
             info = runtime.datasets.register_batches(
                 [pd.DataFrame({"signal": [float(n) for n in range(300)],
                                "unused": ["wide"] * 300})],

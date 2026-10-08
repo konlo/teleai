@@ -22,7 +22,7 @@ from core.analysis_agent.policy import RuntimePolicy
 from utils.analysis_datasets import stored_dataset_digest
 
 
-def run_case(spec, fixture, model, repeat):
+def run_case(spec, fixture, model, repeat, *, intent_mode='llm'):
     frames = {d['source']: pd.DataFrame(d['rows'], columns=d['columns']) for d in fixture['datasets']}
     refs = [{'table': name, 'observed_at': datetime.now(timezone.utc).isoformat(),
              'columns': [{'name': c, 'dtype': str(frame[c].dtype)} for c in frame]}
@@ -32,7 +32,7 @@ def run_case(spec, fixture, model, repeat):
             return GraphAnalysisRuntime(root, 'context-eval', conversation, model,
                 summary_trigger_tokens=spec.get('summary_trigger_tokens', 6000),
                 summary_keep_messages=2 if spec.get('require_summary') else 8,
-                policy=RuntimePolicy(model_timeout_seconds=45), reference_context_loader=lambda: refs)
+                policy=RuntimePolicy(model_timeout_seconds=45), reference_context_loader=lambda: refs,intent_mode=intent_mode)
         def seed(runtime, selected):
             ids = {}
             for source, frame in frames.items():

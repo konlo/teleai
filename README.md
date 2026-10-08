@@ -48,6 +48,49 @@ python3.11 -m venv .telly_runtime/eval-venv
 
 현재 모델 어댑터는 Ollama입니다. 기존 `.env`의 `OLLAMA_MODEL`, `OLLAMA_BASE_URL`을 사용합니다. Databricks 설정은 `DATABRICKS_HOST`, `DATABRICKS_HTTP_PATH`, `DATABRICKS_TOKEN`(또는 `DATABRICKS_ACCESS_TOKEN`), `DATABRICKS_CATALOG`, `DATABRICKS_SCHEMA`입니다. 자격 증명을 저장소에 추가하지 마세요.
 
+`TELLY_GOAL_MODEL`을 지정하면 Ollama의 의도 해석·원문 재검토 단계만 별도 모델을 사용합니다. 비워두면 `OLLAMA_MODEL`과 같습니다. 실행 계획 모델은 기존 설정을 사용하며, SQL 엔진 선택과는 독립적입니다. 선택한 모델이 로컬에 설치되어 있어야 하고 실제 사용자 여정으로 검증해야 합니다. 진단의 `goal_model`에서 적용된 모델을 확인할 수 있습니다.
+
+2026-10-06 로컬 MySQL 재검증은 설치된 `qwen3:8b`를 두 단계 모두에 사용했습니다 (`OLLAMA_MODEL=qwen3:8b`, `TELLY_GOAL_MODEL=qwen3:8b`). 16GB 호스트에서 서로 다른 모델을 번갈아 호출하면 모델 재로딩 비용이 생깁니다. 기존 `gemma4:e4b`는 범위 조건을 누락한 실제 사례가 있어, 모델 이름만 설정했다고 분석 품질이 보장되지는 않습니다. 회사 Databricks 및 다른 모델의 적합성은 별도로 검증해야 합니다.
+
+### 데이터 DB 선택
+
+기본 데이터 backend는 Databricks입니다. 회사에서 사용할 때는 각 호스트의 `.env`에 다음 설정을 명시하고 앱 프로세스를 다시 시작합니다. `.env`는 Git에 포함되지 않으므로 기존 파일의 `TELLY_DATA_BACKEND=mysql`은 호스트에서 변경해야 합니다.
+
+```dotenv
+TELLY_DATA_BACKEND=databricks
+DATABRICKS_HOST=<workspace hostname>
+DATABRICKS_HTTP_PATH=<SQL warehouse HTTP path>
+DATABRICKS_TOKEN=<token>
+DATABRICKS_CATALOG=<catalog>
+DATABRICKS_SCHEMA=<schema>
+```
+
+실행 터미널에 MySQL 환경 변수가 남아 있더라도 Databricks를 명시해서 시작하려면 다음 명령을 사용합니다.
+
+```sh
+TELLY_DATA_BACKEND=databricks python3 scripts/run_telly.py --port 8501
+```
+
+Databricks 모드는 `requirements.txt`만 설치하면 됩니다. MySQL 드라이버·서버·접속 파일은 필요하지 않으며 MySQL adapter를 import하지 않습니다. 연결 실패를 MySQL로 전환해 처리하지 않습니다. 설정한 catalog는 탐색 시작점이며 컬럼은 저장된 유효한 스키마 또는 실제 조회로 확인합니다. 저장된 테이블 정보가 없는 새 환경에서도 실제 테이블 목록 → `LIMIT 0` 스키마 확인으로 진행합니다. `LLM_PROVIDER`는 모델 선택이고 데이터 DB 선택과 별개입니다. OS 환경 변수가 `.env`보다 우선하므로 실행 터미널에 남은 `TELLY_DATA_BACKEND=mysql` 설정도 확인하세요.
+
+로컬 MySQL 평가에만 아래 패키지를 추가하고 `TELLY_DATA_BACKEND=mysql`, `TELLY_MYSQL_DATABASE`, `TELLY_MYSQL_OPTION_FILE`을 설정합니다. 접속 파일은 `[client]`의 user/password/socket을 담는 로컬 0600 파일입니다.
+
+```sh
+.telly_runtime/v1-venv/bin/python -m pip install -r requirements-mysql-eval.txt
+```
+
+MySQL의 데이터·대화·차트 저장소는 기본 저장소 아래 `mysql_eval/<connection identity>/`로 분리됩니다. 기존 Databricks 저장소 경로는 유지하며 서로의 대화를 이어서 실행하지 않습니다. 두 모드 모두 실행 명령은 `python3 scripts/run_telly.py --port 8501`입니다.
+
+로컬 MySQL의 서버 쿼리 실행 제한은 `TELLY_MYSQL_QUERY_TIMEOUT_SECONDS`로 설정합니다(기본 120초, 허용 1~600초). 큰 테이블의 최초 집계는 전체 스캔이 필요할 수 있습니다. 제한을 늘리는 것은 성능 개선이나 요청 전체의 응답시간 보장이 아닙니다. 서버가 실행 제한(3024)·중단(1317)을 명시하면 실패로 기록하고, 결과 수신 여부를 알 수 없는 연결 오류는 불확실 상태로 유지합니다. 저장 완료된 집계는 후속 시각화에서 재사용합니다.
+
+연결 후 실제 목록·스키마·10행 적재·히스토그램·재사용·원본 보존을 확인하려면 아래 검증을 실행합니다. 실제 읽기 전용 SQL 4회를 실행하며 실패 실행 기록도 로컬 저장소에 남깁니다. 이 검증은 LLM 품질 점수나 회사 서버 전체 출시 판정을 대신하지 않습니다.
+
+```sh
+.telly_runtime/v1-venv/bin/python scripts/verify_data_backend.py --backend databricks --cold-start --output .telly_runtime/databricks-smoke.json
+```
+
+MySQL 평가는 `--backend mysql`로 실행합니다. 운영 `deployment_preflight.py`는 Databricks 설정을 검사하며 MySQL 설정으로는 운영 READY를 반환하지 않습니다.
+
 ## 동작
 
 - 기존 결과의 범위·컬럼·집계 상태를 확인하여 로컬 분석에 재사용합니다. 전체 범위를 보장하지 못하는 결과를 모집단으로 계산하지 않습니다.

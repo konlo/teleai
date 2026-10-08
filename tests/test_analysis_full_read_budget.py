@@ -97,7 +97,7 @@ class FullReadBudgetTests(unittest.TestCase):
     def test_small_row_scope_grounding_projects_columns_and_respects_read_budget(self):
         with tempfile.TemporaryDirectory() as root:
             runtime = GraphAnalysisRuntime(root, "owner", "scope-projection",
-                AdaptiveBudgetModel(), policy=RuntimePolicy(max_full_read_bytes=1_000_000))
+                AdaptiveBudgetModel(), policy=RuntimePolicy(max_full_read_bytes=1_000_000),intent_mode='contract_fixture')
             large_label = "x" * 300
             frame = pd.DataFrame({"group_code": ["alpha", "beta", large_label, "beta"],
                                   **{f"field_{n}": [n] * 4 for n in range(15)}})
@@ -133,7 +133,7 @@ class FullReadBudgetTests(unittest.TestCase):
                 return execute
             runtime = GraphAnalysisRuntime(root, "owner", "prefix-preview", model,
                 policy=RuntimePolicy(max_full_read_bytes=5_000),
-                connection_identity="synthetic-connector", remote_factory=remote_factory)
+                connection_identity="synthetic-connector", remote_factory=remote_factory,intent_mode='contract_fixture')
             frame = pd.DataFrame({"event_key": range(300),
                                   **{f"field_{n}": [n] * 300 for n in range(31)}})
             info = runtime.datasets.register_batches([frame], columns=list(frame.columns),
@@ -171,7 +171,7 @@ class FullReadBudgetTests(unittest.TestCase):
                 return execute
             runtime = GraphAnalysisRuntime(root, "owner", "budget-recovery", model,
                 policy=RuntimePolicy(max_full_read_bytes=5_000),
-                connection_identity="synthetic-connector", remote_factory=remote_factory)
+                connection_identity="synthetic-connector", remote_factory=remote_factory,intent_mode='contract_fixture')
             frame = pd.DataFrame({"event_key": range(300),
                                   **{f"field_{n}": [n] * 300 for n in range(31)}})
             info = runtime.datasets.register_batches([frame], columns=list(frame.columns),

@@ -40,8 +40,23 @@ def _clean_keys(keys):
     return result if len(json.dumps(result, ensure_ascii=False)) <= 16000 else None
 
 
-def relationship_plan(table):
+def relationship_plan(table, *, dialect='databricks'):
     parts = _source_key(table).split('.')
+    if dialect=='mysql':
+        if len(parts)!=2 or any(not p or any(ch in p for ch in "`\"'\\\n\r;") for p in parts):
+            return {'status':'needs_context','message':'database.table 전체 이름이 필요합니다.'}
+        database,name=parts
+        source='information_schema.key_column_usage'
+        query=("SELECT constraint_name AS constraint_name, column_name AS source_column, "
+            "'' AS target_catalog, referenced_table_schema AS target_schema, "
+            "referenced_table_name AS target_table, referenced_column_name AS target_column, "
+            "ordinal_position AS ordinal_position FROM " + _quoted_table(source)
+            + f" WHERE table_schema = '{database}' AND table_name = '{name}' "
+            "AND referenced_table_name IS NOT NULL ORDER BY constraint_name, ordinal_position LIMIT 65")
+        return {'status':'planned','metadata_plan':{'source':source,'query':query,
+            'reason':'선택 테이블에 선언된 외래 키와 참조 키를 확인합니다.'},
+            'target_table':_source_key(table),'scope':'MySQL의 선언된 참조 키 metadata 최대 65행. 원본 행은 포함하지 않습니다.',
+            'user_action':'metadata_plan을 query_databricks로 현재 실행 정책에 따라 실행하세요.'}
     if len(parts) != 3 or any(not p or any(ch in p for ch in "`\"'\\\n\r;") for p in parts):
         return {'status': 'needs_context', 'message': 'catalog.schema.table 전체 이름이 필요합니다.'}
     catalog, schema, name = parts
@@ -66,8 +81,8 @@ def relationship_plan(table):
         'user_action': '정확한 SQL을 query_databricks로 현재 원격 실행 정책에 따라 실행하세요.'}
 
 
-def stored_relationships(datasets, table):
-    plan = relationship_plan(table)
+def stored_relationships(datasets, table, *, dialect='databricks'):
+    plan = relationship_plan(table, dialect=dialect)
     if plan['status'] != 'planned':
         return None
     matches = [d for d in datasets.metadata.values()
@@ -83,7 +98,9 @@ def stored_relationships(datasets, table):
         return None
     grouped = defaultdict(list)
     for row in project_dataset(datasets, info.id, list(FIELDS)).to_dict('records'):
-        if not all(isinstance(row[k], str) and row[k] and len(row[k]) <= 256 for k in FIELDS[:-1]):
+        required_fields = [k for k in FIELDS[:-1] if dialect!='mysql' or k!='target_catalog']
+        if (not all(isinstance(row[k], str) and row[k] and len(row[k]) <= 256 for k in required_fields)
+                or (dialect=='mysql' and row['target_catalog']!='')):
             return None
         grouped[row['constraint_name']].append(row)
     keys = []
@@ -93,7 +110,7 @@ def stored_relationships(datasets, table):
             return None
         if [r['ordinal_position'] for r in rows] != list(range(1, len(rows) + 1)):
             return None
-        targets = {'.'.join(r[k] for k in ('target_catalog', 'target_schema', 'target_table')) for r in rows}
+        targets = {'.'.join(r[k] for k in ('target_catalog', 'target_schema', 'target_table') if r[k]) for r in rows}
         if len(targets) != 1:
             return None
         keys.append({'name': name, 'columns': [r['source_column'] for r in rows],
@@ -115,7 +132,7 @@ def relationship_catalog(context):
         if len(entries) != 1 or table_context_freshness(entries[0]) != 'fresh':
             continue
         item = deepcopy(entries[0])
-        observed = stored_relationships(context.datasets, table)
+        observed = stored_relationships(context.datasets, table, dialect=getattr(context,'sql_dialect','databricks'))
         if observed:
             item.update(observed)
         if item.get('relationship_authority') != 'database_catalog':
@@ -134,7 +151,8 @@ def inspect_relationships(context, table):
     known.update(_source_key(d.source) for d in context.datasets.metadata.values())
     if table not in known:
         return {'status': 'needs_context', 'message': '먼저 실제 테이블 이름과 스키마를 확인하세요.'}
-    item = stored_relationships(context.datasets, table) or relationship_catalog(context).get(table)
+    dialect=getattr(context,'sql_dialect','databricks')
+    item = stored_relationships(context.datasets, table, dialect=dialect) or relationship_catalog(context).get(table)
     if item is not None:
         keys = item.get('foreign_keys', [])
         return {'status': 'ready', 'table': table, 'foreign_keys': keys,
@@ -148,7 +166,7 @@ def inspect_relationships(context, table):
                 '일부 테이블이 로딩되지 않은 통계 요청은 연결된 SQL 엔진에서 JOIN/집계 SELECT를 query_databricks로 실행할 수 있습니다. 전체 raw 로딩은 필수가 아닙니다.',
                 '명시된 컬럼·리터럴 조건과 최신 스키마로 의미가 확정됐으면 추가 설명이나 catalog 탐색 없이 계산 계획으로 진행하세요.'
             ]}
-    return relationship_plan(table)
+    return relationship_plan(table, dialect=dialect)
 
 
 def metadata_join_scope(query, context, requested, *, dialect, required_sources=None):

@@ -102,7 +102,7 @@ class AnalysisComparisonTests(unittest.TestCase):
 
     def test_agent_compares_parent_and_inlier_cohort_without_model(self):
         with tempfile.TemporaryDirectory() as root:
-            runtime = GraphAnalysisRuntime(root, "owner", "cohort-compare", ForbiddenModel())
+            runtime = GraphAnalysisRuntime(root, "owner", "cohort-compare", ForbiddenModel(),intent_mode='contract_fixture')
             parent = runtime.datasets.register(
                 self.frame.copy(), source="arbitrary.runtime_measurements",
                 coverage="complete", predicate_known=True, snapshot="fixture:v1")
@@ -129,7 +129,7 @@ class AnalysisComparisonTests(unittest.TestCase):
             finally:
                 runtime.close()
 
-            reopened = GraphAnalysisRuntime(root, "owner", "cohort-compare", ForbiddenModel())
+            reopened = GraphAnalysisRuntime(root, "owner", "cohort-compare", ForbiddenModel(),intent_mode='contract_fixture')
             try:
                 evidence = reopened.inspect()["recovery"]["outlier_aggregate_evidence"]["comparison"]
                 result_info = reopened.datasets.metadata[evidence["dataset"]["id"]]

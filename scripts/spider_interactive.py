@@ -72,7 +72,7 @@ def sqlite_executor(path, datasets, calls, *, max_rows=1000, timeout=10, max_byt
     return execute
 
 
-def evaluate_interactive(spider_root, task, model, predictions):
+def evaluate_interactive(spider_root, task, model, predictions, *, intent_mode='llm'):
     from scripts.evaluate_spider2_teleai import database_path, schema_context, task_document, check_sqlite_candidate
     from core.analysis_agent.runtime import GraphAnalysisRuntime
     from core.analysis_agent.policy import RuntimePolicy
@@ -98,7 +98,7 @@ def evaluate_interactive(spider_root, task, model, predictions):
                 reference_context_loader=lambda:contexts,reference_document=document,
                 sql_dialect='sqlite',proposal_validator=preflight,
                 tool_allowlist={'inspect_table_context','inspect_table_relationships','query_databricks'},
-                agent_instructions=INSTRUCTIONS)
+                agent_instructions=INSTRUCTIONS,intent_mode=intent_mode)
             try:
                 outcome=runtime.submit(task['question'])
                 recovery=runtime.inspect().get('recovery') or {}

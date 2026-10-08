@@ -145,10 +145,10 @@ def check_sqlite_candidate(path: Path, query: str, *, timeout_seconds=5.0) -> di
 
 
 def evaluate_task(spider_root: Path, task: dict, model, predictions: Path,
-                  *, benchmark_instruction=False, interactive=False) -> dict:
+                  *, benchmark_instruction=False, interactive=False, intent_mode='llm') -> dict:
     if interactive:
         from scripts.spider_interactive import evaluate_interactive
-        return evaluate_interactive(spider_root, task, model, predictions)
+        return evaluate_interactive(spider_root, task, model, predictions,intent_mode=intent_mode)
     from core.analysis_agent.runtime import GraphAnalysisRuntime
     from core.analysis_agent.policy import RuntimePolicy
     from langchain_core.messages import AIMessage, ToolMessage
@@ -175,7 +175,7 @@ def evaluate_task(spider_root: Path, task: dict, model, predictions: Path,
     with tempfile.TemporaryDirectory(prefix=f"teleai-spider-{case_id}-") as temp:
         try:
             runtime = GraphAnalysisRuntime(temp, "evaluation", case_id, model,
-                connection_identity="public-spider2-sqlite-proposal-only",
+                connection_identity="public-spider2-sqlite-proposal-only",intent_mode=intent_mode,
                 policy=RuntimePolicy(require_remote_approval=True),
                 remote_factory=forbidden_remote,
                 reference_context_loader=lambda: contexts,

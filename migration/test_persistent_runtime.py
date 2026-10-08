@@ -28,7 +28,7 @@ class PersistentRuntimeTests(unittest.TestCase):
 
     def test_process_exit_restores_data_image_and_conversation(self):
         with tempfile.TemporaryDirectory() as root:
-            runtime=GraphAnalysisRuntime(root,'owner','thread',QuietModel(),cache_bytes=0)
+            runtime=GraphAnalysisRuntime(root,'owner','thread',QuietModel(),cache_bytes=0,intent_mode='contract_fixture')
             fixture=self.fixture()
             info=runtime.datasets.register(pd.DataFrame(fixture['rows']),source=fixture['source'],
                 coverage='complete',predicate_known=True)
@@ -42,7 +42,7 @@ class PersistentRuntimeTests(unittest.TestCase):
 import json,sys
 from migration.graph_runtime import GraphAnalysisRuntime
 from migration.test_persistent_runtime import QuietModel
-r=GraphAnalysisRuntime(sys.argv[1],'owner','thread',QuietModel(),cache_bytes=0)
+r=GraphAnalysisRuntime(sys.argv[1],'owner','thread',QuietModel(),cache_bytes=0,intent_mode='contract_fixture')
 assert len(r.events())==4
 assert len(r.datasets.frames[sys.argv[2]])==7
 assert r.artifacts[sys.argv[3]].image.startswith(b'\\x89PNG')
@@ -53,7 +53,7 @@ r.close()
             result=subprocess.run([sys.executable,'-c',code,root,info.id,card.id],capture_output=True,text=True,timeout=30)
             self.assertEqual(result.returncode,0,result.stderr)
             self.assertEqual(json.loads(result.stdout)['message_count'],6)
-            other=GraphAnalysisRuntime(root,'different-owner','thread',QuietModel())
+            other=GraphAnalysisRuntime(root,'different-owner','thread',QuietModel(),intent_mode='contract_fixture')
             self.assertEqual(other.inspect()['dataset_ids'],[])
             self.assertEqual(other.events(),[])
             with self.assertRaises(KeyError):other.artifacts[card.id]
@@ -61,12 +61,12 @@ r.close()
 
     def test_real_tools_persist_derived_dataset_and_dynamic_catalog(self):
         with tempfile.TemporaryDirectory() as root:
-            runtime=GraphAnalysisRuntime(root,'owner','thread',QuietModel())
+            runtime=GraphAnalysisRuntime(root,'owner','thread',QuietModel(),intent_mode='contract_fixture')
             fixture=self.fixture()
             info=runtime.datasets.register(pd.DataFrame(fixture['rows']),source=fixture['source'],coverage='complete',predicate_known=True)
             runtime.close()
             model=ScriptModel(tool_name='local_analysis_sql',arguments={'dataset_id':info.id,'query':'SELECT COUNT(*) AS n FROM data'})
-            runtime=GraphAnalysisRuntime(root,'owner','thread',model)
+            runtime=GraphAnalysisRuntime(root,'owner','thread',model,intent_mode='contract_fixture')
             self.assertEqual(runtime.submit('개수 계산')['status'],'answered')
             self.assertEqual(len(runtime.datasets.metadata),2)
             child=next(v for v in runtime.datasets.metadata.values() if v.parent_id)
@@ -86,7 +86,7 @@ r.close()
 
     def test_concurrent_controller_call_is_rejected(self):
         with tempfile.TemporaryDirectory() as root:
-            runtime=GraphAnalysisRuntime(root,'owner','thread',QuietModel())
+            runtime=GraphAnalysisRuntime(root,'owner','thread',QuietModel(),intent_mode='contract_fixture')
             with runtime._exclusive():
                 with self.assertRaises(RuntimeError):runtime.submit('중복 실행')
             self.assertEqual(runtime.events(),[])
@@ -94,12 +94,12 @@ r.close()
 
     def test_budget_failure_retains_unfinished_work(self):
         with tempfile.TemporaryDirectory() as root:
-            runtime=GraphAnalysisRuntime(root,'owner','thread',QuietModel(),max_context_chars=1)
+            runtime=GraphAnalysisRuntime(root,'owner','thread',QuietModel(),max_context_chars=1,intent_mode='contract_fixture')
             self.assertEqual(runtime.submit('분석')['status'],'incomplete')
             self.assertEqual(runtime.inspect()['state'],'incomplete')
-            with self.assertRaises(ValueError):runtime.submit('다른 요청')
+            self.assertEqual(runtime.submit('분석')['error_category'],'unfinished_request')
             runtime.close()
-            runtime=GraphAnalysisRuntime(root,'owner','thread',QuietModel())
+            runtime=GraphAnalysisRuntime(root,'owner','thread',QuietModel(),intent_mode='contract_fixture')
             self.assertEqual(runtime.resume()['status'],'answered')
             self.assertEqual(len(runtime.events()),2)
             runtime.close()

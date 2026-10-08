@@ -60,7 +60,7 @@ def evaluate() -> dict:
     expected = independent_oracle(frame)
     started = time.monotonic()
     with tempfile.TemporaryDirectory(prefix="telly-timeseries-eval-") as root:
-        runtime = GraphAnalysisRuntime(root, "evaluation", "datetime-series", ForbiddenModel())
+        runtime = GraphAnalysisRuntime(root, "evaluation", "datetime-series", ForbiddenModel(),intent_mode='contract_fixture')
         runtime.datasets.register(
             frame, source=SOURCE, coverage="complete", predicate_known=True,
             snapshot="fixture:datetime-series")

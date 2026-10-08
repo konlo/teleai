@@ -34,7 +34,7 @@ def main():
     config=ConnectionConfig.from_env()
     if not all([config.server_hostname,config.http_path,config.access_token]):raise ValueError('Missing connection configuration')
     runtime=GraphAnalysisRuntime('.telly_runtime/v1','local-owner','approved-connection-smoke',QuietModel(),
-        connection_identity=config.identity(),remote_factory=lambda d:make_executor(config,d))
+        connection_identity=config.identity(),remote_factory=lambda d:make_executor(config,d),intent_mode='contract_fixture')
     # Never silently create another request if this smoke run already has state.
     if runtime.events():raise RuntimeError('Existing smoke run: inspect saved state; do not resubmit')
     pending=runtime.propose_query('synthetic acceptance fixture',query,'사용자가 승인한 연결 검증용 합성 데이터 7행 조회')['requests'][0]

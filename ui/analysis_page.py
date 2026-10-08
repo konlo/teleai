@@ -13,7 +13,7 @@ from dotenv import load_dotenv
 from ui.analysis_text import display_analysis_text
 from langchain_core.messages import HumanMessage, AIMessage, ToolMessage
 from core.analysis_agent.runtime import GraphAnalysisRuntime
-from core.analysis_agent.databricks import ConnectionConfig, make_executor
+from core.analysis_agent.backends import load_data_backend
 from core.analysis_agent.policy import RuntimePolicy
 from core.analysis_agent.model_provider import build_analysis_chat_model
 
@@ -21,9 +21,22 @@ load_dotenv(ROOT/'.env')
 st.set_page_config(page_title='Telly · 분석',page_icon='📊',layout='wide')
 st.title('Telly · 함께 살펴보는 데이터')
 policy=RuntimePolicy.from_env()
+try:
+    backend=load_data_backend(ROOT)
+    data_backend=backend.name
+    config=backend.config
+    connection_identity=config.identity()
+except ValueError as exc:
+    st.error(str(exc))
+    st.stop()
+except Exception as exc:
+    st.error('데이터 소스 설정이 유효하지 않습니다 ('+type(exc).__name__+'). 접속 설정을 확인해주세요.')
+    st.stop()
 st.caption('결과를 보며 이어서 질문하세요. '+('추가 데이터 조회는 실행 전에 확인합니다.'
     if policy.require_remote_approval else '필요한 데이터는 agent가 자동으로 조회합니다.'))
-root=Path(os.getenv('TELLY_V1_STORAGE',str(ROOT/'.telly_runtime/v1')))
+st.markdown('[최근 결과 · 질문 입력으로 이동](#telly-input)')
+base_root=Path(os.getenv('TELLY_V1_STORAGE',str(ROOT/'.telly_runtime/v1')))
+root=backend.storage_root(base_root)
 root.mkdir(parents=True,exist_ok=True)
 # Local desktop identity; this entrypoint binds loopback and is not a multi-user service.
 owner='local-owner'
@@ -39,8 +52,9 @@ with sqlite3.connect(root/'conversations.sqlite') as db:
 st.query_params['conversation']=cid
 from ui.analysis_preferences import render_provider_selector
 with st.sidebar:
+    st.caption('데이터 소스: '+backend.label)
     provider = render_provider_selector(root, cid)
-runtime_id = (cid, provider, policy.require_remote_approval)
+runtime_id = (cid, provider, policy.require_remote_approval, data_backend, connection_identity)
 if st.session_state.get('v1_runtime_id')!=runtime_id:
     previous=st.session_state.pop('v1_runtime',None)
     if previous:previous.close()
@@ -49,13 +63,17 @@ if st.session_state.get('v1_runtime_id')!=runtime_id:
     except ValueError as exc:
         st.error(str(exc))
         st.stop()
-    config=ConnectionConfig.from_env()
-    from core.analysis_catalog import load_saved_reference_context
-    context_loader=lambda:load_saved_reference_context(ROOT/'.telly_table_context')
+    try:
+        backend.preflight()
+    except Exception as exc:
+        st.error(backend.label+'에 연결할 수 없습니다 ('+type(exc).__name__+'). 접속 설정과 서비스 상태를 확인해주세요.')
+        st.stop()
     runtime=GraphAnalysisRuntime(root,owner,cid,model,
-        connection_identity=config.identity(),
-        remote_factory=lambda d:make_executor(config,d,max_rows=policy.max_remote_rows),
-        reference_context_loader=context_loader,policy=policy)
+        connection_identity=connection_identity,
+        remote_factory=lambda d:backend.executor_factory(config,d,max_rows=policy.max_remote_rows,
+            max_coordinate_rows=policy.max_scatter_coordinates),
+        reference_context_loader=backend.context_loader,policy=policy,
+        sql_dialect=backend.dialect,source_namespace=backend.namespace)
     st.session_state.v1_runtime=runtime
     st.session_state.v1_runtime_id=runtime_id
 runtime=st.session_state.v1_runtime
@@ -89,9 +107,11 @@ with st.sidebar:
     if st.button('새 대화'):
         st.session_state.v1_conversation=str(uuid4());st.rerun()
     st.subheader('분석할 자료')
-    table=st.text_input('Databricks 테이블',placeholder='catalog.schema.table')
+    table=st.text_input('MySQL 테이블' if data_backend=='mysql' else 'Databricks 테이블',
+        placeholder='database.table' if data_backend=='mysql' else 'catalog.schema.table')
     if st.button('데이터 불러오기 제안' if runtime.policy.require_remote_approval else '데이터 불러오기',disabled=not table.strip()):
-        action(lambda:runtime.propose_table(table));st.rerun()
+        selected_table=backend.qualify_table(table)
+        action(lambda:runtime.propose_table(selected_table));st.rerun()
     if st.button('예제 데이터로 시작'):
         def example():
             fixture=json.loads((ROOT/'tests/fixtures/analysis_acceptance.json').read_text())
@@ -125,19 +145,31 @@ with st.sidebar:
         st.write('지원: 보유 데이터 재사용, 기본 집계, 명시적 필터, histogram/bar/line/scatter/단일 수치 boxplot')
         st.write('검증 중: 조인, 가설 검정, 고급 복합 시각화')
         st.caption(f"원격 결과 최대 {policy['max_remote_rows']:,}행 · 최대 {policy['max_dataset_columns']:,}열 · 대화별 저장공간 {policy['scope_disk_quota_bytes'] / 1024**3:.1f} GiB · 정리 후보 기준 {policy['retention_days']}일")
+        st.caption(f"전체 산점도 전용: 정확한 고유 좌표 최대 {policy['max_scatter_coordinates']:,}개. 중복 빈도로 압축하며 표본으로 바꾸지 않습니다. 메모리·저장공간 한도도 적용합니다.")
 
 from ui.analysis_chart_delivery import chart_delivery_plan, displayable_chart
 shown_chart_ids=set()
+shown_table_preview=False
 messages=runtime.events()
 chart_plan=chart_delivery_plan(messages)
 for message in messages:
     if isinstance(message,HumanMessage):
         shown_chart_ids.clear()
+        shown_table_preview=False
     if isinstance(message,(HumanMessage,AIMessage)) and message.content:
         with st.chat_message('user' if isinstance(message,HumanMessage) else 'assistant'):
             content=message.content
             if isinstance(content,str) and content.startswith('선택한 차트:'):content=content.split(', dataset_id=')[0]
             st.markdown(display_analysis_text(content,runtime.datasets.metadata))
+            table_proof=message.additional_kwargs.get('analysis_table_preview')
+            if isinstance(message,AIMessage) and table_proof:
+                from core.analysis_agent.row_preview import frame as table_preview_frame
+                try:
+                    st.dataframe(table_preview_frame(runtime.datasets,table_proof),hide_index=True)
+                    shown_table_preview=True
+                except (KeyError,ValueError,OSError,TypeError) as exc:
+                    error_id=runtime.diagnostics.failure(exc,stage='table_preview_display')
+                    st.error(f'표 데이터를 표시하지 못했습니다 (오류 ID: {error_id}). 저장된 결과를 확인해야 합니다.')
     references=[key for key in chart_plan.get(message.id,[]) if key not in shown_chart_ids]
     if references:
         with st.chat_message('assistant'):
@@ -154,12 +186,11 @@ for message in messages:
                 if st.button('이 차트 선택',key=f'chart-{message.id}-{card.id}'):
                     action(lambda:runtime.select_chart(card.id))
                     st.session_state.v1_selected=card.id;st.rerun()
-selected=None
-for previous in reversed(runtime.events()):
-    if isinstance(previous,HumanMessage) and isinstance(previous.content,str) and ', card_id=' in previous.content:
-        selected=previous.content.rsplit(', card_id=',1)[1]
-        break
-if selected in runtime.artifacts:
+from ui.analysis_chart_selection import latest_selected_chart
+selected=latest_selected_chart(messages)
+# Only the latest selection turn may use a legacy standalone preview. Earlier
+# selections stay in their historical turns when a new request fails or waits.
+if selected in runtime.artifacts and not shown_chart_ids and not shown_table_preview:
     try:
         card=displayable_chart(runtime.artifacts,selected)
         st.subheader(card.title);st.image(card.image, width='content');st.caption(card.scope)
@@ -191,7 +222,7 @@ for pending in (state['requests'] if runtime.policy.require_remote_approval else
         schema_probe=runtime.is_schema_probe(pending['query'])
         st.subheader('현재 컬럼을 확인할까요?' if schema_probe else '추가 데이터를 불러올까요?')
         from core.analysis_load_plan import source_plan
-        plan=source_plan(pending['source'],pending['query'])
+        plan=source_plan(pending['source'],pending['query'],dialect=backend.dialect)
         st.write(pending['reason'])
         st.caption('대상: '+(', '.join(plan.actual_tables) if plan.actual_tables else pending['source'])
                    +' · 결과 유형: '+('컬럼 정보(0행)' if schema_probe else
@@ -206,15 +237,25 @@ for pending in (state['requests'] if runtime.policy.require_remote_approval else
         if no.button('조회 취소',key='no-'+pending['id'],disabled=pending['status'] not in {'proposed','invalidated'}):
             action(lambda:runtime.cancel(pending['id']));st.rerun()
 if state.get('uncertain_executions'):
-    st.warning('이전 원격 조회의 제출 상태를 확인할 수 없습니다. 중복 조회를 막기 위해 자동 재실행을 중단했습니다. Databricks에서 실행 상태를 먼저 확인해주세요.')
+    st.warning('이전 DB 조회의 제출 상태를 확인할 수 없습니다. 중복 조회를 막기 위해 자동 재실행을 중단했습니다. 연결된 DB에서 실행 상태를 먼저 확인해주세요.')
 if state['state']=='incomplete' and not state.get('uncertain_executions'):
-    if not st.session_state.get('v1_notice'):
+    if state.get('recovery',{}).get('chart') and not state['recovery'].get('artifact_ids'):
+        st.warning('이번 시각화 요청은 아직 완료되지 않았습니다. 대화 위쪽의 차트는 이전 요청의 결과입니다.')
+    elif not st.session_state.get('v1_notice'):
         st.warning('이전 분석이 중단되었습니다. 저장된 지점부터 재개할 수 있습니다.')
     if st.button('미완료 분석 재개'):
         action(runtime.resume);st.rerun()
+    if st.button('중단된 요청 종료하고 계속하기'):
+        action(runtime.abandon);st.rerun()
+    st.caption('다른 요청을 입력하면 중단된 요청을 종료하고 이어서 처리합니다. 기존 데이터와 결과는 유지됩니다.')
 if st.session_state.get('v1_notice'):st.info(display_analysis_text(st.session_state.v1_notice,runtime.datasets.metadata))
 from ui.analysis_diagnostics import render_diagnostics
 render_diagnostics(runtime)
-prompt=st.chat_input('무엇을 살펴볼까요?')
+# A root-level chat_input enables Streamlit's whole-page bottom-following
+# scroll hook. During progress updates it can pull readers away from history.
+# Keep the composer inline so the page uses ordinary, user-controlled scrolling.
+with st.container(key='telly_chat_composer'):
+    st.subheader('이어서 질문하기',anchor='telly-input')
+    prompt=st.chat_input('무엇을 살펴볼까요?',key='telly_chat_input')
 if prompt:
     action(lambda:runtime.submit(prompt));st.rerun()

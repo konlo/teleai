@@ -92,6 +92,10 @@ def read_events(path):
 def public_runtime(value):
     if not isinstance(value,dict):return {}
     result={key:token(value.get(key)) for key in ('route','model_class')}
+    for key in ('goal_model','planner_model'):
+        name=value.get(key)
+        result[key]=name if isinstance(name,str) and re.fullmatch(r'[a-zA-Z0-9._:/-]{1,128}',name) else None
+    result['data_backend'] = value.get('data_backend') if value.get('data_backend') in {'databricks','mysql','sqlite'} else None
     result.update({key:identifier(value.get(key)) for key in
                    ('revision_at_first_runtime','loaded_delivery_guard')})
     result['require_remote_approval']=value.get('require_remote_approval') if type(value.get('require_remote_approval')) is bool else None
@@ -100,6 +104,25 @@ def public_runtime(value):
     result['packages']={key:val for key,val in packages.items()
         if key in {'langchain','langchain-core','langgraph','streamlit','sqlglot'}
         and isinstance(val,str) and re.fullmatch(r'[0-9][a-zA-Z0-9.+-]{0,40}',val)} if isinstance(packages,dict) else {}
+    return result
+
+
+def public_input_budget(value):
+    if not isinstance(value,dict):return {}
+    result={k:number(value.get(k)) for k in ('payload_bytes','payload_bytes_before_projection',
+        'template_headroom','input_budget_units','output_reserved','context_window','tool_count','message_count')}
+    result.update({k:value.get(k) if type(value.get(k)) is bool else None for k in
+        ('within_budget','older_turns_compacted','schema_compacted','system_catalog_compacted',
+         'tool_menu_compacted','minimal_discovery_menu','reasoning_compacted','observations_compacted')})
+    for key in ('minimal_catalog','builtin_instructions_compacted'):
+        result[key]=value.get(key) if type(value.get(key)) is bool else None
+    components=value.get('components')
+    if isinstance(components,dict):
+        result['components']={k:number(components.get(k)) for k in
+            ('system_bytes','message_content_bytes','tool_calls_bytes','reasoning_bytes','tool_schema_bytes')}
+        names=components.get('tool_names',[])
+        result['components']['tool_names']=[token(n) for n in names[:32] if token(n)] if isinstance(names,list) else []
+    result['measurement']='conservative_utf8_bytes_not_actual_token_count'
     return result
 
 
@@ -123,6 +146,7 @@ def summarize(path, *, run_id=None, error_id=None):
     start=next((e for e in selected if e.get('event')=='run_started'),{})
     finish=next((e for e in reversed(selected) if e.get('event') in {'run_completed','run_paused'}),{})
     completion=next((e for e in reversed(selected) if e.get('event')=='completion_checked'),{})
+    budget=next((e for e in reversed(selected) if e.get('event')=='model_payload_budget'),{})
     errors=[]
     for e in selected:
         if e.get('event')!='error':continue
@@ -130,6 +154,7 @@ def summarize(path, *, run_id=None, error_id=None):
         errors.append({'error_id':identifier(e.get('error_id')),'stage':token(e.get('stage')),
                        'error_type':token(e.get('error_type')),'http_status':number(e.get('http_status')),
                        'error_category':token(e.get('error_category')),
+                       'database_errno':number(e.get('database_errno')),
                        'frames':[{'file':token(f.get('file')),'line':number(f.get('line')),
                                   'function':token(f.get('function'))} for f in frames[-3:] if isinstance(f,dict)] if isinstance(frames,list) else []})
     status='awaiting_approval' if finish.get('event')=='run_paused' else finish.get('status')
@@ -155,6 +180,7 @@ def summarize(path, *, run_id=None, error_id=None):
             'elapsed_seconds':number(finish.get('elapsed_seconds')),
             'last_event':token(selected[-1].get('event')),'flags':flags,
             'model_calls':counts['model_call_started'],
+            'input_budget':public_input_budget(budget) if budget else {},
             'proposed_tool_calls':sum(number(e.get('tool_call_count')) or 0 for e in selected if e.get('event')=='model_call_finished'),
             'local_tools_started':tally('tool','tool_started'),
             'local_tools_rejected':tally('reason','tool_rejected'),
@@ -181,13 +207,15 @@ def brief(report):
     if not report.get('found'):return '진단: 기록 없음 (대화/ID/보관 기간 확인 필요)'
     runtime=report['runtime']; completion=report['completion']; remote=report['remote']
     last=report['errors'][-1] if report['errors'] else {}
+    budget=report.get('input_budget') or {}
+    budget_text=(f" / 입력 추정(bytes): {budget.get('payload_bytes')}+{budget.get('template_headroom')}/{budget.get('input_budget_units')}" if budget else '')
     return '\n'.join([
         f"시각(UTC): {report['time_utc']}",
         f"실행 ID: {report['run_id']} / 오류 ID: {last.get('error_id')}",
         f"버전: {runtime.get('revision_at_first_runtime')} / 경로: {runtime.get('route')}",
         f"상태: {report['status']} / 마지막 이벤트: {report['last_event']}",
         '진단 코드: '+', '.join(report['flags']),
-        f"주 모델 호출: {report['model_calls']} / 로컬 도구: {report['local_tools_started']}",
+        f"주 모델 호출: {report['model_calls']} / 로컬 도구: {report['local_tools_started']}"+budget_text,
         f"원격 도구 시작: {remote['started']} / 조회 장부: {remote['states']} / 저장 결과 재사용: {remote['cached_receipts']}",
         f"완료 판정: {completion['status']} / 이유: {completion['reason']} / 미충족: {completion['missing_capabilities']}",
         f"복구 재계획: {report['recovery_replans']} / 미래 안내 차단 관측: {report['deferred_reply_blocks']}",

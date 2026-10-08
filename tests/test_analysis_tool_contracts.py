@@ -159,7 +159,7 @@ class AnalysisToolContractTests(unittest.TestCase):
             runtime = GraphAnalysisRuntime(root, 'owner', 'schema-table-list', NoModelCall(),
                 connection_identity='test-connection',
                 remote_factory=lambda _: lambda envelope: self.fail('approval required'),
-                policy=RuntimePolicy(require_remote_approval=True))
+                policy=RuntimePolicy(require_remote_approval=True),intent_mode='contract_fixture')
             try:
                 runtime.context.reference_context[:] = [
                     {'table':SOURCE, 'columns':[]},
@@ -175,7 +175,7 @@ class AnalysisToolContractTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as root:
             runtime = GraphAnalysisRuntime(root, 'owner', 'ambiguous-table-list', NoModelCall(),
                 connection_identity='test-connection',
-                remote_factory=lambda _: lambda envelope: self.fail('no query expected'))
+                remote_factory=lambda _: lambda envelope: self.fail('no query expected'),intent_mode='contract_fixture')
             try:
                 runtime.context.reference_context[:] = [
                     {'table':SOURCE, 'columns':[]},
@@ -205,7 +205,7 @@ class AnalysisToolContractTests(unittest.TestCase):
 
         with tempfile.TemporaryDirectory() as root:
             runtime = GraphAnalysisRuntime(root, 'owner', 'generic-table-list', NoModelCall(),
-                connection_identity='test-connection', remote_factory=factory)
+                connection_identity='test-connection', remote_factory=factory,intent_mode='contract_fixture')
             try:
                 runtime.context.reference_context[:] = [{'table':SOURCE, 'columns':[]}]
                 result = runtime.submit('table list 보여줘')
@@ -262,7 +262,7 @@ class AnalysisToolContractTests(unittest.TestCase):
                 connection_identity="test-connection",
                 remote_factory=factory,
                 policy=RuntimePolicy(require_remote_approval=True),
-            )
+            intent_mode='contract_fixture')
             runtime.context.reference_context[:] = [{"table": SOURCE, "columns": []}]
             result = runtime.submit("loan 이름이 포함된 테이블을 찾아줘")
             self.assertEqual(result["status"], "awaiting_approval", result)
@@ -273,7 +273,7 @@ class AnalysisToolContractTests(unittest.TestCase):
 
     def test_production_graph_profiles_one_loaded_dataset_without_model_or_remote(self):
         with tempfile.TemporaryDirectory() as root:
-            runtime = GraphAnalysisRuntime(root, "owner", "profile", NoModelCall())
+            runtime = GraphAnalysisRuntime(root, "owner", "profile", NoModelCall(),intent_mode='contract_fixture')
             runtime.datasets.register(
                 pd.DataFrame({"age": [20, None, 40], "segment": ["A", "B", "A"]}),
                 source=SOURCE,

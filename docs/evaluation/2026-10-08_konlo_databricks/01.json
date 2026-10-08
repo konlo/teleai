@@ -1,0 +1,343 @@
+{
+  "assets": {},
+  "selection": "",
+  "current": {
+    "request_id": "45a5686a-40c0-4b64-845d-25ad5a4ed114",
+    "request_text": "지금 볼 수있는 table를 보여줘",
+    "status": "blocked",
+    "stop_reason": "remote_blocked",
+    "intent_origin": "llm",
+    "goal": {
+      "objective": "Show available tables",
+      "mode": "execute",
+      "source_reference": "previous_analysis",
+      "sources": [],
+      "columns": [],
+      "conditions": [],
+      "any_conditions": [],
+      "measure_conditions": [],
+      "ratio": null,
+      "current_result_only": false,
+      "fresh_source_required": false,
+      "question": "",
+      "tasks": [
+        {
+          "capability": "table_list",
+          "options": {
+            "catalog": "workspace",
+            "schema": ""
+          }
+        }
+      ]
+    },
+    "model_calls": 2,
+    "model_seconds": 28.431648708006833,
+    "scope": {
+      "conditions": [],
+      "any_conditions": [],
+      "measure_conditions": [],
+      "ratio": null,
+      "sources": [],
+      "columns": [],
+      "unresolved": [],
+      "join_edges": []
+    },
+    "required_sources": [
+      "workspace.information_schema.tables"
+    ],
+    "required_columns": [],
+    "artifact_ids": [],
+    "evidence_ids": [],
+    "kind": null,
+    "failed": {
+      "query_databricks": {
+        "status": "unavailable",
+        "error_type": "QueryNotSubmitted",
+        "http_status": 400,
+        "database_errno": null,
+        "error_code": "databricks_unavailable",
+        "retryable": false,
+        "user_action": "Databricks 연결 권한과 설정을 확인해주세요.",
+        "message": "조회가 완료되지 않았습니다. 임의로 재시도하거나 수치를 추정하지 마세요. 실행 기록과 연결 상태를 확인하고, 제출 여부가 불명확한 조회는 자동 재실행하지 않습니다.",
+        "evidence_ids": [],
+        "scope": "도구가 반환한 구조화 결과 범위입니다."
+      }
+    },
+    "confirmed_analysis": {}
+  },
+  "run_id": "4d354ec8508b4e2f8b1548a915260c1f",
+  "run": [
+    {
+      "time": "2026-10-07T15:55:10.542126+00:00",
+      "event": "run_started",
+      "run_id": "4d354ec8508b4e2f8b1548a915260c1f",
+      "instance_id": "dc9dd2ecd5b2",
+      "pid": 13537,
+      "runtime": {
+        "revision_at_first_runtime": "febd34ae5cbbfbcc7023ea8e0412b84572cd7763",
+        "packages": {
+          "langchain": "1.4.0",
+          "langchain-core": "1.6.2",
+          "langgraph": "1.2.11",
+          "streamlit": "1.63.0",
+          "sqlglot": "30.18.0"
+        },
+        "python_version": "3.11.13",
+        "identity_captured_at": "2026-10-07T15:54:59.153438+00:00",
+        "route": "langgraph-v1",
+        "model_class": "ChatOllama",
+        "require_remote_approval": false,
+        "loaded_delivery_guard": "fb1f0cb9b5e4a3a1",
+        "data_backend": "databricks",
+        "intent_mode": "llm",
+        "goal_version": 1,
+        "goal_model": "qwen3:8b",
+        "planner_model": "qwen3:8b"
+      },
+      "operation": "submit",
+      "process_peak_rss_bytes": 330416128
+    },
+    {
+      "time": "2026-10-07T15:55:10.546625+00:00",
+      "event": "goal_interpretation_started",
+      "run_id": "4d354ec8508b4e2f8b1548a915260c1f",
+      "instance_id": "dc9dd2ecd5b2",
+      "pid": 13537,
+      "request_id": "45a5686a-40c0-4b64-845d-25ad5a4ed114",
+      "origin": "llm",
+      "goal_version": 1
+    },
+    {
+      "time": "2026-10-07T15:55:10.549762+00:00",
+      "event": "model_payload_budget",
+      "run_id": "4d354ec8508b4e2f8b1548a915260c1f",
+      "instance_id": "dc9dd2ecd5b2",
+      "pid": 13537,
+      "payload_bytes": 9532,
+      "payload_bytes_before_projection": 9532,
+      "template_headroom": 640,
+      "input_budget_units": 14336,
+      "output_reserved": 2048,
+      "context_window": 16384,
+      "tool_count": 0,
+      "message_count": 1,
+      "older_turns_compacted": false,
+      "within_budget": true,
+      "observations_compacted": false,
+      "schema_compacted": false,
+      "system_catalog_compacted": false,
+      "tool_menu_compacted": false,
+      "minimal_discovery_menu": false,
+      "reasoning_compacted": false,
+      "minimal_catalog": false,
+      "builtin_instructions_compacted": false,
+      "components": {
+        "system_bytes": 6661,
+        "message_content_bytes": 2423,
+        "tool_calls_bytes": 0,
+        "reasoning_bytes": 0,
+        "tool_schema_bytes": 0,
+        "tool_names": []
+      },
+      "measurement": "conservative_utf8_bytes_not_actual_token_count"
+    },
+    {
+      "time": "2026-10-07T15:55:31.735454+00:00",
+      "event": "goal_semantic_review_started",
+      "run_id": "4d354ec8508b4e2f8b1548a915260c1f",
+      "instance_id": "dc9dd2ecd5b2",
+      "pid": 13537,
+      "request_id": "45a5686a-40c0-4b64-845d-25ad5a4ed114"
+    },
+    {
+      "time": "2026-10-07T15:55:31.736322+00:00",
+      "event": "model_payload_budget",
+      "run_id": "4d354ec8508b4e2f8b1548a915260c1f",
+      "instance_id": "dc9dd2ecd5b2",
+      "pid": 13537,
+      "payload_bytes": 9980,
+      "payload_bytes_before_projection": 9980,
+      "template_headroom": 640,
+      "input_budget_units": 14336,
+      "output_reserved": 2048,
+      "context_window": 16384,
+      "tool_count": 0,
+      "message_count": 1,
+      "older_turns_compacted": false,
+      "within_budget": true,
+      "observations_compacted": false,
+      "schema_compacted": false,
+      "system_catalog_compacted": false,
+      "tool_menu_compacted": false,
+      "minimal_discovery_menu": false,
+      "reasoning_compacted": false,
+      "minimal_catalog": false,
+      "builtin_instructions_compacted": false,
+      "components": {
+        "system_bytes": 6661,
+        "message_content_bytes": 2821,
+        "tool_calls_bytes": 0,
+        "reasoning_bytes": 0,
+        "tool_schema_bytes": 0,
+        "tool_names": []
+      },
+      "measurement": "conservative_utf8_bytes_not_actual_token_count"
+    },
+    {
+      "time": "2026-10-07T15:55:38.987340+00:00",
+      "event": "goal_interpretation_completed",
+      "run_id": "4d354ec8508b4e2f8b1548a915260c1f",
+      "instance_id": "dc9dd2ecd5b2",
+      "pid": 13537,
+      "request_id": "45a5686a-40c0-4b64-845d-25ad5a4ed114",
+      "origin": "llm",
+      "mode": "execute",
+      "capabilities": [
+        "table_list"
+      ],
+      "attempts": 2,
+      "goal_version": 1
+    },
+    {
+      "time": "2026-10-07T15:55:38.991179+00:00",
+      "event": "recovery_transition",
+      "run_id": "4d354ec8508b4e2f8b1548a915260c1f",
+      "instance_id": "dc9dd2ecd5b2",
+      "pid": 13537,
+      "request_id": "45a5686a-40c0-4b64-845d-25ad5a4ed114",
+      "tool": "plan_source_discovery"
+    },
+    {
+      "time": "2026-10-07T15:55:38.997956+00:00",
+      "event": "tool_started",
+      "run_id": "4d354ec8508b4e2f8b1548a915260c1f",
+      "instance_id": "dc9dd2ecd5b2",
+      "pid": 13537,
+      "tool": "plan_source_discovery"
+    },
+    {
+      "time": "2026-10-07T15:55:39.000601+00:00",
+      "event": "tool_completed",
+      "run_id": "4d354ec8508b4e2f8b1548a915260c1f",
+      "instance_id": "dc9dd2ecd5b2",
+      "pid": 13537,
+      "tool": "plan_source_discovery",
+      "status": "planned",
+      "error_code": null,
+      "elapsed_seconds": 0.003,
+      "applied_corrections": []
+    },
+    {
+      "time": "2026-10-07T15:55:39.003705+00:00",
+      "event": "recovery_transition",
+      "run_id": "4d354ec8508b4e2f8b1548a915260c1f",
+      "instance_id": "dc9dd2ecd5b2",
+      "pid": 13537,
+      "request_id": "45a5686a-40c0-4b64-845d-25ad5a4ed114",
+      "tool": "query_databricks"
+    },
+    {
+      "time": "2026-10-07T15:55:39.008727+00:00",
+      "event": "remote_query_authorized",
+      "run_id": "4d354ec8508b4e2f8b1548a915260c1f",
+      "instance_id": "dc9dd2ecd5b2",
+      "pid": 13537,
+      "tool_call_id": "a9d77b3c-2dc6-47b3-8cc7-db9ba4adaad7",
+      "authorization": "automatic_read_policy"
+    },
+    {
+      "time": "2026-10-07T15:55:39.008887+00:00",
+      "event": "remote_query_started",
+      "run_id": "4d354ec8508b4e2f8b1548a915260c1f",
+      "instance_id": "dc9dd2ecd5b2",
+      "pid": 13537,
+      "ledger_status": "auto_authorized",
+      "cached_receipt": false
+    },
+    {
+      "time": "2026-10-07T15:55:39.963201+00:00",
+      "event": "error",
+      "run_id": "4d354ec8508b4e2f8b1548a915260c1f",
+      "instance_id": "dc9dd2ecd5b2",
+      "pid": 13537,
+      "error_category": null,
+      "error_id": "df13544169e9",
+      "stage": "query_databricks",
+      "error_type": "QueryNotSubmitted",
+      "database_errno": null,
+      "http_status": 400,
+      "frames": [
+        {
+          "file": "runtime.py",
+          "line": 213,
+          "function": "query_databricks"
+        },
+        {
+          "file": "approvals.py",
+          "line": 120,
+          "function": "execute"
+        },
+        {
+          "file": "databricks.py",
+          "line": 48,
+          "function": "execute"
+        }
+      ]
+    },
+    {
+      "time": "2026-10-07T15:55:39.963636+00:00",
+      "event": "remote_query_finished",
+      "run_id": "4d354ec8508b4e2f8b1548a915260c1f",
+      "instance_id": "dc9dd2ecd5b2",
+      "pid": 13537,
+      "status": "unavailable",
+      "ledger_status": "failed"
+    },
+    {
+      "time": "2026-10-07T15:55:39.966972+00:00",
+      "event": "completion_checked",
+      "run_id": "4d354ec8508b4e2f8b1548a915260c1f",
+      "instance_id": "dc9dd2ecd5b2",
+      "pid": 13537,
+      "request_id": "45a5686a-40c0-4b64-845d-25ad5a4ed114",
+      "status": "blocked",
+      "reason": "remote_blocked",
+      "attempts": 0,
+      "required_capabilities": [
+        "remote_query"
+      ],
+      "missing_capabilities": [
+        "remote_query"
+      ],
+      "model_calls": 2,
+      "tool_calls": 2,
+      "model_seconds": 28.432,
+      "dataset_ids": [],
+      "artifact_ids": []
+    },
+    {
+      "time": "2026-10-07T15:55:39.969537+00:00",
+      "event": "run_completed",
+      "run_id": "4d354ec8508b4e2f8b1548a915260c1f",
+      "instance_id": "dc9dd2ecd5b2",
+      "pid": 13537,
+      "status": "blocked",
+      "elapsed_seconds": 29.427,
+      "process_peak_rss_bytes": 331153408,
+      "frame_cache_bytes": 0
+    },
+    {
+      "time": "2026-10-07T15:55:39.969661+00:00",
+      "event": "turn_slo",
+      "run_id": "4d354ec8508b4e2f8b1548a915260c1f",
+      "instance_id": "dc9dd2ecd5b2",
+      "pid": 13537,
+      "elapsed_seconds": 29.427,
+      "limit": 180.0,
+      "status": "ok"
+    }
+  ],
+  "requested_prompt": "지금 볼 수있는 table를 보여줘",
+  "current_matches_run": true,
+  "request_checkpoint_verified": true
+}

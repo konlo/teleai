@@ -19,7 +19,7 @@ class HistorySnapshotTests(unittest.TestCase):
             calls = []
             factory = lambda _: lambda envelope: calls.append(envelope)
             original = GraphAnalysisRuntime(source_root, 'owner', 'original', QuietModel(),
-                connection_identity='test', remote_factory=factory, policy=RuntimePolicy(require_remote_approval=True))
+                connection_identity='test', remote_factory=factory, policy=RuntimePolicy(require_remote_approval=True),intent_mode='contract_fixture')
             request = original.propose_query(SOURCE, 'SELECT 1', '검증용 조회')['requests'][0]
             initial_count = original.inspect()['message_count']
             target = AssetDB(clone_root, 'validation', 'cache')
@@ -28,7 +28,7 @@ class HistorySnapshotTests(unittest.TestCase):
             copied = copy_runtime_snapshot(original.db.directory, directory)
             self.assertEqual(len(copied), 3)
             clone = GraphAnalysisRuntime(clone_root, 'validation', 'cache', ChangeModel(),
-                connection_identity='test', remote_factory=factory, policy=RuntimePolicy(require_remote_approval=True))
+                connection_identity='test', remote_factory=factory, policy=RuntimePolicy(require_remote_approval=True),intent_mode='contract_fixture')
             self.assertEqual(clone.inspect()['message_count'], initial_count)
             self.assertEqual(clone.inspect()['state'], 'awaiting_approval')
             result = clone.submit('새 요청으로 바꿔서 설명해줘')
@@ -42,7 +42,7 @@ class HistorySnapshotTests(unittest.TestCase):
 
     def test_running_source_is_not_snapshotted(self):
         with tempfile.TemporaryDirectory() as source_root, tempfile.TemporaryDirectory() as clone_root:
-            original = GraphAnalysisRuntime(source_root, 'owner', 'original', QuietModel())
+            original = GraphAnalysisRuntime(source_root, 'owner', 'original', QuietModel(),intent_mode='contract_fixture')
             original.submit('자료 설명')
             with (original.db.directory / 'runtime.lock').open('rb') as busy:
                 fcntl.flock(busy, fcntl.LOCK_EX)

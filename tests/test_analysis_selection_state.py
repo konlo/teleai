@@ -24,7 +24,7 @@ class SelectionStateTests(unittest.TestCase):
                     return {'status':'ready', 'dataset':asdict(info), 'preview':[{'n':3}]}
                 return execute
             runtime = GraphAnalysisRuntime(directory, 'owner', 'aggregate-selection',
-                NoUnexpectedModelCall(), connection_identity='test', remote_factory=factory, policy=RuntimePolicy(require_remote_approval=True))
+                NoUnexpectedModelCall(), connection_identity='test', remote_factory=factory, policy=RuntimePolicy(require_remote_approval=True),intent_mode='contract_fixture')
             try:
                 raw = runtime.datasets.register(pd.DataFrame({'measure':[1, 2, 3]}),
                     source='synthetic.events', coverage='complete', predicate_known=True)
@@ -40,7 +40,7 @@ class SelectionStateTests(unittest.TestCase):
 
     def test_selection_persists_and_source_only_chart_uses_selected_root(self):
         with tempfile.TemporaryDirectory() as directory:
-            runtime = GraphAnalysisRuntime(directory, 'owner', 'selection', QuietModel())
+            runtime = GraphAnalysisRuntime(directory, 'owner', 'selection', QuietModel(),intent_mode='contract_fixture')
             first = runtime.datasets.register(pd.DataFrame({'measure':[1, 2, 2]}),
                 source='synthetic.events', snapshot='v1',
                 coverage='complete', predicate_known=True)
@@ -54,7 +54,7 @@ class SelectionStateTests(unittest.TestCase):
             self.assertEqual(runtime.inspect()['selected_dataset']['id'], first.id)
             runtime.close()
 
-            restored = GraphAnalysisRuntime(directory, 'owner', 'selection', QuietModel())
+            restored = GraphAnalysisRuntime(directory, 'owner', 'selection', QuietModel(),intent_mode='contract_fixture')
             try:
                 self.assertEqual(restored.inspect()['selected_dataset']['id'], first.id)
                 tools = {tool.name: tool.run for tool in build_analysis_tools(restored.context)}

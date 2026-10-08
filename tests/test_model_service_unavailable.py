@@ -66,7 +66,7 @@ class ProviderServiceUnavailableTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as root,patch('tests.test_model_recovery.rate_error',side_effect=error),patch('core.analysis_agent.model_recovery.time.sleep'):
             model=IntermittentModel(failures_left=3,calls=[{'name':'aggregate_dataset','args':{
                 'dataset_id':'$fixture','aggregation':'mean','value_column':'measurement'}}])
-            runtime=GraphAnalysisRuntime(root,'owner','outage-resume',model)
+            runtime=GraphAnalysisRuntime(root,'owner','outage-resume',model,intent_mode='contract_fixture')
             try:
                 raw=runtime.datasets.register(pd.DataFrame({'measurement':[2.,4.,9.]}),source='fixture.readings',coverage='complete',predicate_known=True)
                 runtime.select_dataset(raw.id);model.evaluation_dataset_id=raw.id

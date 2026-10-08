@@ -27,7 +27,7 @@ class ProductionMemoryTests(unittest.TestCase):
         facts=json.dumps(fixture['rows'][0],ensure_ascii=False)
         model=MemoryModel(summary=facts)
         with tempfile.TemporaryDirectory() as root:
-            runtime=GraphAnalysisRuntime(root,'owner','thread',model,summary_trigger_tokens=100,summary_keep_messages=2)
+            runtime=GraphAnalysisRuntime(root,'owner','thread',model,summary_trigger_tokens=100,summary_keep_messages=2,intent_mode='contract_fixture')
             initial=[HumanMessage(content='확정 조건: '+facts),AIMessage(content='조건을 유지합니다.')]
             for _ in range(8):initial.extend([HumanMessage(content='기존 조건 유지. '*80),AIMessage(content='확인했습니다.')])
             runtime.agent.update_state(runtime.config,{'messages':initial},as_node='model')
@@ -42,6 +42,6 @@ class ProductionMemoryTests(unittest.TestCase):
             self.assertTrue(any(facts in str(text) for text in model.seen[-1]))
             self.assertIn(facts,runtime.events()[0].content)
             runtime.close()
-            runtime=GraphAnalysisRuntime(root,'owner','thread',model)
+            runtime=GraphAnalysisRuntime(root,'owner','thread',model,intent_mode='contract_fixture')
             self.assertEqual(len(runtime.events()),before+2)
             runtime.close()

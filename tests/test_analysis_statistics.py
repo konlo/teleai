@@ -126,7 +126,7 @@ class AnalysisStatisticsTests(unittest.TestCase):
     def test_structured_statistical_evidence_survives_runtime_restart(self):
         from core.analysis_agent.runtime import GraphAnalysisRuntime
         with tempfile.TemporaryDirectory() as root:
-            runtime = GraphAnalysisRuntime(root, "owner", "restart-statistics", ForbiddenModel())
+            runtime = GraphAnalysisRuntime(root, "owner", "restart-statistics", ForbiddenModel(),intent_mode='contract_fixture')
             runtime.datasets.register(
                 self.store.frames[self.info.id].copy(), source="fixture.statistics",
                 coverage="complete", predicate_known=True, snapshot="fixture:v1")
@@ -136,7 +136,7 @@ class AnalysisStatisticsTests(unittest.TestCase):
             before = runtime.inspect()["recovery"]["statistical_evidence"]["test_result"]
             runtime.close()
 
-            reopened = GraphAnalysisRuntime(root, "owner", "restart-statistics", ForbiddenModel())
+            reopened = GraphAnalysisRuntime(root, "owner", "restart-statistics", ForbiddenModel(),intent_mode='contract_fixture')
             state = reopened.inspect()
             after = state["recovery"]["statistical_evidence"]["test_result"]
             self.assertEqual(state["state"], "idle")
@@ -155,7 +155,7 @@ class AnalysisStatisticsTests(unittest.TestCase):
         from core.analysis_agent.runtime import GraphAnalysisRuntime
         for kind, prompt in prompts.items():
             with self.subTest(kind=kind), tempfile.TemporaryDirectory() as root:
-                runtime = GraphAnalysisRuntime(root, "owner", kind, ForbiddenModel())
+                runtime = GraphAnalysisRuntime(root, "owner", kind, ForbiddenModel(),intent_mode='contract_fixture')
                 runtime.datasets.register(
                     self.store.frames[self.info.id].copy(), source="fixture.statistics",
                     coverage="complete", predicate_known=True, snapshot="fixture:v1")

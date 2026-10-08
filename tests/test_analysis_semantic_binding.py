@@ -29,7 +29,7 @@ class SemanticModel(EvaluationModel):
 class SemanticBindingTests(unittest.TestCase):
     def setup_runtime(self, root, replies, *, coverage='complete'):
         model = SemanticModel(replies=replies)
-        runtime = GraphAnalysisRuntime(root, 'owner', 'semantic', model)
+        runtime = GraphAnalysisRuntime(root, 'owner', 'semantic', model,intent_mode='contract_fixture')
         frame = pd.DataFrame({'historical_flag':[0,1,1,1], 'recent_flag':[0,0,0,1], 'metric_z':[2.,4.,8.,10.]})
         raw = runtime.datasets.register(frame, source='private.unfamiliar', coverage=coverage,
             predicate_known=True, snapshot='fixture:v1')
@@ -61,7 +61,7 @@ class SemanticBindingTests(unittest.TestCase):
                 self.assertEqual(stored_dataset_digest(runtime.datasets,raw.id), digest)
                 self.assertFalse(runtime.inspect()['requests'])
             finally: runtime.close()
-            runtime = GraphAnalysisRuntime(root, 'owner', 'semantic', EvaluationModel())
+            runtime = GraphAnalysisRuntime(root, 'owner', 'semantic', EvaluationModel(),intent_mode='contract_fixture')
             try:
                 self.assertEqual(runtime.inspect()['recovery']['semantic_binding']['source'],raw.source)
                 pd.testing.assert_frame_equal(runtime.datasets.frames[raw.id],frame)

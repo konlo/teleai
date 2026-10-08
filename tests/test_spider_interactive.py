@@ -46,7 +46,7 @@ class InteractiveSpiderTests(unittest.TestCase):
                 with self.subTest(query=query),patch('scripts.evaluate_spider2_teleai.database_path',return_value=path),patch('scripts.evaluate_spider2_teleai.task_document',return_value=''):
                     result=evaluate_interactive(Path(root),{'instance_id':f'count_{i}','db':'fixture',
                         'question':'How many events are there for each measurement?'},
-                        FixedAggregate(query=query),Path(root)/'predictions')
+                        FixedAggregate(query=query),Path(root)/'predictions',intent_mode='contract_fixture')
                     self.assertEqual(result['status']=='SQL_COMPLETED',valid,result)
                     self.assertEqual(result['request_contract']['operations'],['COUNT'])
                     self.assertFalse(result['request_contract']['operation_pending'])
@@ -74,7 +74,7 @@ class InteractiveSpiderTests(unittest.TestCase):
             model=ExplorationThenAggregate()
             with patch('scripts.evaluate_spider2_teleai.database_path',return_value=path),patch('scripts.evaluate_spider2_teleai.task_document',return_value=''):
                 result=evaluate_interactive(Path(root),{'instance_id':'synthetic','db':'fixture',
-                    'question':'events 테이블에서 measurement 평균을 계산해줘'},model,Path(root)/'predictions')
+                    'question':'events 테이블에서 measurement 평균을 계산해줘'},model,Path(root)/'predictions',intent_mode='contract_fixture')
             self.assertEqual(result['status'],'SQL_COMPLETED',result)
             query=Path(result['prediction']).read_text()
             self.assertIn('AVG(measurement)',query)
@@ -90,7 +90,7 @@ class InteractiveSpiderTests(unittest.TestCase):
             model=IntermittentModel(failures_left=3,calls=[])
             with patch('scripts.evaluate_spider2_teleai.database_path',return_value=path),patch('scripts.evaluate_spider2_teleai.task_document',return_value=''),patch('tests.test_model_recovery.rate_error',side_effect=error),patch('core.analysis_agent.model_recovery.time.sleep'):
                 result=evaluate_interactive(Path(root),{'instance_id':'outage','db':'fixture',
-                    'question':'events 테이블에서 measurement 평균을 계산해줘'},model,Path(root)/'predictions')
+                    'question':'events 테이블에서 measurement 평균을 계산해줘'},model,Path(root)/'predictions',intent_mode='contract_fixture')
             self.assertEqual(result['status'],'BLOCKED_PROVIDER',result)
             self.assertEqual(result['model_calls'],3)
             self.assertEqual(result['model_retries'],2)

@@ -1,0 +1,63 @@
+- list:
+  - link "main":
+    - /url: http://127.0.0.1:8504/
+    - paragraph: main
+  - link "Telly":
+    - /url: http://127.0.0.1:8504/Telly
+    - paragraph: Telly
+- paragraph: "데이터 소스: Databricks"
+- paragraph: 분석 모델
+- combobox "분석 모델": 로컬 Ollama
+- button "Open":
+- heading "대화" [level=3]
+- paragraph: 저장된 대화
+- combobox "저장된 대화": 분석 baf56db1
+- button "Open":
+- button "새 대화":
+  - paragraph: 새 대화
+- heading "분석할 자료" [level=3]
+- paragraph: Databricks 테이블
+- textbox "Databricks 테이블":
+  - /placeholder: catalog.schema.table
+- button "데이터 불러오기" [disabled]:
+  - paragraph: 데이터 불러오기
+- button "예제 데이터로 시작":
+  - paragraph: 예제 데이터로 시작
+- heading "보유한 결과" [level=3]
+- generic "keyboard_arrow_right 분석 스킬":
+  - generic: keyboard_arrow_right
+  - paragraph: 분석 스킬
+- generic "keyboard_arrow_right 현재 지원 범위와 운영 한도":
+  - generic: keyboard_arrow_right
+  - paragraph: 현재 지원 범위와 운영 한도
+- banner:
+  - button "keyboard_double_arrow_right":
+    - generic: keyboard_double_arrow_right
+  - button "Deploy":
+    - generic: Deploy
+  - button "Main menu":
+- heading "Telly · 함께 살펴보는 데이터" [level=1]:
+  - text: Telly · 함께 살펴보는 데이터
+  - link "Link to heading":
+    - /url: "#telly"
+- paragraph: 결과를 보며 이어서 질문하세요. 필요한 데이터는 agent가 자동으로 조회합니다.
+- paragraph:
+  - link "최근 결과 · 질문 입력으로 이동":
+    - /url: "#telly-input"
+- generic: face
+- generic "Chat message from user":
+  - paragraph: 지금 볼 수있는 table를 보여줘
+- generic: smart_toy
+- generic "Chat message from assistant":
+  - paragraph: Databricks 세션을 열지 못해 SQL이 제출되지 않았습니다. 연결 설정과 인증 상태를 확인해야 합니다. 분석은 완료되지 않았습니다.
+- alert:
+  - paragraph: Databricks 세션을 열지 못해 SQL이 제출되지 않았습니다. 연결 설정과 인증 상태를 확인해야 합니다. 분석은 완료되지 않았습니다.
+- generic "keyboard_arrow_right 문제 진단 · 로그 원문 없이 확인":
+  - generic: keyboard_arrow_right
+  - paragraph: 문제 진단 · 로그 원문 없이 확인
+- heading "이어서 질문하기" [level=3]:
+  - text: 이어서 질문하기
+  - link "Link to heading":
+    - /url: "#telly-input"
+- textbox "무엇을 살펴볼까요?" [active]
+- button "Send message" [disabled]:

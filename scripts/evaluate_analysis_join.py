@@ -52,7 +52,7 @@ def evaluate() -> dict:
     reference = customers.merge(transactions, on="customer_id", how="inner")
     started = time.monotonic()
     with tempfile.TemporaryDirectory(prefix="telly-join-eval-") as root:
-        runtime = GraphAnalysisRuntime(root, "evaluation", "benchmark-join", ForbiddenModel())
+        runtime = GraphAnalysisRuntime(root, "evaluation", "benchmark-join", ForbiddenModel(),intent_mode='contract_fixture')
         left = runtime.datasets.register(
             customers, source="customer_analytics", coverage="complete",
             predicate_known=True, snapshot="fixture:customer_analytics")

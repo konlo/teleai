@@ -19,7 +19,7 @@ def main():
         reasoning=True,temperature=0,num_ctx=16384,num_predict=4096,client_kwargs={'timeout':60})
     fixture=json.loads(Path('tests/fixtures/analysis_acceptance.json').read_text())
     with tempfile.TemporaryDirectory() as root:
-        r=GraphAnalysisRuntime(root,'test-owner','memory',model,summary_trigger_tokens=1000,summary_keep_messages=2)
+        r=GraphAnalysisRuntime(root,'test-owner','memory',model,summary_trigger_tokens=1000,summary_keep_messages=2,intent_mode='contract_fixture')
         info=r.datasets.register(pd.DataFrame(fixture['rows']),source=fixture['source'],coverage='complete',predicate_known=True)
         history=[HumanMessage(content=f"분석 대상은 {info.id}이고 period는 2026-08, segment는 A야. 다음 요청에도 이 조건을 유지해줘."),
                  AIMessage(content='확정한 기간과 그룹을 유지합니다.')]

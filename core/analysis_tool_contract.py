@@ -135,3 +135,7 @@ class AnalysisToolContext:
     selected_dataset_id: str = ""
     semantic_resolver: object = None
     allowed_tool_names: frozenset | None = None
+    sql_dialect: str = 'databricks'
+    source_namespace: str = ''
+    remote_receipt_reader: Callable | None = None
+    max_scatter_coordinates: int = 250_000

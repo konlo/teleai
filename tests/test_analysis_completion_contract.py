@@ -64,7 +64,7 @@ class CompletionContractTests(unittest.TestCase):
             'dataset_id':'$fixture', 'query':"SELECT COUNT(*) AS count FROM data WHERE current_signal = 'ok'"}}],
             answer='이전 통과 인원은 2명입니다.')
         with tempfile.TemporaryDirectory() as root:
-            runtime = GraphAnalysisRuntime(root, 'owner', 'unbound-condition', model)
+            runtime = GraphAnalysisRuntime(root, 'owner', 'unbound-condition', model,intent_mode='contract_fixture')
             try:
                 raw = runtime.datasets.register(frame, source='fixture.decisions',
                     coverage='complete', predicate_known=True, snapshot='fixture:v1')
@@ -115,7 +115,7 @@ class CompletionContractTests(unittest.TestCase):
     def test_graph_rejects_missing_renderer_output_without_losing_raw(self):
         frame = pd.DataFrame({'bucket': ['x', 'x', 'y'], 'reading': [1., 3., 8.]})
         with tempfile.TemporaryDirectory() as root:
-            runtime = GraphAnalysisRuntime(root, 'owner', 'render-failure', ForbiddenModel())
+            runtime = GraphAnalysisRuntime(root, 'owner', 'render-failure', ForbiddenModel(),intent_mode='contract_fixture')
             try:
                 parent = runtime.datasets.register(frame, source='fixture.observations',
                     coverage='complete', predicate_known=True, snapshot='fixture:v1')
@@ -141,7 +141,7 @@ class CompletionContractTests(unittest.TestCase):
     def test_compound_statistics_and_chart_select_raw_among_prior_subsets(self):
         frame = pd.DataFrame({'reading': [2., 4., 10., 20., 30., 40.]})
         with tempfile.TemporaryDirectory() as root:
-            runtime = GraphAnalysisRuntime(root, 'owner', 'compound', ForbiddenModel())
+            runtime = GraphAnalysisRuntime(root, 'owner', 'compound', ForbiddenModel(),intent_mode='contract_fixture')
             try:
                 raw = runtime.datasets.register(frame, source='fixture.signals',
                     coverage='unknown', predicate_known=True, snapshot='fixture:v1')
@@ -172,7 +172,7 @@ class CompletionContractTests(unittest.TestCase):
     def test_timed_out_model_checkpoint_resumes_compound_outputs_without_model(self):
         frame = pd.DataFrame({'reading': [2., 4., 10., 20., 30., 40.]})
         with tempfile.TemporaryDirectory() as root:
-            runtime = GraphAnalysisRuntime(root, 'owner', 'compound-resume', ForbiddenModel())
+            runtime = GraphAnalysisRuntime(root, 'owner', 'compound-resume', ForbiddenModel(),intent_mode='contract_fixture')
             raw = runtime.datasets.register(frame, source='fixture.signals',
                 coverage='unknown', predicate_known=True, snapshot='fixture:v1')
             runtime.datasets.register(frame.iloc[:3].copy(), source=raw.source,
@@ -185,7 +185,7 @@ class CompletionContractTests(unittest.TestCase):
             runtime.agent.update_state(runtime.config, {'messages': [human], 'recovery': recovery},
                                        as_node='ObservedSummarizationMiddleware.before_model')
             runtime.close()
-            reopened = GraphAnalysisRuntime(root, 'owner', 'compound-resume', ForbiddenModel())
+            reopened = GraphAnalysisRuntime(root, 'owner', 'compound-resume', ForbiddenModel(),intent_mode='contract_fixture')
             try:
                 self.assertEqual(reopened.agent.get_state(reopened.config).next, ('model',))
                 result = reopened.resume()

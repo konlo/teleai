@@ -31,7 +31,7 @@ def main():
     config=ConnectionConfig.from_env();policy=RuntimePolicy()
     storage=ROOT/'.telly_runtime/scale-validation-20260927'
     r=GraphAnalysisRuntime(storage,'scale-validator','ncr-100k-once',ForbiddenModel(),
-        connection_identity=config.identity(),remote_factory=lambda datasets:make_executor(config,datasets,max_rows=100000),policy=policy)
+        connection_identity=config.identity(),remote_factory=lambda datasets:make_executor(config,datasets,max_rows=100000),policy=policy,intent_mode='contract_fixture')
     try:
         state=r.inspect();pending=state['requests']
         if a.approved_request:

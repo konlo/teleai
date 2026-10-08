@@ -55,7 +55,7 @@ class ActualAgentEvaluationTests(unittest.TestCase):
         cls.frames = load_frames()
 
     def evaluate(self, case, model):
-        return evaluate_case(self.specs[case], self.grading.get(case), model, frames=self.frames)
+        return evaluate_case(self.specs[case], self.grading.get(case), model, frames=self.frames,intent_mode='contract_fixture')
 
     def test_correct_real_sql_result_passes(self):
         result = self.evaluate("L1_016", EvaluationModel(calls=[{"name": "local_analysis_sql", "args": {
@@ -426,7 +426,7 @@ class ActualAgentEvaluationTests(unittest.TestCase):
                 result = evaluate_case(self.specs["L1_076"], self.grading["L1_076"],
                     EvaluationModel(calls=[{"name": "recommend_chart_images", "args": {
                         "dataset_id": "$fixture", "columns": ["duration"]}}]),
-                    frames=self.frames, artifact_dir=artifacts)
+                    frames=self.frames, artifact_dir=artifacts,intent_mode='contract_fixture')
             self.assertNotEqual(result["status"], "PASS", result)
             metadata = result["runtime_metadata"]
             self.assertTrue(Path(metadata["path"]).exists())
@@ -440,7 +440,7 @@ class ActualAgentEvaluationTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as artifacts, patch(
                 "scripts.evaluate_analysis_agent.grade_evidence", side_effect=RuntimeError(marker)):
             result = evaluate_case(self.specs["L1_016"], self.grading["L1_016"],
-                EvaluationModel(answer=marker), frames=self.frames, artifact_dir=artifacts)
+                EvaluationModel(answer=marker), frames=self.frames, artifact_dir=artifacts,intent_mode='contract_fixture')
             self.assertEqual(result["status"], "FAIL")
             self.assertEqual(result["error_type"], "RuntimeError")
             metadata_text = Path(result["runtime_metadata"]["path"]).read_text()
@@ -474,7 +474,7 @@ class ActualAgentEvaluationTests(unittest.TestCase):
     def test_noop_reference_does_not_silently_become_pass(self):
         spec = {**self.specs["L1_076"], "python_code": "pass"}
         model = EvaluationModel()
-        result = evaluate_case(spec, self.grading["L1_076"], model, frames=self.frames)
+        result = evaluate_case(spec, self.grading["L1_076"], model, frames=self.frames,intent_mode='contract_fixture')
         self.assertEqual(result["status"], "UNGRADED")
         self.assertEqual(model.position, 0)
 

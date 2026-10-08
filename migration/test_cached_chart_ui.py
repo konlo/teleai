@@ -12,10 +12,11 @@ class CachedChartUITests(unittest.TestCase):
     def test_repeated_prepared_chart_displays_without_duplicate_widget_keys(self):
         calls = [{'name':'prepare_histogram', 'args':{'source':SOURCE, 'column':COLUMN}} for _ in range(2)]
         with tempfile.TemporaryDirectory() as root, patch.dict(os.environ, {'TELLY_V1_STORAGE':root}), \
-                patch('langchain_ollama.ChatOllama', return_value=ScriptModel(calls=calls)), \
+                patch('core.analysis_agent.model_provider.build_analysis_chat_model', return_value=ScriptModel(calls=calls)), \
                 patch('databricks.sql.connect') as connect:
             page = Path(__file__).resolve().parents[1] / 'ui' / 'analysis_page.py'
             app = AppTest.from_file(str(page), default_timeout=20).run()
+            app.session_state['v1_runtime'].recovery.intent_mode = 'contract_fixture'  # Rendering fixture only.
             self.assertEqual(len(app.exception), 0)
             next(b for b in app.button if b.label == '예제 데이터로 시작').click().run()
             for _ in range(2):

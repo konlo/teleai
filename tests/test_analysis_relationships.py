@@ -92,7 +92,7 @@ class RelationshipTests(unittest.TestCase):
                     {'name':'query_databricks','args':{'source':'events | labels','query':query,'reason':'Joined count'}}])
                 r=GraphAnalysisRuntime(root,'owner',variant,model,reference_context_loader=lambda:self.references,
                     sql_dialect='sqlite',connection_identity='local-public-test',
-                    remote_factory=lambda _: lambda request:self.fail('Unapproved SQL'), policy=RuntimePolicy(require_remote_approval=True))
+                    remote_factory=lambda _: lambda request:self.fail('Unapproved SQL'), policy=RuntimePolicy(require_remote_approval=True),intent_mode='contract_fixture')
                 try:
                     prompt="Count records with label='A' after join events and labels"
                     if variant=='no_join_requested':prompt="Count records with label='A' from events and labels"
@@ -121,14 +121,14 @@ class RelationshipTests(unittest.TestCase):
             {'name':'query_databricks','args':plan}])
         with tempfile.TemporaryDirectory() as root:
             r=GraphAnalysisRuntime(root,'owner','discovery',model,reference_context_loader=lambda:references,
-                remote_factory=factory,connection_identity='synthetic', policy=RuntimePolicy(require_remote_approval=True))
+                remote_factory=factory,connection_identity='synthetic', policy=RuntimePolicy(require_remote_approval=True),intent_mode='contract_fixture')
             raw=r.datasets.register(pd.DataFrame({'link':[1,2]}),source=target)
             r.select_dataset(raw.id);digest=stored_dataset_digest(r.datasets,raw.id)
             result=r.submit('테이블 관계를 확인해줘')
             self.assertEqual(result['status'],'awaiting_approval',result)
             self.assertFalse(calls);r.close()
             r=GraphAnalysisRuntime(root,'owner','discovery',EvaluationModel(),reference_context_loader=lambda:references,
-                remote_factory=factory,connection_identity='synthetic', policy=RuntimePolicy(require_remote_approval=True))
+                remote_factory=factory,connection_identity='synthetic', policy=RuntimePolicy(require_remote_approval=True),intent_mode='contract_fixture')
             try:
                 r.respond(result['requests'][0]['id'],approved=True)
                 self.assertEqual(calls,[plan['query']])
@@ -141,7 +141,7 @@ class RelationshipTests(unittest.TestCase):
     def test_model_join_choice_does_not_grant_user_join_intent(self):
         with tempfile.TemporaryDirectory() as root:
             r=GraphAnalysisRuntime(root,'owner','unrequested-join',EvaluationModel(),
-                reference_context_loader=lambda:self.references,sql_dialect='sqlite')
+                reference_context_loader=lambda:self.references,sql_dialect='sqlite',intent_mode='contract_fixture')
             try:
                 current={'join':True,'requested_join':False,'required_sources':['events','labels'],
                          'scope':self.scope}
@@ -184,7 +184,7 @@ class RelationshipTests(unittest.TestCase):
                 model=EvaluationModel(calls=[{'name':'query_databricks','args':{
                     'source':'events | labels','query':self.query,'reason':'Joined count'}}])
                 r=GraphAnalysisRuntime(root,'owner','join-count',model,reference_context_loader=lambda:self.references,
-                    sql_dialect='sqlite',connection_identity='public-local-fixture',remote_factory=factory, policy=RuntimePolicy(require_remote_approval=True))
+                    sql_dialect='sqlite',connection_identity='public-local-fixture',remote_factory=factory, policy=RuntimePolicy(require_remote_approval=True),intent_mode='contract_fixture')
                 try:
                     request="Count records with label='A' after join events and labels"
                     if materialize:request += '; also save the joined dataset'

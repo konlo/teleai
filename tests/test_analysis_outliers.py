@@ -129,7 +129,7 @@ class AnalysisOutlierTests(unittest.TestCase):
         }
         for method, prompt in prompts.items():
             with self.subTest(method=method), tempfile.TemporaryDirectory() as root:
-                runtime = GraphAnalysisRuntime(root, "owner", method, ForbiddenModel())
+                runtime = GraphAnalysisRuntime(root, "owner", method, ForbiddenModel(),intent_mode='contract_fixture')
                 runtime.datasets.register(
                     self.frame.copy(), source="fixture.outliers", coverage="complete",
                     predicate_known=True, snapshot="fixture:v1")
@@ -157,7 +157,7 @@ class AnalysisOutlierTests(unittest.TestCase):
     def test_explicit_loaded_row_count_selects_root_over_derived_raw_result(self):
         original = pd.DataFrame({"measure_847": [1, 2, 3, 4, 5, 6, 7, 100]})
         with tempfile.TemporaryDirectory() as root:
-            runtime = GraphAnalysisRuntime(root, "owner", "iqr-root-selection", ForbiddenModel())
+            runtime = GraphAnalysisRuntime(root, "owner", "iqr-root-selection", ForbiddenModel(),intent_mode='contract_fixture')
             source = runtime.datasets.register(
                 original, source="arbitrary.runtime_table",
                 coverage="unknown", predicate_known=True)
@@ -182,7 +182,7 @@ class AnalysisOutlierTests(unittest.TestCase):
     def test_model_node_checkpoint_resumes_iqr_without_model_or_remote(self):
         original = pd.DataFrame({"measure_847": [1, 2, 3, 4, 5, 6, 7, 100]})
         with tempfile.TemporaryDirectory() as root:
-            runtime = GraphAnalysisRuntime(root, "owner", "iqr-model-checkpoint", ForbiddenModel())
+            runtime = GraphAnalysisRuntime(root, "owner", "iqr-model-checkpoint", ForbiddenModel(),intent_mode='contract_fixture')
             source = runtime.datasets.register(
                 original, source="arbitrary.runtime_table",
                 coverage="unknown", predicate_known=True)
@@ -211,7 +211,7 @@ class AnalysisOutlierTests(unittest.TestCase):
 
     def test_structured_evidence_survives_restart(self):
         with tempfile.TemporaryDirectory() as root:
-            runtime = GraphAnalysisRuntime(root, "owner", "restart-outlier", ForbiddenModel())
+            runtime = GraphAnalysisRuntime(root, "owner", "restart-outlier", ForbiddenModel(),intent_mode='contract_fixture')
             runtime.datasets.register(
                 self.frame.copy(), source="fixture.outliers", coverage="complete",
                 predicate_known=True, snapshot="fixture:v1")
@@ -220,7 +220,7 @@ class AnalysisOutlierTests(unittest.TestCase):
             self.assertEqual(outcome["status"], "answered", outcome)
             before = runtime.inspect()["recovery"]["outlier_evidence"]
             runtime.close()
-            reopened = GraphAnalysisRuntime(root, "owner", "restart-outlier", ForbiddenModel())
+            reopened = GraphAnalysisRuntime(root, "owner", "restart-outlier", ForbiddenModel(),intent_mode='contract_fixture')
             try:
                 self.assertEqual(reopened.inspect()["recovery"]["outlier_evidence"], before)
             finally:
@@ -228,7 +228,7 @@ class AnalysisOutlierTests(unittest.TestCase):
 
     def test_unambiguous_winsorization_routes_without_model_and_survives_restart(self):
         with tempfile.TemporaryDirectory() as root:
-            runtime = GraphAnalysisRuntime(root, "owner", "winsorization", ForbiddenModel())
+            runtime = GraphAnalysisRuntime(root, "owner", "winsorization", ForbiddenModel(),intent_mode='contract_fixture')
             runtime.datasets.register(
                 self.frame.copy(), source="fixture.outliers", coverage="complete",
                 predicate_known=True, snapshot="fixture:v1")
@@ -245,7 +245,7 @@ class AnalysisOutlierTests(unittest.TestCase):
                 before = recovery["winsor_evidence"]
             finally:
                 runtime.close()
-            reopened = GraphAnalysisRuntime(root, "owner", "winsorization", ForbiddenModel())
+            reopened = GraphAnalysisRuntime(root, "owner", "winsorization", ForbiddenModel(),intent_mode='contract_fixture')
             try:
                 self.assertEqual(reopened.inspect()["recovery"]["winsor_evidence"], before)
             finally:
@@ -253,7 +253,7 @@ class AnalysisOutlierTests(unittest.TestCase):
 
     def test_compound_outlier_cohort_metric_completes_without_model_or_remote(self):
         with tempfile.TemporaryDirectory() as root:
-            runtime = GraphAnalysisRuntime(root, "owner", "compound-outlier", ForbiddenModel())
+            runtime = GraphAnalysisRuntime(root, "owner", "compound-outlier", ForbiddenModel(),intent_mode='contract_fixture')
             parent = runtime.datasets.register(
                 pd.DataFrame({"Fare": [1, 2, 3, 100], "Survived": [0, 1, 0, 1]}),
                 source="titanic", coverage="complete", predicate_known=True, snapshot="fixture:v1")
@@ -274,7 +274,7 @@ class AnalysisOutlierTests(unittest.TestCase):
                 self.assertAlmostEqual(float(result.iloc[0]["percent"]), 100.0)
             finally:
                 runtime.close()
-            reopened = GraphAnalysisRuntime(root, "owner", "compound-outlier", ForbiddenModel())
+            reopened = GraphAnalysisRuntime(root, "owner", "compound-outlier", ForbiddenModel(),intent_mode='contract_fixture')
             try:
                 recovery = reopened.inspect()["recovery"]
                 self.assertIn(recovery["outlier_dataset"], reopened.datasets.metadata)

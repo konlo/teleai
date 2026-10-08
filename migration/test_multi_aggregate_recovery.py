@@ -13,7 +13,7 @@ from migration.test_persistent_runtime import QuietModel
 class MultiAggregateRecoveryTests(unittest.TestCase):
     def test_average_and_oldest_are_computed_locally_without_model_or_remote(self):
         with tempfile.TemporaryDirectory() as root:
-            runtime = GraphAnalysisRuntime(root, "owner", "multi-aggregate", QuietModel())
+            runtime = GraphAnalysisRuntime(root, "owner", "multi-aggregate", QuietModel(),intent_mode='contract_fixture')
             frame = pd.DataFrame({"age": [20, 35, 71], "segment": ["a", "b", "c"]})
             runtime.datasets.register(
                 frame, source="arbitrary.dynamic_table", coverage="complete", predicate_known=True

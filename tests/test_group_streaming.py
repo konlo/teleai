@@ -36,7 +36,7 @@ class GroupStreamingTests(unittest.TestCase):
         from core.analysis_agent.runtime import GraphAnalysisRuntime
         from migration.test_persistent_runtime import QuietModel
         with tempfile.TemporaryDirectory() as folder:
-            runtime=GraphAnalysisRuntime(folder,'owner','agent-groups',QuietModel())
+            runtime=GraphAnalysisRuntime(folder,'owner','agent-groups',QuietModel(),intent_mode='contract_fixture')
             frame=frame_slice(0,FIXTURE['rows'])
             raw=runtime.datasets.register_batches([frame],columns=list(frame),source=FIXTURE['source'],
                 max_rows=len(frame),coverage='complete',predicate_known=True)

@@ -16,7 +16,7 @@ FIXTURE = json.loads(Path("tests/fixtures/analysis_acceptance.json").read_text()
 class ScalarRecoveryTests(unittest.TestCase):
     def test_model_node_checkpoint_does_not_answer_full_population_from_sample(self):
         with tempfile.TemporaryDirectory() as root:
-            runtime = GraphAnalysisRuntime(root, "owner", "model-node-full-population", ForbiddenModel())
+            runtime = GraphAnalysisRuntime(root, "owner", "model-node-full-population", ForbiddenModel(),intent_mode='contract_fixture')
             source = runtime.datasets.register(
                 pd.DataFrame({"measure_847": [2, 4, 6]}),
                 source="arbitrary.runtime_table", coverage="unknown", predicate_known=True)
@@ -40,7 +40,7 @@ class ScalarRecoveryTests(unittest.TestCase):
 
     def test_exhausted_checkpoint_cannot_promote_sample_to_full_population(self):
         with tempfile.TemporaryDirectory() as root:
-            runtime = GraphAnalysisRuntime(root, "owner", "resume-full-population", ForbiddenModel())
+            runtime = GraphAnalysisRuntime(root, "owner", "resume-full-population", ForbiddenModel(),intent_mode='contract_fixture')
             source = runtime.datasets.register(
                 pd.DataFrame({"measure_847": [2, 4, 6]}),
                 source="arbitrary.runtime_table", coverage="unknown", predicate_known=True)
@@ -64,7 +64,7 @@ class ScalarRecoveryTests(unittest.TestCase):
     def test_exhausted_checkpoint_resumes_exact_loaded_sample_locally(self):
         original = pd.DataFrame({"measure_847": [2, 4, 6, 8, 10, 12]})
         with tempfile.TemporaryDirectory() as root:
-            runtime = GraphAnalysisRuntime(root, "owner", "resume-sample", ForbiddenModel())
+            runtime = GraphAnalysisRuntime(root, "owner", "resume-sample", ForbiddenModel(),intent_mode='contract_fixture')
             source = runtime.datasets.register(
                 original, source="arbitrary.runtime_table",
                 coverage="unknown", predicate_known=True)
@@ -93,7 +93,7 @@ class ScalarRecoveryTests(unittest.TestCase):
     def test_explicit_loaded_sample_size_selects_original_after_derived_result(self):
         original = pd.DataFrame({"measure_847": [2, 4, 6, 8, 10, 12]})
         with tempfile.TemporaryDirectory() as root:
-            runtime = GraphAnalysisRuntime(root, "owner", "sample-median", ForbiddenModel())
+            runtime = GraphAnalysisRuntime(root, "owner", "sample-median", ForbiddenModel(),intent_mode='contract_fixture')
             source = runtime.datasets.register(
                 original, source="arbitrary.runtime_table",
                 coverage="unknown", predicate_known=True)
@@ -117,7 +117,7 @@ class ScalarRecoveryTests(unittest.TestCase):
         frame = pd.DataFrame({"segment_code": ["X", "Y", "X"],
                               "measure_847": [4, 10, 16]})
         with tempfile.TemporaryDirectory() as root:
-            runtime = GraphAnalysisRuntime(root, "owner", "single-scalar", ForbiddenModel())
+            runtime = GraphAnalysisRuntime(root, "owner", "single-scalar", ForbiddenModel(),intent_mode='contract_fixture')
             raw = runtime.datasets.register(
                 frame, source="arbitrary.new_schema", coverage="complete",
                 predicate_known=True)
@@ -140,7 +140,7 @@ class ScalarRecoveryTests(unittest.TestCase):
 
     def test_loaded_dataframe_scalar_followups_never_need_the_model(self):
         with tempfile.TemporaryDirectory() as root:
-            runtime = GraphAnalysisRuntime(root, "owner", "scalar-followups", ForbiddenModel())
+            runtime = GraphAnalysisRuntime(root, "owner", "scalar-followups", ForbiddenModel(),intent_mode='contract_fixture')
             runtime.datasets.register(
                 pd.DataFrame(FIXTURE["rows"]), source=FIXTURE["source"],
                 coverage="complete", predicate_known=True)
@@ -164,7 +164,7 @@ class ScalarRecoveryTests(unittest.TestCase):
             "metric_amount": [3, 9, 30],
         })
         with tempfile.TemporaryDirectory() as root:
-            runtime = GraphAnalysisRuntime(root, "owner", "schema-neutral", ForbiddenModel())
+            runtime = GraphAnalysisRuntime(root, "owner", "schema-neutral", ForbiddenModel(),intent_mode='contract_fixture')
             runtime.datasets.register(
                 frame, source="arbitrary.runtime_table",
                 coverage="complete", predicate_known=True)

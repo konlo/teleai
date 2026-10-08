@@ -15,8 +15,10 @@ class SelectionUiTests(unittest.TestCase):
                 os.environ, {'TELLY_V1_STORAGE': directory}):
             app = AppTest.from_file(str(Path(__file__).resolve().parents[1] /
                                          'ui' / 'analysis_page.py'), default_timeout=20).run()
+            app.session_state['v1_runtime'].recovery.intent_mode = 'contract_fixture'  # Render/receipt fixture only.
             next(button for button in app.button if button.label == '예제 데이터로 시작').click().run()
             runtime = app.session_state['v1_runtime']
+            runtime.recovery.intent_mode = 'contract_fixture'  # UI execution/rendering fixture, not an intent score.
             selected_before = runtime.db.selected_dataset_id()
             app.chat_input[0].set_value('value 컬럼의 앞 두 행만 보여줘. 보유 데이터만 사용해줘.').run()
             self.assertFalse(app.exception)
@@ -31,12 +33,14 @@ class SelectionUiTests(unittest.TestCase):
                 os.environ, {'TELLY_V1_STORAGE': directory}):
             app = AppTest.from_file(str(Path(__file__).resolve().parents[1] /
                                          'ui' / 'analysis_page.py'), default_timeout=30).run()
+            app.session_state['v1_runtime'].recovery.intent_mode = 'contract_fixture'  # Render/receipt fixture only.
             next(button for button in app.button if button.label == '예제 데이터로 시작').click().run()
             app.chat_input[0].set_value('value의 boxplot을 보여줘').run()
             self.assertFalse(app.exception)
             self.assertEqual(len(app.image), 1,
                              'A completed chart response must render a visible image')
             runtime = app.session_state['v1_runtime']
+            runtime.recovery.intent_mode = 'contract_fixture'  # UI execution/rendering fixture, not an intent score.
             card = runtime.artifacts[runtime.inspect()['chart_ids'][0]]
             self.assertEqual(card.kind, 'boxplot')
             self.assertTrue(card.image.startswith(b'\x89PNG\r\n\x1a\n'))
@@ -55,10 +59,12 @@ class SelectionUiTests(unittest.TestCase):
                 os.environ, {'TELLY_V1_STORAGE':directory}):
             app = AppTest.from_file(str(Path(__file__).resolve().parents[1] /
                                          'ui' / 'analysis_page.py'), default_timeout=20).run()
+            app.session_state['v1_runtime'].recovery.intent_mode = 'contract_fixture'  # Render/receipt fixture only.
             self.assertFalse(app.exception)
             next(button for button in app.button if button.label == '예제 데이터로 시작').click().run()
             self.assertFalse(app.exception)
             runtime = app.session_state['v1_runtime']
+            runtime.recovery.intent_mode = 'contract_fixture'  # UI execution/rendering fixture, not an intent score.
             original = runtime.inspect()['selected_dataset']
             self.assertEqual(original['role'], 'root')
             self.assertEqual(runtime.datasets.frames.bytes, 0,

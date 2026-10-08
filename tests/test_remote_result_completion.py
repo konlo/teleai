@@ -6,6 +6,7 @@ from pathlib import Path
 import tempfile
 import unittest
 from uuid import uuid4
+from unittest.mock import patch
 
 import pandas as pd
 from langchain_core.messages import AIMessage
@@ -18,17 +19,25 @@ FIXTURE = json.loads((Path(__file__).parent / 'fixtures/remote_result_completion
 
 class DeferredReplyModel(QuietModel):
     sent: bool = False
+    planned: bool = False
     calls: int = 0
     propose: bool = True
     reply: str = FIXTURE['deferred_reply']
 
     def _generate(self, messages, **kwargs):
         self.calls += 1
-        if self.propose and not self.sent:
+        if self.propose and not self.planned:
+            self.planned=True
+            message=AIMessage(content='',tool_calls=[{
+                'name':'plan_source_discovery','id':str(uuid4()),
+                'args':{'catalog':FIXTURE['source'].split('.')[0],'limit':100}}])
+        elif self.propose and not self.sent:
             self.sent = True
+            plan=next(json.loads(m.content)['discovery_plan'] for m in reversed(messages)
+                if getattr(m,'name',None)=='plan_source_discovery')
             message = AIMessage(content='', tool_calls=[{
                 'name': 'query_databricks', 'id': str(uuid4()),
-                'args': {key: FIXTURE[key] for key in ('source', 'query', 'reason')}}])
+                'args':plan}])
         else:
             message = AIMessage(content=self.reply)
         return ChatResult(generations=[ChatGeneration(message=message)])
@@ -36,6 +45,9 @@ class DeferredReplyModel(QuietModel):
 
 class RemoteResultCompletionTests(unittest.TestCase):
     def runtime(self, root, *, rows=None, error=None, propose=True, mismatched_result=False):
+        # These cases exercise scripted model proposals and receipt delivery.
+        # Ground the fixture catalog explicitly and isolate that proposal path
+        # from the separately tested deterministic catalog-discovery planner.
         executions = []
         def factory(datasets):
             def execute(envelope):
@@ -43,7 +55,7 @@ class RemoteResultCompletionTests(unittest.TestCase):
                 if error:
                     raise error
                 frame = pd.DataFrame(FIXTURE['rows'] if rows is None else rows,
-                                     columns=['table_name', 'table_type'])
+                                     columns=list(FIXTURE['rows'][0]))
                 info = datasets.register(frame, source=envelope['source'],
                                          query=envelope['query'] + (' LIMIT 1' if mismatched_result else ''),
                                          coverage='complete', predicate_known=True, snapshot='fixture-v1')
@@ -51,7 +63,12 @@ class RemoteResultCompletionTests(unittest.TestCase):
             return execute
         model = DeferredReplyModel(propose=propose)
         runtime = GraphAnalysisRuntime(root, 'owner', 'query-result', model,
-            connection_identity='synthetic-connection', remote_factory=factory, policy=RuntimePolicy(require_remote_approval=True))
+            connection_identity='synthetic-connection', remote_factory=factory,
+            source_namespace=FIXTURE['source'].split('.')[0],
+            policy=RuntimePolicy(require_remote_approval=True),intent_mode='contract_fixture')
+        planner=patch.object(runtime.recovery,'_next_local',return_value=None)
+        planner.start()
+        self.addCleanup(planner.stop)
         self.addCleanup(runtime.close)
         return runtime, model, executions
 
@@ -68,7 +85,7 @@ class RemoteResultCompletionTests(unittest.TestCase):
             self.assertIn('sample_summary', result['text'].replace('\\_', '_'))
             self.assertIn('VIEW', result['text'])
             self.assertNotIn('도착하면', result['text'])
-            self.assertEqual(model.calls, 1)  # Result rendering does not ask the LLM to narrate it.
+            self.assertEqual(model.calls, 2)  # Plan, execute; receipt rendering needs no third inference.
             self.assertEqual(runtime.ledger.get(proposal['requests'][0]['id'])['status'], 'completed')
 
     def test_unexecuted_promise_is_not_a_successful_answer(self):
@@ -159,7 +176,7 @@ class RemoteResultCompletionTests(unittest.TestCase):
 
     def test_general_explanation_stays_allowed(self):
         with tempfile.TemporaryDirectory() as root:
-            runtime = GraphAnalysisRuntime(root, 'owner', 'explanation', QuietModel())
+            runtime = GraphAnalysisRuntime(root, 'owner', 'explanation', QuietModel(),intent_mode='contract_fixture')
             try:
                 result = runtime.submit('안녕')
                 self.assertEqual(result['status'], 'answered', result)
@@ -190,7 +207,10 @@ class RemoteResultCompletionTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as root:
             rows = [{'table_name':f'object_{i}', 'table_type':'VIEW'} for i in range(205)]
             runtime, _, executions = self.runtime(root, rows=rows)
-            proposal = runtime.submit(FIXTURE['prompt'])
+            # Exercise the renderer's 200-row bound with a legitimate
+            # unbounded read, rather than fabricating 205 rows for LIMIT 100.
+            proposal = runtime.propose_query(FIXTURE['source'],
+                'SELECT table_name, table_type FROM '+FIXTURE['source'],FIXTURE['reason'])
             result = runtime.respond(proposal['requests'][0]['id'], approved=True)
             self.assertEqual(result['status'], 'answered', result)
             self.assertIn('200/205행', result['text'])
@@ -238,11 +258,14 @@ class RemoteResultCompletionTests(unittest.TestCase):
                     coverage='complete', predicate_known=True, snapshot='ui-fixture')
                 return {'status':'ready', 'dataset':asdict(info)}
             return execute
-        with tempfile.TemporaryDirectory() as root, patch.dict(os.environ, {'TELLY_V1_STORAGE':root, 'TELLY_REQUIRE_REMOTE_APPROVAL':'true'}), \
+        with tempfile.TemporaryDirectory() as root, patch.dict(os.environ, {'TELLY_V1_STORAGE':root,
+                'TELLY_REQUIRE_REMOTE_APPROVAL':'true','TELLY_DATA_BACKEND':'databricks',
+                'DATABRICKS_CATALOG':FIXTURE['source'].split('.')[0]}), \
                 patch('core.analysis_agent.model_provider.build_analysis_chat_model', return_value=DeferredReplyModel()), \
                 patch('core.analysis_agent.databricks.make_executor', side_effect=factory):
             page = Path(__file__).resolve().parents[1] / 'ui/analysis_page.py'
             app = AppTest.from_file(str(page), default_timeout=20).run()
+            app.session_state['v1_runtime'].recovery.intent_mode = 'contract_fixture'  # Render/receipt fixture only.
             app.chat_input[0].set_value(FIXTURE['prompt']).run()
             self.assertEqual(len(app.exception), 0)
             self.assertEqual(executions, [])
@@ -255,7 +278,10 @@ class RemoteResultCompletionTests(unittest.TestCase):
                 self.assertIn('sample_summary', rendered)
                 self.assertIn('VIEW', rendered)
                 self.assertNotIn('도착하면', rendered)
-                self.assertEqual(executions, [FIXTURE['query']])
+                from core.analysis_load_plan import query_sources
+                self.assertEqual(len(executions),1)
+                self.assertEqual(query_sources(executions[0]),(FIXTURE['source'],))
+                self.assertIn('LIMIT 100',executions[0])
             finally:
                 app.session_state['v1_runtime'].close()
 

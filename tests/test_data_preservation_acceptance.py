@@ -36,7 +36,7 @@ class DataPreservationAcceptanceTests(unittest.TestCase):
                 measure, group = spec['roles']['measure'], spec['roles']['group']
                 runtime = GraphAnalysisRuntime(root, 'acceptance', 'filtered-chart',
                     ForbiddenModel(), reference_context_loader=lambda: [
-                        fixture_reference_context(spec['source'], frame)])
+                        fixture_reference_context(spec['source'], frame)],intent_mode='contract_fixture')
                 original = runtime.datasets.register(frame.copy(), source=spec['source'],
                     snapshot=spec['snapshot'], coverage='complete', predicate_known=True)
                 try:

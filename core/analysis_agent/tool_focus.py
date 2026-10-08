@@ -17,7 +17,8 @@ class ExplanationToolsMiddleware(AgentMiddleware):
         from langchain_core.messages import SystemMessage
         content = (str(request.system_message.content)+'\n' if request.system_message else '')
         content += '이번 요청은 설명만 합니다. 도구 실행·데이터 계산·차트 생성 없이 질문의 개념을 설명하세요. 실제 분석을 수행했다고 말하지 마세요.'
-        return handler(request.override(tools=[],system_message=SystemMessage(content=content)))
+        system=request.system_message.model_copy(update={'content':content}) if request.system_message else SystemMessage(content=content)
+        return handler(request.override(tools=[],system_message=system))
 SCALAR_TOOLS = frozenset({
     "list_analysis_context", "inspect_table_context", "inspect_dataset",
     "profile_dataset", "use_dataset", "aggregate_dataset", "local_analysis_sql",
@@ -54,7 +55,8 @@ class FocusedRemoteCatalogToolsMiddleware(AgentMiddleware):
         content = (str(request.system_message.content) + '\n' if request.system_message else '') + instruction
         if self.diagnostics:
             self.diagnostics.emit('model_tools_focused', mode='remote_catalog', tool_count=len(selected))
-        return handler(request.override(tools=selected, system_message=SystemMessage(content=content)))
+        system=request.system_message.model_copy(update={'content':content}) if request.system_message else SystemMessage(content=content)
+        return handler(request.override(tools=selected, system_message=system))
 
 REMOTE_JOIN_TOOLS = frozenset({
     'list_analysis_context', 'inspect_table_context', 'inspect_table_relationships',
@@ -104,7 +106,8 @@ class FocusedRemoteJoinToolsMiddleware(AgentMiddleware):
             '이미 확인한 스키마를 반복 탐색하거나 없는 로컬 dataset ID를 만들지 마세요. '
             '키나 업무 역할이 모호하면 해당 정보만 확인하세요.')
         content = (str(request.system_message.content) + '\n' if request.system_message else '') + instruction
-        return handler(request.override(tools=selected, system_message=SystemMessage(content=content)))
+        system=request.system_message.model_copy(update={'content':content}) if request.system_message else SystemMessage(content=content)
+        return handler(request.override(tools=selected, system_message=system))
 
 
 class FocusedScalarToolsMiddleware(AgentMiddleware):

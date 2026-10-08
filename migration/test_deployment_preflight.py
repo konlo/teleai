@@ -20,6 +20,16 @@ def valid_environment(storage: str) -> dict[str, str]:
 
 
 class DeploymentPreflightTests(unittest.TestCase):
+    def test_mysql_or_unknown_backend_cannot_pass_databricks_deployment_gate(self):
+        with tempfile.TemporaryDirectory() as storage:
+            for backend in ['mysql','typo']:
+                with self.subTest(backend=backend):
+                    env=valid_environment(storage)
+                    env['TELLY_DATA_BACKEND']=backend
+                    report=evaluate_deployment(env,profile='local-desktop',project_root=Path('/workspace/teleai'))
+                    self.assertFalse(report.ready)
+                    self.assertEqual(next(c.status for c in report.checks if c.name=='data_backend'),'fail')
+
     def test_valid_local_configuration_is_ready_and_secret_safe(self):
         with tempfile.TemporaryDirectory() as storage:
             report = evaluate_deployment(

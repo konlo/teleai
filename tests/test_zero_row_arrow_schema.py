@@ -27,7 +27,7 @@ class ZeroRowArrowTests(unittest.TestCase):
             'clock': pa.array([], type=pa.timestamp('us', tz='UTC')),
             'amount': pa.array([], type=pa.decimal128(20, 2))})
         with tempfile.TemporaryDirectory() as root:
-            r = GraphAnalysisRuntime(root, 'test', 'schema', QuietModel())
+            r = GraphAnalysisRuntime(root, 'test', 'schema', QuietModel(),intent_mode='contract_fixture')
             try:
                 config = SimpleNamespace(server_hostname='', http_path='', access_token='', catalog='', schema='')
                 request = SimpleNamespace(status='executing', source='fixture.events', query='SELECT * FROM fixture.events LIMIT 0')
@@ -44,7 +44,7 @@ class ZeroRowArrowTests(unittest.TestCase):
     def test_nonempty_schema_probe_is_rejected_without_publishing(self):
         table = pa.table({'value': [1]})
         with tempfile.TemporaryDirectory() as root:
-            r = GraphAnalysisRuntime(root, 'test', 'schema-invalid', QuietModel())
+            r = GraphAnalysisRuntime(root, 'test', 'schema-invalid', QuietModel(),intent_mode='contract_fixture')
             try:
                 config = SimpleNamespace(server_hostname='', http_path='', access_token='', catalog='', schema='')
                 request = SimpleNamespace(status='executing', source='fixture.events', query='SELECT * FROM fixture.events LIMIT 0')

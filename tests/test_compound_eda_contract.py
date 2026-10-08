@@ -40,7 +40,7 @@ class CompoundEdaTests(unittest.TestCase):
             request=case['request']
             for old,new in rename.items():request=request.replace(old,new)
             with self.subTest(case=case['id'],rename=bool(rename)), tempfile.TemporaryDirectory() as root:
-                model=PrepareOnce();r=GraphAnalysisRuntime(root,'test','compound',model)
+                model=PrepareOnce();r=GraphAnalysisRuntime(root,'test','compound',model,intent_mode='contract_fixture')
                 try:
                     raw=r.datasets.register(pd.DataFrame(FIXTURE['rows']).rename(columns=rename),source=FIXTURE['source'],coverage='unknown')
                     r.select_dataset(raw.id);before=stored_dataset_digest(r.datasets,raw.id)
@@ -89,7 +89,7 @@ class CompoundEdaTests(unittest.TestCase):
         for text in ['구간 수 5개','구간 개수는 5','5개 구간','5 bins','bins=5','bins: 5']:
             self.assertEqual(histogram_bins(text),5,text)
         with tempfile.TemporaryDirectory() as root:
-            model=PrepareOnce();r=GraphAnalysisRuntime(root,'test','bins',model)
+            model=PrepareOnce();r=GraphAnalysisRuntime(root,'test','bins',model,intent_mode='contract_fixture')
             raw=r.datasets.register(pd.DataFrame({FIXTURE['measure']:[1,2,3,4]}),source=FIXTURE['source'],coverage='complete',predicate_known=True)
             r.select_dataset(raw.id)
             result=r.submit(f'현재 데이터의 `{FIXTURE["measure"]}` 히스토그램을 5개 구간으로 보여줘')
@@ -99,7 +99,7 @@ class CompoundEdaTests(unittest.TestCase):
             wrong=tools['render_chart_spec'](dataset_id=raw.id,kind='histogram',x=FIXTURE['measure'],bins=20)
             wrong_card=r.artifacts[wrong['cards'][0]['id']]
             self.assertFalse(r.recovery._valid_card(wrong_card,state,raw.id))
-            r.close();r=GraphAnalysisRuntime(root,'test','bins',PrepareOnce())
+            r.close();r=GraphAnalysisRuntime(root,'test','bins',PrepareOnce(),intent_mode='contract_fixture')
             try:self.assertEqual(r.artifacts[chart_id].render_spec['bins'],5)
             finally:r.close()
 

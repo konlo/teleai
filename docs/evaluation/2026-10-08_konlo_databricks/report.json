@@ -1,0 +1,275 @@
+{
+  "scenario": "prompt_konlo_test_scenario_#1",
+  "prompt_count": 31,
+  "prompts_sha256": "e2a66eb87df377a18a9067c244d43701079be69b77cfa4033c36698b6caa32b3",
+  "status": "BLOCKED_EXTERNAL_DATABASE",
+  "quality_score": null,
+  "quality_score_reason": "Live database oracle and user journey cannot run while configured warehouse cannot create SQL sessions. Do not grade skipped turns as passed or as agent reasoning failures.",
+  "backend": "databricks",
+  "model": "ollama/qwen3:8b",
+  "executed_turns": 1,
+  "not_run_turns": 30,
+  "first_turn": {
+    "prompt": "지금 볼 수있는 table를 보여줘",
+    "status": "blocked",
+    "stop_reason": "remote_blocked",
+    "run_id": "4d354ec8508b4e2f8b1548a915260c1f",
+    "error_id": "df13544169e9",
+    "sql_submitted": false,
+    "http_status": 400,
+    "elapsed_seconds": 29.427,
+    "model_calls": 2
+  },
+  "probes": {
+    "connection_probe": {
+      "backend": "databricks",
+      "namespace": "workspace.default",
+      "query": "SELECT 1",
+      "credential_configured": true,
+      "status": "failed",
+      "error_type": "RequestError",
+      "error_context": {
+        "method": "OpenSession",
+        "http-code": 400
+      },
+      "elapsed_seconds": 1.457
+    },
+    "warehouse_probe": {
+      "configured_path_is_sql_warehouse": true,
+      "configured_warehouse": {
+        "http_status": 200,
+        "warehouses": [
+          {
+            "id": "ed25812fe888c658",
+            "name": "Serverless Starter Warehouse",
+            "state": "STOPPED",
+            "warehouse_type": "PRO",
+            "enable_serverless_compute": true,
+            "num_clusters": 0
+          }
+        ]
+      },
+      "warehouse_inventory": {
+        "http_status": 200,
+        "warehouses": [
+          {
+            "id": "ed25812fe888c658",
+            "name": "Serverless Starter Warehouse",
+            "state": "STOPPED",
+            "warehouse_type": "PRO",
+            "enable_serverless_compute": true,
+            "num_clusters": 0
+          }
+        ]
+      }
+    },
+    "control_probe": {
+      "statement_select1": {
+        "http_status": 400,
+        "error_code": "BAD_REQUEST",
+        "message": "The request could not be processed by the warehouse."
+      },
+      "warehouse_start": {
+        "http_status": 400,
+        "error_code": "BAD_REQUEST",
+        "message": "Cannot create the resource, please try again later."
+      }
+    }
+  },
+  "preservation": {
+    "existing_scopes": 62,
+    "existing_assets": 204,
+    "changed_scopes": [],
+    "http_health": 200
+  },
+  "turns": [
+    {
+      "id": 1,
+      "prompt": "지금 볼 수있는 table를 보여줘",
+      "evaluation_status": "BLOCKED_DATABASE",
+      "ui_submissions": 1
+    },
+    {
+      "id": 2,
+      "prompt": "bank_loan 컬럼들을 보여줘",
+      "evaluation_status": "NOT_RUN_DATABASE_PRECONDITION",
+      "ui_submissions": 0
+    },
+    {
+      "id": 3,
+      "prompt": "age 의 histogram 그려줘",
+      "evaluation_status": "NOT_RUN_DATABASE_PRECONDITION",
+      "ui_submissions": 0
+    },
+    {
+      "id": 4,
+      "prompt": "education은 어떤 값들로 되어 있지 ?",
+      "evaluation_status": "NOT_RUN_DATABASE_PRECONDITION",
+      "ui_submissions": 0
+    },
+    {
+      "id": 5,
+      "prompt": "histogram을 그려줘",
+      "evaluation_status": "NOT_RUN_DATABASE_PRECONDITION",
+      "ui_submissions": 0
+    },
+    {
+      "id": 6,
+      "prompt": "education이 primary 이고 age가 30~40인 사람들을 시각화 해줘",
+      "evaluation_status": "NOT_RUN_DATABASE_PRECONDITION",
+      "ui_submissions": 0
+    },
+    {
+      "id": 7,
+      "prompt": "education이 primary과 secondary 이고 age가 30~40인 사람들을 시각화 해줘 ",
+      "evaluation_status": "NOT_RUN_DATABASE_PRECONDITION",
+      "ui_submissions": 0
+    },
+    {
+      "id": 8,
+      "prompt": "같은 조건을 유지해서 histogram을 다시 보여줘",
+      "evaluation_status": "NOT_RUN_DATABASE_PRECONDITION",
+      "ui_submissions": 0
+    },
+    {
+      "id": 9,
+      "prompt": "legend를 넣어서 primary과 secondary 에 따라서 색을 좀 넣어줘, ",
+      "evaluation_status": "NOT_RUN_DATABASE_PRECONDITION",
+      "ui_submissions": 0
+    },
+    {
+      "id": 10,
+      "prompt": "색 구별이 안 되고 있어 ",
+      "evaluation_status": "NOT_RUN_DATABASE_PRECONDITION",
+      "ui_submissions": 0
+    },
+    {
+      "id": 11,
+      "prompt": "education별 색상 구분과 legend를 넣어줘",
+      "evaluation_status": "NOT_RUN_DATABASE_PRECONDITION",
+      "ui_submissions": 0
+    },
+    {
+      "id": 12,
+      "prompt": "하나의 stack으로 legend를 포함해서 다시 그려줘",
+      "evaluation_status": "NOT_RUN_DATABASE_PRECONDITION",
+      "ui_submissions": 0
+    },
+    {
+      "id": 13,
+      "prompt": "stackbin으로 다시 그려줘",
+      "evaluation_status": "NOT_RUN_DATABASE_PRECONDITION",
+      "ui_submissions": 0
+    },
+    {
+      "id": 14,
+      "prompt": "이거 legend를 넣어줘",
+      "evaluation_status": "NOT_RUN_DATABASE_PRECONDITION",
+      "ui_submissions": 0
+    },
+    {
+      "id": 15,
+      "prompt": "테이블의 column 다시 보여줘",
+      "evaluation_status": "NOT_RUN_DATABASE_PRECONDITION",
+      "ui_submissions": 0
+    },
+    {
+      "id": 16,
+      "prompt": "데이타 10개 row만 추출해서 table로 보여줘 ",
+      "evaluation_status": "NOT_RUN_DATABASE_PRECONDITION",
+      "ui_submissions": 0
+    },
+    {
+      "id": 17,
+      "prompt": "age를 x축으로 하고 balance를 Y축으로 하는 scatter plot를 그려줘",
+      "evaluation_status": "NOT_RUN_DATABASE_PRECONDITION",
+      "ui_submissions": 0
+    },
+    {
+      "id": 18,
+      "prompt": "age와 balance의 관계를 그려줘봐",
+      "evaluation_status": "NOT_RUN_DATABASE_PRECONDITION",
+      "ui_submissions": 0
+    },
+    {
+      "id": 19,
+      "prompt": "전체 데이타에 대해서 age와 balance scatter plot으로 그려줘",
+      "evaluation_status": "NOT_RUN_DATABASE_PRECONDITION",
+      "ui_submissions": 0
+    },
+    {
+      "id": 20,
+      "prompt": "age와 balance 의 scatter plot으로 그려줘",
+      "evaluation_status": "NOT_RUN_DATABASE_PRECONDITION",
+      "ui_submissions": 0
+    },
+    {
+      "id": 21,
+      "prompt": "bank_loan 데이터를 10개 row로 보여줘",
+      "evaluation_status": "NOT_RUN_DATABASE_PRECONDITION",
+      "ui_submissions": 0
+    },
+    {
+      "id": 22,
+      "prompt": "방금 보여준 10행 데이터의 age를 x축, balance를 y축으로 scatter plot을 그려줘",
+      "evaluation_status": "NOT_RUN_DATABASE_PRECONDITION",
+      "ui_submissions": 0
+    },
+    {
+      "id": 23,
+      "prompt": "전체 데이타를 이용해서 age와 balance의 관계를 다시 scatter plot으로 그려줘",
+      "evaluation_status": "NOT_RUN_DATABASE_PRECONDITION",
+      "ui_submissions": 0
+    },
+    {
+      "id": 24,
+      "prompt": "내가 볼 수 있는 table 다시 한번 보여줘",
+      "evaluation_status": "NOT_RUN_DATABASE_PRECONDITION",
+      "ui_submissions": 0
+    },
+    {
+      "id": 25,
+      "prompt": "_tianchi_ssd_shared300k_import  row 수가 몇개야 ?",
+      "evaluation_status": "NOT_RUN_DATABASE_PRECONDITION",
+      "ui_submissions": 0
+    },
+    {
+      "id": 26,
+      "prompt": "table 다시 한번 보여줘",
+      "evaluation_status": "NOT_RUN_DATABASE_PRECONDITION",
+      "ui_submissions": 0
+    },
+    {
+      "id": 27,
+      "prompt": "tianchi_ssd_shared300k_raw 이 table row 수가 몇개야 ?",
+      "evaluation_status": "NOT_RUN_DATABASE_PRECONDITION",
+      "ui_submissions": 0
+    },
+    {
+      "id": 28,
+      "prompt": "이 테이블의 column들을 보여줘",
+      "evaluation_status": "NOT_RUN_DATABASE_PRECONDITION",
+      "ui_submissions": 0
+    },
+    {
+      "id": 29,
+      "prompt": "teleai_default.bank_loan 전체 데이타를 이용해서 age와 balance의 관계를 다시 scatter plot으로 그려줘",
+      "evaluation_status": "NOT_RUN_DATABASE_PRECONDITION",
+      "ui_submissions": 0
+    },
+    {
+      "id": 30,
+      "prompt": "table column를보여줘",
+      "evaluation_status": "NOT_RUN_DATABASE_PRECONDITION",
+      "ui_submissions": 0
+    },
+    {
+      "id": 31,
+      "prompt": "teleai_default.bank_loan 전체 데이터의 age와 balance scatter plot을 다시 그려줘",
+      "evaluation_status": "NOT_RUN_DATABASE_PRECONDITION",
+      "ui_submissions": 0
+    }
+  ],
+  "compatibility_note": "Frozen prompts 29/31 use MySQL qualifier teleai_default.bank_loan. Databricks namespace workspace.default. Preserve originals and grade clarification/identity safety separately; no automatic fixture rewrite. SSD table existence remains unverified.",
+  "next_action": "Restore the configured warehouse ability to start and complete SELECT 1, then restart all 31 exact prompts in a new isolated conversation with live Databricks oracles."
+}

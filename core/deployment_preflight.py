@@ -109,6 +109,11 @@ def evaluate_deployment(
         raise ValueError(f"unsupported profile: {profile}")
 
     checks: list[PreflightCheck] = []
+    data_backend = env.get('TELLY_DATA_BACKEND', 'databricks').strip().lower()
+    checks.append(PreflightCheck('data_backend', 'pass' if data_backend == 'databricks' else 'fail',
+        '운영 데이터 backend는 Databricks입니다. MySQL 평가 설정을 사용하지 않습니다.'
+        if data_backend == 'databricks' else
+        '운영 preflight는 TELLY_DATA_BACKEND=databricks가 필요합니다. MySQL은 별도 로컬 평가 모드입니다.'))
     model = env.get("OLLAMA_MODEL", "").strip()
     endpoint = env.get("OLLAMA_BASE_URL", "").strip()
     if not model or not endpoint:

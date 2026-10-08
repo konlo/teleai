@@ -24,7 +24,7 @@ COLUMN=next(k for k,v in FIXTURE['rows'][0].items() if isinstance(v,(int,float))
 
 class ChartDeliveryTests(unittest.TestCase):
     def prepare(self,root,model=None):
-        r=GraphAnalysisRuntime(root,'test','chart',model or QuietModel())
+        r=GraphAnalysisRuntime(root,'test','chart',model or QuietModel(),intent_mode='contract_fixture')
         self.addCleanup(r.close)
         info=r.datasets.register(pd.DataFrame(FIXTURE['rows']),source=FIXTURE['source'],
             coverage='complete',predicate_known=True)

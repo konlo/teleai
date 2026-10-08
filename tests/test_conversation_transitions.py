@@ -33,12 +33,12 @@ class ConversationTransitionTests(unittest.TestCase):
             for spec in fixture['cases']:
                 if spec['id'] not in {'selective_filter','topic_pause_return','language_source_switch'}:continue
                 with self.subTest(case=spec['id'],renamed=renamed):
-                    result=run_case(spec,fixture,ExplanationModel(),1)
+                    result=run_case(spec,fixture,ExplanationModel(),1,intent_mode='contract_fixture')
                     self.assertEqual(result['status'],'PASS',result)
 
     def test_explanation_restart_and_explicit_ui_selection(self):
         with tempfile.TemporaryDirectory() as root:
-            runtime=GraphAnalysisRuntime(root,'test','context',ExplanationModel())
+            runtime=GraphAnalysisRuntime(root,'test','context',ExplanationModel(),intent_mode='contract_fixture')
             identities={}
             for source in FIXTURE['datasets']:
                 data=runtime.datasets.register(pd.DataFrame(source['rows'],columns=source['columns']),
@@ -54,7 +54,7 @@ class ConversationTransitionTests(unittest.TestCase):
             self.assertFalse(runtime.recovery._proposed_scope_valid({'name':'local_analysis_sql'},state))
             self.assertTrue(state['confirmed_analysis']['scope']['conditions'])
             runtime.close()
-            runtime=GraphAnalysisRuntime(root,'test','context',ExplanationModel())
+            runtime=GraphAnalysisRuntime(root,'test','context',ExplanationModel(),intent_mode='contract_fixture')
             try:
                 result=runtime.submit(journey['turns'][2]['prompt'])
                 self.assertEqual(result['status'],'answered',result)

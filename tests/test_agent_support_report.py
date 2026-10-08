@@ -98,15 +98,18 @@ class AgentSupportReportTests(unittest.TestCase):
     def test_real_runtime_logs_receipt_state_and_report_excludes_data(self):
         from tests import test_remote_result_completion as cases
         with tempfile.TemporaryDirectory() as folder:
-            runtime,model,executions=cases.RemoteResultCompletionTests().runtime(folder)
+            runtime,model,executions=cases.RemoteResultCompletionTests.runtime(self,folder)
             try:
                 # Existing fixture helper starts in manual approval mode.
-                result=runtime.submit(cases.FIXTURE['prompt'])
+                # This contract tests receipt logging for a known exact query;
+                # natural discovery needs separately configured catalog context.
+                result=runtime.propose_query(cases.FIXTURE['source'],cases.FIXTURE['query'],cases.FIXTURE['reason'])
                 if result['status']=='awaiting_approval':
                     runtime.respond(result['requests'][0]['id'],approved=True)
                 report=summarize(runtime.diagnostics.path)
                 self.assertTrue(report['found'])
                 self.assertEqual(report['runtime']['route'],'langgraph-v1')
+                self.assertEqual(report['runtime']['data_backend'],'databricks')
                 self.assertTrue(report['runtime']['loaded_delivery_guard'])
                 self.assertEqual(report['remote']['states'].get('completed'),1)
                 self.assertEqual(len(executions),1)
@@ -126,6 +129,7 @@ class AgentSupportReportTests(unittest.TestCase):
             app=AppTest.from_file(str(Path(__file__).resolve().parents[1]/'main.py'),default_timeout=20).run()
             self.assertFalse(app.exception)
             runtime=app.session_state['v1_runtime']
+            runtime.recovery.intent_mode = 'contract_fixture'  # UI execution/rendering fixture, not an intent score.
             try:
                 pending={**runtime.inspect(),'requests':[{}],'state':'awaiting_approval'}
                 with patch.object(runtime,'inspect',return_value=pending), patch.object(runtime,'resume') as resume:

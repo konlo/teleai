@@ -22,7 +22,7 @@ class AnalysisGroupSummaryTests(unittest.TestCase):
             'value': [2.0, 4.0, 10.0, 20.0],
         })
         with tempfile.TemporaryDirectory() as root:
-            runtime = GraphAnalysisRuntime(root, 'owner', 'group-summary', ForbiddenModel())
+            runtime = GraphAnalysisRuntime(root, 'owner', 'group-summary', ForbiddenModel(),intent_mode='contract_fixture')
             parent = runtime.datasets.register(frame.copy(), source='synthetic.events',
                 coverage='complete', predicate_known=True, snapshot='fixture:v1')
             runtime.context.reference_context[:] = [fixture_reference_context(parent.source, frame)]
@@ -60,7 +60,7 @@ class AnalysisGroupSummaryTests(unittest.TestCase):
             'measure': [2.0, 4.0, 10.0, 20.0, 1000.0],
         })
         with tempfile.TemporaryDirectory() as root:
-            runtime = GraphAnalysisRuntime(root, 'owner', 'named-groups', ForbiddenModel())
+            runtime = GraphAnalysisRuntime(root, 'owner', 'named-groups', ForbiddenModel(),intent_mode='contract_fixture')
             parent = runtime.datasets.register(frame.copy(), source='fixture.dynamic_table',
                 coverage='complete', predicate_known=True, snapshot='fixture:v1')
             runtime.context.reference_context[:] = [fixture_reference_context(parent.source, frame)]

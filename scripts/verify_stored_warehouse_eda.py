@@ -26,7 +26,7 @@ def evaluate(storage,owner,conversation,request_id,missing_values):
             raise AssertionError('Re-execution forbidden; use persisted receipt')
         return forbidden
     def runtime():return GraphAnalysisRuntime(storage,owner,conversation,ForbiddenModel(),
-                         connection_identity='stored-verification-no-network',remote_factory=factory)
+                         connection_identity='stored-verification-no-network',remote_factory=factory,intent_mode='contract_fixture')
     r=runtime()
     report={'generated_at':datetime.now(timezone.utc).isoformat(),
             'mode':'actual stored Databricks data, production graph, independent Pandas oracle',

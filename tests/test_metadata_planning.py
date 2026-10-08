@@ -12,7 +12,7 @@ from scripts.evaluate_analysis_statistics import ForbiddenModel
 class MetadataPlanningTests(unittest.TestCase):
     def test_group_and_pivot_bind_without_any_data_scan(self):
         with tempfile.TemporaryDirectory() as root:
-            r=GraphAnalysisRuntime(root,'test','metadata-planning',ForbiddenModel())
+            r=GraphAnalysisRuntime(root,'test','metadata-planning',ForbiddenModel(),intent_mode='contract_fixture')
             frame=pd.DataFrame({'segment':['a','a','b'],'measure':[2.,4.,7.], 'flag':['x','y','y'],'unused':['wide'*500]*3})
             frame=pd.concat([frame]*100,ignore_index=True)
             info=r.datasets.register_batches([frame],columns=list(frame.columns),source='arbitrary.dynamic',

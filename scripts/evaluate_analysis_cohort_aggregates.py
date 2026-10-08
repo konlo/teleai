@@ -46,7 +46,7 @@ def independent_cohorts(frame: pd.DataFrame) -> tuple[pd.DataFrame, pd.DataFrame
 
 
 def run_case(root: str, conversation: str, prompt: str, frame: pd.DataFrame) -> dict:
-    runtime = GraphAnalysisRuntime(root, "evaluation", conversation, ForbiddenModel())
+    runtime = GraphAnalysisRuntime(root, "evaluation", conversation, ForbiddenModel(),intent_mode='contract_fixture')
     parent = runtime.datasets.register(
         frame.copy(), source=SOURCE, coverage="complete", predicate_known=True,
         snapshot="fixture:cohort-aggregate")

@@ -36,7 +36,7 @@ def arbitrary_frame() -> pd.DataFrame:
 def run_arbitrary(root: str) -> dict:
     frame = arbitrary_frame()
     before = frame.copy(deep=True)
-    runtime = GraphAnalysisRuntime(root, "evaluation", "winsor-arbitrary", ForbiddenModel())
+    runtime = GraphAnalysisRuntime(root, "evaluation", "winsor-arbitrary", ForbiddenModel(),intent_mode='contract_fixture')
     info = runtime.datasets.register(
         frame.copy(), source=SOURCE, coverage="complete", predicate_known=True,
         snapshot="fixture:winsorization")

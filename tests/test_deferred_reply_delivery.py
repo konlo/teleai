@@ -67,10 +67,13 @@ class DeferredReplyDeliveryTests(unittest.TestCase):
                 return {'status':'ready','dataset':asdict(info)}
             return execute
         with tempfile.TemporaryDirectory() as root, \
-                patch.dict(os.environ, {'TELLY_V1_STORAGE':root, 'TELLY_REQUIRE_REMOTE_APPROVAL':'false'}), \
+                patch.dict(os.environ, {'TELLY_V1_STORAGE':root,'TELLY_REQUIRE_REMOTE_APPROVAL':'false',
+                    'TELLY_DATA_BACKEND':'databricks','DATABRICKS_CATALOG':FIXTURE['source'].split('.')[0]}), \
+                patch('core.analysis_agent.recovery.RecoveryMiddleware._next_local',return_value=None), \
                 patch('core.analysis_agent.model_provider.build_analysis_chat_model', return_value=NarratedModel()), \
                 patch('core.analysis_agent.databricks.make_executor', side_effect=factory):
             app = AppTest.from_file(str(Path(__file__).resolve().parents[1]/'main.py'),default_timeout=20).run()
+            app.session_state['v1_runtime'].recovery.intent_mode = 'contract_fixture'  # Render/receipt fixture only.
             app.chat_input[0].set_value(FIXTURE['prompt']).run()
             try:
                 self.assertFalse(app.exception)

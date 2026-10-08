@@ -21,7 +21,7 @@ class SchemaObservationAuthorityTests(unittest.TestCase):
                         {'name': 'flag', 'dtype': 'INTEGER'}, {'name': 'label', 'dtype': 'STRING'}]}
         with tempfile.TemporaryDirectory() as root:
             r = GraphAnalysisRuntime(root, 'test', 'source-mentions', CapturingModel(),
-                reference_context_loader=lambda: [saved])
+                reference_context_loader=lambda: [saved],intent_mode='contract_fixture')
             try:
                 for token in [source, '`metrics`.`flag`.`events`', '`metrics.flag.events`']:
                     text = token + '에서 measurement 평균을 구해줘'
@@ -64,7 +64,7 @@ class SchemaObservationAuthorityTests(unittest.TestCase):
                              {'name': 'event_id', 'dtype': 'INTEGER'}]}
         with tempfile.TemporaryDirectory() as root:
             runtime = GraphAnalysisRuntime(root, 'test', 'schema-authority', CapturingModel(),
-                reference_context_loader=lambda: [saved])
+                reference_context_loader=lambda: [saved],intent_mode='contract_fixture')
             try:
                 aggregate = runtime.datasets.register(pd.DataFrame({'n': [3]}),
                     source='events', query='SELECT COUNT(*) AS n FROM events',

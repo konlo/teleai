@@ -18,7 +18,8 @@ def semantic_metadata(context, dataset_id):
     tables = [item for item in context.reference_context
               if _source_key(item.get('table', '')) == _source_key(info.source)]
     from core.analysis_metadata_discovery import stored_column_definitions, compatible_storage_type
-    approved = stored_column_definitions(context.datasets, info.source)
+    approved = stored_column_definitions(context.datasets, info.source,
+                                        dialect=getattr(context, 'sql_dialect', 'databricks'))
     if approved:
         actual = context.datasets.inspect(dataset_id).get('dtypes', {})
         # SQL and Parquet type spellings differ. Adapt only an explicit safe

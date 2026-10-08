@@ -24,7 +24,7 @@ class NoModelCall(BaseChatModel):
 class ChartRangeFollowupTests(unittest.TestCase):
     def test_web_wording_binds_interval_to_grounded_column(self):
         with tempfile.TemporaryDirectory() as root:
-            runtime = GraphAnalysisRuntime(root, 'owner', 'scope-only', NoModelCall())
+            runtime = GraphAnalysisRuntime(root, 'owner', 'scope-only', NoModelCall(),intent_mode='contract_fixture')
             info = runtime.datasets.register(pd.DataFrame({'metric': [0, 1, 3, 5, 6, 100]}),
                 source='catalog.schema.events', coverage='complete', predicate_known=True)
             runtime.select_dataset(info.id)
@@ -39,7 +39,7 @@ class ChartRangeFollowupTests(unittest.TestCase):
 
     def test_range_followup_creates_new_local_chart_and_preserves_root(self):
         with tempfile.TemporaryDirectory() as root:
-            runtime = GraphAnalysisRuntime(root, 'owner', 'range-followup', NoModelCall())
+            runtime = GraphAnalysisRuntime(root, 'owner', 'range-followup', NoModelCall(),intent_mode='contract_fixture')
             frame = pd.DataFrame({'metric': [0, 1, 3, 5, 6, 100]})
             info = runtime.datasets.register(frame, source='catalog.schema.events',
                 coverage='complete', predicate_known=True)
