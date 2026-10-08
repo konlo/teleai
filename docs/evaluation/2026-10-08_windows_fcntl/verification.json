@@ -11,7 +11,68 @@
     "compile": "PASS",
     "diff_check": "PASS"
   },
-  "windows_native_status": "CI_PENDING",
+  "windows_native_status": "PASS",
   "windows_api_documentation": "https://docs.python.org/3.11/library/msvcrt.html",
-  "limits": "Local tests ran on macOS. Windows stub checks are not native execution. Databricks SQL connectivity and full Windows agent journeys are not established by these tests."
+  "limits": "Real Windows runner passed import, native lock contention/release and initial Databricks page with fixture configuration; no live SQL executed. This does not establish company Databricks connectivity or full Windows analysis journeys.",
+  "windows_native_evidence": {
+    "run_id": 37741165163,
+    "head_sha": "2ee4afd1162f8a6633063cf5048894c7e4f7c83f",
+    "url": "https://github.com/konlo/teleai/actions/runs/37741165163/job/113191970672",
+    "steps": [
+      {
+        "name": "Set up job",
+        "status": "completed",
+        "conclusion": "success"
+      },
+      {
+        "name": "Run actions/checkout@v7",
+        "status": "completed",
+        "conclusion": "success"
+      },
+      {
+        "name": "Run actions/setup-python@v7",
+        "status": "completed",
+        "conclusion": "success"
+      },
+      {
+        "name": "Install runtime dependencies",
+        "status": "completed",
+        "conclusion": "success"
+      },
+      {
+        "name": "Import the agent on Windows without fcntl",
+        "status": "completed",
+        "conclusion": "success"
+      },
+      {
+        "name": "Check native Windows contention and release",
+        "status": "completed",
+        "conclusion": "success"
+      },
+      {
+        "name": "Render initial Databricks page without executing SQL",
+        "status": "completed",
+        "conclusion": "success"
+      },
+      {
+        "name": "Post Run actions/setup-python@v7",
+        "status": "completed",
+        "conclusion": "success"
+      },
+      {
+        "name": "Post Run actions/checkout@v7",
+        "status": "completed",
+        "conclusion": "success"
+      },
+      {
+        "name": "Complete job",
+        "status": "completed",
+        "conclusion": "success"
+      }
+    ]
+  },
+  "other_ci_status": {
+    "status": "in_progress",
+    "conclusion": ""
+  }
 }
