@@ -9,8 +9,11 @@ import os
 from copy import deepcopy
 
 from langchain_ollama import ChatOllama
-from langchain_openai import ChatOpenAI
+from langchain_openai import ChatOpenAI, AzureChatOpenAI
+from typing import Literal
 from langchain_core.utils.function_calling import convert_to_openai_tool
+from core.databricks_settings import env_value, normalize_hostname
+from core.analysis_agent.provider_config import configured_provider, azure_options
 
 
 def _databricks_schema(schema):
@@ -42,6 +45,18 @@ def _databricks_schema(schema):
     return result
 
 
+class AzureAnalysisChatModel(AzureChatOpenAI):
+    """Keep legacy Azure token parameters configurable across deployments."""
+    token_parameter: Literal['max_tokens', 'max_completion_tokens'] = 'max_tokens'
+
+    def _get_request_payload(self, *args, **kwargs):
+        payload = super()._get_request_payload(*args, **kwargs)
+        other = 'max_completion_tokens' if self.token_parameter == 'max_tokens' else 'max_tokens'
+        if other in payload:
+            payload[self.token_parameter] = payload.pop(other)
+        return payload
+
+
 class DatabricksChatModel(ChatOpenAI):
     """Adapt OpenAI chat payloads to Databricks serving's max_tokens field."""
 
@@ -64,7 +79,12 @@ class DatabricksChatModel(ChatOpenAI):
 def build_analysis_chat_model(policy, *, provider=None, environ=None):
     """Construct one graph-compatible tool-calling model without a network call."""
     config = os.environ if environ is None else environ
-    selected = (provider or config.get('TELLY_ANALYSIS_MODEL_PROVIDER') or 'ollama').casefold()
+    selected = provider.strip().casefold() if provider else configured_provider(config)
+    if selected == 'azure':
+        # No temperature/top_p/seed overrides: some company deployments are
+        # reasoning models that reject those parameters. The graph owns retry.
+        return AzureAnalysisChatModel(**azure_options(config), max_tokens=4096,
+            timeout=policy.model_timeout_seconds, max_retries=0)
     if selected == 'ollama':
         return ChatOllama(
             model=config.get('OLLAMA_MODEL', 'gemma4:e4b'),
@@ -74,14 +94,13 @@ def build_analysis_chat_model(policy, *, provider=None, environ=None):
         )
     if selected != 'databricks':
         raise ValueError('Unsupported analysis model provider')
-    host = str(config.get('DATABRICKS_HOST') or '').rstrip('/')
-    token = str(config.get('DATABRICKS_TOKEN') or '')
+    host = env_value(config, 'DATABRICKS_HOST')
+    token = env_value(config, 'DATABRICKS_TOKEN', 'DATABRICKS_ACCESS_TOKEN')
     if not host or not token:
         raise ValueError('Databricks model serving requires DATABRICKS_HOST and DATABRICKS_TOKEN')
-    if not host.startswith(('https://', 'http://')):
-        host = 'https://' + host
-    if not host.startswith('https://'):
+    if '://' in host and not host.startswith('https://'):
         raise ValueError('Databricks model serving requires HTTPS')
+    host = 'https://' + normalize_hostname(host)
     return DatabricksChatModel(
         model=config.get('TELLY_DATABRICKS_MODEL', 'databricks-qwen3-next-80b-a3b-instruct'),
         base_url=host + '/serving-endpoints', api_key=token,

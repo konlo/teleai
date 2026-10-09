@@ -21,13 +21,12 @@ def applies(goal, current=None):
 
 
 def model_for(model):
-    from langchain_ollama import ChatOllama
-    if not isinstance(model,ChatOllama):return None
+    from core.analysis_agent.model_roles import json_role
     properties=response_schema()['properties']
     keys=['conditions','any_conditions']
-    return model.model_copy(update={'num_predict':1024,'reasoning':False,'format':{
+    return json_role(model, {
         'type':'object','additionalProperties':False,'required':keys,
-        'properties':{k:properties[k] for k in keys}}})
+        'properties':{k:properties[k] for k in keys}}, 1024)
 
 
 def audit(interpreter,current,data,goal):

@@ -53,7 +53,13 @@ st.query_params['conversation']=cid
 from ui.analysis_preferences import render_provider_selector
 with st.sidebar:
     st.caption('데이터 소스: '+backend.label)
-    provider = render_provider_selector(root, cid)
+    from ui.analysis_connections import render_database_connection_check
+    render_database_connection_check(backend, root)
+    try:
+        provider = render_provider_selector(root, cid)
+    except ValueError as exc:
+        st.error(str(exc))
+        st.stop()
 runtime_id = (cid, provider, policy.require_remote_approval, data_backend, connection_identity)
 if st.session_state.get('v1_runtime_id')!=runtime_id:
     previous=st.session_state.pop('v1_runtime',None)

@@ -17,9 +17,13 @@ def snapshot(current, context):
 
 
 def prior_analysis(current, context):
-    previous = (current.get('confirmed_analysis')
-                if (current.get('explanation_only') or current.get('status')=='cancelled'
-                    or (current.get('status')=='blocked' and current.get('goal_interpretation_error')))
+    confirmed = current.get('confirmed_analysis') or {}
+    # An unfinished/failed request is not a new verified analytical subject.
+    # Keep its pending intent elsewhere; omitted-source follow-ups must use
+    # the last completed analysis, even after exhaustion or restart.
+    previous = (confirmed if (current.get('explanation_only')
+                             or (current.get('status') != 'complete'
+                                 and confirmed.get('status') == 'complete'))
                 else current)
     previous = previous or {}
     selected = context.selected_dataset_id if context else ''

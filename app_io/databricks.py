@@ -4,12 +4,14 @@ Utility helpers to talk to Databricks SQL Warehouse.
 
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
+import os
 from typing import Optional
 
 import pandas as pd
 
 from utils.perf_monitor import track_time
+from core.databricks_settings import env_value, normalize_hostname
 
 try:  # pragma: no cover - optional dependency
     from databricks import sql as databricks_sql
@@ -22,24 +24,28 @@ class DatabricksConnectorError(RuntimeError):
 
 
 def _normalize_hostname(host: str) -> str:
-    value = (host or "").strip()
-    if value.startswith("https://"):
-        value = value[len("https://") :]
-    elif value.startswith("http://"):
-        value = value[len("http://") :]
-    return value.strip("/")
+    return normalize_hostname(host)
 
 
 @dataclass
 class DatabricksConfig:
     server_hostname: str
     http_path: str
-    access_token: str
+    access_token: str = field(repr=False)
     catalog: Optional[str] = None
     schema: Optional[str] = None
 
     def __post_init__(self) -> None:
         self.server_hostname = _normalize_hostname(self.server_hostname)
+
+    @classmethod
+    def from_env(cls, *, environ=None):
+        config = os.environ if environ is None else environ
+        return cls(env_value(config, 'DATABRICKS_HOST'),
+                   env_value(config, 'DATABRICKS_HTTP_PATH'),
+                   env_value(config, 'DATABRICKS_TOKEN', 'DATABRICKS_ACCESS_TOKEN'),
+                   env_value(config, 'DATABRICKS_CATALOG') or None,
+                   env_value(config, 'DATABRICKS_SCHEMA') or None)
 
     def table_identifier(self, table: str) -> str:
         """Compose a catalog.schema.table reference for the given table."""

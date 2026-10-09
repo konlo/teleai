@@ -341,7 +341,9 @@ class PersistentDatasets(DatasetStore):
                       for group in range(parquet.metadata.num_row_groups)]
             null_counts[name] = (sum(item.null_count for item in counts)
                 if all(item is not None and item.has_null_count for item in counts) else None)
-        return {'dataset': asdict(info), 'dtypes': dtypes, 'null_counts': null_counts,
+        return {'dataset': asdict(info), 'dtypes': dtypes,
+                'storage_dtypes': {field.name: str(field.type) for field in schema
+                                  if field.name in info.columns}, 'null_counts': null_counts,
                 'preview': self.db.dataset_preview(dataset_id) or []}
 
     def register_batches(self, batches, *, columns, source, max_rows,

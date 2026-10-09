@@ -2,6 +2,10 @@
 
 ## Current Status
 
+- **2026-10-08 Databricks konlo31 재평가 완료**: SQL 접속 복구 후 새 브라우저 대화에서31원문 모두 제출,1PASS/30FAIL(3.23%). 첫 목록 SQL 성공 후 의도 판독의32테이블 JSON 입력이 UTF8 보수적 한도를 초과하여 나머지 모두 호출 전 차단. SQL/LLM 응답 장애와 구분,범용 NO-GO. .env 보존/서버8504 Databricks,Ollama qwen3:8b. [실패 원인·전체31결과](docs/evaluation/2026-10-08_konlo_databricks_retry_222347/report.md).
+
+- **2026-10-08 회사 Azure/Databricks 경로 보강**: 현재 agent의 LLM_PROVIDER=azure 무시 및 UI 저장 Ollama 우선/운영 점검 Ollama 전용 누락을 수정했다. 기존 Azure 설정 계약·의도/참조/모집단 JSON 역할을 현재 agent에 연결하고 LLM 없는 SELECT 1 진단을 CLI/화면에 추가했다. 전체 앱670건=666PASS/4SKIP, migration137PASS. Azure SDK 가짜 HTTP→SQL 대역→10행 출력/AppTest 통과이며 실제 회사 서버 원인 및 접속/API는 미확인, 범용 NO-GO 판정은 유지. 기존 .env 수정 없음. [검증 근거](docs/evaluation/2026-10-08_azure_databricks_service/verification.json).
+
 - **2026-10-08 Databricks konlo31 평가 차단**: 설정/서버8504를Databricks로 전환, 모델Ollama/qwen3:8b 유지. 웨어하우스API200·STOPPED, connector OpenSession/독립SELECT1 API/웨어하우스start 모두400. 새 웹 대화 첫 문항도SQL미제출 remote_blocked(29.427초, 모델2회); 나머지30 NOT_RUN, 점수 미산정. 기존62scope 자산/선택 변경0. [증거와 재개 조건](docs/evaluation/2026-10-08_konlo_databricks/report.md).
 
 - **2026-10-08 konlo31 실제 브라우저 평가 완료**: 저장 시나리오 원문31개를 새 대화ba79a02e에서 MySQL/Ollama qwen3:8b 최초 순차 제출31회·재제출0회로 평가. 독립 SQL/PNG/화면 대조17PASS·14FAIL(54.8%). 8/25 예산 소진,9~16 실패 상태의 후속 참조 차단,17/18 조건 소실,27/28 없는 출처 대체. 잘못된 완료4건으로 NO-GO. p50 46.0초/p95 150.6초/최대246.8초, 모델89회. 기존9대화95자산·선택과 이번17자산 및 제품 코드 변경0. [전체31개 결과](docs/evaluation/2026-10-08_konlo_scenario_1/report.md). 회사Databricks/공식benchmark 점수와 구분, 제품수정·commit/push 없음.
@@ -3004,3 +3008,87 @@ Task definitions and acceptance conditions: docs/agent_remaining_tasks_2026-09-1
 - **Action** [Agent: /root]: Azure/Databricks 설정 예제와 관련 작업 기록만 검토하여 커밋하고 현재 브랜치를 push한다. 실제 .env는 제외한다.
 - **Outcome**: .env.example 및 .env_azure_example 파싱과 빈 인증/접속 항목 확인 통과, git diff --check 통과. 두 예제와 project_progress.md만 커밋 대상으로 선택했다. Azure 실제 에이전트 연결은 미완료임을 예제에 유지한다.
 - **Outcome**: bb889f384218db4a89f21a6c5a11084638ee67a3 커밋을 origin/codex/agentic-analysis-rc-2026-09-14에 push 완료. git ls-remote로 원격 해시와 로컬 HEAD 일치 확인. 실제 .env는 추적/커밋하지 않았다.
+
+## [2026-10-08 17:05:04] [Agent: /root] User Request: AZURE_STORAGE_ACCOUNT, BLOB_CONNECTION_STR, DATABRICKS_HOST/HTTP_PATH/TOKEN 연결 관련 코드 존속 및 삭제 여부 확인
+- **Action** [Agent: /root]: 실제 .env는 읽거나 수정하지 않고 코드 참조와 Git 이력을 통해 Blob 및 Databricks 설정 소비 경로를 확인한다.
+- **Outcome**: DATABRICKS_HOST/HTTP_PATH/TOKEN은 core/analysis_agent/databricks.py:21-23에서 읽고 core/analysis_databricks.py:23-26에서 databricks.sql.connect 및 SQL 실행에 사용한다. AZURE_STORAGE_ACCOUNT/BLOB_CONNECTION_STR 소비 코드는 현재 추적 소스 및 로컬 전체 Git 이력 검색에서 발견되지 않았다. app_io/blob.py는 삭제되지 않았으며 초기 커밋 536c480부터 현재까지 동일한 NotImplementedError scaffold이다.
+- **Verification**: 실제 .env와 네트워크 없이 fixture 환경으로 Databricks 설정 파싱 검증 및 Blob 함수 미구현 확인 통과. 다른 서버/다른 저장소 또는 로컬에 없는 Git 이력의 이전 구현은 확인 범위 밖이다. 코드 변경 없음.
+
+## [2026-10-08 17:08:04] [Agent: /root] User Request: 알려준 .env 항목을 사용하는 기존 Databricks 연결 경로를 활용하여 코드 수정
+- **Action** [Agent: /root]: .env 원본은 읽거나 수정하지 않고 현재/기존 SQL 연결 설정 소비 경로 및 회귀 테스트를 점검한다. Blob 항목 용도는 비동기 질문으로 확인한다.
+- **Artifact Update**: core/databricks_settings.py에 비밀값을 출력하지 않는 공통 환경변수 파서 및 workspace 호스트 정규화를 추가했다. agent/기존 app_io 설정, Databricks 모델 serving, deployment preflight가 같은 파서를 사용한다. 대소문자 혼용과 공백, 빈 토큰의 alias fallback을 처리하고 충돌 시 중단한다. 기존 SQL 실행 경로는 유지한다.
+- **Artifact Update**: 두 .env 예제에 AZURE_STORAGE_ACCOUNT/BLOB_CONNECTION_STR 빈 항목과 현재 미사용 상태를 추가하고 README에 기존 설정 호환성을 설명했다. 실제 .env 수정 없음.
+- **Outcome**: 관련 회귀 61개 모두 통과(12.070초), dotenv 예제 검증 및 git diff --check 통과. 가짜 SQL 커넥터 인자 전달/2행 결과 저장, 실패 시 1회 호출 및 원본 보존을 검증했다. 회사 서버 및 실제 Databricks 접속은 미검증. Azure 모델 통합과 Blob 전송 구현은 이번 범위에 포함하지 않았고 Blob 용도 답변은 아직 필요하다.
+- **Evidence**: docs/evaluation/2026-10-08_databricks_settings/verification.json (작업 중 소스 해시 포함, 운영 GO 판정 아님).
+
+## [2026-10-08 17:30:23] [Agent: /root] User Request: MySQL 도입 전에는 정상인데 실제 서버에서 Databricks 연결이 실패하는 회귀 진단
+- **Action** [Agent: /root]: 기존 .env 수정 없이 MySQL 도입 전후 backend/SQL executor/model 초기화 경로를 비교하고 실제 서버 오류 stage/type/HTTP 정보는 비동기 질문으로 요청한다.
+- **Diagnosis**: MySQL 도입 커밋 9f641f6 이전과 현재 core/analysis_databricks.py의 Databricks SQL connect 인자는 동일했다. 반면 구형 core/llm.py의 Azure 선택은 현재 main/UI/model factory에 연결되지 않아 회사 .env가 Azure여도 Ollama를 선택하는 누락을 확인했다. 이 누락은 실제 서버의 DB 세션 장애 여부와 구분하며 사용자 서버 오류 정보는 아직 미제공이다.
+- **Artifact Update**: provider_config/model_roles/AzureAnalysisChatModel을 추가하여 기존 Azure 설정과 배포/API 버전을 사용하고 legacy max_tokens 또는 배포가 요구하는 max_completion_tokens를 명시적으로 선택한다. Azure 설정은 과거 대화 Ollama 선택에 우선하고 provider별 사전 점검을 한다. Azure 의도/참조/모집단 판독도 기존 provider로 처리한다.
+- **Artifact Update**: connection_probe.py, scripts/check_service_connections.py 및 화면 Databricks 연결 확인을 추가했다. 모델 없이 SELECT 1을 한 번 실행하며 설정/세션/SQL/결과수신 실패와 HTTP 상태를 안전한 JSON으로 반환한다. 기존 데이터/대화는 보존하고 rerender 시 재조회하지 않는다. .env 예제 및 README에 실제 사용법과 provider/token-parameter 우선순위를 반영했다.
+- **Outcome**: 대상73PASS, 전체앱670건(666PASS/4SKIP,92.570초), migration137PASS(16.694초). Azure SDK 가짜 HTTP 응답→agent 목표→Databricks 대역 SQL→10행 표 계약과 AppTest 실제 main 초기화/SQL-only 버튼/재조회 방지를 검증했다. compileall/git diff --check 통과. 기존 .env는 수정하지 않았다. 실제 회사 서버 및 실제 Azure API·Databricks 접속은 미검증이며 운영 GO 증거가 아니다.
+- **Evidence**: docs/evaluation/2026-10-08_azure_databricks_service/verification.json. 실제 서버에서는 수정 배포 후 python scripts/check_service_connections.py --database 결과의 stage/error_type/http_status로 원인을 확정해야 한다.
+
+## [2026-10-08 17:46:44] [Agent: /root] User Request: Azure/Databricks 연결 수정 내용 git push
+- **Action** [Agent: /root]: 수정 파일 및 검증 증거만 대상으로 상태와 민감정보 미포함을 점검하고 commit/push를 시도한다. 기존 .env는 제외한다.
+- **Verification**: 두 예제의 인증/접속 항목이 빈 값임을 확인했고, 현재 소스 SHA256이 검증 보고서와 일치했다. 전체앱666PASS/4SKIP 및 migration137PASS 근거와 git diff --cached --check를 확인했다. 수정22개만 stage, 실제 .env 제외.
+- **Outcome**: git commit 단계에서 .git/index.lock 생성 Operation not permitted로 실패했다. 현재 실행 환경의 Git 메타데이터 쓰기 제한 때문에 새 commit/push는 완료되지 않았다. 기존 stage된 수정은 보존했으며 사용자 일반 터미널에서 commit/push를 수행할 수 있다.
+
+## [2026-10-08 18:26:10] [Agent: /root] User Request: push 재시도
+- **Action** [Agent: /root]: Git staging/HEAD 상태를 확인하고 일반 git 경로로 commit 및 push를 재시도한다. 권한 제한 우회는 하지 않는다.
+- **Outcome**: 재시도에서도 git add가 .git/index.lock 생성 Operation not permitted로 실패했다. HEAD는 646d344이며 수정22개는 staged 상태로 보존되어 있다. project_progress.md 최신 실패 기록은 unstaged 상태이다. 신규 변경 push는 미완료다.
+
+## [2026-10-08 19:39:01] [Agent: /root] User Request: Git lock를 풀고 push
+- **Action** [Agent: /root]: 실제 lock 파일 존재와 실행 중 Git 프로세스를 확인하여 stale lock와 실행 환경의 메타데이터 쓰기 차단을 구분한다.
+- **Outcome**: .git/index.lock, HEAD.lock, config.lock, 현재 브랜치 ref lock 모두 존재하지 않는다. 삭제할 stale lock가 없으며 앞선 실패는 lock 파일 생성 자체가 실행 환경에서 차단된 것이다. ps 조회도 환경에서 차단되었으며 실행 중 Git 프로세스 부재를 주장하지 않는다. lock 삭제/권한 우회는 하지 않았고 push는 미완료다.
+
+## [2026-10-08 22:03:51] [Agent: /root] User Request: Databricks 실제 재접속 확인
+- **Action** [Agent: /root]: 기존 .env는 수정하지 않고 자식 프로세스의 데이터 backend만 Databricks로 지정하여 독립 SELECT 1을 실행한다. 실제 인증정보/주소/예외 원문은 출력하지 않고 45초 벽시계 한도를 적용한다. 이전 SQL 프로브는 중단 전 도구 실행이 없어 신규 제출이다.
+
+- **Outcome**: 실제 Databricks SQL 연결 및 SELECT 1 결과 수신 PASS(database_fetch, 13.46초). 현재 접속에서는 이전 HTTP400이 재현되지 않았다. LLM 호출 및 기존 .env 변경 없음. 실제 테이블/EDA 및 회사 서버 검증을 대신하는 결과는 아니다.
+- **Evidence**: docs/evaluation/2026-10-08_databricks_reconnect/probe.json.
+
+## [2026-10-08T22:06:41+09:00] [Agent: /root] Action: 이전에 승인된 Git push 재개
+- **Action**: 실행 환경의 Git 쓰기 제한이 해제되어 기존 Azure/Databricks 수정22개와 안전한 접속 증거 및 최신 작업 기록만 commit/push한다. 기존 .env 및 다른 평가 원문은 제외한다.
+- **Outcome**: 제품 수정 및 접속 증거를 e29c5bb39818e45d5042bdfa2c3097a05a147502로 commit/push 완료. origin/codex/agentic-analysis-rc-2026-09-14의 git ls-remote SHA와 로컬 HEAD 일치 확인. 실제 .env 제외. 이 최종 결과 기록만 로컬 후속 로그로 남긴다.
+
+## [2026-10-08T13:08:33.015569+00:00] [Agent: databricks-recovery] User Request: Chrome 및 현재 teleai 설정을 대조해 Databricks 연결 실패 복구
+- **Action**: 저장소 AGENTS.md 및 chatbot_project_manager/project_logger/release 기준을 읽음. 기존 미커밋 수정과 .env 보존. 관련 실행 프로세스 없음 확인. Chrome은 Free Edition workspace이며 자동 브라우저 제어 불가 안내로 콘솔 자동 조작 중단; 기존 앱 인증을 통한 공식 API 최소 확인으로 진행. 과거 HTTP400과 최신 SELECT 1 성공 기록을 구분하여 현재 상태 재검증. commit/push/deploy 수행하지 않음.
+
+- **Verification** [Agent: databricks-recovery]: 2026-10-08 13:09 UTC 공식 warehouse metadata HTTP200, RUNNING/HEALTHY. Chrome workspace와 실제 설정 host 일치, API warehouse ID/ODBC host/path와 앱 설정 일치. 기존 .env와 유효 설정 동일. 13:10 UTC 앱 SQL-only probe SELECT 1 PASS(database_fetch, 2.731초, connect 1회), 실제 모델 호출 없음. 관련 설정/SQL 실패/화면 회귀 19PASS 및 git diff --check PASS.
+- **Outcome**: 현재 연결 정상; 과거 HTTP400 미재현이며 당시 원인은 미확정. 이번 작업의 제품 코드/.env/모델/warehouse/인증/권한 변경 및 commit/push/deploy 없음. 과거 start event·계정 알림은 Chrome 자동화 불가로 미확인; 전체 분석·모델 API·회사 원격 서버는 미검증.
+- **Evidence**: docs/evaluation/2026-10-08_databricks_chrome_recheck/verification.json.
+
+## [2026-10-08T22:23:15+09:00] [Agent: /root] User Request: Databricks로 전환하여 prompt_konlo_test_scenario_#1 수행
+- **Action**: 기존 .env 보존, Databricks backend의 새 실행/대화로 저장된31턴을 실제 브라우저에서 재생하고 독립 기대값/SQL/범위/이미지/실패를 평가한다. 프로젝트 관리·로깅·Streamlit skill 및 출시 기준 적용.
+- **Outcome**: Databricks 서버8504 실행 및 실제 UI31문항 완료.1PASS/30FAIL; 최초두번째 이후 모두 ModelContextBudgetExceeded, 원격SQL0회. 고유 run_id/request_id31개를 대조했다. 기존 목록 자산/선택 불변. 제품코드 수정·재제출·.env 변경 없음, NO-GO 유지.
+- **Diagnosis**: goal_interpreter.payload의32개 테이블 반복JSON이4,667바이트(재구성), 최초실제요청 시스템6,661+메시지7,142/직렬화14,711+여유640이 입력한도14,336초과. 토큰실측이 아닌UTF8보수적추정. 의도JSON 입력용 의미 보존 압축/실패 맥락 유지 보강 후 새 대화 재평가 필요.
+- **Evidence**: docs/evaluation/2026-10-08_konlo_databricks_retry_222347/report.md, report.json, NN_receipt.json, oracles.json, input_diagnosis.json 및31_final.png. Azure/회사Windows 미검증.
+
+## [2026-10-08T22:36:36+09:00] [Agent: /root] User Request: 계획 중 미수행 작업 수행
+- **Action**: Databricks konlo31 baseline의 공통 입력차단을 의미 보존 압축/실패 요청 맥락 보존으로 수정하고 관련 회귀 및 실제31턴 새 대화 평가를 재수행한다. 기존 .env 및 최초실패 증거는 보존한다.
+
+- 2026-10-08 브라우저 재평가: 7/31 실행, 4 PASS / 3 FAIL. 후속 실패 원인 공통 수정 위해 중간 결과를 interrupted_report.json으로 동결. 나머지 24건은 미실행이며 통과로 세지 않음. 문자열 Arrow 스키마를 object로 변환한 후 미확인 처리하는 경로와 exhausted 요청이 confirmed_analysis를 대체하는 경로를 함께 수정한다.
+
+- 2026-10-08 23:15 [Agent: /root] 최종 batch 수정: 관련 테이블만 포함하는 goal 입력 압축, inference 전 pending checkpoint, confirmed snapshot 재귀 제거, Databricks LIMIT0 typed Parquet 문자열 스키마 보존, 모든 미완료 상태에서 마지막 완료 맥락 유지. 최종 앱 전체674건(670 PASS/4 SKIP), migration137 PASS; 추가 end-to-end 회귀3건 PASS(1개는 전체 discovery 이후 추가). 실제 UI 새 대화1~5 PASS,6~8 필터/합계는 맞으나 고정 oracle의 나이분포와 학력분포 선택 차이. NO-GO, 재평가 계속. .env 보존.
+
+## Daily Wrap-ups — 2026-10-08T23:48:19.519965+09:00 Databricks 계획 미수행 작업
+- [Agent: /root] goal 입력 압축/pending checkpoint/last confirmed 보존/typed empty schema 보존 완료. 앱675건(671PASS/4SKIP), migration137PASS, compile·diff PASS. 실제 고정31문항 모두 실행:13PASS/18FAIL, input budget failure0, 과거 자산 변경·삭제0. scope audit 필터 해제·출처 namespace 대체·시각화 표현 명세 누락 등 추가 차단 원인을 도출했다. NO-GO. .env 불변, 회사Azure/Windows 미검증.
+- Evidence: docs/evaluation/2026-10-08_konlo_databricks_final_230549/report.md, report.json, go_gate.json. 중간7건 중단 기록은 별도 보존; 전체31점수에 합산하지 않음.
+
+## Next Action Items — Databricks31 실사용 차단 문제
+- P0: scope delta를 독립 계약으로 검증하여 metadata→10행→산점도에서 기존 필터의 묵시적 해제를 방지.
+- P0: 명시된 DB/schema/table identity와 pending unknown subject를 원문에 바인딩하고 다른 namespace의 suffix 대체를 거부.
+- P1: 구조화 goal의 legend/colors/stacked를 도구·renderer·completion evidence까지 연결.
+- P1: 없는 테이블의 catalog 탐색/구체적 설명·질문으로 복구. 축 미지정 visualization의 기대값/명확화 기준도 검토.
+- 위 묶음 수정 후 별도 새 build의 실제31문항 재평가; current report를 덮어쓰지 않음.
+
+## [2026-10-08 23:51:06] [Agent: /root] User Request: .env_azure_example에 제공한 Databricks 연결 설정 반영
+- **Action**: 기존 .env 보존. 공유용 예제에 비밀이 아닌 host/http_path/catalog/schema를 반영하고, 제공된 토큰은 Git에서 제외한 개인용 companion 설정에만 보관한다. 요청·로그·검증 출력에는 토큰을 기록하지 않는다.
+- **Outcome** [2026-10-08 23:52:08]: .env_azure_example에 host/http_path/catalog/schema 반영. 실제 토큰은 .env_azure_example.local에 보관(권한0600), .gitignore에 정확한 파일명 추가. Azure LLM/Databricks backend 유지. dotenv 파싱·연결설정 validate·토큰 분리·권한·Git ignore·diff check PASS. 기존 .env 및 실행중 서버는 변경하지 않았고 실제 접속/SQL/commit/push는 수행하지 않았다.
+
+## [2026-10-09 09:11:42] [Agent: /root] User Request: git push
+- **Action**: 프로젝트 관리/로깅 skill 적용. 현재 agent 수정·회귀 테스트·공유용 Azure/Databricks 예제·최종 평가 요약을 commit/push한다. 실제 .env/토큰 companion과 과거 원문 평가 자료는 제외하며 staged secret 검사와 원격 SHA 일치를 검증한다. 현재13/31 실제 평가 NO-GO를 유지한다.
+- **Verification** [2026-10-09 09:12:48]: 제품 소스가 실제31문항 및675건 회귀 검증 build 해시와 일치. 추가 관련5건 PASS(7.474초), 기존전체671PASS/4SKIP 및migration137PASS 근거 유지. .env/개인토큰 companion은 Git ignore 확인. push 대상 요약 문서에서 원문NN 로그가 로컬 전용임을 명시한다.
+
+- **Outcome** [2026-10-09 09:14:28] [Agent: /root]: 요청한 변경 22개 파일을 커밋 4860700으로 origin/codex/agentic-analysis-rc-2026-09-14에 push 완료. git ls-remote의 원격 SHA와 로컬 HEAD 일치를 확인했고 tracked 변경은 없음. 실제 토큰·개인 설정·과거 원문 평가 자료는 제외. 실제 사용자 시나리오 13/31 통과에 따른 NO-GO 판정은 유지. 이 결과 기록을 별도 문서 커밋으로 동기화한다.

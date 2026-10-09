@@ -76,7 +76,15 @@ python3.11 -m venv .telly_runtime/eval-venv
 
 이미 `../ai_agent_eval/.venv`를 사용 중이면 해당 환경의 Python으로 같은 파일을 설치할 수 있습니다. Agent 실행·대화 평가 스크립트는 앱 환경에서, `scripts/evaluate_deepeval_real_report.py`, `scripts/calibrate_deepeval_judge.py` 및 Spider2 공식 채점기는 평가 환경에서 실행합니다. Spider2 저장소·벤치마크 데이터는 pip 패키지가 아니므로 별도로 준비해야 합니다. 이 파일은 현재 사용하는 SQLite 채점 경로를 지원하며, BigQuery 실제 실행에 필요한 인증이나 다른 Spider2 실행 환경까지 설정하지는 않습니다.
 
-현재 모델 어댑터는 Ollama입니다. 기존 `.env`의 `OLLAMA_MODEL`, `OLLAMA_BASE_URL`을 사용합니다. Databricks 설정은 `DATABRICKS_HOST`, `DATABRICKS_HTTP_PATH`, `DATABRICKS_TOKEN`(또는 `DATABRICKS_ACCESS_TOKEN`), `DATABRICKS_CATALOG`, `DATABRICKS_SCHEMA`입니다. 자격 증명을 저장소에 추가하지 마세요.
+분석 모델은 Ollama, Azure OpenAI, Databricks 모델 serving을 지원하며 데이터 DB와 별도로 선택합니다. 집에서는 `LLM_PROVIDER=ollama`와 기존 `OLLAMA_MODEL`, `OLLAMA_BASE_URL`을 사용합니다. 회사에서는 기존 `.env`의 `LLM_PROVIDER=azure`, `AZURE_OPENAI_API_KEY`, `AZURE_OPENAI_ENDPOINT`, `AZURE_OPENAI_DEPLOYMENT`, `AZURE_OPENAI_API_VERSION`을 사용합니다. API 버전이 없으면 구형 Azure 설정의 기본값 `2024-02-15-preview`를 유지합니다. 배포 이름·API 버전·자격 증명을 임의로 바꾸지 마세요. Azure 설정은 과거 대화의 Ollama 선택보다 우선합니다. `TELLY_ANALYSIS_MODEL_PROVIDER`를 명시하면 이 값이 가장 우선합니다. `TELLY_AZURE_TOKEN_PARAMETER`는 기본 `max_tokens`이며, 해당 배포가 요구하면 `max_completion_tokens`로 지정합니다. 모델별로 지원이 다른 temperature/top_p/seed는 강제하지 않습니다. Databricks DB 설정은 `DATABRICKS_HOST`, `DATABRICKS_HTTP_PATH`, `DATABRICKS_TOKEN`(또는 `DATABRICKS_ACCESS_TOKEN`), `DATABRICKS_CATALOG`, `DATABRICKS_SCHEMA`입니다. 자격 증명을 저장소에 추가하지 마세요.
+
+회사 서버에서 DB 장애와 모델 장애를 구분하려면 가상환경을 활성화한 뒤 다음 명령을 실행합니다. 기존 `.env`를 읽으며 LLM은 호출하지 않고 `SELECT 1`만 한 번 실행합니다. 출력에는 토큰·주소·예외 원문이 포함되지 않습니다.
+
+```powershell
+python scripts/check_service_connections.py --database
+```
+
+`database.status=PASS`이면 해당 프로세스의 DB 연결과 `SELECT 1`이 성공한 것입니다. `database.stage=database_open_session`이면 세션 연결 단계, `database_execute`이면 SQL 실행 단계에서 실패한 것입니다. `model_configuration=PASS`는 설정 형식 확인만 의미하며 실제 모델 API 성공 판정은 아닙니다. 화면의 **Databricks 연결 확인 → DB 연결만 확인**도 같은 SQL 전용 검사를 수행하고 안전한 결과를 기록합니다. 설정 변경 후에는 앱 프로세스를 재시작하세요.
 
 `TELLY_GOAL_MODEL`을 지정하면 Ollama의 의도 해석·원문 재검토 단계만 별도 모델을 사용합니다. 비워두면 `OLLAMA_MODEL`과 같습니다. 실행 계획 모델은 기존 설정을 사용하며, SQL 엔진 선택과는 독립적입니다. 선택한 모델이 로컬에 설치되어 있어야 하고 실제 사용자 여정으로 검증해야 합니다. 진단의 `goal_model`에서 적용된 모델을 확인할 수 있습니다.
 
@@ -94,6 +102,10 @@ DATABRICKS_TOKEN=<token>
 DATABRICKS_CATALOG=<catalog>
 DATABRICKS_SCHEMA=<schema>
 ```
+
+연결 설정은 기존 `DATABRICKS_HOST`, `DATABRICKS_HTTP_PATH`, `DATABRICKS_TOKEN`을 사용합니다. 앞뒤 공백은 제거하며, 기존 파일의 대소문자가 섞인 변수명도 인식합니다. 같은 변수의 대소문자별 값이 서로 다르면 연결 대상을 임의로 선택하지 않고 오류로 안내합니다. 새 설정은 위처럼 대문자로 작성하세요. `DATABRICKS_TOKEN`이 비어 있으면 `DATABRICKS_ACCESS_TOKEN`도 사용할 수 있습니다. `DATABRICKS_HOST`에는 workspace 호스트명 또는 루트 URL을 넣고 SQL warehouse 경로는 `DATABRICKS_HTTP_PATH`에 넣습니다.
+
+`AZURE_STORAGE_ACCOUNT`, `BLOB_CONNECTION_STR`는 별도의 Azure Blob 접근 설정입니다. 현재 SQL 연결·로딩은 이 두 값을 읽지 않으며, 저장소의 `app_io/blob.py`는 아직 미구현입니다. 기존 `.env`의 값을 삭제할 필요는 없지만, 이 값을 설정하는 것만으로 Blob 파일 로딩이 활성화되지는 않습니다. Azure LLM과 Databricks DB용 설정 이름은 `.env_azure_example`을 참고하세요. 이 예제 파일은 자동으로 로드되지 않습니다.
 
 실행 터미널에 MySQL 환경 변수가 남아 있더라도 Databricks를 명시해서 시작하려면 다음 명령을 사용합니다.
 

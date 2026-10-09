@@ -137,6 +137,9 @@ def pending_state(human, previous, context):
     from core.analysis_agent.conversation_context import prior_analysis
     from core.analysis_agent.schema_questions import prior_subject
     prior=prior_analysis(previous,context)
+    # Confirmed snapshots must not recursively embed older snapshots on every
+    # turn. The active request and its prior verified analysis are separate.
+    prior={k:v for k,v in prior.items() if k!='confirmed_analysis'}
     current={
         'request_id':human.id,'request_text':str(human.content),'status':'working',
         'intent_origin':'llm','goal_pending':True,'request_started_at':time.time(),

@@ -5,7 +5,7 @@ def family(value):
     dtype = str(value or '').strip().casefold()
     # Match complete type names. 'long' must not classify MySQL longtext.
     base = re.split(r'[\s(<\[]', dtype, maxsplit=1)[0]
-    if base in {'bool','boolean','object','string','str','category','categorical',
+    if base in {'bool','boolean','object','string','large_string','string_view','str','category','categorical',
                 'char','varchar','nvarchar','nchar','text','tinytext','mediumtext','longtext','enum','set'}:
         return 'categorical'
     if (base in {'float','double','decimal','numeric','number','real','long','short','byte',

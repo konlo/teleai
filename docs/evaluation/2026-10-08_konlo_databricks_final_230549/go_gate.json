@@ -1,0 +1,79 @@
+{
+  "verdict": "NO-GO",
+  "generated_at": "2026-10-08T23:48:19.519965+09:00",
+  "scenario": "prompt_konlo_test_scenario_#1",
+  "completed": 31,
+  "passed": 13,
+  "failed": 18,
+  "runtime_answered": 28,
+  "context_budget_failures": 0,
+  "verification": {
+    "app": {
+      "run": 675,
+      "pass": 671,
+      "skip": 4,
+      "seconds": 104.399
+    },
+    "migration": {
+      "pass": 137,
+      "seconds": 20.219
+    },
+    "compileall": "PASS",
+    "diff_check": "PASS"
+  },
+  "release_blockers": [
+    {
+      "id": "P0_SCOPE",
+      "turns": [
+        16,
+        17,
+        18
+      ],
+      "problem": "population audit cleared inherited filters on a row-preview follow-up"
+    },
+    {
+      "id": "P0_SOURCE",
+      "turns": [
+        29,
+        30,
+        31
+      ],
+      "problem": "explicit teleai_default.bank_loan was silently substituted with workspace.default.bank_loan"
+    },
+    {
+      "id": "P1_VIS_STYLE",
+      "turns": [
+        9,
+        10,
+        11,
+        12,
+        13,
+        14
+      ],
+      "problem": "goal grammar lacks legend/colors/stacking; request was dropped while reporting completion"
+    },
+    {
+      "id": "P1_MISSING_SUBJECT",
+      "turns": [
+        25,
+        27,
+        28
+      ],
+      "problem": "unavailable source produced generic goal_unverified, with no actionable catalog recovery"
+    },
+    {
+      "id": "P1_CHART_SUBJECT",
+      "turns": [
+        6,
+        7,
+        8
+      ],
+      "problem": "scenario expects age distribution but goal chose education; wording leaves chart target implicit"
+    }
+  ],
+  "limits": [
+    "Home Ollama qwen3:8b plus real Databricks only; company Windows/Azure API not verified",
+    "This is stored-user-journey regression, not official DeepEval or Spider 2.0 score",
+    "MySQL-only fixture sources remain unchanged in the prompts and are absent on this Databricks connection"
+  ]
+}
