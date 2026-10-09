@@ -433,6 +433,17 @@ class GraphAnalysisRuntime:
             runtime=self.diagnostic_identity,
             operation='resume' if value is None else 'submit',
             process_peak_rss_bytes=process_peak_rss_bytes())
+        # Commit the pending user goal with the input, before a fallible model
+        # middleware runs. A failure must not leave the previous completed goal
+        # masquerading as the active request in the checkpoint.
+        if isinstance(value,dict) and self.recovery.intent_mode=='llm':
+            human=latest_user_request(value.get('messages',[]))
+            if human and not human.additional_kwargs:
+                from core.analysis_agent.goal_contract import pending_state
+                if not human.id:human=human.model_copy(update={'id':uuid4().hex})
+                previous=self.agent.get_state(self.config).values.get('recovery') or {}
+                value={**value,'messages':[human],
+                       'recovery':pending_state(human,previous,self.context)}
         try:
             result={}
             completed_load_id=''

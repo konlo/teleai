@@ -132,13 +132,19 @@ class GoalInterpreter:
         if current.get('schema_subject'):wanted.add(current['schema_subject']['table'])
         tables=[]
         column_budget=24
-        for t in self.context.reference_context[:32]:
+        references=self.context.reference_context
+        # Names provide discovery candidates, not schema evidence. Do not
+        # repeat the schema/tool protocol for every unrelated inventory row.
+        # Explicit/confirmed subjects remain available beyond the name preview.
+        for t in references:
+            if t.get('table') not in wanted:
+                continue
             cols=t.get('columns') or []
-            shown=cols[:min(8,column_budget)] if t.get('table') in wanted else []
+            shown=cols[:min(8,max(0,column_budget))]
             column_budget-=len(shown)
             tables.append({'table':t.get('table'),'columns':[
                 {k:c[k] for k in ('name','dtype') if k in c} for c in shown],
-                'column_count':len(cols),'more_columns_tool':'inspect_table_context'})
+                'column_count':len(cols) if t.get('training_status')!='discovered_name' else None})
         # Prior visible text helps resolve ellipsis, but is explicitly not schema/result evidence.
         history=[]
         for m in [m for m in messages if m.type=='human' and m.id!=current['request_id']][-4:]:
@@ -151,7 +157,8 @@ class GoalInterpreter:
             'selected_dataset':{'id':selected.id,'source':selected.source,'grain':selected.grain,
                 'role':'preserved UI-selected original; not the active conversational subject',
                 'coverage':selected.coverage,'columns':list(selected.columns)[:32]} if selected else None,
-            'tables':tables,'table_count':len(self.context.reference_context),
+            'tables':tables,'available_table_names':[t.get('table') for t in references[:32]],
+            'table_count':len(references),
             'schema_view':'bounded preview; missing columns must be verified with inspect_table_context during execution',
             'namespace':getattr(self.context,'source_namespace',''),
             'conversation_text_not_evidence':history,'task_options':compact_option_protocol()}
@@ -170,7 +177,7 @@ class GoalInterpreter:
         for attempt in range(4):
             candidate=None
             reference_mismatch=False
-            payload=json.dumps(data,ensure_ascii=False,default=str)
+            payload=json.dumps(data,ensure_ascii=False,default=str,separators=(',',':'))
             if error:payload+='\nPrevious JSON validation error (fix the structure without changing the original goal): '+error[:500]
             req=SimpleNamespace(state={'recovery':current},system_message=SystemMessage(content=INSTRUCTIONS+'\nProtocol examples:\n'+protocol_examples()),
                 messages=[HumanMessage(content=payload)],tools=[])

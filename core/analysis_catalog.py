@@ -203,10 +203,13 @@ def resolve_table_context(reference_context, datasets, table):
                 database_types=db_stamp >= result_stamp
             except (ValueError,TypeError):pass
         try:
-            actual_dtypes = (datasets.inspect(latest.id)['dtypes'] if hasattr(datasets, 'inspect') else
-                             {str(name):str(dtype) for name, dtype in datasets.frames[latest.id].dtypes.items()})
+            inspection = datasets.inspect(latest.id) if hasattr(datasets, 'inspect') else {}
+            actual_dtypes = (inspection['dtypes'] if inspection else
+                            {str(name):str(dtype) for name, dtype in datasets.frames[latest.id].dtypes.items()})
+            storage_dtypes = inspection.get('storage_dtypes', {})
         except (KeyError, OSError, ValueError, TypeError):
             actual_dtypes = {}
+            storage_dtypes = {}
         columns = []
         for name in latest.columns:
             column = dict(saved_columns.get(name, {'name':name, 'dtype':''}))
@@ -216,6 +219,13 @@ def resolve_table_context(reference_context, datasets, table):
             # even when the SQL column is numeric. Preserve only explicit type
             # evidence supplied by the result schema.
             observed_dtype = str(actual_dtypes.get(name, '') or '')
+            # Empty pandas object columns cannot prove a type, but a typed
+            # Parquet footer can. Do not discard the connector's Arrow string
+            # schema merely because its pandas equivalent is object.
+            if schema_only and observed_dtype.casefold() in {'', 'object', 'unknown', 'null', 'none'}:
+                storage_dtype = str(storage_dtypes.get(name, '') or '')
+                if storage_dtype.casefold() not in {'', 'null', 'unknown', 'none'}:
+                    observed_dtype = storage_dtype
             column['dtype'] = ('' if schema_only and observed_dtype.casefold()
                                in {'', 'object', 'unknown', 'null', 'none'}
                                else observed_dtype)

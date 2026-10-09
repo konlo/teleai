@@ -1,0 +1,767 @@
+{
+  "verdict": "NO-GO",
+  "generated_at": "2026-10-08T23:48:19.519965+09:00",
+  "scenario": "prompt_konlo_test_scenario_#1",
+  "completed": 31,
+  "passed": 13,
+  "failed": 18,
+  "runtime_answered": 28,
+  "context_budget_failures": 0,
+  "preservation": {
+    "changed_old_assets": [],
+    "removed_old_assets": [],
+    "selection_values": [
+      ""
+    ]
+  },
+  "verification": {
+    "app": {
+      "run": 675,
+      "pass": 671,
+      "skip": 4,
+      "seconds": 104.399
+    },
+    "migration": {
+      "pass": 137,
+      "seconds": 20.219
+    },
+    "compileall": "PASS",
+    "diff_check": "PASS"
+  },
+  "release_blockers": [
+    {
+      "id": "P0_SCOPE",
+      "turns": [
+        16,
+        17,
+        18
+      ],
+      "problem": "population audit cleared inherited filters on a row-preview follow-up"
+    },
+    {
+      "id": "P0_SOURCE",
+      "turns": [
+        29,
+        30,
+        31
+      ],
+      "problem": "explicit teleai_default.bank_loan was silently substituted with workspace.default.bank_loan"
+    },
+    {
+      "id": "P1_VIS_STYLE",
+      "turns": [
+        9,
+        10,
+        11,
+        12,
+        13,
+        14
+      ],
+      "problem": "goal grammar lacks legend/colors/stacking; request was dropped while reporting completion"
+    },
+    {
+      "id": "P1_MISSING_SUBJECT",
+      "turns": [
+        25,
+        27,
+        28
+      ],
+      "problem": "unavailable source produced generic goal_unverified, with no actionable catalog recovery"
+    },
+    {
+      "id": "P1_CHART_SUBJECT",
+      "turns": [
+        6,
+        7,
+        8
+      ],
+      "problem": "scenario expects age distribution but goal chose education; wording leaves chart target implicit"
+    }
+  ],
+  "limits": [
+    "Home Ollama qwen3:8b plus real Databricks only; company Windows/Azure API not verified",
+    "This is stored-user-journey regression, not official DeepEval or Spider 2.0 score",
+    "MySQL-only fixture sources remain unchanged in the prompts and are absent on this Databricks connection"
+  ],
+  "rows": [
+    {
+      "id": 1,
+      "prompt": "지금 볼 수있는 table를 보여줘",
+      "request_id": "47ac5082ef3b42c4ab3418f51431441e",
+      "run_id": "3cf80c4f4f394d139dbed23d1267d8d4",
+      "verdict": "PASS",
+      "reason": null,
+      "runtime_status": "answered",
+      "elapsed_seconds": 46.488,
+      "model_calls": 2,
+      "sources": [
+        "workspace.information_schema.tables"
+      ],
+      "conditions": [],
+      "remote_queries": 1
+    },
+    {
+      "id": 2,
+      "prompt": "bank_loan 컬럼들을 보여줘",
+      "request_id": "dc43b2c34baf4c16ae1960d5b661b725",
+      "run_id": "598c7a37f62945b7b49de55f0b7fcbf5",
+      "verdict": "PASS",
+      "reason": null,
+      "runtime_status": "answered",
+      "elapsed_seconds": 27.53,
+      "model_calls": 3,
+      "sources": [
+        "workspace.default.bank_loan"
+      ],
+      "conditions": [],
+      "remote_queries": 1
+    },
+    {
+      "id": 3,
+      "prompt": "age 의 histogram 그려줘",
+      "request_id": "f089984086a94ad0bbc724729a9c5c87",
+      "run_id": "241f2e83263c4ca880ec462362c09258",
+      "verdict": "PASS",
+      "reason": null,
+      "runtime_status": "answered",
+      "elapsed_seconds": 38.865,
+      "model_calls": 3,
+      "sources": [
+        "workspace.default.bank_loan"
+      ],
+      "conditions": [],
+      "remote_queries": 1
+    },
+    {
+      "id": 4,
+      "prompt": "education은 어떤 값들로 되어 있지 ?",
+      "request_id": "6af00b6dadc741378a625c4b3b103ea3",
+      "run_id": "a64556fb9ace4fc5baf2d47601464e70",
+      "verdict": "PASS",
+      "reason": null,
+      "runtime_status": "answered",
+      "elapsed_seconds": 31.43,
+      "model_calls": 3,
+      "sources": [
+        "workspace.default.bank_loan"
+      ],
+      "conditions": [],
+      "remote_queries": 1
+    },
+    {
+      "id": 5,
+      "prompt": "histogram을 그려줘",
+      "request_id": "1fecceed1a06447aa6f245d84ca39c7c",
+      "run_id": "594a79e5b6ed476c8c2b88c2a4fd690e",
+      "verdict": "PASS",
+      "reason": null,
+      "runtime_status": "answered",
+      "elapsed_seconds": 39.222,
+      "model_calls": 3,
+      "sources": [
+        "workspace.default.bank_loan"
+      ],
+      "conditions": [],
+      "remote_queries": 1
+    },
+    {
+      "id": 6,
+      "prompt": "education이 primary 이고 age가 30~40인 사람들을 시각화 해줘",
+      "request_id": "cb4a5351a11c4dcb937022762544a29a",
+      "run_id": "e0f179c355954ad3b2789e63170d12e5",
+      "verdict": "FAIL",
+      "reason": "contract mismatch",
+      "runtime_status": "answered",
+      "elapsed_seconds": 50.786,
+      "model_calls": 4,
+      "sources": [
+        "workspace.default.bank_loan"
+      ],
+      "conditions": [
+        {
+          "column": "education",
+          "op": "in",
+          "value": [
+            "primary"
+          ]
+        },
+        {
+          "column": "age",
+          "op": "ge",
+          "value": 30
+        },
+        {
+          "column": "age",
+          "op": "le",
+          "value": 40
+        }
+      ],
+      "remote_queries": 1
+    },
+    {
+      "id": 7,
+      "prompt": "education이 primary과 secondary 이고 age가 30~40인 사람들을 시각화 해줘 ",
+      "request_id": "8205ca67bbb64ddbb30f976d2d34f845",
+      "run_id": "2fa5d13c6d3542a282cab5779d13aafb",
+      "verdict": "FAIL",
+      "reason": "contract mismatch",
+      "runtime_status": "answered",
+      "elapsed_seconds": 37.375,
+      "model_calls": 3,
+      "sources": [
+        "workspace.default.bank_loan"
+      ],
+      "conditions": [
+        {
+          "column": "education",
+          "op": "in",
+          "value": [
+            "primary",
+            "secondary"
+          ]
+        },
+        {
+          "column": "age",
+          "op": "ge",
+          "value": 30
+        },
+        {
+          "column": "age",
+          "op": "le",
+          "value": 40
+        }
+      ],
+      "remote_queries": 1
+    },
+    {
+      "id": 8,
+      "prompt": "같은 조건을 유지해서 histogram을 다시 보여줘",
+      "request_id": "b87034aff1b54051b240a71eca9aebb4",
+      "run_id": "88cbcfefdc134cacbc4107d089e83925",
+      "verdict": "FAIL",
+      "reason": "contract mismatch",
+      "runtime_status": "answered",
+      "elapsed_seconds": 34.207,
+      "model_calls": 3,
+      "sources": [
+        "workspace.default.bank_loan"
+      ],
+      "conditions": [
+        {
+          "column": "education",
+          "op": "in",
+          "value": [
+            "primary",
+            "secondary"
+          ]
+        },
+        {
+          "column": "age",
+          "op": "ge",
+          "value": 30
+        },
+        {
+          "column": "age",
+          "op": "le",
+          "value": 40
+        }
+      ],
+      "remote_queries": 0
+    },
+    {
+      "id": 9,
+      "prompt": "legend를 넣어서 primary과 secondary 에 따라서 색을 좀 넣어줘, ",
+      "request_id": "071314d5aad14d2993bafc22ea5822c1",
+      "run_id": "102566505869467fb3aa01eae9b97c34",
+      "verdict": "FAIL",
+      "reason": "contract mismatch",
+      "runtime_status": "answered",
+      "elapsed_seconds": 36.274,
+      "model_calls": 3,
+      "sources": [
+        "workspace.default.bank_loan"
+      ],
+      "conditions": [
+        {
+          "column": "education",
+          "op": "in",
+          "value": [
+            "primary",
+            "secondary"
+          ]
+        },
+        {
+          "column": "age",
+          "op": "ge",
+          "value": 30
+        },
+        {
+          "column": "age",
+          "op": "le",
+          "value": 40
+        }
+      ],
+      "remote_queries": 0
+    },
+    {
+      "id": 10,
+      "prompt": "색 구별이 안 되고 있어 ",
+      "request_id": "1a8a33249676467880b10db7135828c8",
+      "run_id": "b1459925adab42d9b88673fe78a51754",
+      "verdict": "FAIL",
+      "reason": "contract mismatch",
+      "runtime_status": "answered",
+      "elapsed_seconds": 35.317,
+      "model_calls": 2,
+      "sources": [
+        "workspace.default.bank_loan"
+      ],
+      "conditions": [
+        {
+          "column": "education",
+          "op": "in",
+          "value": [
+            "primary",
+            "secondary"
+          ]
+        },
+        {
+          "column": "age",
+          "op": "ge",
+          "value": 30
+        },
+        {
+          "column": "age",
+          "op": "le",
+          "value": 40
+        }
+      ],
+      "remote_queries": 0
+    },
+    {
+      "id": 11,
+      "prompt": "education별 색상 구분과 legend를 넣어줘",
+      "request_id": "559c94fb8e4c46da8bb3480a25ef165a",
+      "run_id": "cf59c05bef90457fa34a5943fcbeb345",
+      "verdict": "FAIL",
+      "reason": "contract mismatch",
+      "runtime_status": "answered",
+      "elapsed_seconds": 41.839,
+      "model_calls": 3,
+      "sources": [
+        "workspace.default.bank_loan"
+      ],
+      "conditions": [
+        {
+          "column": "education",
+          "op": "in",
+          "value": [
+            "primary",
+            "secondary"
+          ]
+        },
+        {
+          "column": "age",
+          "op": "ge",
+          "value": 30
+        },
+        {
+          "column": "age",
+          "op": "le",
+          "value": 40
+        }
+      ],
+      "remote_queries": 0
+    },
+    {
+      "id": 12,
+      "prompt": "하나의 stack으로 legend를 포함해서 다시 그려줘",
+      "request_id": "da38688ff8ba40ef99ddf5f4315a80d5",
+      "run_id": "b6651135ecb842d881e97d187b4cc1f3",
+      "verdict": "FAIL",
+      "reason": "contract mismatch",
+      "runtime_status": "answered",
+      "elapsed_seconds": 56.04,
+      "model_calls": 3,
+      "sources": [
+        "workspace.default.bank_loan"
+      ],
+      "conditions": [
+        {
+          "column": "education",
+          "op": "in",
+          "value": [
+            "primary",
+            "secondary"
+          ]
+        },
+        {
+          "column": "age",
+          "op": "ge",
+          "value": 30
+        },
+        {
+          "column": "age",
+          "op": "le",
+          "value": 40
+        }
+      ],
+      "remote_queries": 0
+    },
+    {
+      "id": 13,
+      "prompt": "stackbin으로 다시 그려줘",
+      "request_id": "c9104b9daace4122a7c1ecdca824c180",
+      "run_id": "50e59e8fdb3b452684de80c0ac3f5051",
+      "verdict": "FAIL",
+      "reason": "contract mismatch",
+      "runtime_status": "answered",
+      "elapsed_seconds": 59.689,
+      "model_calls": 3,
+      "sources": [
+        "workspace.default.bank_loan"
+      ],
+      "conditions": [
+        {
+          "column": "education",
+          "op": "in",
+          "value": [
+            "primary",
+            "secondary"
+          ]
+        },
+        {
+          "column": "age",
+          "op": "ge",
+          "value": 30
+        },
+        {
+          "column": "age",
+          "op": "le",
+          "value": 40
+        }
+      ],
+      "remote_queries": 0
+    },
+    {
+      "id": 14,
+      "prompt": "이거 legend를 넣어줘",
+      "request_id": "61880177e09c4ba28046406d02e46a35",
+      "run_id": "a760d8eb76544c468b4bd8558aee518c",
+      "verdict": "FAIL",
+      "reason": "contract mismatch",
+      "runtime_status": "answered",
+      "elapsed_seconds": 59.751,
+      "model_calls": 3,
+      "sources": [
+        "workspace.default.bank_loan"
+      ],
+      "conditions": [
+        {
+          "column": "education",
+          "op": "in",
+          "value": [
+            "primary",
+            "secondary"
+          ]
+        },
+        {
+          "column": "age",
+          "op": "ge",
+          "value": 30
+        },
+        {
+          "column": "age",
+          "op": "le",
+          "value": 40
+        }
+      ],
+      "remote_queries": 0
+    },
+    {
+      "id": 15,
+      "prompt": "테이블의 column 다시 보여줘",
+      "request_id": "54955e91db14432e9c4e499fa4a875c1",
+      "run_id": "b9b00612274b47e19bf7e3fc5300d8a4",
+      "verdict": "PASS",
+      "reason": null,
+      "runtime_status": "answered",
+      "elapsed_seconds": 35.389,
+      "model_calls": 2,
+      "sources": [
+        "workspace.default.bank_loan"
+      ],
+      "conditions": [
+        {
+          "column": "education",
+          "op": "in",
+          "value": [
+            "primary",
+            "secondary"
+          ]
+        },
+        {
+          "column": "age",
+          "op": "ge",
+          "value": 30
+        },
+        {
+          "column": "age",
+          "op": "le",
+          "value": 40
+        }
+      ],
+      "remote_queries": 0
+    },
+    {
+      "id": 16,
+      "prompt": "데이타 10개 row만 추출해서 table로 보여줘 ",
+      "request_id": "411986e0ce614c2591aab5cd5cdcea8d",
+      "run_id": "3109c12517b142398374ceac46b4b3a3",
+      "verdict": "FAIL",
+      "reason": "preview lost preceding population conditions",
+      "runtime_status": "answered",
+      "elapsed_seconds": 74.665,
+      "model_calls": 4,
+      "sources": [
+        "workspace.default.bank_loan"
+      ],
+      "conditions": [],
+      "remote_queries": 1
+    },
+    {
+      "id": 17,
+      "prompt": "age를 x축으로 하고 balance를 Y축으로 하는 scatter plot를 그려줘",
+      "request_id": "89e269f27a5d4ee0bd24f710051b7d29",
+      "run_id": "457007bc9c1e4de6af66a21ffceddac8",
+      "verdict": "FAIL",
+      "reason": "unrequested prior-population removal",
+      "runtime_status": "answered",
+      "elapsed_seconds": 31.715,
+      "model_calls": 3,
+      "sources": [
+        "workspace.default.bank_loan"
+      ],
+      "conditions": [],
+      "remote_queries": 1
+    },
+    {
+      "id": 18,
+      "prompt": "age와 balance의 관계를 그려줘봐",
+      "request_id": "319fc680f801450c87f43e0d7f89cbee",
+      "run_id": "a0e48407370a4caa97655d73922b04da",
+      "verdict": "FAIL",
+      "reason": "unrequested prior-population removal",
+      "runtime_status": "answered",
+      "elapsed_seconds": 26.128,
+      "model_calls": 3,
+      "sources": [
+        "workspace.default.bank_loan"
+      ],
+      "conditions": [],
+      "remote_queries": 0
+    },
+    {
+      "id": 19,
+      "prompt": "전체 데이타에 대해서 age와 balance scatter plot으로 그려줘",
+      "request_id": "b0d96257904545e991646bf1e7cf4130",
+      "run_id": "f18df7e4c6dc408e8208d537694c7b92",
+      "verdict": "PASS",
+      "reason": null,
+      "runtime_status": "answered",
+      "elapsed_seconds": 25.326,
+      "model_calls": 3,
+      "sources": [
+        "workspace.default.bank_loan"
+      ],
+      "conditions": [],
+      "remote_queries": 0
+    },
+    {
+      "id": 20,
+      "prompt": "age와 balance 의 scatter plot으로 그려줘",
+      "request_id": "21ea5cae49184fcbbfe32a85b1ed2570",
+      "run_id": "4ae671eedddd4cbd9956c0090bceb1a9",
+      "verdict": "PASS",
+      "reason": null,
+      "runtime_status": "answered",
+      "elapsed_seconds": 25.285,
+      "model_calls": 3,
+      "sources": [
+        "workspace.default.bank_loan"
+      ],
+      "conditions": [],
+      "remote_queries": 0
+    },
+    {
+      "id": 21,
+      "prompt": "bank_loan 데이터를 10개 row로 보여줘",
+      "request_id": "1140f7734f9c4bdabaf8016d6543a942",
+      "run_id": "bc0b24bd4c264b5b88525464dece8117",
+      "verdict": "PASS",
+      "reason": null,
+      "runtime_status": "answered",
+      "elapsed_seconds": 25.518,
+      "model_calls": 3,
+      "sources": [
+        "workspace.default.bank_loan"
+      ],
+      "conditions": [],
+      "remote_queries": 0
+    },
+    {
+      "id": 22,
+      "prompt": "방금 보여준 10행 데이터의 age를 x축, balance를 y축으로 scatter plot을 그려줘",
+      "request_id": "f0e2b704822a4d68a620e63a7b3d66b7",
+      "run_id": "2924d3d61f61472fb16aac295eb09351",
+      "verdict": "PASS",
+      "reason": null,
+      "runtime_status": "answered",
+      "elapsed_seconds": 24.807,
+      "model_calls": 3,
+      "sources": [
+        "workspace.default.bank_loan"
+      ],
+      "conditions": [],
+      "remote_queries": 0
+    },
+    {
+      "id": 23,
+      "prompt": "전체 데이타를 이용해서 age와 balance의 관계를 다시 scatter plot으로 그려줘",
+      "request_id": "84c0d81aa7e84020809cb302cc28b5c4",
+      "run_id": "038dcc3ac85e4a70895c81850b0969df",
+      "verdict": "PASS",
+      "reason": null,
+      "runtime_status": "answered",
+      "elapsed_seconds": 25.405,
+      "model_calls": 3,
+      "sources": [
+        "workspace.default.bank_loan"
+      ],
+      "conditions": [],
+      "remote_queries": 0
+    },
+    {
+      "id": 24,
+      "prompt": "내가 볼 수 있는 table 다시 한번 보여줘",
+      "request_id": "0ba61028d67f418e829a9f20aa7bc266",
+      "run_id": "70f382b0415e4fa4a879f460dcf407a1",
+      "verdict": "PASS",
+      "reason": null,
+      "runtime_status": "answered",
+      "elapsed_seconds": 23.228,
+      "model_calls": 2,
+      "sources": [
+        "workspace.information_schema.tables"
+      ],
+      "conditions": [],
+      "remote_queries": 1
+    },
+    {
+      "id": 25,
+      "prompt": "_tianchi_ssd_shared300k_import  row 수가 몇개야 ?",
+      "request_id": "6774ac107d9a4bbd8b61f013faa108f8",
+      "run_id": "d38ef88651d94f64af563bd557f07104",
+      "verdict": "FAIL",
+      "reason": "goal_unverified",
+      "runtime_status": "blocked",
+      "elapsed_seconds": 18.354,
+      "model_calls": 3,
+      "sources": [],
+      "conditions": [],
+      "remote_queries": 0
+    },
+    {
+      "id": 26,
+      "prompt": "table 다시 한번 보여줘",
+      "request_id": "0585d9e32ad04853a0d9fd7a719f0927",
+      "run_id": "0222cbd4a5d44d618f1ebd9bbda48297",
+      "verdict": "PASS",
+      "reason": null,
+      "runtime_status": "answered",
+      "elapsed_seconds": 21.815,
+      "model_calls": 2,
+      "sources": [
+        "workspace.information_schema.tables"
+      ],
+      "conditions": [],
+      "remote_queries": 1
+    },
+    {
+      "id": 27,
+      "prompt": "tianchi_ssd_shared300k_raw 이 table row 수가 몇개야 ?",
+      "request_id": "a8786ee4c6504cbfb06ee17fbfbbb560",
+      "run_id": "b8c49351fdda4f88b80d7b220c1b777a",
+      "verdict": "FAIL",
+      "reason": "goal_unverified",
+      "runtime_status": "blocked",
+      "elapsed_seconds": 33.559,
+      "model_calls": 5,
+      "sources": [],
+      "conditions": [],
+      "remote_queries": 0
+    },
+    {
+      "id": 28,
+      "prompt": "이 테이블의 column들을 보여줘",
+      "request_id": "e3752689c9954c93a2327345931dba02",
+      "run_id": "fc70bc05721e4a3b99d36de29bcd7901",
+      "verdict": "FAIL",
+      "reason": "goal_unverified",
+      "runtime_status": "blocked",
+      "elapsed_seconds": 18.719,
+      "model_calls": 3,
+      "sources": [],
+      "conditions": [],
+      "remote_queries": 0
+    },
+    {
+      "id": 29,
+      "prompt": "teleai_default.bank_loan 전체 데이타를 이용해서 age와 balance의 관계를 다시 scatter plot으로 그려줘",
+      "request_id": "fb50cdd10f1e46169fb3742f6cdd6fc9",
+      "run_id": "0bc829d6f7474b30a02502eb9faa0a63",
+      "verdict": "FAIL",
+      "reason": "requested qualified source was silently replaced",
+      "runtime_status": "answered",
+      "elapsed_seconds": 27.163,
+      "model_calls": 4,
+      "sources": [
+        "workspace.default.bank_loan"
+      ],
+      "conditions": [],
+      "remote_queries": 0
+    },
+    {
+      "id": 30,
+      "prompt": "table column를보여줘",
+      "request_id": "0f7f6a2e18c94da2b5beef3fdb87e6ab",
+      "run_id": "271c68bfdc8a40f897391e55fe9c064b",
+      "verdict": "FAIL",
+      "reason": "requested qualified source was silently replaced",
+      "runtime_status": "answered",
+      "elapsed_seconds": 19.367,
+      "model_calls": 2,
+      "sources": [
+        "workspace.default.bank_loan"
+      ],
+      "conditions": [],
+      "remote_queries": 0
+    },
+    {
+      "id": 31,
+      "prompt": "teleai_default.bank_loan 전체 데이터의 age와 balance scatter plot을 다시 그려줘",
+      "request_id": "feaeb44ccf8c4c6c9c5deddf5d578624",
+      "run_id": "6c528c98cd1f4468bbf7bbe25c83e5cf",
+      "verdict": "FAIL",
+      "reason": "requested qualified source was silently replaced",
+      "runtime_status": "answered",
+      "elapsed_seconds": 25.019,
+      "model_calls": 3,
+      "sources": [
+        "workspace.default.bank_loan"
+      ],
+      "conditions": [],
+      "remote_queries": 0
+    }
+  ]
+}
