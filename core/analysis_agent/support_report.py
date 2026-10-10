@@ -155,6 +155,8 @@ def summarize(path, *, run_id=None, error_id=None):
                        'error_type':token(e.get('error_type')),'http_status':number(e.get('http_status')),
                        'error_category':token(e.get('error_category')),
                        'database_errno':number(e.get('database_errno')),
+                       'os_errno':number(e.get('os_errno')),
+                       'winerror':number(e.get('winerror')),
                        'frames':[{'file':token(f.get('file')),'line':number(f.get('line')),
                                   'function':token(f.get('function'))} for f in frames[-3:] if isinstance(f,dict)] if isinstance(frames,list) else []})
     status='awaiting_approval' if finish.get('event')=='run_paused' else finish.get('status')
@@ -219,7 +221,9 @@ def brief(report):
         f"원격 도구 시작: {remote['started']} / 조회 장부: {remote['states']} / 저장 결과 재사용: {remote['cached_receipts']}",
         f"완료 판정: {completion['status']} / 이유: {completion['reason']} / 미충족: {completion['missing_capabilities']}",
         f"복구 재계획: {report['recovery_replans']} / 미래 안내 차단 관측: {report['deferred_reply_blocks']}",
-        f"최근 오류: 단계={last.get('stage')}, 유형={last.get('error_type')}, HTTP={last.get('http_status')}",
+        f"최근 오류: 단계={last.get('stage')}, 유형={last.get('error_type')}, HTTP={last.get('http_status')}"
+        + (f" / OS errno={last.get('os_errno')}, WinError={last.get('winerror')}"
+           if last.get('os_errno') is not None or last.get('winerror') is not None else ''),
         f"오류 위치: {last.get('frames',[])}",
         f"로그 완전성: {report['log_integrity']}",
     ])

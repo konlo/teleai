@@ -390,7 +390,9 @@ class PersistentDatasets(DatasetStore):
                     pd.DataFrame(columns=columns), preserve_index=False).schema)
             writer.close()
             writer = None
-            with staged.open('rb') as candidate_file:
+            # Windows fsync uses _commit/FlushFileBuffers, which requires a
+            # writable handle. r+b preserves the closed Parquet writer's bytes.
+            with staged.open('r+b') as candidate_file:
                 os.fsync(candidate_file.fileno())
             if final_provenance is not None:
                 provenance.update(final_provenance())

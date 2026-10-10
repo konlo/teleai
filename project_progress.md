@@ -3343,3 +3343,26 @@ Task definitions and acceptance conditions: docs/agent_remaining_tasks_2026-09-1
 ## [2026-10-10 17:57:30] [Agent: /root] User Request: push 해줘
 - **Action**: 테이블 목록 sidebar 기능 및 검증 코드, 요청·결과 기록을 커밋하고 현재 branch를 origin으로 push한 뒤 원격 commit 일치를 확인한다.
 - **Outcome**: 기능 commit 1bd4e9f를 origin/codex/agentic-analysis-rc-2026-09-14로 push 성공. git ls-remote에서 전체 commit ID와 로컬 HEAD 일치 확인; 기능 push 후 작업 트리 clean.
+
+## [2026-10-10 18:11:18] [Agent: /root] User Request: 첫 입력 table list를 보여줘 오류 진단에 필요한 정보 안내
+- **Action**: 구현된 안전한 진단 요약 필드와 실패 대화의 조회 방법을 확인하고 필요한 최소 증거를 안내한다. 회사 서버의 원인이나 최신 코드 반영 여부를 추측하지 않는다.
+- **Outcome**: 오류 문구, 실패 대화의 진단 요약, 선택 모델/DB, 새 테이블 목록 버튼의 결과를 최소 증거로 안내. 오류 ID 단독은 회사 로그 접근 없이 원인을 제공하지 못함; 버튼 성공도 chatbot agent 경로 성공을 보증하지 않는다고 구분한다. 제품 변경 없음.
+
+## [2026-10-10 18:21:49] [Agent: /root] User Request: sidebar 목록 정상, 채팅 이전 DB 조회 제출 상태 미확인·중복조회 차단
+- **Action**: 실제 차단 문구와 query ledger 복구 경로를 확인한다. 메타데이터 연결 정상과 기존 agent 조회 제출 불확실 상태를 구분하며, 중복 방지를 우회하지 않는다.
+- **Finding**: 해당 문구는 ui/analysis_page.py의 uncertain_executions 경고. ApprovalLedger는 submitting/unknown 상태를 반환하며, 실행·fetch·결과검증·저장 중 QueryNotSubmitted/QueryTerminated/QueryRejected 외 예외도 unknown으로 남김. 따라서 이 문구는 최초 원인이 아닌 중복실행 차단 결과이며 sidebar 성공만으로 생성 SQL 또는 결과 저장 오류를 배제할 수 없다. 실제 회사 실패 run의 최근 오류 유형·위치·장부 상태가 있어야 구분 가능.
+
+## [2026-10-10 18:38:52] [Agent: /root] User Request: query_databricks OSError, databricks.py execute 57 / analysis_databricks.py execute_approved 87 / assets.py register_batches 394 / unknown 1
+- **Action**: 원격 실행 후 결과 저장 경로와 OSError 진단을 조사한다. 전달된 서버 증거와 로컬 코드 버전 차이를 구분하며 unknown 조회를 강제로 재실행하지 않는다.
+
+### [2026-10-10 18:43:59] Windows result persistence diagnosis and fix
+- **Finding**: 전달된 세 frames가 현재 코드와 일치. assets.py 기존 394는 rb handle에 fsync. DB 조회·batch 소비·Parquet writer close 이후 로컬 동기화 오류이며 SQL 생성/HTTP 실패와 구분됨. Windows FlushFileBuffers는 GENERIC_WRITE 필수(https://learn.microsoft.com/en-us/windows/win32/api/fileapi/nf-fileapi-flushfilebuffers); Python Windows fsync는 _commit. 회사 errno/WinError 미제공으로 OS 세부 원인은 추가 확인 대상이지만 읽기 전용 동기화 호환 결함 확인.
+- **Artifact Update**: assets.py r+b 변경(내용 유지, fsync 생략하지 않음); Diagnostics/support_report에 os_errno·winerror 안전 숫자 기록과 요약, DB errno와 분리; tests/test_windows_dataset_sync.py에서 Windows writable handle 조건 실패 재현, 빈/비어 있지 않은 저장 성공, ENOSPC 원본·선택 보존과 중복 실행 차단, 안전 진단 검사.
+- **Outcome**: 수정 전 Windows 조건 검사 2건 fsync EBADF 실패 재현. 수정 후 관련 37 passed. 전체 tests/migration: 981 passed, 4 skipped, 683 subtests passed, 640 기존 font warnings, 126.88초. 실제 Ollama + Databricks 신규 대화 table list 요청 answered, 37행, 42.767초, remote 1회 completed, errors 0. 증거 docs/evaluation/2026-10-10_databricks_inventory_contract/windows_fsync_live.json.
+- **Limit**: 로컬 macOS에서 Windows handle 제약을 주입한 검사이며 Windows 네이티브/회사 Azure 환경 검증 아님. 기존 unknown 장부는 초기화/자동 재조회하지 않음. 회사 반영·완전 재시작 후 해당 fsync 실패 건의 확인과 별도 신규 대화 검증 필요; 운영 GO 판정 변경 없음.
+- **Action**: 이전 push 요청과 회사 서버 수정 전달 흐름에 따라 현재 작업 branch로 fix와 진단·검증 증거를 push한다. .env/자격증명 변경 없음.
+- **Push Outcome**: fix 658ce17를 origin/codex/agentic-analysis-rc-2026-09-14에 push 성공. git ls-remote 전체 commit ID와 HEAD 일치 확인.
+
+## [2026-10-10 18:50:33] [Agent: /root] User Request: push해줘
+- **Action**: 현재 branch와 origin HEAD를 대조하여 Windows 파일 동기화 수정의 원격 반영 여부를 확인하고 요청 기록도 push한다.
+- **Outcome**: 요청 시점에 기능 수정은 이미 원격 9cce38f까지 반영되어 있으며 로컬 HEAD 일치 확인. 추가 제품 변경 없음; 이 확인 기록을 커밋·push한다.
