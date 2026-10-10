@@ -1,0 +1,81 @@
+{
+  "id": 6,
+  "prompt": "education이 primary 이고 age가 30~40인 사람들을 시각화 해줘",
+  "status": "complete",
+  "goal": {
+    "objective": "visualization",
+    "mode": "execute",
+    "source_reference": "previous_analysis",
+    "sources": [
+      "workspace.default.bank_loan"
+    ],
+    "columns": [
+      "education"
+    ],
+    "conditions": [
+      {
+        "column": "education",
+        "op": "in",
+        "value": [
+          "primary"
+        ]
+      },
+      {
+        "column": "age",
+        "op": "between",
+        "value": [
+          30,
+          40
+        ]
+      }
+    ],
+    "any_conditions": [],
+    "measure_conditions": [],
+    "ratio": null,
+    "current_result_only": false,
+    "fresh_source_required": false,
+    "question": "",
+    "tasks": [
+      {
+        "capability": "chart",
+        "options": {
+          "kind": "bar",
+          "axes": {
+            "x": "education"
+          },
+          "categorical": true
+        }
+      }
+    ]
+  },
+  "reason": null,
+  "run_id": "e0f179c355954ad3b2789e63170d12e5",
+  "model_calls": 4,
+  "chart_metadata": [
+    {
+      "id": "a826e0d8-6313-41ae-828b-9aca8600ec0f",
+      "dataset_id": "30aff26d-4e33-44ed-aa81-26eff20fa934",
+      "title": "education 분포",
+      "reason": "범주별 실제 COUNT(*) 빈도를 표시합니다. 결측은 제외했습니다.",
+      "kind": "bar",
+      "columns": [
+        "education"
+      ],
+      "scope": "빈도 합계 27,439 · complete · SELECT `education`, COUNT(*) AS `__frequency` FROM `workspace`.`default`.`bank_loan` WHERE `education` IS NOT NULL AND (`education` IN ('primary') AND `age` >= 30 AND `age` <= 40) GROUP BY `education`",
+      "render_spec": {
+        "aggregation": "count",
+        "labels": [
+          "primary"
+        ],
+        "counts": [
+          27439
+        ],
+        "total_count": 27439,
+        "has_more_categories": false,
+        "null_policy": "exclude"
+      }
+    }
+  ],
+  "verdict": "FAIL",
+  "error": "contract mismatch"
+}

@@ -38,6 +38,7 @@ def query_conditions(tree):
     if single_table(tree) is None or tree.args.get('having') or tree.args.get('qualify'):
         return None
     def literal(node):
+        if isinstance(node,exp.Null):return None
         if isinstance(node, exp.Neg):
             return -literal(node.this)
         if isinstance(node, exp.Boolean):
@@ -49,8 +50,18 @@ def query_conditions(tree):
     def parse(node):
         if isinstance(node,exp.Paren):return parse(node.this)
         if isinstance(node,exp.And):return parse(node.this)+parse(node.expression)
+        if isinstance(node,exp.Is) and isinstance(node.this,exp.Column) and isinstance(node.expression,exp.Null):
+            return [Condition(node.this.name,'eq',None)]
+        if isinstance(node,exp.Not):
+            inner=node.this
+            if isinstance(inner,exp.Paren):inner=inner.this
+            if isinstance(inner,exp.Is) and isinstance(inner.this,exp.Column) and isinstance(inner.expression,exp.Null):
+                return [Condition(inner.this.name,'ne',None)]
+            if isinstance(inner,exp.In) and isinstance(inner.this,exp.Column) and not inner.args.get('query'):
+                return [Condition(inner.this.name,'not_in',[literal(item) for item in inner.expressions])]
         ops={exp.EQ:'eq',exp.NEQ:'ne',exp.GT:'gt',exp.GTE:'ge',exp.LT:'lt',exp.LTE:'le'}
         if type(node) in ops and isinstance(node.this,exp.Column):
+            if isinstance(node.expression,exp.Null):raise ValueError('NULL comparisons require IS NULL')
             return [Condition(node.this.name,ops[type(node)],literal(node.expression))]
         if isinstance(node,exp.In) and isinstance(node.this,exp.Column) and not node.args.get('query'):
             return [Condition(node.this.name,'in',[literal(item) for item in node.expressions])]

@@ -1,0 +1,250 @@
+[
+  {
+    "id": 1,
+    "prompt": "지금 볼 수있는 table를 보여줘",
+    "source_message_id": "42495c16-3c47-4ccd-8ce8-720db44bf88a",
+    "source_rowid": 1,
+    "expected_kind": "inventory",
+    "acceptance_requirement": "7 observed tables"
+  },
+  {
+    "id": 2,
+    "prompt": "bank_loan 컬럼들을 보여줘",
+    "source_message_id": "7fb4a677-1bcc-428c-8d49-f14cf4651788",
+    "source_rowid": 7,
+    "expected_kind": "metadata",
+    "acceptance_requirement": "bank_loan 18 source columns"
+  },
+  {
+    "id": 3,
+    "prompt": "age 의 histogram 그려줘",
+    "source_message_id": "e0d23f9b-bfc4-4e06-977b-6ebea2a8b229",
+    "source_rowid": 17,
+    "expected_kind": "chart",
+    "acceptance_requirement": "bank_loan age histogram full 750000"
+  },
+  {
+    "id": 4,
+    "prompt": "education은 어떤 값들로 되어 있지 ?",
+    "source_message_id": "f26735f8-ec24-4adc-89c4-ccb9626bc374",
+    "source_rowid": 25,
+    "expected_kind": "value_list",
+    "acceptance_requirement": "education 4 observed values"
+  },
+  {
+    "id": 5,
+    "prompt": "histogram을 그려줘",
+    "source_message_id": "1b59857e-70fb-46a2-a813-e804b5d712fb",
+    "source_rowid": 29,
+    "expected_kind": "chart",
+    "acceptance_requirement": "education category counts sum750000"
+  },
+  {
+    "id": 6,
+    "prompt": "education이 primary 이고 age가 30~40인 사람들을 시각화 해줘",
+    "source_message_id": "6a9f7a00-6797-4d5b-9137-2be94aa21fb7",
+    "source_rowid": 41,
+    "expected_kind": "chart",
+    "acceptance_requirement": "primary and inclusiveage30..40 sum27439"
+  },
+  {
+    "id": 7,
+    "prompt": "education이 primary과 secondary 이고 age가 30~40인 사람들을 시각화 해줘 ",
+    "source_message_id": "21fb29cd-af50-48af-ab9a-425a10520fdf",
+    "source_rowid": 57,
+    "expected_kind": "chart",
+    "acceptance_requirement": "primary or secondary ANDage30..40 sum208699"
+  },
+  {
+    "id": 8,
+    "prompt": "같은 조건을 유지해서 histogram을 다시 보여줘",
+    "source_message_id": "d0d07526-b676-429e-b8a0-4b2b142d7a5d",
+    "source_rowid": 70,
+    "expected_kind": "chart",
+    "acceptance_requirement": "samepopulation histogram208699"
+  },
+  {
+    "id": 9,
+    "prompt": "legend를 넣어서 primary과 secondary 에 따라서 색을 좀 넣어줘, ",
+    "source_message_id": "71ffeb16-427d-4c83-99d8-2b587835e204",
+    "source_rowid": 88,
+    "expected_kind": "chart",
+    "acceptance_requirement": "education legend/color primary/secondary and same208699 population"
+  },
+  {
+    "id": 10,
+    "prompt": "색 구별이 안 되고 있어 ",
+    "source_message_id": "0e58fdc1-35c3-4851-a2cc-a20b7dcbda47",
+    "source_rowid": 90,
+    "expected_kind": "chart_feedback",
+    "acceptance_requirement": "visibly distinguish education colors, preserve208699"
+  },
+  {
+    "id": 11,
+    "prompt": "education별 색상 구분과 legend를 넣어줘",
+    "source_message_id": "3e773749-b3e4-4ade-9640-e2a6ad25f4d5",
+    "source_rowid": 100,
+    "expected_kind": "chart",
+    "acceptance_requirement": "education legend/color same208699"
+  },
+  {
+    "id": 12,
+    "prompt": "하나의 stack으로 legend를 포함해서 다시 그려줘",
+    "source_message_id": "d1acd716-ab99-4d30-8fae-22d536dd484d",
+    "source_rowid": 104,
+    "expected_kind": "chart",
+    "acceptance_requirement": "stacked histogram/legend same208699"
+  },
+  {
+    "id": 13,
+    "prompt": "stackbin으로 다시 그려줘",
+    "source_message_id": "87208e7f-d91b-4a2f-92be-1a2a00c4cfb8",
+    "source_rowid": 108,
+    "expected_kind": "chart",
+    "acceptance_requirement": "stacked bins same208699"
+  },
+  {
+    "id": 14,
+    "prompt": "이거 legend를 넣어줘",
+    "source_message_id": "8882ba6e-5e6a-43ae-8dfa-8d8f046ff310",
+    "source_rowid": 110,
+    "expected_kind": "chart",
+    "acceptance_requirement": "legend primary/secondary same208699"
+  },
+  {
+    "id": 15,
+    "prompt": "테이블의 column 다시 보여줘",
+    "source_message_id": "bfecda92-9506-4b40-8ce9-65a633166af8",
+    "source_rowid": 114,
+    "expected_kind": "metadata",
+    "acceptance_requirement": "bank18 sourcecolumns, not aggregated columns"
+  },
+  {
+    "id": 16,
+    "prompt": "데이타 10개 row만 추출해서 table로 보여줘 ",
+    "source_message_id": "cb7d3d5a-2967-4ad9-a824-3b46f3e96c8a",
+    "source_rowid": 128,
+    "expected_kind": "preview",
+    "acceptance_requirement": "10 actual bank rows, source filters retained unless resolved clarification"
+  },
+  {
+    "id": 17,
+    "prompt": "age를 x축으로 하고 balance를 Y축으로 하는 scatter plot를 그려줘",
+    "source_message_id": "2873ca75-a3e0-454f-b460-1505eada7596",
+    "source_rowid": 144,
+    "expected_kind": "chart",
+    "acceptance_requirement": "age/balance scatter, same filters, no histogram; unspecified preview vs source scope must be truthful"
+  },
+  {
+    "id": 18,
+    "prompt": "age와 balance의 관계를 그려줘봐",
+    "source_message_id": "405152e5-3a2e-408e-9d0e-7e93e69abd7d",
+    "source_rowid": 152,
+    "expected_kind": "chart",
+    "acceptance_requirement": "age/balance relationship, samepopulation or explicit clarification"
+  },
+  {
+    "id": 19,
+    "prompt": "전체 데이타에 대해서 age와 balance scatter plot으로 그려줘",
+    "source_message_id": "ca3476d0-d5b7-4572-ac37-94059b6fc702",
+    "source_rowid": 160,
+    "expected_kind": "chart",
+    "acceptance_requirement": "explicit whole source, age/balance scatter750000; no primary/age restriction"
+  },
+  {
+    "id": 20,
+    "prompt": "age와 balance 의 scatter plot으로 그려줘",
+    "source_message_id": "7093637c-675d-40ed-ac39-47484757c3fd",
+    "source_rowid": 166,
+    "expected_kind": "chart",
+    "acceptance_requirement": "same fullscope750000 scatter"
+  },
+  {
+    "id": 21,
+    "prompt": "bank_loan 데이터를 10개 row로 보여줘",
+    "source_message_id": "9485b7ed-e132-4ba2-959f-e5f76dd587a7",
+    "source_rowid": 172,
+    "expected_kind": "preview",
+    "acceptance_requirement": "bank10 rows"
+  },
+  {
+    "id": 22,
+    "prompt": "방금 보여준 10행 데이터의 age를 x축, balance를 y축으로 scatter plot을 그려줘",
+    "source_message_id": "6ab53dd3-5608-42bd-bee1-a3a236f2f1f0",
+    "source_rowid": 184,
+    "expected_kind": "chart",
+    "acceptance_requirement": "explicit last10-row preview scatter, no remote fullscan"
+  },
+  {
+    "id": 23,
+    "prompt": "전체 데이타를 이용해서 age와 balance의 관계를 다시 scatter plot으로 그려줘",
+    "source_message_id": "8e8f6771-f440-4bdf-a69e-19109648a55d",
+    "source_rowid": 188,
+    "expected_kind": "chart",
+    "acceptance_requirement": "whole source scatter750000"
+  },
+  {
+    "id": 24,
+    "prompt": "내가 볼 수 있는 table 다시 한번 보여줘",
+    "source_message_id": "a062fd70-99d4-488b-8e46-1c48828c9bea",
+    "source_rowid": 190,
+    "expected_kind": "inventory",
+    "acceptance_requirement": "7 tables, sourcefocus not replaced"
+  },
+  {
+    "id": 25,
+    "prompt": "_tianchi_ssd_shared300k_import  row 수가 몇개야 ?",
+    "source_message_id": "98eac648-e25d-402e-845e-b2e753039658",
+    "source_rowid": 196,
+    "expected_kind": "count",
+    "acceptance_requirement": "_tianchi_ssd_shared300k_import current actual716 rows (independent COUNT before this case; name300k is not a row count)"
+  },
+  {
+    "id": 26,
+    "prompt": "table 다시 한번 보여줘",
+    "source_message_id": "fb7514ab-b297-472e-a1ac-3c3a82abd35a",
+    "source_rowid": 198,
+    "expected_kind": "inventory",
+    "acceptance_requirement": "7 tables"
+  },
+  {
+    "id": 27,
+    "prompt": "tianchi_ssd_shared300k_raw 이 table row 수가 몇개야 ?",
+    "source_message_id": "e91e9122-fee3-4ce9-8ee5-ecb190388ae9",
+    "source_rowid": 204,
+    "expected_kind": "missing_source",
+    "acceptance_requirement": "requested tianchi_ssd_shared300k_raw absent in currentDB; clarify or precise nonexistence, no silent substitution"
+  },
+  {
+    "id": 28,
+    "prompt": "이 테이블의 column들을 보여줘",
+    "source_message_id": "849dcae0-7af2-4bc6-97c5-9469912fa152",
+    "source_rowid": 208,
+    "expected_kind": "missing_source_followup",
+    "acceptance_requirement": "resolve absent requestedsource; no wrong table schema"
+  },
+  {
+    "id": 29,
+    "prompt": "teleai_default.bank_loan 전체 데이타를 이용해서 age와 balance의 관계를 다시 scatter plot으로 그려줘",
+    "source_message_id": "c8f22d79-c656-418a-99d0-7d1d19bdecdf",
+    "source_rowid": 214,
+    "expected_kind": "chart",
+    "acceptance_requirement": "fullyqualified bank whole750000 scatter"
+  },
+  {
+    "id": 30,
+    "prompt": "table column를보여줘",
+    "source_message_id": "e67f39be-aa13-4d50-96f0-ea6c94ee1c23",
+    "source_rowid": 222,
+    "expected_kind": "metadata",
+    "acceptance_requirement": "bank source18 columns"
+  },
+  {
+    "id": 31,
+    "prompt": "teleai_default.bank_loan 전체 데이터의 age와 balance scatter plot을 다시 그려줘",
+    "source_message_id": "9719f3d8-b77f-47c6-b3e4-7f1a36589d0d",
+    "source_rowid": 232,
+    "expected_kind": "chart",
+    "acceptance_requirement": "fullyqualified bank whole750000 scatter"
+  }
+]

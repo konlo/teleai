@@ -170,9 +170,24 @@ class AzureDatabricksServiceTests(unittest.TestCase):
             self.assertEqual(request.url.host, 'azure.example.invalid')
             self.assertIn('/deployments/fixture-deployment/', request.url.path)
             self.assertEqual(payload['response_format'], {'type':'json_object'})
+            response=plan
+            if any('decision_evidence is an OBJECT' in str(m.get('content')) for m in payload['messages']):
+                from core.analysis_agent.goal_grounding import required_paths
+                response={**plan,'decision_evidence':{p:{'origin':'request',
+                    'quote':'catalog.lab.observations table row 10개 보여줘','reference':''}
+                    for p in required_paths(plan)}}
+            if any('subject_identity_v1' in str(m.get('content')) for m in payload['messages']):
+                response={'candidate_roles':{source:'requested_table','table':'other','row':'other'}}
+            if any('population_basis_v1' in str(m.get('content')) for m in payload['messages']):
+                body['choices'][0]['message']['content']=json.dumps({'basis':'source_population','quote':''})
+                return httpx.Response(200,json=body)
+            if any('goal_task_selection_v1' in str(m.get('content')) for m in payload['messages']):
+                response={'mode':'execute','capabilities':['row_preview'],'source_reference':'explicit',
+                    'source_mentions':[{'name':source,'quote':source}],
+                    'chart_kind':''}
             return httpx.Response(200, json={'id':'fixture-response','object':'chat.completion',
                 'created':0,'model':'fixture-model','choices':[{'index':0,
-                    'message':{'role':'assistant','content':json.dumps(plan)}, 'finish_reason':'stop'}]})
+                    'message':{'role':'assistant','content':json.dumps(response)}, 'finish_reason':'stop'}]})
         client = httpx.Client(transport=httpx.MockTransport(transport))
         model = build_analysis_chat_model(RuntimePolicy(), environ=AZURE)
         # SDK clients are created with a fake transport, not patched model output.

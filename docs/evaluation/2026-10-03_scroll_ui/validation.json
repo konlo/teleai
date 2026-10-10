@@ -1,0 +1,40 @@
+{
+  "date": "2026-10-03",
+  "browser": "Codex in-app browser",
+  "url": "http://127.0.0.1:8504/Telly?conversation=0728dee0-d555-4aa2-853b-1101679346da",
+  "before": {
+    "root": "stAppScrollToBottomContainer",
+    "height": 748,
+    "scroll_height": 10458,
+    "initial_top": 9710,
+    "after_up_and_later_observation": 9710.5,
+    "running_status": "Ollama retry progress"
+  },
+  "after": {
+    "root": "stMain",
+    "scroll_height": 10773,
+    "height": 748,
+    "input_link_top": 10006.5,
+    "first_up_top": 9258.5,
+    "later_top": 9258.5,
+    "second_up_top": 8510.5,
+    "whole_page_auto_scroll_container_count": 0
+  },
+  "tests": {
+    "passed": 10,
+    "subtests_passed": 2,
+    "seconds": 11.21,
+    "files": [
+      "tests/test_stored_chart_selection.py",
+      "tests/test_agent_support_report.py"
+    ]
+  },
+  "compile": "passed",
+  "diff_check": "passed",
+  "health": "ok",
+  "limitations": [
+    "No fresh model/SQL run launched for scroll validation",
+    "In-progress status was observed before change; post-change browser checks used completed state",
+    "Legend/color analysis failure is a separate unresolved issue"
+  ]
+}

@@ -1,0 +1,114 @@
+[
+  {
+    "backend": "mysql",
+    "status": "answered",
+    "seconds": 0.159,
+    "model_calls": 0,
+    "queries": [
+      "SELECT * FROM `teleai_default`.`bank_loan` LIMIT 10"
+    ],
+    "proof": {
+      "dataset_id": "71ccba44-a0b1-478b-b864-4e3760aa8368",
+      "source": "teleai_default.bank_loan",
+      "snapshot": "2026-10-03T14:04:03.812551+00:00",
+      "columns": [
+        "id",
+        "age",
+        "job",
+        "marital",
+        "education",
+        "default",
+        "balance",
+        "housing",
+        "loan",
+        "contact",
+        "day",
+        "month",
+        "duration",
+        "campaign",
+        "pdays",
+        "previous",
+        "poutcome",
+        "y"
+      ],
+      "total_rows": 10,
+      "rows": 10,
+      "limit": 10
+    },
+    "text": "teleai_default.bank_loan의 데이터 10행, 18열을 표로 표시했습니다. 원본과 기존 분석 기준은 보존했습니다. 이 미리보기는 전체 분포 통계가 아닙니다.\n\n원격 조회가 완료되어 결과 10행을 저장했습니다.",
+    "verified_shape": [
+      10,
+      18
+    ],
+    "repeat_status": "answered",
+    "repeat_queries": 0,
+    "scatter": {
+      "status": "answered",
+      "seconds": 8.304,
+      "model_calls": 0,
+      "extra_queries": 0,
+      "axes": [
+        "age",
+        "balance"
+      ],
+      "dataset_same": true,
+      "text": "age와 balance의 관계 이미지를 생성했습니다.\n분석 범위: 보유 10행 기준 · unknown · raw · 표시 데이터 10개 · 집계 none"
+    }
+  },
+  {
+    "backend": "databricks",
+    "status": "answered",
+    "seconds": 17.764,
+    "model_calls": 0,
+    "queries": [
+      "SELECT * FROM `workspace`.`default`.`bank_loan` LIMIT 10"
+    ],
+    "proof": {
+      "dataset_id": "4ef0c4e8-c4af-4eb3-b8c2-56791d59d30e",
+      "source": "workspace.default.bank_loan",
+      "snapshot": "2026-10-03T14:04:29.518310+00:00",
+      "columns": [
+        "id",
+        "age",
+        "job",
+        "marital",
+        "education",
+        "default",
+        "balance",
+        "housing",
+        "loan",
+        "contact",
+        "day",
+        "month",
+        "duration",
+        "campaign",
+        "pdays",
+        "previous",
+        "poutcome",
+        "y"
+      ],
+      "total_rows": 10,
+      "rows": 10,
+      "limit": 10
+    },
+    "text": "workspace.default.bank_loan의 데이터 10행, 18열을 표로 표시했습니다. 원본과 기존 분석 기준은 보존했습니다. 이 미리보기는 전체 분포 통계가 아닙니다.\n\n원격 조회가 완료되어 결과 10행을 저장했습니다.",
+    "verified_shape": [
+      10,
+      18
+    ],
+    "repeat_status": "answered",
+    "repeat_queries": 0,
+    "scatter": {
+      "status": "answered",
+      "seconds": 0.37,
+      "model_calls": 0,
+      "extra_queries": 0,
+      "axes": [
+        "age",
+        "balance"
+      ],
+      "dataset_same": true,
+      "text": "age와 balance의 관계 이미지를 생성했습니다.\n분석 범위: 보유 10행 기준 · unknown · raw · 표시 데이터 10개 · 집계 none"
+    }
+  }
+]

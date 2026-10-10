@@ -139,3 +139,5 @@ class AnalysisToolContext:
     source_namespace: str = ''
     remote_receipt_reader: Callable | None = None
     max_scatter_coordinates: int = 250_000
+    registered_contracts: dict | None = None
+    runtime_services: dict | None = None

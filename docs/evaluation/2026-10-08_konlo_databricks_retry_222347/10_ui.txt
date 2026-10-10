@@ -1,0 +1,319 @@
+- list:
+  - link "main":
+    - /url: http://127.0.0.1:8504/
+    - paragraph: main
+  - link "Telly":
+    - /url: http://127.0.0.1:8504/Telly
+    - paragraph: Telly
+- paragraph: "데이터 소스: Databricks"
+- generic "keyboard_arrow_right Databricks 연결 확인":
+  - generic: keyboard_arrow_right
+  - paragraph: Databricks 연결 확인
+- paragraph: 분석 모델
+- combobox "분석 모델": 로컬 Ollama
+- button "Open":
+- heading "대화" [level=3]
+- paragraph: 저장된 대화
+- combobox "저장된 대화": 분석 a31a03d2
+- button "Open":
+- button "새 대화":
+  - paragraph: 새 대화
+- heading "분석할 자료" [level=3]
+- paragraph: Databricks 테이블
+- textbox "Databricks 테이블":
+  - /placeholder: catalog.schema.table
+- button "데이터 불러오기" [disabled]:
+  - paragraph: 데이터 불러오기
+- button "예제 데이터로 시작":
+  - paragraph: 예제 데이터로 시작
+- heading "보유한 결과" [level=3]
+- generic "keyboard_arrow_right 결과 1 · workspace.information_schema.tables · 37행":
+  - generic: keyboard_arrow_right
+  - paragraph: 결과 1 · workspace.information_schema.tables · 37행
+- generic "keyboard_arrow_right 분석 스킬":
+  - generic: keyboard_arrow_right
+  - paragraph: 분석 스킬
+- generic "keyboard_arrow_right 현재 지원 범위와 운영 한도":
+  - generic: keyboard_arrow_right
+  - paragraph: 현재 지원 범위와 운영 한도
+- banner:
+  - button "keyboard_double_arrow_right":
+    - generic: keyboard_double_arrow_right
+  - button "Deploy":
+    - generic: Deploy
+  - button "Main menu":
+- heading "Telly · 함께 살펴보는 데이터" [level=1]:
+  - text: Telly · 함께 살펴보는 데이터
+  - link "Link to heading":
+    - /url: "#telly"
+- paragraph: 결과를 보며 이어서 질문하세요. 필요한 데이터는 agent가 자동으로 조회합니다.
+- paragraph:
+  - link "최근 결과 · 질문 입력으로 이동":
+    - /url: "#telly-input"
+- generic: face
+- generic "Chat message from user":
+  - paragraph: 지금 볼 수있는 table를 보여줘
+- generic: smart_toy
+- generic "Chat message from assistant":
+  - paragraph: "조회가 완료되었습니다. 출처: workspace.information_schema.tables · 저장된 결과 37행."
+  - table:
+    - rowgroup:
+      - row "table_catalog table_schema table_name table_type":
+        - columnheader "table_catalog"
+        - columnheader "table_schema"
+        - columnheader "table_name"
+        - columnheader "table_type"
+    - rowgroup:
+      - row "workspace default bank_loan MANAGED":
+        - cell "workspace"
+        - cell "default"
+        - cell "bank_loan"
+        - cell "MANAGED"
+      - row "workspace default error_test MANAGED":
+        - cell "workspace"
+        - cell "default"
+        - cell "error_test"
+        - cell "MANAGED"
+      - row "workspace default ncr_ride MANAGED":
+        - cell "workspace"
+        - cell "default"
+        - cell "ncr_ride"
+        - cell "MANAGED"
+      - row "workspace default stormtrooper MANAGED":
+        - cell "workspace"
+        - cell "default"
+        - cell "stormtrooper"
+        - cell "MANAGED"
+      - row "workspace default titanic MANAGED":
+        - cell "workspace"
+        - cell "default"
+        - cell "titanic"
+        - cell "MANAGED"
+      - row "workspace information_schema abac_policy_definitions VIEW":
+        - cell "workspace"
+        - cell "information_schema"
+        - cell "abac_policy_definitions"
+        - cell "VIEW"
+      - row "workspace information_schema catalog_privileges VIEW":
+        - cell "workspace"
+        - cell "information_schema"
+        - cell "catalog_privileges"
+        - cell "VIEW"
+      - row "workspace information_schema catalog_properties VIEW":
+        - cell "workspace"
+        - cell "information_schema"
+        - cell "catalog_properties"
+        - cell "VIEW"
+      - row "workspace information_schema catalog_tags VIEW":
+        - cell "workspace"
+        - cell "information_schema"
+        - cell "catalog_tags"
+        - cell "VIEW"
+      - row "workspace information_schema catalogs VIEW":
+        - cell "workspace"
+        - cell "information_schema"
+        - cell "catalogs"
+        - cell "VIEW"
+      - row "workspace information_schema check_constraints VIEW":
+        - cell "workspace"
+        - cell "information_schema"
+        - cell "check_constraints"
+        - cell "VIEW"
+      - row "workspace information_schema column_masks VIEW":
+        - cell "workspace"
+        - cell "information_schema"
+        - cell "column_masks"
+        - cell "VIEW"
+      - row "workspace information_schema column_tags VIEW":
+        - cell "workspace"
+        - cell "information_schema"
+        - cell "column_tags"
+        - cell "VIEW"
+      - row "workspace information_schema columns VIEW":
+        - cell "workspace"
+        - cell "information_schema"
+        - cell "columns"
+        - cell "VIEW"
+      - row "workspace information_schema constraint_column_usage VIEW":
+        - cell "workspace"
+        - cell "information_schema"
+        - cell "constraint_column_usage"
+        - cell "VIEW"
+      - row "workspace information_schema constraint_table_usage VIEW":
+        - cell "workspace"
+        - cell "information_schema"
+        - cell "constraint_table_usage"
+        - cell "VIEW"
+      - row "workspace information_schema information_schema_catalog_name VIEW":
+        - cell "workspace"
+        - cell "information_schema"
+        - cell "information_schema_catalog_name"
+        - cell "VIEW"
+      - row "workspace information_schema key_column_usage VIEW":
+        - cell "workspace"
+        - cell "information_schema"
+        - cell "key_column_usage"
+        - cell "VIEW"
+      - row "workspace information_schema parameters VIEW":
+        - cell "workspace"
+        - cell "information_schema"
+        - cell "parameters"
+        - cell "VIEW"
+      - row "workspace information_schema referential_constraints VIEW":
+        - cell "workspace"
+        - cell "information_schema"
+        - cell "referential_constraints"
+        - cell "VIEW"
+      - row "workspace information_schema routine_columns VIEW":
+        - cell "workspace"
+        - cell "information_schema"
+        - cell "routine_columns"
+        - cell "VIEW"
+      - row "workspace information_schema routine_privileges VIEW":
+        - cell "workspace"
+        - cell "information_schema"
+        - cell "routine_privileges"
+        - cell "VIEW"
+      - row "workspace information_schema routine_tags VIEW":
+        - cell "workspace"
+        - cell "information_schema"
+        - cell "routine_tags"
+        - cell "VIEW"
+      - row "workspace information_schema routines VIEW":
+        - cell "workspace"
+        - cell "information_schema"
+        - cell "routines"
+        - cell "VIEW"
+      - row "workspace information_schema row_filters VIEW":
+        - cell "workspace"
+        - cell "information_schema"
+        - cell "row_filters"
+        - cell "VIEW"
+      - row "workspace information_schema schema_privileges VIEW":
+        - cell "workspace"
+        - cell "information_schema"
+        - cell "schema_privileges"
+        - cell "VIEW"
+      - row "workspace information_schema schema_tags VIEW":
+        - cell "workspace"
+        - cell "information_schema"
+        - cell "schema_tags"
+        - cell "VIEW"
+      - row "workspace information_schema schemata VIEW":
+        - cell "workspace"
+        - cell "information_schema"
+        - cell "schemata"
+        - cell "VIEW"
+      - row "workspace information_schema table_constraints VIEW":
+        - cell "workspace"
+        - cell "information_schema"
+        - cell "table_constraints"
+        - cell "VIEW"
+      - row "workspace information_schema table_privileges VIEW":
+        - cell "workspace"
+        - cell "information_schema"
+        - cell "table_privileges"
+        - cell "VIEW"
+      - row "workspace information_schema table_tags VIEW":
+        - cell "workspace"
+        - cell "information_schema"
+        - cell "table_tags"
+        - cell "VIEW"
+      - row "workspace information_schema tables VIEW":
+        - cell "workspace"
+        - cell "information_schema"
+        - cell "tables"
+        - cell "VIEW"
+      - row "workspace information_schema views VIEW":
+        - cell "workspace"
+        - cell "information_schema"
+        - cell "views"
+        - cell "VIEW"
+      - row "workspace information_schema volume_privileges VIEW":
+        - cell "workspace"
+        - cell "information_schema"
+        - cell "volume_privileges"
+        - cell "VIEW"
+      - row "workspace information_schema volume_tags VIEW":
+        - cell "workspace"
+        - cell "information_schema"
+        - cell "volume_tags"
+        - cell "VIEW"
+      - row "workspace information_schema volumes VIEW":
+        - cell "workspace"
+        - cell "information_schema"
+        - cell "volumes"
+        - cell "VIEW"
+      - row "workspace telly_log chatbot_turn_logs MANAGED":
+        - cell "workspace"
+        - cell "telly_log"
+        - cell "chatbot_turn_logs"
+        - cell "MANAGED"
+  - paragraph: "범위: 전체 범위 미확인. 실행한 SQL의 조건과 행 제한이 적용된 결과입니다."
+- generic: face
+- generic "Chat message from user":
+  - paragraph: bank_loan 컬럼들을 보여줘
+- generic: smart_toy
+- generic "Chat message from assistant":
+  - paragraph: 미완료 요청을 종료했습니다. 기존 데이터와 결과는 보존했으며 새 요청을 입력할 수 있습니다.
+- generic: face
+- generic "Chat message from user":
+  - paragraph: age 의 histogram 그려줘
+- generic: smart_toy
+- generic "Chat message from assistant":
+  - paragraph: 미완료 요청을 종료했습니다. 기존 데이터와 결과는 보존했으며 새 요청을 입력할 수 있습니다.
+- generic: face
+- generic "Chat message from user":
+  - paragraph: education은 어떤 값들로 되어 있지 ?
+- generic: smart_toy
+- generic "Chat message from assistant":
+  - paragraph: 미완료 요청을 종료했습니다. 기존 데이터와 결과는 보존했으며 새 요청을 입력할 수 있습니다.
+- generic: face
+- generic "Chat message from user":
+  - paragraph: histogram을 그려줘
+- generic: smart_toy
+- generic "Chat message from assistant":
+  - paragraph: 미완료 요청을 종료했습니다. 기존 데이터와 결과는 보존했으며 새 요청을 입력할 수 있습니다.
+- generic: face
+- generic "Chat message from user":
+  - paragraph: education이 primary 이고 age가 30~40인 사람들을 시각화 해줘
+- generic: smart_toy
+- generic "Chat message from assistant":
+  - paragraph: 미완료 요청을 종료했습니다. 기존 데이터와 결과는 보존했으며 새 요청을 입력할 수 있습니다.
+- generic: face
+- generic "Chat message from user":
+  - paragraph: education이 primary과 secondary 이고 age가 30~40인 사람들을 시각화 해줘
+- generic: smart_toy
+- generic "Chat message from assistant":
+  - paragraph: 미완료 요청을 종료했습니다. 기존 데이터와 결과는 보존했으며 새 요청을 입력할 수 있습니다.
+- generic: face
+- generic "Chat message from user":
+  - paragraph: 같은 조건을 유지해서 histogram을 다시 보여줘
+- generic: smart_toy
+- generic "Chat message from assistant":
+  - paragraph: 미완료 요청을 종료했습니다. 기존 데이터와 결과는 보존했으며 새 요청을 입력할 수 있습니다.
+- generic: face
+- generic "Chat message from user":
+  - paragraph: legend를 넣어서 primary과 secondary 에 따라서 색을 좀 넣어줘,
+- generic: smart_toy
+- generic "Chat message from assistant":
+  - paragraph: 미완료 요청을 종료했습니다. 기존 데이터와 결과는 보존했으며 새 요청을 입력할 수 있습니다.
+- generic: face
+- generic "Chat message from user":
+  - paragraph: 색 구별이 안 되고 있어
+- button "미완료 분석 재개":
+  - paragraph: 미완료 분석 재개
+- button "중단된 요청 종료하고 계속하기":
+  - paragraph: 중단된 요청 종료하고 계속하기
+- paragraph: 다른 요청을 입력하면 중단된 요청을 종료하고 이어서 처리합니다. 기존 데이터와 결과는 유지됩니다.
+- status:
+  - paragraph: "모델 입력과 도구 정의가 응답 공간을 포함한 한도를 넘었습니다 (오류 ID: 9306351c43c7). 현재 요청·조건·기존 결과를 보존하고 호출 전에 중단했습니다. 같은 입력을 재시도하기보다 분석 단계를 나누거나 모델 문맥 설정을 점검해야 합니다."
+- generic "keyboard_arrow_right 문제 진단 · 로그 원문 없이 확인":
+  - generic: keyboard_arrow_right
+  - paragraph: 문제 진단 · 로그 원문 없이 확인
+- heading "이어서 질문하기" [level=3]:
+  - text: 이어서 질문하기
+  - link "Link to heading":
+    - /url: "#telly-input"
+- textbox "무엇을 살펴볼까요?"
+- button "Send message" [disabled]:

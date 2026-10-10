@@ -60,3 +60,16 @@ python3 scripts/run_prompt_scenario.py --scenario 'prompt_ai_test_scenario_#1' -
 ```bash
 python3 -m unittest tests.test_saved_prompt_scenarios -v
 ```
+
+## 2026-10-09 실제 웹 평가와 출력 증거
+
+같은 최종 로컬 MySQL/Ollama 코드의 실제 브라우저 첫 입력 기준으로 konlo31/31 + AI10/10 요구사항을 확인했다. 없는 테이블 안내2건은 분석 출력39건과 구분한다. 공식 DeepEval/Spider 점수나 회사 운영 GO를 뜻하지 않는다. 원문별 결과·쿼리 횟수·화면·남은 범위는 [최종 보고서](../../docs/evaluation/2026-10-09_mysql_go_prompt_final/report.md)에 있다.
+
+실제 프롬프트를 입력한 브라우저의 메시지 DOM을 `browser_messages.json`으로 저장한 뒤, 실행별 checkpoint·plan과 함께 실제 이미지/표/본문 출력 누락을 읽기 전용으로 채점한다. 아래 명령은 새 프롬프트를 제출하거나 agent를 다시 실행하지 않는다.
+
+```sh
+python3 test_set/check_prompt_browser_evidence.py docs/evaluation/2026-10-09_mysql_go_konlo_output
+python3 test_set/check_prompt_browser_evidence.py docs/evaluation/2026-10-09_mysql_go_ai10_output
+```
+
+DB 수치/PNG 내용/보존 oracle 검사와 UI 검사는 별도다. 내부 schema에 타입이 있다는 것만으로 실제 타입 답변을 통과 처리하지 않는다. Markdown 화면의 공백 축약만 허용하며 원래 제출한 prompt는 checkpoint에서 원문 그대로 비교한다.

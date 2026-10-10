@@ -1,0 +1,44 @@
+{
+  "id": 15,
+  "prompt": "테이블의 column 다시 보여줘",
+  "status": "complete",
+  "goal": {
+    "objective": "requested work",
+    "mode": "execute",
+    "source_reference": "previous_analysis",
+    "sources": [
+      "teleai_default.bank_loan"
+    ],
+    "columns": [],
+    "conditions": [
+      {
+        "column": "education",
+        "op": "in",
+        "value": [
+          "primary",
+          "secondary"
+        ]
+      }
+    ],
+    "any_conditions": [],
+    "measure_conditions": [],
+    "ratio": null,
+    "current_result_only": false,
+    "fresh_source_required": false,
+    "question": "",
+    "tasks": [
+      {
+        "capability": "metadata",
+        "options": {
+          "kind": "columns"
+        }
+      }
+    ]
+  },
+  "reason": null,
+  "run_id": "2e767f487ee24187af373c00cac007d0",
+  "model_calls": 4,
+  "chart_metadata": [],
+  "verified_metadata_columns": 18,
+  "verdict": "PASS"
+}

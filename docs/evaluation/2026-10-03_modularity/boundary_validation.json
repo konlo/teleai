@@ -1,0 +1,18 @@
+{
+  "date": "2026-10-03",
+  "command": ".telly_runtime/v1-venv/bin/python -m pytest tests/test_analysis_runtime_boundary.py tests/test_data_backend_isolation.py tests/test_analysis_completion_contract.py -q",
+  "exit_code": 0,
+  "passed": 21,
+  "failed": 0,
+  "subtests_passed": 27,
+  "seconds": 14.50,
+  "static_parse": {
+    "product_files": 126,
+    "syntax_errors": 0,
+    "metrics": "metrics.json"
+  },
+  "coverage": "Existing runtime-independent tool, backend separation, and completion contracts; not a complete architecture or dependency gate.",
+  "not_run": ["full regression rerun", "live model inference", "database queries", "browser actions"],
+  "reason": "Audit only; product behavior, runtime settings and CI were not modified.",
+  "rules_status": "Architecture rules are recommendations in report.md, not applied or enforced."
+}

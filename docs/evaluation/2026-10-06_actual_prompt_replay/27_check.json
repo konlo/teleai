@@ -1,0 +1,33 @@
+{
+  "id": 27,
+  "prompt": "tianchi_ssd_shared300k_raw 이 table row 수가 몇개야 ?",
+  "status": "complete",
+  "goal": {
+    "objective": "row_count",
+    "mode": "execute",
+    "source_reference": "explicit",
+    "sources": [
+      "teleai_default._tianchi_ssd_shared300k_import"
+    ],
+    "columns": [],
+    "conditions": [],
+    "any_conditions": [],
+    "measure_conditions": [],
+    "ratio": null,
+    "current_result_only": true,
+    "fresh_source_required": false,
+    "question": "",
+    "tasks": [
+      {
+        "capability": "row_count",
+        "options": {}
+      }
+    ]
+  },
+  "reason": null,
+  "run_id": "24cb808f33b4405bb299d1b395f24edf",
+  "model_calls": 5,
+  "chart_metadata": [],
+  "verdict": "FAIL",
+  "error": "absent requested table must not silently produce completion for another source"
+}

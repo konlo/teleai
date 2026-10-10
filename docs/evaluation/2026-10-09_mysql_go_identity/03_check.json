@@ -1,0 +1,114 @@
+{
+  "id": 3,
+  "prompt": "age 의 histogram 그려줘",
+  "status": "complete",
+  "goal": {
+    "objective": "requested work",
+    "mode": "execute",
+    "source_reference": "previous_analysis",
+    "sources": [
+      "teleai_default.bank_loan"
+    ],
+    "columns": [
+      "age"
+    ],
+    "conditions": [],
+    "any_conditions": [],
+    "measure_conditions": [],
+    "ratio": null,
+    "current_result_only": false,
+    "fresh_source_required": false,
+    "question": "",
+    "tasks": [
+      {
+        "capability": "chart",
+        "options": {
+          "kind": "histogram",
+          "axes": {
+            "x": "age"
+          },
+          "category": "default",
+          "legend": true,
+          "stacked": false,
+          "palette": "default"
+        }
+      }
+    ]
+  },
+  "reason": null,
+  "run_id": "63fb63c1f5d244099d69940134daeab7",
+  "model_calls": 9,
+  "chart_metadata": [
+    {
+      "id": "dfaf8663-28c0-4dda-92b0-a5f66d3d9461",
+      "dataset_id": "31f87c66-6cbf-4488-8063-ea19151906b3",
+      "title": "default별 age 분포",
+      "reason": "공통 bin의 그룹별 COUNT(*)를 서로 다른 색의 막대로 표시하고 범례를 추가했습니다.",
+      "kind": "histogram",
+      "columns": [
+        "age",
+        "default"
+      ],
+      "scope": "빈도 합계 750,000 · complete · 그룹 결측 제외 0 · SELECT `age`, `default`, COUNT(*) AS `__frequency` FROM `teleai_default`.`bank_loan` WHERE `age` IS NOT NULL GROUP BY `age`, `default`",
+      "render_spec": {
+        "kind": "histogram",
+        "x": "age",
+        "category": "default",
+        "bins": 8,
+        "legend": true,
+        "stacked": false,
+        "palette": "default",
+        "legend_labels": [
+          "no",
+          "yes"
+        ],
+        "colors": [
+          "#3278b9",
+          "#e58632"
+        ],
+        "bin_edges": [
+          18.0,
+          27.625,
+          37.25,
+          46.875,
+          56.5,
+          66.125,
+          75.75,
+          85.375,
+          95.0
+        ],
+        "series_counts": [
+          [
+            41020,
+            289038,
+            191025,
+            153873,
+            54819,
+            5271,
+            1967,
+            138
+          ],
+          [
+            826,
+            5136,
+            3601,
+            2679,
+            604,
+            2,
+            1,
+            0
+          ]
+        ],
+        "group_totals": [
+          737151,
+          12849
+        ],
+        "total_count": 750000,
+        "excluded_null_group_count": 0,
+        "null_policy": "exclude"
+      }
+    }
+  ],
+  "verdict": "FAIL",
+  "error": "contract mismatch"
+}

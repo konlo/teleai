@@ -1,0 +1,242 @@
+{
+  "assets": {
+    "1544597d-51b0-4661-86d2-3e3587014fdb": {
+      "kind": "dataset",
+      "metadata": {
+        "id": "1544597d-51b0-4661-86d2-3e3587014fdb",
+        "source": "information_schema.tables",
+        "columns": [
+          "TABLE_SCHEMA",
+          "TABLE_NAME",
+          "TABLE_TYPE"
+        ],
+        "rows": 7,
+        "coverage": "unknown",
+        "conditions": [],
+        "predicate_known": false,
+        "grain": "raw",
+        "aggregation": "",
+        "snapshot": "2026-10-06T04:48:11.094212+00:00",
+        "query": "SELECT table_schema, table_name, table_type FROM information_schema.tables WHERE table_schema = 'teleai_default' ORDER BY table_name LIMIT 100",
+        "parent_id": "",
+        "parent_ids": [],
+        "role": "root",
+        "root_id": "1544597d-51b0-4661-86d2-3e3587014fdb",
+        "row_selection": {}
+      },
+      "metadata_sha256": "4d8a61d19cdb3827b15ad3bf3c2e4f39cde2685f0588488e2305f31472a6dcca",
+      "payload_sha256": "372844c886cd58f8ef309861fc6bb1a9265e5de25cd71d7493b1199d66a13318"
+    }
+  },
+  "selection": "",
+  "current": {
+    "request_id": "fe2e850d-93d6-4bd0-ab6a-a62f8b34981c",
+    "request_text": "방금 확인한 값들이 얼마나 많은지 막대 그림으로 보여줘.",
+    "status": "blocked",
+    "stop_reason": "goal_unverified",
+    "intent_origin": "llm",
+    "model_calls": 3,
+    "model_seconds": 30.842653249987052,
+    "scope": {
+      "sources": [],
+      "columns": [],
+      "conditions": [],
+      "any_conditions": [],
+      "measure_conditions": [],
+      "ratio": null,
+      "join_edges": [],
+      "unresolved": []
+    },
+    "required_sources": [],
+    "required_columns": [],
+    "artifact_ids": [],
+    "evidence_ids": [],
+    "kind": null,
+    "failed": {},
+    "goal_contract_error": "previous_analysis source mismatch; verified subject is ['information_schema.tables']"
+  },
+  "run_id": "e33306229b5f4f4c8f5613689dc7a330",
+  "run": [
+    {
+      "time": "2026-10-06T04:50:05.595228+00:00",
+      "event": "run_started",
+      "run_id": "e33306229b5f4f4c8f5613689dc7a330",
+      "instance_id": "6df70d3544f7",
+      "pid": 29590,
+      "runtime": {
+        "revision_at_first_runtime": "febd34ae5cbbfbcc7023ea8e0412b84572cd7763",
+        "packages": {
+          "langchain": "1.4.0",
+          "langchain-core": "1.6.2",
+          "langgraph": "1.2.11",
+          "streamlit": "1.63.0",
+          "sqlglot": "30.18.0"
+        },
+        "python_version": "3.11.13",
+        "identity_captured_at": "2026-10-06T03:10:47.558100+00:00",
+        "route": "langgraph-v1",
+        "model_class": "ChatOllama",
+        "require_remote_approval": false,
+        "loaded_delivery_guard": "45c393f977353fe9",
+        "data_backend": "mysql",
+        "intent_mode": "llm",
+        "goal_version": 1,
+        "goal_model": "qwen3:8b",
+        "planner_model": "qwen3:8b"
+      },
+      "operation": "submit",
+      "process_peak_rss_bytes": 378978304
+    },
+    {
+      "time": "2026-10-06T04:50:05.598109+00:00",
+      "event": "goal_interpretation_started",
+      "run_id": "e33306229b5f4f4c8f5613689dc7a330",
+      "instance_id": "6df70d3544f7",
+      "pid": 29590,
+      "request_id": "fe2e850d-93d6-4bd0-ab6a-a62f8b34981c",
+      "origin": "llm",
+      "goal_version": 1
+    },
+    {
+      "time": "2026-10-06T04:50:05.598566+00:00",
+      "event": "model_payload_budget",
+      "run_id": "e33306229b5f4f4c8f5613689dc7a330",
+      "instance_id": "6df70d3544f7",
+      "pid": 29590,
+      "payload_bytes": 10106,
+      "payload_bytes_before_projection": 10106,
+      "template_headroom": 640,
+      "input_budget_units": 14336,
+      "output_reserved": 2048,
+      "context_window": 16384,
+      "tool_count": 0,
+      "message_count": 1,
+      "older_turns_compacted": false,
+      "within_budget": true,
+      "observations_compacted": false,
+      "schema_compacted": false,
+      "system_catalog_compacted": false,
+      "tool_menu_compacted": false,
+      "minimal_discovery_menu": false,
+      "reasoning_compacted": false,
+      "minimal_catalog": false,
+      "builtin_instructions_compacted": false,
+      "components": {
+        "system_bytes": 6086,
+        "message_content_bytes": 3483,
+        "tool_calls_bytes": 0,
+        "reasoning_bytes": 0,
+        "tool_schema_bytes": 0,
+        "tool_names": []
+      },
+      "measurement": "conservative_utf8_bytes_not_actual_token_count"
+    },
+    {
+      "time": "2026-10-06T04:50:22.981789+00:00",
+      "event": "goal_structure_rejected",
+      "run_id": "e33306229b5f4f4c8f5613689dc7a330",
+      "instance_id": "6df70d3544f7",
+      "pid": 29590,
+      "request_id": "fe2e850d-93d6-4bd0-ab6a-a62f8b34981c",
+      "attempt": 1,
+      "error_type": "ValueError"
+    },
+    {
+      "time": "2026-10-06T04:50:22.982096+00:00",
+      "event": "goal_contract_error",
+      "run_id": "e33306229b5f4f4c8f5613689dc7a330",
+      "instance_id": "6df70d3544f7",
+      "pid": 29590,
+      "request_id": "fe2e850d-93d6-4bd0-ab6a-a62f8b34981c",
+      "error_code": "goal_schema_invalid",
+      "detail": "invalid chart axes {'x': 'value'} for goal columns []; histogram frequency Y-axis is implicit, omit y. Axes must reference goal.columns."
+    },
+    {
+      "time": "2026-10-06T04:50:22.982775+00:00",
+      "event": "model_payload_budget",
+      "run_id": "e33306229b5f4f4c8f5613689dc7a330",
+      "instance_id": "6df70d3544f7",
+      "pid": 29590,
+      "payload_bytes": 11064,
+      "payload_bytes_before_projection": 11064,
+      "template_headroom": 640,
+      "input_budget_units": 14336,
+      "output_reserved": 2048,
+      "context_window": 16384,
+      "tool_count": 0,
+      "message_count": 1,
+      "older_turns_compacted": false,
+      "within_budget": true,
+      "observations_compacted": false,
+      "schema_compacted": false,
+      "system_catalog_compacted": false,
+      "tool_menu_compacted": false,
+      "minimal_discovery_menu": false,
+      "reasoning_compacted": false,
+      "minimal_catalog": false,
+      "builtin_instructions_compacted": false,
+      "components": {
+        "system_bytes": 6086,
+        "message_content_bytes": 4372,
+        "tool_calls_bytes": 0,
+        "reasoning_bytes": 0,
+        "tool_schema_bytes": 0,
+        "tool_names": []
+      },
+      "measurement": "conservative_utf8_bytes_not_actual_token_count"
+    },
+    {
+      "time": "2026-10-06T04:50:36.444928+00:00",
+      "event": "goal_source_reference_audited",
+      "run_id": "e33306229b5f4f4c8f5613689dc7a330",
+      "instance_id": "6df70d3544f7",
+      "pid": 29590,
+      "request_id": "fe2e850d-93d6-4bd0-ab6a-a62f8b34981c",
+      "reference": "previous_analysis"
+    },
+    {
+      "time": "2026-10-06T04:50:36.446041+00:00",
+      "event": "goal_structure_rejected",
+      "run_id": "e33306229b5f4f4c8f5613689dc7a330",
+      "instance_id": "6df70d3544f7",
+      "pid": 29590,
+      "request_id": "fe2e850d-93d6-4bd0-ab6a-a62f8b34981c",
+      "attempt": 2,
+      "error_type": "ValueError"
+    },
+    {
+      "time": "2026-10-06T04:50:36.446111+00:00",
+      "event": "goal_contract_error",
+      "run_id": "e33306229b5f4f4c8f5613689dc7a330",
+      "instance_id": "6df70d3544f7",
+      "pid": 29590,
+      "request_id": "fe2e850d-93d6-4bd0-ab6a-a62f8b34981c",
+      "error_code": "goal_schema_invalid",
+      "detail": "previous_analysis source mismatch; verified subject is ['information_schema.tables']"
+    },
+    {
+      "time": "2026-10-06T04:50:36.453762+00:00",
+      "event": "run_completed",
+      "run_id": "e33306229b5f4f4c8f5613689dc7a330",
+      "instance_id": "6df70d3544f7",
+      "pid": 29590,
+      "status": "blocked",
+      "elapsed_seconds": 30.859,
+      "process_peak_rss_bytes": 378978304,
+      "frame_cache_bytes": 0
+    },
+    {
+      "time": "2026-10-06T04:50:36.453902+00:00",
+      "event": "turn_slo",
+      "run_id": "e33306229b5f4f4c8f5613689dc7a330",
+      "instance_id": "6df70d3544f7",
+      "pid": 29590,
+      "elapsed_seconds": 30.859,
+      "limit": 180.0,
+      "status": "ok"
+    }
+  ],
+  "requested_prompt": "방금 확인한 값들이 얼마나 많은지 막대 그림으로 보여줘.",
+  "current_matches_run": true,
+  "request_checkpoint_verified": true
+}

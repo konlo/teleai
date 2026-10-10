@@ -13,7 +13,10 @@ class RecoveryModel(QuietModel):
     def _generate(self, messages, **kwargs):
         # Recovery guidance may follow the tool result in model context.
         latest=next((m for m in reversed(messages) if isinstance(m,ToolMessage)),None)
-        if latest is not None:
+        preflight=next((m for m in reversed(messages) if m.additional_kwargs.get('lc_source')=='proposal_preflight'),None)
+        if latest is None and preflight is not None and 'unknown_dataset_id' in str(preflight.content):
+            message=AIMessage(content='',tool_calls=[{'name':'inspect_table_context','args':{'table':'fixture.table'},'id':'schema'}])
+        elif latest is not None:
             observation=json.loads(latest.content)
             if observation.get('error_code')=='dataset_not_loaded':
                 message=AIMessage(content='',tool_calls=[{'name':'inspect_table_context','args':{'table':'fixture.table'},'id':'schema'}])
@@ -32,7 +35,7 @@ class DiagnosticsTests(unittest.TestCase):
             self.assertEqual(runtime.submit('저장된 테이블 구조 확인')['status'],'answered')
             self.assertEqual(runtime.inspect()['state'],'idle')
             records=[json.loads(line) for line in runtime.diagnostics.path.read_text().splitlines()]
-            self.assertTrue(any(r['event']=='tool_rejected' for r in records))
+            self.assertTrue(any(r['event']=='proposal_preflight_rejected' and r['error_code']=='unknown_dataset_id' for r in records))
             self.assertTrue(any(r.get('tool')=='inspect_table_context' for r in records))
             self.assertTrue(any(r['event']=='run_completed' for r in records))
             completed=next(r for r in reversed(records) if r['event']=='run_completed')

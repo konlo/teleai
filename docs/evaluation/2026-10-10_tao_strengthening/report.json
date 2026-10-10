@@ -1,0 +1,189 @@
+{
+  "purpose": "Strengthen Thought-Action-Observation: a successful execution must satisfy the frozen requested result contract before publication.",
+  "build": {
+    "head": "3a7206654b3d2fab7cd145893fd52970e397dd07",
+    "product_sha256": "105a8b6610e363eede7bd6b9cadd594a582dcd7858519c885e21a607b4b7ee03",
+    "file_count": 178,
+    "hash_scope": [
+      "core/**/*.py",
+      "utils/**/*.py",
+      "ui/**/*.py",
+      "pages/Telly.py",
+      "requirements.txt"
+    ],
+    "env_included": false,
+    "commit_or_push_performed": false
+  },
+  "changes": [
+    "Typed result postconditions are created and semantically reviewed before generated Python; execution cannot rewrite them.",
+    "Independent reference verifies requested column order, row count, numeric values, missing values and sorted observation order.",
+    "Semantic mismatches publish no dataset and produce bounded code-repair observations preserving original scope and data.",
+    "Legacy receipts and receipts for a different contract cannot satisfy completion or task dependencies.",
+    "Plans persist expected postconditions and accepted verification receipts.",
+    "Discovery-stall recovery reads the actual automatic/manual SQL authorization policy.",
+    "Historical derived columns no longer contaminate input candidates for another visible result of the same source.",
+    "Only selected capabilities contribute option descriptions to the detailed goal role.",
+    "Unquoted sentence-ending punctuation no longer becomes a qualified database address.",
+    "Complete rolling windows are the default; smaller min_periods requires a CURRENT user quote for partial-window intent.",
+    "Worker output may contain extra input-reference columns; project only the frozen outputs and independently verify every requested value. Unexpected derived columns are still rejected.",
+    "Code-result failures retain execute_analysis_python as a repair candidate with corrected arguments; unchanged repeats remain bounded."
+  ],
+  "supported_result_contract": {
+    "steps": [
+      "stable sort, nulls last",
+      "rolling mean/sum/min/max/median/sample std/count",
+      "positive-period difference",
+      "scalar mean/sum/min/max/median/sample std/count"
+    ],
+    "max_steps": 8,
+    "max_output_columns": 8,
+    "max_window": 10000,
+    "numeric_tolerance": {
+      "relative": 1e-07,
+      "absolute": 1e-09
+    },
+    "estimated_verifier_memory_limit_bytes": 67108864,
+    "nonlinear_window_work_limit": 2000000,
+    "worker_limit_seconds": 12,
+    "verification_is_not_an_OS_sandbox": true
+  },
+  "automated_validation": {
+    "regression": {
+      "passed": 928,
+      "skipped": 4,
+      "subtests_passed": 636,
+      "seconds": 147.5,
+      "log": "regression.log"
+    },
+    "focused": {
+      "passed": 28,
+      "subtests_passed": 33,
+      "log": "focused.log"
+    },
+    "compileall": "PASS",
+    "git_diff_check": "PASS",
+    "scripted_model_fault_injection_not_language_score": true,
+    "checks": [
+      "df.copy() is not accepted as rolling mean",
+      "wrong rolling window or sum instead of mean fails",
+      "mismatch then corrected code completes through actual graph",
+      "unchanged repeated mismatch never completes",
+      "original digest unchanged and no rejected output publication",
+      "null/sample std/count/sort-tie/difference/scalar numeric oracles",
+      "verification budget rejects before worker",
+      "legacy/different contract proof rejected",
+      "automatic/manual stalled recovery policy",
+      "partial window cannot be invented",
+      "historical computed column excluded unless its result is referenced"
+    ],
+    "reference_projection": {
+      "passed": 39,
+      "subtests_passed": 31,
+      "log": "reference_projection.log"
+    }
+  },
+  "actual_browser_validation": {
+    "state": "PASS",
+    "conversation": "2d20b7a7-a716-4330-b60b-a4345e13443e",
+    "run_id": "f57c9c6ee6da4ffcb9ac74f261a5eafe",
+    "elapsed_seconds": 75.618,
+    "model_calls": 7,
+    "tool_calls": 1,
+    "request": "방금 다운로드한 10개 행만 사용해 age를 오름차순 정렬한 뒤 두 행씩 이동평균 age_rolling을 Python으로 계산해서 표로 보여줘. 원본은 그대로 유지하고 DB는 다시 조회하지 마.",
+    "independent_numerical_oracle": {
+      "expected_non_null_rolling_mean": [
+        25.0,
+        26.5,
+        31.5,
+        37.0,
+        38.5,
+        39.0,
+        40.5,
+        44.0,
+        48.0
+      ],
+      "output_columns": [
+        "age_rolling"
+      ],
+      "matches_one_numeric_column": true,
+      "requested_age_rolling_matches": true,
+      "sorted_age_matches": false,
+      "rows": 10
+    },
+    "semantic_verified": true,
+    "result_contract": {
+      "output_columns": [
+        "age_rolling"
+      ],
+      "steps": [
+        {
+          "op": "sort",
+          "columns": [
+            "age"
+          ],
+          "ascending": true
+        },
+        {
+          "op": "rolling",
+          "column": "age",
+          "output_column": "age_rolling",
+          "window": 2,
+          "min_periods": 2,
+          "aggregation": "mean"
+        }
+      ]
+    },
+    "task_status": "verified",
+    "matching_task_verification_receipt": true,
+    "existing_assets_unchanged": true,
+    "new_verified_datasets": 1,
+    "original_preserved": true,
+    "additional_remote_queries": 0,
+    "omitted_input_reference_columns": [
+      "age"
+    ],
+    "original_ui_selected_dataset_preserved": false,
+    "screen": "final_screen.png",
+    "evidence": "final_browser_evidence.json",
+    "same_final_build_as_full_regression": true,
+    "single_final_run_is_not_repeatability_or_general_GO": true
+  },
+  "preserved_failures": [
+    {
+      "artifact": "first_browser_failure.json",
+      "run_id": "01d757207eb945dba926370db69bba69",
+      "seconds": 94.35,
+      "failure": "historical derived input chosen; repair exceeded conservative input budget",
+      "error_id": "266981c19e4e",
+      "authoritative_run_status": "incomplete",
+      "checkpoint_status_can_remain_working": true
+    },
+    {
+      "artifact": "second_browser_attempt.json",
+      "run_id": "9564c5a0947742ad84932cc292bce27f",
+      "seconds": 209.493,
+      "failure": "invented partial window and result semantic mismatch; real model recovery did not finish in budget",
+      "status": "exhausted",
+      "invalid_output_published": false
+    },
+    {
+      "artifact": "third_browser_attempt.json",
+      "run_id": "7e85daee5009412bab3bff5cf66c77e3",
+      "seconds": 262.352,
+      "status": "exhausted",
+      "failure": "Correct complete-window calculation returned an extra input-reference column; strict formatting caused unnecessary repair and exhausted time budget. Fixed by explicit presentation-only projection.",
+      "invalid_output_published": false
+    }
+  ],
+  "remaining_limits": [
+    "A natural-language goal and semantic reviewer remain fallible; numeric verification proves the frozen supported contract, not every possible interpretation of human language.",
+    "Arbitrary Python mathematics outside this result grammar must clarify or remain unverified; do not claim general Python analysis completeness.",
+    "Independent task populations, multiple tasks of the same capability and a general execution DAG remain incomplete.",
+    "Recovery orchestration remains large; new verification/context responsibilities are separated but the entire recovery module is not refactored.",
+    "macOS/Windows worker has no hard OS RSS limit; the independent verifier budget is an estimate.",
+    "Large-scale production data transfer/performance, full held-out dialogue replay, official DeepEval/Spider scores and company Windows/Azure/Databricks end-to-end verification are not established."
+  ],
+  "general_agent_operational_go": false,
+  "env_changed": false,
+  "commit_or_push_performed": false
+}

@@ -1,0 +1,19 @@
+.......E
+======================================================================
+ERROR: test_weighted_histogram_respects_requested_bins_and_population (tests.test_agent_failure_batch.FailureBatchTests.test_weighted_histogram_respects_requested_bins_and_population)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/najongseong/git_repository/teleai/tests/test_agent_failure_batch.py", line 72, in test_weighted_histogram_respects_requested_bins_and_population
+    card=histogram_from_counts(store,info.id,'reading','__frequency',bins=2)
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/najongseong/git_repository/teleai/utils/analysis_charts.py", line 197, in histogram_from_counts
+    info = validate_frequency_dataset(store, dataset_id, value_column, weight_column)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/najongseong/git_repository/teleai/utils/analysis_charts.py", line 182, in validate_frequency_dataset
+    raise ValueError('값별 COUNT(*) 집계의 실행 출처가 필요합니다. 임의의 수치 컬럼을 빈도로 사용할 수 없습니다.')
+ValueError: 값별 COUNT(*) 집계의 실행 출처가 필요합니다. 임의의 수치 컬럼을 빈도로 사용할 수 없습니다.
+
+----------------------------------------------------------------------
+Ran 8 tests in 18.157s
+
+FAILED (errors=1)

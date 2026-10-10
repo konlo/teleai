@@ -1,0 +1,457 @@
+[
+  {
+    "time": "2026-10-05T09:13:02.869160+00:00",
+    "event": "run_started",
+    "run_id": "8ed04892d4174efa93d4a87feed6326a",
+    "instance_id": "9541fa0b910f",
+    "pid": 9829,
+    "runtime": {
+      "revision_at_first_runtime": "febd34ae5cbbfbcc7023ea8e0412b84572cd7763",
+      "packages": {
+        "langchain": "1.4.0",
+        "langchain-core": "1.6.2",
+        "langgraph": "1.2.11",
+        "streamlit": "1.63.0",
+        "sqlglot": "30.18.0"
+      },
+      "python_version": "3.11.13",
+      "identity_captured_at": "2026-10-05T08:48:37.214319+00:00",
+      "route": "langgraph-v1",
+      "model_class": "ChatOllama",
+      "require_remote_approval": false,
+      "loaded_delivery_guard": "8bd5c1e1c3b08e13",
+      "data_backend": "mysql"
+    },
+    "operation": "submit",
+    "process_peak_rss_bytes": 405635072
+  },
+  {
+    "time": "2026-10-05T09:13:03.361871+00:00",
+    "event": "summarization_started",
+    "run_id": "8ed04892d4174efa93d4a87feed6326a",
+    "instance_id": "9541fa0b910f",
+    "pid": 9829,
+    "span_id": "6ff543e3308b",
+    "message_count": 14
+  },
+  {
+    "time": "2026-10-05T09:13:03.362044+00:00",
+    "event": "summarization_finished",
+    "run_id": "8ed04892d4174efa93d4a87feed6326a",
+    "instance_id": "9541fa0b910f",
+    "pid": 9829,
+    "span_id": "6ff543e3308b",
+    "status": "ok",
+    "elapsed_seconds": 0.0,
+    "message_count": 14,
+    "summarized": false
+  },
+  {
+    "time": "2026-10-05T09:13:03.362581+00:00",
+    "event": "model_call_started",
+    "run_id": "8ed04892d4174efa93d4a87feed6326a",
+    "instance_id": "9541fa0b910f",
+    "pid": 9829,
+    "span_id": "a572c853f602",
+    "message_count": 14
+  },
+  {
+    "time": "2026-10-05T09:13:03.376270+00:00",
+    "event": "context_budget",
+    "run_id": "8ed04892d4174efa93d4a87feed6326a",
+    "instance_id": "9541fa0b910f",
+    "pid": 9829,
+    "characters": 15037,
+    "limit": 32000
+  },
+  {
+    "time": "2026-10-05T09:13:03.376538+00:00",
+    "event": "model_tools_focused",
+    "run_id": "8ed04892d4174efa93d4a87feed6326a",
+    "instance_id": "9541fa0b910f",
+    "pid": 9829,
+    "mode": "progressive",
+    "tool_count": 8,
+    "registered_tool_count": 35
+  },
+  {
+    "time": "2026-10-05T09:13:03.377317+00:00",
+    "event": "model_payload_budget",
+    "run_id": "8ed04892d4174efa93d4a87feed6326a",
+    "instance_id": "9541fa0b910f",
+    "pid": 9829,
+    "payload_bytes": 10789,
+    "template_headroom": 1216,
+    "input_budget_units": 12288,
+    "output_reserved": 4096,
+    "context_window": 16384,
+    "tool_count": 4,
+    "message_count": 2,
+    "older_turns_compacted": true,
+    "within_budget": true,
+    "observations_compacted": false,
+    "tool_menu_compacted": true,
+    "measurement": "conservative_utf8_bytes_not_actual_token_count"
+  },
+  {
+    "time": "2026-10-05T09:13:21.489289+00:00",
+    "event": "model_call_finished",
+    "run_id": "8ed04892d4174efa93d4a87feed6326a",
+    "instance_id": "9541fa0b910f",
+    "pid": 9829,
+    "span_id": "a572c853f602",
+    "status": "ok",
+    "elapsed_seconds": 18.127,
+    "message_count": 14,
+    "tool_call_count": 1,
+    "actual_input_tokens": 3183,
+    "actual_output_tokens": 189,
+    "prompt_eval_seconds": 11.013029,
+    "finish_reasons": [
+      "stop"
+    ]
+  },
+  {
+    "time": "2026-10-05T09:13:21.502501+00:00",
+    "event": "tool_started",
+    "run_id": "8ed04892d4174efa93d4a87feed6326a",
+    "instance_id": "9541fa0b910f",
+    "pid": 9829,
+    "tool": "inspect_table_context"
+  },
+  {
+    "time": "2026-10-05T09:13:21.513394+00:00",
+    "event": "tool_completed",
+    "run_id": "8ed04892d4174efa93d4a87feed6326a",
+    "instance_id": "9541fa0b910f",
+    "pid": 9829,
+    "tool": "inspect_table_context",
+    "status": "ready",
+    "error_code": null,
+    "elapsed_seconds": 0.011,
+    "applied_corrections": []
+  },
+  {
+    "time": "2026-10-05T09:13:21.518319+00:00",
+    "event": "summarization_started",
+    "run_id": "8ed04892d4174efa93d4a87feed6326a",
+    "instance_id": "9541fa0b910f",
+    "pid": 9829,
+    "span_id": "77a2ad76f39b",
+    "message_count": 16
+  },
+  {
+    "time": "2026-10-05T09:13:47.768749+00:00",
+    "event": "summarization_finished",
+    "run_id": "8ed04892d4174efa93d4a87feed6326a",
+    "instance_id": "9541fa0b910f",
+    "pid": 9829,
+    "span_id": "77a2ad76f39b",
+    "status": "ok",
+    "elapsed_seconds": 26.25,
+    "message_count": 16,
+    "summarized": true
+  },
+  {
+    "time": "2026-10-05T09:13:47.775543+00:00",
+    "event": "model_call_started",
+    "run_id": "8ed04892d4174efa93d4a87feed6326a",
+    "instance_id": "9541fa0b910f",
+    "pid": 9829,
+    "span_id": "98472f5fc336",
+    "message_count": 9
+  },
+  {
+    "time": "2026-10-05T09:13:47.815334+00:00",
+    "event": "context_budget",
+    "run_id": "8ed04892d4174efa93d4a87feed6326a",
+    "instance_id": "9541fa0b910f",
+    "pid": 9829,
+    "characters": 13130,
+    "limit": 32000
+  },
+  {
+    "time": "2026-10-05T09:13:47.815944+00:00",
+    "event": "model_tools_focused",
+    "run_id": "8ed04892d4174efa93d4a87feed6326a",
+    "instance_id": "9541fa0b910f",
+    "pid": 9829,
+    "mode": "progressive",
+    "tool_count": 8,
+    "registered_tool_count": 35
+  },
+  {
+    "time": "2026-10-05T09:13:47.816866+00:00",
+    "event": "model_payload_budget",
+    "run_id": "8ed04892d4174efa93d4a87feed6326a",
+    "instance_id": "9541fa0b910f",
+    "pid": 9829,
+    "payload_bytes": 17314,
+    "template_headroom": 1344,
+    "input_budget_units": 12288,
+    "output_reserved": 4096,
+    "context_window": 16384,
+    "tool_count": 4,
+    "message_count": 4,
+    "older_turns_compacted": true,
+    "within_budget": false,
+    "observations_compacted": false,
+    "tool_menu_compacted": true,
+    "measurement": "conservative_utf8_bytes_not_actual_token_count"
+  },
+  {
+    "time": "2026-10-05T09:13:47.816938+00:00",
+    "event": "model_call_finished",
+    "run_id": "8ed04892d4174efa93d4a87feed6326a",
+    "instance_id": "9541fa0b910f",
+    "pid": 9829,
+    "span_id": "98472f5fc336",
+    "status": "error",
+    "error_type": "ModelContextBudgetExceeded",
+    "elapsed_seconds": 0.041,
+    "message_count": 9
+  },
+  {
+    "time": "2026-10-05T09:13:47.835651+00:00",
+    "event": "error",
+    "run_id": "8ed04892d4174efa93d4a87feed6326a",
+    "instance_id": "9541fa0b910f",
+    "pid": 9829,
+    "error_category": null,
+    "error_id": "0a3f64804e0f",
+    "stage": "agent_stream",
+    "error_type": "ModelContextBudgetExceeded",
+    "database_errno": null,
+    "http_status": null,
+    "frames": [
+      {
+        "file": "factory.py",
+        "line": 329,
+        "function": "inner_handler"
+      },
+      {
+        "file": "factory.py",
+        "line": 339,
+        "function": "composed"
+      },
+      {
+        "file": "tool_focus.py",
+        "line": 41,
+        "function": "wrap_model_call"
+      },
+      {
+        "file": "factory.py",
+        "line": 329,
+        "function": "inner_handler"
+      },
+      {
+        "file": "factory.py",
+        "line": 339,
+        "function": "composed"
+      },
+      {
+        "file": "tool_focus.py",
+        "line": 16,
+        "function": "wrap_model_call"
+      },
+      {
+        "file": "factory.py",
+        "line": 329,
+        "function": "inner_handler"
+      },
+      {
+        "file": "factory.py",
+        "line": 339,
+        "function": "composed"
+      },
+      {
+        "file": "model_context.py",
+        "line": 148,
+        "function": "wrap_model_call"
+      },
+      {
+        "file": "factory.py",
+        "line": 329,
+        "function": "inner_handler"
+      },
+      {
+        "file": "factory.py",
+        "line": 339,
+        "function": "composed"
+      },
+      {
+        "file": "model_context.py",
+        "line": 252,
+        "function": "wrap_model_call"
+      }
+    ]
+  },
+  {
+    "time": "2026-10-05T09:13:47.836077+00:00",
+    "event": "run_completed",
+    "run_id": "8ed04892d4174efa93d4a87feed6326a",
+    "instance_id": "9541fa0b910f",
+    "pid": 9829,
+    "status": "incomplete",
+    "elapsed_seconds": 44.956,
+    "error_id": "0a3f64804e0f"
+  },
+  {
+    "time": "2026-10-05T09:13:47.836285+00:00",
+    "event": "turn_slo",
+    "run_id": "8ed04892d4174efa93d4a87feed6326a",
+    "instance_id": "9541fa0b910f",
+    "pid": 9829,
+    "elapsed_seconds": 44.956,
+    "limit": 180.0,
+    "status": "error",
+    "process_peak_rss_bytes": 405635072,
+    "frame_cache_bytes": 0
+  },
+  {
+    "time": "2026-10-05T09:30:32.755121+00:00",
+    "event": "run_started",
+    "run_id": "97424e250ace4c98b6521d07a7fca48b",
+    "instance_id": "ecc50f5420e6",
+    "pid": 11020,
+    "runtime": {
+      "revision_at_first_runtime": "febd34ae5cbbfbcc7023ea8e0412b84572cd7763",
+      "packages": {
+        "langchain": "1.4.0",
+        "langchain-core": "1.6.2",
+        "langgraph": "1.2.11",
+        "streamlit": "1.63.0",
+        "sqlglot": "30.18.0"
+      },
+      "python_version": "3.11.13",
+      "identity_captured_at": "2026-10-05T09:30:04.606600+00:00",
+      "route": "langgraph-v1",
+      "model_class": "ChatOllama",
+      "require_remote_approval": false,
+      "loaded_delivery_guard": "0b31d473d77d2dc4",
+      "data_backend": "mysql"
+    },
+    "operation": "resume",
+    "process_peak_rss_bytes": 385662976
+  },
+  {
+    "time": "2026-10-05T09:30:32.758451+00:00",
+    "event": "model_call_started",
+    "run_id": "97424e250ace4c98b6521d07a7fca48b",
+    "instance_id": "ecc50f5420e6",
+    "pid": 11020,
+    "span_id": "ecfcf25d514b",
+    "message_count": 9
+  },
+  {
+    "time": "2026-10-05T09:30:32.772625+00:00",
+    "event": "context_budget",
+    "run_id": "97424e250ace4c98b6521d07a7fca48b",
+    "instance_id": "ecc50f5420e6",
+    "pid": 11020,
+    "characters": 13244,
+    "limit": 32000
+  },
+  {
+    "time": "2026-10-05T09:30:32.773031+00:00",
+    "event": "model_tools_focused",
+    "run_id": "97424e250ace4c98b6521d07a7fca48b",
+    "instance_id": "ecc50f5420e6",
+    "pid": 11020,
+    "mode": "progressive",
+    "tool_count": 8,
+    "registered_tool_count": 35
+  },
+  {
+    "time": "2026-10-05T09:30:32.774807+00:00",
+    "event": "model_payload_budget",
+    "run_id": "97424e250ace4c98b6521d07a7fca48b",
+    "instance_id": "ecc50f5420e6",
+    "pid": 11020,
+    "payload_bytes": 10549,
+    "payload_bytes_before_projection": 23161,
+    "template_headroom": 1088,
+    "input_budget_units": 12288,
+    "output_reserved": 4096,
+    "context_window": 16384,
+    "tool_count": 2,
+    "message_count": 4,
+    "older_turns_compacted": true,
+    "within_budget": true,
+    "observations_compacted": false,
+    "schema_compacted": true,
+    "system_catalog_compacted": true,
+    "tool_menu_compacted": true,
+    "minimal_discovery_menu": true,
+    "reasoning_compacted": true,
+    "components": {
+      "system_bytes": 5797,
+      "message_content_bytes": 3018,
+      "tool_calls_bytes": 143,
+      "reasoning_bytes": 0,
+      "tool_schema_bytes": 762,
+      "tool_names": [
+        "search_analysis_tools",
+        "read_analysis_skill"
+      ]
+    },
+    "measurement": "conservative_utf8_bytes_not_actual_token_count"
+  },
+  {
+    "time": "2026-10-05T09:31:04.973588+00:00",
+    "event": "model_call_finished",
+    "run_id": "97424e250ace4c98b6521d07a7fca48b",
+    "instance_id": "ecc50f5420e6",
+    "pid": 11020,
+    "span_id": "ecfcf25d514b",
+    "status": "ok",
+    "elapsed_seconds": 32.224,
+    "message_count": 9,
+    "tool_call_count": 0,
+    "actual_input_tokens": 3170,
+    "actual_output_tokens": 383,
+    "prompt_eval_seconds": 11.939637,
+    "finish_reasons": [
+      "stop"
+    ]
+  },
+  {
+    "time": "2026-10-05T09:31:04.985891+00:00",
+    "event": "completion_checked",
+    "run_id": "97424e250ace4c98b6521d07a7fca48b",
+    "instance_id": "ecc50f5420e6",
+    "pid": 11020,
+    "request_id": "083c9257-3c57-4ff1-a1c5-85a568b7e1fd",
+    "status": "complete",
+    "reason": null,
+    "attempts": 0,
+    "required_capabilities": [],
+    "missing_capabilities": [],
+    "model_calls": 3,
+    "tool_calls": 1,
+    "model_seconds": 50.388,
+    "dataset_ids": [],
+    "artifact_ids": []
+  },
+  {
+    "time": "2026-10-05T09:31:04.989664+00:00",
+    "event": "run_completed",
+    "run_id": "97424e250ace4c98b6521d07a7fca48b",
+    "instance_id": "ecc50f5420e6",
+    "pid": 11020,
+    "status": "answered",
+    "elapsed_seconds": 32.249,
+    "process_peak_rss_bytes": 385925120,
+    "frame_cache_bytes": 0
+  },
+  {
+    "time": "2026-10-05T09:31:04.989761+00:00",
+    "event": "turn_slo",
+    "run_id": "97424e250ace4c98b6521d07a7fca48b",
+    "instance_id": "ecc50f5420e6",
+    "pid": 11020,
+    "elapsed_seconds": 32.249,
+    "limit": 180.0,
+    "status": "ok"
+  }
+]

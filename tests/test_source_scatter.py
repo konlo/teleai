@@ -93,6 +93,12 @@ class SourceScatterTests(unittest.TestCase):
             query=coordinate_query(source,'reading','response')
             self.assertEqual(fetch_limit(query,dialect,2,5),5)
             self.assertEqual(fetch_limit(query,dialect,2),2)
+            filtered=coordinate_query(source,'reading','response',"`segment` IN ('A', 'B')")
+            self.assertEqual(fetch_limit(filtered,dialect,2,5),5)
+            self.assertEqual(fetch_limit(filtered+' LIMIT 10',dialect,2,5),2)
+            self.assertEqual(fetch_limit(query.replace('AND','OR',1),dialect,2,5),2)
+            nested=coordinate_query(source,'reading','response','`reading` IN (SELECT 1)')
+            self.assertEqual(fetch_limit(nested,dialect,2,5),2)
             for altered in [f'SELECT * FROM {source}',query+' LIMIT 10',
                             query.replace('COUNT(*)','SUM(`reading`)'),
                             query.replace('IS NOT NULL','> 1',1)]:

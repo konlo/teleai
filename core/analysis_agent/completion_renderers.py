@@ -80,7 +80,8 @@ def render_metadata(runtime, current):
         if kind == 'dtypes':
             type_origin=('현재 DB 메타데이터' if metadata.get('type_authority')=='current_database_metadata' else origin)
             parts.append(f"{type_origin} 기준으로 {metadata['table']}의 컬럼별 데이터 타입입니다.{changed}\n"
-                         + '\n'.join(f"{column['name']}: {column['dtype']}" for column in metadata['schema']))
+                         + '| 컬럼 이름 | DB 데이터 타입 |\n| --- | --- |\n'
+                         + '\n'.join('| '+str(column['name']).replace('|','&#124;').replace('\n',' ')+' | '+str(column['dtype']).replace('|','&#124;').replace('\n',' ')+' |' for column in metadata['schema']))
         elif kind in {'numeric_columns', 'categorical_columns'}:
             label = '수치형' if kind == 'numeric_columns' else '문자열/범주형'
             selected = metadata.get('selected_columns', [])
@@ -351,9 +352,13 @@ def render_calculation(runtime, current):
         requested_conditions=current.get('scope',{}).get('conditions',[])
         any_conditions=current.get('scope',{}).get('any_conditions',[])
         if requested_conditions or any_conditions:
-            ops = {'eq':'=', 'ne':'≠', 'gt':'>', 'ge':'≥', 'lt':'<', 'le':'≤', 'in':'포함'}
-            conjunction=' AND '.join(f"{c['column']} {ops[c['op']]} {c['value']}" for c in requested_conditions)
-            disjunction=' OR '.join(f"{c['column']} {ops[c['op']]} {c['value']}" for c in any_conditions)
+            ops = {'eq':'=', 'ne':'≠', 'gt':'>', 'ge':'≥', 'lt':'<', 'le':'≤', 'in':'포함', 'not_in':'제외'}
+            def predicate(c):
+                if c['value'] is None and c['op'] in {'eq','ne'}:
+                    return c['column']+(' 결측값' if c['op']=='eq' else ' 결측 제외')
+                return f"{c['column']} {ops[c['op']]} {c['value']}"
+            conjunction=' AND '.join(predicate(c) for c in requested_conditions)
+            disjunction=' OR '.join(predicate(c) for c in any_conditions)
             rendered=' AND '.join(item for item in (conjunction, '('+disjunction+')' if disjunction else '') if item)
             parts.append('적용 조건: '+rendered)
         # Never publish unchecked numbers from the model as computed results.

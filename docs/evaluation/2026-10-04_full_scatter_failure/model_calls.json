@@ -1,0 +1,52 @@
+{
+  "error_id": "11c321334f37",
+  "run_id": "ea527c0b5ccf40bab265ffcb6732fa5b",
+  "physical_model_requests": 3,
+  "analysis_spans": 2,
+  "summary_model_requests": 0,
+  "total_seconds": 139.144,
+  "requests": [
+    {
+      "kind": "initial",
+      "seconds": 60,
+      "result": "ReadTimeout",
+      "prompt_tokens": 16083
+    },
+    {
+      "kind": "transport_retry",
+      "seconds": 17.723,
+      "result": "response_without_tool_calls",
+      "prompt_tokens": 16083,
+      "generated_tokens": 301,
+      "context_end_tokens": 16383,
+      "truncated": true
+    },
+    {
+      "kind": "agent_replan",
+      "seconds": 60.067,
+      "result": "ReadTimeout",
+      "prompt_tokens": 16310
+    }
+  ],
+  "context_limit": 16384,
+  "reasoning_enabled": true,
+  "configured_num_predict": 4096,
+  "observed_prompt_prefill": [
+    {
+      "attempt": 1,
+      "tokens_processed": 14848,
+      "elapsed_seconds": 53.84
+    },
+    {
+      "attempt": 3,
+      "tokens_processed": 14848,
+      "elapsed_seconds": 57.64
+    }
+  ],
+  "app_context_characters": [
+    20568,
+    21121
+  ],
+  "budget_gap": "runtime prompt guard counts characters in rendered system/messages/tool-call args, but excludes offered tool schemas and does not reserve token space for output.",
+  "conclusion": "Oversized near-capacity input and long prefill are observed causes of latency. Context-ended response has no tool calls; its exact semantic incompleteness needs retained response analysis. Whole-source executable loading plan remains absent. No inference retry performed during diagnosis."
+}

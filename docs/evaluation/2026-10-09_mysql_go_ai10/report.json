@@ -1,0 +1,90 @@
+{
+  "completed": 10,
+  "verdicts": {
+    "FAIL": 7,
+    "PASS": 3
+  },
+  "failures": [
+    {
+      "id": 3,
+      "status": "needs_context",
+      "run_id": "ae901a3acd5848f8bd48987f353c85bf",
+      "verdict": "FAIL",
+      "reason": "independent output contract mismatch",
+      "error_type": "AssertionError"
+    },
+    {
+      "id": 4,
+      "status": "needs_context",
+      "run_id": "53acf1d9a8c54efa94f0acb4bb7776aa",
+      "verdict": "FAIL",
+      "reason": "independent output contract mismatch",
+      "error_type": "AssertionError"
+    },
+    {
+      "id": 5,
+      "status": "complete",
+      "run_id": "02174dbcf7fa45a5a8945a6d78dd436c",
+      "verdict": "FAIL",
+      "reason": "independent output contract mismatch",
+      "error_type": "AssertionError"
+    },
+    {
+      "id": 6,
+      "status": "complete",
+      "run_id": "e0edcf911c8a428ebbd940a3cc33ad34",
+      "verdict": "FAIL",
+      "reason": "independent output contract mismatch",
+      "error_type": "AssertionError"
+    },
+    {
+      "id": 7,
+      "status": "complete",
+      "run_id": "b24aa884f99642a4ad8a561801cfd512",
+      "verdict": "FAIL",
+      "reason": "independent output contract mismatch",
+      "error_type": "AssertionError"
+    },
+    {
+      "id": 9,
+      "verdict": "FAIL",
+      "reason": "ModelAttemptBudgetExceeded",
+      "run_id": "1b1bb49fcc3845b593f19965b6283039",
+      "error_id": "de268eeb788b"
+    },
+    {
+      "id": 10,
+      "status": "needs_context",
+      "run_id": "7066ff56ed084db88a16285f929814ac",
+      "verdict": "FAIL",
+      "reason": "independent output contract mismatch",
+      "error_type": "AssertionError"
+    }
+  ],
+  "source_changes_during_replay": [
+    "core/analysis_agent/population_basis.py",
+    "core/analysis_agent/population_audit.py",
+    "core/analysis_agent/subject_identity.py"
+  ],
+  "existing_asset_changes": [],
+  "remote_queries_by_turn": {
+    "1": 1,
+    "2": 0,
+    "3": 0,
+    "4": 0,
+    "5": 1,
+    "6": 1,
+    "7": 0,
+    "8": 1,
+    "9": 0,
+    "10": 0
+  },
+  "seconds": {
+    "median": 33.2625,
+    "max": 61.678,
+    "total": 352.10999999999996
+  },
+  "model_calls_total": 41,
+  "release": "NO-GO",
+  "scope": "single-user loopback MySQL + Ollama; company Windows/Azure/Databricks and official DeepEval/Spider2 benchmark unverified"
+}

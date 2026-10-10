@@ -82,6 +82,17 @@ class GraphAnalysisRuntime:
         self.context.sql_dialect=sql_dialect
         self.context.max_scatter_coordinates=self.policy.max_scatter_coordinates
         self.context.source_namespace=source_namespace
+        from core.analysis_agent.execution_plan import ExecutionPlans
+        self.plans=ExecutionPlans(self.db)
+        self.context.runtime_services={'asset_db':self.db,'policy':self.policy.public,
+            'approval_required':lambda:self.policy.require_remote_approval,
+            'current':lambda:getattr(self.context,'current_analysis',{}),
+            'plan':lambda:self.plans.inspect(getattr(self.context,'current_analysis',{}).get('request_id','')),
+            'dependencies':lambda edges:self.plans.dependencies(getattr(self.context,'current_analysis',{}).get('request_id',''),edges),
+            'sync_plan':self.plans.sync,'plan_admission':self.plans.admission,'status':self.execution_status,
+            'cancel_query':self.cancel_database_query,
+            'diagnostics':lambda:__import__('core.analysis_agent.support_report',fromlist=['summarize']).summarize(self.diagnostics.path,run_id=self.diagnostics.run_id),
+            'health':lambda:getattr(self.remote_execute,'probe',lambda:{'status':'unavailable','error_code':'probe_unavailable'})()}
         def read_receipt(dataset_id):
             record=self.ledger.completed_for_dataset(dataset_id)
             return record if record and record.get('connection')==self.connection_identity else None
@@ -100,7 +111,13 @@ class GraphAnalysisRuntime:
                              '\n현재 원격 실행 정책: 필요한 읽기 전용 SQL은 사용자 승인 없이 query_databricks로 즉시 실행하세요. 승인 여부를 묻거나 기다리지 마세요.')
             catalog_block=json.dumps(prompt_catalog(catalog(),request.state.get('recovery')),ensure_ascii=False,default=str)
             rendered=instructions+'\n현재 분석 환경:\n'+catalog_block
-            rendered += '\n연결된 SQL 엔진: ' + self.sql_dialect + '. 실제 관측된 테이블 이름을 그대로 사용하세요.'
+            if self.remote_execute is not None:
+                rendered += '\n연결된 SQL 엔진: ' + self.sql_dialect + '. 실제 관측된 테이블 이름을 그대로 사용하세요.'
+            else:
+                rendered += ('\n외부 SQL 실행기는 연결되어 있지 않습니다. query_databricks는 원격 실행 결과를 제공할 수 없습니다. '
+                             '보유 데이터의 계산/차트는 실제 dataset ID로 로컬 도구를 사용하세요. '
+                             'local_analysis_sql은 원격 테이블명이 아니라 FROM data와 해당 dataset_id로 SELECT를 실행합니다. '
+                             '원격 조회 계획 작성과 실제 실행/결과는 구분하세요.')
             if self.sql_dialect == 'mysql':
                 rendered += ('\n현재 데이터 소스는 로컬 MySQL입니다. 테이블은 database.table 두 단계 이름을 사용하고 '
                              'MySQL 문법으로 SELECT를 작성하세요. query_databricks는 이전 이름을 유지한 공통 읽기 전용 SQL 실행 도구입니다.')
@@ -161,6 +178,8 @@ class GraphAnalysisRuntime:
         self.model_recovery = model_recovery
         recovery.goal_interpreter.model_recovery=model_recovery
         self.context.semantic_resolver.model_recovery = model_recovery
+        from core.analysis_agent.remaining_work import RemainingWorkMiddleware
+        from core.analysis_agent.python_planning import BoundedPythonPlanningMiddleware
         middleware=[QueuedRequestMiddleware(),RecoveryPlanningMiddleware(recovery),CompactDiscoveryMiddleware(),
                     FocusedScalarToolsMiddleware(self.context,self.diagnostics),
                     memory_middleware(model,summary_trigger_tokens,summary_keep_messages,diagnostics=self.diagnostics,
@@ -169,7 +188,9 @@ class GraphAnalysisRuntime:
                     FocusedRemoteJoinToolsMiddleware(self.context,self.diagnostics),
                     FocusedRemoteCatalogToolsMiddleware(self.context,self.diagnostics),
                     ExplanationToolsMiddleware(),
-                    ProgressiveToolsMiddleware(registered,self.diagnostics),
+                    ProgressiveToolsMiddleware(registered,self.diagnostics,remote_available=self.remote_execute is not None),
+                    RemainingWorkMiddleware(self.context),
+                    BoundedPythonPlanningMiddleware(self.diagnostics),
                     ModelContextBudgetMiddleware(model,self.diagnostics,self.max_context_chars),
                     model_recovery]
         if self.remote_execute is not None:
@@ -210,7 +231,7 @@ class GraphAnalysisRuntime:
                     self.diagnostics.emit('remote_query_started',
                         ledger_status=recorded['status'], cached_receipt=recorded['status']=='completed')
                     result=normalize_tool_result(
-                        self.ledger.execute(runtime.tool_call_id,envelope,self.remote_execute))
+                        self.ledger.execute(runtime.tool_call_id,envelope,self._controlled_executor(runtime.tool_call_id)))
                     self.diagnostics.emit('remote_query_finished',
                         ledger_status=self.ledger.get(runtime.tool_call_id)['status'],
                         status=result.get('status'), cached_receipt=recorded['status']=='completed')
@@ -241,6 +262,11 @@ class GraphAnalysisRuntime:
                 middleware.append(HumanInTheLoopMiddleware(interrupt_on={
                     'query_databricks':{'allowed_decisions':['approve','reject']}}
                     if self.policy.require_remote_approval else {}))
+        from core.analysis_tool_contract import COMMON_TOOL_RESULT_SCHEMA
+        self.context.registered_contracts={entry.name:{'name':entry.name,'description':entry.description,
+            'parameters':entry.args_schema if isinstance(entry.args_schema,dict) else entry.tool_call_schema.model_json_schema(),
+            'output_schema':COMMON_TOOL_RESULT_SCHEMA} for entry in registered}
+        recovery.tool_input_schemas={name:item['parameters'] for name,item in self.context.registered_contracts.items()}
         self.context.allowed_tool_names = frozenset(entry.name for entry in registered)
         middleware.append(recovery)
         self.agent=create_agent(model,tools=registered,checkpointer=self.saver,middleware=middleware)
@@ -249,6 +275,41 @@ class GraphAnalysisRuntime:
         self._reconcile_cancelled_request()
         self._reconcile_completed_controller_load()
         self._reconcile_deferred_query_reply()
+
+    def execution_status(self, request_id=''):
+        if request_id:
+            try:records=[self.ledger.get(request_id)]
+            except KeyError:return {'status':'needs_context','error_code':'query_not_found'}
+        else:
+            ids=(getattr(self.context,'current_analysis',{}) or {}).get('remote_query_ids',[])
+            records=[self.ledger.get(key) for key in ids]
+        control=getattr(self.remote_execute,'control',None)
+        return {'status':'ready','queries':[{**{k:r.get(k) for k in ('id','status','source','result')},
+                    'driver_observation':control.inspect(r['id']) if control else None} for r in records],
+                'provider_polling_available':False,'provider_cancel_available':bool(control and any(control.inspect(r['id']).get('cancel_available') for r in records)),
+                'message':'로컬 실행 장부입니다. submitting/unknown은 DB 종료의 증거가 아니며 자동 재조회하지 않습니다.'}
+
+    def _controlled_executor(self, request_id):
+        def execute(envelope):
+            control=getattr(self.remote_execute,'control',None)
+            current=getattr(self.context,'current_analysis',{})
+            deadline=current.get('request_started_at',time.time())+self.policy.turn_slo_seconds
+            if deadline<=time.time():
+                from core.analysis_agent.approvals import QueryNotSubmitted
+                raise QueryNotSubmitted()
+            if control:control.bind(request_id,deadline)
+            try:return self.remote_execute(envelope)
+            finally:
+                if control:control.finish()
+        return execute
+
+    def cancel_database_query(self, request_id):
+        try:record=self.ledger.get(request_id)
+        except KeyError:return {'status':'needs_context','error_code':'query_not_found'}
+        control=getattr(self.remote_execute,'control',None)
+        if record['status'] not in {'submitting','unknown'} or control is None:
+            return {'status':'unavailable','error_code':'query_not_active','retryable':False}
+        return control.cancel(request_id)
 
     def _reconcile_deferred_query_reply(self):
         """Repair an old deferred final reply only from already completed receipts.

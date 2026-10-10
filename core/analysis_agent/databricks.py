@@ -42,6 +42,8 @@ class ConnectionConfig:
 
 
 def make_executor(config,datasets,*,max_rows=100_000,max_coordinate_rows=None):
+    from core.analysis_agent.query_control import QueryControl,TrackedConnection
+    control=QueryControl()
     def execute(envelope):
         if not config.server_hostname or not config.http_path or not config.access_token:
             raise QueryNotSubmitted()
@@ -50,10 +52,18 @@ def make_executor(config,datasets,*,max_rows=100_000,max_coordinate_rows=None):
         try:
             from core.analysis_agent.source_scatter import fetch_limit
             row_limit=fetch_limit(envelope['query'],'databricks',max_rows,max_coordinate_rows)
-            return execute_approved(request,config,datasets,max_rows=row_limit)
+            from databricks import sql
+            def tracked_connect(**kwargs):return TrackedConnection(sql.connect(**kwargs),control)
+            return execute_approved(request,config,datasets,max_rows=row_limit,connect=tracked_connect)
         except Exception as exc:
             context=getattr(exc,'context',{})
             if context.get('method')=='OpenSession':
                 raise QueryNotSubmitted(context.get('http-code')) from exc
             raise
+    def probe():
+        from core.analysis_agent.connection_probe import probe_databricks
+        result=probe_databricks(config)
+        return {**result,'status':'ready' if result['status']=='PASS' else 'unavailable','backend':'databricks','retryable':False}
+    execute.probe=probe
+    execute.control=control
     return execute

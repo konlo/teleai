@@ -1,6 +1,6 @@
 """Bounded row display, separated from source loading and analytical selection."""
 import re
-from sqlglot import parse_one
+from sqlglot import parse_one,exp
 from core.analysis_catalog import full_schema_source, resolve_table_context
 from utils.analysis_provenance import table_identity
 from utils.analysis_datasets import preview_dataset
@@ -27,27 +27,29 @@ def key(source):
     return str(source).replace('`','').casefold()
 
 
-def evidence(store,dataset_id,limit):
+def evidence(store,dataset_id,limit,columns=None):
     info=store.metadata[dataset_id]
     frame=preview_dataset(store,dataset_id,limit=limit)
     if list(frame.columns)!=list(info.columns) or len(frame)!=min(info.rows,limit):
         raise ValueError('Stored preview shape does not match dataset metadata')
+    shown=list(columns or info.columns)
+    if len(shown)!=len(set(shown)) or not set(shown).issubset(info.columns):raise ValueError('Unknown preview columns')
     return {'dataset_id':info.id,'source':info.source,'snapshot':info.snapshot,
-            'columns':list(info.columns),'total_rows':info.rows,'rows':len(frame),'limit':limit}
+            'columns':shown,'total_rows':info.rows,'rows':len(frame),'limit':limit}
 
 
 def frame(store,proof):
     info=store.metadata[proof['dataset_id']]
     if any(proof.get(k)!=v for k,v in {'source':info.source,'snapshot':info.snapshot,
-            'columns':list(info.columns),'total_rows':info.rows}.items()):
+            'total_rows':info.rows}.items()) or not set(proof['columns']).issubset(info.columns):
         raise ValueError('Table display references a different dataset')
-    result=preview_dataset(store,info.id,limit=proof['limit'])
+    result=preview_dataset(store,info.id,limit=proof['limit'])[proof['columns']]
     if len(result)!=proof['rows'] or list(result.columns)!=proof['columns']:
         raise ValueError('Table display shape mismatch')
     return result
 
 
-def prepare(context,source,limit=10,where_sql='',current_result_only=False,fresh=False):
+def prepare(context,source,limit=10,where_sql='',current_result_only=False,fresh=False,columns=None):
     if isinstance(limit,bool) or not isinstance(limit,int) or not 1<=limit<=200:
         raise ValueError('limit must be an integer between 1 and 200')
     store=context.datasets
@@ -55,21 +57,24 @@ def prepare(context,source,limit=10,where_sql='',current_result_only=False,fresh
         selected=store.metadata.get(context.selected_dataset_id)
         if not selected or key(selected.source)!=key(source) or where_sql:
             return {'status':'needs_context','message':'현재 결과의 필터·출처를 먼저 확정해야 합니다.'}
-        return {'status':'ready','table_preview_evidence':evidence(store,selected.id,limit)}
+        return {'status':'ready','table_preview_evidence':evidence(store,selected.id,limit,columns)}
     inspection=resolve_table_context(context.reference_context,store,source)
     if inspection.get('status') not in {'ready','needs_refresh'}:
         return {'status':'needs_context','message':'미리볼 테이블의 실제 출처를 확인해주세요.'}
     source=inspection.get('table_context',{}).get('table') or source
-    columns=[c['name'] for c in inspection.get('table_context',{}).get('columns',[]) if c.get('name')]
+    all_columns=[c['name'] for c in inspection.get('table_context',{}).get('columns',[]) if c.get('name')]
+    wanted=list(columns or all_columns)
+    if columns and not set(columns).issubset(all_columns):
+        return {'status':'needs_context','message':'요청한 컬럼을 실제 스키마에서 확인해야 합니다.'}
     if not fresh and not where_sql and inspection.get('status')=='ready':
         for info in reversed(list(store.metadata.values())):
             if (key(info.source)!=key(source) or info.grain!='raw' or info.parent_id
-                    or tuple(info.columns)!=tuple(columns)
+                    or not set(wanted).issubset(info.columns)
                     or info.rows<limit and info.coverage!='complete'):
                 continue
             if info.query:
                 tree=parse_one(info.query,read=context.sql_dialect)
-                if (full_schema_source(info.query,dialect=context.sql_dialect) is None
+                if (preview_source(info.query,context.sql_dialect) is None
                         or tree.args.get('where') or tree.args.get('order')):
                     continue
                 bound=tree.args.get('limit')
@@ -77,8 +82,9 @@ def prepare(context,source,limit=10,where_sql='',current_result_only=False,fresh
                     continue
             elif info.coverage!='complete' or not info.predicate_known:
                 continue
-            return {'status':'ready','table_preview_evidence':evidence(store,info.id,limit)}
-    query='SELECT * FROM '+'.'.join('`'+p.replace('`','``')+'`' for p in source.split('.'))
+            return {'status':'ready','table_preview_evidence':evidence(store,info.id,limit,wanted)}
+    projection=', '.join('`'+c.replace('`','``')+'`' for c in columns) if columns else '*'
+    query='SELECT '+projection+' FROM '+'.'.join('`'+p.replace('`','``')+'`' for p in source.split('.'))
     if where_sql:query+=' WHERE ('+where_sql+')'
     query+=f' LIMIT {limit}'
     from core.analysis_load_plan import source_plan
@@ -93,18 +99,30 @@ def accept_remote(context,current,receipt):
     limit=current['row_preview_spec']['limit']
     if (not info or info.query!=plan.get('query') or key(info.source)!=key(plan.get('source'))
             or info.grain!='raw' or info.rows>limit
-            or full_schema_source(info.query,dialect=context.sql_dialect) is None):
+            or preview_source(info.query,context.sql_dialect) is None):
         return None
-    return evidence(context.datasets,info.id,limit)
+    return evidence(context.datasets,info.id,limit,current.get('required_columns'))
+
+
+def preview_source(query,dialect):
+    from utils.analysis_provenance import single_table
+    tree=parse_one(query,read=dialect);table=single_table(tree)
+    if table is None or any(tree.args.get(k) for k in ('group','having','distinct','offset')):return None
+    if full_schema_source(query,dialect=dialect) is not None:return table
+    if not tree.expressions or any(not isinstance(c,exp.Column) or c.is_star or
+            (c.table and c.table.casefold()!=table.alias_or_name.casefold()) for c in tree.expressions):return None
+    return table
 
 
 def valid_plan(context,current,plan):
     try:
         query=plan['query']
-        source=full_schema_source(query,dialect=context.sql_dialect)
+        source=preview_source(query,context.sql_dialect)
         tree=parse_one(query,read=context.sql_dialect)
         bound=tree.args.get('limit')
-        return bool(source is not None and key(table_identity(source))==key(plan['source'])
+        wanted=current.get('required_columns',[])
+        projection=[c.name for c in tree.expressions] if all(isinstance(c,exp.Column) for c in tree.expressions) else []
+        return bool(source is not None and (not wanted or projection==wanted) and key(table_identity(source))==key(plan['source'])
             and key(plan['source']) in {key(s) for s in current.get('required_sources',[])}
             and bound and int(bound.expression.this)==current['row_preview_spec']['limit']
             and not any(tree.args.get(k) for k in ('group','having','offset','distinct')))

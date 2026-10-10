@@ -1,0 +1,90 @@
+[
+  {
+    "backend": "mysql",
+    "status": "answered",
+    "seconds": 0.228,
+    "model_calls": 0,
+    "queries": [
+      "SELECT * FROM `teleai_default`.`bank_loan` LIMIT 10"
+    ],
+    "proof": {
+      "dataset_id": "d670bae8-ad99-429a-b8b9-990eaa248781",
+      "source": "teleai_default.bank_loan",
+      "snapshot": "2026-10-03T13:30:53.620702+00:00",
+      "columns": [
+        "id",
+        "age",
+        "job",
+        "marital",
+        "education",
+        "default",
+        "balance",
+        "housing",
+        "loan",
+        "contact",
+        "day",
+        "month",
+        "duration",
+        "campaign",
+        "pdays",
+        "previous",
+        "poutcome",
+        "y"
+      ],
+      "total_rows": 10,
+      "rows": 10,
+      "limit": 10
+    },
+    "text": "teleai_default.bank_loan의 데이터 10행, 18열을 표로 표시했습니다. 원본과 기존 분석 기준은 보존했습니다. 이 미리보기는 전체 분포 통계가 아닙니다.\n\n원격 조회가 완료되어 결과 10행을 저장했습니다.",
+    "verified_shape": [
+      10,
+      18
+    ],
+    "repeat_status": "answered",
+    "repeat_queries": 0
+  },
+  {
+    "backend": "databricks",
+    "status": "answered",
+    "seconds": 2.908,
+    "model_calls": 0,
+    "queries": [
+      "SELECT * FROM `workspace`.`default`.`bank_loan` LIMIT 10"
+    ],
+    "proof": {
+      "dataset_id": "2d4492bc-3039-4c8e-82a9-865ced337b6f",
+      "source": "workspace.default.bank_loan",
+      "snapshot": "2026-10-03T13:30:56.756949+00:00",
+      "columns": [
+        "id",
+        "age",
+        "job",
+        "marital",
+        "education",
+        "default",
+        "balance",
+        "housing",
+        "loan",
+        "contact",
+        "day",
+        "month",
+        "duration",
+        "campaign",
+        "pdays",
+        "previous",
+        "poutcome",
+        "y"
+      ],
+      "total_rows": 10,
+      "rows": 10,
+      "limit": 10
+    },
+    "text": "workspace.default.bank_loan의 데이터 10행, 18열을 표로 표시했습니다. 원본과 기존 분석 기준은 보존했습니다. 이 미리보기는 전체 분포 통계가 아닙니다.\n\n원격 조회가 완료되어 결과 10행을 저장했습니다.",
+    "verified_shape": [
+      10,
+      18
+    ],
+    "repeat_status": "answered",
+    "repeat_queries": 0
+  }
+]

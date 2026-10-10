@@ -1,0 +1,69 @@
+{
+  "id": 22,
+  "prompt": "방금 보여준 10행 데이터의 age를 x축, balance를 y축으로 scatter plot을 그려줘",
+  "status": "complete",
+  "goal": {
+    "objective": "requested work",
+    "mode": "execute",
+    "source_reference": "previous_analysis",
+    "sources": [
+      "teleai_default.bank_loan"
+    ],
+    "columns": [
+      "age",
+      "balance"
+    ],
+    "conditions": [],
+    "any_conditions": [],
+    "measure_conditions": [],
+    "ratio": null,
+    "current_result_only": true,
+    "fresh_source_required": false,
+    "question": "",
+    "tasks": [
+      {
+        "capability": "chart",
+        "options": {
+          "kind": "scatter",
+          "axes": {
+            "x": "age",
+            "y": "balance"
+          }
+        }
+      }
+    ]
+  },
+  "reason": null,
+  "run_id": "11bf46bb57d64626b9c11749b22ae689",
+  "model_calls": 6,
+  "chart_metadata": [
+    {
+      "id": "871f8f2b-6e41-4931-b552-ca844d8272fc",
+      "dataset_id": "ea1f6975-fb05-4a5c-ace6-60a86ec8f5b2",
+      "title": "age와 balance의 관계",
+      "reason": "완전한 좌표 10개 중 10개를 표시했습니다. 상관만으로 인과를 판단할 수 없습니다.",
+      "kind": "scatter",
+      "columns": [
+        "age",
+        "balance"
+      ],
+      "scope": "보유 10행 기준 · unknown · raw · 표시 데이터 10개 · 집계 none",
+      "render_spec": {
+        "kind": "scatter",
+        "x": "age",
+        "y": "balance",
+        "category": "",
+        "aggregation": "none",
+        "sort": "none",
+        "cumulative": false,
+        "top_n": 50,
+        "bins": 20,
+        "title": "age와 balance의 관계",
+        "x_label": "age",
+        "y_label": "balance",
+        "orientation": "vertical"
+      }
+    }
+  ],
+  "verdict": "PASS"
+}

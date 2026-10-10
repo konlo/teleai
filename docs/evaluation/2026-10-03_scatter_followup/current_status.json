@@ -1,0 +1,35 @@
+{
+  "checked_at_kst": "2026-10-03T23:40:10.093929+09:00",
+  "web_server": {
+    "port": 8504,
+    "pid": 23371,
+    "health": "ok",
+    "data_backend": "mysql"
+  },
+  "conversation": "0728dee0-d555-4aa2-853b-1101679346da",
+  "agent_state": "incomplete checkpoint, not active inference",
+  "latest_request": "전체 데이타에 대해서 age와 balance scatter plot으로 그려줘",
+  "initial_error": {
+    "id": "65a8460de89e",
+    "type": "ReadTimeout",
+    "stage": "model HTTP response wait"
+  },
+  "latest_error": {
+    "id": "cdde80d4b174",
+    "type": "ValueError",
+    "stage": "ui_action -> runtime.submit",
+    "cause": "existing unfinished analysis rejects new submission"
+  },
+  "load_plan": null,
+  "current_request_sql_started": false,
+  "current_request_chart_ids": [],
+  "retained_dataset_count": 8,
+  "retained_chart_count": 9,
+  "ollama": {
+    "version_probe_http": 200,
+    "version": "0.35.1",
+    "loaded_model_count": 0,
+    "inference_tested": false
+  },
+  "execution_performed": false
+}

@@ -278,6 +278,7 @@ class AutomaticReadTests(unittest.TestCase):
                 return {'status':'ready','dataset':asdict(info)}
             return execute
         with tempfile.TemporaryDirectory() as root, patch.dict(os.environ,{
+                'TELLY_DATA_BACKEND':'databricks',
                 'TELLY_V1_STORAGE':root,'TELLY_REQUIRE_REMOTE_APPROVAL':'true' if initial_manual else 'false'}), \
                 patch('core.analysis_agent.model_provider.build_analysis_chat_model',return_value=DeferredReplyModel()), \
                 patch('core.analysis_agent.databricks.make_executor',side_effect=factory), \

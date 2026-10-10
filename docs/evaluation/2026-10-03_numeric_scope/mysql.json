@@ -1,0 +1,33 @@
+{
+  "backend": "mysql",
+  "scope": "live_adapter_and_agent_deterministic_range_chart_not_free_form_model",
+  "status": "PASS",
+  "conditions": [
+    {
+      "column": "age",
+      "op": "ge",
+      "value": 30
+    },
+    {
+      "column": "age",
+      "op": "le",
+      "value": 40
+    },
+    {
+      "column": "education",
+      "op": "eq",
+      "value": "primary"
+    }
+  ],
+  "sql_executions": 2,
+  "model_calls": 0,
+  "frequency_rows": 11,
+  "tool_calls": [
+    "23e0583d-a946-47aa-a4cd-bc64378ec22a",
+    "5f7c575a-30ad-4ee9-8e3f-519e14db7334",
+    "396e9226-65d2-4261-a1ff-ef7f2d8f7d1b"
+  ],
+  "frequency_sum": 27439,
+  "png_bytes": 11076,
+  "query": "SELECT `age`, COUNT(*) AS `__frequency` FROM `teleai_default`.`bank_loan` WHERE `age` IS NOT NULL AND (`age` >= 30 AND `age` <= 40 AND `education` = 'primary') GROUP BY `age`"
+}

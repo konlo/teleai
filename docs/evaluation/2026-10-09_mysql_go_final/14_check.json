@@ -1,0 +1,130 @@
+{
+  "id": 14,
+  "prompt": "이거 legend를 넣어줘",
+  "status": "complete",
+  "goal": {
+    "objective": "Add legend to the histogram",
+    "mode": "execute",
+    "source_reference": "previous_analysis",
+    "sources": [
+      "teleai_default.bank_loan"
+    ],
+    "columns": [
+      "age"
+    ],
+    "conditions": [
+      {
+        "column": "education",
+        "op": "in",
+        "value": [
+          "primary",
+          "secondary"
+        ]
+      },
+      {
+        "column": "age",
+        "op": "ge",
+        "value": 30
+      },
+      {
+        "column": "age",
+        "op": "le",
+        "value": 40
+      }
+    ],
+    "any_conditions": [],
+    "measure_conditions": [],
+    "ratio": null,
+    "current_result_only": true,
+    "fresh_source_required": false,
+    "question": "",
+    "tasks": [
+      {
+        "capability": "chart",
+        "options": {
+          "kind": "histogram",
+          "axes": {
+            "x": "age"
+          },
+          "category": "education",
+          "legend": true,
+          "stacked": true
+        }
+      }
+    ]
+  },
+  "reason": null,
+  "run_id": "16be744339dd43d3993a9d2d25292f52",
+  "model_calls": 3,
+  "chart_metadata": [
+    {
+      "id": "ad3f5f6b-b4fa-4c84-9834-dd3f4a12e0d7",
+      "dataset_id": "d7ded5c8-6d68-474d-99bf-6321c1fd1402",
+      "title": "education별 age 분포",
+      "reason": "공통 bin의 그룹별 COUNT(*)를 서로 다른 색의 막대로 표시하고 범례를 추가했습니다.",
+      "kind": "histogram",
+      "columns": [
+        "age",
+        "education"
+      ],
+      "scope": "빈도 합계 208,699 · complete · 그룹 결측 제외 0 · SELECT `age`, `education`, COUNT(*) AS `__frequency` FROM `teleai_default`.`bank_loan` WHERE `age` IS NOT NULL AND (`education` IN ('primary', 'secondary') AND `age` >= 30 AND `age` <= 40) GROUP BY `age`, `education`",
+      "render_spec": {
+        "kind": "histogram",
+        "x": "age",
+        "category": "education",
+        "bins": 8,
+        "legend": true,
+        "stacked": true,
+        "legend_labels": [
+          "primary",
+          "secondary"
+        ],
+        "colors": [
+          "#3278b9",
+          "#e58632"
+        ],
+        "bin_edges": [
+          30.0,
+          31.25,
+          32.5,
+          33.75,
+          35.0,
+          36.25,
+          37.5,
+          38.75,
+          40.0
+        ],
+        "series_counts": [
+          [
+            3015,
+            2336,
+            2357,
+            2324,
+            5197,
+            2714,
+            2677,
+            6819
+          ],
+          [
+            34015,
+            19889,
+            18085,
+            18462,
+            34644,
+            15689,
+            13982,
+            26494
+          ]
+        ],
+        "group_totals": [
+          27439,
+          181260
+        ],
+        "total_count": 208699,
+        "excluded_null_group_count": 0,
+        "null_policy": "exclude"
+      }
+    }
+  ],
+  "verdict": "PASS"
+}

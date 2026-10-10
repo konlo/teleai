@@ -1,0 +1,101 @@
+{
+  "completed": 31,
+  "verdicts": {
+    "PASS": 26,
+    "FAIL": 5
+  },
+  "failures": [
+    {
+      "id": 16,
+      "status": "complete",
+      "reason": null,
+      "run_id": "b668569b3858461b9640dc1bbd7d01be",
+      "model_calls": 5,
+      "verified_preview_shape": [
+        10,
+        18
+      ],
+      "verdict": "FAIL",
+      "error": "preview lost preceding population conditions"
+    },
+    {
+      "id": 17,
+      "status": "complete",
+      "reason": null,
+      "run_id": "cac264de5d3e42e1be0474efbf975c5f",
+      "model_calls": 6,
+      "verdict": "FAIL",
+      "error": "unrequested prior-population removal"
+    },
+    {
+      "id": 18,
+      "status": "complete",
+      "reason": null,
+      "run_id": "920b4b326d764451aa95efa717ee74c3",
+      "model_calls": 6,
+      "verdict": "FAIL",
+      "error": "unrequested prior-population removal"
+    },
+    {
+      "id": 27,
+      "status": "exhausted",
+      "reason": "sql_repair_budget",
+      "run_id": "19e35504f81147f0a5ff40e4b514b936",
+      "model_calls": 7,
+      "verdict": "FAIL",
+      "error": "missing source needs actionable clarification"
+    },
+    {
+      "id": 28,
+      "status": "complete",
+      "reason": null,
+      "run_id": "11ec99e61827499e99ce98c98176a671",
+      "model_calls": 5,
+      "verdict": "FAIL",
+      "error": "missing source needs actionable clarification"
+    }
+  ],
+  "source_changes_during_replay": [],
+  "existing_asset_changes": [],
+  "remote_queries_by_turn": {
+    "1": 1,
+    "2": 0,
+    "3": 1,
+    "4": 1,
+    "5": 1,
+    "6": 1,
+    "7": 1,
+    "8": 0,
+    "9": 0,
+    "10": 0,
+    "11": 0,
+    "12": 1,
+    "13": 0,
+    "14": 0,
+    "15": 0,
+    "16": 1,
+    "17": 1,
+    "18": 0,
+    "19": 0,
+    "20": 0,
+    "21": 0,
+    "22": 0,
+    "23": 0,
+    "24": 1,
+    "25": 1,
+    "26": 1,
+    "27": 2,
+    "28": 0,
+    "29": 0,
+    "30": 0,
+    "31": 0
+  },
+  "seconds": {
+    "median": 40.766,
+    "max": 153.656,
+    "total": 1351.1689999999999
+  },
+  "model_calls_total": 165,
+  "release": "NO-GO",
+  "scope": "single-user loopback MySQL + Ollama; company Windows/Azure/Databricks and official DeepEval/Spider2 benchmark unverified"
+}

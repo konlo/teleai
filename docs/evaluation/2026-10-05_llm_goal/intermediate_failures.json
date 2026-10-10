@@ -1,0 +1,225 @@
+[
+  {
+    "stage": "live-debug",
+    "cases": [
+      {
+        "id": "preview",
+        "prompt": "observations에서 열 개 행을 보여줘",
+        "status": "answered",
+        "text": "lab.observations의 데이터 10행, 3열을 표로 표시했습니다. 원본과 기존 분석 기준은 보존했습니다. 이 미리보기는 전체 분포 통계가 아닙니다.",
+        "seconds": 8.182,
+        "goal": {
+          "objective": "Show the first 10 rows from the 'observations' table.",
+          "mode": "execute",
+          "sources": [
+            "lab.observations"
+          ],
+          "columns": [
+            "*"
+          ],
+          "conditions": [],
+          "any_conditions": [],
+          "measure_conditions": [],
+          "ratio": null,
+          "current_result_only": false,
+          "fresh_source_required": false,
+          "question": "observations에서 열 개 행을 보여줘",
+          "tasks": [
+            {
+              "capability": "row_preview",
+              "options": {
+                "limit": 10
+              }
+            }
+          ]
+        },
+        "model_calls": 1,
+        "goal_error": null,
+        "result": null,
+        "pass": true
+      },
+      {
+        "id": "negated_chart",
+        "prompt": "observations의 reading 히스토그램은 그리지 말고 컬럼 목록만 보여줘",
+        "status": "blocked",
+        "text": "요청의 분석 목표를 확인하지 못해 실행하지 않았습니다. 기존 데이터와 결과는 보존했습니다.",
+        "seconds": 12.294,
+        "goal": null,
+        "model_calls": 2,
+        "goal_error": "goal_schema_v1 fields are required exactly",
+        "result": null,
+        "pass": false
+      },
+      {
+        "id": "negated_avg",
+        "prompt": "observations의 reading 평균은 계산하지 말고 합계만 알려줘",
+        "status": "blocked",
+        "text": "요청의 분석 목표를 확인하지 못해 실행하지 않았습니다. 기존 데이터와 결과는 보존했습니다.",
+        "seconds": 16.312,
+        "goal": null,
+        "model_calls": 2,
+        "goal_error": "invalid condition structure",
+        "result": null,
+        "pass": false
+      },
+      {
+        "id": "filtered_sum",
+        "prompt": "observations에서 reading이 3~8인 것만 합계를 알려줘",
+        "status": "blocked",
+        "text": "요청의 분석 목표를 확인하지 못해 실행하지 않았습니다. 기존 데이터와 결과는 보존했습니다.",
+        "seconds": 21.235,
+        "goal": null,
+        "model_calls": 2,
+        "goal_error": "invalid task",
+        "result": null,
+        "pass": false
+      }
+    ]
+  },
+  {
+    "stage": "grammar",
+    "cases": [
+      {
+        "id": "preview",
+        "prompt": "observations에서 열 개 행을 보여줘",
+        "status": "answered",
+        "text": "lab.observations의 데이터 10행, 3열을 표로 표시했습니다. 원본과 기존 분석 기준은 보존했습니다. 이 미리보기는 전체 분포 통계가 아닙니다.",
+        "seconds": 8.253,
+        "goal": {
+          "objective": "Show the first 10 rows from the 'observations' table.",
+          "mode": "execute",
+          "sources": [
+            "lab.observations"
+          ],
+          "columns": [
+            "*"
+          ],
+          "conditions": [],
+          "any_conditions": [],
+          "measure_conditions": [],
+          "ratio": null,
+          "current_result_only": true,
+          "fresh_source_required": false,
+          "question": "observations에서 열 개 행을 보여줘",
+          "tasks": [
+            {
+              "capability": "row_preview",
+              "options": {
+                "limit": 10
+              }
+            }
+          ]
+        },
+        "model_calls": 1,
+        "goal_error": null,
+        "result": null,
+        "pass": true
+      },
+      {
+        "id": "negated_chart",
+        "prompt": "observations의 reading 히스토그램은 그리지 말고 컬럼 목록만 보여줘",
+        "status": "blocked",
+        "text": "요청의 분석 목표를 확인하지 못해 실행하지 않았습니다. 기존 데이터와 결과는 보존했습니다.",
+        "seconds": 11.139,
+        "goal": null,
+        "model_calls": 2,
+        "goal_error": "explanation cannot execute tasks",
+        "result": null,
+        "pass": false
+      },
+      {
+        "id": "negated_avg",
+        "prompt": "observations의 reading 평균은 계산하지 말고 합계만 알려줘",
+        "status": "exhausted",
+        "text": "복구를 시도했지만 요청한 결과를 확인하지 못했습니다. 기존 데이터는 보존했습니다.",
+        "seconds": 51.901,
+        "goal": {
+          "objective": "lab.observations 테이블의 'reading' 컬럼의 합계를 계산하는 것",
+          "mode": "execute",
+          "sources": [
+            "lab.observations"
+          ],
+          "columns": [
+            "reading"
+          ],
+          "conditions": [],
+          "any_conditions": [],
+          "measure_conditions": [
+            {
+              "column": "reading",
+              "op": "not_null",
+              "value": null
+            }
+          ],
+          "ratio": null,
+          "current_result_only": false,
+          "fresh_source_required": false,
+          "question": "lab.observations 테이블의 'reading' 컬럼의 합계를 알려주세요.",
+          "tasks": [
+            {
+              "capability": "calculation",
+              "options": {
+                "operations": [
+                  "SUM"
+                ]
+              }
+            }
+          ]
+        },
+        "model_calls": 4,
+        "goal_error": null,
+        "result": null,
+        "pass": false
+      },
+      {
+        "id": "filtered_sum",
+        "prompt": "observations에서 reading이 3~8인 것만 합계를 알려줘",
+        "status": "blocked",
+        "text": "생성된 SQL이 실행 전 문법·출처·실행 가능성 검사에 반복해서 실패했습니다 (invalid_source_or_sql). 조회는 제안하거나 실행하지 않았고 기존 데이터는 보존했습니다.",
+        "seconds": 57.476,
+        "goal": {
+          "objective": "observations 테이블에서 reading 값이 3 이상 8 이하인 데이터의 합계를 계산",
+          "mode": "execute",
+          "sources": [
+            "lab.observations"
+          ],
+          "columns": [
+            "reading"
+          ],
+          "conditions": [
+            {
+              "column": "reading",
+              "op": "ge",
+              "value": 3
+            },
+            {
+              "column": "reading",
+              "op": "le",
+              "value": 8
+            }
+          ],
+          "any_conditions": [],
+          "measure_conditions": [],
+          "ratio": null,
+          "current_result_only": false,
+          "fresh_source_required": false,
+          "question": "observations 테이블에서 reading이 3 이상 8 이하인 데이터의 합계는 얼마인가요?",
+          "tasks": [
+            {
+              "capability": "calculation",
+              "options": {
+                "operations": [
+                  "SUM"
+                ]
+              }
+            }
+          ]
+        },
+        "model_calls": 4,
+        "goal_error": null,
+        "result": null,
+        "pass": false
+      }
+    ]
+  }
+]

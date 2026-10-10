@@ -1,0 +1,295 @@
+{
+  "status": "INTERRUPTED_FOR_BATCH_REPAIR",
+  "completed": 7,
+  "passed": 4,
+  "not_executed": [
+    8,
+    9,
+    10,
+    11,
+    12,
+    13,
+    14,
+    15,
+    16,
+    17,
+    18,
+    19,
+    20,
+    21,
+    22,
+    23,
+    24,
+    25,
+    26,
+    27,
+    28,
+    29,
+    30,
+    31
+  ],
+  "findings": [
+    "typed zero-row schema lost at footer conversion",
+    "exhausted turn replaced completed subject"
+  ],
+  "checks": [
+    {
+      "id": 1,
+      "prompt": "지금 볼 수있는 table를 보여줘",
+      "status": "complete",
+      "goal": {
+        "objective": "available datasets/tables",
+        "mode": "execute",
+        "source_reference": "previous_analysis",
+        "sources": [
+          "workspace.default.bank_loan",
+          "workspace.default.stormtrooper",
+          "workspace.default.titanic",
+          "workspace.default.ncr_ride"
+        ],
+        "columns": [],
+        "conditions": [],
+        "any_conditions": [],
+        "measure_conditions": [],
+        "ratio": null,
+        "current_result_only": false,
+        "fresh_source_required": false,
+        "question": "",
+        "tasks": [
+          {
+            "capability": "table_list",
+            "options": {
+              "catalog": "workspace",
+              "schema": "default"
+            }
+          }
+        ]
+      },
+      "reason": null,
+      "run_id": "472a0f5844e349a5a91db74b78ffc80d",
+      "model_calls": 2,
+      "chart_metadata": [],
+      "verdict": "PASS"
+    },
+    {
+      "id": 2,
+      "prompt": "bank_loan 컬럼들을 보여줘",
+      "status": "complete",
+      "goal": {
+        "objective": "bank_loan 컬럼들을 보여줘",
+        "mode": "execute",
+        "source_reference": "explicit",
+        "sources": [
+          "workspace.default.bank_loan"
+        ],
+        "columns": [
+          "id",
+          "age",
+          "job",
+          "marital",
+          "education",
+          "default",
+          "balance",
+          "housing"
+        ],
+        "conditions": [],
+        "any_conditions": [],
+        "measure_conditions": [],
+        "ratio": null,
+        "current_result_only": false,
+        "fresh_source_required": false,
+        "question": "",
+        "tasks": [
+          {
+            "capability": "metadata",
+            "options": {
+              "kind": "columns"
+            }
+          }
+        ]
+      },
+      "reason": null,
+      "run_id": "5bdb170a7f6a426f94cc9c4c75b5ef6d",
+      "model_calls": 3,
+      "chart_metadata": [],
+      "verified_metadata_columns": 18,
+      "verdict": "PASS"
+    },
+    {
+      "id": 3,
+      "prompt": "age 의 histogram 그려줘",
+      "status": "complete",
+      "goal": {
+        "objective": "age 의 histogram 그려줘",
+        "mode": "execute",
+        "source_reference": "previous_analysis",
+        "sources": [
+          "workspace.default.bank_loan"
+        ],
+        "columns": [
+          "age"
+        ],
+        "conditions": [],
+        "any_conditions": [],
+        "measure_conditions": [],
+        "ratio": null,
+        "current_result_only": false,
+        "fresh_source_required": false,
+        "question": "",
+        "tasks": [
+          {
+            "capability": "chart",
+            "options": {
+              "kind": "histogram",
+              "axes": {
+                "x": "age"
+              }
+            }
+          }
+        ]
+      },
+      "reason": null,
+      "run_id": "bc446b1f01084dd1a86b7c2a9a517f87",
+      "model_calls": 3,
+      "chart_metadata": [
+        {
+          "id": "51cd8eed-ea20-4a00-ab3c-878f46612fc0",
+          "dataset_id": "9dade304-67e5-4c9e-ae46-d738814b2c19",
+          "title": "age 분포",
+          "reason": "값별 빈도를 가중치로 사용했습니다. 원본 행을 펼치거나 표본을 만들지 않았습니다.",
+          "kind": "histogram",
+          "columns": [
+            "age"
+          ],
+          "scope": "빈도 합계 750,000 · complete · SELECT `age`, COUNT(*) AS `__frequency` FROM `workspace`.`default`.`bank_loan` WHERE `age` IS NOT NULL GROUP BY `age`",
+          "render_spec": {
+            "aggregation": "count",
+            "bins": 8,
+            "bin_counts": [
+              41846.0,
+              294174.0,
+              194626.0,
+              156552.0,
+              55423.0,
+              5273.0,
+              1968.0,
+              138.0
+            ],
+            "bin_edges": [
+              18.0,
+              27.625,
+              37.25,
+              46.875,
+              56.5,
+              66.125,
+              75.75,
+              85.375,
+              95.0
+            ],
+            "total_count": 750000,
+            "null_policy": "exclude"
+          }
+        }
+      ],
+      "verdict": "PASS"
+    },
+    {
+      "id": 4,
+      "prompt": "education은 어떤 값들로 되어 있지 ?",
+      "status": "complete",
+      "goal": {
+        "objective": "value_list",
+        "mode": "execute",
+        "source_reference": "previous_analysis",
+        "sources": [
+          "workspace.default.bank_loan"
+        ],
+        "columns": [
+          "education"
+        ],
+        "conditions": [],
+        "any_conditions": [],
+        "measure_conditions": [],
+        "ratio": null,
+        "current_result_only": false,
+        "fresh_source_required": false,
+        "question": "",
+        "tasks": [
+          {
+            "capability": "value_list",
+            "options": {}
+          }
+        ]
+      },
+      "reason": null,
+      "run_id": "12b0997a70b641e584dff9e89943bff3",
+      "model_calls": 3,
+      "chart_metadata": [],
+      "verdict": "PASS"
+    },
+    {
+      "id": 5,
+      "prompt": "histogram을 그려줘",
+      "status": "exhausted",
+      "goal": {
+        "objective": "histogram",
+        "mode": "execute",
+        "source_reference": "previous_analysis",
+        "sources": [
+          "workspace.default.bank_loan"
+        ],
+        "columns": [
+          "education"
+        ],
+        "conditions": [],
+        "any_conditions": [],
+        "measure_conditions": [],
+        "ratio": null,
+        "current_result_only": false,
+        "fresh_source_required": false,
+        "question": "",
+        "tasks": [
+          {
+            "capability": "chart",
+            "options": {
+              "kind": "histogram",
+              "axes": {
+                "x": "education"
+              }
+            }
+          }
+        ]
+      },
+      "reason": "model_time_budget",
+      "run_id": "64b9b167703644419a4daf6e9b30661a",
+      "model_calls": 5,
+      "chart_metadata": [],
+      "verdict": "FAIL",
+      "error": "model_time_budget"
+    },
+    {
+      "id": 6,
+      "prompt": "education이 primary 이고 age가 30~40인 사람들을 시각화 해줘",
+      "status": "blocked",
+      "goal": null,
+      "reason": "goal_unverified",
+      "run_id": "7a5614817da14915a45ad8638b67e23c",
+      "model_calls": 2,
+      "chart_metadata": [],
+      "verdict": "FAIL",
+      "error": "goal_unverified"
+    },
+    {
+      "id": 7,
+      "prompt": "education이 primary과 secondary 이고 age가 30~40인 사람들을 시각화 해줘 ",
+      "status": "blocked",
+      "goal": null,
+      "reason": "goal_unverified",
+      "run_id": "826b389e888d4327869d145d47c0cda3",
+      "model_calls": 2,
+      "chart_metadata": [],
+      "verdict": "FAIL",
+      "error": "goal_unverified"
+    }
+  ]
+}

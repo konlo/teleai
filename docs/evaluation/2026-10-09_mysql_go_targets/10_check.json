@@ -1,0 +1,87 @@
+{
+  "id": 10,
+  "prompt": "색 구별이 안 되고 있어 ",
+  "status": "complete",
+  "goal": {
+    "objective": "requested work",
+    "mode": "execute",
+    "source_reference": "previous_analysis",
+    "sources": [
+      "teleai_default.bank_loan"
+    ],
+    "columns": [
+      "education",
+      "age"
+    ],
+    "conditions": [
+      {
+        "column": "education",
+        "op": "in",
+        "value": [
+          "primary",
+          "secondary"
+        ]
+      },
+      {
+        "column": "age",
+        "op": "ge",
+        "value": 30
+      },
+      {
+        "column": "age",
+        "op": "le",
+        "value": 40
+      }
+    ],
+    "any_conditions": [],
+    "measure_conditions": [],
+    "ratio": null,
+    "current_result_only": false,
+    "fresh_source_required": false,
+    "question": "",
+    "tasks": [
+      {
+        "capability": "chart",
+        "options": {
+          "kind": "bar",
+          "axes": {
+            "x": "education"
+          },
+          "categorical": true
+        }
+      }
+    ]
+  },
+  "reason": null,
+  "run_id": "ecc10b946cae4e4c8e66d25208421b46",
+  "model_calls": 5,
+  "chart_metadata": [
+    {
+      "id": "8990e14e-56dc-4bf0-9b2f-041f71aa3b43",
+      "dataset_id": "ab8ce099-a2eb-4ff6-8117-8a929ddaafe6",
+      "title": "education 분포",
+      "reason": "범주별 실제 COUNT(*) 빈도를 표시합니다. 결측은 제외했습니다.",
+      "kind": "bar",
+      "columns": [
+        "education"
+      ],
+      "scope": "빈도 합계 208,699 · complete · SELECT `education`, COUNT(*) AS `__frequency` FROM `teleai_default`.`bank_loan` WHERE `education` IS NOT NULL AND (`education` IN ('primary', 'secondary') AND `age` >= 30 AND `age` <= 40) GROUP BY `education`",
+      "render_spec": {
+        "aggregation": "count",
+        "labels": [
+          "secondary",
+          "primary"
+        ],
+        "counts": [
+          181260,
+          27439
+        ],
+        "total_count": 208699,
+        "has_more_categories": false,
+        "null_policy": "exclude"
+      }
+    }
+  ],
+  "verdict": "FAIL",
+  "error": "contract mismatch"
+}

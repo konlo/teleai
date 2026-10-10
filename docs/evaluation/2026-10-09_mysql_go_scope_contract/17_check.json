@@ -1,0 +1,67 @@
+{
+  "id": 17,
+  "prompt": "age를 x축으로 하고 balance를 Y축으로 하는 scatter plot를 그려줘",
+  "status": "complete",
+  "goal": {
+    "objective": "requested work",
+    "mode": "execute",
+    "source_reference": "previous_analysis",
+    "sources": [
+      "teleai_default.bank_loan"
+    ],
+    "columns": [
+      "age",
+      "balance"
+    ],
+    "conditions": [],
+    "any_conditions": [],
+    "measure_conditions": [],
+    "ratio": null,
+    "current_result_only": false,
+    "fresh_source_required": false,
+    "question": "",
+    "tasks": [
+      {
+        "capability": "chart",
+        "options": {
+          "kind": "scatter",
+          "axes": {
+            "x": "age",
+            "y": "balance"
+          }
+        }
+      }
+    ]
+  },
+  "reason": null,
+  "run_id": "cac264de5d3e42e1be0474efbf975c5f",
+  "model_calls": 6,
+  "chart_metadata": [
+    {
+      "id": "2c3a68ef-917e-4d0d-a368-b6d5776f2356",
+      "dataset_id": "ce37e8f3-88db-4244-b679-fc05d73c4fdf",
+      "title": "age와 balance 관계",
+      "reason": "전체 유효 좌표를 표시하고 중복 빈도를 색상으로 표현합니다.",
+      "kind": "scatter",
+      "columns": [
+        "age",
+        "balance"
+      ],
+      "scope": "전체 유효 원본 750,000행 · 고유 좌표 132,613개 · 동일 좌표는 빈도로 압축 · 표본/구간 집계 없음 · 두 축의 NULL 제외 · complete",
+      "render_spec": {
+        "mode": "exact_coordinate_frequency",
+        "source": "teleai_default.bank_loan",
+        "query": "SELECT `age`, `balance`, COUNT(*) AS `__telly_coordinate_frequency` FROM `teleai_default`.`bank_loan` WHERE `age` IS NOT NULL AND `balance` IS NOT NULL GROUP BY `age`, `balance`",
+        "snapshot": "2026-10-09T06:41:37.186991+00:00",
+        "x": "age",
+        "y": "balance",
+        "coordinate_count": 132613,
+        "drawable_rows": 750000,
+        "weight_column": "__telly_coordinate_frequency",
+        "data_sha256": "56a6272329b399a90bd24386eea1f14df29e43c365b7d2f82fb01915d09bdc2c"
+      }
+    }
+  ],
+  "verdict": "FAIL",
+  "error": "unrequested prior-population removal"
+}

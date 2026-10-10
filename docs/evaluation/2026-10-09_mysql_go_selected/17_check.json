@@ -1,0 +1,86 @@
+{
+  "id": 17,
+  "prompt": "age를 x축으로 하고 balance를 Y축으로 하는 scatter plot를 그려줘",
+  "status": "complete",
+  "goal": {
+    "objective": "chart",
+    "mode": "execute",
+    "source_reference": "previous_analysis",
+    "sources": [
+      "teleai_default.bank_loan"
+    ],
+    "columns": [
+      "age",
+      "balance"
+    ],
+    "conditions": [
+      {
+        "column": "education",
+        "op": "eq",
+        "value": "primary"
+      },
+      {
+        "column": "age",
+        "op": "ge",
+        "value": 30
+      },
+      {
+        "column": "age",
+        "op": "le",
+        "value": 40
+      }
+    ],
+    "any_conditions": [],
+    "measure_conditions": [],
+    "ratio": null,
+    "current_result_only": true,
+    "fresh_source_required": false,
+    "question": "age를 x축으로 하고 balance를 Y축으로 하는 scatter plot를 그려줘",
+    "tasks": [
+      {
+        "capability": "chart",
+        "options": {
+          "kind": "scatter",
+          "axes": {
+            "x": "age",
+            "y": "balance"
+          }
+        }
+      }
+    ]
+  },
+  "reason": null,
+  "run_id": "525b4edd4b76413da398a22c17ccc691",
+  "model_calls": 5,
+  "chart_metadata": [
+    {
+      "id": "25ff220e-21fc-4ad6-b4d4-c52aa0421702",
+      "dataset_id": "66bf6822-30d7-47d5-abf3-7ea4a78ddf7d",
+      "title": "age와 balance의 관계",
+      "reason": "완전한 좌표 10개 중 10개를 표시했습니다. 상관만으로 인과를 판단할 수 없습니다.",
+      "kind": "scatter",
+      "columns": [
+        "age",
+        "balance"
+      ],
+      "scope": "보유 10행 기준 · unknown · raw · 표시 데이터 10개 · 집계 none",
+      "render_spec": {
+        "kind": "scatter",
+        "x": "age",
+        "y": "balance",
+        "category": "",
+        "aggregation": "none",
+        "sort": "none",
+        "cumulative": false,
+        "top_n": 50,
+        "bins": 20,
+        "title": "age와 balance의 관계",
+        "x_label": "age",
+        "y_label": "balance",
+        "orientation": "vertical"
+      }
+    }
+  ],
+  "verdict": "FAIL",
+  "error": "'drawable_rows'"
+}

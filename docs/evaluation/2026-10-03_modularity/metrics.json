@@ -1,0 +1,4394 @@
+{
+  "scope": "Python files in product packages plus main.py, current working tree; tests/migration/scripts excluded",
+  "production_file_count": 126,
+  "parse_errors": [],
+  "total_lines": 27918,
+  "files": [
+    {
+      "file": "core/analysis_agent/recovery.py",
+      "lines": 4560,
+      "function_count": 60,
+      "direct_class_count": 3,
+      "internal_dependency_count": 32,
+      "longest_functions": [
+        {
+          "name": "RecoveryMiddleware._state",
+          "line": 190,
+          "lines": 1714
+        },
+        {
+          "name": "RecoveryMiddleware._next_local",
+          "line": 2618,
+          "lines": 1115
+        },
+        {
+          "name": "RecoveryMiddleware._proposed_scope_valid",
+          "line": 4220,
+          "lines": 227
+        },
+        {
+          "name": "RecoveryMiddleware._finish",
+          "line": 2394,
+          "lines": 138
+        },
+        {
+          "name": "RecoveryMiddleware.before_step",
+          "line": 3908,
+          "lines": 109
+        },
+        {
+          "name": "RecoveryMiddleware.after_model",
+          "line": 4466,
+          "lines": 95
+        },
+        {
+          "name": "RecoveryMiddleware._valid_calculation",
+          "line": 2288,
+          "lines": 86
+        }
+      ],
+      "head_lines": 4037
+    },
+    {
+      "file": "utils/chatbot_plan.py",
+      "lines": 1846,
+      "function_count": 60,
+      "direct_class_count": 4,
+      "internal_dependency_count": 3,
+      "longest_functions": [
+        {
+          "name": "_explicit_visualization_plan",
+          "line": 1009,
+          "lines": 225
+        },
+        {
+          "name": "build_llm_visualization_plan",
+          "line": 1422,
+          "lines": 131
+        },
+        {
+          "name": "_resolve_plan_parts",
+          "line": 905,
+          "lines": 102
+        },
+        {
+          "name": "select_visualization_config",
+          "line": 1728,
+          "lines": 102
+        },
+        {
+          "name": "build_sql_from_plan",
+          "line": 1555,
+          "lines": 97
+        },
+        {
+          "name": "_parse_categorical_value_filters",
+          "line": 712,
+          "lines": 85
+        },
+        {
+          "name": "build_controlled_plan",
+          "line": 1335,
+          "lines": 85
+        }
+      ],
+      "head_lines": 1846
+    },
+    {
+      "file": "core/chat_flow.py",
+      "lines": 1506,
+      "function_count": 20,
+      "direct_class_count": 0,
+      "internal_dependency_count": 20,
+      "longest_functions": [
+        {
+          "name": "handle_user_query",
+          "line": 1089,
+          "lines": 415
+        },
+        {
+          "name": "_try_run_controlled_production_flow",
+          "line": 312,
+          "lines": 297
+        },
+        {
+          "name": "_run_agent_interaction",
+          "line": 889,
+          "lines": 198
+        },
+        {
+          "name": "_handle_builtin_commands",
+          "line": 143,
+          "lines": 138
+        },
+        {
+          "name": "_render_eda_parser_fallback",
+          "line": 764,
+          "lines": 76
+        },
+        {
+          "name": "_invoke_agent_runner",
+          "line": 631,
+          "lines": 47
+        },
+        {
+          "name": "_validate_eda_before_agent",
+          "line": 842,
+          "lines": 45
+        }
+      ],
+      "head_lines": 1506
+    },
+    {
+      "file": "core/tools.py",
+      "lines": 1309,
+      "function_count": 31,
+      "direct_class_count": 0,
+      "internal_dependency_count": 1,
+      "longest_functions": [
+        {
+          "name": "compare_on_keys",
+          "line": 295,
+          "lines": 106
+        },
+        {
+          "name": "auto_outlier_eda",
+          "line": 1219,
+          "lines": 88
+        },
+        {
+          "name": "anomaly_isoforest",
+          "line": 699,
+          "lines": 82
+        },
+        {
+          "name": "plot_outliers_multi",
+          "line": 1028,
+          "lines": 80
+        },
+        {
+          "name": "create_features",
+          "line": 483,
+          "lines": 70
+        },
+        {
+          "name": "stl_decompose",
+          "line": 594,
+          "lines": 57
+        },
+        {
+          "name": "plot_outliers",
+          "line": 925,
+          "lines": 50
+        }
+      ],
+      "head_lines": 1309
+    },
+    {
+      "file": "core/analysis_runtime_tools.py",
+      "lines": 993,
+      "function_count": 43,
+      "direct_class_count": 0,
+      "internal_dependency_count": 26,
+      "longest_functions": [
+        {
+          "name": "build_analysis_tools",
+          "line": 42,
+          "lines": 952
+        },
+        {
+          "name": "build_analysis_tools.prepare_histogram",
+          "line": 557,
+          "lines": 183
+        },
+        {
+          "name": "build_analysis_tools.analyze_local",
+          "line": 381,
+          "lines": 124
+        },
+        {
+          "name": "build_analysis_tools.plan_source_discovery",
+          "line": 103,
+          "lines": 95
+        },
+        {
+          "name": "build_analysis_tools.use_dataset",
+          "line": 199,
+          "lines": 23
+        },
+        {
+          "name": "build_analysis_tools.pivot_dataset",
+          "line": 316,
+          "lines": 21
+        },
+        {
+          "name": "build_analysis_tools.prepare_time_series",
+          "line": 285,
+          "lines": 15
+        }
+      ],
+      "head_lines": 917
+    },
+    {
+      "file": "utils/session.py",
+      "lines": 857,
+      "function_count": 30,
+      "direct_class_count": 0,
+      "internal_dependency_count": 5,
+      "longest_functions": [
+        {
+          "name": "load_preview_from_databricks_query",
+          "line": 726,
+          "lines": 89
+        },
+        {
+          "name": "train_selected_table_context",
+          "line": 359,
+          "lines": 65
+        },
+        {
+          "name": "ensure_session_state",
+          "line": 152,
+          "lines": 63
+        },
+        {
+          "name": "load_df_from_databricks",
+          "line": 602,
+          "lines": 57
+        },
+        {
+          "name": "list_databricks_tables_in_session",
+          "line": 523,
+          "lines": 51
+        },
+        {
+          "name": "_fetch_table_column_profiles",
+          "line": 311,
+          "lines": 46
+        },
+        {
+          "name": "load_table_sample_from_databricks",
+          "line": 671,
+          "lines": 30
+        }
+      ],
+      "head_lines": 857
+    },
+    {
+      "file": "core/analysis_agent/runtime.py",
+      "lines": 740,
+      "function_count": 30,
+      "direct_class_count": 1,
+      "internal_dependency_count": 21,
+      "longest_functions": [
+        {
+          "name": "GraphAnalysisRuntime.__init__",
+          "line": 35,
+          "lines": 177
+        },
+        {
+          "name": "GraphAnalysisRuntime._invoke",
+          "line": 382,
+          "lines": 94
+        },
+        {
+          "name": "GraphAnalysisRuntime.__init__.query_databricks",
+          "line": 149,
+          "lines": 52
+        },
+        {
+          "name": "GraphAnalysisRuntime.resume",
+          "line": 571,
+          "lines": 49
+        },
+        {
+          "name": "GraphAnalysisRuntime._recover_completed_observations",
+          "line": 529,
+          "lines": 41
+        },
+        {
+          "name": "GraphAnalysisRuntime._reconcile_deferred_query_reply",
+          "line": 213,
+          "lines": 37
+        },
+        {
+          "name": "GraphAnalysisRuntime.__init__.prompt",
+          "line": 89,
+          "lines": 33
+        }
+      ],
+      "head_lines": 676
+    },
+    {
+      "file": "core/analysis_agent/intent_scope.py",
+      "lines": 708,
+      "function_count": 20,
+      "direct_class_count": 0,
+      "internal_dependency_count": 5,
+      "longest_functions": [
+        {
+          "name": "resolve_request_scope",
+          "line": 166,
+          "lines": 315
+        },
+        {
+          "name": "scope_matches",
+          "line": 483,
+          "lines": 180
+        },
+        {
+          "name": "_grounding",
+          "line": 59,
+          "lines": 87
+        },
+        {
+          "name": "measure_scope_matches",
+          "line": 665,
+          "lines": 44
+        },
+        {
+          "name": "scope_matches.sql_conditions",
+          "line": 589,
+          "lines": 32
+        },
+        {
+          "name": "scope_matches.join_sources",
+          "line": 529,
+          "lines": 31
+        },
+        {
+          "name": "scope_matches.base_population_select",
+          "line": 561,
+          "lines": 27
+        }
+      ],
+      "head_lines": 683
+    },
+    {
+      "file": "utils/analysis_charts.py",
+      "lines": 693,
+      "function_count": 12,
+      "direct_class_count": 1,
+      "internal_dependency_count": 2,
+      "longest_functions": [
+        {
+          "name": "render_chart_spec",
+          "line": 232,
+          "lines": 296
+        },
+        {
+          "name": "render_count_rate_chart",
+          "line": 530,
+          "lines": 164
+        },
+        {
+          "name": "recommend_charts",
+          "line": 66,
+          "lines": 101
+        },
+        {
+          "name": "histogram_from_counts",
+          "line": 192,
+          "lines": 38
+        },
+        {
+          "name": "validate_frequency_dataset",
+          "line": 169,
+          "lines": 21
+        },
+        {
+          "name": "_unicode_font",
+          "line": 36,
+          "lines": 20
+        },
+        {
+          "name": "recommend_charts.save",
+          "line": 90,
+          "lines": 8
+        }
+      ],
+      "head_lines": 678
+    },
+    {
+      "file": "utils/table_context.py",
+      "lines": 569,
+      "function_count": 31,
+      "direct_class_count": 2,
+      "internal_dependency_count": 0,
+      "longest_functions": [
+        {
+          "name": "apply_table_context_overrides",
+          "line": 361,
+          "lines": 44
+        },
+        {
+          "name": "build_trained_context",
+          "line": 247,
+          "lines": 37
+        },
+        {
+          "name": "build_schema_only_context",
+          "line": 210,
+          "lines": 35
+        },
+        {
+          "name": "table_context_summary",
+          "line": 477,
+          "lines": 29
+        },
+        {
+          "name": "generate_column_aliases",
+          "line": 113,
+          "lines": 23
+        },
+        {
+          "name": "resolve_column_from_prompt",
+          "line": 452,
+          "lines": 23
+        },
+        {
+          "name": "save_table_context",
+          "line": 286,
+          "lines": 22
+        }
+      ],
+      "head_lines": 569
+    },
+    {
+      "file": "utils/analysis_statistics.py",
+      "lines": 438,
+      "function_count": 13,
+      "direct_class_count": 0,
+      "internal_dependency_count": 1,
+      "longest_functions": [
+        {
+          "name": "_independent_t",
+          "line": 124,
+          "lines": 58
+        },
+        {
+          "name": "_chi_square",
+          "line": 279,
+          "lines": 55
+        },
+        {
+          "name": "_anova",
+          "line": 228,
+          "lines": 49
+        },
+        {
+          "name": "_paired_t",
+          "line": 184,
+          "lines": 42
+        },
+        {
+          "name": "statistical_test",
+          "line": 397,
+          "lines": 42
+        },
+        {
+          "name": "_mean_ci",
+          "line": 366,
+          "lines": 29
+        },
+        {
+          "name": "_mann_whitney",
+          "line": 336,
+          "lines": 28
+        }
+      ]
+    },
+    {
+      "file": "core/analysis_agent/assets.py",
+      "lines": 435,
+      "function_count": 35,
+      "direct_class_count": 4,
+      "internal_dependency_count": 3,
+      "longest_functions": [
+        {
+          "name": "PersistentDatasets.register_batches",
+          "line": 347,
+          "lines": 59
+        },
+        {
+          "name": "PersistentDatasets.inspect",
+          "line": 314,
+          "lines": 32
+        },
+        {
+          "name": "FrameCache.sample",
+          "line": 241,
+          "lines": 30
+        },
+        {
+          "name": "FrameCache.digest",
+          "line": 201,
+          "lines": 22
+        },
+        {
+          "name": "PersistentDatasets.register",
+          "line": 292,
+          "lines": 21
+        },
+        {
+          "name": "FrameCache.__getitem__",
+          "line": 136,
+          "lines": 20
+        },
+        {
+          "name": "AssetDB.put_staged_dataset",
+          "line": 54,
+          "lines": 19
+        }
+      ]
+    },
+    {
+      "file": "utils/analysis_outliers.py",
+      "lines": 396,
+      "function_count": 7,
+      "direct_class_count": 0,
+      "internal_dependency_count": 1,
+      "longest_functions": [
+        {
+          "name": "select_outlier_rows",
+          "line": 260,
+          "lines": 137
+        },
+        {
+          "name": "detect_outliers",
+          "line": 125,
+          "lines": 133
+        },
+        {
+          "name": "winsorize_numeric_summary",
+          "line": 35,
+          "lines": 88
+        },
+        {
+          "name": "select_outlier_rows.batches",
+          "line": 345,
+          "lines": 16
+        },
+        {
+          "name": "select_outlier_rows.selected_rows",
+          "line": 295,
+          "lines": 9
+        },
+        {
+          "name": "dataset_digest",
+          "line": 27,
+          "lines": 6
+        },
+        {
+          "name": "_number",
+          "line": 20,
+          "lines": 5
+        }
+      ]
+    },
+    {
+      "file": "utils/runtime_trace.py",
+      "lines": 385,
+      "function_count": 20,
+      "direct_class_count": 0,
+      "internal_dependency_count": 0,
+      "longest_functions": [
+        {
+          "name": "_summary_fields_for_event",
+          "line": 208,
+          "lines": 60
+        },
+        {
+          "name": "sanitize_for_trace",
+          "line": 74,
+          "lines": 39
+        },
+        {
+          "name": "start_turn_trace",
+          "line": 157,
+          "lines": 30
+        },
+        {
+          "name": "runtime_trace_fixture_for_keyword_sql",
+          "line": 341,
+          "lines": 29
+        },
+        {
+          "name": "snapshot_session_state",
+          "line": 291,
+          "lines": 24
+        },
+        {
+          "name": "finish_turn_trace",
+          "line": 270,
+          "lines": 19
+        },
+        {
+          "name": "record_trace_event",
+          "line": 189,
+          "lines": 17
+        }
+      ]
+    },
+    {
+      "file": "core/analysis_agent/completion_renderers.py",
+      "lines": 367,
+      "function_count": 16,
+      "direct_class_count": 0,
+      "internal_dependency_count": 4,
+      "longest_functions": [
+        {
+          "name": "render_remote_query",
+          "line": 5,
+          "lines": 40
+        },
+        {
+          "name": "render_statistics",
+          "line": 166,
+          "lines": 36
+        },
+        {
+          "name": "render_profile",
+          "line": 93,
+          "lines": 31
+        },
+        {
+          "name": "render_outlier_aggregate",
+          "line": 298,
+          "lines": 30
+        },
+        {
+          "name": "render_calculation",
+          "line": 342,
+          "lines": 26
+        },
+        {
+          "name": "render_pivot",
+          "line": 226,
+          "lines": 24
+        },
+        {
+          "name": "render_outliers",
+          "line": 272,
+          "lines": 24
+        }
+      ]
+    },
+    {
+      "file": "core/prompt.py",
+      "lines": 358,
+      "function_count": 7,
+      "direct_class_count": 0,
+      "internal_dependency_count": 3,
+      "longest_functions": [
+        {
+          "name": "build_sql_prompt",
+          "line": 178,
+          "lines": 178
+        },
+        {
+          "name": "build_react_prompt",
+          "line": 58,
+          "lines": 118
+        },
+        {
+          "name": "_stringify_cell",
+          "line": 15,
+          "lines": 20
+        },
+        {
+          "name": "_df_head",
+          "line": 37,
+          "lines": 5
+        },
+        {
+          "name": "_format_df_columns",
+          "line": 44,
+          "lines": 5
+        },
+        {
+          "name": "_format_df_dtypes",
+          "line": 51,
+          "lines": 5
+        },
+        {
+          "name": "escape_braces",
+          "line": 11,
+          "lines": 2
+        }
+      ]
+    },
+    {
+      "file": "utils/data_context.py",
+      "lines": 347,
+      "function_count": 10,
+      "direct_class_count": 4,
+      "internal_dependency_count": 0,
+      "longest_functions": [
+        {
+          "name": "evaluate_data_readiness",
+          "line": 141,
+          "lines": 118
+        },
+        {
+          "name": "requirement_from_controlled_plan",
+          "line": 102,
+          "lines": 37
+        },
+        {
+          "name": "make_dataframe_state",
+          "line": 61,
+          "lines": 22
+        },
+        {
+          "name": "build_reload_sql_for_requirement",
+          "line": 301,
+          "lines": 18
+        },
+        {
+          "name": "coerce_dataframe_state",
+          "line": 85,
+          "lines": 15
+        },
+        {
+          "name": "resolve_source_table",
+          "line": 261,
+          "lines": 14
+        },
+        {
+          "name": "_where_clause_from_filters",
+          "line": 286,
+          "lines": 13
+        }
+      ]
+    },
+    {
+      "file": "utils/controlled_visualization.py",
+      "lines": 346,
+      "function_count": 5,
+      "direct_class_count": 0,
+      "internal_dependency_count": 0,
+      "longest_functions": [
+        {
+          "name": "plot_controlled_visualization",
+          "line": 39,
+          "lines": 275
+        },
+        {
+          "name": "collect_matplotlib_figure_payloads",
+          "line": 316,
+          "lines": 28
+        },
+        {
+          "name": "_top_n_series",
+          "line": 29,
+          "lines": 8
+        },
+        {
+          "name": "_stat_column",
+          "line": 21,
+          "lines": 6
+        },
+        {
+          "name": "_sample_for_plot",
+          "line": 14,
+          "lines": 5
+        }
+      ]
+    },
+    {
+      "file": "utils/analysis_datasets.py",
+      "lines": 342,
+      "function_count": 14,
+      "direct_class_count": 7,
+      "internal_dependency_count": 1,
+      "longest_functions": [
+        {
+          "name": "select_reusable_dataset",
+          "line": 172,
+          "lines": 64
+        },
+        {
+          "name": "DatasetStore.register",
+          "line": 296,
+          "lines": 32
+        },
+        {
+          "name": "_implies",
+          "line": 30,
+          "lines": 29
+        },
+        {
+          "name": "assess_reuse",
+          "line": 238,
+          "lines": 25
+        },
+        {
+          "name": "full_read_preflight",
+          "line": 127,
+          "lines": 19
+        },
+        {
+          "name": "filter_frame",
+          "line": 272,
+          "lines": 16
+        },
+        {
+          "name": "DatasetStore.derive",
+          "line": 329,
+          "lines": 14
+        }
+      ]
+    },
+    {
+      "file": "utils/analysis_pivot.py",
+      "lines": 312,
+      "function_count": 6,
+      "direct_class_count": 0,
+      "internal_dependency_count": 1,
+      "longest_functions": [
+        {
+          "name": "pivot_dataset",
+          "line": 120,
+          "lines": 193
+        },
+        {
+          "name": "_apply_derived_bins",
+          "line": 72,
+          "lines": 46
+        },
+        {
+          "name": "_flatten_columns",
+          "line": 37,
+          "lines": 12
+        },
+        {
+          "name": "_normalize_aggregation",
+          "line": 60,
+          "lines": 10
+        },
+        {
+          "name": "_calendar_sort",
+          "line": 51,
+          "lines": 7
+        },
+        {
+          "name": "dataset_digest",
+          "line": 30,
+          "lines": 5
+        }
+      ]
+    },
+    {
+      "file": "core/analysis_catalog.py",
+      "lines": 292,
+      "function_count": 14,
+      "direct_class_count": 0,
+      "internal_dependency_count": 3,
+      "longest_functions": [
+        {
+          "name": "resolve_table_context",
+          "line": 165,
+          "lines": 83
+        },
+        {
+          "name": "discovered_reference_context",
+          "line": 62,
+          "lines": 48
+        },
+        {
+          "name": "full_schema_source",
+          "line": 112,
+          "lines": 23
+        },
+        {
+          "name": "table_context_freshness",
+          "line": 27,
+          "lines": 19
+        },
+        {
+          "name": "load_saved_reference_context",
+          "line": 262,
+          "lines": 18
+        },
+        {
+          "name": "compact_catalog",
+          "line": 282,
+          "lines": 11
+        },
+        {
+          "name": "_is_zero_row_schema_probe",
+          "line": 146,
+          "lines": 10
+        }
+      ]
+    },
+    {
+      "file": "ui/chat_log.py",
+      "lines": 282,
+      "function_count": 12,
+      "direct_class_count": 0,
+      "internal_dependency_count": 3,
+      "longest_functions": [
+        {
+          "name": "render_conversation_log",
+          "line": 64,
+          "lines": 52
+        },
+        {
+          "name": "_render_rating_buttons",
+          "line": 196,
+          "lines": 35
+        },
+        {
+          "name": "_record_rating",
+          "line": 161,
+          "lines": 33
+        },
+        {
+          "name": "render_thinking_log",
+          "line": 241,
+          "lines": 28
+        },
+        {
+          "name": "append_dataframe_preview_message",
+          "line": 132,
+          "lines": 27
+        },
+        {
+          "name": "render_chat_history",
+          "line": 45,
+          "lines": 17
+        },
+        {
+          "name": "append_assistant_message",
+          "line": 26,
+          "lines": 12
+        }
+      ]
+    },
+    {
+      "file": "core/analysis_agent/latest_selection.py",
+      "lines": 280,
+      "function_count": 8,
+      "direct_class_count": 0,
+      "internal_dependency_count": 6,
+      "longest_functions": [
+        {
+          "name": "bind",
+          "line": 13,
+          "lines": 90
+        },
+        {
+          "name": "continue_order",
+          "line": 105,
+          "lines": 46
+        },
+        {
+          "name": "accepted_remote",
+          "line": 195,
+          "lines": 38
+        },
+        {
+          "name": "accepted",
+          "line": 166,
+          "lines": 27
+        },
+        {
+          "name": "reuse_verified",
+          "line": 235,
+          "lines": 26
+        },
+        {
+          "name": "render",
+          "line": 263,
+          "lines": 18
+        },
+        {
+          "name": "ask",
+          "line": 153,
+          "lines": 11
+        }
+      ]
+    },
+    {
+      "file": "core/deployment_preflight.py",
+      "lines": 263,
+      "function_count": 7,
+      "direct_class_count": 2,
+      "internal_dependency_count": 2,
+      "longest_functions": [
+        {
+          "name": "evaluate_deployment",
+          "line": 101,
+          "lines": 163
+        },
+        {
+          "name": "_storage_check",
+          "line": 50,
+          "lines": 49
+        },
+        {
+          "name": "PreflightReport.public",
+          "line": 33,
+          "lines": 6
+        },
+        {
+          "name": "_check_url",
+          "line": 45,
+          "lines": 3
+        },
+        {
+          "name": "PreflightCheck.public",
+          "line": 20,
+          "lines": 2
+        },
+        {
+          "name": "PreflightReport.ready",
+          "line": 30,
+          "lines": 2
+        },
+        {
+          "name": "_configured",
+          "line": 41,
+          "lines": 2
+        }
+      ]
+    },
+    {
+      "file": "ui/analysis_page.py",
+      "lines": 257,
+      "function_count": 2,
+      "direct_class_count": 0,
+      "internal_dependency_count": 12,
+      "longest_functions": [
+        {
+          "name": "action",
+          "line": 82,
+          "lines": 16
+        },
+        {
+          "name": "example",
+          "line": 115,
+          "lines": 6
+        }
+      ]
+    },
+    {
+      "file": "core/analysis_relationships.py",
+      "lines": 256,
+      "function_count": 6,
+      "direct_class_count": 0,
+      "internal_dependency_count": 2,
+      "longest_functions": [
+        {
+          "name": "metadata_join_scope",
+          "line": 172,
+          "lines": 85
+        },
+        {
+          "name": "relationship_plan",
+          "line": 43,
+          "lines": 39
+        },
+        {
+          "name": "stored_relationships",
+          "line": 84,
+          "lines": 39
+        },
+        {
+          "name": "inspect_relationships",
+          "line": 148,
+          "lines": 22
+        },
+        {
+          "name": "relationship_catalog",
+          "line": 125,
+          "lines": 21
+        },
+        {
+          "name": "_clean_keys",
+          "line": 23,
+          "lines": 18
+        }
+      ]
+    },
+    {
+      "file": "utils/analysis_group_summary.py",
+      "lines": 253,
+      "function_count": 3,
+      "direct_class_count": 0,
+      "internal_dependency_count": 2,
+      "longest_functions": [
+        {
+          "name": "summarize_groups",
+          "line": 83,
+          "lines": 171
+        },
+        {
+          "name": "_validated_metrics",
+          "line": 28,
+          "lines": 53
+        },
+        {
+          "name": "dataset_digest",
+          "line": 21,
+          "lines": 5
+        }
+      ]
+    },
+    {
+      "file": "utils/analysis_join.py",
+      "lines": 246,
+      "function_count": 5,
+      "direct_class_count": 0,
+      "internal_dependency_count": 1,
+      "longest_functions": [
+        {
+          "name": "join_datasets",
+          "line": 74,
+          "lines": 173
+        },
+        {
+          "name": "_projection",
+          "line": 48,
+          "lines": 24
+        },
+        {
+          "name": "_dtype_family",
+          "line": 26,
+          "lines": 10
+        },
+        {
+          "name": "_key_counts",
+          "line": 38,
+          "lines": 8
+        },
+        {
+          "name": "_quote",
+          "line": 22,
+          "lines": 2
+        }
+      ]
+    },
+    {
+      "file": "utils/analysis_remote_latest.py",
+      "lines": 240,
+      "function_count": 5,
+      "direct_class_count": 0,
+      "internal_dependency_count": 5,
+      "longest_functions": [
+        {
+          "name": "plan",
+          "line": 18,
+          "lines": 99
+        },
+        {
+          "name": "prepare",
+          "line": 119,
+          "lines": 73
+        },
+        {
+          "name": "_histogram_result",
+          "line": 194,
+          "lines": 47
+        },
+        {
+          "name": "prepare.integer",
+          "line": 135,
+          "lines": 7
+        },
+        {
+          "name": "_quote",
+          "line": 14,
+          "lines": 2
+        }
+      ]
+    },
+    {
+      "file": "core/analysis_agent/memory.py",
+      "lines": 235,
+      "function_count": 14,
+      "direct_class_count": 7,
+      "internal_dependency_count": 2,
+      "longest_functions": [
+        {
+          "name": "ObservedSummarizationMiddleware.before_model",
+          "line": 70,
+          "lines": 36
+        },
+        {
+          "name": "Transcript.record",
+          "line": 141,
+          "lines": 23
+        },
+        {
+          "name": "ToolOutcomeMiddleware.after_model",
+          "line": 214,
+          "lines": 22
+        },
+        {
+          "name": "CompactDiscoveryMiddleware.before_model",
+          "line": 195,
+          "lines": 15
+        },
+        {
+          "name": "memory_middleware",
+          "line": 119,
+          "lines": 12
+        },
+        {
+          "name": "Transcript.messages",
+          "line": 165,
+          "lines": 11
+        },
+        {
+          "name": "ObservedSummarizationMiddleware.__init__",
+          "line": 53,
+          "lines": 9
+        }
+      ]
+    },
+    {
+      "file": "utils/turn_logger.py",
+      "lines": 231,
+      "function_count": 9,
+      "direct_class_count": 0,
+      "internal_dependency_count": 2,
+      "longest_functions": [
+        {
+          "name": "build_turn_payload",
+          "line": 85,
+          "lines": 59
+        },
+        {
+          "name": "log_turn",
+          "line": 146,
+          "lines": 56
+        },
+        {
+          "name": "update_user_rating",
+          "line": 204,
+          "lines": 28
+        },
+        {
+          "name": "_safe_text",
+          "line": 35,
+          "lines": 20
+        },
+        {
+          "name": "_literal",
+          "line": 57,
+          "lines": 9
+        },
+        {
+          "name": "_array_literal",
+          "line": 68,
+          "lines": 6
+        },
+        {
+          "name": "_escape",
+          "line": 16,
+          "lines": 3
+        }
+      ]
+    },
+    {
+      "file": "core/analysis_agent/semantic.py",
+      "lines": 218,
+      "function_count": 11,
+      "direct_class_count": 1,
+      "internal_dependency_count": 2,
+      "longest_functions": [
+        {
+          "name": "SemanticResolver.resolve",
+          "line": 145,
+          "lines": 74
+        },
+        {
+          "name": "semantic_metadata",
+          "line": 14,
+          "lines": 38
+        },
+        {
+          "name": "validate_interpretation",
+          "line": 81,
+          "lines": 27
+        },
+        {
+          "name": "SemanticResolver.invoke",
+          "line": 117,
+          "lines": 15
+        },
+        {
+          "name": "meaning_constraints",
+          "line": 63,
+          "lines": 9
+        },
+        {
+          "name": "eligible",
+          "line": 54,
+          "lines": 7
+        },
+        {
+          "name": "SemanticResolver.finish_timing",
+          "line": 133,
+          "lines": 7
+        }
+      ]
+    },
+    {
+      "file": "core/sql_utils.py",
+      "lines": 214,
+      "function_count": 4,
+      "direct_class_count": 0,
+      "internal_dependency_count": 3,
+      "longest_functions": [
+        {
+          "name": "execute_sql_preview",
+          "line": 87,
+          "lines": 119
+        },
+        {
+          "name": "infer_table_from_sql",
+          "line": 20,
+          "lines": 21
+        },
+        {
+          "name": "ensure_limit_clause",
+          "line": 61,
+          "lines": 21
+        },
+        {
+          "name": "sanitize_sql_text",
+          "line": 43,
+          "lines": 16
+        }
+      ]
+    },
+    {
+      "file": "utils/analysis_timeseries.py",
+      "lines": 205,
+      "function_count": 4,
+      "direct_class_count": 0,
+      "internal_dependency_count": 1,
+      "longest_functions": [
+        {
+          "name": "prepare_time_series",
+          "line": 83,
+          "lines": 123
+        },
+        {
+          "name": "_parse_time",
+          "line": 30,
+          "lines": 32
+        },
+        {
+          "name": "_bucket_time",
+          "line": 64,
+          "lines": 17
+        },
+        {
+          "name": "dataset_digest",
+          "line": 24,
+          "lines": 4
+        }
+      ]
+    },
+    {
+      "file": "app_io/databricks.py",
+      "lines": 203,
+      "function_count": 13,
+      "direct_class_count": 2,
+      "internal_dependency_count": 1,
+      "longest_functions": [
+        {
+          "name": "list_tables",
+          "line": 146,
+          "lines": 33
+        },
+        {
+          "name": "list_schemas",
+          "line": 129,
+          "lines": 17
+        },
+        {
+          "name": "run_query",
+          "line": 94,
+          "lines": 16
+        },
+        {
+          "name": "DatabricksConfig.table_identifier",
+          "line": 44,
+          "lines": 14
+        },
+        {
+          "name": "list_catalogs",
+          "line": 114,
+          "lines": 13
+        },
+        {
+          "name": "load_table",
+          "line": 181,
+          "lines": 10
+        },
+        {
+          "name": "_normalize_hostname",
+          "line": 24,
+          "lines": 7
+        }
+      ]
+    },
+    {
+      "file": "utils/eda_validation.py",
+      "lines": 203,
+      "function_count": 8,
+      "direct_class_count": 2,
+      "internal_dependency_count": 1,
+      "longest_functions": [
+        {
+          "name": "validate_eda_visualization_request",
+          "line": 120,
+          "lines": 49
+        },
+        {
+          "name": "_aggregate_result_target_column",
+          "line": 45,
+          "lines": 26
+        },
+        {
+          "name": "validate_data_sufficiency",
+          "line": 171,
+          "lines": 22
+        },
+        {
+          "name": "find_exact_prompt_column",
+          "line": 73,
+          "lines": 17
+        },
+        {
+          "name": "_requested_identifier_tokens",
+          "line": 92,
+          "lines": 17
+        },
+        {
+          "name": "_visual_token_position",
+          "line": 35,
+          "lines": 8
+        },
+        {
+          "name": "choose_distribution_chart",
+          "line": 111,
+          "lines": 7
+        }
+      ]
+    },
+    {
+      "file": "utils/analysis_compare.py",
+      "lines": 202,
+      "function_count": 4,
+      "direct_class_count": 0,
+      "internal_dependency_count": 1,
+      "longest_functions": [
+        {
+          "name": "compare_group_aggregates",
+          "line": 43,
+          "lines": 160
+        },
+        {
+          "name": "_is_descendant",
+          "line": 25,
+          "lines": 16
+        },
+        {
+          "name": "dataset_digest",
+          "line": 18,
+          "lines": 5
+        },
+        {
+          "name": "compare_group_aggregates.grouped",
+          "line": 114,
+          "lines": 4
+        }
+      ]
+    },
+    {
+      "file": "core/analysis_agent/support_report.py",
+      "lines": 198,
+      "function_count": 10,
+      "direct_class_count": 0,
+      "internal_dependency_count": 2,
+      "longest_functions": [
+        {
+          "name": "summarize",
+          "line": 107,
+          "lines": 71
+        },
+        {
+          "name": "read_events",
+          "line": 65,
+          "lines": 25
+        },
+        {
+          "name": "brief",
+          "line": 180,
+          "lines": 19
+        },
+        {
+          "name": "process_code_identity",
+          "line": 35,
+          "lines": 18
+        },
+        {
+          "name": "public_runtime",
+          "line": 92,
+          "lines": 13
+        },
+        {
+          "name": "runtime_identity",
+          "line": 55,
+          "lines": 8
+        },
+        {
+          "name": "token",
+          "line": 22,
+          "lines": 2
+        }
+      ]
+    },
+    {
+      "file": "core/analysis_agent/mysql.py",
+      "lines": 196,
+      "function_count": 10,
+      "direct_class_count": 1,
+      "internal_dependency_count": 4,
+      "longest_functions": [
+        {
+          "name": "make_executor",
+          "line": 101,
+          "lines": 79
+        },
+        {
+          "name": "make_executor.execute",
+          "line": 102,
+          "lines": 77
+        },
+        {
+          "name": "make_executor.execute.batches",
+          "line": 137,
+          "lines": 20
+        },
+        {
+          "name": "reference_context",
+          "line": 182,
+          "lines": 15
+        },
+        {
+          "name": "MySQLConfig.credentials",
+          "line": 43,
+          "lines": 13
+        },
+        {
+          "name": "_empty_schema",
+          "line": 86,
+          "lines": 13
+        },
+        {
+          "name": "MySQLConfig.connect",
+          "line": 62,
+          "lines": 11
+        }
+      ]
+    },
+    {
+      "file": "ui/viz.py",
+      "lines": 187,
+      "function_count": 1,
+      "direct_class_count": 0,
+      "internal_dependency_count": 1,
+      "longest_functions": [
+        {
+          "name": "render_visualizations",
+          "line": 15,
+          "lines": 173
+        }
+      ]
+    },
+    {
+      "file": "ui/sidebar.py",
+      "lines": 187,
+      "function_count": 2,
+      "direct_class_count": 0,
+      "internal_dependency_count": 1,
+      "longest_functions": [
+        {
+          "name": "render_sidebar",
+          "line": 17,
+          "lines": 171
+        },
+        {
+          "name": "render_sidebar._table_display_name",
+          "line": 91,
+          "lines": 4
+        }
+      ]
+    },
+    {
+      "file": "core/analysis_agent/model_recovery.py",
+      "lines": 183,
+      "function_count": 13,
+      "direct_class_count": 4,
+      "internal_dependency_count": 1,
+      "longest_functions": [
+        {
+          "name": "ModelRecoveryMiddleware.invoke",
+          "line": 139,
+          "lines": 45
+        },
+        {
+          "name": "ModelAttemptLedger.__init__",
+          "line": 49,
+          "lines": 17
+        },
+        {
+          "name": "ModelAttemptLedger.sync",
+          "line": 101,
+          "lines": 14
+        },
+        {
+          "name": "retry_after",
+          "line": 33,
+          "lines": 13
+        },
+        {
+          "name": "ModelRecoveryMiddleware.auxiliary_call",
+          "line": 128,
+          "lines": 10
+        },
+        {
+          "name": "transient_model_error",
+          "line": 24,
+          "lines": 7
+        },
+        {
+          "name": "ModelAttemptLedger.get",
+          "line": 67,
+          "lines": 6
+        }
+      ]
+    },
+    {
+      "file": "core/analysis_agent/value_list.py",
+      "lines": 163,
+      "function_count": 8,
+      "direct_class_count": 0,
+      "internal_dependency_count": 7,
+      "longest_functions": [
+        {
+          "name": "prepare",
+          "line": 93,
+          "lines": 53
+        },
+        {
+          "name": "retained",
+          "line": 57,
+          "lines": 30
+        },
+        {
+          "name": "target",
+          "line": 25,
+          "lines": 18
+        },
+        {
+          "name": "render",
+          "line": 148,
+          "lines": 16
+        },
+        {
+          "name": "_receipt",
+          "line": 45,
+          "lines": 10
+        },
+        {
+          "name": "requested",
+          "line": 17,
+          "lines": 6
+        },
+        {
+          "name": "render.display",
+          "line": 151,
+          "lines": 4
+        }
+      ]
+    },
+    {
+      "file": "core/analysis_agent/tool_focus.py",
+      "lines": 161,
+      "function_count": 8,
+      "direct_class_count": 4,
+      "internal_dependency_count": 2,
+      "longest_functions": [
+        {
+          "name": "FocusedRemoteJoinToolsMiddleware.wrap_model_call",
+          "line": 78,
+          "lines": 30
+        },
+        {
+          "name": "FocusedScalarToolsMiddleware._safe_local_scalar",
+          "line": 135,
+          "lines": 27
+        },
+        {
+          "name": "FocusedRemoteCatalogToolsMiddleware.wrap_model_call",
+          "line": 35,
+          "lines": 23
+        },
+        {
+          "name": "FocusedScalarToolsMiddleware.wrap_model_call",
+          "line": 121,
+          "lines": 13
+        },
+        {
+          "name": "ExplanationToolsMiddleware.wrap_model_call",
+          "line": 14,
+          "lines": 7
+        },
+        {
+          "name": "FocusedRemoteJoinToolsMiddleware.__init__",
+          "line": 74,
+          "lines": 3
+        },
+        {
+          "name": "FocusedScalarToolsMiddleware.__init__",
+          "line": 117,
+          "lines": 3
+        }
+      ]
+    },
+    {
+      "file": "core/runtime_capacity.py",
+      "lines": 160,
+      "function_count": 5,
+      "direct_class_count": 2,
+      "internal_dependency_count": 0,
+      "longest_functions": [
+        {
+          "name": "evaluate_capacity",
+          "line": 57,
+          "lines": 104
+        },
+        {
+          "name": "CapacityPolicy.from_mapping",
+          "line": 27,
+          "lines": 13
+        },
+        {
+          "name": "CapacityPolicy.__post_init__",
+          "line": 19,
+          "lines": 6
+        },
+        {
+          "name": "CapacityPolicy.public",
+          "line": 41,
+          "lines": 2
+        },
+        {
+          "name": "CapacityCheck.public",
+          "line": 53,
+          "lines": 2
+        }
+      ]
+    },
+    {
+      "file": "utils/analysis_aggregate.py",
+      "lines": 153,
+      "function_count": 2,
+      "direct_class_count": 0,
+      "internal_dependency_count": 1,
+      "longest_functions": [
+        {
+          "name": "aggregate_dataset",
+          "line": 25,
+          "lines": 129
+        },
+        {
+          "name": "dataset_digest",
+          "line": 18,
+          "lines": 5
+        }
+      ]
+    },
+    {
+      "file": "ui/style.py",
+      "lines": 149,
+      "function_count": 1,
+      "direct_class_count": 0,
+      "internal_dependency_count": 0,
+      "longest_functions": [
+        {
+          "name": "inject_base_styles",
+          "line": 4,
+          "lines": 143
+        }
+      ]
+    },
+    {
+      "file": "core/analysis_tool_contract.py",
+      "lines": 140,
+      "function_count": 4,
+      "direct_class_count": 2,
+      "internal_dependency_count": 0,
+      "longest_functions": [
+        {
+          "name": "json_tool_value",
+          "line": 12,
+          "lines": 32
+        },
+        {
+          "name": "normalize_tool_result",
+          "line": 88,
+          "lines": 17
+        },
+        {
+          "name": "_evidence_ids",
+          "line": 74,
+          "lines": 12
+        },
+        {
+          "name": "ToolDefinition.schema",
+          "line": 116,
+          "lines": 8
+        }
+      ]
+    },
+    {
+      "file": "core/sql_tools.py",
+      "lines": 136,
+      "function_count": 6,
+      "direct_class_count": 0,
+      "internal_dependency_count": 2,
+      "longest_functions": [
+        {
+          "name": "databricks_preview_sql",
+          "line": 64,
+          "lines": 58
+        },
+        {
+          "name": "databricks_list_schemas",
+          "line": 39,
+          "lines": 12
+        },
+        {
+          "name": "_df_preview_markdown",
+          "line": 18,
+          "lines": 8
+        },
+        {
+          "name": "build_sql_tools",
+          "line": 124,
+          "lines": 8
+        },
+        {
+          "name": "databricks_list_catalogs",
+          "line": 29,
+          "lines": 7
+        },
+        {
+          "name": "databricks_list_tables",
+          "line": 54,
+          "lines": 7
+        }
+      ]
+    },
+    {
+      "file": "core/analysis_agent/completion.py",
+      "lines": 133,
+      "function_count": 10,
+      "direct_class_count": 2,
+      "internal_dependency_count": 6,
+      "longest_functions": [
+        {
+          "name": "render_completion",
+          "line": 104,
+          "lines": 16
+        },
+        {
+          "name": "recovery_instruction",
+          "line": 122,
+          "lines": 12
+        },
+        {
+          "name": "_outlier_aggregate_ready",
+          "line": 33,
+          "lines": 7
+        },
+        {
+          "name": "CompletionContract.__post_init__",
+          "line": 22,
+          "lines": 5
+        },
+        {
+          "name": "completion_ready",
+          "line": 91,
+          "lines": 5
+        },
+        {
+          "name": "CompletionContract.satisfied",
+          "line": 28,
+          "lines": 3
+        },
+        {
+          "name": "CompletionOutputError.__init__",
+          "line": 99,
+          "lines": 3
+        }
+      ]
+    },
+    {
+      "file": "core/analysis_agent/operation_binding.py",
+      "lines": 126,
+      "function_count": 4,
+      "direct_class_count": 0,
+      "internal_dependency_count": 2,
+      "longest_functions": [
+        {
+          "name": "resolve",
+          "line": 86,
+          "lines": 41
+        },
+        {
+          "name": "metadata_for",
+          "line": 44,
+          "lines": 27
+        },
+        {
+          "name": "candidate",
+          "line": 19,
+          "lines": 23
+        },
+        {
+          "name": "validate",
+          "line": 73,
+          "lines": 11
+        }
+      ]
+    },
+    {
+      "file": "core/analysis_agent/tools.py",
+      "lines": 119,
+      "function_count": 3,
+      "direct_class_count": 0,
+      "internal_dependency_count": 3,
+      "longest_functions": [
+        {
+          "name": "local_tools",
+          "line": 13,
+          "lines": 107
+        },
+        {
+          "name": "local_tools.bind",
+          "line": 14,
+          "lines": 102
+        },
+        {
+          "name": "local_tools.bind.execute",
+          "line": 17,
+          "lines": 98
+        }
+      ]
+    },
+    {
+      "file": "utils/analysis_grouped_distribution.py",
+      "lines": 118,
+      "function_count": 6,
+      "direct_class_count": 0,
+      "internal_dependency_count": 4,
+      "longest_functions": [
+        {
+          "name": "prepare",
+          "line": 74,
+          "lines": 45
+        },
+        {
+          "name": "render",
+          "line": 32,
+          "lines": 40
+        },
+        {
+          "name": "frequency_columns",
+          "line": 14,
+          "lines": 16
+        },
+        {
+          "name": "prepare.compatible_raw",
+          "line": 104,
+          "lines": 7
+        },
+        {
+          "name": "prepare.ready",
+          "line": 89,
+          "lines": 5
+        },
+        {
+          "name": "prepare.quote",
+          "line": 76,
+          "lines": 1
+        }
+      ]
+    },
+    {
+      "file": "core/analysis_agent/row_preview.py",
+      "lines": 113,
+      "function_count": 8,
+      "direct_class_count": 0,
+      "internal_dependency_count": 4,
+      "longest_functions": [
+        {
+          "name": "prepare",
+          "line": 43,
+          "lines": 38
+        },
+        {
+          "name": "valid_plan",
+          "line": 94,
+          "lines": 12
+        },
+        {
+          "name": "frame",
+          "line": 32,
+          "lines": 9
+        },
+        {
+          "name": "accept_remote",
+          "line": 83,
+          "lines": 9
+        },
+        {
+          "name": "requested",
+          "line": 9,
+          "lines": 8
+        },
+        {
+          "name": "evidence",
+          "line": 23,
+          "lines": 7
+        },
+        {
+          "name": "render",
+          "line": 108,
+          "lines": 6
+        }
+      ]
+    },
+    {
+      "file": "utils/analysis_group_streaming.py",
+      "lines": 112,
+      "function_count": 2,
+      "direct_class_count": 0,
+      "internal_dependency_count": 2,
+      "longest_functions": [
+        {
+          "name": "reduce_groups",
+          "line": 15,
+          "lines": 98
+        },
+        {
+          "name": "reduce_groups.prepared",
+          "line": 60,
+          "lines": 26
+        }
+      ]
+    },
+    {
+      "file": "core/learning_memory.py",
+      "lines": 111,
+      "function_count": 6,
+      "direct_class_count": 0,
+      "internal_dependency_count": 0,
+      "longest_functions": [
+        {
+          "name": "init_db",
+          "line": 15,
+          "lines": 29
+        },
+        {
+          "name": "record_interaction",
+          "line": 59,
+          "lines": 21
+        },
+        {
+          "name": "get_successful_examples",
+          "line": 95,
+          "lines": 14
+        },
+        {
+          "name": "update_rating_by_query",
+          "line": 81,
+          "lines": 13
+        },
+        {
+          "name": "record_performance",
+          "line": 45,
+          "lines": 12
+        },
+        {
+          "name": "_get_connection",
+          "line": 9,
+          "lines": 5
+        }
+      ]
+    },
+    {
+      "file": "utils/agent_output.py",
+      "lines": 109,
+      "function_count": 5,
+      "direct_class_count": 0,
+      "internal_dependency_count": 0,
+      "longest_functions": [
+        {
+          "name": "unwrap_final_answer_payload",
+          "line": 35,
+          "lines": 30
+        },
+        {
+          "name": "detect_agent_parser_loop",
+          "line": 81,
+          "lines": 22
+        },
+        {
+          "name": "_count_parser_exception_steps",
+          "line": 67,
+          "lines": 12
+        },
+        {
+          "name": "_json_payload",
+          "line": 12,
+          "lines": 10
+        },
+        {
+          "name": "has_invalid_action_schema",
+          "line": 24,
+          "lines": 9
+        }
+      ]
+    },
+    {
+      "file": "utils/analysis_provenance.py",
+      "lines": 106,
+      "function_count": 8,
+      "direct_class_count": 0,
+      "internal_dependency_count": 1,
+      "longest_functions": [
+        {
+          "name": "query_conditions",
+          "line": 32,
+          "lines": 31
+        },
+        {
+          "name": "count_frequency_columns",
+          "line": 81,
+          "lines": 26
+        },
+        {
+          "name": "raw_conditions",
+          "line": 65,
+          "lines": 14
+        },
+        {
+          "name": "query_conditions.parse",
+          "line": 49,
+          "lines": 11
+        },
+        {
+          "name": "query_coverage",
+          "line": 6,
+          "lines": 10
+        },
+        {
+          "name": "query_conditions.literal",
+          "line": 40,
+          "lines": 9
+        },
+        {
+          "name": "single_table",
+          "line": 23,
+          "lines": 7
+        }
+      ]
+    },
+    {
+      "file": "modules/dataload/databricks_sql_loader.py",
+      "lines": 103,
+      "function_count": 8,
+      "direct_class_count": 1,
+      "internal_dependency_count": 1,
+      "longest_functions": [
+        {
+          "name": "DatabricksCredentials.to_config",
+          "line": 34,
+          "lines": 8
+        },
+        {
+          "name": "load_table",
+          "line": 71,
+          "lines": 7
+        },
+        {
+          "name": "list_catalogs",
+          "line": 49,
+          "lines": 6
+        },
+        {
+          "name": "list_tables",
+          "line": 63,
+          "lines": 6
+        },
+        {
+          "name": "run_sql",
+          "line": 80,
+          "lines": 6
+        },
+        {
+          "name": "list_schemas",
+          "line": 57,
+          "lines": 4
+        },
+        {
+          "name": "connector_available",
+          "line": 44,
+          "lines": 3
+        }
+      ]
+    },
+    {
+      "file": "utils/analysis_latest.py",
+      "lines": 102,
+      "function_count": 1,
+      "direct_class_count": 0,
+      "internal_dependency_count": 4,
+      "longest_functions": [
+        {
+          "name": "latest_distribution",
+          "line": 8,
+          "lines": 95
+        }
+      ]
+    },
+    {
+      "file": "core/analysis_agent/approvals.py",
+      "lines": 101,
+      "function_count": 13,
+      "direct_class_count": 2,
+      "internal_dependency_count": 2,
+      "longest_functions": [
+        {
+          "name": "ApprovalLedger.execute",
+          "line": 82,
+          "lines": 20
+        },
+        {
+          "name": "ApprovalLedger.authorize_automatic",
+          "line": 60,
+          "lines": 12
+        },
+        {
+          "name": "ApprovalLedger.propose",
+          "line": 33,
+          "lines": 8
+        },
+        {
+          "name": "ApprovalLedger.__init__",
+          "line": 17,
+          "lines": 5
+        },
+        {
+          "name": "ApprovalLedger.get",
+          "line": 42,
+          "lines": 5
+        },
+        {
+          "name": "ApprovalLedger.completed_for_dataset",
+          "line": 48,
+          "lines": 5
+        },
+        {
+          "name": "ApprovalLedger.decide",
+          "line": 54,
+          "lines": 5
+        }
+      ]
+    },
+    {
+      "file": "utils/analysis_profile.py",
+      "lines": 100,
+      "function_count": 3,
+      "direct_class_count": 0,
+      "internal_dependency_count": 0,
+      "longest_functions": [
+        {
+          "name": "_column_profile",
+          "line": 22,
+          "lines": 41
+        },
+        {
+          "name": "profile_dataset",
+          "line": 65,
+          "lines": 36
+        },
+        {
+          "name": "_safe_scalar",
+          "line": 10,
+          "lines": 10
+        }
+      ]
+    },
+    {
+      "file": "utils/analysis_latest_sql.py",
+      "lines": 99,
+      "function_count": 3,
+      "direct_class_count": 0,
+      "internal_dependency_count": 2,
+      "longest_functions": [
+        {
+          "name": "select_latest",
+          "line": 22,
+          "lines": 78
+        },
+        {
+          "name": "_quote",
+          "line": 14,
+          "lines": 2
+        },
+        {
+          "name": "_issue",
+          "line": 18,
+          "lines": 2
+        }
+      ]
+    },
+    {
+      "file": "core/analysis_databricks.py",
+      "lines": 98,
+      "function_count": 2,
+      "direct_class_count": 0,
+      "internal_dependency_count": 3,
+      "longest_functions": [
+        {
+          "name": "execute_approved",
+          "line": 13,
+          "lines": 86
+        },
+        {
+          "name": "execute_approved.read_batches",
+          "line": 56,
+          "lines": 23
+        }
+      ]
+    },
+    {
+      "file": "core/llm.py",
+      "lines": 92,
+      "function_count": 4,
+      "direct_class_count": 0,
+      "internal_dependency_count": 0,
+      "longest_functions": [
+        {
+          "name": "_load_azure_llm",
+          "line": 46,
+          "lines": 35
+        },
+        {
+          "name": "_load_google_llm",
+          "line": 28,
+          "lines": 16
+        },
+        {
+          "name": "load_llm",
+          "line": 12,
+          "lines": 14
+        },
+        {
+          "name": "_load_ollama_llm",
+          "line": 83,
+          "lines": 7
+        }
+      ]
+    },
+    {
+      "file": "core/analysis_agent/model_provider.py",
+      "lines": 90,
+      "function_count": 4,
+      "direct_class_count": 1,
+      "internal_dependency_count": 0,
+      "longest_functions": [
+        {
+          "name": "_databricks_schema",
+          "line": 16,
+          "lines": 27
+        },
+        {
+          "name": "build_analysis_chat_model",
+          "line": 64,
+          "lines": 27
+        },
+        {
+          "name": "DatabricksChatModel.bind_tools",
+          "line": 54,
+          "lines": 8
+        },
+        {
+          "name": "DatabricksChatModel._get_request_payload",
+          "line": 48,
+          "lines": 5
+        }
+      ]
+    },
+    {
+      "file": "core/analysis_metadata_discovery.py",
+      "lines": 89,
+      "function_count": 5,
+      "direct_class_count": 0,
+      "internal_dependency_count": 2,
+      "longest_functions": [
+        {
+          "name": "make_plan",
+          "line": 17,
+          "lines": 28
+        },
+        {
+          "name": "stored_column_definitions",
+          "line": 47,
+          "lines": 25
+        },
+        {
+          "name": "column_metadata_plan",
+          "line": 8,
+          "lines": 7
+        },
+        {
+          "name": "inspect_column_definitions",
+          "line": 74,
+          "lines": 7
+        },
+        {
+          "name": "compatible_storage_type",
+          "line": 83,
+          "lines": 7
+        }
+      ]
+    },
+    {
+      "file": "core/analysis_agent/remote_completion.py",
+      "lines": 87,
+      "function_count": 5,
+      "direct_class_count": 0,
+      "internal_dependency_count": 0,
+      "longest_functions": [
+        {
+          "name": "deferred_execution_claim",
+          "line": 63,
+          "lines": 25
+        },
+        {
+          "name": "verified_receipt",
+          "line": 34,
+          "lines": 22
+        },
+        {
+          "name": "table_list_requested",
+          "line": 11,
+          "lines": 10
+        },
+        {
+          "name": "catalog_read_requested",
+          "line": 23,
+          "lines": 9
+        },
+        {
+          "name": "remote_queries_ready",
+          "line": 58,
+          "lines": 3
+        }
+      ]
+    },
+    {
+      "file": "utils/table_training_sql.py",
+      "lines": 87,
+      "function_count": 4,
+      "direct_class_count": 0,
+      "internal_dependency_count": 0,
+      "longest_functions": [
+        {
+          "name": "build_bulk_top_values_sql",
+          "line": 47,
+          "lines": 32
+        },
+        {
+          "name": "build_bulk_profile_stats_sql",
+          "line": 17,
+          "lines": 28
+        },
+        {
+          "name": "quote_identifier",
+          "line": 9,
+          "lines": 2
+        },
+        {
+          "name": "quote_sql_literal",
+          "line": 13,
+          "lines": 2
+        }
+      ]
+    },
+    {
+      "file": "core/llm_router.py",
+      "lines": 84,
+      "function_count": 1,
+      "direct_class_count": 1,
+      "internal_dependency_count": 1,
+      "longest_functions": [
+        {
+          "name": "route_query",
+          "line": 15,
+          "lines": 70
+        }
+      ]
+    },
+    {
+      "file": "core/analysis_load_plan.py",
+      "lines": 81,
+      "function_count": 5,
+      "direct_class_count": 1,
+      "internal_dependency_count": 2,
+      "longest_functions": [
+        {
+          "name": "source_plan",
+          "line": 43,
+          "lines": 39
+        },
+        {
+          "name": "_actual_tables",
+          "line": 31,
+          "lines": 5
+        },
+        {
+          "name": "_compatible",
+          "line": 25,
+          "lines": 4
+        },
+        {
+          "name": "query_sources",
+          "line": 38,
+          "lines": 3
+        },
+        {
+          "name": "_parts",
+          "line": 21,
+          "lines": 2
+        }
+      ]
+    },
+    {
+      "file": "ui/data_preview.py",
+      "lines": 78,
+      "function_count": 2,
+      "direct_class_count": 0,
+      "internal_dependency_count": 0,
+      "longest_functions": [
+        {
+          "name": "render_data_preview_section",
+          "line": 19,
+          "lines": 57
+        },
+        {
+          "name": "_render_csv_download_button",
+          "line": 5,
+          "lines": 12
+        }
+      ]
+    },
+    {
+      "file": "core/analysis_agent/chart_grouping.py",
+      "lines": 76,
+      "function_count": 3,
+      "direct_class_count": 0,
+      "internal_dependency_count": 3,
+      "longest_functions": [
+        {
+          "name": "bind",
+          "line": 13,
+          "lines": 64
+        },
+        {
+          "name": "bind.flatten",
+          "line": 40,
+          "lines": 4
+        },
+        {
+          "name": "requested",
+          "line": 9,
+          "lines": 2
+        }
+      ]
+    },
+    {
+      "file": "utils/prompt_help.py",
+      "lines": 76,
+      "function_count": 2,
+      "direct_class_count": 0,
+      "internal_dependency_count": 1,
+      "longest_functions": [
+        {
+          "name": "build_command_help_message",
+          "line": 64,
+          "lines": 7
+        },
+        {
+          "name": "build_command_example_message",
+          "line": 73,
+          "lines": 4
+        }
+      ]
+    },
+    {
+      "file": "core/agent.py",
+      "lines": 75,
+      "function_count": 5,
+      "direct_class_count": 1,
+      "internal_dependency_count": 0,
+      "longest_functions": [
+        {
+          "name": "build_agent",
+          "line": 41,
+          "lines": 32
+        },
+        {
+          "name": "SimpleCollectCallback.__init__",
+          "line": 16,
+          "lines": 2
+        },
+        {
+          "name": "SimpleCollectCallback.on_tool_error",
+          "line": 19,
+          "lines": 2
+        },
+        {
+          "name": "SimpleCollectCallback.on_llm_start",
+          "line": 22,
+          "lines": 2
+        },
+        {
+          "name": "SimpleCollectCallback.on_llm_end",
+          "line": 25,
+          "lines": 2
+        }
+      ]
+    },
+    {
+      "file": "core/analysis_agent/diagnostics.py",
+      "lines": 74,
+      "function_count": 5,
+      "direct_class_count": 1,
+      "internal_dependency_count": 1,
+      "longest_functions": [
+        {
+          "name": "Diagnostics.span",
+          "line": 59,
+          "lines": 16
+        },
+        {
+          "name": "Diagnostics.__init__",
+          "line": 26,
+          "lines": 13
+        },
+        {
+          "name": "Diagnostics.failure",
+          "line": 46,
+          "lines": 11
+        },
+        {
+          "name": "process_peak_rss_bytes",
+          "line": 14,
+          "lines": 9
+        },
+        {
+          "name": "Diagnostics.emit",
+          "line": 40,
+          "lines": 5
+        }
+      ]
+    },
+    {
+      "file": "core/analysis_agent/sql_preflight.py",
+      "lines": 72,
+      "function_count": 3,
+      "direct_class_count": 0,
+      "internal_dependency_count": 2,
+      "longest_functions": [
+        {
+          "name": "known_column_error",
+          "line": 10,
+          "lines": 63
+        },
+        {
+          "name": "known_column_error.context_for",
+          "line": 32,
+          "lines": 8
+        },
+        {
+          "name": "known_column_error.source_name",
+          "line": 29,
+          "lines": 2
+        }
+      ]
+    },
+    {
+      "file": "utils/analysis_latest_filters.py",
+      "lines": 69,
+      "function_count": 5,
+      "direct_class_count": 0,
+      "internal_dependency_count": 1,
+      "longest_functions": [
+        {
+          "name": "validate",
+          "line": 9,
+          "lines": 19
+        },
+        {
+          "name": "validate_types",
+          "line": 45,
+          "lines": 18
+        },
+        {
+          "name": "sql",
+          "line": 29,
+          "lines": 15
+        },
+        {
+          "name": "matches",
+          "line": 67,
+          "lines": 3
+        },
+        {
+          "name": "lineage",
+          "line": 64,
+          "lines": 2
+        }
+      ]
+    },
+    {
+      "file": "core/analysis_agent/progress_guard.py",
+      "lines": 67,
+      "function_count": 7,
+      "direct_class_count": 0,
+      "internal_dependency_count": 1,
+      "longest_functions": [
+        {
+          "name": "instruction",
+          "line": 56,
+          "lines": 12
+        },
+        {
+          "name": "observe",
+          "line": 34,
+          "lines": 8
+        },
+        {
+          "name": "context_version",
+          "line": 25,
+          "lines": 7
+        },
+        {
+          "name": "stalled",
+          "line": 44,
+          "lines": 6
+        },
+        {
+          "name": "digest",
+          "line": 17,
+          "lines": 2
+        },
+        {
+          "name": "call_key",
+          "line": 21,
+          "lines": 2
+        },
+        {
+          "name": "token",
+          "line": 52,
+          "lines": 2
+        }
+      ]
+    },
+    {
+      "file": "utils/sql_text.py",
+      "lines": 65,
+      "function_count": 2,
+      "direct_class_count": 0,
+      "internal_dependency_count": 0,
+      "longest_functions": [
+        {
+          "name": "extract_sql_from_text",
+          "line": 27,
+          "lines": 32
+        },
+        {
+          "name": "strip_sql_code_fence",
+          "line": 19,
+          "lines": 6
+        }
+      ]
+    },
+    {
+      "file": "utils/analysis_numeric.py",
+      "lines": 65,
+      "function_count": 1,
+      "direct_class_count": 0,
+      "internal_dependency_count": 1,
+      "longest_functions": [
+        {
+          "name": "prepare_numeric_dataset",
+          "line": 9,
+          "lines": 57
+        }
+      ]
+    },
+    {
+      "file": "core/analysis_agent/backends.py",
+      "lines": 64,
+      "function_count": 7,
+      "direct_class_count": 1,
+      "internal_dependency_count": 3,
+      "longest_functions": [
+        {
+          "name": "load_data_backend",
+          "line": 38,
+          "lines": 27
+        },
+        {
+          "name": "load_data_backend.preflight",
+          "line": 57,
+          "lines": 6
+        },
+        {
+          "name": "DataBackend.storage_root",
+          "line": 28,
+          "lines": 4
+        },
+        {
+          "name": "DataBackend.qualify_table",
+          "line": 33,
+          "lines": 3
+        },
+        {
+          "name": "DataBackend.dialect",
+          "line": 17,
+          "lines": 2
+        },
+        {
+          "name": "DataBackend.namespace",
+          "line": 21,
+          "lines": 2
+        },
+        {
+          "name": "DataBackend.label",
+          "line": 25,
+          "lines": 2
+        }
+      ]
+    },
+    {
+      "file": "core/analysis_agent/tool_repair.py",
+      "lines": 63,
+      "function_count": 3,
+      "direct_class_count": 0,
+      "internal_dependency_count": 0,
+      "longest_functions": [
+        {
+          "name": "diagnosis",
+          "line": 15,
+          "lines": 34
+        },
+        {
+          "name": "repair_instruction",
+          "line": 51,
+          "lines": 13
+        },
+        {
+          "name": "signature_id",
+          "line": 11,
+          "lines": 2
+        }
+      ]
+    },
+    {
+      "file": "core/analysis_agent/policy.py",
+      "lines": 63,
+      "function_count": 4,
+      "direct_class_count": 1,
+      "internal_dependency_count": 0,
+      "longest_functions": [
+        {
+          "name": "RuntimePolicy.from_env",
+          "line": 41,
+          "lines": 19
+        },
+        {
+          "name": "_positive_int",
+          "line": 11,
+          "lines": 5
+        },
+        {
+          "name": "_positive_float",
+          "line": 18,
+          "lines": 5
+        },
+        {
+          "name": "RuntimePolicy.public",
+          "line": 61,
+          "lines": 3
+        }
+      ]
+    },
+    {
+      "file": "core/analysis_sql.py",
+      "lines": 62,
+      "function_count": 3,
+      "direct_class_count": 0,
+      "internal_dependency_count": 0,
+      "longest_functions": [
+        {
+          "name": "local_input_columns",
+          "line": 40,
+          "lines": 23
+        },
+        {
+          "name": "local_query",
+          "line": 20,
+          "lines": 18
+        },
+        {
+          "name": "validate_query",
+          "line": 8,
+          "lines": 10
+        }
+      ]
+    },
+    {
+      "file": "core/analysis_agent/eda_contract.py",
+      "lines": 58,
+      "function_count": 4,
+      "direct_class_count": 0,
+      "internal_dependency_count": 0,
+      "longest_functions": [
+        {
+          "name": "group_sort",
+          "line": 33,
+          "lines": 26
+        },
+        {
+          "name": "histogram_bins",
+          "line": 5,
+          "lines": 8
+        },
+        {
+          "name": "group_columns",
+          "line": 23,
+          "lines": 8
+        },
+        {
+          "name": "profile_request_text",
+          "line": 15,
+          "lines": 6
+        }
+      ]
+    },
+    {
+      "file": "core/analysis_agent/approval_intent.py",
+      "lines": 58,
+      "function_count": 1,
+      "direct_class_count": 0,
+      "internal_dependency_count": 0,
+      "longest_functions": [
+        {
+          "name": "classify_pending_message",
+          "line": 12,
+          "lines": 47
+        }
+      ]
+    },
+    {
+      "file": "utils/agent_routing.py",
+      "lines": 58,
+      "function_count": 5,
+      "direct_class_count": 0,
+      "internal_dependency_count": 0,
+      "longest_functions": [
+        {
+          "name": "should_force_sql_from_keywords",
+          "line": 18,
+          "lines": 15
+        },
+        {
+          "name": "parse_command_prefix",
+          "line": 35,
+          "lines": 8
+        },
+        {
+          "name": "resolve_forced_agent_mode",
+          "line": 10,
+          "lines": 6
+        },
+        {
+          "name": "resolve_agent_mode_for_input",
+          "line": 45,
+          "lines": 5
+        },
+        {
+          "name": "should_force_sql_builder",
+          "line": 4,
+          "lines": 4
+        }
+      ]
+    },
+    {
+      "file": "core/analysis_agent/numeric_scope.py",
+      "lines": 52,
+      "function_count": 3,
+      "direct_class_count": 0,
+      "internal_dependency_count": 0,
+      "longest_functions": [
+        {
+          "name": "intervals",
+          "line": 12,
+          "lines": 35
+        },
+        {
+          "name": "uncovered_intervals",
+          "line": 49,
+          "lines": 4
+        },
+        {
+          "name": "intervals.number",
+          "line": 42,
+          "lines": 3
+        }
+      ]
+    },
+    {
+      "file": "ui/analysis_preferences.py",
+      "lines": 49,
+      "function_count": 5,
+      "direct_class_count": 0,
+      "internal_dependency_count": 0,
+      "longest_functions": [
+        {
+          "name": "render_provider_selector",
+          "line": 32,
+          "lines": 18
+        },
+        {
+          "name": "save_provider",
+          "line": 23,
+          "lines": 7
+        },
+        {
+          "name": "_connect",
+          "line": 9,
+          "lines": 5
+        },
+        {
+          "name": "saved_provider",
+          "line": 16,
+          "lines": 5
+        },
+        {
+          "name": "render_provider_selector.changed",
+          "line": 40,
+          "lines": 4
+        }
+      ]
+    },
+    {
+      "file": "core/analysis_tool_discovery.py",
+      "lines": 48,
+      "function_count": 1,
+      "direct_class_count": 0,
+      "internal_dependency_count": 0,
+      "longest_functions": [
+        {
+          "name": "discover_tools",
+          "line": 7,
+          "lines": 42
+        }
+      ]
+    },
+    {
+      "file": "core/analysis_agent/databricks.py",
+      "lines": 48,
+      "function_count": 5,
+      "direct_class_count": 1,
+      "internal_dependency_count": 2,
+      "longest_functions": [
+        {
+          "name": "make_executor",
+          "line": 35,
+          "lines": 14
+        },
+        {
+          "name": "make_executor.execute",
+          "line": 36,
+          "lines": 12
+        },
+        {
+          "name": "ConnectionConfig.from_env",
+          "line": 20,
+          "lines": 4
+        },
+        {
+          "name": "ConnectionConfig.identity",
+          "line": 29,
+          "lines": 4
+        },
+        {
+          "name": "ConnectionConfig.validate",
+          "line": 25,
+          "lines": 3
+        }
+      ]
+    },
+    {
+      "file": "ui/analysis_chart_delivery.py",
+      "lines": 46,
+      "function_count": 4,
+      "direct_class_count": 0,
+      "internal_dependency_count": 1,
+      "longest_functions": [
+        {
+          "name": "chart_delivery_plan",
+          "line": 27,
+          "lines": 20
+        },
+        {
+          "name": "chart_references",
+          "line": 7,
+          "lines": 12
+        },
+        {
+          "name": "chart_delivery_plan.flush",
+          "line": 35,
+          "lines": 6
+        },
+        {
+          "name": "displayable_chart",
+          "line": 21,
+          "lines": 4
+        }
+      ]
+    },
+    {
+      "file": "ui/runtime_trace_view.py",
+      "lines": 45,
+      "function_count": 1,
+      "direct_class_count": 0,
+      "internal_dependency_count": 1,
+      "longest_functions": [
+        {
+          "name": "render_runtime_trace_debug_panel",
+          "line": 6,
+          "lines": 37
+        }
+      ]
+    },
+    {
+      "file": "core/analysis_agent/latest_filter_scope.py",
+      "lines": 44,
+      "function_count": 2,
+      "direct_class_count": 0,
+      "internal_dependency_count": 2,
+      "longest_functions": [
+        {
+          "name": "bind_scope",
+          "line": 8,
+          "lines": 27
+        },
+        {
+          "name": "continue_stage",
+          "line": 36,
+          "lines": 9
+        }
+      ]
+    },
+    {
+      "file": "utils/analysis_skill_registry.py",
+      "lines": 43,
+      "function_count": 4,
+      "direct_class_count": 1,
+      "internal_dependency_count": 0,
+      "longest_functions": [
+        {
+          "name": "AnalysisSkillRegistry._read",
+          "line": 13,
+          "lines": 24
+        },
+        {
+          "name": "AnalysisSkillRegistry.list",
+          "line": 38,
+          "lines": 3
+        },
+        {
+          "name": "AnalysisSkillRegistry.__init__",
+          "line": 10,
+          "lines": 2
+        },
+        {
+          "name": "AnalysisSkillRegistry.read",
+          "line": 42,
+          "lines": 2
+        }
+      ]
+    },
+    {
+      "file": "ui/data_state.py",
+      "lines": 36,
+      "function_count": 1,
+      "direct_class_count": 0,
+      "internal_dependency_count": 2,
+      "longest_functions": [
+        {
+          "name": "load_dataframes",
+          "line": 7,
+          "lines": 27
+        }
+      ]
+    },
+    {
+      "file": "core/analysis_agent/conversation_context.py",
+      "lines": 36,
+      "function_count": 4,
+      "direct_class_count": 0,
+      "internal_dependency_count": 1,
+      "longest_functions": [
+        {
+          "name": "prior_analysis",
+          "line": 19,
+          "lines": 8
+        },
+        {
+          "name": "suspend_analysis",
+          "line": 29,
+          "lines": 8
+        },
+        {
+          "name": "explanation_only",
+          "line": 6,
+          "lines": 5
+        },
+        {
+          "name": "snapshot",
+          "line": 13,
+          "lines": 4
+        }
+      ]
+    },
+    {
+      "file": "core/analysis_agent/clarification.py",
+      "lines": 36,
+      "function_count": 1,
+      "direct_class_count": 0,
+      "internal_dependency_count": 1,
+      "longest_functions": [
+        {
+          "name": "continue_analysis",
+          "line": 7,
+          "lines": 30
+        }
+      ]
+    },
+    {
+      "file": "utils/perf_monitor.py",
+      "lines": 36,
+      "function_count": 6,
+      "direct_class_count": 1,
+      "internal_dependency_count": 1,
+      "longest_functions": [
+        {
+          "name": "track_time",
+          "line": 22,
+          "lines": 15
+        },
+        {
+          "name": "track_time.decorator",
+          "line": 24,
+          "lines": 12
+        },
+        {
+          "name": "track_time.decorator.wrapper",
+          "line": 26,
+          "lines": 9
+        },
+        {
+          "name": "TimeTracker.__init__",
+          "line": 9,
+          "lines": 4
+        },
+        {
+          "name": "TimeTracker.__enter__",
+          "line": 14,
+          "lines": 3
+        },
+        {
+          "name": "TimeTracker.__exit__",
+          "line": 18,
+          "lines": 3
+        }
+      ]
+    },
+    {
+      "file": "utils/analysis_image_validation.py",
+      "lines": 31,
+      "function_count": 1,
+      "direct_class_count": 0,
+      "internal_dependency_count": 0,
+      "longest_functions": [
+        {
+          "name": "validate_chart_image",
+          "line": 7,
+          "lines": 25
+        }
+      ]
+    },
+    {
+      "file": "ui/analysis_diagnostics.py",
+      "lines": 30,
+      "function_count": 2,
+      "direct_class_count": 0,
+      "internal_dependency_count": 1,
+      "longest_functions": [
+        {
+          "name": "render_diagnostics",
+          "line": 11,
+          "lines": 20
+        },
+        {
+          "name": "_diagnostic_rerun",
+          "line": 7,
+          "lines": 2
+        }
+      ]
+    },
+    {
+      "file": "core/analysis_agent/storage_policy.py",
+      "lines": 30,
+      "function_count": 1,
+      "direct_class_count": 0,
+      "internal_dependency_count": 0,
+      "longest_functions": [
+        {
+          "name": "storage_report",
+          "line": 10,
+          "lines": 21
+        }
+      ]
+    },
+    {
+      "file": "core/analysis_agent/progress.py",
+      "lines": 27,
+      "function_count": 1,
+      "direct_class_count": 0,
+      "internal_dependency_count": 0,
+      "longest_functions": [
+        {
+          "name": "tool_progress",
+          "line": 5,
+          "lines": 23
+        }
+      ]
+    },
+    {
+      "file": "core/analysis_agent/source_mentions.py",
+      "lines": 27,
+      "function_count": 1,
+      "direct_class_count": 0,
+      "internal_dependency_count": 1,
+      "longest_functions": [
+        {
+          "name": "mask_source_mentions",
+          "line": 5,
+          "lines": 23
+        }
+      ]
+    },
+    {
+      "file": "core/analysis_agent/failure_messages.py",
+      "lines": 25,
+      "function_count": 2,
+      "direct_class_count": 0,
+      "internal_dependency_count": 0,
+      "longest_functions": [
+        {
+          "name": "remote_failure_message",
+          "line": 7,
+          "lines": 19
+        },
+        {
+          "name": "remote_blocked",
+          "line": 2,
+          "lines": 3
+        }
+      ]
+    },
+    {
+      "file": "ui/history.py",
+      "lines": 24,
+      "function_count": 2,
+      "direct_class_count": 0,
+      "internal_dependency_count": 0,
+      "longest_functions": [
+        {
+          "name": "_enforce_limit",
+          "line": 6,
+          "lines": 10
+        },
+        {
+          "name": "get_history",
+          "line": 18,
+          "lines": 6
+        }
+      ]
+    },
+    {
+      "file": "utils/conversation_figures.py",
+      "lines": 24,
+      "function_count": 1,
+      "direct_class_count": 0,
+      "internal_dependency_count": 0,
+      "longest_functions": [
+        {
+          "name": "attach_figures_to_log",
+          "line": 4,
+          "lines": 18
+        }
+      ]
+    },
+    {
+      "file": "ui/agent_entry.py",
+      "lines": 20,
+      "function_count": 1,
+      "direct_class_count": 0,
+      "internal_dependency_count": 0,
+      "longest_functions": [
+        {
+          "name": "runtime_compatibility_error",
+          "line": 6,
+          "lines": 15
+        }
+      ]
+    },
+    {
+      "file": "core/analysis_agent/model_errors.py",
+      "lines": 19,
+      "function_count": 1,
+      "direct_class_count": 0,
+      "internal_dependency_count": 0,
+      "longest_functions": [
+        {
+          "name": "model_error_category",
+          "line": 5,
+          "lines": 15
+        }
+      ]
+    },
+    {
+      "file": "core/analysis_instructions.py",
+      "lines": 18,
+      "function_count": 0,
+      "direct_class_count": 0,
+      "internal_dependency_count": 0,
+      "longest_functions": []
+    },
+    {
+      "file": "utils/config.py",
+      "lines": 18,
+      "function_count": 0,
+      "direct_class_count": 0,
+      "internal_dependency_count": 0,
+      "longest_functions": []
+    },
+    {
+      "file": "pages/Telly.py",
+      "lines": 17,
+      "function_count": 0,
+      "direct_class_count": 0,
+      "internal_dependency_count": 1,
+      "longest_functions": []
+    },
+    {
+      "file": "main.py",
+      "lines": 17,
+      "function_count": 0,
+      "direct_class_count": 0,
+      "internal_dependency_count": 1,
+      "longest_functions": []
+    },
+    {
+      "file": "utils/chat_turn.py",
+      "lines": 16,
+      "function_count": 2,
+      "direct_class_count": 0,
+      "internal_dependency_count": 0,
+      "longest_functions": [
+        {
+          "name": "should_process_chat_turn",
+          "line": 4,
+          "lines": 4
+        },
+        {
+          "name": "resolve_chat_turn_query",
+          "line": 10,
+          "lines": 4
+        }
+      ]
+    },
+    {
+      "file": "app_io/blob.py",
+      "lines": 14,
+      "function_count": 2,
+      "direct_class_count": 0,
+      "internal_dependency_count": 0,
+      "longest_functions": [
+        {
+          "name": "list_blobs",
+          "line": 8,
+          "lines": 2
+        },
+        {
+          "name": "download_blob",
+          "line": 12,
+          "lines": 2
+        }
+      ]
+    },
+    {
+      "file": "ui/analysis_text.py",
+      "lines": 6,
+      "function_count": 1,
+      "direct_class_count": 0,
+      "internal_dependency_count": 0,
+      "longest_functions": [
+        {
+          "name": "display_analysis_text",
+          "line": 2,
+          "lines": 5
+        }
+      ]
+    },
+    {
+      "file": "pages/__init__.py",
+      "lines": 4,
+      "function_count": 0,
+      "direct_class_count": 0,
+      "internal_dependency_count": 0,
+      "longest_functions": []
+    },
+    {
+      "file": "app/__init__.py",
+      "lines": 4,
+      "function_count": 0,
+      "direct_class_count": 0,
+      "internal_dependency_count": 0,
+      "longest_functions": []
+    },
+    {
+      "file": "app_io/__init__.py",
+      "lines": 4,
+      "function_count": 0,
+      "direct_class_count": 0,
+      "internal_dependency_count": 0,
+      "longest_functions": []
+    },
+    {
+      "file": "core/__init__.py",
+      "lines": 4,
+      "function_count": 0,
+      "direct_class_count": 0,
+      "internal_dependency_count": 0,
+      "longest_functions": []
+    },
+    {
+      "file": "ui/__init__.py",
+      "lines": 4,
+      "function_count": 0,
+      "direct_class_count": 0,
+      "internal_dependency_count": 0,
+      "longest_functions": []
+    },
+    {
+      "file": "utils/__init__.py",
+      "lines": 4,
+      "function_count": 0,
+      "direct_class_count": 0,
+      "internal_dependency_count": 0,
+      "longest_functions": []
+    },
+    {
+      "file": "modules/dataload/__init__.py",
+      "lines": 4,
+      "function_count": 0,
+      "direct_class_count": 0,
+      "internal_dependency_count": 0,
+      "longest_functions": []
+    },
+    {
+      "file": "modules/__init__.py",
+      "lines": 4,
+      "function_count": 0,
+      "direct_class_count": 0,
+      "internal_dependency_count": 0,
+      "longest_functions": []
+    },
+    {
+      "file": "core/analysis_agent/__init__.py",
+      "lines": 1,
+      "function_count": 0,
+      "direct_class_count": 0,
+      "internal_dependency_count": 0,
+      "longest_functions": []
+    }
+  ],
+  "lexical_internal_import_sccs": [
+    [
+      "utils.analysis_datasets",
+      "utils.analysis_pivot"
+    ],
+    [
+      "core.analysis_agent.completion",
+      "core.analysis_agent.completion_renderers"
+    ],
+    [
+      "utils.analysis_group_streaming",
+      "utils.analysis_group_summary"
+    ]
+  ],
+  "imports": {
+    "pages": [],
+    "pages.Telly": [
+      "ui.agent_entry"
+    ],
+    "app": [],
+    "app_io.blob": [],
+    "app_io.databricks": [
+      "utils.perf_monitor"
+    ],
+    "app_io": [],
+    "main": [
+      "ui.agent_entry"
+    ],
+    "core.analysis_catalog": [
+      "utils.analysis_datasets",
+      "utils.analysis_provenance",
+      "utils.table_context"
+    ],
+    "core.analysis_load_plan": [
+      "core.analysis_sql",
+      "utils.analysis_provenance"
+    ],
+    "core.learning_memory": [],
+    "core.sql_utils": [
+      "utils.perf_monitor",
+      "utils.runtime_trace",
+      "utils.session"
+    ],
+    "core.prompt": [
+      "core.learning_memory",
+      "utils.session",
+      "utils.table_context"
+    ],
+    "core.analysis_tool_discovery": [],
+    "core.runtime_capacity": [],
+    "core.agent": [],
+    "core.deployment_preflight": [
+      "core.analysis_agent.policy",
+      "core.runtime_capacity"
+    ],
+    "core.chat_flow": [
+      "core.agent",
+      "core.learning_memory",
+      "core.llm_router",
+      "core.sql_utils",
+      "ui.chat_log",
+      "ui.viz",
+      "utils.agent_output",
+      "utils.agent_routing",
+      "utils.chatbot_plan",
+      "utils.config",
+      "utils.controlled_visualization",
+      "utils.data_context",
+      "utils.eda_validation",
+      "utils.perf_monitor",
+      "utils.prompt_help",
+      "utils.runtime_trace",
+      "utils.session",
+      "utils.sql_text",
+      "utils.table_context",
+      "utils.turn_logger"
+    ],
+    "core.analysis_instructions": [],
+    "core.llm": [],
+    "core.analysis_metadata_discovery": [
+      "core.analysis_catalog",
+      "utils.analysis_datasets"
+    ],
+    "core": [],
+    "core.tools": [
+      "utils.session"
+    ],
+    "ui.history": [],
+    "ui.data_state": [
+      "ui.sidebar",
+      "utils.session"
+    ],
+    "ui.runtime_trace_view": [
+      "utils.runtime_trace"
+    ],
+    "ui.viz": [
+      "utils.perf_monitor"
+    ],
+    "ui.analysis_text": [],
+    "ui": [],
+    "ui.analysis_chart_delivery": [
+      "utils.analysis_image_validation"
+    ],
+    "ui.analysis_page": [
+      "core.analysis_agent.backends",
+      "core.analysis_agent.failure_messages",
+      "core.analysis_agent.model_provider",
+      "core.analysis_agent.policy",
+      "core.analysis_agent.row_preview",
+      "core.analysis_agent.runtime",
+      "core.analysis_load_plan",
+      "ui.analysis_chart_delivery",
+      "ui.analysis_diagnostics",
+      "ui.analysis_preferences",
+      "ui.analysis_text",
+      "utils.analysis_skill_registry"
+    ],
+    "ui.style": [],
+    "ui.analysis_diagnostics": [
+      "core.analysis_agent.support_report"
+    ],
+    "ui.data_preview": [],
+    "ui.chat_log": [
+      "core.learning_memory",
+      "utils.conversation_figures",
+      "utils.turn_logger"
+    ],
+    "ui.sidebar": [
+      "utils.session"
+    ],
+    "ui.agent_entry": [],
+    "ui.analysis_preferences": [],
+    "core.analysis_tool_contract": [],
+    "core.analysis_relationships": [
+      "core.analysis_catalog",
+      "utils.analysis_datasets"
+    ],
+    "core.analysis_databricks": [
+      "core.analysis_load_plan",
+      "core.analysis_sql",
+      "utils.analysis_provenance"
+    ],
+    "core.sql_tools": [
+      "core.sql_utils",
+      "utils.session"
+    ],
+    "core.analysis_runtime_tools": [
+      "core.analysis_agent.operation_binding",
+      "core.analysis_agent.row_preview",
+      "core.analysis_agent.value_list",
+      "core.analysis_catalog",
+      "core.analysis_metadata_discovery",
+      "core.analysis_relationships",
+      "core.analysis_sql",
+      "core.analysis_tool_contract",
+      "core.analysis_tool_discovery",
+      "utils.analysis_aggregate",
+      "utils.analysis_charts",
+      "utils.analysis_compare",
+      "utils.analysis_datasets",
+      "utils.analysis_group_summary",
+      "utils.analysis_grouped_distribution",
+      "utils.analysis_join",
+      "utils.analysis_latest",
+      "utils.analysis_numeric",
+      "utils.analysis_outliers",
+      "utils.analysis_pivot",
+      "utils.analysis_profile",
+      "utils.analysis_provenance",
+      "utils.analysis_remote_latest",
+      "utils.analysis_skill_registry",
+      "utils.analysis_statistics",
+      "utils.analysis_timeseries"
+    ],
+    "core.llm_router": [
+      "utils.perf_monitor"
+    ],
+    "core.analysis_sql": [],
+    "core.analysis_agent.latest_filter_scope": [
+      "core.analysis_catalog",
+      "utils.analysis_latest_filters"
+    ],
+    "core.analysis_agent.tool_focus": [
+      "core.analysis_agent.remote_completion",
+      "core.analysis_catalog"
+    ],
+    "core.analysis_agent.latest_selection": [
+      "core.analysis_agent.eda_contract",
+      "core.analysis_agent.latest_filter_scope",
+      "core.analysis_agent.remote_completion",
+      "core.analysis_catalog",
+      "utils.analysis_image_validation",
+      "utils.analysis_latest_filters"
+    ],
+    "core.analysis_agent.mysql": [
+      "core.analysis_agent.approvals",
+      "core.analysis_load_plan",
+      "core.analysis_sql",
+      "utils.analysis_provenance"
+    ],
+    "core.analysis_agent.operation_binding": [
+      "core.analysis_agent.remote_completion",
+      "core.analysis_catalog"
+    ],
+    "core.analysis_agent.model_errors": [],
+    "core.analysis_agent.eda_contract": [],
+    "core.analysis_agent.progress": [],
+    "core.analysis_agent.databricks": [
+      "core.analysis_agent.approvals",
+      "core.analysis_databricks"
+    ],
+    "core.analysis_agent.progress_guard": [
+      "core.analysis_agent.completion"
+    ],
+    "core.analysis_agent.support_report": [
+      "core.analysis_agent.memory",
+      "core.analysis_agent.remote_completion"
+    ],
+    "core.analysis_agent.tool_repair": [],
+    "core.analysis_agent.approval_intent": [],
+    "core.analysis_agent.conversation_context": [
+      "core.analysis_agent.completion"
+    ],
+    "core.analysis_agent.assets": [
+      "utils.analysis_charts",
+      "utils.analysis_datasets",
+      "utils.analysis_image_validation"
+    ],
+    "core.analysis_agent.remote_completion": [],
+    "core.analysis_agent.model_provider": [],
+    "core.analysis_agent.backends": [
+      "core.analysis_agent.databricks",
+      "core.analysis_agent.mysql",
+      "core.analysis_catalog"
+    ],
+    "core.analysis_agent.model_recovery": [
+      "core.analysis_agent.model_errors"
+    ],
+    "core.analysis_agent.completion_renderers": [
+      "core.analysis_agent.completion",
+      "core.analysis_load_plan",
+      "utils.analysis_datasets",
+      "utils.analysis_image_validation"
+    ],
+    "core.analysis_agent.clarification": [
+      "core.analysis_agent.intent_scope"
+    ],
+    "core.analysis_agent.runtime": [
+      "core.analysis_agent.approval_intent",
+      "core.analysis_agent.approvals",
+      "core.analysis_agent.assets",
+      "core.analysis_agent.diagnostics",
+      "core.analysis_agent.memory",
+      "core.analysis_agent.model_errors",
+      "core.analysis_agent.model_recovery",
+      "core.analysis_agent.policy",
+      "core.analysis_agent.progress",
+      "core.analysis_agent.recovery",
+      "core.analysis_agent.remote_completion",
+      "core.analysis_agent.semantic",
+      "core.analysis_agent.support_report",
+      "core.analysis_agent.tool_focus",
+      "core.analysis_agent.tools",
+      "core.analysis_catalog",
+      "core.analysis_instructions",
+      "core.analysis_load_plan",
+      "core.analysis_runtime_tools",
+      "core.analysis_sql",
+      "core.analysis_tool_contract"
+    ],
+    "core.analysis_agent.source_mentions": [
+      "core.analysis_catalog"
+    ],
+    "core.analysis_agent": [],
+    "core.analysis_agent.policy": [],
+    "core.analysis_agent.failure_messages": [],
+    "core.analysis_agent.tools": [
+      "core.analysis_runtime_tools",
+      "core.analysis_tool_contract",
+      "utils.analysis_datasets"
+    ],
+    "core.analysis_agent.numeric_scope": [],
+    "core.analysis_agent.diagnostics": [
+      "core.analysis_agent.model_errors"
+    ],
+    "core.analysis_agent.row_preview": [
+      "core.analysis_catalog",
+      "core.analysis_load_plan",
+      "utils.analysis_datasets",
+      "utils.analysis_provenance"
+    ],
+    "core.analysis_agent.intent_scope": [
+      "core.analysis_agent.numeric_scope",
+      "core.analysis_agent.source_mentions",
+      "core.analysis_catalog",
+      "utils.analysis_datasets",
+      "utils.analysis_provenance"
+    ],
+    "core.analysis_agent.memory": [
+      "core.analysis_agent.remote_completion",
+      "core.analysis_catalog"
+    ],
+    "core.analysis_agent.completion": [
+      "core.analysis_agent",
+      "core.analysis_agent.completion_renderers",
+      "core.analysis_agent.latest_selection",
+      "core.analysis_agent.remote_completion",
+      "core.analysis_agent.row_preview",
+      "core.analysis_agent.value_list"
+    ],
+    "core.analysis_agent.approvals": [
+      "core.analysis_load_plan",
+      "core.analysis_tool_contract"
+    ],
+    "core.analysis_agent.recovery": [
+      "core.analysis_agent",
+      "core.analysis_agent.chart_grouping",
+      "core.analysis_agent.clarification",
+      "core.analysis_agent.completion",
+      "core.analysis_agent.conversation_context",
+      "core.analysis_agent.eda_contract",
+      "core.analysis_agent.failure_messages",
+      "core.analysis_agent.intent_scope",
+      "core.analysis_agent.latest_filter_scope",
+      "core.analysis_agent.latest_selection",
+      "core.analysis_agent.memory",
+      "core.analysis_agent.numeric_scope",
+      "core.analysis_agent.operation_binding",
+      "core.analysis_agent.progress_guard",
+      "core.analysis_agent.remote_completion",
+      "core.analysis_agent.row_preview",
+      "core.analysis_agent.semantic",
+      "core.analysis_agent.source_mentions",
+      "core.analysis_agent.sql_preflight",
+      "core.analysis_agent.tool_repair",
+      "core.analysis_agent.value_list",
+      "core.analysis_catalog",
+      "core.analysis_load_plan",
+      "core.analysis_relationships",
+      "core.analysis_sql",
+      "utils.analysis_charts",
+      "utils.analysis_datasets",
+      "utils.analysis_grouped_distribution",
+      "utils.analysis_image_validation",
+      "utils.analysis_latest_filters",
+      "utils.analysis_pivot",
+      "utils.analysis_provenance"
+    ],
+    "core.analysis_agent.semantic": [
+      "core.analysis_catalog",
+      "core.analysis_metadata_discovery"
+    ],
+    "core.analysis_agent.value_list": [
+      "core.analysis_agent.intent_scope",
+      "core.analysis_catalog",
+      "core.analysis_sql",
+      "core.analysis_tool_contract",
+      "utils.analysis_datasets",
+      "utils.analysis_latest_filters",
+      "utils.analysis_provenance"
+    ],
+    "core.analysis_agent.chart_grouping": [
+      "core.analysis_agent.eda_contract",
+      "core.analysis_agent.numeric_scope",
+      "utils.analysis_provenance"
+    ],
+    "core.analysis_agent.sql_preflight": [
+      "core.analysis_catalog",
+      "core.analysis_sql"
+    ],
+    "core.analysis_agent.storage_policy": [],
+    "utils.analysis_latest_sql": [
+      "utils.analysis_datasets",
+      "utils.analysis_latest_filters"
+    ],
+    "utils.analysis_group_streaming": [
+      "utils.analysis_datasets",
+      "utils.analysis_group_summary"
+    ],
+    "utils.chat_turn": [],
+    "utils.agent_routing": [],
+    "utils.analysis_outliers": [
+      "utils.analysis_datasets"
+    ],
+    "utils.analysis_charts": [
+      "utils.analysis_datasets",
+      "utils.analysis_provenance"
+    ],
+    "utils.analysis_skill_registry": [],
+    "utils.analysis_aggregate": [
+      "utils.analysis_datasets"
+    ],
+    "utils.data_context": [],
+    "utils.analysis_profile": [],
+    "utils.agent_output": [],
+    "utils.analysis_pivot": [
+      "utils.analysis_datasets"
+    ],
+    "utils.controlled_visualization": [],
+    "utils.prompt_help": [
+      "utils.config"
+    ],
+    "utils.sql_text": [],
+    "utils.conversation_figures": [],
+    "utils.turn_logger": [
+      "modules.dataload.databricks_sql_loader",
+      "utils.session"
+    ],
+    "utils.runtime_trace": [],
+    "utils.analysis_remote_latest": [
+      "core.analysis_catalog",
+      "core.analysis_sql",
+      "utils.analysis_charts",
+      "utils.analysis_datasets",
+      "utils.analysis_latest_filters"
+    ],
+    "utils.chatbot_plan": [
+      "utils.config",
+      "utils.eda_validation",
+      "utils.table_context"
+    ],
+    "utils.analysis_latest": [
+      "utils.analysis_charts",
+      "utils.analysis_datasets",
+      "utils.analysis_latest_filters",
+      "utils.analysis_latest_sql"
+    ],
+    "utils.eda_validation": [
+      "utils.table_context"
+    ],
+    "utils": [],
+    "utils.analysis_group_summary": [
+      "utils.analysis_datasets",
+      "utils.analysis_group_streaming"
+    ],
+    "utils.session": [
+      "modules.dataload.databricks_sql_loader",
+      "utils.config",
+      "utils.data_context",
+      "utils.table_context",
+      "utils.table_training_sql"
+    ],
+    "utils.analysis_latest_filters": [
+      "utils.analysis_datasets"
+    ],
+    "utils.analysis_grouped_distribution": [
+      "core.analysis_sql",
+      "utils.analysis_charts",
+      "utils.analysis_datasets",
+      "utils.analysis_provenance"
+    ],
+    "utils.table_context": [],
+    "utils.analysis_join": [
+      "utils.analysis_datasets"
+    ],
+    "utils.table_training_sql": [],
+    "utils.analysis_numeric": [
+      "utils.analysis_datasets"
+    ],
+    "utils.analysis_timeseries": [
+      "utils.analysis_datasets"
+    ],
+    "utils.config": [],
+    "utils.analysis_image_validation": [],
+    "utils.analysis_datasets": [
+      "utils.analysis_pivot"
+    ],
+    "utils.analysis_statistics": [
+      "utils.analysis_datasets"
+    ],
+    "utils.analysis_compare": [
+      "utils.analysis_datasets"
+    ],
+    "utils.perf_monitor": [
+      "core.learning_memory"
+    ],
+    "utils.analysis_provenance": [
+      "utils.analysis_datasets"
+    ],
+    "modules.dataload.databricks_sql_loader": [
+      "app_io.databricks"
+    ],
+    "modules.dataload": [],
+    "modules": []
+  },
+  "active_entrypoint_lexical_closure": {
+    "roots": [
+      "main",
+      "pages.Telly",
+      "ui.analysis_page"
+    ],
+    "modules": [
+      "core.analysis_agent",
+      "core.analysis_agent.approval_intent",
+      "core.analysis_agent.approvals",
+      "core.analysis_agent.assets",
+      "core.analysis_agent.backends",
+      "core.analysis_agent.chart_grouping",
+      "core.analysis_agent.clarification",
+      "core.analysis_agent.completion",
+      "core.analysis_agent.completion_renderers",
+      "core.analysis_agent.conversation_context",
+      "core.analysis_agent.databricks",
+      "core.analysis_agent.diagnostics",
+      "core.analysis_agent.eda_contract",
+      "core.analysis_agent.failure_messages",
+      "core.analysis_agent.intent_scope",
+      "core.analysis_agent.latest_filter_scope",
+      "core.analysis_agent.latest_selection",
+      "core.analysis_agent.memory",
+      "core.analysis_agent.model_errors",
+      "core.analysis_agent.model_provider",
+      "core.analysis_agent.model_recovery",
+      "core.analysis_agent.mysql",
+      "core.analysis_agent.numeric_scope",
+      "core.analysis_agent.operation_binding",
+      "core.analysis_agent.policy",
+      "core.analysis_agent.progress",
+      "core.analysis_agent.progress_guard",
+      "core.analysis_agent.recovery",
+      "core.analysis_agent.remote_completion",
+      "core.analysis_agent.row_preview",
+      "core.analysis_agent.runtime",
+      "core.analysis_agent.semantic",
+      "core.analysis_agent.source_mentions",
+      "core.analysis_agent.sql_preflight",
+      "core.analysis_agent.support_report",
+      "core.analysis_agent.tool_focus",
+      "core.analysis_agent.tool_repair",
+      "core.analysis_agent.tools",
+      "core.analysis_agent.value_list",
+      "core.analysis_catalog",
+      "core.analysis_databricks",
+      "core.analysis_instructions",
+      "core.analysis_load_plan",
+      "core.analysis_metadata_discovery",
+      "core.analysis_relationships",
+      "core.analysis_runtime_tools",
+      "core.analysis_sql",
+      "core.analysis_tool_contract",
+      "core.analysis_tool_discovery",
+      "main",
+      "pages.Telly",
+      "ui.agent_entry",
+      "ui.analysis_chart_delivery",
+      "ui.analysis_diagnostics",
+      "ui.analysis_page",
+      "ui.analysis_preferences",
+      "ui.analysis_text",
+      "utils.analysis_aggregate",
+      "utils.analysis_charts",
+      "utils.analysis_compare",
+      "utils.analysis_datasets",
+      "utils.analysis_group_streaming",
+      "utils.analysis_group_summary",
+      "utils.analysis_grouped_distribution",
+      "utils.analysis_image_validation",
+      "utils.analysis_join",
+      "utils.analysis_latest",
+      "utils.analysis_latest_filters",
+      "utils.analysis_latest_sql",
+      "utils.analysis_numeric",
+      "utils.analysis_outliers",
+      "utils.analysis_pivot",
+      "utils.analysis_profile",
+      "utils.analysis_provenance",
+      "utils.analysis_remote_latest",
+      "utils.analysis_skill_registry",
+      "utils.analysis_statistics",
+      "utils.analysis_timeseries",
+      "utils.table_context"
+    ],
+    "file_count": 79,
+    "lines": 17536,
+    "note": "Conservative lexical reachability includes imports inside functions and may include optional paths; runpy entrypoints added explicitly."
+  },
+  "recovery_literal_current_keys": {
+    "count": 153,
+    "keys": [
+      "_new_model_failure_seconds",
+      "artifact_ids",
+      "attempts",
+      "calculation",
+      "catalog_discovery_question",
+      "catalog_discovery_schema",
+      "catalog_discovery_source",
+      "categorical_distribution",
+      "chart",
+      "chart_cumulative",
+      "chart_group_spec",
+      "chart_spec_requested",
+      "columns",
+      "confirmed_analysis",
+      "count_rate_evidence",
+      "count_rate_group_column",
+      "count_rate_layout",
+      "current_result_only",
+      "data_load",
+      "discovery_plan",
+      "evidence_ids",
+      "expected_load_query",
+      "expected_load_source",
+      "explanation_only",
+      "explicit_columns",
+      "failed",
+      "failed_signatures",
+      "frequency_column",
+      "fresh_source_required",
+      "group_summary_columns",
+      "group_summary_conditions",
+      "group_summary_evidence",
+      "group_summary_metrics",
+      "group_summary_requested",
+      "group_summary_sort",
+      "histogram_bins",
+      "join",
+      "join_evidence",
+      "join_how",
+      "join_query_evidence",
+      "join_relationship_basis",
+      "kind",
+      "latest_error_code",
+      "latest_per_key_spec",
+      "latest_question",
+      "latest_selection_evidence",
+      "load_evidence_id",
+      "loaded_dataset",
+      "local_continuation",
+      "metadata_evidence",
+      "metadata_kind",
+      "metadata_query_plan",
+      "metadata_source_question",
+      "model_calls",
+      "model_seconds",
+      "model_started_at",
+      "named_measure_columns",
+      "numeric_preparation",
+      "numeric_prepared_dataset",
+      "numeric_scope_version",
+      "operation_binding",
+      "operation_pending",
+      "operations",
+      "outlier_aggregate_evidence",
+      "outlier_aggregate_mode",
+      "outlier_aggregate_requested",
+      "outlier_column",
+      "outlier_dataset",
+      "outlier_evidence",
+      "outlier_followup",
+      "outlier_group_column",
+      "outlier_metric_aggregation",
+      "outlier_metric_column",
+      "outlier_selection",
+      "outlier_spec",
+      "outlier_top_n",
+      "pending_clarification",
+      "pivot_aggregation",
+      "pivot_column_columns",
+      "pivot_conditions",
+      "pivot_derived_bins",
+      "pivot_evidence",
+      "pivot_index_columns",
+      "pivot_margins",
+      "pivot_margins_name",
+      "pivot_requested",
+      "pivot_sort",
+      "pivot_success_value",
+      "pivot_value_column",
+      "plan",
+      "plan_call",
+      "preview_evidence",
+      "preview_limit",
+      "previous_operation",
+      "previous_scope",
+      "processed",
+      "profile_evidence",
+      "profile_kind",
+      "progress_notified",
+      "progress_rejected",
+      "proposal_error",
+      "query_seen",
+      "rejected_preflight_signatures",
+      "rejected_scope_signatures",
+      "remote_latest_plan",
+      "remote_latest_refresh",
+      "remote_latest_reused",
+      "remote_query_evidence",
+      "remote_query_ids",
+      "remote_rejected",
+      "remote_result_requested",
+      "repair_notified",
+      "repair_rejected",
+      "request_id",
+      "request_started_at",
+      "request_text",
+      "requested_join",
+      "requested_result_rows",
+      "required_columns",
+      "required_sources",
+      "row_preview_plan",
+      "row_preview_spec",
+      "scalar_grouping",
+      "schema_probe_dtype_unknown",
+      "scope",
+      "scope_error",
+      "scope_notified",
+      "selection_at_confirmation",
+      "semantic_binding",
+      "sent_calls",
+      "statistical_evidence",
+      "statistical_kind",
+      "status",
+      "stop_reason",
+      "superseded_histogram_plan",
+      "table_preview_evidence",
+      "target_inherited_from",
+      "time_series_aggregation",
+      "time_series_dataset",
+      "time_series_evidence",
+      "time_series_frequency",
+      "time_series_gap_policy",
+      "time_series_timezone",
+      "tool_failures",
+      "unverified_execution_claim",
+      "value_list_evidence",
+      "value_list_plan",
+      "value_list_refresh",
+      "value_list_requested",
+      "whole_row_count",
+      "winsor_column",
+      "winsor_evidence",
+      "winsor_spec"
+    ],
+    "note": "Literal access keys only, not a complete schema; no assertion that all are simultaneously populated."
+  }
+}

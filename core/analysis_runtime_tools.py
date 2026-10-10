@@ -48,7 +48,7 @@ def build_analysis_tools(context: AnalysisToolContext) -> list[ToolDefinition]:
     def search_analysis_tools(query, limit=3):
         from core.analysis_tool_discovery import discover_tools
         return discover_tools(definitions, registry.list(), query, limit=limit,
-                              allowed_names=context.allowed_tool_names)
+                              allowed_names=context.allowed_tool_names, contracts=context.registered_contracts)
 
     def catalog():
         return compact_catalog({"datasets": [dict(display_name=f"결과 {index}", **asdict(info)) for index,info in enumerate(datasets.metadata.values(),1)],
@@ -63,13 +63,13 @@ def build_analysis_tools(context: AnalysisToolContext) -> list[ToolDefinition]:
         from core.analysis_agent.value_list import prepare
         return prepare(context,source,column,conditions,current_result_only,fresh)
 
-    def prepare_row_preview(source,limit=10,where_sql='',current_result_only=False,fresh=False):
+    def prepare_row_preview(source,limit=10,where_sql='',current_result_only=False,fresh=False,columns=None):
         from core.analysis_agent.row_preview import prepare
-        return prepare(context,source,limit,where_sql,current_result_only,fresh)
+        return prepare(context,source,limit,where_sql,current_result_only,fresh,columns)
 
-    def prepare_source_scatter(source,x,y,fresh=False,dataset_id=''):
+    def prepare_source_scatter(source,x,y,fresh=False,dataset_id='',where_sql=''):
         from core.analysis_agent.source_scatter import prepare
-        return prepare(context,source,x,y,fresh,dataset_id)
+        return prepare(context,source,x,y,fresh,dataset_id,where_sql)
 
     def inspect_column_definitions(table):
         from core.analysis_metadata_discovery import inspect_column_definitions as inspect
@@ -556,15 +556,28 @@ def build_analysis_tools(context: AnalysisToolContext) -> list[ToolDefinition]:
         for identifier in tree.find_all(exp.Identifier):
             identifier.set('quoted', False)
             identifier.set('this', identifier.name.casefold())
+        where = tree.args.get('where')
+        if where is not None:
+            def terms(node):
+                if isinstance(node, exp.Paren):return terms(node.this)
+                if isinstance(node, exp.And):return terms(node.this)+terms(node.expression)
+                return [node]
+            # AND order is not a new population. Keep OR subtrees intact and
+            # compare every other SELECT/GROUP/LIMIT clause without alteration.
+            ordered=sorted(terms(where.this),key=lambda n:n.sql(dialect=context.sql_dialect))
+            tree.set('where',exp.Where(this=exp.and_(*ordered)))
         return tree.sql(dialect=context.sql_dialect)
 
     def prepare_histogram(source, column, where_sql="", fresh_source_required=False,
-                          current_result_only=False, dataset_id="", categorical=False, category="", bins=8):
+                          current_result_only=False, dataset_id="", categorical=False, category="", bins=8,
+                          stacked=False, legend=False, palette='default'):
         if category:
             if categorical:raise ValueError("그룹별 수치 histogram만 지원합니다.")
             from utils.analysis_grouped_distribution import prepare
             return prepare(context,source,column,category,where_sql,bins,normalized_query,
-                analyze_local,card_entry,source_key,current_result_only,fresh_source_required)
+                analyze_local,card_entry,source_key,current_result_only,fresh_source_required,
+                stacked=stacked,legend=legend,palette=palette)
+        if stacked and not categorical:raise ValueError('수치 누적 막대는 그룹 컬럼이 필요합니다.')
         identity = source_key(source)
         matches=[t for t in context.reference_context if source_key(t.get('table','')) == identity and identity]
         metadata = datasets.metadata
@@ -645,7 +658,8 @@ def build_analysis_tools(context: AnalysisToolContext) -> list[ToolDefinition]:
             raise ValueError('필터에는 다른 조회나 테이블을 포함할 수 없습니다.')
         plan = {'source':source,'query':query,
             'reason':f'{column} 히스토그램에 필요한 값별 빈도를 조회합니다. 원본 행 전체는 가져오지 않습니다.',
-            'value_column':column,'weight_column':'__frequency'}
+            'value_column':column,'weight_column':'__frequency',
+            'stacked':stacked,'legend':legend,'palette':palette}
         if not categorical:plan['bins']=bins
         if categorical:plan['kind']='bar'
         scope_tree = validate_query(f'SELECT * FROM {table}'+(' WHERE '+where_sql if where_sql.strip() else ''),dialect=context.sql_dialect)
@@ -674,10 +688,13 @@ def build_analysis_tools(context: AnalysisToolContext) -> list[ToolDefinition]:
                          if card.dataset_id == info.id and card.kind == ('bar' if categorical else 'histogram')
                          and card.columns == (column,) and (categorical or card.render_spec.get('bins')==bins)
                          and not card.render_spec.get('y_limits')
+                         and card.render_spec.get('legend',False)==legend
+                         and card.render_spec.get('stacked',False)==stacked
+                         and card.render_spec.get('palette','default')==palette
                          and card.image.startswith(b'\x89PNG\r\n\x1a\n')), None)
             if card is None:
                 card = histogram_from_counts(datasets, info.id, column, '__frequency',categorical=categorical,
-                                             bins=None if categorical else bins)
+                                             bins=None if categorical else bins,legend=legend,stacked=stacked,palette=palette)
                 context.artifacts[card.id] = card
             return {'status':'ready','histogram_plan':plan,'loaded_dataset':info.id,
                     'cards':[card_entry(card)],'reused':True}
@@ -703,7 +720,12 @@ def build_analysis_tools(context: AnalysisToolContext) -> list[ToolDefinition]:
                     if filtered['status'] != 'ready':
                         return filtered
                     chart_info = datasets.metadata[filtered['dataset']['id']]
-                previews=recommend_charts(datasets,chart_info.id,[column])
+                if categorical and chart_info.grain == 'raw' and not chart_info.aggregation:
+                    from utils.analysis_retained_distribution import categorical_counts
+                    previews=[categorical_counts(datasets,chart_info.id,column,
+                        legend=legend,stacked=stacked,palette=palette)]
+                else:
+                    previews=recommend_charts(datasets,chart_info.id,[column])
                 card=next((item for item in previews if item.kind == ('bar' if categorical else 'histogram')
                     and item.columns == (column,)),None)
                 if card is None:
@@ -757,15 +779,16 @@ def build_analysis_tools(context: AnalysisToolContext) -> list[ToolDefinition]:
                 return ready(datasets.metadata[result['dataset']['id']])
         return {'status':'planned','histogram_plan':plan}
 
-    def render_histogram(dataset_id, value_column, weight_column, categorical=False, category="", bins=8, y_max=None):
+    def render_histogram(dataset_id, value_column, weight_column, categorical=False, category="", bins=8, y_max=None,
+                         stacked=False, legend=False, palette='default'):
         if category:
             if y_max is not None:raise ValueError('그룹 histogram의 Y축 범위 수정은 아직 지원하지 않습니다.')
             if categorical:raise ValueError("그룹별 수치 histogram만 지원합니다.")
             from utils.analysis_grouped_distribution import render
-            card=render(datasets,dataset_id,value_column,category,weight_column,bins)
+            card=render(datasets,dataset_id,value_column,category,weight_column,bins,stacked=stacked,legend=legend,palette=palette)
         else:
             card = histogram_from_counts(datasets, dataset_id, value_column, weight_column,categorical=categorical,y_max=y_max,
-                                         bins=None if categorical else bins)
+                                         bins=None if categorical else bins,legend=legend,stacked=stacked,palette=palette)
         context.artifacts[card.id] = card
         return {'status':'ready', 'cards':[card_entry(card)]}
 
@@ -784,6 +807,7 @@ def build_analysis_tools(context: AnalysisToolContext) -> list[ToolDefinition]:
             COMMON_TOOL_RESULT_SCHEMA)
 
     string = {"type": "string"}
+    condition_ops = ["eq", "ne", "gt", "ge", "lt", "le", "in", "not_in", "is_null", "not_null"]
     definitions = [
         tool('inspect_value_list','실제 컬럼의 고유값 목록을 최대 100개 확인합니다. 저장된 동일 조건의 완료 조회 또는 선택 원본을 우선 재사용하며 직접 원격 조회하지 않습니다. value_list_plan은 query_databricks로 실행합니다. 고유값 개수·빈도 계산과는 별도 기능입니다.',
              {'source':string,'column':string,'conditions':{'type':'array','items':{'type':'object'}},
@@ -798,10 +822,11 @@ def build_analysis_tools(context: AnalysisToolContext) -> list[ToolDefinition]:
              {"table":string}, ["table"], inspect_table_relationships),
         tool("prepare_row_preview", "테이블의 1~200행을 표로 미리봅니다. 검증된 보유 raw 데이터의 bounded prefix를 우선 재사용하고 부족하면 SELECT * LIMIT 조회 계획을 반환합니다. 집계를 원본으로 간주하지 않고 기존 분석 기준을 변경하지 않습니다. row_preview_plan은 query_databricks로 실행하세요.",
              {"source":string,"limit":{"type":"integer","minimum":1,"maximum":200},
-              "where_sql":string,"current_result_only":{"type":"boolean"},"fresh":{"type":"boolean"}},
+              "where_sql":string,"current_result_only":{"type":"boolean"},"fresh":{"type":"boolean"},
+              "columns":{"type":"array","items":string,"maxItems":32,"uniqueItems":True}},
              ["source"],prepare_row_preview),
         tool("prepare_source_scatter", "전체 원본의 두 수치 축을 정확한 좌표별 빈도로 압축하여 산점도 PNG를 만듭니다. 표본/구간 집계가 아니며 NULL 좌표는 제외합니다. 실제 스키마와 완료된 조회 receipt만 사용합니다. source_scatter_plan은 query_databricks로 실행 후 반환된 dataset_id로 다시 호출하세요. 잘린 결과는 전체 차트로 인정하지 않습니다.",
-             {"source":string,"x":string,"y":string,"fresh":{"type":"boolean"},"dataset_id":string},
+             {"source":string,"x":string,"y":string,"fresh":{"type":"boolean"},"dataset_id":string,"where_sql":string},
              ["source","x","y"],prepare_source_scatter),
         tool("inspect_column_definitions", f"업무 의미가 부족하면 확인된 {namespace}의 저장된 컬럼 설명을 읽습니다. 없으면 {metadata_catalog}.columns의 정확한 조회 계획만 반환합니다. metadata_plan을 query_databricks로 실행해 실제 결과를 확인하세요. 원본 행은 로딩하지 않습니다.",
              {"table":string}, ["table"], inspect_column_definitions),
@@ -832,7 +857,7 @@ def build_analysis_tools(context: AnalysisToolContext) -> list[ToolDefinition]:
         tool("use_dataset", "원본 범위에 대한 raw 데이터 충분성을 검사하고 현재 결과가 부족하면 보존된 부모·같은 버전의 registry 데이터를 찾아 로컬 필터링합니다. needs_data는 이 탐색 후에만 반환합니다. conditions는 AND입니다. OR를 AND로 바꾸지 마세요. current_result_only는 사용자가 현재 결과 자체만 분석할 때 사용합니다.",
              {"dataset_id": string, "columns": {"type": "array", "items": string},
               "conditions": {"type": "array", "items": {"type": "object",
-                  "properties": {"column": string, "op": {"type": "string", "enum": ["eq", "ne", "gt", "ge", "lt", "le", "in"]},
+                  "properties": {"column": string, "op": {"type": "string", "enum": condition_ops},
                                  "value": {}}, "required": ["column", "op", "value"], "additionalProperties": False}},
               "current_result_only": {"type": "boolean"}}, ["dataset_id", "columns"], use_dataset),
         tool("join_datasets", "로딩된 두 raw 또는 명시적 aggregate dataset을 1~4개 key로 조인합니다. 실행 전에 key 자료형, NULL, 중복도, cardinality, 예상 행 수와 확장률을 검사합니다. many-to-many 또는 운영 한도 초과는 실행하지 않으며, 성공 결과는 두 부모 dataset ID와 snapshot lineage를 보존합니다. 조인 후 계산에는 반환된 dataset_id와 current_result_only=true를 사용하세요.",
@@ -905,7 +930,7 @@ def build_analysis_tools(context: AnalysisToolContext) -> list[ToolDefinition]:
               "value_column":string,
               "success_value":{},
               "conditions":{"type":"array","items":{"type":"object",
-                  "properties":{"column":string,"op":{"type":"string","enum":["eq","ne","gt","ge","lt","le","in"]},"value":{}},
+                  "properties":{"column":string,"op":{"type":"string","enum":condition_ops},"value":{}},
                   "required":["column","op","value"],"additionalProperties":False}},
               "derived_bins":{"type":"array","maxItems":2,"items":{"type":"object",
                   "properties":{"source_column":string,"output_column":string,
@@ -926,12 +951,12 @@ def build_analysis_tools(context: AnalysisToolContext) -> list[ToolDefinition]:
                       "aggregation":{"type":"string","enum":["count","mean","sum","median","min","max","conditional_count","conditional_percent","conditional_mean"]},
                       "value_column":string,
                       "condition":{"type":"object","properties":{"column":string,
-                          "op":{"type":"string","enum":["eq","ne","gt","ge","lt","le","in"]},"value":{}},
+                          "op":{"type":"string","enum":condition_ops},"value":{}},
                           "required":["column","op","value"],"additionalProperties":False},
                       "empty_value":{"type":"number"}},
                   "required":["name","aggregation"],"additionalProperties":False}},
               "conditions":{"type":"array","items":{"type":"object",
-                  "properties":{"column":string,"op":{"type":"string","enum":["eq","ne","gt","ge","lt","le","in"]},"value":{}},
+                  "properties":{"column":string,"op":{"type":"string","enum":condition_ops},"value":{}},
                   "required":["column","op","value"],"additionalProperties":False}},
               "sort":{"type":"string","enum":["group_ascending","group_descending","metric_ascending","metric_descending","none"]},
               "sort_by": string,
@@ -953,7 +978,7 @@ def build_analysis_tools(context: AnalysisToolContext) -> list[ToolDefinition]:
              {"dataset_id":string,"key_columns":{"type":"array","items":string,"minItems":1},
               "order_column":string,"value_column":string,"categorical":{"type":"boolean"},
               "null_policy":{"type":"string","enum":["reject","drop_before_selection"]},
-              "conditions":{"type":"array","items":{"type":"object","properties":{"column":string,"op":{"type":"string","enum":["eq","ne","gt","ge","lt","le","in"]},"value":{}},"required":["column","op","value"]}},
+              "conditions":{"type":"array","items":{"type":"object","properties":{"column":string,"op":{"type":"string","enum":condition_ops},"value":{}},"required":["column","op","value"]}},
               "filter_stage":{"type":"string","enum":["","before_selection","after_selection"]},
               "tie_break_columns":{"type":"array","items":string},"bins":{"type":"integer","minimum":2,"maximum":100}},
              ["dataset_id","key_columns","order_column","value_column"],analyze_latest_distribution),
@@ -961,7 +986,7 @@ def build_analysis_tools(context: AnalysisToolContext) -> list[ToolDefinition]:
              {"source":string,"key_columns":{"type":"array","items":string,"minItems":1,"maxItems":4},
               "order_column":string,"value_column":string,"result_dataset_id":string,
               "null_policy":{"type":"string","enum":["reject","drop_before_selection"]},
-              "conditions":{"type":"array","items":{"type":"object","properties":{"column":string,"op":{"type":"string","enum":["eq","ne","gt","ge","lt","le","in"]},"value":{}},"required":["column","op","value"]}},
+              "conditions":{"type":"array","items":{"type":"object","properties":{"column":string,"op":{"type":"string","enum":condition_ops},"value":{}},"required":["column","op","value"]}},
               "filter_stage":{"type":"string","enum":["","before_selection","after_selection"]},
               "tie_break_columns":{"type":"array","items":string},
               "categorical":{"type":"boolean"},"bins":{"type":"integer","minimum":2,"maximum":100}},
@@ -1001,17 +1026,19 @@ def build_analysis_tools(context: AnalysisToolContext) -> list[ToolDefinition]:
              render_count_rate_chart),
         tool("prepare_histogram", "보유한 완전한 빈도·원본 데이터와 이미지를 먼저 재사용하여 히스토그램을 만듭니다. 여러 원본·버전·분기가 있으면 dataset_id로 사용자가 선택한 데이터의 계보를 지정하세요. 명시하지 않아 모호하면 다른 결과를 임의 선택하지 않습니다. source는 정확한 테이블명, column은 실제 분석 컬럼, 범주형 분포는 categorical=true로 값별 COUNT(*) 막대를 만듭니다. where_sql은 유지할 사용자 필터 SQL입니다. 최신 데이터 요청에만 fresh_source_required=true를 사용합니다. category를 지정하면 그 컬럼의 그룹별 빈도와 색상·범례를 계획합니다. 직접 원격 조회하지 않습니다.",
              {"source":string,"column":string,"where_sql":string,"dataset_id":string,"category":string,"bins":{"type":"integer","minimum":2,"maximum":100},
-              "current_result_only":{"type":"boolean"},
+              "current_result_only":{"type":"boolean"},"stacked":{"type":"boolean"},"legend":{"type":"boolean"},"palette":{"type":"string","enum":["default","high_contrast"]},
               "fresh_source_required":{"type":"boolean"},"categorical":{"type":"boolean"}},["source","column"],prepare_histogram),
         tool("render_histogram", "완전한 값별 빈도 집계의 히스토그램을 생성합니다. value_column은 실제 값, weight_column은 해당 값의 COUNT(*) 빈도입니다. categorical=true이면 범주별 빈도 막대, false이면 수치 히스토그램입니다. category를 지정하면 수치·그룹별 COUNT(*)에서 공통 bin과 색상·범례를 렌더링합니다. y_max는 그룹 없는 분포의 Y축 표시 상한만 바꾸며 실제 빈도는 유지합니다. 원본 행이나 빈도 아닌 집계값을 넣지 마세요.",
-            {"dataset_id":string,"value_column":string,"weight_column":string,"categorical":{"type":"boolean"},"category":string,"bins":{"type":"integer","minimum":2,"maximum":100},"y_max":{"type":"number","exclusiveMinimum":0}},
+            {"dataset_id":string,"value_column":string,"weight_column":string,"categorical":{"type":"boolean"},"category":string,"bins":{"type":"integer","minimum":2,"maximum":100},"y_max":{"type":"number","exclusiveMinimum":0},"stacked":{"type":"boolean"},"legend":{"type":"boolean"},"palette":{"type":"string","enum":["default","high_contrast"]}},
              ["dataset_id","value_column","weight_column"],render_histogram),
         tool("show_chart", "저장된 검증 완료 차트 이미지를 다시 표시합니다. 새 계산이나 원격 조회를 수행하지 않습니다.",
              {"chart_id":string}, ["chart_id"], show_chart),
         tool("local_analysis_sql", "보유 dataset을 data라는 로컬 테이블로 SELECT 계산합니다. 현재 결과가 부족하면 보존된 부모·같은 버전의 registry 원본을 먼저 탐색합니다. requested_conditions는 요청 모집단의 AND 조건이며 SQL 전에 실제 적용합니다. 생략하면 SQL WHERE의 범위(WHERE가 없으면 전체 원본)를 요구합니다. 이전 필터 결과를 이어서 분석할 때도 요청 조건을 명시하세요. current_result_only는 사용자가 현재 결과 자체만 분석할 때만 true로 지정합니다.",
              {"dataset_id": string, "query": string, "current_result_only": {"type": "boolean"},
               "requested_conditions": {"type":"array","items":{"type":"object",
-                  "properties":{"column":string,"op":{"type":"string","enum":["eq","ne","gt","ge","lt","le","in"]},"value":{}},
+                  "properties":{"column":string,"op":{"type":"string","enum":condition_ops},"value":{}},
                   "required":["column","op","value"],"additionalProperties":False}}}, ["dataset_id", "query"], analyze_local),
     ]
+    from core.analysis_agent.analysis_extensions import build_extension_tools
+    definitions.extend(build_extension_tools(context))
     return definitions

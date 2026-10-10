@@ -1,0 +1,177 @@
+[
+  {
+    "grids": 0,
+    "images": 0,
+    "role": "Chat message from user",
+    "tables": 0,
+    "text": "지금 연결된 DB에서 분석 가능한 테이블 이름들을 알려줄래?"
+  },
+  {
+    "grids": 0,
+    "images": 0,
+    "role": "Chat message from assistant",
+    "tables": 1,
+    "text": "조회가 완료되었습니다. 출처: information_schema.tables · 저장된 결과 7행.\n\nTABLE_SCHEMA\tTABLE_NAME\tTABLE_TYPE\nteleai_default\t_tianchi_ssd_shared300k_import\tBASE TABLE\nteleai_default\talibaba_ssd\tBASE TABLE\nteleai_default\tbank_loan\tBASE TABLE\nteleai_default\terror_test\tBASE TABLE\nteleai_default\tncr_ride\tBASE TABLE\nteleai_default\tstormtrooper\tBASE TABLE\nteleai_default\ttitanic\tBASE TABLE\n\n범위: 전체 범위 미확인. 실행한 SQL의 조건과 행 제한이 적용된 결과입니다."
+  },
+  {
+    "grids": 0,
+    "images": 0,
+    "role": "Chat message from user",
+    "tables": 0,
+    "text": "은행 대출 데이터 bank_loan에는 어떤 컬럼이 들어 있어?"
+  },
+  {
+    "grids": 0,
+    "images": 0,
+    "role": "Chat message from assistant",
+    "tables": 0,
+    "text": "확인된 스키마 스냅샷 기준으로 teleai_default.bank_loan에는 컬럼이 18개 있습니다. id, age, job, marital, education, default, balance, housing, loan, contact, day, month, duration, campaign, pdays, previous, poutcome, y"
+  },
+  {
+    "grids": 0,
+    "images": 0,
+    "role": "Chat message from user",
+    "tables": 0,
+    "text": "여기 education에 들어있는 값 종류를 전부 알려줘."
+  },
+  {
+    "grids": 0,
+    "images": 0,
+    "role": "Chat message from assistant",
+    "tables": 0,
+    "text": "teleai_default.bank_loan의 education 값 목록입니다.\n\nprimary\nsecondary\ntertiary\nunknown\n\n범위: 모집단 조건의 고유값. 고유값 4개를 모두 표시했습니다. 긴 문자열은 256자로 제한하여 표시합니다.\n\n원격 조회가 완료되어 결과 4행을 저장했습니다."
+  },
+  {
+    "grids": 0,
+    "images": 0,
+    "role": "Chat message from user",
+    "tables": 0,
+    "text": "방금 확인한 값들이 얼마나 많은지 막대 그림으로 보여줘."
+  },
+  {
+    "grids": 0,
+    "images": 1,
+    "role": "Chat message from assistant",
+    "tables": 0,
+    "text": "education 분포\n\n범주별 실제 COUNT(*) 빈도를 표시합니다. 결측은 제외했습니다. · 빈도 합계 750,000 · complete · SELECT education, COUNT(*) AS __frequency FROM teleai_default.bank_loan WHERE education IS NOT NULL GROUP BY education\n\n이 차트 선택"
+  },
+  {
+    "grids": 0,
+    "images": 0,
+    "role": "Chat message from assistant",
+    "tables": 0,
+    "text": "원격 조회가 완료되어 결과 4행을 저장했습니다.\n\neducation 분포 이미지를 생성했습니다. 분석 범위: 빈도 합계 750,000 · complete · SELECT education, COUNT(*) AS __frequency FROM teleai_default.bank_loan WHERE education IS NOT NULL GROUP BY education"
+  },
+  {
+    "grids": 0,
+    "images": 0,
+    "role": "Chat message from user",
+    "tables": 0,
+    "text": "education이 primary인 사람 중 나이가 30세 이상 40세 이하인 사람들의 age 분포를 그려줘."
+  },
+  {
+    "grids": 0,
+    "images": 1,
+    "role": "Chat message from assistant",
+    "tables": 0,
+    "text": "education별 age 분포\n\n공통 bin의 그룹별 COUNT(*)를 서로 다른 색의 막대로 표시하고 범례를 추가했습니다. · 빈도 합계 27,439 · complete · 그룹 결측 제외 0 · SELECT age, education, COUNT(*) AS __frequency FROM teleai_default.bank_loan WHERE age IS NOT NULL AND ((education = 'primary' AND age ≥ 30 AND age ≤ 40)) GROUP BY age, education\n\n이 차트 선택"
+  },
+  {
+    "grids": 0,
+    "images": 0,
+    "role": "Chat message from assistant",
+    "tables": 0,
+    "text": "원격 조회가 완료되어 결과 11행을 저장했습니다.\n\neducation별 age 분포 이미지를 생성했습니다. 분석 범위: 빈도 합계 27,439 · complete · 그룹 결측 제외 0 · SELECT age, education, COUNT(*) AS __frequency FROM teleai_default.bank_loan WHERE age IS NOT NULL AND ((education = 'primary' AND age ≥ 30 AND age ≤ 40)) GROUP BY age, education"
+  },
+  {
+    "grids": 0,
+    "images": 0,
+    "role": "Chat message from user",
+    "tables": 0,
+    "text": "나이 조건은 그대로 두고 secondary도 포함해서 다시 그려줄래?"
+  },
+  {
+    "grids": 0,
+    "images": 1,
+    "role": "Chat message from assistant",
+    "tables": 0,
+    "text": "education별 age 분포\n\n공통 bin의 그룹별 COUNT(*)를 서로 다른 색의 막대로 표시하고 범례를 추가했습니다. · 빈도 합계 208,699 · complete · 그룹 결측 제외 0 · SELECT age, education, COUNT(*) AS __frequency FROM teleai_default.bank_loan WHERE age IS NOT NULL AND ((age ≥ 30 AND age ≤ 40 AND education IN ('primary', 'secondary'))) GROUP BY age, education\n\n이 차트 선택"
+  },
+  {
+    "grids": 0,
+    "images": 0,
+    "role": "Chat message from assistant",
+    "tables": 0,
+    "text": "원격 조회가 완료되어 결과 22행을 저장했습니다.\n\neducation별 age 분포 이미지를 생성했습니다. 분석 범위: 빈도 합계 208,699 · complete · 그룹 결측 제외 0 · SELECT age, education, COUNT(*) AS __frequency FROM teleai_default.bank_loan WHERE age IS NOT NULL AND ((age ≥ 30 AND age ≤ 40 AND education IN ('primary', 'secondary'))) GROUP BY age, education"
+  },
+  {
+    "grids": 0,
+    "images": 0,
+    "role": "Chat message from user",
+    "tables": 0,
+    "text": "같은 사람들을 대상으로 구간을 5개로 나눠 histogram을 보여줘."
+  },
+  {
+    "grids": 0,
+    "images": 1,
+    "role": "Chat message from assistant",
+    "tables": 0,
+    "text": "education별 age 분포\n\n공통 bin의 그룹별 COUNT(*)를 서로 다른 색의 막대로 표시하고 범례를 추가했습니다. · 빈도 합계 208,699 · complete · 그룹 결측 제외 0 · SELECT age, education, COUNT(*) AS __frequency FROM teleai_default.bank_loan WHERE age IS NOT NULL AND ((age ≥ 30 AND age ≤ 40 AND education IN ('primary', 'secondary'))) GROUP BY age, education\n\n이 차트 선택"
+  },
+  {
+    "grids": 0,
+    "images": 0,
+    "role": "Chat message from assistant",
+    "tables": 0,
+    "text": "education별 age 분포 이미지를 생성했습니다. 분석 범위: 빈도 합계 208,699 · complete · 그룹 결측 제외 0 · SELECT age, education, COUNT(*) AS __frequency FROM teleai_default.bank_loan WHERE age IS NOT NULL AND ((age ≥ 30 AND age ≤ 40 AND education IN ('primary', 'secondary'))) GROUP BY age, education"
+  },
+  {
+    "grids": 0,
+    "images": 0,
+    "role": "Chat message from user",
+    "tables": 0,
+    "text": "이제 조건을 전부 없애고 bank_loan 전체의 age를 가로축, balance를 세로축으로 산점도를 그려줘."
+  },
+  {
+    "grids": 0,
+    "images": 1,
+    "role": "Chat message from assistant",
+    "tables": 0,
+    "text": "age와 balance 관계\n\n전체 유효 좌표를 표시하고 중복 빈도를 색상으로 표현합니다. · 전체 유효 원본 750,000행 · 고유 좌표 132,613개 · 동일 좌표는 빈도로 압축 · 표본/구간 집계 없음 · 두 축의 NULL 제외 · complete\n\n이 차트 선택"
+  },
+  {
+    "grids": 0,
+    "images": 0,
+    "role": "Chat message from assistant",
+    "tables": 0,
+    "text": "원격 조회가 완료되어 결과 132,613행을 저장했습니다.\n\nage와 balance 관계 이미지를 생성했습니다. 분석 범위: 전체 유효 원본 750,000행 · 고유 좌표 132,613개 · 동일 좌표는 빈도로 압축 · 표본/구간 집계 없음 · 두 축의 NULL 제외 · complete"
+  },
+  {
+    "grids": 0,
+    "images": 0,
+    "role": "Chat message from user",
+    "tables": 0,
+    "text": "이번에는 stormtrooper에서 row 10개만 표로 보고 싶어."
+  },
+  {
+    "grids": 1,
+    "images": 0,
+    "role": "Chat message from assistant",
+    "tables": 1,
+    "text": "teleai_default.stormtrooper의 데이터 10행, 13열을 표로 표시했습니다. 원본과 기존 분석 기준은 보존했습니다. 이 미리보기는 전체 분포 통계가 아닙니다.\n\n원격 조회가 완료되어 결과 10행을 저장했습니다."
+  },
+  {
+    "grids": 0,
+    "images": 0,
+    "role": "Chat message from user",
+    "tables": 0,
+    "text": "그 테이블의 컬럼 이름과 DB 데이터 타입을 모두 다시 알려줘. 차트는 만들지 말아줘."
+  },
+  {
+    "grids": 0,
+    "images": 0,
+    "role": "Chat message from assistant",
+    "tables": 1,
+    "text": "현재 DB 메타데이터 기준으로 teleai_default.stormtrooper의 컬럼별 데이터 타입입니다.\n\n컬럼 이름\tDB 데이터 타입\nflight_id\tlongtext\ndate_str\tdatetime\nlatitude\tdouble\nlongitude\tdouble\npressure_altitude\tdouble\ncdo\tdouble\ncth\tdouble\nglm_event_density\tdouble\nglm_optical_flux\tdouble\ncdo025\tdouble\ncth025\tdouble\ncth025_diff_feet\tdouble\ncdo_dist_km\tdouble"
+  }
+]

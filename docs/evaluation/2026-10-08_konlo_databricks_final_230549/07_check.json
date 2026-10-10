@@ -1,0 +1,84 @@
+{
+  "id": 7,
+  "prompt": "education이 primary과 secondary 이고 age가 30~40인 사람들을 시각화 해줘 ",
+  "status": "complete",
+  "goal": {
+    "objective": "visualization",
+    "mode": "execute",
+    "source_reference": "previous_analysis",
+    "sources": [
+      "workspace.default.bank_loan"
+    ],
+    "columns": [
+      "education",
+      "age"
+    ],
+    "conditions": [
+      {
+        "column": "education",
+        "op": "in",
+        "value": [
+          "primary",
+          "secondary"
+        ]
+      },
+      {
+        "column": "age",
+        "op": "between",
+        "value": [
+          30,
+          40
+        ]
+      }
+    ],
+    "any_conditions": [],
+    "measure_conditions": [],
+    "ratio": null,
+    "current_result_only": false,
+    "fresh_source_required": false,
+    "question": "",
+    "tasks": [
+      {
+        "capability": "chart",
+        "options": {
+          "kind": "bar",
+          "axes": {
+            "x": "education"
+          }
+        }
+      }
+    ]
+  },
+  "reason": null,
+  "run_id": "2fa5d13c6d3542a282cab5779d13aafb",
+  "model_calls": 3,
+  "chart_metadata": [
+    {
+      "id": "65691d53-382f-448b-ae5c-763aecf53b4c",
+      "dataset_id": "d0dd8739-138c-49ee-a316-d9f41b42fadf",
+      "title": "education 분포",
+      "reason": "범주별 실제 COUNT(*) 빈도를 표시합니다. 결측은 제외했습니다.",
+      "kind": "bar",
+      "columns": [
+        "education"
+      ],
+      "scope": "빈도 합계 208,699 · complete · SELECT `education`, COUNT(*) AS `__frequency` FROM `workspace`.`default`.`bank_loan` WHERE `education` IS NOT NULL AND (`education` IN ('primary', 'secondary') AND `age` >= 30 AND `age` <= 40) GROUP BY `education`",
+      "render_spec": {
+        "aggregation": "count",
+        "labels": [
+          "secondary",
+          "primary"
+        ],
+        "counts": [
+          181260,
+          27439
+        ],
+        "total_count": 208699,
+        "has_more_categories": false,
+        "null_policy": "exclude"
+      }
+    }
+  ],
+  "verdict": "FAIL",
+  "error": "contract mismatch"
+}

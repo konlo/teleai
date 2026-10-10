@@ -82,9 +82,12 @@ class ObservedSummarizationMiddleware(SummarizationMiddleware):
             return {'recovery':recovery} if recovery != original else None
         confirmed = (recovery or {}).get('confirmed_analysis') or {}
         confirmed_source=confirmed.get('required_sources') or (confirmed.get('metadata_evidence') or {}).get('table')
-        if (confirmed.get('status') == 'complete' and confirmed_source
+        structured_goal=((recovery or {}).get('intent_origin')=='llm'
+                         and isinstance((recovery or {}).get('goal'),dict)
+                         and not (recovery or {}).get('goal_pending'))
+        if structured_goal or (confirmed.get('status') == 'complete' and confirmed_source
                 and any(confirmed.get(k) for k in ('table_preview_evidence',
-                    'metadata_evidence','artifact_ids','evidence_ids','value_list_evidence'))):
+                    'metadata_evidence','artifact_ids','evidence_ids','value_list_evidence','remote_query_evidence'))):
             # Verified scope/IDs are already durable. The final model-view
             # budget compacts old turns using those facts without spending an
             # extra inference just to rediscover the current table. Transcript

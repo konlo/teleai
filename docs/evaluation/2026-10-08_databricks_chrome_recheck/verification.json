@@ -1,0 +1,95 @@
+{
+  "checked_at": "2026-10-08T13:12:51.081818+00:00",
+  "outcome": "SQL_CONNECTIVITY_VERIFIED",
+  "scope": "Mac teleai existing environment and configured Databricks warehouse",
+  "browser": {
+    "workspace_matches_application": true,
+    "edition_observed": "Free Edition",
+    "page_observed": "workspace home",
+    "automation_notice_observed": true,
+    "further_console_automation_performed": false,
+    "console_selected_warehouse_verified": false,
+    "account_notices_and_historical_start_events_verified": false
+  },
+  "metadata": {
+    "checked_at": "2026-10-08T13:09:50.353729+00:00",
+    "scope": "existing_workspace_metadata_only",
+    "model_called": false,
+    "warehouse_start_requested": false,
+    "effective_config_matches_env_file": true,
+    "data_backend": "databricks",
+    "model_provider": "ollama",
+    "chrome_workspace_matches_config": true,
+    "http_status": 200,
+    "warehouse_id_matches_config": true,
+    "warehouse_odbc_host_matches_config": true,
+    "warehouse_odbc_path_matches_config": true,
+    "warehouse_state": "RUNNING",
+    "health_status": "HEALTHY",
+    "failure_code": null,
+    "enable_serverless_compute": true,
+    "num_clusters": 1,
+    "auto_stop_mins": 10,
+    "min_num_clusters": 1,
+    "max_num_clusters": 1,
+    "cluster_size": "2X-Small",
+    "status": "PASS",
+    "env_file_unchanged": true
+  },
+  "sql": {
+    "checked_at": "2026-10-08T13:10:55.759809+00:00",
+    "model_called": false,
+    "model_api_checked": false,
+    "data_backend": "databricks",
+    "model_provider": "ollama",
+    "model_configuration": "PASS",
+    "database": {
+      "status": "PASS",
+      "stage": "database_fetch",
+      "elapsed_seconds": 2.731,
+      "model_called": false,
+      "probe_sql": "SELECT 1"
+    },
+    "connect_calls": 1,
+    "env_file_unchanged": true,
+    "finished_at": "2026-10-08T13:10:58.982384+00:00"
+  },
+  "regression": {
+    "checked_at": "2026-10-08T13:11:29.106079+00:00",
+    "test_modules": [
+      "tests.test_databricks_settings",
+      "tests.test_azure_databricks_service"
+    ],
+    "exit_code": 0,
+    "summary": [
+      "Ran 19 tests in 0.857s",
+      "OK"
+    ],
+    "elapsed_seconds": 11.062,
+    "scope": "fixture_configuration_provider_routing_sql_probe_and_ui_regression_not_live_models"
+  },
+  "diagnosis": {
+    "current_failure_reproduced": false,
+    "past_HTTP_400_root_cause": "NOT_ESTABLISHED",
+    "account_quota_or_permissions_blame_supported": false,
+    "latest_prior_project_probe_already_passed": true,
+    "product_code_change_needed": false
+  },
+  "changes": {
+    "product_code_changed_by_this_task": false,
+    "env_modified": false,
+    "model_changed": false,
+    "warehouse_started_or_resized": false,
+    "credentials_or_permissions_changed": false,
+    "committed_pushed_or_deployed_by_this_task": false,
+    "repository_log_appended": true
+  },
+  "limits": [
+    "No live model API call",
+    "No real table or end-to-end analysis validation",
+    "No remote company-host validation",
+    "Historical failure events and account notices not inspected because console disallows automated browser control"
+  ],
+  "next_action_if_failure_returns": "Capture the SQL-only probe stage/error_type/http_status; manually inspect warehouse start events in the existing Chrome session without changing billing, credentials, permissions or network settings.",
+  "api_reference": "https://docs.databricks.com/api/warehouses/v1/get-warehouse"
+}

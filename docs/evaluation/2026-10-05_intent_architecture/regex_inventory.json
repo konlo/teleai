@@ -1,0 +1,2421 @@
+{
+  "summary": {
+    "scope": "AST scan of production core, utils, ui, pages; regex call sites, NOT natural-language rules or defect counts",
+    "parsed_python_files": 128,
+    "all_regex_call_sites": 322,
+    "files_with_regex_calls": 37,
+    "analysis_agent_regex_call_sites": 270,
+    "analysis_agent_files_with_regex_calls": 25,
+    "per_file": {
+      "core/analysis_agent/recovery.py": 124,
+      "core/analysis_agent/intent_scope.py": 37,
+      "core/analysis_agent/latest_selection.py": 29,
+      "utils/chatbot_plan.py": 25,
+      "core/analysis_agent/remote_completion.py": 9,
+      "core/analysis_agent/eda_contract.py": 8,
+      "core/analysis_agent/schema_questions.py": 7,
+      "core/analysis_agent/semantic.py": 6,
+      "core/analysis_agent/support_report.py": 6,
+      "utils/analysis_latest_filters.py": 5,
+      "core/analysis_agent/chart_binding.py": 4,
+      "core/analysis_agent/latest_filter_scope.py": 4,
+      "core/analysis_agent/operation_binding.py": 4,
+      "core/analysis_agent/row_preview.py": 4,
+      "core/analysis_agent/value_list.py": 4,
+      "utils/analysis_remote_latest.py": 4,
+      "utils/sql_text.py": 4,
+      "utils/table_context.py": 4,
+      "core/analysis_agent/chart_grouping.py": 3,
+      "core/analysis_agent/conversation_context.py": 3,
+      "core/analysis_agent/distribution_intent.py": 3,
+      "core/analysis_agent/numeric_scope.py": 3,
+      "core/analysis_agent/source_mentions.py": 3,
+      "core/analysis_agent/source_scatter.py": 3,
+      "core/sql_utils.py": 2,
+      "utils/analysis_skill_registry.py": 2,
+      "utils/data_context.py": 2,
+      "core/analysis_agent/chart_axis.py": 1,
+      "core/analysis_agent/clarification.py": 1,
+      "core/analysis_agent/model_errors.py": 1,
+      "core/analysis_agent/mysql.py": 1,
+      "core/analysis_agent/row_count.py": 1,
+      "core/analysis_agent/storage_policy.py": 1,
+      "core/analysis_tool_discovery.py": 1,
+      "utils/eda_validation.py": 1,
+      "utils/turn_logger.py": 1,
+      "ui/analysis_diagnostics.py": 1
+    },
+    "recovery_functions": {
+      "_named_measures": 2,
+      "_dtype_family": 3,
+      "_chart_kind": 3,
+      "_bounded_preview_count": 2,
+      "_column_listing_requested": 3,
+      "_metadata_ellipsis": 1,
+      "_source_from_prior_table_list": 5,
+      "_strip_outlier_method_scope": 1,
+      "_state": 96,
+      "_state.mentioned": 1,
+      "_state.mentioned_alias": 1,
+      "_state.mentioned_column": 2,
+      "_numeric_column_known": 1,
+      "_numeric_missing_policy_valid": 2,
+      "_prepared_numeric_call": 1
+    },
+    "manually_reviewed_mixed_nl_modules": {
+      "count": 21,
+      "regex_calls_in_these_modules": 261,
+      "by_module": {
+        "recovery": 124,
+        "intent_scope": 37,
+        "latest_selection": 29,
+        "row_preview": 4,
+        "row_count": 1,
+        "remote_completion": 9,
+        "distribution_intent": 3,
+        "schema_questions": 7,
+        "chart_binding": 4,
+        "chart_grouping": 3,
+        "chart_axis": 1,
+        "eda_contract": 8,
+        "latest_filter_scope": 4,
+        "clarification": 1,
+        "conversation_context": 3,
+        "numeric_scope": 3,
+        "operation_binding": 4,
+        "semantic": 6,
+        "source_mentions": 3,
+        "source_scatter": 3,
+        "value_list": 4
+      },
+      "caution": "Includes deterministic validators and parsing; not all regex calls are semantic routing."
+    },
+    "state_constructor_fields": [
+      "attempts",
+      "calculation",
+      "catalog_discovery_question",
+      "catalog_discovery_schema",
+      "catalog_discovery_source",
+      "chart",
+      "chart_cumulative",
+      "chart_spec_requested",
+      "columns",
+      "count_rate_layout",
+      "current_result_only",
+      "data_load",
+      "expected_load_query",
+      "expected_load_source",
+      "explicit_columns",
+      "failed",
+      "fresh_source_required",
+      "group_summary_columns",
+      "group_summary_conditions",
+      "group_summary_metrics",
+      "group_summary_requested",
+      "histogram_bins",
+      "join",
+      "join_how",
+      "kind",
+      "metadata_kind",
+      "operations",
+      "outlier_aggregate_mode",
+      "outlier_aggregate_requested",
+      "outlier_column",
+      "outlier_followup",
+      "outlier_group_column",
+      "outlier_metric_aggregation",
+      "outlier_metric_column",
+      "outlier_selection",
+      "outlier_spec",
+      "outlier_top_n",
+      "pivot_aggregation",
+      "pivot_column_columns",
+      "pivot_conditions",
+      "pivot_derived_bins",
+      "pivot_index_columns",
+      "pivot_margins",
+      "pivot_margins_name",
+      "pivot_requested",
+      "pivot_sort",
+      "pivot_success_value",
+      "pivot_value_column",
+      "preview_limit",
+      "profile_kind",
+      "request_id",
+      "request_started_at",
+      "request_text",
+      "requested_join",
+      "requested_result_rows",
+      "required_columns",
+      "required_sources",
+      "scalar_grouping",
+      "schema_semantic",
+      "statistical_kind",
+      "status",
+      "time_series_aggregation",
+      "time_series_frequency",
+      "time_series_gap_policy",
+      "time_series_timezone",
+      "whole_row_count",
+      "winsor_column",
+      "winsor_spec"
+    ],
+    "state_constructor_field_count": 68
+  },
+  "sites": [
+    {
+      "file": "core/analysis_agent/chart_axis.py",
+      "line": 8,
+      "function": "bind",
+      "operation": "fullmatch",
+      "expression": "re.fullmatch('\\\\s*(?:y\\\\s*축|y[- ]?axis)\\\\s*(?:을|를)?\\\\s*([\\\\d,]+(?:\\\\.\\\\d+)?)\\\\s*(?:으로|로|to)?\\\\s*(?:해\\\\s*줘|해\\\\s*주세요|바꿔\\\\s*줘|설정해\\\\s*줘)?\\\\s*[.!]?\\\\s*', text, re.I)"
+    },
+    {
+      "file": "core/analysis_agent/chart_binding.py",
+      "line": 14,
+      "function": "axis_roles",
+      "operation": "search",
+      "expression": "re.search(name + '\\\\s*(?:을|를|은|는)?\\\\s*(?:as\\\\s+)?' + role, text, re.I)"
+    },
+    {
+      "file": "core/analysis_agent/chart_binding.py",
+      "line": 15,
+      "function": "axis_roles",
+      "operation": "search",
+      "expression": "re.search(role + '\\\\s*(?:은|는|에|=|:|is)?\\\\s*' + name, text, re.I)"
+    },
+    {
+      "file": "core/analysis_agent/chart_binding.py",
+      "line": 24,
+      "function": "bind",
+      "operation": "search",
+      "expression": "re.search('관계.{0,30}그려|(?:draw|plot).{0,30}relationship', text, re.I)"
+    },
+    {
+      "file": "core/analysis_agent/chart_binding.py",
+      "line": 42,
+      "function": "bind",
+      "operation": "search",
+      "expression": "re.search('전체|모든|모집단|\\\\b(?:all|whole|entire|population)\\\\b', current.get('text', ''), re.I)"
+    },
+    {
+      "file": "core/analysis_agent/chart_grouping.py",
+      "line": 10,
+      "function": "requested",
+      "operation": "search",
+      "expression": "re.search('(?<![A-Za-z])legend(?![A-Za-z])|범례|색(?:상)?\\\\s*(?:구분|구별|을|으로|좀)|\\\\b(?:hue|color|colour)\\\\b', text, re.I)"
+    },
+    {
+      "file": "core/analysis_agent/chart_grouping.py",
+      "line": 56,
+      "function": "bind",
+      "operation": "search",
+      "expression": "re.search('(?<![A-Za-z0-9_])' + re.escape(name) + '(?![A-Za-z0-9_])', text, re.I)"
+    },
+    {
+      "file": "core/analysis_agent/chart_grouping.py",
+      "line": 66,
+      "function": "bind",
+      "operation": "search",
+      "expression": "re.search('조건|이상|이하|초과|미만|where|filter', text, re.I)"
+    },
+    {
+      "file": "core/analysis_agent/clarification.py",
+      "line": 28,
+      "function": "continue_analysis",
+      "operation": "fullmatch",
+      "expression": "re.fullmatch('`?[^\\\\s`=]+`?\\\\s*=\\\\s*' + literal, reply, re.I)"
+    },
+    {
+      "file": "core/analysis_agent/conversation_context.py",
+      "line": 7,
+      "function": "explanation_only",
+      "operation": "search",
+      "expression": "re.search('(?:그려줘|그려\\\\s*줘|계산해줘|생성해줘|실행해줘)', text)"
+    },
+    {
+      "file": "core/analysis_agent/conversation_context.py",
+      "line": 9,
+      "function": "explanation_only",
+      "operation": "search",
+      "expression": "re.search('설명|차이|개념|\\\\bexplain\\\\b', text, re.I)"
+    },
+    {
+      "file": "core/analysis_agent/conversation_context.py",
+      "line": 10,
+      "function": "explanation_only",
+      "operation": "search",
+      "expression": "re.search('설명만|차이만|(?:계산|생성|실행).{0,24}(?:하지\\\\s*마|하지\\\\s*말|금지)|\\\\bexplain\\\\s+only\\\\b', text, re.I)"
+    },
+    {
+      "file": "core/analysis_agent/distribution_intent.py",
+      "line": 7,
+      "function": "requested",
+      "operation": "search",
+      "expression": "re.search('분포|(?<![A-Za-z0-9_])distribution(?![A-Za-z0-9_])', text, re.I)"
+    },
+    {
+      "file": "core/analysis_agent/distribution_intent.py",
+      "line": 8,
+      "function": "requested",
+      "operation": "search",
+      "expression": "re.search('보여|그려|그리|시각화|그래프|차트|(?<![A-Za-z0-9_])(?:show|plot|draw|display|visuali[sz]e)(?![A-Za-z0-9_])', text, re.I)"
+    },
+    {
+      "file": "core/analysis_agent/distribution_intent.py",
+      "line": 9,
+      "function": "requested",
+      "operation": "search",
+      "expression": "re.search('설명만|표로|표만|explain\\\\s+only|(?:as\\\\s+(?:a\\\\s+)?|in\\\\s+(?:a\\\\s+)?)table|table\\\\s+only', text, re.I)"
+    },
+    {
+      "file": "core/analysis_agent/eda_contract.py",
+      "line": 11,
+      "function": "histogram_bins",
+      "operation": "finditer",
+      "expression": "re.finditer(pattern, text, re.I)"
+    },
+    {
+      "file": "core/analysis_agent/eda_contract.py",
+      "line": 18,
+      "function": "profile_request_text",
+      "operation": "sub",
+      "expression": "re.sub('[\"\\'`][^\"\\'`\\\\n]{1,64}[\"\\'`]\\\\s*(?:문자열)?(?:만|을|를)?\\\\s*\\n        (?:결측값?|NULL|NaN)(?:으로|로)?\\\\s*(?:처리|변환|간주)(?:해줘|해|하세요|한다)?', '', text, flags=re.I | re.X)"
+    },
+    {
+      "file": "core/analysis_agent/eda_contract.py",
+      "line": 27,
+      "function": "group_columns",
+      "operation": "search",
+      "expression": "re.search('(?<![A-Za-z0-9_])' + name + '\\\\s*(?:별|마다|기준으로)', text, re.I)"
+    },
+    {
+      "file": "core/analysis_agent/eda_contract.py",
+      "line": 28,
+      "function": "group_columns",
+      "operation": "search",
+      "expression": "re.search('\\\\b(?:by|(?:in|for)\\\\s+each)\\\\s+' + name, text, re.I)"
+    },
+    {
+      "file": "core/analysis_agent/eda_contract.py",
+      "line": 35,
+      "function": "group_sort",
+      "operation": "search",
+      "expression": "re.search('내림차순|오름차순|\\\\bdescending\\\\b|\\\\bascending\\\\b', text, re.I)"
+    },
+    {
+      "file": "core/analysis_agent/eda_contract.py",
+      "line": 37,
+      "function": "group_sort",
+      "operation": "search",
+      "expression": "re.search('내림차순|descending', direction[0], re.I)"
+    },
+    {
+      "file": "core/analysis_agent/eda_contract.py",
+      "line": 45,
+      "function": "group_sort",
+      "operation": "search",
+      "expression": "re.search('(?<![A-Za-z0-9_])[`\"\\\\\\']?' + re.escape(term) + '[`\"\\\\\\']?(?:\\\\))?' + suffix, preceding, re.I)"
+    },
+    {
+      "file": "core/analysis_agent/eda_contract.py",
+      "line": 55,
+      "function": "group_sort",
+      "operation": "search",
+      "expression": "re.search('(?:' + target + ')' + suffix, preceding, re.I)"
+    },
+    {
+      "file": "core/analysis_agent/intent_scope.py",
+      "line": 18,
+      "function": "",
+      "operation": "compile",
+      "expression": "re.compile('(?<![A-Za-z0-9_-])(\\\\d{4}-\\\\d{2}(?:-\\\\d{2})?)(?![A-Za-z0-9_-])')"
+    },
+    {
+      "file": "core/analysis_agent/intent_scope.py",
+      "line": 19,
+      "function": "",
+      "operation": "compile",
+      "expression": "re.compile('그중|같은|아까|앞선|이어서|말고|대신|바꿔|그\\\\s*데이터|유지')"
+    },
+    {
+      "file": "core/analysis_agent/intent_scope.py",
+      "line": 20,
+      "function": "",
+      "operation": "compile",
+      "expression": "re.compile('이전\\\\s*달|지난\\\\s*달|전월')"
+    },
+    {
+      "file": "core/analysis_agent/intent_scope.py",
+      "line": 34,
+      "function": "_mentioned",
+      "operation": "search",
+      "expression": "re.search('[가-힣]$', name)"
+    },
+    {
+      "file": "core/analysis_agent/intent_scope.py",
+      "line": 35,
+      "function": "_mentioned",
+      "operation": "search",
+      "expression": "re.search('(?<![A-Za-z_가-힣])' + re.escape(name) + suffix, text, re.I)"
+    },
+    {
+      "file": "core/analysis_agent/intent_scope.py",
+      "line": 51,
+      "function": "_literal",
+      "operation": "fullmatch",
+      "expression": "re.fullmatch('\\\\d{4}-\\\\d{2}(?:-\\\\d{2})?', value)"
+    },
+    {
+      "file": "core/analysis_agent/intent_scope.py",
+      "line": 54,
+      "function": "_literal",
+      "operation": "fullmatch",
+      "expression": "re.fullmatch('[+-]?\\\\d+(?:\\\\.\\\\d+)?', numeric)"
+    },
+    {
+      "file": "core/analysis_agent/intent_scope.py",
+      "line": 96,
+      "function": "_grounding",
+      "operation": "search",
+      "expression": "re.search('(?<![A-Za-z0-9_])' + re.escape(name) + '(?![A-Za-z0-9_])', text)"
+    },
+    {
+      "file": "core/analysis_agent/intent_scope.py",
+      "line": 158,
+      "function": "_reset_filter_columns",
+      "operation": "search",
+      "expression": "re.search('(?:이전|기존|모든|전체|앞의)\\\\s*' + qualifier + action, text)"
+    },
+    {
+      "file": "core/analysis_agent/intent_scope.py",
+      "line": 163,
+      "function": "_reset_filter_columns",
+      "operation": "search",
+      "expression": "re.search('(?<![A-Za-z0-9_])`?' + names + '`?\\\\s*' + qualifier + action, text)"
+    },
+    {
+      "file": "core/analysis_agent/intent_scope.py",
+      "line": 203,
+      "function": "resolve_request_scope",
+      "operation": "finditer",
+      "expression": "re.finditer(qualified_pattern, text, re.I)"
+    },
+    {
+      "file": "core/analysis_agent/intent_scope.py",
+      "line": 210,
+      "function": "resolve_request_scope",
+      "operation": "fullmatch",
+      "expression": "re.fullmatch('(\\\\d{1,3})대', alias)"
+    },
+    {
+      "file": "core/analysis_agent/intent_scope.py",
+      "line": 229,
+      "function": "resolve_request_scope",
+      "operation": "finditer",
+      "expression": "re.finditer(column_pattern + '\\\\s+(' + _LITERAL + '(?:\\\\s*(?:와|과|및|,)\\\\s*' + _LITERAL + ')+)' + '\\\\s*(?:인|이고|이며|의)(?=\\\\s|$)', text, re.I)"
+    },
+    {
+      "file": "core/analysis_agent/intent_scope.py",
+      "line": 232,
+      "function": "resolve_request_scope",
+      "operation": "finditer",
+      "expression": "re.finditer(_LITERAL, match[1], re.I)"
+    },
+    {
+      "file": "core/analysis_agent/intent_scope.py",
+      "line": 235,
+      "function": "resolve_request_scope",
+      "operation": "finditer",
+      "expression": "re.finditer(column_pattern + '\\\\s*(>=|<=|!=|<>|==|=|>|<)\\\\s*(' + _LITERAL + ')', text, re.I)"
+    },
+    {
+      "file": "core/analysis_agent/intent_scope.py",
+      "line": 242,
+      "function": "resolve_request_scope",
+      "operation": "finditer",
+      "expression": "re.finditer(column_pattern + '\\\\s+(' + _LITERAL + ')\\\\s*(?:인|이고|이며)(?=\\\\s|$)', text, re.I)"
+    },
+    {
+      "file": "core/analysis_agent/intent_scope.py",
+      "line": 247,
+      "function": "resolve_request_scope",
+      "operation": "finditer",
+      "expression": "re.finditer(column_pattern + '\\\\s*(' + _LITERAL + ')\\\\s*(?:[A-Za-z가-힣%]+(?:을|를)?\\\\s*)?(이상|이하|초과|미만|넘는|넘은)', text, re.I)"
+    },
+    {
+      "file": "core/analysis_agent/intent_scope.py",
+      "line": 253,
+      "function": "resolve_request_scope",
+      "operation": "finditer",
+      "expression": "re.finditer(column_pattern + '\\\\s*(\\\\d{1,3})대', text, re.I)"
+    },
+    {
+      "file": "core/analysis_agent/intent_scope.py",
+      "line": 261,
+      "function": "resolve_request_scope",
+      "operation": "finditer",
+      "expression": "re.finditer(column_pattern + '\\\\s*\\\\(\\\\s*((?:' + _LITERAL + '\\\\s*,\\\\s*)+' + _LITERAL + ')\\\\s*\\\\)', text, re.I)"
+    },
+    {
+      "file": "core/analysis_agent/intent_scope.py",
+      "line": 263,
+      "function": "resolve_request_scope",
+      "operation": "finditer",
+      "expression": "re.finditer(_LITERAL, match[1], re.I)"
+    },
+    {
+      "file": "core/analysis_agent/intent_scope.py",
+      "line": 279,
+      "function": "resolve_request_scope",
+      "operation": "finditer",
+      "expression": "re.finditer(pattern, text, re.I)"
+    },
+    {
+      "file": "core/analysis_agent/intent_scope.py",
+      "line": 286,
+      "function": "resolve_request_scope",
+      "operation": "finditer",
+      "expression": "re.finditer(column_pattern + '\\\\s+' + _LITERAL + '\\\\s*(?:와|과|및|,)\\\\s*' + _LITERAL, text, re.I)"
+    },
+    {
+      "file": "core/analysis_agent/intent_scope.py",
+      "line": 304,
+      "function": "resolve_request_scope",
+      "operation": "finditer",
+      "expression": "re.finditer('(?<![A-Za-z0-9_])' + re.escape(alias) + '(?![A-Za-z0-9_])', text, re.I)"
+    },
+    {
+      "file": "core/analysis_agent/intent_scope.py",
+      "line": 307,
+      "function": "resolve_request_scope",
+      "operation": "search",
+      "expression": "re.search('없(?:는|음)|안\\\\s*받은|받지\\\\s*않은|가입하지\\\\s*않은|하지\\\\s*않은|미보유|아닌', window)"
+    },
+    {
+      "file": "core/analysis_agent/intent_scope.py",
+      "line": 308,
+      "function": "resolve_request_scope",
+      "operation": "search",
+      "expression": "re.search('^\\\\s*한\\\\b|있(?:는|음)|받은|가입한|보유한|참인', window)"
+    },
+    {
+      "file": "core/analysis_agent/intent_scope.py",
+      "line": 322,
+      "function": "resolve_request_scope",
+      "operation": "match",
+      "expression": "re.match('\\\\s*(?:이전|이후|전까지|후부터|부터|까지|보다|제외)', text[match.end():])"
+    },
+    {
+      "file": "core/analysis_agent/intent_scope.py",
+      "line": 323,
+      "function": "resolve_request_scope",
+      "operation": "search",
+      "expression": "re.search('\\\\b(?:before|after|since|until)\\\\s*$', text[:match.start()], re.I)"
+    },
+    {
+      "file": "core/analysis_agent/intent_scope.py",
+      "line": 334,
+      "function": "resolve_request_scope",
+      "operation": "fullmatch",
+      "expression": "re.fullmatch('\\\\d{4}-\\\\d{2}(?:-\\\\d{2})?', value)"
+    },
+    {
+      "file": "core/analysis_agent/intent_scope.py",
+      "line": 344,
+      "function": "resolve_request_scope",
+      "operation": "match",
+      "expression": "re.match('\\\\s*(?:(?:인|인 것은|인 것|인 행|인 데이터|인 경우|인 항목|인 것들|인 행들)\\\\s*)?(?:은|는|을|를)?\\\\s*(?:제외|빼고)', text[end:])"
+    },
+    {
+      "file": "core/analysis_agent/intent_scope.py",
+      "line": 376,
+      "function": "resolve_request_scope",
+      "operation": "search",
+      "expression": "re.search('\\\\bOR\\\\b|또는|혹은|아니면|이나|거나|중\\\\s*하나라도', text, re.I)"
+    },
+    {
+      "file": "core/analysis_agent/intent_scope.py",
+      "line": 378,
+      "function": "resolve_request_scope",
+      "operation": "search",
+      "expression": "re.search('부터.*까지|\\\\bbetween\\\\b', text, re.I)"
+    },
+    {
+      "file": "core/analysis_agent/intent_scope.py",
+      "line": 384,
+      "function": "resolve_request_scope",
+      "operation": "fullmatch",
+      "expression": "re.fullmatch('\\\\d{4}-\\\\d{2}', item['value'])"
+    },
+    {
+      "file": "core/analysis_agent/intent_scope.py",
+      "line": 404,
+      "function": "resolve_request_scope",
+      "operation": "compile",
+      "expression": "re.compile('\\\\bOR\\\\b|또는|혹은|아니면|이나|거나|중\\\\s*하나라도', re.I)"
+    },
+    {
+      "file": "core/analysis_agent/intent_scope.py",
+      "line": 411,
+      "function": "resolve_request_scope",
+      "operation": "finditer",
+      "expression": "re.finditer(re.escape(name), text, re.I)"
+    },
+    {
+      "file": "core/analysis_agent/intent_scope.py",
+      "line": 429,
+      "function": "resolve_request_scope",
+      "operation": "finditer",
+      "expression": "re.finditer(edge_pattern, text)"
+    },
+    {
+      "file": "core/analysis_agent/intent_scope.py",
+      "line": 445,
+      "function": "resolve_request_scope",
+      "operation": "search",
+      "expression": "re.search('비율|성공률|생존율|전환율|[가-힣A-Za-z]+[율률]|\\\\b(?:ratio|rate|percentage|percent)\\\\b', ratio_text, re.I)"
+    },
+    {
+      "file": "core/analysis_agent/intent_scope.py",
+      "line": 451,
+      "function": "resolve_request_scope",
+      "operation": "finditer",
+      "expression": "re.finditer('(?<![A-Za-z0-9_])' + re.escape(alias) + '(?![A-Za-z0-9_])', text, re.I)"
+    },
+    {
+      "file": "core/analysis_agent/latest_filter_scope.py",
+      "line": 17,
+      "function": "bind_scope",
+      "operation": "finditer",
+      "expression": "re.finditer(STAGE_PATTERN, text, re.I)"
+    },
+    {
+      "file": "core/analysis_agent/latest_filter_scope.py",
+      "line": 18,
+      "function": "bind_scope",
+      "operation": "search",
+      "expression": "re.search(STAGE_PATTERN + '.{0,12}(?:말고|않|아니|하지)', text, re.I)"
+    },
+    {
+      "file": "core/analysis_agent/latest_filter_scope.py",
+      "line": 37,
+      "function": "continue_stage",
+      "operation": "fullmatch",
+      "expression": "re.fullmatch('\\\\s*' + STAGE_PATTERN + '[.!]?\\\\s*', text, re.I)"
+    },
+    {
+      "file": "core/analysis_agent/latest_filter_scope.py",
+      "line": 43,
+      "function": "continue_stage",
+      "operation": "sub",
+      "expression": "re.sub(STAGE_PATTERN, '', base, flags=re.I)"
+    },
+    {
+      "file": "core/analysis_agent/latest_selection.py",
+      "line": 14,
+      "function": "bind",
+      "operation": "search",
+      "expression": "re.search('마지막|가장\\\\s*(?:늦|최근)|최신|\\\\blatest\\\\b|\\\\blast\\\\b', text, re.I)"
+    },
+    {
+      "file": "core/analysis_agent/latest_selection.py",
+      "line": 15,
+      "function": "bind",
+      "operation": "search",
+      "expression": "re.search('중복|unique|고유|(?:별|마다).{0,55}(?:행|기록)|\\\\bper\\\\b', text, re.I)"
+    },
+    {
+      "file": "core/analysis_agent/latest_selection.py",
+      "line": 16,
+      "function": "bind",
+      "operation": "search",
+      "expression": "re.search('분포|histogram|히스토그램|차트|그려|distribution', text, re.I)"
+    },
+    {
+      "file": "core/analysis_agent/latest_selection.py",
+      "line": 24,
+      "function": "bind",
+      "operation": "search",
+      "expression": "re.search('재조회|다시\\\\s*(?:로딩|조회|불러)|새로\\\\s*(?:조회|로딩|불러)|\\\\brefresh\\\\b', text, re.I)"
+    },
+    {
+      "file": "core/analysis_agent/latest_selection.py",
+      "line": 41,
+      "function": "bind",
+      "operation": "search",
+      "expression": "re.search('(?:동률(?:일\\\\s*때|이면|인\\\\s*경우)?|동일하면|ties?\\\\s*(?:use|by)?)\\\\s*[, :]*' + name_pattern(column) + '\\\\s*(?:이|가|을|를)?\\\\s*(?:가장\\\\s*큰|내림차순|descending|DESC\\\\b)(?:\\\\s*행)?', text, re.I)"
+    },
+    {
+      "file": "core/analysis_agent/latest_selection.py",
+      "line": 49,
+      "function": "bind",
+      "operation": "search",
+      "expression": "re.search(name_pattern(c), role_text, re.I)"
+    },
+    {
+      "file": "core/analysis_agent/latest_selection.py",
+      "line": 50,
+      "function": "bind",
+      "operation": "search",
+      "expression": "re.search(name_pattern(c) + '(?:에\\\\s*대한|의|별)?\\\\s*(?:장치\\\\s*수\\\\s*)?(?:histogram|히스토그램|분포)', text, re.I)"
+    },
+    {
+      "file": "core/analysis_agent/latest_selection.py",
+      "line": 51,
+      "function": "bind",
+      "operation": "search",
+      "expression": "re.search(name_pattern(c) + '\\\\s*(?:컬럼(?:을)?\\\\s*)?(?:을|를)?\\\\s*(?:기준|별|마다)', text, re.I)"
+    },
+    {
+      "file": "core/analysis_agent/latest_selection.py",
+      "line": 52,
+      "function": "bind",
+      "operation": "search",
+      "expression": "re.search('datetime|timestamp|date', dtypes.get(c, ''), re.I)"
+    },
+    {
+      "file": "core/analysis_agent/latest_selection.py",
+      "line": 54,
+      "function": "bind",
+      "operation": "finditer",
+      "expression": "re.finditer('((?:[`\"\\\\w]+\\\\s*(?:,|와|과|and|&)\\\\s*)+[`\"\\\\w]+)\\\\s*(?:의\\\\s*)?(?:조합|복합\\\\s*키|기준)', text, re.I)"
+    },
+    {
+      "file": "core/analysis_agent/latest_selection.py",
+      "line": 55,
+      "function": "bind",
+      "operation": "search",
+      "expression": "re.search(name_pattern(c), match[1], re.I)"
+    },
+    {
+      "file": "core/analysis_agent/latest_selection.py",
+      "line": 59,
+      "function": "bind",
+      "operation": "search",
+      "expression": "re.search('datetime|timestamp|date', dtypes.get(c, ''), re.I)"
+    },
+    {
+      "file": "core/analysis_agent/latest_selection.py",
+      "line": 60,
+      "function": "bind",
+      "operation": "search",
+      "expression": "re.search(name_pattern(c) + '(?:이|가|을|를)?\\\\s*(?:기준|가장\\\\s*큰)', text, re.I)"
+    },
+    {
+      "file": "core/analysis_agent/latest_selection.py",
+      "line": 67,
+      "function": "bind",
+      "operation": "search",
+      "expression": "re.search(NULL_BEFORE_PATTERN, text, re.I)"
+    },
+    {
+      "file": "core/analysis_agent/latest_selection.py",
+      "line": 71,
+      "function": "bind",
+      "operation": "search",
+      "expression": "re.search('(?:동률|결측).{0,90}(?:말고|말아|않|아니|사용하지|제외하지)', text, re.I)"
+    },
+    {
+      "file": "core/analysis_agent/latest_selection.py",
+      "line": 73,
+      "function": "bind",
+      "operation": "search",
+      "expression": "re.search('결측|\\\\b(?:null|missing)\\\\b', text, re.I)"
+    },
+    {
+      "file": "core/analysis_agent/latest_selection.py",
+      "line": 73,
+      "function": "bind",
+      "operation": "search",
+      "expression": "re.search('선택\\\\s*후', text)"
+    },
+    {
+      "file": "core/analysis_agent/latest_selection.py",
+      "line": 75,
+      "function": "bind",
+      "operation": "search",
+      "expression": "re.search('동률|동일하면|\\\\bties?\\\\b', role_text, re.I)"
+    },
+    {
+      "file": "core/analysis_agent/latest_selection.py",
+      "line": 79,
+      "function": "bind",
+      "operation": "search",
+      "expression": "re.search('평균|중앙값|표준편차|상관|합계|\\\\b(?:mean|average|median|correlation)\\\\b', text, re.I)"
+    },
+    {
+      "file": "core/analysis_agent/latest_selection.py",
+      "line": 81,
+      "function": "bind",
+      "operation": "search",
+      "expression": "re.search('제목|축\\\\s*라벨', text, re.I)"
+    },
+    {
+      "file": "core/analysis_agent/latest_selection.py",
+      "line": 86,
+      "function": "bind",
+      "operation": "search",
+      "expression": "re.search('datetime|timestamp|date', dtypes.get(c, ''), re.I)"
+    },
+    {
+      "file": "core/analysis_agent/latest_selection.py",
+      "line": 92,
+      "function": "bind",
+      "operation": "search",
+      "expression": "re.search('int|long|short|byte|float|double|decimal|numeric', dtypes.get(targets[0], ''), re.I)"
+    },
+    {
+      "file": "core/analysis_agent/latest_selection.py",
+      "line": 93,
+      "function": "bind",
+      "operation": "search",
+      "expression": "re.search(name_pattern(targets[0]) + '.{0,20}(?:식별자|identifier|category|범주)', text, re.I)"
+    },
+    {
+      "file": "core/analysis_agent/latest_selection.py",
+      "line": 117,
+      "function": "continue_order",
+      "operation": "fullmatch",
+      "expression": "re.fullmatch('\\\\s*(?:그\\\\s*(?:차트|히스토그램)\\\\s*)?(?:구간\\\\s*(?:수|개수)\\\\s*(?:는|를|을|만|:|=)?\\\\s*\\\\d+\\\\s*(?:개)?|\\\\d+\\\\s*개\\\\s*구간|bins?\\\\s*[=:]?\\\\s*\\\\d+)\\\\s*(?:으로|로)?\\\\s*(?:바꿔줘|변경해줘|그려줘|해줘)?[.!]?\\\\s*', text, re.I)"
+    },
+    {
+      "file": "core/analysis_agent/latest_selection.py",
+      "line": 123,
+      "function": "continue_order",
+      "operation": "sub",
+      "expression": "re.sub(pattern, '', base, flags=re.I)"
+    },
+    {
+      "file": "core/analysis_agent/latest_selection.py",
+      "line": 130,
+      "function": "continue_order",
+      "operation": "fullmatch",
+      "expression": "re.fullmatch('\\\\s*' + NULL_BEFORE_PATTERN + '[.!]?\\\\s*', text, re.I)"
+    },
+    {
+      "file": "core/analysis_agent/latest_selection.py",
+      "line": 143,
+      "function": "continue_order",
+      "operation": "fullmatch",
+      "expression": "re.fullmatch('\\\\s*(?:동률(?:이면|일\\\\s*때)?\\\\s*)?' + name_pattern(column) + '\\\\s*(?:(?:이|가)\\\\s*가장\\\\s*큰\\\\s*(?:행)?|내림차순|기준(?:으로)?|으로|로)?\\\\s*(?:해줘|선택|사용해줘)?[.!]?\\\\s*', text, re.I)"
+    },
+    {
+      "file": "core/analysis_agent/latest_selection.py",
+      "line": 148,
+      "function": "continue_order",
+      "operation": "fullmatch",
+      "expression": "re.fullmatch('\\\\s*[`\\\\\"]?' + re.escape(column) + '[`\\\\\"]?\\\\s*(?:기준(?:으로)?|으로|로)?\\\\s*(?:해줘|선택|사용해줘)?[.!]?\\\\s*', text, re.I)"
+    },
+    {
+      "file": "core/analysis_agent/latest_selection.py",
+      "line": 236,
+      "function": "reuse_verified",
+      "operation": "search",
+      "expression": "re.search('재조회|다시\\\\s*(?:로딩|조회|불러)|새로\\\\s*(?:조회|로딩|불러)|\\\\brefresh\\\\b', text, re.I)"
+    },
+    {
+      "file": "core/analysis_agent/model_errors.py",
+      "line": 15,
+      "function": "model_error_category",
+      "operation": "fullmatch",
+      "expression": "re.fullmatch('(?:BAD_REQUEST:\\\\s*)?Cannot create or query foundation model endpoints, please try again later\\\\.?', message.strip())"
+    },
+    {
+      "file": "core/analysis_agent/mysql.py",
+      "line": 24,
+      "function": "",
+      "operation": "compile",
+      "expression": "re.compile('^[A-Za-z_][A-Za-z0-9_]*$')"
+    },
+    {
+      "file": "core/analysis_agent/numeric_scope.py",
+      "line": 22,
+      "function": "intervals",
+      "operation": "finditer",
+      "expression": "re.finditer('\\'(?:[^\\']|\\'\\')*\\'|\"(?:[^\"]|\"\")*\"|(?<!\\\\d)\\\\d{4}-\\\\d{2}(?:-\\\\d{2})?(?!\\\\d)|\\\\b[0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12}\\\\b', text, re.I)"
+    },
+    {
+      "file": "core/analysis_agent/numeric_scope.py",
+      "line": 26,
+      "function": "intervals",
+      "operation": "finditer",
+      "expression": "re.finditer('\\\\([A-Za-z_][A-Za-z0-9_]*\\\\s*,[^()\\\\n]{1,48}\\\\)\\\\s*별', text)"
+    },
+    {
+      "file": "core/analysis_agent/numeric_scope.py",
+      "line": 30,
+      "function": "intervals",
+      "operation": "finditer",
+      "expression": "re.finditer(pattern, text, re.I)"
+    },
+    {
+      "file": "core/analysis_agent/operation_binding.py",
+      "line": 29,
+      "function": "candidate",
+      "operation": "search",
+      "expression": "re.search(re.escape(column) + '(?:의)?\\\\s*값(?:들)?(?:을|은|는)?\\\\s*(?:확인|보여|출력)', text)"
+    },
+    {
+      "file": "core/analysis_agent/operation_binding.py",
+      "line": 40,
+      "function": "candidate",
+      "operation": "search",
+      "expression": "re.search('뜻|의미|정의|설명|\\\\b(?:meaning|define|definition|explain)\\\\b', current.get('request_text', ''), re.I)"
+    },
+    {
+      "file": "core/analysis_agent/operation_binding.py",
+      "line": 60,
+      "function": "metadata_for",
+      "operation": "search",
+      "expression": "re.search('int|float|double|decimal|numeric|real', dtypes.get(name, ''), re.I)"
+    },
+    {
+      "file": "core/analysis_agent/operation_binding.py",
+      "line": 114,
+      "function": "resolve",
+      "operation": "sub",
+      "expression": "re.sub('^```(?:json)?\\\\s*|\\\\s*```$', '', text)"
+    },
+    {
+      "file": "core/analysis_agent/recovery.py",
+      "line": 32,
+      "function": "_named_measures",
+      "operation": "search",
+      "expression": "re.search(name + '\\\\)?(?:의)?\\\\s*' + operation, text, re.I)"
+    },
+    {
+      "file": "core/analysis_agent/recovery.py",
+      "line": 33,
+      "function": "_named_measures",
+      "operation": "search",
+      "expression": "re.search(operation + '\\\\s*(?:of\\\\s+|\\\\(\\\\s*)' + name, text, re.I)"
+    },
+    {
+      "file": "core/analysis_agent/recovery.py",
+      "line": 42,
+      "function": "_dtype_family",
+      "operation": "search",
+      "expression": "re.search('(?:^|\\\\W)(?:bool|boolean)(?:\\\\W|$)', dtype)"
+    },
+    {
+      "file": "core/analysis_agent/recovery.py",
+      "line": 44,
+      "function": "_dtype_family",
+      "operation": "search",
+      "expression": "re.search('(?:int|float|double|decimal|numeric|number|real|long|short|byte)', dtype)"
+    },
+    {
+      "file": "core/analysis_agent/recovery.py",
+      "line": 46,
+      "function": "_dtype_family",
+      "operation": "search",
+      "expression": "re.search('(?:object|string|category|categorical|varchar|char|text|enum)', dtype)"
+    },
+    {
+      "file": "core/analysis_agent/recovery.py",
+      "line": 61,
+      "function": "_chart_kind",
+      "operation": "search",
+      "expression": "re.search(pattern, text, re.I)"
+    },
+    {
+      "file": "core/analysis_agent/recovery.py",
+      "line": 69,
+      "function": "_chart_kind",
+      "operation": "search",
+      "expression": "re.search('(?:구간|범위).{0,30}(?:모여|몰려|빈도|분포)', text)"
+    },
+    {
+      "file": "core/analysis_agent/recovery.py",
+      "line": 70,
+      "function": "_chart_kind",
+      "operation": "search",
+      "expression": "re.search('보여|그림|시각화|차트|그래프', text)"
+    },
+    {
+      "file": "core/analysis_agent/recovery.py",
+      "line": 77,
+      "function": "_bounded_preview_count",
+      "operation": "search",
+      "expression": "re.search('정렬|높은|낮은|최신|오래된|상위|하위|조건|필터|\\\\b(?:sort|order|top|bottom|where)\\\\b', text, re.I)"
+    },
+    {
+      "file": "core/analysis_agent/recovery.py",
+      "line": 79,
+      "function": "_bounded_preview_count",
+      "operation": "search",
+      "expression": "re.search('(?:앞|처음|첫)\\\\s*(\\\\d+|한|두|세|네|다섯)\\\\s*(?:개|건|행|줄|값|records?|rows?)', text, re.I)"
+    },
+    {
+      "file": "core/analysis_agent/recovery.py",
+      "line": 93,
+      "function": "_column_listing_requested",
+      "operation": "search",
+      "expression": "re.search(words, text, re.I)"
+    },
+    {
+      "file": "core/analysis_agent/recovery.py",
+      "line": 94,
+      "function": "_column_listing_requested",
+      "operation": "search",
+      "expression": "re.search('고유|결측|중복|누락|빈도|설명|의미|뜻|\\\\b(?:null|distinct|missing|unique|definition|meaning)\\\\b', text, re.I)"
+    },
+    {
+      "file": "core/analysis_agent/recovery.py",
+      "line": 95,
+      "function": "_column_listing_requested",
+      "operation": "search",
+      "expression": "re.search('목록|개수|구조|이름|어떤|몇|전체|보여|알려|확인|\\\\b(?:list|schema|show|display)\\\\b', text, re.I)"
+    },
+    {
+      "file": "core/analysis_agent/recovery.py",
+      "line": 101,
+      "function": "_metadata_ellipsis",
+      "operation": "fullmatch",
+      "expression": "re.fullmatch('(?:\\\\s|[.!?`\\\\\\'\\\\\"]|테이블|데이터베이스|데이터|데이타|자료|컬럼|필드|항목|스키마|현재|방금|지금|다시|앞서|전에|해당|목록|전체|구조|이름|개수|어떤|몇|각|별|자료형|타입|수치형|숫자형|문자열|범주형|정보|않아|않나|있잖아|보여|알려|확인|볼|수|있지|있어|주세요|줘|해|들|의|을|를|은|는|이|그|에|도|(?<![A-Za-z0-9_])(?:tables?|databases?|db|columns?|fields?|schema|list|show|display|the|this|that|again|for|of|please|can|you|all|dtypes?|data|types?|numeric|categorical|string)(?![A-Za-z0-9_]))+', text, re.I)"
+    },
+    {
+      "file": "core/analysis_agent/recovery.py",
+      "line": 118,
+      "function": "_source_from_prior_table_list",
+      "operation": "findall",
+      "expression": "re.findall('[가-힣]{2,}', text)"
+    },
+    {
+      "file": "core/analysis_agent/recovery.py",
+      "line": 132,
+      "function": "_source_from_prior_table_list",
+      "operation": "sub",
+      "expression": "re.sub('[*`]', '', line)"
+    },
+    {
+      "file": "core/analysis_agent/recovery.py",
+      "line": 133,
+      "function": "_source_from_prior_table_list",
+      "operation": "search",
+      "expression": "re.search('(?<![A-Za-z0-9_])' + re.escape(source.rsplit('.', 1)[-1]) + '(?![A-Za-z0-9_])', normalized, re.I)"
+    },
+    {
+      "file": "core/analysis_agent/recovery.py",
+      "line": 139,
+      "function": "_source_from_prior_table_list",
+      "operation": "split",
+      "expression": "re.split(re.escape(short), normalized, maxsplit=1, flags=re.I)"
+    },
+    {
+      "file": "core/analysis_agent/recovery.py",
+      "line": 140,
+      "function": "_source_from_prior_table_list",
+      "operation": "findall",
+      "expression": "re.findall('[가-힣]{2,}', description)"
+    },
+    {
+      "file": "core/analysis_agent/recovery.py",
+      "line": 160,
+      "function": "_strip_outlier_method_scope",
+      "operation": "sub",
+      "expression": "re.sub('[\\\\s_-]+', '', item['value'])"
+    },
+    {
+      "file": "core/analysis_agent/recovery.py",
+      "line": 215,
+      "function": "_state",
+      "operation": "search",
+      "expression": "re.search('(?<!\\\\d)([\\\\d,]+)\\\\s*행\\\\s*(?:표본|샘플|데이터|결과)', text)"
+    },
+    {
+      "file": "core/analysis_agent/recovery.py",
+      "line": 217,
+      "function": "_state",
+      "operation": "search",
+      "expression": "re.search('이상.{0,24}이하', text)"
+    },
+    {
+      "file": "core/analysis_agent/recovery.py",
+      "line": 229,
+      "function": "_state",
+      "operation": "search",
+      "expression": "re.search('(?:현재|지금|이|그)\\\\s*(?:로딩된|보유한|저장된)\\\\b|현재\\\\s*결과|보유\\\\s*데이터', text)"
+    },
+    {
+      "file": "core/analysis_agent/recovery.py",
+      "line": 236,
+      "function": "_state",
+      "operation": "fullmatch",
+      "expression": "re.fullmatch('데이터 구조와 예시를 살펴볼 최대 [\\\\d,]+행입니다\\\\. 전체 통계용 데이터가 아닙니다\\\\.', str(human.content).strip())"
+    },
+    {
+      "file": "core/analysis_agent/recovery.py",
+      "line": 251,
+      "function": "_state",
+      "operation": "search",
+      "expression": "re.search('최신|새로\\\\s*(?:갱신|업데이트|변경)된|현재\\\\s*(?:원본|테이블|DB|데이터베이스)|지금\\\\s*(?:원본|테이블|DB|데이터베이스)|오늘\\\\s*기준|방금\\\\s*갱신', text, re.I)"
+    },
+    {
+      "file": "core/analysis_agent/recovery.py",
+      "line": 254,
+      "function": "_state",
+      "operation": "sub",
+      "expression": "re.sub('(?:평균|중앙값|합계|최소값|최대값)\\\\s*(?:말고|대신|아닌|아니라)', '', text)"
+    },
+    {
+      "file": "core/analysis_agent/recovery.py",
+      "line": 257,
+      "function": "_state",
+      "operation": "sub",
+      "expression": "re.sub('전체\\\\s*총합계|총합계', '총계', objective_text)"
+    },
+    {
+      "file": "core/analysis_agent/recovery.py",
+      "line": 259,
+      "function": "_state",
+      "operation": "search",
+      "expression": "re.search('차트|시각화|그래프|분포.{0,20}(?:그려|그리)|\\\\b(?:chart|plot|viz|visuali[sz]e|visuali[sz]ation)\\\\b', text, re.I)"
+    },
+    {
+      "file": "core/analysis_agent/recovery.py",
+      "line": 260,
+      "function": "_state",
+      "operation": "search",
+      "expression": "re.search('피벗(?:\\\\s*테이블)?|\\\\bpivot(?:\\\\s*table)?\\\\b|교차\\\\s*(?:빈도)?표', text, re.I)"
+    },
+    {
+      "file": "core/analysis_agent/recovery.py",
+      "line": 263,
+      "function": "_state",
+      "operation": "search",
+      "expression": "re.search('건수|고객\\\\s*수|승객\\\\s*수|접촉\\\\s*수|행\\\\s*수|\\\\b(?:row\\\\s*)?count\\\\b', text, re.I)"
+    },
+    {
+      "file": "core/analysis_agent/recovery.py",
+      "line": 264,
+      "function": "_state",
+      "operation": "search",
+      "expression": "re.search('비율|성공률|생존율|전환율|\\\\b(?:ratio|rate|percentage|percent)\\\\b', text, re.I)"
+    },
+    {
+      "file": "core/analysis_agent/recovery.py",
+      "line": 265,
+      "function": "_state",
+      "operation": "search",
+      "expression": "re.search('이중\\\\s*(?:Y\\\\s*)?축|dual\\\\s*(?:Y[- ]?)?axis|twinx', text, re.I)"
+    },
+    {
+      "file": "core/analysis_agent/recovery.py",
+      "line": 268,
+      "function": "_state",
+      "operation": "search",
+      "expression": "re.search('(?:2|두)\\\\s*열.{0,12}(?:서브\\\\s*플롯|패널)|split\\\\s*panel', text, re.I)"
+    },
+    {
+      "file": "core/analysis_agent/recovery.py",
+      "line": 273,
+      "function": "_state",
+      "operation": "search",
+      "expression": "re.search('누적(?:합|곡선|성장)?|\\\\bcumulative(?:\\\\s+sum)?\\\\b|\\\\bcumsum\\\\b', text, re.I)"
+    },
+    {
+      "file": "core/analysis_agent/recovery.py",
+      "line": 277,
+      "function": "_state",
+      "operation": "search",
+      "expression": "re.search('제목|축\\\\s*라벨|정렬|상위\\\\s*\\\\d+|top\\\\s*\\\\d+|\\\\bbins?\\\\b|\\\\d+\\\\s*(?:개\\\\s*)?구간|가로|세로', text, re.I)"
+    },
+    {
+      "file": "core/analysis_agent/recovery.py",
+      "line": 279,
+      "function": "_state",
+      "operation": "search",
+      "expression": "re.search('시계열|리샘플|재표본|시간\\\\s*간격|날짜|일시|타임스탬프|\\\\b(?:time[ -]?series|resampl(?:e|ing)|datetime|timestamp)\\\\b', text, re.I)"
+    },
+    {
+      "file": "core/analysis_agent/recovery.py",
+      "line": 282,
+      "function": "_state",
+      "operation": "search",
+      "expression": "re.search('시간별|매\\\\s*시간|hourly|\\\\b1h\\\\b', text, re.I)"
+    },
+    {
+      "file": "core/analysis_agent/recovery.py",
+      "line": 284,
+      "function": "_state",
+      "operation": "search",
+      "expression": "re.search('일별|매일|daily|\\\\b1d\\\\b', text, re.I)"
+    },
+    {
+      "file": "core/analysis_agent/recovery.py",
+      "line": 286,
+      "function": "_state",
+      "operation": "search",
+      "expression": "re.search('주별|주간|weekly|\\\\b1w\\\\b', text, re.I)"
+    },
+    {
+      "file": "core/analysis_agent/recovery.py",
+      "line": 288,
+      "function": "_state",
+      "operation": "search",
+      "expression": "re.search('월별|매월|monthly|\\\\b1m\\\\b', text, re.I)"
+    },
+    {
+      "file": "core/analysis_agent/recovery.py",
+      "line": 292,
+      "function": "_state",
+      "operation": "search",
+      "expression": "re.search('빈\\\\s*(?:시간|날짜|구간).{0,12}(?:0|제로)|(?:gap|missing).{0,12}(?:zero|0)|fill.{0,8}zero', text, re.I)"
+    },
+    {
+      "file": "core/analysis_agent/recovery.py",
+      "line": 296,
+      "function": "_state",
+      "operation": "search",
+      "expression": "re.search('빈\\\\s*(?:시간|날짜|구간).{0,12}(?:NaN|결측)|(?:gap|missing).{0,12}(?:nan|null)', text, re.I)"
+    },
+    {
+      "file": "core/analysis_agent/recovery.py",
+      "line": 302,
+      "function": "_state",
+      "operation": "search",
+      "expression": "re.search('(?:timezone|시간대)\\\\s*(?:은|는|을|를|:|=)?\\\\s*(UTC|[A-Za-z_]+/[A-Za-z0-9_+\\\\-]+(?:/[A-Za-z0-9_+\\\\-]+)*)', text, re.I)"
+    },
+    {
+      "file": "core/analysis_agent/recovery.py",
+      "line": 306,
+      "function": "_state",
+      "operation": "search",
+      "expression": "re.search('조인|병합|데이터\\\\s*결합|\\\\bjoin\\\\b|\\\\bmerge\\\\b', text, re.I)"
+    },
+    {
+      "file": "core/analysis_agent/recovery.py",
+      "line": 307,
+      "function": "_state",
+      "operation": "search",
+      "expression": "re.search('좌측|왼쪽|\\\\bleft\\\\s*(?:outer\\\\s*)?join\\\\b', text, re.I)"
+    },
+    {
+      "file": "core/analysis_agent/recovery.py",
+      "line": 308,
+      "function": "_state",
+      "operation": "search",
+      "expression": "re.search('우측|오른쪽|\\\\bright\\\\s*(?:outer\\\\s*)?join\\\\b', text, re.I)"
+    },
+    {
+      "file": "core/analysis_agent/recovery.py",
+      "line": 309,
+      "function": "_state",
+      "operation": "search",
+      "expression": "re.search('완전\\\\s*외부|전체\\\\s*외부|\\\\b(?:full|outer)\\\\s*(?:outer\\\\s*)?join\\\\b', text, re.I)"
+    },
+    {
+      "file": "core/analysis_agent/recovery.py",
+      "line": 310,
+      "function": "_state",
+      "operation": "search",
+      "expression": "re.search('내부|\\\\binner\\\\s*join\\\\b', text, re.I)"
+    },
+    {
+      "file": "core/analysis_agent/recovery.py",
+      "line": 312,
+      "function": "_state",
+      "operation": "search",
+      "expression": "re.search('맨[\\\\s-]*휘트니|mann[\\\\s-]*whitney', text, re.I)"
+    },
+    {
+      "file": "core/analysis_agent/recovery.py",
+      "line": 314,
+      "function": "_state",
+      "operation": "search",
+      "expression": "re.search('카이\\\\s*제곱|chi[\\\\s-]*square', text, re.I)"
+    },
+    {
+      "file": "core/analysis_agent/recovery.py",
+      "line": 316,
+      "function": "_state",
+      "operation": "search",
+      "expression": "re.search('일원\\\\s*분산|one[\\\\s-]*way\\\\s*anova|\\\\banova\\\\b', text, re.I)"
+    },
+    {
+      "file": "core/analysis_agent/recovery.py",
+      "line": 318,
+      "function": "_state",
+      "operation": "search",
+      "expression": "re.search('대응\\\\s*(?:표본\\\\s*)?t[\\\\s-]*검정|paired\\\\s*t[\\\\s-]*test', text, re.I)"
+    },
+    {
+      "file": "core/analysis_agent/recovery.py",
+      "line": 320,
+      "function": "_state",
+      "operation": "search",
+      "expression": "re.search('독립\\\\s*(?:표본\\\\s*)?t[\\\\s-]*검정|two[\\\\s-]*sample\\\\s*t[\\\\s-]*test|independent\\\\s*t[\\\\s-]*test', text, re.I)"
+    },
+    {
+      "file": "core/analysis_agent/recovery.py",
+      "line": 322,
+      "function": "_state",
+      "operation": "search",
+      "expression": "re.search('(?:모평균|평균).{0,12}(?:신뢰\\\\s*구간|confidence\\\\s*interval)', text, re.I)"
+    },
+    {
+      "file": "core/analysis_agent/recovery.py",
+      "line": 327,
+      "function": "_state",
+      "operation": "search",
+      "expression": "re.search('윈저화|winsori[sz]|clipping|\\\\bclip\\\\b', text, re.I)"
+    },
+    {
+      "file": "core/analysis_agent/recovery.py",
+      "line": 328,
+      "function": "_state",
+      "operation": "search",
+      "expression": "re.search('(?:상\\\\s*[·ㆍ]?\\\\s*하위|상하위|양쪽)\\\\s*(\\\\d+(?:\\\\.\\\\d+)?)\\\\s*%', text, re.I)"
+    },
+    {
+      "file": "core/analysis_agent/recovery.py",
+      "line": 335,
+      "function": "_state",
+      "operation": "search",
+      "expression": "re.search('(?<![A-Za-z0-9_])IQR(?![A-Za-z0-9_])|사분위\\\\s*범위', text, re.I)"
+    },
+    {
+      "file": "core/analysis_agent/recovery.py",
+      "line": 335,
+      "function": "_state",
+      "operation": "search",
+      "expression": "re.search('이상치|극단치|상한|하한|fence|기준선', text, re.I)"
+    },
+    {
+      "file": "core/analysis_agent/recovery.py",
+      "line": 337,
+      "function": "_state",
+      "operation": "search",
+      "expression": "re.search('(?<![A-Za-z0-9_])(\\\\d+(?:\\\\.\\\\d+)?)\\\\s*\\\\*?\\\\s*IQR(?![A-Za-z0-9_])', text, re.I)"
+    },
+    {
+      "file": "core/analysis_agent/recovery.py",
+      "line": 339,
+      "function": "_state",
+      "operation": "search",
+      "expression": "re.search('Z[\\\\s-]*Score|Z\\\\s*점수|시그마|sigma', text, re.I)"
+    },
+    {
+      "file": "core/analysis_agent/recovery.py",
+      "line": 339,
+      "function": "_state",
+      "operation": "search",
+      "expression": "re.search('이상치|극단치|초과|범위|점검', text, re.I)"
+    },
+    {
+      "file": "core/analysis_agent/recovery.py",
+      "line": 341,
+      "function": "_state",
+      "operation": "search",
+      "expression": "re.search('(?:Z[\\\\s-]*Score|Z\\\\s*점수).{0,12}?(\\\\d+(?:\\\\.\\\\d+)?)|(\\\\d+(?:\\\\.\\\\d+)?)\\\\s*[- ]?시그마', text, re.I)"
+    },
+    {
+      "file": "core/analysis_agent/recovery.py",
+      "line": 345,
+      "function": "_state",
+      "operation": "search",
+      "expression": "re.search('\\\\bMAD\\\\b|중앙값\\\\s*절대\\\\s*편차', text, re.I)"
+    },
+    {
+      "file": "core/analysis_agent/recovery.py",
+      "line": 345,
+      "function": "_state",
+      "operation": "search",
+      "expression": "re.search('이상치|극단치|초과|범위|점검', text, re.I)"
+    },
+    {
+      "file": "core/analysis_agent/recovery.py",
+      "line": 347,
+      "function": "_state",
+      "operation": "search",
+      "expression": "re.search('(?:MAD|수정\\\\s*Z[\\\\s-]*Score).{0,12}?(\\\\d+(?:\\\\.\\\\d+)?)', text, re.I)"
+    },
+    {
+      "file": "core/analysis_agent/recovery.py",
+      "line": 349,
+      "function": "_state",
+      "operation": "search",
+      "expression": "re.search('이상치|극단치', text, re.I)"
+    },
+    {
+      "file": "core/analysis_agent/recovery.py",
+      "line": 350,
+      "function": "_state",
+      "operation": "search",
+      "expression": "re.search('(상위|하위|양쪽|상하위)\\\\s*(\\\\d+(?:\\\\.\\\\d+)?)\\\\s*%', text, re.I)"
+    },
+    {
+      "file": "core/analysis_agent/recovery.py",
+      "line": 356,
+      "function": "_state",
+      "operation": "search",
+      "expression": "re.search('범위|양쪽|상하위|상·?하한|하한.*상한|상한.*하한|절대값|\\\\|Z\\\\|', text, re.I)"
+    },
+    {
+      "file": "core/analysis_agent/recovery.py",
+      "line": 358,
+      "function": "_state",
+      "operation": "search",
+      "expression": "re.search('하한|미만|낮은|하위', text, re.I)"
+    },
+    {
+      "file": "core/analysis_agent/recovery.py",
+      "line": 360,
+      "function": "_state",
+      "operation": "search",
+      "expression": "re.search('상한|초과|높은|고액|상위|최장', text, re.I)"
+    },
+    {
+      "file": "core/analysis_agent/recovery.py",
+      "line": 370,
+      "function": "_state",
+      "operation": "search",
+      "expression": "re.search('결측|누락|\\\\b(?:null|missing|nan)\\\\b', profile_text, re.I)"
+    },
+    {
+      "file": "core/analysis_agent/recovery.py",
+      "line": 372,
+      "function": "_state",
+      "operation": "search",
+      "expression": "re.search('고유값|유니크|\\\\b(?:distinct|unique)\\\\b', text, re.I)"
+    },
+    {
+      "file": "core/analysis_agent/recovery.py",
+      "line": 374,
+      "function": "_state",
+      "operation": "search",
+      "expression": "re.search('기초\\\\s*통계|요약\\\\s*통계|데이터\\\\s*프로파일|\\\\b(?:describe|profile)\\\\b', text, re.I)"
+    },
+    {
+      "file": "core/analysis_agent/recovery.py",
+      "line": 376,
+      "function": "_state",
+      "operation": "search",
+      "expression": "re.search('건수|인원\\\\s*수|명수|빈도|결측|고유값|(?:사람|고객|승객|신청자|가입자|사용자|행)[\\\\\\'\\\\\"]*(?:들)?(?:의)?\\\\s*수|\\\\bhow\\\\s+many\\\\b', profile_text, re.I)"
+    },
+    {
+      "file": "core/analysis_agent/recovery.py",
+      "line": 379,
+      "function": "_state",
+      "operation": "search",
+      "expression": "re.search('평균|중앙값|합계|총합|최솟값|최댓값|최소값|최대값|표준편차|상관|비율|성공률|개수|몇\\\\s*(?:명|개|건)|계산|통계|[가-힣A-Za-z]+[율률]|\\\\b(?:mean|average|avg|count|sum|median|std|correlation|ratio|rate|percentage|percent)\\\\b', text, re.I)"
+    },
+    {
+      "file": "core/analysis_agent/recovery.py",
+      "line": 382,
+      "function": "_state",
+      "operation": "search",
+      "expression": "re.search('(?:이란|개념|정의|뜻).*(?:설명|알려)|(?:이란|란)\\\\s*(?:무엇|뭐)', text)"
+    },
+    {
+      "file": "core/analysis_agent/recovery.py",
+      "line": 402,
+      "function": "_state.mentioned",
+      "operation": "search",
+      "expression": "re.search('(?<![A-Za-z0-9_])' + re.escape(name) + '(?![A-Za-z0-9_])', content)"
+    },
+    {
+      "file": "core/analysis_agent/recovery.py",
+      "line": 406,
+      "function": "_state.mentioned_alias",
+      "operation": "search",
+      "expression": "re.search('(?<![A-Za-z0-9_가-힣])' + re.escape(alias) + '(?=(?:은|는|이|가|을|를|의|과|와|별|간|에서|으로|에|도)?(?:[^가-힣]|$))', column_text)"
+    },
+    {
+      "file": "core/analysis_agent/recovery.py",
+      "line": 416,
+      "function": "_state.mentioned_column",
+      "operation": "sub",
+      "expression": "re.sub('\\\\s*(?:여부|유무|상태|율)$', '', alias)"
+    },
+    {
+      "file": "core/analysis_agent/recovery.py",
+      "line": 417,
+      "function": "_state.mentioned_column",
+      "operation": "search",
+      "expression": "re.search('(?<![A-Za-z0-9_])' + re.escape(stem) + '(?:자|여부|유무|상태|율)(?![A-Za-z0-9_])', column_text)"
+    },
+    {
+      "file": "core/analysis_agent/recovery.py",
+      "line": 444,
+      "function": "_state",
+      "operation": "sub",
+      "expression": "re.sub('구간\\\\s*개수|\\\\bbins?\\\\s+count\\\\b', '', objective_text, flags=re.I)"
+    },
+    {
+      "file": "core/analysis_agent/recovery.py",
+      "line": 450,
+      "function": "_state",
+      "operation": "search",
+      "expression": "re.search(pattern, objective_text, re.I)"
+    },
+    {
+      "file": "core/analysis_agent/recovery.py",
+      "line": 451,
+      "function": "_state",
+      "operation": "search",
+      "expression": "re.search('상관(?:계수|관계)?|피어슨|\\\\b(?:correlation|pearson)\\\\b', objective_text, re.I)"
+    },
+    {
+      "file": "core/analysis_agent/recovery.py",
+      "line": 453,
+      "function": "_state",
+      "operation": "search",
+      "expression": "re.search('비율|성공률|생존율|전환율|[가-힣A-Za-z]+[율률]|\\\\b(?:ratio|rate|percentage|percent)\\\\b', objective_text, re.I)"
+    },
+    {
+      "file": "core/analysis_agent/recovery.py",
+      "line": 459,
+      "function": "_state",
+      "operation": "search",
+      "expression": "re.search('margins?\\\\s*=\\\\s*True|행.{0,8}열.{0,12}(?:총계|합계)|전체\\\\s*(?:총계|평균|생존율)', text, re.I)"
+    },
+    {
+      "file": "core/analysis_agent/recovery.py",
+      "line": 462,
+      "function": "_state",
+      "operation": "search",
+      "expression": "re.search('(전체\\\\s*(?:총계|총합계|평균|생존율|성공률|전환율))', text, re.I)"
+    },
+    {
+      "file": "core/analysis_agent/recovery.py",
+      "line": 464,
+      "function": "_state",
+      "operation": "sub",
+      "expression": "re.sub('\\\\s+', '', pivot_margin_match.group(1))"
+    },
+    {
+      "file": "core/analysis_agent/recovery.py",
+      "line": 466,
+      "function": "_state",
+      "operation": "search",
+      "expression": "re.search('월\\\\s*순서|달력\\\\s*순서|calendar\\\\s*(?:month\\\\s*)?order', text, re.I)"
+    },
+    {
+      "file": "core/analysis_agent/recovery.py",
+      "line": 470,
+      "function": "_state",
+      "operation": "search",
+      "expression": "re.search('normalize\\\\s*=\\\\s*True|전체\\\\s*대비\\\\s*백분율|전체\\\\s*대비\\\\s*비율', text, re.I)"
+    },
+    {
+      "file": "core/analysis_agent/recovery.py",
+      "line": 528,
+      "function": "_state",
+      "operation": "search",
+      "expression": "re.search('이상치.{0,12}(?:제외|제거)|(?:일반|정상)\\\\s*(?:고객|승객|행)', text)"
+    },
+    {
+      "file": "core/analysis_agent/recovery.py",
+      "line": 535,
+      "function": "_state",
+      "operation": "search",
+      "expression": "re.search('(?:TOP|상위)\\\\s*(\\\\d+)', text, re.I)"
+    },
+    {
+      "file": "core/analysis_agent/recovery.py",
+      "line": 544,
+      "function": "_state",
+      "operation": "search",
+      "expression": "re.search('(?<![A-Za-z0-9_가-힣])' + re.escape(term) + '\\\\s*(?:별|그룹별)(?![A-Za-z0-9_])', text, re.I)"
+    },
+    {
+      "file": "core/analysis_agent/recovery.py",
+      "line": 547,
+      "function": "_state",
+      "operation": "search",
+      "expression": "re.search('(?:주요|빈도가\\\\s*높은)\\\\s*' + re.escape(term) + '|' + re.escape(term) + '\\\\s*(?:TOP|상위)\\\\s*\\\\d+', text, re.I)"
+    },
+    {
+      "file": "core/analysis_agent/recovery.py",
+      "line": 571,
+      "function": "_state",
+      "operation": "search",
+      "expression": "re.search('별|그룹별', text)"
+    },
+    {
+      "file": "core/analysis_agent/recovery.py",
+      "line": 581,
+      "function": "_state",
+      "operation": "search",
+      "expression": "re.search('(?:포함|제외).{0,12}(?:전|후)|(?:전|후).{0,12}(?:포함|제외)|비교', text, re.I)"
+    },
+    {
+      "file": "core/analysis_agent/recovery.py",
+      "line": 595,
+      "function": "_state",
+      "operation": "search",
+      "expression": "re.search('조인\\\\s*결과.*(?:행|열|컬럼)|(?:행|열|컬럼).*개수|결합된\\\\s*컬럼', text, re.I)"
+    },
+    {
+      "file": "core/analysis_agent/recovery.py",
+      "line": 610,
+      "function": "_state",
+      "operation": "search",
+      "expression": "re.search('컬럼|필드|항목|(?<![A-Za-z0-9_])(?:columns?|fields?)(?![A-Za-z0-9_])', text, re.I)"
+    },
+    {
+      "file": "core/analysis_agent/recovery.py",
+      "line": 612,
+      "function": "_state",
+      "operation": "search",
+      "expression": "re.search('데이터\\\\s*타입|자료형|\\\\bdtypes?\\\\b|\\\\bdata\\\\s*types?\\\\b', text, re.I)"
+    },
+    {
+      "file": "core/analysis_agent/recovery.py",
+      "line": 616,
+      "function": "_state",
+      "operation": "search",
+      "expression": "re.search('수치형|숫자형|\\\\bnumeric\\\\b', text, re.I)"
+    },
+    {
+      "file": "core/analysis_agent/recovery.py",
+      "line": 619,
+      "function": "_state",
+      "operation": "search",
+      "expression": "re.search('문자열|범주형|카테고리형|\\\\bcategorical\\\\b|\\\\bstring\\\\b', text, re.I)"
+    },
+    {
+      "file": "core/analysis_agent/recovery.py",
+      "line": 680,
+      "function": "_state",
+      "operation": "search",
+      "expression": "re.search('(?<!\\\\d)([\\\\d,]+)\\\\s*행\\\\s*(?:표본|샘플|데이터|결과)', text)"
+    },
+    {
+      "file": "core/analysis_agent/recovery.py",
+      "line": 711,
+      "function": "_state",
+      "operation": "search",
+      "expression": "re.search('별|\\\\bgroup\\\\s+by\\\\b|\\\\bby\\\\b|\\\\b(?:in|for)\\\\s+each\\\\b', text, re.I)"
+    },
+    {
+      "file": "core/analysis_agent/recovery.py",
+      "line": 724,
+      "function": "_state",
+      "operation": "search",
+      "expression": "re.search('전체\\\\s*(?:행|레코드|데이터)(?:의)?\\\\s*(?:수|개수)|총\\\\s*(?:데이터\\\\s*)?(?:행|레코드)\\\\s*(?:수|개수)', text)"
+    },
+    {
+      "file": "core/analysis_agent/recovery.py",
+      "line": 725,
+      "function": "_state",
+      "operation": "fullmatch",
+      "expression": "re.fullmatch('(?:전체\\\\s*)?(?:개수|건수|행\\\\s*수)\\\\s*(?:계산|알려줘|세어줘)?[.!?]?', text.strip())"
+    },
+    {
+      "file": "core/analysis_agent/recovery.py",
+      "line": 727,
+      "function": "_state",
+      "operation": "search",
+      "expression": "re.search('(?:현재|보유|지금|이|그)\\\\s*(?:로딩된\\\\s*)?(?:[\\\\d,]+\\\\s*행\\\\s*)?(?:결과|표본|샘플|데이터)|(?<!독립)(?<!대응)표본(?!\\\\s*(?:평균|분산|크기|수))|샘플|일부\\\\s*데이터', text)"
+    },
+    {
+      "file": "core/analysis_agent/recovery.py",
+      "line": 755,
+      "function": "_state",
+      "operation": "fullmatch",
+      "expression": "re.fullmatch('(?:\\\\s*(?:histogram|히스토그램|막대그래프|차트|그래프|분포|시각화|그려\\\\s*줘|그려주세요|보여\\\\s*줘|보여주세요|그려|plot|draw|show|please|it|that|again|the|a|이거|그거|방금|해당|같은|이어서|다시|이를|그|이|을|를|으로|로|도|[.!?]))+', text, re.I)"
+    },
+    {
+      "file": "core/analysis_agent/recovery.py",
+      "line": 802,
+      "function": "_state",
+      "operation": "search",
+      "expression": "re.search(operation_patterns[value_aggregation], text, re.I)"
+    },
+    {
+      "file": "core/analysis_agent/recovery.py",
+      "line": 852,
+      "function": "_state",
+      "operation": "findall",
+      "expression": "re.findall('(\\\\d{1,3})\\\\s*대\\\\s*(이상|이하)?', text)"
+    },
+    {
+      "file": "core/analysis_agent/recovery.py",
+      "line": 900,
+      "function": "_state",
+      "operation": "search",
+      "expression": "re.search('(?<![A-Za-z0-9_가-힣])' + re.escape(term) + '(?:\\\\))?\\\\s*(?:군|그룹)?별(?![A-Za-z0-9_])', text, re.I)"
+    },
+    {
+      "file": "core/analysis_agent/recovery.py",
+      "line": 914,
+      "function": "_state",
+      "operation": "search",
+      "expression": "re.search('(?<![A-Za-z0-9_가-힣])' + re.escape(term) + '\\\\s+([^\\\\s,]+)와\\\\s+([^\\\\s,]+)의.{0,50}(?:비교|대조)', text, re.I)"
+    },
+    {
+      "file": "core/analysis_agent/recovery.py",
+      "line": 944,
+      "function": "_state",
+      "operation": "search",
+      "expression": "re.search('(<=|>=|<|>)\\\\s*(-?\\\\d+(?:\\\\.\\\\d+)?)', text)"
+    },
+    {
+      "file": "core/analysis_agent/recovery.py",
+      "line": 1007,
+      "function": "_state",
+      "operation": "search",
+      "expression": "re.search('빈도|분포.*표|종류별|범주별|현황.*(?:세어|건수)|frequency', text, re.I)"
+    },
+    {
+      "file": "core/analysis_agent/recovery.py",
+      "line": 1008,
+      "function": "_state",
+      "operation": "search",
+      "expression": "re.search(re.escape(term) + '\\\\s*별', text)"
+    },
+    {
+      "file": "core/analysis_agent/recovery.py",
+      "line": 1063,
+      "function": "_state",
+      "operation": "search",
+      "expression": "re.search('그중|같은|아까|앞선|이어서|말고|대신|바꿔|그\\\\s*데이터|유지', text)"
+    },
+    {
+      "file": "core/analysis_agent/recovery.py",
+      "line": 1064,
+      "function": "_state",
+      "operation": "search",
+      "expression": "re.search('그중|말고|대신|바꿔|조건', text)"
+    },
+    {
+      "file": "core/analysis_agent/recovery.py",
+      "line": 1108,
+      "function": "_state",
+      "operation": "search",
+      "expression": "re.search('제목|축|라벨|정렬|상위|top|bin|구간|가로|세로|바꿔|수정', text, re.I)"
+    },
+    {
+      "file": "core/analysis_agent/recovery.py",
+      "line": 1135,
+      "function": "_state",
+      "operation": "search",
+      "expression": "re.search('재조회|다시\\\\s*(?:로딩|조회|불러)|새로\\\\s*(?:조회|로딩|불러)|\\\\brefresh\\\\b', text, re.I)"
+    },
+    {
+      "file": "core/analysis_agent/recovery.py",
+      "line": 1163,
+      "function": "_state",
+      "operation": "search",
+      "expression": "re.search('같은|다시|이어서|그\\\\s*차트|same|again', text, re.I)"
+    },
+    {
+      "file": "core/analysis_agent/recovery.py",
+      "line": 1199,
+      "function": "_state",
+      "operation": "search",
+      "expression": "re.search('object|string|varchar|char|text|enum|^set$|categor|bool', str(dtype), re.I)"
+    },
+    {
+      "file": "core/analysis_agent/recovery.py",
+      "line": 1937,
+      "function": "_state",
+      "operation": "search",
+      "expression": "re.search('데이터셋|데이터프레임|조인\\\\s*결과|합친\\\\s*데이터|저장|내보내|다운로드|\\\\b(?:dataset|dataframe|save|export|download)\\\\b|joined\\\\s+rows|merged\\\\s+data', current.get('request_text', ''), re.I)"
+    },
+    {
+      "file": "core/analysis_agent/recovery.py",
+      "line": 2037,
+      "function": "_numeric_column_known",
+      "operation": "match",
+      "expression": "re.match('^(?:tinyint|smallint|bigint|int(?:eger)?|float|double|decimal|numeric|real|number)', str(dtype), re.I)"
+    },
+    {
+      "file": "core/analysis_agent/recovery.py",
+      "line": 2647,
+      "function": "_numeric_missing_policy_valid",
+      "operation": "search",
+      "expression": "re.search(\"(?:결측|NULL|NaN).{0,24}(?:처리|변환|간주)\\\\s*(?:하지\\\\s*(?:마|말|않)|금지)|(?:do\\\\s+not|don't|never)\\\\s+(?:treat|convert|map|interpret)\", text, re.I)"
+    },
+    {
+      "file": "core/analysis_agent/recovery.py",
+      "line": 2649,
+      "function": "_numeric_missing_policy_valid",
+      "operation": "search",
+      "expression": "re.search('(?:결측|NULL|NaN).{0,20}(?:처리|변환|간주)|(?:treat|convert|map|interpret).{0,100}(?:missing|null|nan)', text, re.I)"
+    },
+    {
+      "file": "core/analysis_agent/recovery.py",
+      "line": 2667,
+      "function": "_prepared_numeric_call",
+      "operation": "search",
+      "expression": "re.search('히스토그램|histogram|분포', current.get('request_text', ''), re.I)"
+    },
+    {
+      "file": "core/analysis_agent/remote_completion.py",
+      "line": 15,
+      "function": "table_list_requested",
+      "operation": "search",
+      "expression": "re.search('컬럼|필드|항목|(?<![A-Za-z0-9_])(?:columns?|fields?|dtypes?|data\\\\s+types?)(?![A-Za-z0-9_])', text, re.I)"
+    },
+    {
+      "file": "core/analysis_agent/remote_completion.py",
+      "line": 17,
+      "function": "table_list_requested",
+      "operation": "search",
+      "expression": "re.search('(?<![A-Za-z0-9_])(?:rows?|records?|레코드|행)(?![A-Za-z_])', text, re.I)"
+    },
+    {
+      "file": "core/analysis_agent/remote_completion.py",
+      "line": 20,
+      "function": "table_list_requested",
+      "operation": "search",
+      "expression": "re.search('(?:테이블|(?<![A-Za-z0-9_])tables?(?![A-Za-z0-9_])).{0,45}(?:목록|리스트|\\\\blist\\\\b|어떤|보여|있(?:어|나요|지))', text, re.I)"
+    },
+    {
+      "file": "core/analysis_agent/remote_completion.py",
+      "line": 21,
+      "function": "table_list_requested",
+      "operation": "search",
+      "expression": "re.search('(?:목록|리스트|\\\\blist\\\\b|어떤).{0,45}(?:테이블|(?<![A-Za-z0-9_])tables?(?![A-Za-z0-9_]))', text, re.I)"
+    },
+    {
+      "file": "core/analysis_agent/remote_completion.py",
+      "line": 31,
+      "function": "catalog_read_requested",
+      "operation": "search",
+      "expression": "re.search('목록|리스트|조회|보여|출력|\\\\b(?:list|show|display|select)\\\\b', text, re.I)"
+    },
+    {
+      "file": "core/analysis_agent/remote_completion.py",
+      "line": 32,
+      "function": "catalog_read_requested",
+      "operation": "search",
+      "expression": "re.search('뜻|의미|정의|설명|\\\\b(?:meaning|definition|explain)\\\\b', text, re.I)"
+    },
+    {
+      "file": "core/analysis_agent/remote_completion.py",
+      "line": 77,
+      "function": "deferred_execution_claim",
+      "operation": "split",
+      "expression": "re.split('(?<=[.!?。])\\\\s+|\\\\n', content)"
+    },
+    {
+      "file": "core/analysis_agent/remote_completion.py",
+      "line": 78,
+      "function": "deferred_execution_claim",
+      "operation": "search",
+      "expression": "re.search('(?:기능|자동\\\\s*알림).{0,20}(?:없습니다|지원하지\\\\s*않|제공하지\\\\s*않)|(?:안내|알려).{0,12}(?:드릴|줄)\\\\s*수\\\\s*없', sentence)"
+    },
+    {
+      "file": "core/analysis_agent/remote_completion.py",
+      "line": 83,
+      "function": "deferred_execution_claim",
+      "operation": "search",
+      "expression": "re.search(\"(?:조회\\\\s*)?결과(?:가|는)?\\\\s*(?:도착|반환|준비|나오|오면).{0,100}(?:알려|안내|보여|제공|전달)|(?:조회|분석|작업)(?:가|이)?\\\\s*완료되면.{0,80}(?:알려|안내|보여|전달)|(?:I(?:\\\\s+will|[’\\\\']ll)\\\\s+(?:notify|let\\\\s+you\\\\s+know)|(?:when|once)\\\\s+(?:the\\\\s+)?results?\\\\s+(?:arrive|are\\\\s+ready|come\\\\s+back))\", content, re.I | re.S)"
+    },
+    {
+      "file": "core/analysis_agent/row_count.py",
+      "line": 7,
+      "function": "requested",
+      "operation": "search",
+      "expression": "re.search('(?<![A-Za-z0-9_])rows?\\\\s*(?:수|개수|몇|count)|(?<![A-Za-z0-9_])(?:행|레코드)\\\\s*(?:수|개수)|\\\\b(?:number|count)\\\\s+of\\\\s+(?:rows|records)\\\\b', text, re.I)"
+    },
+    {
+      "file": "core/analysis_agent/row_preview.py",
+      "line": 10,
+      "function": "requested",
+      "operation": "search",
+      "expression": "re.search('그려|시각화|histogram|chart|plot|조인|join|평균|합계|고유|결측', text, re.I)"
+    },
+    {
+      "file": "core/analysis_agent/row_preview.py",
+      "line": 17,
+      "function": "requested",
+      "operation": "search",
+      "expression": "re.search(number + '\\\\s*(?:개\\\\s*)?' + unit, text, re.I)"
+    },
+    {
+      "file": "core/analysis_agent/row_preview.py",
+      "line": 19,
+      "function": "requested",
+      "operation": "search",
+      "expression": "re.search('(?<![A-Za-z0-9_])' + unit + '\\\\s*(?:를|을|만)?\\\\s*' + number + '\\\\s*(?:개|건|행)?', text, re.I)"
+    },
+    {
+      "file": "core/analysis_agent/row_preview.py",
+      "line": 20,
+      "function": "requested",
+      "operation": "search",
+      "expression": "re.search('보여|출력|추출|미리보기|표|(?<![A-Za-z0-9_])(?:table|preview|show|display|extract|sample|head)(?![A-Za-z0-9_])', text, re.I)"
+    },
+    {
+      "file": "core/analysis_agent/schema_questions.py",
+      "line": 9,
+      "function": "type_question",
+      "operation": "search",
+      "expression": "re.search('자료형|(?:데이터\\\\s*)?타입|' + edge('dtypes?|data\\\\s*types?'), text, re.I)"
+    },
+    {
+      "file": "core/analysis_agent/schema_questions.py",
+      "line": 10,
+      "function": "type_question",
+      "operation": "search",
+      "expression": "re.search('컬럼|필드|항목|테이블|스키마|' + edge('columns?|fields?|tables?|schema'), text, re.I)"
+    },
+    {
+      "file": "core/analysis_agent/schema_questions.py",
+      "line": 58,
+      "function": "semantic_columns",
+      "operation": "search",
+      "expression": "re.search('컬럼|필드|항목|\\\\bcolumns?\\\\b|\\\\bfields?\\\\b', text, re.I)"
+    },
+    {
+      "file": "core/analysis_agent/schema_questions.py",
+      "line": 59,
+      "function": "semantic_columns",
+      "operation": "search",
+      "expression": "re.search('의미|나타내|표현|represent|시간|날짜|\\\\b(?:date|time|temporal)\\\\b|관련(?:된)?\\\\s*(?:컬럼|필드|항목)|(?:컬럼|필드|항목).{0,20}관련|related.{0,10}(?:columns?|fields?)', text, re.I)"
+    },
+    {
+      "file": "core/analysis_agent/schema_questions.py",
+      "line": 61,
+      "function": "semantic_columns",
+      "operation": "search",
+      "expression": "re.search('전체\\\\s*(?:목록|리스트)|모든\\\\s*(?:컬럼|필드)|all\\\\s+columns', text, re.I)"
+    },
+    {
+      "file": "core/analysis_agent/schema_questions.py",
+      "line": 65,
+      "function": "reference",
+      "operation": "search",
+      "expression": "re.search('여기|현재|이\\\\s*테이블|이\\\\s*데이터|이\\\\s*자료|\\\\bthis\\\\s+(?:table|dataset)\\\\b', text, re.I)"
+    },
+    {
+      "file": "core/analysis_agent/schema_questions.py",
+      "line": 69,
+      "function": "corrective_goal",
+      "operation": "search",
+      "expression": "re.search('찾아\\\\s*줘야|테이블에서\\\\s*(?:찾아|확인)|대신.{0,15}테이블|wrong\\\\s+table', text, re.I)"
+    },
+    {
+      "file": "core/analysis_agent/semantic.py",
+      "line": 65,
+      "function": "meaning_constraints",
+      "operation": "sub",
+      "expression": "re.sub('(?:현재|지금)\\\\s*(?:로딩된|보유한|저장된|보유|결과|데이터)|\\\\bcurrent\\\\s+(?:loaded|data|sample)', '', text, flags=re.I)"
+    },
+    {
+      "file": "core/analysis_agent/semantic.py",
+      "line": 70,
+      "function": "meaning_constraints",
+      "operation": "search",
+      "expression": "re.search(pattern, text, re.I)"
+    },
+    {
+      "file": "core/analysis_agent/semantic.py",
+      "line": 78,
+      "function": "compatible_definition",
+      "operation": "search",
+      "expression": "re.search(patterns[item], description, re.I)"
+    },
+    {
+      "file": "core/analysis_agent/semantic.py",
+      "line": 89,
+      "function": "validate_interpretation",
+      "operation": "search",
+      "expression": "re.search('int|float|double|decimal|numeric|real', column['dtype'], re.I)"
+    },
+    {
+      "file": "core/analysis_agent/semantic.py",
+      "line": 104,
+      "function": "validate_interpretation",
+      "operation": "search",
+      "expression": "re.search('(?<![\\\\w.])' + re.escape(str(value)) + '(?![\\\\w.])', column['description'], re.I)"
+    },
+    {
+      "file": "core/analysis_agent/semantic.py",
+      "line": 199,
+      "function": "resolve",
+      "operation": "sub",
+      "expression": "re.sub('^```(?:json)?\\\\s*|\\\\s*```$', '', text)"
+    },
+    {
+      "file": "core/analysis_agent/source_mentions.py",
+      "line": 13,
+      "function": "mask_source_mentions",
+      "operation": "finditer",
+      "expression": "re.finditer('\\'(?:[^\\']|\\'\\')*\\'|\\\\\"(?:[^\\\\\"]|\\\\\"\\\\\")*\\\\\"', text)"
+    },
+    {
+      "file": "core/analysis_agent/source_mentions.py",
+      "line": 18,
+      "function": "mask_source_mentions",
+      "operation": "fullmatch",
+      "expression": "re.fullmatch('[\\\\w-]+', p)"
+    },
+    {
+      "file": "core/analysis_agent/source_mentions.py",
+      "line": 23,
+      "function": "mask_source_mentions",
+      "operation": "finditer",
+      "expression": "re.finditer(pattern, text, re.I)"
+    },
+    {
+      "file": "core/analysis_agent/source_scatter.py",
+      "line": 66,
+      "function": "target",
+      "operation": "search",
+      "expression": "re.search('전체|모든|모집단|\\\\b(?:all|whole|entire|population)\\\\b', text, re.I)"
+    },
+    {
+      "file": "core/analysis_agent/source_scatter.py",
+      "line": 74,
+      "function": "target",
+      "operation": "search",
+      "expression": "re.search('제목|축\\\\s*라벨|추세선|회귀선|로그\\\\s*축|색상|마커|\\\\b(?:title|xlabel|ylabel|legend|colou?r|marker|alpha|logarithmic|regression)\\\\b', text, re.I)"
+    },
+    {
+      "file": "core/analysis_agent/source_scatter.py",
+      "line": 92,
+      "function": "plan_for",
+      "operation": "search",
+      "expression": "re.search('int|float|double|decimal|numeric|real|number', str(types[c]), re.I)"
+    },
+    {
+      "file": "core/analysis_agent/storage_policy.py",
+      "line": 7,
+      "function": "",
+      "operation": "compile",
+      "expression": "re.compile('^[0-9a-f]{64}$')"
+    },
+    {
+      "file": "core/analysis_agent/support_report.py",
+      "line": 15,
+      "function": "",
+      "operation": "compile",
+      "expression": "re.compile('[A-Za-z_][A-Za-z0-9_.-]{0,95}\\\\Z')"
+    },
+    {
+      "file": "core/analysis_agent/support_report.py",
+      "line": 16,
+      "function": "",
+      "operation": "compile",
+      "expression": "re.compile('[a-f0-9]{12,64}\\\\Z')"
+    },
+    {
+      "file": "core/analysis_agent/support_report.py",
+      "line": 47,
+      "function": "process_code_identity",
+      "operation": "fullmatch",
+      "expression": "re.fullmatch('[0-9][a-zA-Z0-9.+-]{0,40}', value)"
+    },
+    {
+      "file": "core/analysis_agent/support_report.py",
+      "line": 99,
+      "function": "public_runtime",
+      "operation": "fullmatch",
+      "expression": "re.fullmatch('[0-9.]{1,20}', str(value.get('python_version')))"
+    },
+    {
+      "file": "core/analysis_agent/support_report.py",
+      "line": 103,
+      "function": "public_runtime",
+      "operation": "fullmatch",
+      "expression": "re.fullmatch('[0-9][a-zA-Z0-9.+-]{0,40}', val)"
+    },
+    {
+      "file": "core/analysis_agent/support_report.py",
+      "line": 171,
+      "function": "summarize",
+      "operation": "fullmatch",
+      "expression": "re.fullmatch('[0-9T:.+Z-]{10,40}', rawtime)"
+    },
+    {
+      "file": "core/analysis_agent/value_list.py",
+      "line": 18,
+      "function": "requested",
+      "operation": "search",
+      "expression": "re.search('개수|몇\\\\s*개|빈도|비율|평균|최대|최소|\\\\b(?:count|how many|frequency|ratio|average|max|min)\\\\b', text, re.I)"
+    },
+    {
+      "file": "core/analysis_agent/value_list.py",
+      "line": 20,
+      "function": "requested",
+      "operation": "search",
+      "expression": "re.search('어떤\\\\s*(?:값|종류)|값들.{0,25}(?:되어|있|보여|알려)|(?:고유값|유니크|값\\\\s*목록|범주\\\\s*목록).{0,20}(?:보여|알려|확인|출력)|\\\\b(?:distinct|unique|possible)\\\\s+values\\\\b|\\\\bwhat\\\\s+values\\\\b', text, re.I)"
+    },
+    {
+      "file": "core/analysis_agent/value_list.py",
+      "line": 28,
+      "function": "target",
+      "operation": "search",
+      "expression": "re.search(re.escape(column) + '[`\\\\\"]?(?:은|는|의|에)?\\\\s*(?:어떤\\\\s*)?(?:값|고유값|유니크)', text, re.I)"
+    },
+    {
+      "file": "core/analysis_agent/value_list.py",
+      "line": 154,
+      "function": "render.display",
+      "operation": "sub",
+      "expression": "re.sub('([\\\\\\\\`*_\\\\[\\\\]|])', '\\\\\\\\\\\\1', text)"
+    },
+    {
+      "file": "core/analysis_tool_discovery.py",
+      "line": 12,
+      "function": "discover_tools",
+      "operation": "findall",
+      "expression": "re.findall('[a-z0-9_]+|[가-힣]+', query.casefold())"
+    },
+    {
+      "file": "core/sql_utils.py",
+      "line": 17,
+      "function": "",
+      "operation": "compile",
+      "expression": "re.compile('```(?:sql)?\\\\s*(.*?)\\\\s*```', re.IGNORECASE | re.DOTALL)"
+    },
+    {
+      "file": "core/sql_utils.py",
+      "line": 72,
+      "function": "ensure_limit_clause",
+      "operation": "compile",
+      "expression": "re.compile('(?is)\\\\blimit\\\\s+\\\\d+(\\\\s+offset\\\\s+\\\\d+)?\\\\s*$')"
+    },
+    {
+      "file": "utils/analysis_latest_filters.py",
+      "line": 40,
+      "function": "sql",
+      "operation": "search",
+      "expression": "re.search('float|double', str((types or {}).get(item['column'], '')).lower())"
+    },
+    {
+      "file": "utils/analysis_latest_filters.py",
+      "line": 50,
+      "function": "validate_types",
+      "operation": "search",
+      "expression": "re.search('string|str|object|varchar|char', dtype)"
+    },
+    {
+      "file": "utils/analysis_latest_filters.py",
+      "line": 52,
+      "function": "validate_types",
+      "operation": "search",
+      "expression": "re.search('bool', dtype)"
+    },
+    {
+      "file": "utils/analysis_latest_filters.py",
+      "line": 54,
+      "function": "validate_types",
+      "operation": "search",
+      "expression": "re.search('int|long|short|byte|float|double|decimal|numeric', dtype)"
+    },
+    {
+      "file": "utils/analysis_latest_filters.py",
+      "line": 56,
+      "function": "validate_types",
+      "operation": "search",
+      "expression": "re.search('date|time', dtype)"
+    },
+    {
+      "file": "utils/analysis_remote_latest.py",
+      "line": 42,
+      "function": "plan",
+      "operation": "search",
+      "expression": "re.search('int|long|short|byte|float|double|decimal|numeric|timestamp|datetime|date', types[c])"
+    },
+    {
+      "file": "utils/analysis_remote_latest.py",
+      "line": 44,
+      "function": "plan",
+      "operation": "search",
+      "expression": "re.search('array|struct|map|binary', types[c])"
+    },
+    {
+      "file": "utils/analysis_remote_latest.py",
+      "line": 46,
+      "function": "plan",
+      "operation": "search",
+      "expression": "re.search('int|long|short|byte|float|double|decimal|numeric', types[value_column])"
+    },
+    {
+      "file": "utils/analysis_remote_latest.py",
+      "line": 61,
+      "function": "plan",
+      "operation": "search",
+      "expression": "re.search('float|double', types[c])"
+    },
+    {
+      "file": "utils/analysis_skill_registry.py",
+      "line": 14,
+      "function": "_read",
+      "operation": "fullmatch",
+      "expression": "re.fullmatch('[a-z0-9]+(?:-[a-z0-9]+)*', name)"
+    },
+    {
+      "file": "utils/analysis_skill_registry.py",
+      "line": 22,
+      "function": "_read",
+      "operation": "match",
+      "expression": "re.match('\\\\A---\\\\n(.*?)\\\\n---\\\\n(.*)\\\\Z', text, re.S)"
+    },
+    {
+      "file": "utils/chatbot_plan.py",
+      "line": 72,
+      "function": "_has_yes_filter",
+      "operation": "search",
+      "expression": "re.search(f\"(?<![A-Za-z0-9_]){re.escape(term.lower())}{separator}'?yes'?\", lowered)"
+    },
+    {
+      "file": "utils/chatbot_plan.py",
+      "line": 80,
+      "function": "_has_positive_filter",
+      "operation": "search",
+      "expression": "re.search(term_pattern + separator + positive_pattern, lowered)"
+    },
+    {
+      "file": "utils/chatbot_plan.py",
+      "line": 84,
+      "function": "_identifier_position",
+      "operation": "search",
+      "expression": "re.search(f'(?<![A-Za-z0-9_]){re.escape(column)}(?![A-Za-z0-9_])', text)"
+    },
+    {
+      "file": "utils/chatbot_plan.py",
+      "line": 294,
+      "function": "_unmatched_identifier_tokens",
+      "operation": "findall",
+      "expression": "re.findall('[A-Za-z_][A-Za-z0-9_]*', strip_internal_prompt_context(text or ''))"
+    },
+    {
+      "file": "utils/chatbot_plan.py",
+      "line": 307,
+      "function": "_axis_token_spans",
+      "operation": "finditer",
+      "expression": "re.finditer(pattern, lowered)"
+    },
+    {
+      "file": "utils/chatbot_plan.py",
+      "line": 371,
+      "function": "_parse_top_n",
+      "operation": "search",
+      "expression": "re.search('(?:top|상위)\\\\s*(\\\\d+)\\\\s*(?:개|건|명)?', lowered)"
+    },
+    {
+      "file": "utils/chatbot_plan.py",
+      "line": 412,
+      "function": "_parenthetical_target_candidate",
+      "operation": "search",
+      "expression": "re.search(term_pattern + '\\\\s*\\\\(', lowered)"
+    },
+    {
+      "file": "utils/chatbot_plan.py",
+      "line": 467,
+      "function": "_parse_group_value_condition",
+      "operation": "findall",
+      "expression": "re.findall('(-?\\\\d+(?:\\\\.\\\\d+)?)\\\\s*인\\\\s*사람', window)"
+    },
+    {
+      "file": "utils/chatbot_plan.py",
+      "line": 469,
+      "function": "_parse_group_value_condition",
+      "operation": "findall",
+      "expression": "re.findall('(-?\\\\d+(?:\\\\.\\\\d+)?)\\\\s*인', window)"
+    },
+    {
+      "file": "utils/chatbot_plan.py",
+      "line": 482,
+      "function": "_parse_rank_percent",
+      "operation": "search",
+      "expression": "re.search('(상위|top)\\\\s*(\\\\d+(?:\\\\.\\\\d+)?)\\\\s*%', lowered)"
+    },
+    {
+      "file": "utils/chatbot_plan.py",
+      "line": 485,
+      "function": "_parse_rank_percent",
+      "operation": "search",
+      "expression": "re.search('(하위|bottom)\\\\s*(\\\\d+(?:\\\\.\\\\d+)?)\\\\s*%', lowered)"
+    },
+    {
+      "file": "utils/chatbot_plan.py",
+      "line": 508,
+      "function": "_comparison_op_from_word",
+      "operation": "sub",
+      "expression": "re.sub('\\\\s+', '', word or '')"
+    },
+    {
+      "file": "utils/chatbot_plan.py",
+      "line": 537,
+      "function": "_parse_comparison_filters",
+      "operation": "search",
+      "expression": "re.search(pattern, lowered)"
+    },
+    {
+      "file": "utils/chatbot_plan.py",
+      "line": 557,
+      "function": "_normalize_condition_phrase",
+      "operation": "sub",
+      "expression": "re.sub('\\\\s+', ' ', str(text or ''))"
+    },
+    {
+      "file": "utils/chatbot_plan.py",
+      "line": 607,
+      "function": "_numeric_range_condition_candidates",
+      "operation": "finditer",
+      "expression": "re.finditer(pattern, lowered)"
+    },
+    {
+      "file": "utils/chatbot_plan.py",
+      "line": 665,
+      "function": "_unresolved_numeric_range_condition_candidates",
+      "operation": "finditer",
+      "expression": "re.finditer(pattern, search_text, flags=re.IGNORECASE)"
+    },
+    {
+      "file": "utils/chatbot_plan.py",
+      "line": 672,
+      "function": "_unresolved_numeric_range_condition_candidates",
+      "operation": "sub",
+      "expression": "re.sub('(?:이|가|은|는|을|를|의)$', '', str(match.group('term') or '').strip())"
+    },
+    {
+      "file": "utils/chatbot_plan.py",
+      "line": 697,
+      "function": "_find_phrase_positions",
+      "operation": "finditer",
+      "expression": "re.finditer(pattern, lowered)"
+    },
+    {
+      "file": "utils/chatbot_plan.py",
+      "line": 709,
+      "function": "_has_explicit_column_value",
+      "operation": "search",
+      "expression": "re.search(term_pattern + connector + value_pattern, lowered)"
+    },
+    {
+      "file": "utils/chatbot_plan.py",
+      "line": 801,
+      "function": "_range_condition_candidates",
+      "operation": "finditer",
+      "expression": "re.finditer('(\\\\d{2})\\\\s*대\\\\s*(?:에서|부터)?\\\\s*(\\\\d{2})\\\\s*대(?:\\\\s*사이)?', text or '')"
+    },
+    {
+      "file": "utils/chatbot_plan.py",
+      "line": 808,
+      "function": "_range_condition_candidates",
+      "operation": "sub",
+      "expression": "re.sub('\\\\s+', ' ', match.group(0))"
+    },
+    {
+      "file": "utils/chatbot_plan.py",
+      "line": 818,
+      "function": "_possession_condition_candidates",
+      "operation": "finditer",
+      "expression": "re.finditer(pattern, text or '')"
+    },
+    {
+      "file": "utils/chatbot_plan.py",
+      "line": 819,
+      "function": "_possession_condition_candidates",
+      "operation": "sub",
+      "expression": "re.sub('(?:을|를)$', '', str(match.group(1) or '').strip())"
+    },
+    {
+      "file": "utils/chatbot_plan.py",
+      "line": 820,
+      "function": "_possession_condition_candidates",
+      "operation": "sub",
+      "expression": "re.sub('\\\\s+', ' ', match.group(0))"
+    },
+    {
+      "file": "utils/chatbot_plan.py",
+      "line": 1659,
+      "function": "_parse_decade_range_filters",
+      "operation": "search",
+      "expression": "re.search('(\\\\d{2})\\\\s*대.*?(\\\\d{2})\\\\s*대', text or '')"
+    },
+    {
+      "file": "utils/data_context.py",
+      "line": 47,
+      "function": "",
+      "operation": "compile",
+      "expression": "re.compile('^[A-Za-z_][A-Za-z0-9_]*$')"
+    },
+    {
+      "file": "utils/data_context.py",
+      "line": 48,
+      "function": "",
+      "operation": "compile",
+      "expression": "re.compile('^[A-Za-z_][A-Za-z0-9_]*(\\\\.[A-Za-z_][A-Za-z0-9_]*){0,2}$')"
+    },
+    {
+      "file": "utils/eda_validation.py",
+      "line": 107,
+      "function": "_requested_identifier_tokens",
+      "operation": "findall",
+      "expression": "re.findall('[A-Za-z_][A-Za-z0-9_]*', user_prompt)"
+    },
+    {
+      "file": "utils/sql_text.py",
+      "line": 6,
+      "function": "",
+      "operation": "compile",
+      "expression": "re.compile('```(?:sql)?\\\\s*(.*?)\\\\s*```', re.IGNORECASE | re.DOTALL)"
+    },
+    {
+      "file": "utils/sql_text.py",
+      "line": 7,
+      "function": "",
+      "operation": "compile",
+      "expression": "re.compile('(?is)^\\\\s*(select|with)\\\\b')"
+    },
+    {
+      "file": "utils/sql_text.py",
+      "line": 8,
+      "function": "",
+      "operation": "compile",
+      "expression": "re.compile('(?im)^\\\\s*(select|with)\\\\b')"
+    },
+    {
+      "file": "utils/sql_text.py",
+      "line": 56,
+      "function": "extract_sql_from_text",
+      "operation": "search",
+      "expression": "re.search('(?is)\\\\bfrom\\\\b', candidate)"
+    },
+    {
+      "file": "utils/table_context.py",
+      "line": 122,
+      "function": "generate_column_aliases",
+      "operation": "sub",
+      "expression": "re.sub('[_\\\\-.]+', ' ', name)"
+    },
+    {
+      "file": "utils/table_context.py",
+      "line": 125,
+      "function": "generate_column_aliases",
+      "operation": "sub",
+      "expression": "re.sub('[_\\\\-\\\\.\\\\s]+', '', name)"
+    },
+    {
+      "file": "utils/table_context.py",
+      "line": 128,
+      "function": "generate_column_aliases",
+      "operation": "sub",
+      "expression": "re.sub('(?<!^)([A-Z])', ' \\\\1', name)"
+    },
+    {
+      "file": "utils/table_context.py",
+      "line": 448,
+      "function": "_identifier_position",
+      "operation": "search",
+      "expression": "re.search(f'(?<![A-Za-z0-9_]){re.escape(column.lower())}(?![A-Za-z0-9_])', text)"
+    },
+    {
+      "file": "utils/turn_logger.py",
+      "line": 49,
+      "function": "_safe_text",
+      "operation": "sub",
+      "expression": "re.sub(\"'{2,}\", \"'\", value)"
+    },
+    {
+      "file": "ui/analysis_diagnostics.py",
+      "line": 18,
+      "function": "render_diagnostics",
+      "operation": "fullmatch",
+      "expression": "re.fullmatch('(?:[a-f0-9]{12}|[a-f0-9]{32})', reference)"
+    }
+  ]
+}

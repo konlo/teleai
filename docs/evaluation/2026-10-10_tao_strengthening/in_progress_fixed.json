@@ -1,0 +1,865 @@
+{
+  "conversation": "2d20b7a7-a716-4330-b60b-a4345e13443e",
+  "status": "working",
+  "goal": {
+    "objective": "requested work",
+    "mode": "execute",
+    "source_reference": "previous_analysis",
+    "sources": [
+      "teleai_default.bank_loan"
+    ],
+    "columns": [
+      "age"
+    ],
+    "conditions": [],
+    "any_conditions": [],
+    "measure_conditions": [],
+    "ratio": null,
+    "current_result_only": true,
+    "fresh_source_required": false,
+    "question": "",
+    "tasks": [
+      {
+        "capability": "custom_analysis",
+        "options": {
+          "description": "방금 다운로드한 10개 행만 사용해 age를 오름차순 정렬한 뒤 두 행씩 이동평균 age_rolling을 Python으로 계산해서 표로 보여줘. 원본은 그대로 유지하고 DB는 다시 조회하지 마.",
+          "result_contract": {
+            "output_columns": [
+              "age_rolling"
+            ],
+            "steps": [
+              {
+                "op": "sort",
+                "columns": [
+                  "age"
+                ],
+                "ascending": true
+              },
+              {
+                "op": "rolling",
+                "column": "age",
+                "output_column": "age_rolling",
+                "window": 2,
+                "min_periods": 1,
+                "aggregation": "mean"
+              }
+            ]
+          }
+        }
+      }
+    ]
+  },
+  "model_calls": 5,
+  "tool_calls": null,
+  "elapsed_model_seconds": 81.47707866702694,
+  "selected_dataset_id": "",
+  "dataset_count": 2,
+  "datasets": [
+    {
+      "id": "6a83772d-172e-4d0c-bae8-3c72b786d4ac",
+      "source": "teleai_default.bank_loan",
+      "rows": 10,
+      "columns": [
+        "id",
+        "age",
+        "job",
+        "marital",
+        "education",
+        "default",
+        "balance",
+        "housing",
+        "loan",
+        "contact",
+        "day",
+        "month",
+        "duration",
+        "campaign",
+        "pdays",
+        "previous",
+        "poutcome",
+        "y"
+      ],
+      "coverage": "unknown",
+      "parent_id": "",
+      "digest": "06e8443c9fb358517faac21487988d5be8e970e0984b9fffcaf7849dc7e74a7e"
+    },
+    {
+      "id": "1eb46756-04ad-451a-b5af-05966718a5a5",
+      "source": "teleai_default.bank_loan",
+      "rows": 10,
+      "columns": [
+        "age",
+        "age_rolling"
+      ],
+      "coverage": "unknown",
+      "parent_id": "6a83772d-172e-4d0c-bae8-3c72b786d4ac",
+      "digest": "95edae0a768e30d86cfd51dc51e97220c19a5a38881fc0c083c02f2cbf7ee784"
+    }
+  ],
+  "result_spec": {
+    "description": "방금 다운로드한 10개 행만 사용해 age를 오름차순 정렬한 뒤 두 행씩 이동평균 age_rolling을 Python으로 계산해서 표로 보여줘. 원본은 그대로 유지하고 DB는 다시 조회하지 마.",
+    "result_contract": {
+      "output_columns": [
+        "age_rolling"
+      ],
+      "steps": [
+        {
+          "op": "sort",
+          "columns": [
+            "age"
+          ],
+          "ascending": true
+        },
+        {
+          "op": "rolling",
+          "column": "age",
+          "output_column": "age_rolling",
+          "window": 2,
+          "min_periods": 1,
+          "aggregation": "mean"
+        }
+      ]
+    }
+  },
+  "execution_plan": {
+    "status": "ready",
+    "plan": {
+      "id": "2184e8ac214d461c90003f3e53d53a31",
+      "tasks": [
+        {
+          "id": "4b942d854a49c5662872",
+          "capability": "custom_analysis",
+          "options": {
+            "description": "방금 다운로드한 10개 행만 사용해 age를 오름차순 정렬한 뒤 두 행씩 이동평균 age_rolling을 Python으로 계산해서 표로 보여줘. 원본은 그대로 유지하고 DB는 다시 조회하지 마.",
+            "result_contract": {
+              "output_columns": [
+                "age_rolling"
+              ],
+              "steps": [
+                {
+                  "op": "sort",
+                  "columns": [
+                    "age"
+                  ],
+                  "ascending": true
+                },
+                {
+                  "op": "rolling",
+                  "column": "age",
+                  "output_column": "age_rolling",
+                  "window": 2,
+                  "min_periods": 1,
+                  "aggregation": "mean"
+                }
+              ]
+            }
+          },
+          "scope": {
+            "required_sources": [
+              "teleai_default.bank_loan"
+            ],
+            "required_columns": [
+              "age"
+            ],
+            "scope": {
+              "conditions": [],
+              "any_conditions": [],
+              "measure_conditions": [],
+              "ratio": null,
+              "sources": [
+                "teleai_default.bank_loan"
+              ],
+              "columns": [],
+              "unresolved": [],
+              "join_edges": []
+            },
+            "current_result_only": true,
+            "fresh_source_required": false
+          },
+          "depends_on": [],
+          "postconditions": {
+            "output_columns": [
+              "age_rolling"
+            ],
+            "steps": [
+              {
+                "op": "sort",
+                "columns": [
+                  "age"
+                ],
+                "ascending": true
+              },
+              {
+                "op": "rolling",
+                "column": "age",
+                "output_column": "age_rolling",
+                "window": 2,
+                "min_periods": 1,
+                "aggregation": "mean"
+              }
+            ]
+          },
+          "verification_receipt": null,
+          "status": "pending",
+          "completion_contract": "custom_analysis",
+          "evidence_ids": [],
+          "artifact_ids": []
+        }
+      ],
+      "goal": {
+        "objective": "requested work",
+        "mode": "execute",
+        "source_reference": "previous_analysis",
+        "sources": [
+          "teleai_default.bank_loan"
+        ],
+        "columns": [
+          "age"
+        ],
+        "conditions": [],
+        "any_conditions": [],
+        "measure_conditions": [],
+        "ratio": null,
+        "current_result_only": true,
+        "fresh_source_required": false,
+        "question": "",
+        "tasks": [
+          {
+            "capability": "custom_analysis",
+            "options": {
+              "description": "방금 다운로드한 10개 행만 사용해 age를 오름차순 정렬한 뒤 두 행씩 이동평균 age_rolling을 Python으로 계산해서 표로 보여줘. 원본은 그대로 유지하고 DB는 다시 조회하지 마.",
+              "result_contract": {
+                "output_columns": [
+                  "age_rolling"
+                ],
+                "steps": [
+                  {
+                    "op": "sort",
+                    "columns": [
+                      "age"
+                    ],
+                    "ascending": true
+                  },
+                  {
+                    "op": "rolling",
+                    "column": "age",
+                    "output_column": "age_rolling",
+                    "window": 2,
+                    "min_periods": 1,
+                    "aggregation": "mean"
+                  }
+                ]
+              }
+            }
+          }
+        ]
+      },
+      "status": "working",
+      "scope_mode": "shared_goal_scope"
+    }
+  },
+  "new_evidence": {
+    "custom_analysis_evidence": null,
+    "advanced_eda_evidence": null,
+    "export_evidence": null,
+    "table_preview_evidence": null
+  },
+  "original_preserved": true,
+  "charts": [
+    {
+      "id": "48814c26-ec45-481d-b55b-d1d9bdc87a97",
+      "expected_correlation": 0.025100640576938584,
+      "actual_correlation": 0.025100640576938622,
+      "oracle_pass": true,
+      "scope": "보유 10행 · unknown · 표본화 없음"
+    },
+    {
+      "id": "04186463-323a-4444-a044-66b29526fb6c",
+      "expected_correlation": 0.025100640576938584,
+      "actual_correlation": 0.025100640576938622,
+      "oracle_pass": true,
+      "scope": "보유 10행 · unknown · 표본화 없음"
+    }
+  ],
+  "exports": [
+    {
+      "id": "8bbc8bb7-0d8c-4245-8559-c20f5961c4c7",
+      "manifest": {
+        "dataset": {
+          "id": "6a83772d-172e-4d0c-bae8-3c72b786d4ac",
+          "source": "teleai_default.bank_loan",
+          "columns": [
+            "id",
+            "age",
+            "job",
+            "marital",
+            "education",
+            "default",
+            "balance",
+            "housing",
+            "loan",
+            "contact",
+            "day",
+            "month",
+            "duration",
+            "campaign",
+            "pdays",
+            "previous",
+            "poutcome",
+            "y"
+          ],
+          "rows": 10,
+          "coverage": "unknown",
+          "conditions": [],
+          "predicate_known": false,
+          "grain": "raw",
+          "aggregation": "",
+          "snapshot": "2026-10-09T23:55:38.271091+00:00",
+          "query": "SELECT * FROM `teleai_default`.`bank_loan` LIMIT 10",
+          "parent_id": "",
+          "parent_ids": [],
+          "role": "root",
+          "root_id": "6a83772d-172e-4d0c-bae8-3c72b786d4ac",
+          "row_selection": {}
+        },
+        "format": "csv",
+        "coverage_note": "Coverage and conditions describe this saved result, not necessarily the whole source table."
+      },
+      "csv_rows": 10,
+      "original_values_equal": true,
+      "exported_columns_match_receipt": true,
+      "exported_values_equal_to_source": true
+    },
+    {
+      "id": "ecebab6d-55b0-48dd-a19f-58bd6e35980a",
+      "manifest": {
+        "dataset": {
+          "id": "6a83772d-172e-4d0c-bae8-3c72b786d4ac",
+          "source": "teleai_default.bank_loan",
+          "columns": [
+            "id",
+            "age",
+            "job",
+            "marital",
+            "education",
+            "default",
+            "balance",
+            "housing",
+            "loan",
+            "contact",
+            "day",
+            "month",
+            "duration",
+            "campaign",
+            "pdays",
+            "previous",
+            "poutcome",
+            "y"
+          ],
+          "rows": 10,
+          "coverage": "unknown",
+          "conditions": [],
+          "predicate_known": false,
+          "grain": "raw",
+          "aggregation": "",
+          "snapshot": "2026-10-09T23:55:38.271091+00:00",
+          "query": "SELECT * FROM `teleai_default`.`bank_loan` LIMIT 10",
+          "parent_id": "",
+          "parent_ids": [],
+          "role": "root",
+          "root_id": "6a83772d-172e-4d0c-bae8-3c72b786d4ac",
+          "row_selection": {}
+        },
+        "exported_columns": [
+          "age",
+          "balance"
+        ],
+        "format": "csv",
+        "coverage_note": "Coverage and conditions describe this saved result, not necessarily the whole source table."
+      },
+      "csv_rows": 10,
+      "original_values_equal": false,
+      "exported_columns_match_receipt": true,
+      "exported_values_equal_to_source": true
+    }
+  ],
+  "runs": [
+    {
+      "run_id": "0f0d3684ff3d4ba685827a09fcf6aebe",
+      "status": "answered",
+      "elapsed_seconds": 30.416,
+      "error_id": null
+    },
+    {
+      "run_id": "bbe02316c62d4b0bac0b241bc4619841",
+      "status": "incomplete",
+      "elapsed_seconds": 39.619,
+      "error_id": "59e811033444"
+    },
+    {
+      "run_id": "3b7eafefe9294712bdb55699a319f773",
+      "status": "answered",
+      "elapsed_seconds": 105.565,
+      "error_id": null
+    },
+    {
+      "run_id": "3902596354214b359d896a98059ab215",
+      "status": "exhausted",
+      "elapsed_seconds": 81.192,
+      "error_id": null
+    },
+    {
+      "run_id": "08059f800440440fb0eb70c8bd043530",
+      "status": "answered",
+      "elapsed_seconds": 51.289,
+      "error_id": null
+    },
+    {
+      "run_id": "c7d18ba6b9074235b1f35f29a89ce132",
+      "status": "incomplete",
+      "elapsed_seconds": 102.367,
+      "error_id": "dd95331cb808"
+    },
+    {
+      "run_id": "ab145934ea8f472599ce199d9779cd00",
+      "status": "incomplete",
+      "elapsed_seconds": 163.702,
+      "error_id": "a9604a69c800"
+    },
+    {
+      "run_id": "481b64eaa01f4068a6ba1a083602d9a1",
+      "status": "blocked",
+      "elapsed_seconds": 22.125,
+      "error_id": null
+    },
+    {
+      "run_id": "86790801b784476fa8b093a5dcb2a37b",
+      "status": "incomplete",
+      "elapsed_seconds": 161.437,
+      "error_id": "dc70f0ddf955"
+    },
+    {
+      "run_id": "a4dce6eacb304f10a4926f6beba7a84d",
+      "status": "exhausted",
+      "elapsed_seconds": 235.251,
+      "error_id": null
+    },
+    {
+      "run_id": "94f2f239b4c742eea98d5f044672fda9",
+      "status": "exhausted",
+      "elapsed_seconds": 186.647,
+      "error_id": null
+    },
+    {
+      "run_id": "5ccca768714a4722bfd286ff2fe968a2",
+      "status": "answered",
+      "elapsed_seconds": 59.161,
+      "error_id": null
+    },
+    {
+      "run_id": "85a9abdb565d4a5d8cbc1792a2f41212",
+      "status": "answered",
+      "elapsed_seconds": 61.483,
+      "error_id": null
+    },
+    {
+      "run_id": "e097b491faa64409a9df9b9e2dd206c2",
+      "status": "blocked",
+      "elapsed_seconds": 22.071,
+      "error_id": null
+    },
+    {
+      "run_id": "91cb4c97e85b4be486ee57f8e34db2e9",
+      "status": "answered",
+      "elapsed_seconds": 63.565,
+      "error_id": null
+    },
+    {
+      "run_id": "c97cc94552114c8abbc0b04fd6ac5f50",
+      "status": "blocked",
+      "elapsed_seconds": 170.245,
+      "error_id": null
+    },
+    {
+      "run_id": "895334d1a1f74bf68c302ef3d72ddbdb",
+      "status": "answered",
+      "elapsed_seconds": 66.09,
+      "error_id": null
+    },
+    {
+      "run_id": "01d757207eb945dba926370db69bba69",
+      "status": "incomplete",
+      "elapsed_seconds": 94.35,
+      "error_id": "266981c19e4e"
+    }
+  ],
+  "last_run_diagnostics": [
+    {
+      "time": "2026-10-10T03:06:16.982155+00:00",
+      "event": "run_started",
+      "run_id": "9564c5a0947742ad84932cc292bce27f",
+      "instance_id": "50f1c5a2c168",
+      "pid": 92076,
+      "runtime": {
+        "revision_at_first_runtime": "3a7206654b3d2fab7cd145893fd52970e397dd07",
+        "packages": {
+          "langchain": "1.4.0",
+          "langchain-core": "1.6.2",
+          "langgraph": "1.2.11",
+          "streamlit": "1.63.0",
+          "sqlglot": "30.18.0"
+        },
+        "python_version": "3.11.13",
+        "identity_captured_at": "2026-10-10T03:05:17.080095+00:00",
+        "route": "langgraph-v1",
+        "model_class": "ChatOllama",
+        "require_remote_approval": false,
+        "loaded_delivery_guard": "fe636ce820546fac",
+        "data_backend": "mysql",
+        "intent_mode": "llm",
+        "goal_version": 1,
+        "goal_model": "gemma4:e4b",
+        "planner_model": "gemma4:e4b"
+      },
+      "operation": "submit",
+      "process_peak_rss_bytes": 329400320
+    },
+    {
+      "time": "2026-10-10T03:06:17.003391+00:00",
+      "event": "goal_interpretation_started",
+      "run_id": "9564c5a0947742ad84932cc292bce27f",
+      "instance_id": "50f1c5a2c168",
+      "pid": 92076,
+      "request_id": "2184e8ac214d461c90003f3e53d53a31",
+      "origin": "llm",
+      "goal_version": 1
+    },
+    {
+      "time": "2026-10-10T03:06:17.009925+00:00",
+      "event": "model_payload_budget",
+      "run_id": "9564c5a0947742ad84932cc292bce27f",
+      "instance_id": "50f1c5a2c168",
+      "pid": 92076,
+      "payload_bytes": 2140,
+      "payload_bytes_before_projection": 2140,
+      "template_headroom": 640,
+      "input_budget_units": 14336,
+      "output_reserved": 2048,
+      "context_window": 16384,
+      "tool_count": 0,
+      "message_count": 1,
+      "older_turns_compacted": false,
+      "within_budget": true,
+      "observations_compacted": false,
+      "schema_compacted": false,
+      "system_catalog_compacted": false,
+      "tool_menu_compacted": false,
+      "minimal_discovery_menu": false,
+      "reasoning_compacted": false,
+      "minimal_catalog": false,
+      "builtin_instructions_compacted": false,
+      "repair_history_compacted": false,
+      "components": {
+        "system_bytes": 1332,
+        "message_content_bytes": 671,
+        "tool_calls_bytes": 0,
+        "reasoning_bytes": 0,
+        "tool_schema_bytes": 0,
+        "tool_names": []
+      },
+      "measurement": "conservative_utf8_bytes_not_actual_token_count"
+    },
+    {
+      "time": "2026-10-10T03:06:20.584017+00:00",
+      "event": "goal_literal_subjects_read",
+      "run_id": "9564c5a0947742ad84932cc292bce27f",
+      "instance_id": "50f1c5a2c168",
+      "pid": 92076,
+      "request_id": "2184e8ac214d461c90003f3e53d53a31",
+      "candidate_count": 4,
+      "table_count": 0
+    },
+    {
+      "time": "2026-10-10T03:06:20.591152+00:00",
+      "event": "model_payload_budget",
+      "run_id": "9564c5a0947742ad84932cc292bce27f",
+      "instance_id": "50f1c5a2c168",
+      "pid": 92076,
+      "payload_bytes": 8374,
+      "payload_bytes_before_projection": 8374,
+      "template_headroom": 640,
+      "input_budget_units": 14336,
+      "output_reserved": 2048,
+      "context_window": 16384,
+      "tool_count": 0,
+      "message_count": 1,
+      "older_turns_compacted": false,
+      "within_budget": true,
+      "observations_compacted": false,
+      "schema_compacted": false,
+      "system_catalog_compacted": false,
+      "tool_menu_compacted": false,
+      "minimal_discovery_menu": false,
+      "reasoning_compacted": false,
+      "minimal_catalog": false,
+      "builtin_instructions_compacted": false,
+      "repair_history_compacted": false,
+      "components": {
+        "system_bytes": 6126,
+        "message_content_bytes": 1884,
+        "tool_calls_bytes": 0,
+        "reasoning_bytes": 0,
+        "tool_schema_bytes": 0,
+        "tool_names": []
+      },
+      "measurement": "conservative_utf8_bytes_not_actual_token_count"
+    },
+    {
+      "time": "2026-10-10T03:06:32.667374+00:00",
+      "event": "model_payload_budget",
+      "run_id": "9564c5a0947742ad84932cc292bce27f",
+      "instance_id": "50f1c5a2c168",
+      "pid": 92076,
+      "payload_bytes": 3554,
+      "payload_bytes_before_projection": 3554,
+      "template_headroom": 640,
+      "input_budget_units": 14336,
+      "output_reserved": 2048,
+      "context_window": 16384,
+      "tool_count": 0,
+      "message_count": 1,
+      "older_turns_compacted": false,
+      "within_budget": true,
+      "observations_compacted": false,
+      "schema_compacted": false,
+      "system_catalog_compacted": false,
+      "tool_menu_compacted": false,
+      "minimal_discovery_menu": false,
+      "reasoning_compacted": false,
+      "minimal_catalog": false,
+      "builtin_instructions_compacted": false,
+      "repair_history_compacted": false,
+      "components": {
+        "system_bytes": 2888,
+        "message_content_bytes": 463,
+        "tool_calls_bytes": 0,
+        "reasoning_bytes": 0,
+        "tool_schema_bytes": 0,
+        "tool_names": []
+      },
+      "measurement": "conservative_utf8_bytes_not_actual_token_count"
+    },
+    {
+      "time": "2026-10-10T03:06:40.106428+00:00",
+      "event": "goal_population_basis_read",
+      "run_id": "9564c5a0947742ad84932cc292bce27f",
+      "instance_id": "50f1c5a2c168",
+      "pid": 92076,
+      "request_id": "2184e8ac214d461c90003f3e53d53a31",
+      "basis": "displayed_result",
+      "has_current_quote": true,
+      "changes_filters": false,
+      "filter_change_quote_verified": false
+    },
+    {
+      "time": "2026-10-10T03:06:40.107847+00:00",
+      "event": "goal_tasks_selected",
+      "run_id": "9564c5a0947742ad84932cc292bce27f",
+      "instance_id": "50f1c5a2c168",
+      "pid": 92076,
+      "request_id": "2184e8ac214d461c90003f3e53d53a31",
+      "mode": "execute",
+      "capabilities": [
+        "custom_analysis"
+      ],
+      "chart_kind": "",
+      "metadata_kind": "",
+      "source_reference": "previous_analysis",
+      "current_result_only": true
+    },
+    {
+      "time": "2026-10-10T03:06:40.111629+00:00",
+      "event": "model_payload_budget",
+      "run_id": "9564c5a0947742ad84932cc292bce27f",
+      "instance_id": "50f1c5a2c168",
+      "pid": 92076,
+      "payload_bytes": 11152,
+      "payload_bytes_before_projection": 11152,
+      "template_headroom": 640,
+      "input_budget_units": 14336,
+      "output_reserved": 2048,
+      "context_window": 16384,
+      "tool_count": 0,
+      "message_count": 1,
+      "older_turns_compacted": false,
+      "within_budget": true,
+      "observations_compacted": false,
+      "schema_compacted": false,
+      "system_catalog_compacted": false,
+      "tool_menu_compacted": false,
+      "minimal_discovery_menu": false,
+      "reasoning_compacted": false,
+      "minimal_catalog": false,
+      "builtin_instructions_compacted": false,
+      "repair_history_compacted": false,
+      "components": {
+        "system_bytes": 7309,
+        "message_content_bytes": 3282,
+        "tool_calls_bytes": 0,
+        "reasoning_bytes": 0,
+        "tool_schema_bytes": 0,
+        "tool_names": []
+      },
+      "measurement": "conservative_utf8_bytes_not_actual_token_count"
+    },
+    {
+      "time": "2026-10-10T03:07:19.563110+00:00",
+      "event": "goal_semantic_review_started",
+      "run_id": "9564c5a0947742ad84932cc292bce27f",
+      "instance_id": "50f1c5a2c168",
+      "pid": 92076,
+      "request_id": "2184e8ac214d461c90003f3e53d53a31"
+    },
+    {
+      "time": "2026-10-10T03:07:19.565596+00:00",
+      "event": "model_payload_budget",
+      "run_id": "9564c5a0947742ad84932cc292bce27f",
+      "instance_id": "50f1c5a2c168",
+      "pid": 92076,
+      "payload_bytes": 12064,
+      "payload_bytes_before_projection": 12064,
+      "template_headroom": 640,
+      "input_budget_units": 14336,
+      "output_reserved": 2048,
+      "context_window": 16384,
+      "tool_count": 0,
+      "message_count": 1,
+      "older_turns_compacted": false,
+      "within_budget": true,
+      "observations_compacted": false,
+      "schema_compacted": false,
+      "system_catalog_compacted": false,
+      "tool_menu_compacted": false,
+      "minimal_discovery_menu": false,
+      "reasoning_compacted": false,
+      "minimal_catalog": false,
+      "builtin_instructions_compacted": false,
+      "repair_history_compacted": false,
+      "components": {
+        "system_bytes": 7309,
+        "message_content_bytes": 4106,
+        "tool_calls_bytes": 0,
+        "reasoning_bytes": 0,
+        "tool_schema_bytes": 0,
+        "tool_names": []
+      },
+      "measurement": "conservative_utf8_bytes_not_actual_token_count"
+    },
+    {
+      "time": "2026-10-10T03:07:38.534910+00:00",
+      "event": "goal_interpretation_completed",
+      "run_id": "9564c5a0947742ad84932cc292bce27f",
+      "instance_id": "50f1c5a2c168",
+      "pid": 92076,
+      "request_id": "2184e8ac214d461c90003f3e53d53a31",
+      "origin": "llm",
+      "mode": "execute",
+      "capabilities": [
+        "custom_analysis"
+      ],
+      "attempts": 2,
+      "goal_version": 1
+    },
+    {
+      "time": "2026-10-10T03:07:38.564250+00:00",
+      "event": "summarization_skipped",
+      "run_id": "9564c5a0947742ad84932cc292bce27f",
+      "instance_id": "50f1c5a2c168",
+      "pid": 92076,
+      "reason": "verified_context_model_view_compaction",
+      "message_count": 81
+    },
+    {
+      "time": "2026-10-10T03:07:38.568680+00:00",
+      "event": "model_call_started",
+      "run_id": "9564c5a0947742ad84932cc292bce27f",
+      "instance_id": "50f1c5a2c168",
+      "pid": 92076,
+      "span_id": "4794db0241b3",
+      "message_count": 81
+    },
+    {
+      "time": "2026-10-10T03:07:38.602017+00:00",
+      "event": "context_budget",
+      "run_id": "9564c5a0947742ad84932cc292bce27f",
+      "instance_id": "50f1c5a2c168",
+      "pid": 92076,
+      "characters": 42265,
+      "limit": 32000
+    },
+    {
+      "time": "2026-10-10T03:07:38.602988+00:00",
+      "event": "model_tools_focused",
+      "run_id": "9564c5a0947742ad84932cc292bce27f",
+      "instance_id": "50f1c5a2c168",
+      "pid": 92076,
+      "mode": "progressive",
+      "tool_count": 10,
+      "registered_tool_count": 46
+    },
+    {
+      "time": "2026-10-10T03:07:38.603634+00:00",
+      "event": "model_execution_profile",
+      "run_id": "9564c5a0947742ad84932cc292bce27f",
+      "instance_id": "50f1c5a2c168",
+      "pid": 92076,
+      "phase": "bounded_python_code",
+      "reasoning": false,
+      "output_tokens": 1536,
+      "provider": "ollama",
+      "scope_changed": false
+    },
+    {
+      "time": "2026-10-10T03:07:38.613962+00:00",
+      "event": "model_payload_budget",
+      "run_id": "9564c5a0947742ad84932cc292bce27f",
+      "instance_id": "50f1c5a2c168",
+      "pid": 92076,
+      "payload_bytes": 12154,
+      "payload_bytes_before_projection": 88581,
+      "template_headroom": 1344,
+      "input_budget_units": 14848,
+      "output_reserved": 1536,
+      "context_window": 16384,
+      "tool_count": 5,
+      "message_count": 2,
+      "older_turns_compacted": true,
+      "within_budget": true,
+      "observations_compacted": true,
+      "schema_compacted": false,
+      "system_catalog_compacted": true,
+      "tool_menu_compacted": true,
+      "minimal_discovery_menu": false,
+      "reasoning_compacted": false,
+      "minimal_catalog": false,
+      "builtin_instructions_compacted": false,
+      "repair_history_compacted": false,
+      "components": {
+        "system_bytes": 7277,
+        "message_content_bytes": 1548,
+        "tool_calls_bytes": 0,
+        "reasoning_bytes": 0,
+        "tool_schema_bytes": 2804,
+        "tool_names": [
+          "search_analysis_tools",
+          "read_analysis_skill",
+          "inspect_table_context",
+          "execute_analysis_python",
+          "query_databricks"
+        ]
+      },
+      "measurement": "conservative_utf8_bytes_not_actual_token_count"
+    }
+  ],
+  "remote_queries_started": 1
+}

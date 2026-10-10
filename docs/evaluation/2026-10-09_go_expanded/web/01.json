@@ -1,0 +1,654 @@
+{
+  "recent_transcript": [
+    {
+      "type": "ai",
+      "data": {
+        "content": "조회가 완료되었습니다. 출처: information\\_schema.tables · 저장된 결과 7행.\n\n| TABLE\\_SCHEMA | TABLE\\_NAME | TABLE\\_TYPE |\n| --- | --- | --- |\n| teleai\\_default | \\_tianchi\\_ssd\\_shared300k\\_import | BASE TABLE |\n| teleai\\_default | alibaba\\_ssd | BASE TABLE |\n| teleai\\_default | bank\\_loan | BASE TABLE |\n| teleai\\_default | error\\_test | BASE TABLE |\n| teleai\\_default | ncr\\_ride | BASE TABLE |\n| teleai\\_default | stormtrooper | BASE TABLE |\n| teleai\\_default | titanic | BASE TABLE |\n\n범위: 전체 범위 미확인. 실행한 SQL의 조건과 행 제한이 적용된 결과입니다.",
+        "additional_kwargs": {
+          "analysis_status": "answered",
+          "analysis_controller_result": true,
+          "analysis_artifact_ids": []
+        },
+        "response_metadata": {},
+        "type": "ai",
+        "name": null,
+        "id": "9603da17-4dbc-4fac-acd6-27c0da7e103e",
+        "tool_calls": [],
+        "invalid_tool_calls": [],
+        "usage_metadata": null
+      }
+    },
+    {
+      "type": "tool",
+      "data": {
+        "content": "{\"status\": \"ready\", \"dataset\": {\"id\": \"e42531a9-b5b2-4612-8a64-b6744274acf6\", \"source\": \"information_schema.tables\", \"columns\": [\"TABLE_SCHEMA\", \"TABLE_NAME\", \"TABLE_TYPE\"], \"rows\": 7, \"coverage\": \"unknown\", \"conditions\": [], \"predicate_known\": false, \"grain\": \"raw\", \"aggregation\": \"\", \"snapshot\": \"2026-10-09T15:41:12.647075+00:00\", \"query\": \"SELECT table_schema, table_name, table_type FROM information_schema.tables WHERE table_schema = 'teleai_default' ORDER BY table_name LIMIT 100\", \"parent_id\": \"\", \"parent_ids\": [], \"role\": \"root\", \"root_id\": \"e42531a9-b5b2-4612-8a64-b6744274acf6\", \"row_selection\": {}}, \"preview\": [{\"TABLE_SCHEMA\": \"teleai_default\", \"TABLE_NAME\": \"_tianchi_ssd_shared300k_import\", \"TABLE_TYPE\": \"BASE TABLE\"}, {\"TABLE_SCHEMA\": \"teleai_default\", \"TABLE_NAME\": \"alibaba_ssd\", \"TABLE_TYPE\": \"BASE TABLE\"}, {\"TABLE_SCHEMA\": \"teleai_default\", \"TABLE_NAME\": \"bank_loan\", \"TABLE_TYPE\": \"BASE TABLE\"}, {\"TABLE_SCHEMA\": \"teleai_default\", \"TABLE_NAME\": \"error_test\", \"TABLE_TYPE\": \"BASE TABLE\"}, {\"TABLE_SCHEMA\": \"teleai_default\", \"TABLE_NAME\": \"ncr_ride\", \"TABLE_TYPE\": \"BASE TABLE\"}, {\"TABLE_SCHEMA\": \"teleai_default\", \"TABLE_NAME\": \"stormtrooper\", \"TABLE_TYPE\": \"BASE TABLE\"}, {\"TABLE_SCHEMA\": \"teleai_default\", \"TABLE_NAME\": \"titanic\", \"TABLE_TYPE\": \"BASE TABLE\"}], \"evidence_ids\": [\"e42531a9-b5b2-4612-8a64-b6744274acf6\"], \"error_code\": null, \"retryable\": false, \"user_action\": \"\", \"scope\": \"도구가 반환한 구조화 결과 범위입니다.\"}",
+        "additional_kwargs": {},
+        "response_metadata": {},
+        "type": "tool",
+        "name": "query_databricks",
+        "id": "4dcedb48-d203-4902-95d1-cda186289638",
+        "tool_call_id": "75729643-ca92-4c66-b302-478a23df0a34",
+        "artifact": null,
+        "status": "success"
+      }
+    },
+    {
+      "type": "ai",
+      "data": {
+        "content": "",
+        "additional_kwargs": {},
+        "response_metadata": {},
+        "type": "ai",
+        "name": null,
+        "id": "9dbe3142-fef3-4619-9c28-1253858adbc8",
+        "tool_calls": [
+          {
+            "name": "query_databricks",
+            "args": {
+              "source": "information_schema.tables",
+              "query": "SELECT table_schema, table_name, table_type FROM information_schema.tables WHERE table_schema = 'teleai_default' ORDER BY table_name LIMIT 100",
+              "reason": "현재 MySQL database의 실제 테이블 목록을 조회합니다."
+            },
+            "id": "75729643-ca92-4c66-b302-478a23df0a34",
+            "type": "tool_call"
+          }
+        ],
+        "invalid_tool_calls": [],
+        "usage_metadata": null
+      }
+    },
+    {
+      "type": "tool",
+      "data": {
+        "content": "{\"status\": \"planned\", \"discovery_plan\": {\"source\": \"information_schema.tables\", \"query\": \"SELECT table_schema, table_name, table_type FROM information_schema.tables WHERE table_schema = 'teleai_default' ORDER BY table_name LIMIT 100\", \"reason\": \"현재 MySQL database의 실제 테이블 목록을 조회합니다.\"}, \"scope\": \"teleai_default database의 테이블 최대 100건. 아직 실행되지 않았습니다.\", \"user_action\": \"query_databricks 도구에 이 정확한 계획을 전달해 실행하세요.\", \"evidence_ids\": [], \"error_code\": null, \"retryable\": false}",
+        "additional_kwargs": {},
+        "response_metadata": {},
+        "type": "tool",
+        "name": "plan_source_discovery",
+        "id": "382470e4-aad0-4fae-8152-0370dffb2345",
+        "tool_call_id": "c49b7721-f924-4ce7-b7b5-765337696458",
+        "artifact": null,
+        "status": "success"
+      }
+    },
+    {
+      "type": "ai",
+      "data": {
+        "content": "",
+        "additional_kwargs": {},
+        "response_metadata": {},
+        "type": "ai",
+        "name": null,
+        "id": "3dbc7bc4-2868-47c7-9a3f-b889b10da1ee",
+        "tool_calls": [
+          {
+            "name": "plan_source_discovery",
+            "args": {
+              "catalog": "",
+              "schema": "",
+              "limit": 100
+            },
+            "id": "c49b7721-f924-4ce7-b7b5-765337696458",
+            "type": "tool_call"
+          }
+        ],
+        "invalid_tool_calls": [],
+        "usage_metadata": null
+      }
+    },
+    {
+      "type": "human",
+      "data": {
+        "content": "현재 볼 수 있는 테이블 목록을 보여줘.",
+        "additional_kwargs": {},
+        "response_metadata": {},
+        "type": "human",
+        "name": null,
+        "id": "6d977c0a0641445fa1a49dc5ceb7f6a6"
+      }
+    }
+  ],
+  "assets": {
+    "e42531a9-b5b2-4612-8a64-b6744274acf6": {
+      "kind": "dataset",
+      "metadata": {
+        "id": "e42531a9-b5b2-4612-8a64-b6744274acf6",
+        "source": "information_schema.tables",
+        "columns": [
+          "TABLE_SCHEMA",
+          "TABLE_NAME",
+          "TABLE_TYPE"
+        ],
+        "rows": 7,
+        "coverage": "unknown",
+        "conditions": [],
+        "predicate_known": false,
+        "grain": "raw",
+        "aggregation": "",
+        "snapshot": "2026-10-09T15:41:12.647075+00:00",
+        "query": "SELECT table_schema, table_name, table_type FROM information_schema.tables WHERE table_schema = 'teleai_default' ORDER BY table_name LIMIT 100",
+        "parent_id": "",
+        "parent_ids": [],
+        "role": "root",
+        "root_id": "e42531a9-b5b2-4612-8a64-b6744274acf6",
+        "row_selection": {}
+      },
+      "metadata_sha256": "cefa2790b29357572a9b8d93982f98eb8d419e22bfc8b09873f1ab39d3a2dc32",
+      "payload_sha256": "372844c886cd58f8ef309861fc6bb1a9265e5de25cd71d7493b1199d66a13318"
+    }
+  },
+  "selection": "",
+  "current": {
+    "request_id": "6d977c0a0641445fa1a49dc5ceb7f6a6",
+    "request_text": "현재 볼 수 있는 테이블 목록을 보여줘.",
+    "status": "complete",
+    "stop_reason": null,
+    "intent_origin": "llm",
+    "goal": {
+      "objective": "list available tables",
+      "mode": "execute",
+      "source_reference": "explicit",
+      "sources": [],
+      "columns": [],
+      "conditions": [],
+      "any_conditions": [],
+      "measure_conditions": [],
+      "ratio": null,
+      "current_result_only": false,
+      "fresh_source_required": false,
+      "question": "",
+      "tasks": [
+        {
+          "capability": "table_list",
+          "options": {}
+        }
+      ]
+    },
+    "model_calls": 3,
+    "model_seconds": 20.09696570900269,
+    "scope": {
+      "conditions": [],
+      "any_conditions": [],
+      "measure_conditions": [],
+      "ratio": null,
+      "sources": [],
+      "columns": [],
+      "unresolved": [],
+      "join_edges": []
+    },
+    "required_sources": [
+      "information_schema.tables"
+    ],
+    "required_columns": [],
+    "artifact_ids": [],
+    "evidence_ids": [],
+    "kind": null,
+    "remote_query_evidence": {
+      "75729643-ca92-4c66-b302-478a23df0a34": {
+        "dataset_id": "e42531a9-b5b2-4612-8a64-b6744274acf6",
+        "source": "information_schema.tables",
+        "query": "SELECT table_schema, table_name, table_type FROM information_schema.tables WHERE table_schema = 'teleai_default' ORDER BY table_name LIMIT 100",
+        "rows": 7,
+        "columns": [
+          "TABLE_SCHEMA",
+          "TABLE_NAME",
+          "TABLE_TYPE"
+        ],
+        "coverage": "unknown"
+      }
+    },
+    "operations": [],
+    "calculation": false,
+    "failed": {},
+    "confirmed_analysis": {
+      "request_id": "6d977c0a0641445fa1a49dc5ceb7f6a6",
+      "request_text": "현재 볼 수 있는 테이블 목록을 보여줘.",
+      "status": "complete",
+      "intent_origin": "llm",
+      "goal_pending": false,
+      "request_started_at": 1791560452.486356,
+      "required_sources": [
+        "information_schema.tables"
+      ],
+      "required_columns": [],
+      "explicit_columns": [],
+      "scope": {
+        "conditions": [],
+        "any_conditions": [],
+        "measure_conditions": [],
+        "ratio": null,
+        "sources": [],
+        "columns": [],
+        "unresolved": [],
+        "join_edges": []
+      },
+      "previous_scope": {},
+      "chart": false,
+      "kind": null,
+      "calculation": false,
+      "operations": [],
+      "metadata_kind": null,
+      "catalog_discovery_source": "information_schema.tables",
+      "catalog_discovery_schema": "",
+      "profile_kind": null,
+      "preview_limit": 0,
+      "data_load": false,
+      "whole_row_count": false,
+      "current_result_only": false,
+      "fresh_source_required": false,
+      "requested_result_rows": null,
+      "requested_join": false,
+      "join": false,
+      "join_how": null,
+      "statistical_kind": null,
+      "latest_per_key_spec": null,
+      "row_preview_spec": null,
+      "chart_spec_requested": false,
+      "value_list_requested": false,
+      "operation_pending": false,
+      "schema_semantic": false,
+      "outlier_spec": null,
+      "outlier_column": null,
+      "time_series_frequency": null,
+      "histogram_bins": null,
+      "chart_cumulative": false,
+      "processed": [
+        "c49b7721-f924-4ce7-b7b5-765337696458",
+        "75729643-ca92-4c66-b302-478a23df0a34"
+      ],
+      "sent_calls": [
+        "c49b7721-f924-4ce7-b7b5-765337696458",
+        "75729643-ca92-4c66-b302-478a23df0a34"
+      ],
+      "evidence_ids": [],
+      "artifact_ids": [],
+      "failed": {},
+      "failed_signatures": {},
+      "attempts": 0,
+      "model_calls": 3,
+      "model_seconds": 20.09696570900269,
+      "remote_query_ids": [
+        "75729643-ca92-4c66-b302-478a23df0a34"
+      ],
+      "remote_query_evidence": {
+        "75729643-ca92-4c66-b302-478a23df0a34": {
+          "dataset_id": "e42531a9-b5b2-4612-8a64-b6744274acf6",
+          "source": "information_schema.tables",
+          "query": "SELECT table_schema, table_name, table_type FROM information_schema.tables WHERE table_schema = 'teleai_default' ORDER BY table_name LIMIT 100",
+          "rows": 7,
+          "columns": [
+            "TABLE_SCHEMA",
+            "TABLE_NAME",
+            "TABLE_TYPE"
+          ],
+          "coverage": "unknown"
+        }
+      },
+      "columns": [],
+      "output_references": [],
+      "preview_evidence": null,
+      "outlier_aggregate_evidence": {},
+      "count_rate_evidence": null,
+      "count_rate_layout": null,
+      "count_rate_group_column": null,
+      "winsor_evidence": null,
+      "winsor_spec": null,
+      "winsor_column": null,
+      "pivot_evidence": null,
+      "pivot_requested": false,
+      "pivot_index_columns": [],
+      "pivot_column_columns": [],
+      "pivot_conditions": [],
+      "pivot_margins_name": "전체",
+      "pivot_derived_bins": [],
+      "group_summary_requested": false,
+      "group_summary_columns": [],
+      "group_summary_metrics": [],
+      "group_summary_conditions": [],
+      "group_summary_evidence": null,
+      "remote_result_requested": true,
+      "accounted_model_failures": 0,
+      "accounted_model_failure_seconds": 0.0,
+      "model_retries": 0,
+      "accounted_aux_calls": 3,
+      "accounted_aux_seconds": 20.09696570900269,
+      "_new_model_failure_seconds": 0.0,
+      "requested_subject": {},
+      "goal": {
+        "objective": "list available tables",
+        "mode": "execute",
+        "source_reference": "explicit",
+        "sources": [],
+        "columns": [],
+        "conditions": [],
+        "any_conditions": [],
+        "measure_conditions": [],
+        "ratio": null,
+        "current_result_only": false,
+        "fresh_source_required": false,
+        "question": "",
+        "tasks": [
+          {
+            "capability": "table_list",
+            "options": {}
+          }
+        ]
+      },
+      "goal_version": 1,
+      "explanation_only": false,
+      "goal_question": "",
+      "discovery_plan": {
+        "source": "information_schema.tables",
+        "query": "SELECT table_schema, table_name, table_type FROM information_schema.tables WHERE table_schema = 'teleai_default' ORDER BY table_name LIMIT 100",
+        "reason": "현재 MySQL database의 실제 테이블 목록을 조회합니다."
+      },
+      "stop_reason": null,
+      "selection_at_confirmation": ""
+    }
+  },
+  "run_id": "8fbeb694598546998217c36884553c20",
+  "run": [
+    {
+      "time": "2026-10-09T15:40:52.485161+00:00",
+      "event": "run_started",
+      "run_id": "8fbeb694598546998217c36884553c20",
+      "instance_id": "ed211a985397",
+      "pid": 76543,
+      "runtime": {
+        "revision_at_first_runtime": "3a7206654b3d2fab7cd145893fd52970e397dd07",
+        "packages": {
+          "langchain": "1.4.0",
+          "langchain-core": "1.6.2",
+          "langgraph": "1.2.11",
+          "streamlit": "1.63.0",
+          "sqlglot": "30.18.0"
+        },
+        "python_version": "3.11.13",
+        "identity_captured_at": "2026-10-09T15:37:26.630353+00:00",
+        "route": "langgraph-v1",
+        "model_class": "ChatOllama",
+        "require_remote_approval": false,
+        "loaded_delivery_guard": "fe636ce820546fac",
+        "data_backend": "mysql",
+        "intent_mode": "llm",
+        "goal_version": 1,
+        "goal_model": "gemma4:e4b",
+        "planner_model": "gemma4:e4b"
+      },
+      "operation": "submit",
+      "process_peak_rss_bytes": 342786048
+    },
+    {
+      "time": "2026-10-09T15:40:52.494667+00:00",
+      "event": "goal_interpretation_started",
+      "run_id": "8fbeb694598546998217c36884553c20",
+      "instance_id": "ed211a985397",
+      "pid": 76543,
+      "request_id": "6d977c0a0641445fa1a49dc5ceb7f6a6",
+      "origin": "llm",
+      "goal_version": 1
+    },
+    {
+      "time": "2026-10-09T15:40:52.499484+00:00",
+      "event": "model_payload_budget",
+      "run_id": "8fbeb694598546998217c36884553c20",
+      "instance_id": "ed211a985397",
+      "pid": 76543,
+      "payload_bytes": 5782,
+      "payload_bytes_before_projection": 5782,
+      "template_headroom": 640,
+      "input_budget_units": 14336,
+      "output_reserved": 2048,
+      "context_window": 16384,
+      "tool_count": 0,
+      "message_count": 1,
+      "older_turns_compacted": false,
+      "within_budget": true,
+      "observations_compacted": false,
+      "schema_compacted": false,
+      "system_catalog_compacted": false,
+      "tool_menu_compacted": false,
+      "minimal_discovery_menu": false,
+      "reasoning_compacted": false,
+      "minimal_catalog": false,
+      "builtin_instructions_compacted": false,
+      "components": {
+        "system_bytes": 5148,
+        "message_content_bytes": 452,
+        "tool_calls_bytes": 0,
+        "reasoning_bytes": 0,
+        "tool_schema_bytes": 0,
+        "tool_names": []
+      },
+      "measurement": "conservative_utf8_bytes_not_actual_token_count"
+    },
+    {
+      "time": "2026-10-09T15:40:56.289095+00:00",
+      "event": "goal_tasks_selected",
+      "run_id": "8fbeb694598546998217c36884553c20",
+      "instance_id": "ed211a985397",
+      "pid": 76543,
+      "request_id": "6d977c0a0641445fa1a49dc5ceb7f6a6",
+      "mode": "execute",
+      "capabilities": [
+        "table_list"
+      ],
+      "chart_kind": "",
+      "metadata_kind": "",
+      "source_reference": "explicit",
+      "current_result_only": false
+    },
+    {
+      "time": "2026-10-09T15:40:56.289867+00:00",
+      "event": "model_payload_budget",
+      "run_id": "8fbeb694598546998217c36884553c20",
+      "instance_id": "ed211a985397",
+      "pid": 76543,
+      "payload_bytes": 8889,
+      "payload_bytes_before_projection": 8889,
+      "template_headroom": 640,
+      "input_budget_units": 14336,
+      "output_reserved": 2048,
+      "context_window": 16384,
+      "tool_count": 0,
+      "message_count": 1,
+      "older_turns_compacted": false,
+      "within_budget": true,
+      "observations_compacted": false,
+      "schema_compacted": false,
+      "system_catalog_compacted": false,
+      "tool_menu_compacted": false,
+      "minimal_discovery_menu": false,
+      "reasoning_compacted": false,
+      "minimal_catalog": false,
+      "builtin_instructions_compacted": false,
+      "components": {
+        "system_bytes": 6101,
+        "message_content_bytes": 2406,
+        "tool_calls_bytes": 0,
+        "reasoning_bytes": 0,
+        "tool_schema_bytes": 0,
+        "tool_names": []
+      },
+      "measurement": "conservative_utf8_bytes_not_actual_token_count"
+    },
+    {
+      "time": "2026-10-09T15:41:09.003363+00:00",
+      "event": "goal_semantic_review_started",
+      "run_id": "8fbeb694598546998217c36884553c20",
+      "instance_id": "ed211a985397",
+      "pid": 76543,
+      "request_id": "6d977c0a0641445fa1a49dc5ceb7f6a6"
+    },
+    {
+      "time": "2026-10-09T15:41:09.004469+00:00",
+      "event": "model_payload_budget",
+      "run_id": "8fbeb694598546998217c36884553c20",
+      "instance_id": "ed211a985397",
+      "pid": 76543,
+      "payload_bytes": 9254,
+      "payload_bytes_before_projection": 9254,
+      "template_headroom": 640,
+      "input_budget_units": 14336,
+      "output_reserved": 2048,
+      "context_window": 16384,
+      "tool_count": 0,
+      "message_count": 1,
+      "older_turns_compacted": false,
+      "within_budget": true,
+      "observations_compacted": false,
+      "schema_compacted": false,
+      "system_catalog_compacted": false,
+      "tool_menu_compacted": false,
+      "minimal_discovery_menu": false,
+      "reasoning_compacted": false,
+      "minimal_catalog": false,
+      "builtin_instructions_compacted": false,
+      "components": {
+        "system_bytes": 6101,
+        "message_content_bytes": 2729,
+        "tool_calls_bytes": 0,
+        "reasoning_bytes": 0,
+        "tool_schema_bytes": 0,
+        "tool_names": []
+      },
+      "measurement": "conservative_utf8_bytes_not_actual_token_count"
+    },
+    {
+      "time": "2026-10-09T15:41:12.607871+00:00",
+      "event": "goal_interpretation_completed",
+      "run_id": "8fbeb694598546998217c36884553c20",
+      "instance_id": "ed211a985397",
+      "pid": 76543,
+      "request_id": "6d977c0a0641445fa1a49dc5ceb7f6a6",
+      "origin": "llm",
+      "mode": "execute",
+      "capabilities": [
+        "table_list"
+      ],
+      "attempts": 2,
+      "goal_version": 1
+    },
+    {
+      "time": "2026-10-09T15:41:12.612764+00:00",
+      "event": "recovery_transition",
+      "run_id": "8fbeb694598546998217c36884553c20",
+      "instance_id": "ed211a985397",
+      "pid": 76543,
+      "request_id": "6d977c0a0641445fa1a49dc5ceb7f6a6",
+      "tool": "plan_source_discovery"
+    },
+    {
+      "time": "2026-10-09T15:41:12.621403+00:00",
+      "event": "tool_started",
+      "run_id": "8fbeb694598546998217c36884553c20",
+      "instance_id": "ed211a985397",
+      "pid": 76543,
+      "tool": "plan_source_discovery"
+    },
+    {
+      "time": "2026-10-09T15:41:12.633179+00:00",
+      "event": "tool_completed",
+      "run_id": "8fbeb694598546998217c36884553c20",
+      "instance_id": "ed211a985397",
+      "pid": 76543,
+      "tool": "plan_source_discovery",
+      "status": "planned",
+      "error_code": null,
+      "elapsed_seconds": 0.012,
+      "applied_corrections": []
+    },
+    {
+      "time": "2026-10-09T15:41:12.635910+00:00",
+      "event": "recovery_transition",
+      "run_id": "8fbeb694598546998217c36884553c20",
+      "instance_id": "ed211a985397",
+      "pid": 76543,
+      "request_id": "6d977c0a0641445fa1a49dc5ceb7f6a6",
+      "tool": "query_databricks"
+    },
+    {
+      "time": "2026-10-09T15:41:12.640014+00:00",
+      "event": "remote_query_authorized",
+      "run_id": "8fbeb694598546998217c36884553c20",
+      "instance_id": "ed211a985397",
+      "pid": 76543,
+      "tool_call_id": "75729643-ca92-4c66-b302-478a23df0a34",
+      "authorization": "automatic_read_policy"
+    },
+    {
+      "time": "2026-10-09T15:41:12.640168+00:00",
+      "event": "remote_query_started",
+      "run_id": "8fbeb694598546998217c36884553c20",
+      "instance_id": "ed211a985397",
+      "pid": 76543,
+      "ledger_status": "auto_authorized",
+      "cached_receipt": false
+    },
+    {
+      "time": "2026-10-09T15:41:12.660136+00:00",
+      "event": "remote_query_finished",
+      "run_id": "8fbeb694598546998217c36884553c20",
+      "instance_id": "ed211a985397",
+      "pid": 76543,
+      "ledger_status": "completed",
+      "status": "ready",
+      "cached_receipt": false
+    },
+    {
+      "time": "2026-10-09T15:41:12.662952+00:00",
+      "event": "remote_result_verified",
+      "run_id": "8fbeb694598546998217c36884553c20",
+      "instance_id": "ed211a985397",
+      "pid": 76543,
+      "request_id": "6d977c0a0641445fa1a49dc5ceb7f6a6",
+      "tool_call_id": "75729643-ca92-4c66-b302-478a23df0a34",
+      "dataset_id": "e42531a9-b5b2-4612-8a64-b6744274acf6",
+      "rows": 7
+    },
+    {
+      "time": "2026-10-09T15:41:12.666715+00:00",
+      "event": "completion_checked",
+      "run_id": "8fbeb694598546998217c36884553c20",
+      "instance_id": "ed211a985397",
+      "pid": 76543,
+      "request_id": "6d977c0a0641445fa1a49dc5ceb7f6a6",
+      "status": "complete",
+      "reason": null,
+      "attempts": 0,
+      "required_capabilities": [
+        "remote_query"
+      ],
+      "missing_capabilities": [],
+      "model_calls": 3,
+      "tool_calls": 2,
+      "model_seconds": 20.097,
+      "dataset_ids": [],
+      "artifact_ids": []
+    },
+    {
+      "time": "2026-10-09T15:41:12.669480+00:00",
+      "event": "run_completed",
+      "run_id": "8fbeb694598546998217c36884553c20",
+      "instance_id": "ed211a985397",
+      "pid": 76543,
+      "status": "answered",
+      "elapsed_seconds": 20.184,
+      "process_peak_rss_bytes": 342786048,
+      "frame_cache_bytes": 0
+    },
+    {
+      "time": "2026-10-09T15:41:12.669544+00:00",
+      "event": "turn_slo",
+      "run_id": "8fbeb694598546998217c36884553c20",
+      "instance_id": "ed211a985397",
+      "pid": 76543,
+      "elapsed_seconds": 20.184,
+      "limit": 180.0,
+      "status": "ok"
+    }
+  ],
+  "requested_prompt": "현재 볼 수 있는 테이블 목록을 보여줘.",
+  "current_matches_run": true,
+  "request_checkpoint_verified": true
+}

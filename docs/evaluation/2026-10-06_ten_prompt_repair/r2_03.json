@@ -1,0 +1,328 @@
+{
+  "assets": {
+    "8b86a691-b1cf-479a-88bf-2ca3ef58bb97": {
+      "kind": "dataset",
+      "metadata": {
+        "id": "8b86a691-b1cf-479a-88bf-2ca3ef58bb97",
+        "source": "information_schema.tables",
+        "columns": [
+          "TABLE_SCHEMA",
+          "TABLE_NAME",
+          "TABLE_TYPE"
+        ],
+        "rows": 7,
+        "coverage": "unknown",
+        "conditions": [],
+        "predicate_known": false,
+        "grain": "raw",
+        "aggregation": "",
+        "snapshot": "2026-10-06T10:05:01.526082+00:00",
+        "query": "SELECT table_schema, table_name, table_type FROM information_schema.tables WHERE table_schema = 'teleai_default' ORDER BY table_name LIMIT 100",
+        "parent_id": "",
+        "parent_ids": [],
+        "role": "root",
+        "root_id": "8b86a691-b1cf-479a-88bf-2ca3ef58bb97",
+        "row_selection": {}
+      },
+      "metadata_sha256": "5902ae18872de72e4b38dbd34c97d094dccb768fd45f91aab7941df86b59c252",
+      "payload_sha256": "372844c886cd58f8ef309861fc6bb1a9265e5de25cd71d7493b1199d66a13318"
+    }
+  },
+  "selection": "",
+  "current": {
+    "request_id": "abdb273f-a810-4da1-a999-a618456a2872",
+    "request_text": "은행 대출 데이터 bank_loan에는 어떤 컬럼이 들어 있어?",
+    "status": "complete",
+    "stop_reason": null,
+    "intent_origin": "llm",
+    "goal": {
+      "objective": "Identify the columns in the bank_loan table",
+      "mode": "execute",
+      "source_reference": "explicit",
+      "sources": [
+        "teleai_default.bank_loan"
+      ],
+      "columns": [
+        "id",
+        "age",
+        "job",
+        "marital",
+        "education",
+        "default",
+        "balance",
+        "housing"
+      ],
+      "conditions": [],
+      "any_conditions": [],
+      "measure_conditions": [],
+      "ratio": null,
+      "current_result_only": false,
+      "fresh_source_required": false,
+      "question": "",
+      "tasks": [
+        {
+          "capability": "metadata",
+          "options": {
+            "kind": "columns"
+          }
+        }
+      ]
+    },
+    "model_calls": 3,
+    "model_seconds": 68.46275200000673,
+    "scope": {
+      "conditions": [],
+      "any_conditions": [],
+      "measure_conditions": [],
+      "ratio": null,
+      "sources": [
+        "teleai_default.bank_loan"
+      ],
+      "columns": [],
+      "unresolved": [],
+      "join_edges": []
+    },
+    "required_sources": [
+      "teleai_default.bank_loan"
+    ],
+    "required_columns": [
+      "id",
+      "age",
+      "job",
+      "marital",
+      "education",
+      "default",
+      "balance",
+      "housing"
+    ],
+    "artifact_ids": [],
+    "evidence_ids": [],
+    "metadata_evidence": {
+      "table": "teleai_default.bank_loan",
+      "kind": "columns",
+      "columns": [
+        "id",
+        "age",
+        "job",
+        "marital",
+        "education",
+        "default",
+        "balance",
+        "housing",
+        "loan",
+        "contact",
+        "day",
+        "month",
+        "duration",
+        "campaign",
+        "pdays",
+        "previous",
+        "poutcome",
+        "y"
+      ],
+      "schema": [
+        {
+          "name": "id",
+          "dtype": "bigint"
+        },
+        {
+          "name": "age",
+          "dtype": "bigint"
+        },
+        {
+          "name": "job",
+          "dtype": "longtext"
+        },
+        {
+          "name": "marital",
+          "dtype": "longtext"
+        },
+        {
+          "name": "education",
+          "dtype": "longtext"
+        },
+        {
+          "name": "default",
+          "dtype": "longtext"
+        },
+        {
+          "name": "balance",
+          "dtype": "bigint"
+        },
+        {
+          "name": "housing",
+          "dtype": "longtext"
+        },
+        {
+          "name": "loan",
+          "dtype": "longtext"
+        },
+        {
+          "name": "contact",
+          "dtype": "longtext"
+        },
+        {
+          "name": "day",
+          "dtype": "bigint"
+        },
+        {
+          "name": "month",
+          "dtype": "longtext"
+        },
+        {
+          "name": "duration",
+          "dtype": "bigint"
+        },
+        {
+          "name": "campaign",
+          "dtype": "bigint"
+        },
+        {
+          "name": "pdays",
+          "dtype": "bigint"
+        },
+        {
+          "name": "previous",
+          "dtype": "bigint"
+        },
+        {
+          "name": "poutcome",
+          "dtype": "longtext"
+        },
+        {
+          "name": "y",
+          "dtype": "bigint"
+        }
+      ],
+      "selected_columns": [],
+      "authority": "saved_snapshot",
+      "type_authority": null,
+      "scope": "저장된 스키마 스냅샷입니다. observed_at과 freshness를 함께 확인해야 합니다.",
+      "schema_changed": false
+    },
+    "kind": null,
+    "failed": {}
+  },
+  "run_id": "9fd30b191b1a4e758ec93d103af5246e",
+  "run": [
+    {
+      "time": "2026-10-06T10:06:44.504801+00:00",
+      "event": "run_started",
+      "run_id": "9fd30b191b1a4e758ec93d103af5246e",
+      "instance_id": "f840fc0b73c1",
+      "pid": 33618,
+      "runtime": {
+        "revision_at_first_runtime": "febd34ae5cbbfbcc7023ea8e0412b84572cd7763",
+        "packages": {
+          "langchain": "1.4.0",
+          "langchain-core": "1.6.2",
+          "langgraph": "1.2.11",
+          "streamlit": "1.63.0",
+          "sqlglot": "30.18.0"
+        },
+        "python_version": "3.11.13",
+        "identity_captured_at": "2026-10-06T10:01:04.363452+00:00",
+        "route": "langgraph-v1",
+        "model_class": "ChatOllama",
+        "require_remote_approval": false,
+        "loaded_delivery_guard": "45c393f977353fe9",
+        "data_backend": "mysql",
+        "intent_mode": "llm",
+        "goal_version": 1,
+        "goal_model": "qwen3:8b",
+        "planner_model": "qwen3:8b"
+      },
+      "operation": "submit",
+      "process_peak_rss_bytes": 323780608
+    },
+    {
+      "time": "2026-10-06T10:06:44.507654+00:00",
+      "event": "goal_interpretation_started",
+      "run_id": "9fd30b191b1a4e758ec93d103af5246e",
+      "instance_id": "f840fc0b73c1",
+      "pid": 33618,
+      "request_id": "369549b1-1ec3-4812-89a2-9d8d26ea3314",
+      "origin": "llm",
+      "goal_version": 1
+    },
+    {
+      "time": "2026-10-06T10:06:44.508266+00:00",
+      "event": "model_payload_budget",
+      "run_id": "9fd30b191b1a4e758ec93d103af5246e",
+      "instance_id": "f840fc0b73c1",
+      "pid": 33618,
+      "payload_bytes": 11642,
+      "payload_bytes_before_projection": 11642,
+      "template_headroom": 640,
+      "input_budget_units": 14336,
+      "output_reserved": 2048,
+      "context_window": 16384,
+      "tool_count": 0,
+      "message_count": 1,
+      "older_turns_compacted": false,
+      "within_budget": true,
+      "observations_compacted": false,
+      "schema_compacted": false,
+      "system_catalog_compacted": false,
+      "tool_menu_compacted": false,
+      "minimal_discovery_menu": false,
+      "reasoning_compacted": false,
+      "minimal_catalog": false,
+      "builtin_instructions_compacted": false,
+      "components": {
+        "system_bytes": 6661,
+        "message_content_bytes": 4321,
+        "tool_calls_bytes": 0,
+        "reasoning_bytes": 0,
+        "tool_schema_bytes": 0,
+        "tool_names": []
+      },
+      "measurement": "conservative_utf8_bytes_not_actual_token_count"
+    },
+    {
+      "time": "2026-10-06T10:07:28.743202+00:00",
+      "event": "goal_semantic_review_started",
+      "run_id": "9fd30b191b1a4e758ec93d103af5246e",
+      "instance_id": "f840fc0b73c1",
+      "pid": 33618,
+      "request_id": "369549b1-1ec3-4812-89a2-9d8d26ea3314"
+    },
+    {
+      "time": "2026-10-06T10:07:28.744787+00:00",
+      "event": "model_payload_budget",
+      "run_id": "9fd30b191b1a4e758ec93d103af5246e",
+      "instance_id": "f840fc0b73c1",
+      "pid": 33618,
+      "payload_bytes": 12107,
+      "payload_bytes_before_projection": 12107,
+      "template_headroom": 640,
+      "input_budget_units": 14336,
+      "output_reserved": 2048,
+      "context_window": 16384,
+      "tool_count": 0,
+      "message_count": 1,
+      "older_turns_compacted": false,
+      "within_budget": true,
+      "observations_compacted": false,
+      "schema_compacted": false,
+      "system_catalog_compacted": false,
+      "tool_menu_compacted": false,
+      "minimal_discovery_menu": false,
+      "reasoning_compacted": false,
+      "minimal_catalog": false,
+      "builtin_instructions_compacted": false,
+      "components": {
+        "system_bytes": 6661,
+        "message_content_bytes": 4740,
+        "tool_calls_bytes": 0,
+        "reasoning_bytes": 0,
+        "tool_schema_bytes": 0,
+        "tool_names": []
+      },
+      "measurement": "conservative_utf8_bytes_not_actual_token_count"
+    }
+  ],
+  "requested_prompt": "여기 education에 들어있는 값 종류를 전부 알려줘.",
+  "current_matches_run": false,
+  "request_checkpoint_verified": false
+}

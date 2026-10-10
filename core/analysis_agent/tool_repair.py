@@ -15,7 +15,11 @@ def signature_id(signature):
 def diagnosis(failure, available):
     code=failure.get('error_code')
     if not isinstance(code,str):code=None
-    if code=='dataset_not_loaded':
+    if code in {'semantic_mismatch','python_contract_violation','python_execution_failed'}:
+        category='code_result_contract_failure'
+        tools=['execute_analysis_python','get_analysis_tool_contract','inspect_dataset']
+        action='Read the fixed custom_analysis result_contract and latest received mismatch/error; correct code, ordering and values. Do not change the expected contract, reload data or publish unverified output.'
+    elif code=='dataset_not_loaded':
         category='missing_local_reference'
         tools=['list_analysis_context','inspect_dataset']
         action='Find the retained dataset ID and verify its source and coverage. A table name is not a dataset ID.'
@@ -44,7 +48,8 @@ def diagnosis(failure, available):
         tools=['search_analysis_tools','inspect_dataset','inspect_table_context']
         action='Inspect the relevant tool and data contracts; change the plan only when evidence supports it.'
     return {'category':category,'failed_tool':failure.get('tool'),
-            'candidate_tools':[t for t in tools if t in available and t!=failure.get('tool')],
+            'candidate_tools':[t for t in tools if t in available and
+                               (t!=failure.get('tool') or category=='code_result_contract_failure')],
             'next_action':action}
 
 

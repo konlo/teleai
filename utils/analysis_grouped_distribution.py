@@ -29,7 +29,7 @@ def frequency_columns(tree):
     return (*axes,weight)
 
 
-def render(store,dataset_id,value,category,weight,bins=8):
+def render(store,dataset_id,value,category,weight,bins=8,*,stacked=False,legend=True,palette='default'):
     from utils.analysis_charts import ChartPreview,_apply_unicode_font
     info=store.metadata[dataset_id]
     tree=sqlglot.parse_one(info.query,read='duckdb' if info.parent_id else 'databricks')
@@ -57,10 +57,19 @@ def render(store,dataset_id,value,category,weight,bins=8):
     colors=['#3278b9','#e58632','#38946c','#b94d66','#7956a1','#8c6d31',
         '#238b9e','#bc80bd','#969696','#80b1d3','#fdb462','#b3de69',
         '#fb8072','#bebada','#8dd3c7','#d9d9d9','#ccebc5','#ffed6f','#fccde5','#a6cee3'][:len(labels)]
-    counts,_,_=ax.hist(arrays,weights=weights,bins=edges,histtype='bar',
+    if palette=='high_contrast':
+        colors=['#003f5c','#ffa600','#bc5090','#006d2c','#7a0177','#8c510a',
+                '#000000','#80cdc1','#5e3c99','#e66101','#1b9e77','#d95f02',
+                '#7570b3','#e7298a','#66a61e','#e6ab02','#a6761d','#666666','#023858','#b30000'][:len(labels)]
+    elif palette!='default':raise ValueError('unknown chart palette')
+    ax.hist(arrays,weights=weights,bins=edges,histtype='bar',stacked=stacked,
         label=[str(x) for x in labels],color=colors,edgecolor='white')
-    ax.legend(title=category,fontsize=8);ax.set(xlabel=value,ylabel='Count')
-    spec={'kind':'histogram','x':value,'category':category,'bins':int(bins),'legend':True,
+    # Matplotlib returns cumulative counts for stacked plots. Persist the
+    # independent per-series counts so the population proof remains identical.
+    counts=[np.histogram(a,bins=edges,weights=w)[0] for a,w in zip(arrays,weights)]
+    if legend:ax.legend(title=category,fontsize=8)
+    ax.set(xlabel=value,ylabel='Count')
+    spec={'kind':'histogram','x':value,'category':category,'bins':int(bins),'legend':legend,'stacked':stacked,'palette':palette,
         'legend_labels':[str(x) for x in labels],'colors':colors,'bin_edges':edges.tolist(),
         'series_counts':np.asarray(counts).reshape(len(labels),-1).astype(int).tolist(),
         'group_totals':[int(w.sum()) for w in weights],'total_count':int(frame[weight].sum()),
@@ -71,7 +80,7 @@ def render(store,dataset_id,value,category,weight,bins=8):
         'histogram',(value,category),f'빈도 합계 {spec["total_count"]:,} · complete · 그룹 결측 제외 {excluded:,} · {info.query}',buffer.getvalue(),spec)
 
 
-def prepare(context,source,column,category,where_sql,bins,normalized_query,analyze_local,card_entry,source_key,current_result_only=False,fresh_source_required=False):
+def prepare(context,source,column,category,where_sql,bins,normalized_query,analyze_local,card_entry,source_key,current_result_only=False,fresh_source_required=False,*,stacked=False,legend=True,palette='default'):
     from core.analysis_sql import validate_query
     def quote(name):return '`'+name.replace('`','``')+'`'
     table='.'.join(quote(p) for p in source.split('.'))
@@ -85,11 +94,13 @@ def prepare(context,source,column,category,where_sql,bins,normalized_query,analy
     tree=validate_query(query,dialect=context.sql_dialect)
     if frequency_columns(tree)!=(column,category,'__frequency'):raise ValueError('허용된 단일 출처 집계만 계획할 수 있습니다.')
     plan={'source':source,'query':query,'reason':f'{column} 분포를 {category}별 색상·범례로 표시하기 위한 빈도 집계입니다. 원본 전체를 가져오지 않습니다.',
-        'value_column':column,'category':category,'weight_column':'__frequency','bins':int(bins)}
+        'value_column':column,'category':category,'weight_column':'__frequency','bins':int(bins),'stacked':stacked,'legend':legend,'palette':palette}
     def ready(info):
-        card=next((c for c in context.artifacts.values() if c.dataset_id==info.id and c.render_spec.get('category')==category and c.render_spec.get('bins')==int(bins) and c.render_spec.get('legend')),None)
+        card=next((c for c in context.artifacts.values() if c.dataset_id==info.id and c.render_spec.get('category')==category
+            and c.render_spec.get('bins')==int(bins) and c.render_spec.get('legend')==legend
+            and bool(c.render_spec.get('stacked'))==stacked and c.render_spec.get('palette','default')==palette),None)
         if card is None:
-            card=render(context.datasets,info.id,column,category,'__frequency',bins);context.artifacts[card.id]=card
+            card=render(context.datasets,info.id,column,category,'__frequency',bins,stacked=stacked,legend=legend,palette=palette);context.artifacts[card.id]=card
         return {'status':'ready','histogram_plan':plan,'loaded_dataset':info.id,'cards':[card_entry(card)],'reused':True}
     if not fresh_source_required:
         for info in reversed(list(context.datasets.metadata.values())):

@@ -4,7 +4,7 @@ import json
 import re
 
 
-def discover_tools(definitions, skills, query, *, limit=3, allowed_names=None):
+def discover_tools(definitions, skills, query, *, limit=3, allowed_names=None, contracts=None):
     if not isinstance(query, str) or not query.strip() or len(query) > 400:
         raise ValueError('검색어는 1~400자여야 합니다.')
     if type(limit) is not int or not 1 <= limit <= 3:
@@ -23,8 +23,10 @@ def discover_tools(definitions, skills, query, *, limit=3, allowed_names=None):
                                      '기본 자동 조회 정책에서는 승인 대기 없이 실행합니다. 실행기의 현재 정책을 따르세요.')
         if allowed_names is not None and name not in allowed_names:
             continue
+        if contracts and name in contracts:
+            schema=contracts[name]
         searchable = json.dumps(schema, ensure_ascii=False).casefold()
-        score = sum(8 if token == name else 3 if token in name else 1
+        score = sum(100 if token == name else 3 if token in name else 1
                     for token in tokens if token in searchable)
         if score:
             ranked.append((score, name, schema))
@@ -41,6 +43,11 @@ def discover_tools(definitions, skills, query, *, limit=3, allowed_names=None):
     result = {'status':'ready', 'matches':matches,
               'total_matches':len(ranked), 'more_available':len(ranked)>limit,
               'message':'등록 도구의 실제 계약입니다. 검색은 실행·승인·완료의 근거가 아닙니다.'}
+    if not matches:
+        result['capability_catalog']=[{'name':t.name,'description':t.description[:180]}
+            for t in definitions if t.name!='propose_databricks_query'
+            and (allowed_names is None or t.name in allowed_names)]
+        result['message']='검색 결과가 없습니다. 기능 목록에서 실제 도구명을 선택해 get_analysis_tool_contract로 정확한 계약을 읽으세요.'
     # Do not silently truncate a JSON schema and make it look executable.
     while len(json.dumps(result, ensure_ascii=False)) > 18000 and matches:
         matches.pop()

@@ -1,0 +1,85 @@
+{
+  "id": 17,
+  "prompt": "age를 x축으로 하고 balance를 Y축으로 하는 scatter plot를 그려줘",
+  "status": "complete",
+  "goal": {
+    "objective": "requested work",
+    "mode": "execute",
+    "source_reference": "previous_analysis",
+    "sources": [
+      "teleai_default.bank_loan"
+    ],
+    "columns": [
+      "age",
+      "balance"
+    ],
+    "conditions": [
+      {
+        "column": "age",
+        "op": "ge",
+        "value": 30
+      },
+      {
+        "column": "age",
+        "op": "le",
+        "value": 40
+      },
+      {
+        "column": "education",
+        "op": "in",
+        "value": [
+          "primary",
+          "secondary"
+        ]
+      }
+    ],
+    "any_conditions": [],
+    "measure_conditions": [],
+    "ratio": null,
+    "current_result_only": false,
+    "fresh_source_required": false,
+    "question": "",
+    "tasks": [
+      {
+        "capability": "chart",
+        "options": {
+          "kind": "scatter",
+          "axes": {
+            "x": "age",
+            "y": "balance"
+          }
+        }
+      }
+    ]
+  },
+  "reason": null,
+  "run_id": "6087a2fbc3214a1b923651d8d18f550c",
+  "model_calls": 6,
+  "chart_metadata": [
+    {
+      "id": "b862f13f-d7b3-4dd2-a605-f154d6ff6e0b",
+      "dataset_id": "48080e63-d700-44aa-bd2b-2a5534649acf",
+      "title": "age와 balance 관계",
+      "reason": "전체 유효 좌표를 표시하고 중복 빈도를 색상으로 표현합니다.",
+      "kind": "scatter",
+      "columns": [
+        "age",
+        "balance"
+      ],
+      "scope": "전체 유효 원본 208,699행 · 고유 좌표 35,294개 · 동일 좌표는 빈도로 압축 · 표본/구간 집계 없음 · 두 축의 NULL 제외 · complete",
+      "render_spec": {
+        "mode": "exact_coordinate_frequency",
+        "source": "teleai_default.bank_loan",
+        "query": "SELECT `age`, `balance`, COUNT(*) AS `__telly_coordinate_frequency` FROM `teleai_default`.`bank_loan` WHERE `age` IS NOT NULL AND `balance` IS NOT NULL AND (`age` >= 30 AND `age` <= 40 AND `education` IN ('primary', 'secondary')) GROUP BY `age`, `balance`",
+        "snapshot": "2026-10-09T09:49:10.371694+00:00",
+        "x": "age",
+        "y": "balance",
+        "coordinate_count": 35294,
+        "drawable_rows": 208699,
+        "weight_column": "__telly_coordinate_frequency",
+        "data_sha256": "6c1b82fa3d3d04fd50e40f83eae230879e70c14f251c9c0b084c5f289b5a61dd"
+      }
+    }
+  ],
+  "verdict": "PASS"
+}

@@ -1,0 +1,85 @@
+{
+  "assets": {},
+  "selection": "",
+  "current": {},
+  "run_id": "e8ce77cc378e4547b21c4593c8e07f64",
+  "run": [
+    {
+      "time": "2026-10-06T09:58:23.868888+00:00",
+      "event": "run_started",
+      "run_id": "e8ce77cc378e4547b21c4593c8e07f64",
+      "instance_id": "fdb9d47393aa",
+      "pid": 33470,
+      "runtime": {
+        "revision_at_first_runtime": "febd34ae5cbbfbcc7023ea8e0412b84572cd7763",
+        "packages": {
+          "langchain": "1.4.0",
+          "langchain-core": "1.6.2",
+          "langgraph": "1.2.11",
+          "streamlit": "1.63.0",
+          "sqlglot": "30.18.0"
+        },
+        "python_version": "3.11.13",
+        "identity_captured_at": "2026-10-06T09:57:33.338396+00:00",
+        "route": "langgraph-v1",
+        "model_class": "ChatOllama",
+        "require_remote_approval": false,
+        "loaded_delivery_guard": "45c393f977353fe9",
+        "data_backend": "mysql",
+        "intent_mode": "llm",
+        "goal_version": 1,
+        "goal_model": "qwen3:8b",
+        "planner_model": "qwen3:8b"
+      },
+      "operation": "submit",
+      "process_peak_rss_bytes": 358465536
+    },
+    {
+      "time": "2026-10-06T09:58:23.873092+00:00",
+      "event": "goal_interpretation_started",
+      "run_id": "e8ce77cc378e4547b21c4593c8e07f64",
+      "instance_id": "fdb9d47393aa",
+      "pid": 33470,
+      "request_id": "a28f061a-42ec-4963-a1d3-a1555906b22c",
+      "origin": "llm",
+      "goal_version": 1
+    },
+    {
+      "time": "2026-10-06T09:58:23.875687+00:00",
+      "event": "model_payload_budget",
+      "run_id": "e8ce77cc378e4547b21c4593c8e07f64",
+      "instance_id": "fdb9d47393aa",
+      "pid": 33470,
+      "payload_bytes": 10025,
+      "payload_bytes_before_projection": 10025,
+      "template_headroom": 640,
+      "input_budget_units": 14336,
+      "output_reserved": 2048,
+      "context_window": 16384,
+      "tool_count": 0,
+      "message_count": 1,
+      "older_turns_compacted": false,
+      "within_budget": true,
+      "observations_compacted": false,
+      "schema_compacted": false,
+      "system_catalog_compacted": false,
+      "tool_menu_compacted": false,
+      "minimal_discovery_menu": false,
+      "reasoning_compacted": false,
+      "minimal_catalog": false,
+      "builtin_instructions_compacted": false,
+      "components": {
+        "system_bytes": 6661,
+        "message_content_bytes": 2880,
+        "tool_calls_bytes": 0,
+        "reasoning_bytes": 0,
+        "tool_schema_bytes": 0,
+        "tool_names": []
+      },
+      "measurement": "conservative_utf8_bytes_not_actual_token_count"
+    }
+  ],
+  "requested_prompt": "지금 연결된 DB에서 분석 가능한 테이블 이름들을 알려줄래?",
+  "current_matches_run": false,
+  "request_checkpoint_verified": false
+}

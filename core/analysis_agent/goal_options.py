@@ -2,6 +2,9 @@
 import math
 
 RESULT_TOOLS={
+    'custom_analysis_spec':{'execute_analysis_python'},
+    'advanced_eda_spec':{'render_advanced_eda'},
+    'export_spec':{'export_analysis_result'},
     'chart':{'render_chart_spec','render_histogram','recommend_chart_images','prepare_histogram','show_chart','prepare_source_scatter','render_count_rate_chart'},
     'statistical_kind':{'statistical_test'},'winsor_spec':{'winsorize_numeric'},
     'outlier_spec':{'detect_outliers','select_outlier_rows'},'time_series_frequency':{'prepare_time_series'},
@@ -27,12 +30,21 @@ def validate_options(cap, options, goal):
         v=options.get(key)
         if not isinstance(v,list) or not v or len(v)>32 or any(not isinstance(c,str) or not c for c in v):
             raise ValueError(cap+'.'+key+' requires explicit columns')
-    for key in ('grouped','categorical','margins'):
+    for key in ('grouped','categorical','margins','legend','stacked'):
         if key in options and type(options[key]) is not bool:raise ValueError(key+' must be boolean')
     if 'bins' in options and (type(options['bins']) is not int or not 2<=options['bins']<=100):raise ValueError('invalid bins')
     if cap=='table_list':
         for key in options:
             if not isinstance(options[key],str):raise ValueError('namespace must be text')
+    if cap=='custom_analysis' and (not isinstance(options.get('description'),str) or not options['description'].strip()):
+        raise ValueError('Custom analysis requires an explicit description')
+    if cap=='custom_analysis':
+        from core.analysis_agent.python_result_contract import validate
+        validate(options.get('result_contract'),goal['columns'])
+    if cap=='advanced_eda':
+        enum('kind',{'correlation_heatmap','scatter_matrix','distribution_panels'})
+        if not 2<=len(goal['columns'])<=6:raise ValueError('Advanced EDA requires 2..6 explicit columns')
+    if cap=='export':enum('format',{'csv','parquet','png'})
     if cap=='calculation' and (options.get('grouped') or options.get('group_columns')):
         columns('group_columns')
         if not set(options['group_columns']).issubset(goal['columns']):
@@ -40,9 +52,16 @@ def validate_options(cap, options, goal):
                              '; ungrouped totals must omit group_columns or use []')
     elif cap=='calculation' and 'group_columns' in options and options['group_columns']!=[]:
         raise ValueError('group_columns must be a list')
+    if cap in {'chart','chart_adjust'} and 'palette' in options:
+        enum('palette',{'default','high_contrast'})
     if cap=='chart_adjust':
-        v=options['y_max']
-        if type(v) not in (int,float) or not math.isfinite(v) or v<=0:raise ValueError('y_max must be positive finite')
+        if not options:raise ValueError('chart adjustment needs a requested display property')
+        if 'bins' in options and (type(options['bins']) is not int or not 2<=options['bins']<=100):
+            raise ValueError('bins must be an integer in 2..100')
+        if 'y_max' in options:
+            if len(options)!=1:raise ValueError('axis limit and presentation edits require separate tasks')
+            v=options['y_max']
+            if type(v) not in (int,float) or not math.isfinite(v) or v<=0:raise ValueError('y_max must be positive finite')
     if cap=='statistics':
         enum('test',{'mann_whitney','chi_square','one_way_anova','paired_t','independent_t','mean_ci'})
         if not goal['columns']:raise ValueError('statistical columns required')

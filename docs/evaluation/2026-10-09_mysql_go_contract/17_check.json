@@ -1,0 +1,51 @@
+{
+  "id": 17,
+  "prompt": "age를 x축으로 하고 balance를 Y축으로 하는 scatter plot를 그려줘",
+  "status": "blocked",
+  "goal": {
+    "objective": "requested work",
+    "mode": "execute",
+    "source_reference": "previous_analysis",
+    "sources": [
+      "teleai_default.bank_loan"
+    ],
+    "columns": [
+      "age",
+      "balance"
+    ],
+    "conditions": [
+      {
+        "column": "education",
+        "op": "in",
+        "value": [
+          "primary",
+          "secondary"
+        ]
+      }
+    ],
+    "any_conditions": [],
+    "measure_conditions": [],
+    "ratio": null,
+    "current_result_only": false,
+    "fresh_source_required": false,
+    "question": "",
+    "tasks": [
+      {
+        "capability": "chart",
+        "options": {
+          "kind": "scatter",
+          "axes": {
+            "x": "age",
+            "y": "balance"
+          }
+        }
+      }
+    ]
+  },
+  "reason": "whole_scatter_incomplete",
+  "run_id": "705c6ba1862b48dea01f20b4f6637c9f",
+  "model_calls": 6,
+  "chart_metadata": [],
+  "verdict": "FAIL",
+  "error": "whole_scatter_incomplete"
+}

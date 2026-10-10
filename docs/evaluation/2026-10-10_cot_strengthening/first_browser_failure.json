@@ -1,0 +1,609 @@
+{
+  "conversation": "e0ae7385-5872-4659-ba15-ab38c3ab2804",
+  "diagnostics": [
+    {
+      "time": "2026-10-10T04:59:42.112832+00:00",
+      "event": "run_started",
+      "run_id": "f3ec11abcfc848da87b6611052dcd837",
+      "instance_id": "9e230fb64617",
+      "pid": 94514,
+      "runtime": {
+        "revision_at_first_runtime": "3a7206654b3d2fab7cd145893fd52970e397dd07",
+        "packages": {
+          "langchain": "1.4.0",
+          "langchain-core": "1.6.2",
+          "langgraph": "1.2.11",
+          "streamlit": "1.63.0",
+          "sqlglot": "30.18.0"
+        },
+        "python_version": "3.11.13",
+        "identity_captured_at": "2026-10-10T04:59:05.980865+00:00",
+        "route": "langgraph-v1",
+        "model_class": "ChatOllama",
+        "require_remote_approval": false,
+        "loaded_delivery_guard": "892057222e9ed9b4",
+        "data_backend": "mysql",
+        "intent_mode": "llm",
+        "goal_version": 1,
+        "goal_model": "gemma4:e4b",
+        "planner_model": "gemma4:e4b"
+      },
+      "operation": "submit",
+      "process_peak_rss_bytes": 359350272
+    },
+    {
+      "time": "2026-10-10T04:59:42.118147+00:00",
+      "event": "goal_interpretation_started",
+      "run_id": "f3ec11abcfc848da87b6611052dcd837",
+      "instance_id": "9e230fb64617",
+      "pid": 94514,
+      "request_id": "9cc81b1642a340c28fc9c420a7b86c53",
+      "origin": "llm",
+      "goal_version": 1
+    },
+    {
+      "time": "2026-10-10T04:59:42.121746+00:00",
+      "event": "model_payload_budget",
+      "run_id": "f3ec11abcfc848da87b6611052dcd837",
+      "instance_id": "9e230fb64617",
+      "pid": 94514,
+      "payload_bytes": 2230,
+      "payload_bytes_before_projection": 2230,
+      "template_headroom": 640,
+      "input_budget_units": 14336,
+      "output_reserved": 2048,
+      "context_window": 16384,
+      "tool_count": 0,
+      "message_count": 1,
+      "older_turns_compacted": false,
+      "within_budget": true,
+      "observations_compacted": false,
+      "schema_compacted": false,
+      "system_catalog_compacted": false,
+      "tool_menu_compacted": false,
+      "minimal_discovery_menu": false,
+      "reasoning_compacted": false,
+      "minimal_catalog": false,
+      "builtin_instructions_compacted": false,
+      "repair_history_compacted": false,
+      "components": {
+        "system_bytes": 1332,
+        "message_content_bytes": 739,
+        "tool_calls_bytes": 0,
+        "reasoning_bytes": 0,
+        "tool_schema_bytes": 0,
+        "tool_names": []
+      },
+      "measurement": "conservative_utf8_bytes_not_actual_token_count"
+    },
+    {
+      "time": "2026-10-10T04:59:50.364788+00:00",
+      "event": "goal_literal_subjects_read",
+      "run_id": "f3ec11abcfc848da87b6611052dcd837",
+      "instance_id": "9e230fb64617",
+      "pid": 94514,
+      "request_id": "9cc81b1642a340c28fc9c420a7b86c53",
+      "candidate_count": 6,
+      "table_count": 1
+    },
+    {
+      "time": "2026-10-10T04:59:50.367907+00:00",
+      "event": "model_payload_budget",
+      "run_id": "f3ec11abcfc848da87b6611052dcd837",
+      "instance_id": "9e230fb64617",
+      "pid": 94514,
+      "payload_bytes": 7621,
+      "payload_bytes_before_projection": 7621,
+      "template_headroom": 640,
+      "input_budget_units": 14336,
+      "output_reserved": 2048,
+      "context_window": 16384,
+      "tool_count": 0,
+      "message_count": 1,
+      "older_turns_compacted": false,
+      "within_budget": true,
+      "observations_compacted": false,
+      "schema_compacted": false,
+      "system_catalog_compacted": false,
+      "tool_menu_compacted": false,
+      "minimal_discovery_menu": false,
+      "reasoning_compacted": false,
+      "minimal_catalog": false,
+      "builtin_instructions_compacted": false,
+      "repair_history_compacted": false,
+      "components": {
+        "system_bytes": 6126,
+        "message_content_bytes": 1185,
+        "tool_calls_bytes": 0,
+        "reasoning_bytes": 0,
+        "tool_schema_bytes": 0,
+        "tool_names": []
+      },
+      "measurement": "conservative_utf8_bytes_not_actual_token_count"
+    },
+    {
+      "time": "2026-10-10T04:59:59.800010+00:00",
+      "event": "goal_tasks_selected",
+      "run_id": "f3ec11abcfc848da87b6611052dcd837",
+      "instance_id": "9e230fb64617",
+      "pid": 94514,
+      "request_id": "9cc81b1642a340c28fc9c420a7b86c53",
+      "mode": "execute",
+      "capabilities": [
+        "row_preview"
+      ],
+      "chart_kind": "",
+      "metadata_kind": "",
+      "source_reference": "explicit",
+      "current_result_only": false
+    },
+    {
+      "time": "2026-10-10T04:59:59.800806+00:00",
+      "event": "model_payload_budget",
+      "run_id": "f3ec11abcfc848da87b6611052dcd837",
+      "instance_id": "9e230fb64617",
+      "pid": 94514,
+      "payload_bytes": 11197,
+      "payload_bytes_before_projection": 11197,
+      "template_headroom": 640,
+      "input_budget_units": 14336,
+      "output_reserved": 2048,
+      "context_window": 16384,
+      "tool_count": 0,
+      "message_count": 1,
+      "older_turns_compacted": false,
+      "within_budget": true,
+      "observations_compacted": false,
+      "schema_compacted": false,
+      "system_catalog_compacted": false,
+      "tool_menu_compacted": false,
+      "minimal_discovery_menu": false,
+      "reasoning_compacted": false,
+      "minimal_catalog": false,
+      "builtin_instructions_compacted": false,
+      "repair_history_compacted": false,
+      "components": {
+        "system_bytes": 8679,
+        "message_content_bytes": 2026,
+        "tool_calls_bytes": 0,
+        "reasoning_bytes": 0,
+        "tool_schema_bytes": 0,
+        "tool_names": []
+      },
+      "measurement": "conservative_utf8_bytes_not_actual_token_count"
+    },
+    {
+      "time": "2026-10-10T05:00:12.896084+00:00",
+      "event": "goal_structure_rejected",
+      "run_id": "f3ec11abcfc848da87b6611052dcd837",
+      "instance_id": "9e230fb64617",
+      "pid": 94514,
+      "request_id": "9cc81b1642a340c28fc9c420a7b86c53",
+      "attempt": 1,
+      "error_type": "ValueError"
+    },
+    {
+      "time": "2026-10-10T05:00:12.896395+00:00",
+      "event": "goal_contract_error",
+      "run_id": "f3ec11abcfc848da87b6611052dcd837",
+      "instance_id": "9e230fb64617",
+      "pid": 94514,
+      "request_id": "9cc81b1642a340c28fc9c420a7b86c53",
+      "error_code": "goal_schema_invalid",
+      "detail": "Missing decision evidence: /columns/0, /columns/1, /columns/2, /conditions/0, /conditions/1, /sources/0, /tasks/0",
+      "output_columns": [
+        "age",
+        "balance",
+        "education"
+      ],
+      "selected_output_columns": [
+        "age",
+        "balance",
+        "education"
+      ],
+      "predicate_shapes": [
+        {
+          "column": "age",
+          "op": "between",
+          "value_type": "list",
+          "item_types": [
+            "int",
+            "int"
+          ]
+        },
+        {
+          "column": "education",
+          "op": "in",
+          "value_type": "list",
+          "item_types": [
+            "str",
+            "str"
+          ]
+        }
+      ]
+    },
+    {
+      "time": "2026-10-10T05:00:12.897056+00:00",
+      "event": "model_payload_budget",
+      "run_id": "f3ec11abcfc848da87b6611052dcd837",
+      "instance_id": "9e230fb64617",
+      "pid": 94514,
+      "payload_bytes": 11967,
+      "payload_bytes_before_projection": 11967,
+      "template_headroom": 640,
+      "input_budget_units": 14336,
+      "output_reserved": 2048,
+      "context_window": 16384,
+      "tool_count": 0,
+      "message_count": 1,
+      "older_turns_compacted": false,
+      "within_budget": true,
+      "observations_compacted": false,
+      "schema_compacted": false,
+      "system_catalog_compacted": false,
+      "tool_menu_compacted": false,
+      "minimal_discovery_menu": false,
+      "reasoning_compacted": false,
+      "minimal_catalog": false,
+      "builtin_instructions_compacted": false,
+      "repair_history_compacted": false,
+      "components": {
+        "system_bytes": 8679,
+        "message_content_bytes": 2719,
+        "tool_calls_bytes": 0,
+        "reasoning_bytes": 0,
+        "tool_schema_bytes": 0,
+        "tool_names": []
+      },
+      "measurement": "conservative_utf8_bytes_not_actual_token_count"
+    },
+    {
+      "time": "2026-10-10T05:00:18.303016+00:00",
+      "event": "goal_structure_rejected",
+      "run_id": "f3ec11abcfc848da87b6611052dcd837",
+      "instance_id": "9e230fb64617",
+      "pid": 94514,
+      "request_id": "9cc81b1642a340c28fc9c420a7b86c53",
+      "attempt": 2,
+      "error_type": "ValueError"
+    },
+    {
+      "time": "2026-10-10T05:00:18.303103+00:00",
+      "event": "goal_contract_error",
+      "run_id": "f3ec11abcfc848da87b6611052dcd837",
+      "instance_id": "9e230fb64617",
+      "pid": 94514,
+      "request_id": "9cc81b1642a340c28fc9c420a7b86c53",
+      "error_code": "goal_schema_invalid",
+      "detail": "Missing decision evidence: /columns/0, /columns/1, /columns/2, /conditions/0, /conditions/1, /sources/0, /tasks/0",
+      "output_columns": [
+        "age",
+        "balance",
+        "education"
+      ],
+      "selected_output_columns": [
+        "age",
+        "balance",
+        "education"
+      ],
+      "predicate_shapes": [
+        {
+          "column": "age",
+          "op": "between",
+          "value_type": "list",
+          "item_types": [
+            "int",
+            "int"
+          ]
+        },
+        {
+          "column": "education",
+          "op": "in",
+          "value_type": "list",
+          "item_types": [
+            "str",
+            "str"
+          ]
+        }
+      ]
+    },
+    {
+      "time": "2026-10-10T05:00:18.303387+00:00",
+      "event": "model_payload_budget",
+      "run_id": "f3ec11abcfc848da87b6611052dcd837",
+      "instance_id": "9e230fb64617",
+      "pid": 94514,
+      "payload_bytes": 2230,
+      "payload_bytes_before_projection": 2230,
+      "template_headroom": 640,
+      "input_budget_units": 14336,
+      "output_reserved": 2048,
+      "context_window": 16384,
+      "tool_count": 0,
+      "message_count": 1,
+      "older_turns_compacted": false,
+      "within_budget": true,
+      "observations_compacted": false,
+      "schema_compacted": false,
+      "system_catalog_compacted": false,
+      "tool_menu_compacted": false,
+      "minimal_discovery_menu": false,
+      "reasoning_compacted": false,
+      "minimal_catalog": false,
+      "builtin_instructions_compacted": false,
+      "repair_history_compacted": false,
+      "components": {
+        "system_bytes": 1332,
+        "message_content_bytes": 739,
+        "tool_calls_bytes": 0,
+        "reasoning_bytes": 0,
+        "tool_schema_bytes": 0,
+        "tool_names": []
+      },
+      "measurement": "conservative_utf8_bytes_not_actual_token_count"
+    },
+    {
+      "time": "2026-10-10T05:00:20.200523+00:00",
+      "event": "goal_literal_subjects_read",
+      "run_id": "f3ec11abcfc848da87b6611052dcd837",
+      "instance_id": "9e230fb64617",
+      "pid": 94514,
+      "request_id": "9cc81b1642a340c28fc9c420a7b86c53",
+      "candidate_count": 6,
+      "table_count": 1
+    },
+    {
+      "time": "2026-10-10T05:00:20.203016+00:00",
+      "event": "model_payload_budget",
+      "run_id": "f3ec11abcfc848da87b6611052dcd837",
+      "instance_id": "9e230fb64617",
+      "pid": 94514,
+      "payload_bytes": 8248,
+      "payload_bytes_before_projection": 8248,
+      "template_headroom": 640,
+      "input_budget_units": 14336,
+      "output_reserved": 2048,
+      "context_window": 16384,
+      "tool_count": 0,
+      "message_count": 1,
+      "older_turns_compacted": false,
+      "within_budget": true,
+      "observations_compacted": false,
+      "schema_compacted": false,
+      "system_catalog_compacted": false,
+      "tool_menu_compacted": false,
+      "minimal_discovery_menu": false,
+      "reasoning_compacted": false,
+      "minimal_catalog": false,
+      "builtin_instructions_compacted": false,
+      "repair_history_compacted": false,
+      "components": {
+        "system_bytes": 6126,
+        "message_content_bytes": 1750,
+        "tool_calls_bytes": 0,
+        "reasoning_bytes": 0,
+        "tool_schema_bytes": 0,
+        "tool_names": []
+      },
+      "measurement": "conservative_utf8_bytes_not_actual_token_count"
+    },
+    {
+      "time": "2026-10-10T05:00:26.445642+00:00",
+      "event": "goal_tasks_selected",
+      "run_id": "f3ec11abcfc848da87b6611052dcd837",
+      "instance_id": "9e230fb64617",
+      "pid": 94514,
+      "request_id": "9cc81b1642a340c28fc9c420a7b86c53",
+      "mode": "execute",
+      "capabilities": [
+        "row_preview"
+      ],
+      "chart_kind": "",
+      "metadata_kind": "",
+      "source_reference": "explicit",
+      "current_result_only": false
+    },
+    {
+      "time": "2026-10-10T05:00:26.447020+00:00",
+      "event": "goal_task_selection_repaired",
+      "run_id": "f3ec11abcfc848da87b6611052dcd837",
+      "instance_id": "9e230fb64617",
+      "pid": 94514,
+      "request_id": "9cc81b1642a340c28fc9c420a7b86c53",
+      "changed": true,
+      "attempt": 2
+    },
+    {
+      "time": "2026-10-10T05:00:26.448600+00:00",
+      "event": "model_payload_budget",
+      "run_id": "f3ec11abcfc848da87b6611052dcd837",
+      "instance_id": "9e230fb64617",
+      "pid": 94514,
+      "payload_bytes": 11850,
+      "payload_bytes_before_projection": 11850,
+      "template_headroom": 640,
+      "input_budget_units": 14336,
+      "output_reserved": 2048,
+      "context_window": 16384,
+      "tool_count": 0,
+      "message_count": 1,
+      "older_turns_compacted": false,
+      "within_budget": true,
+      "observations_compacted": false,
+      "schema_compacted": false,
+      "system_catalog_compacted": false,
+      "tool_menu_compacted": false,
+      "minimal_discovery_menu": false,
+      "reasoning_compacted": false,
+      "minimal_catalog": false,
+      "builtin_instructions_compacted": false,
+      "repair_history_compacted": false,
+      "components": {
+        "system_bytes": 8679,
+        "message_content_bytes": 2613,
+        "tool_calls_bytes": 0,
+        "reasoning_bytes": 0,
+        "tool_schema_bytes": 0,
+        "tool_names": []
+      },
+      "measurement": "conservative_utf8_bytes_not_actual_token_count"
+    },
+    {
+      "time": "2026-10-10T05:00:35.033956+00:00",
+      "event": "goal_structure_rejected",
+      "run_id": "f3ec11abcfc848da87b6611052dcd837",
+      "instance_id": "9e230fb64617",
+      "pid": 94514,
+      "request_id": "9cc81b1642a340c28fc9c420a7b86c53",
+      "attempt": 3,
+      "error_type": "ValueError"
+    },
+    {
+      "time": "2026-10-10T05:00:35.034291+00:00",
+      "event": "goal_contract_error",
+      "run_id": "f3ec11abcfc848da87b6611052dcd837",
+      "instance_id": "9e230fb64617",
+      "pid": 94514,
+      "request_id": "9cc81b1642a340c28fc9c420a7b86c53",
+      "error_code": "goal_schema_invalid",
+      "detail": "Unexpected or repeated decision evidence path",
+      "output_columns": [
+        "age",
+        "balance",
+        "education"
+      ],
+      "selected_output_columns": [
+        "age",
+        "balance",
+        "education"
+      ],
+      "predicate_shapes": [
+        {
+          "column": "age",
+          "op": "between",
+          "value_type": "list",
+          "item_types": [
+            "int",
+            "int"
+          ]
+        },
+        {
+          "column": "education",
+          "op": "in",
+          "value_type": "list",
+          "item_types": [
+            "str",
+            "str"
+          ]
+        }
+      ]
+    },
+    {
+      "time": "2026-10-10T05:00:35.035266+00:00",
+      "event": "model_payload_budget",
+      "run_id": "f3ec11abcfc848da87b6611052dcd837",
+      "instance_id": "9e230fb64617",
+      "pid": 94514,
+      "payload_bytes": 12552,
+      "payload_bytes_before_projection": 12552,
+      "template_headroom": 640,
+      "input_budget_units": 14336,
+      "output_reserved": 2048,
+      "context_window": 16384,
+      "tool_count": 0,
+      "message_count": 1,
+      "older_turns_compacted": false,
+      "within_budget": true,
+      "observations_compacted": false,
+      "schema_compacted": false,
+      "system_catalog_compacted": false,
+      "tool_menu_compacted": false,
+      "minimal_discovery_menu": false,
+      "reasoning_compacted": false,
+      "minimal_catalog": false,
+      "builtin_instructions_compacted": false,
+      "repair_history_compacted": false,
+      "components": {
+        "system_bytes": 8679,
+        "message_content_bytes": 3238,
+        "tool_calls_bytes": 0,
+        "reasoning_bytes": 0,
+        "tool_schema_bytes": 0,
+        "tool_names": []
+      },
+      "measurement": "conservative_utf8_bytes_not_actual_token_count"
+    },
+    {
+      "time": "2026-10-10T05:00:40.308792+00:00",
+      "event": "goal_structure_rejected",
+      "run_id": "f3ec11abcfc848da87b6611052dcd837",
+      "instance_id": "9e230fb64617",
+      "pid": 94514,
+      "request_id": "9cc81b1642a340c28fc9c420a7b86c53",
+      "attempt": 4,
+      "error_type": "ValueError"
+    },
+    {
+      "time": "2026-10-10T05:00:40.308884+00:00",
+      "event": "goal_contract_error",
+      "run_id": "f3ec11abcfc848da87b6611052dcd837",
+      "instance_id": "9e230fb64617",
+      "pid": 94514,
+      "request_id": "9cc81b1642a340c28fc9c420a7b86c53",
+      "error_code": "goal_schema_invalid",
+      "detail": "Missing decision evidence: /columns/0, /columns/1, /columns/2, /conditions/0, /conditions/1, /sources/0, /tasks/0",
+      "output_columns": [
+        "age",
+        "balance",
+        "education"
+      ],
+      "selected_output_columns": [
+        "age",
+        "balance",
+        "education"
+      ],
+      "predicate_shapes": [
+        {
+          "column": "age",
+          "op": "between",
+          "value_type": "list",
+          "item_types": [
+            "int",
+            "int"
+          ]
+        },
+        {
+          "column": "education",
+          "op": "in",
+          "value_type": "list",
+          "item_types": [
+            "str",
+            "str"
+          ]
+        }
+      ]
+    },
+    {
+      "time": "2026-10-10T05:00:40.313583+00:00",
+      "event": "run_completed",
+      "run_id": "f3ec11abcfc848da87b6611052dcd837",
+      "instance_id": "9e230fb64617",
+      "pid": 94514,
+      "status": "blocked",
+      "elapsed_seconds": 58.202,
+      "process_peak_rss_bytes": 359530496,
+      "frame_cache_bytes": 0
+    },
+    {
+      "time": "2026-10-10T05:00:40.313660+00:00",
+      "event": "turn_slo",
+      "run_id": "f3ec11abcfc848da87b6611052dcd837",
+      "instance_id": "9e230fb64617",
+      "pid": 94514,
+      "elapsed_seconds": 58.202,
+      "limit": 180.0,
+      "status": "ok"
+    }
+  ],
+  "qualification": "First grounding schema failed; no data execution, preserve separately from repaired build"
+}

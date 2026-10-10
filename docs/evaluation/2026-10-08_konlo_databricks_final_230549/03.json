@@ -1,0 +1,865 @@
+{
+  "recent_transcript": [
+    {
+      "type": "ai",
+      "data": {
+        "content": "원격 조회가 완료되어 결과 78행을 저장했습니다.\n\nage 분포 이미지를 생성했습니다.\n분석 범위: 빈도 합계 750,000 · complete · SELECT `age`, COUNT(*) AS `__frequency` FROM `workspace`.`default`.`bank_loan` WHERE `age` IS NOT NULL GROUP BY `age`",
+        "additional_kwargs": {
+          "analysis_status": "answered",
+          "analysis_controller_result": true,
+          "analysis_artifact_ids": [
+            "f6091fa6-11b3-4b59-aa57-9abc79595045"
+          ]
+        },
+        "response_metadata": {},
+        "type": "ai",
+        "name": null,
+        "id": "69f8b47b-28e4-4639-88ae-064202cb3d64",
+        "tool_calls": [],
+        "invalid_tool_calls": [],
+        "usage_metadata": null
+      }
+    },
+    {
+      "type": "tool",
+      "data": {
+        "content": "{\"status\": \"ready\", \"cards\": [{\"id\": \"f6091fa6-11b3-4b59-aa57-9abc79595045\", \"dataset_id\": \"3bbf6e8f-fcb1-471d-8596-f22a3359d116\", \"title\": \"age 분포\", \"reason\": \"값별 빈도를 가중치로 사용했습니다. 원본 행을 펼치거나 표본을 만들지 않았습니다.\", \"kind\": \"histogram\", \"columns\": [\"age\"], \"scope\": \"빈도 합계 750,000 · complete · SELECT `age`, COUNT(*) AS `__frequency` FROM `workspace`.`default`.`bank_loan` WHERE `age` IS NOT NULL GROUP BY `age`\"}], \"evidence_ids\": [\"f6091fa6-11b3-4b59-aa57-9abc79595045\"], \"error_code\": null, \"retryable\": false, \"user_action\": \"\", \"scope\": \"도구가 반환한 구조화 결과 범위입니다.\"}",
+        "additional_kwargs": {},
+        "response_metadata": {},
+        "type": "tool",
+        "name": "render_histogram",
+        "id": "d56ec2e1-1502-4375-a9b5-3fa47e2aab20",
+        "tool_call_id": "61c88ea6-6676-4fc6-8398-65384e4bb7e3",
+        "artifact": null,
+        "status": "success"
+      }
+    },
+    {
+      "type": "ai",
+      "data": {
+        "content": "",
+        "additional_kwargs": {},
+        "response_metadata": {},
+        "type": "ai",
+        "name": null,
+        "id": "74b33243-7bee-48d9-a958-2962a0df628a",
+        "tool_calls": [
+          {
+            "name": "render_histogram",
+            "args": {
+              "dataset_id": "3bbf6e8f-fcb1-471d-8596-f22a3359d116",
+              "value_column": "age",
+              "weight_column": "__frequency",
+              "bins": 8
+            },
+            "id": "61c88ea6-6676-4fc6-8398-65384e4bb7e3",
+            "type": "tool_call"
+          }
+        ],
+        "invalid_tool_calls": [],
+        "usage_metadata": null
+      }
+    },
+    {
+      "type": "tool",
+      "data": {
+        "content": "{\"status\": \"ready\", \"dataset\": {\"id\": \"3bbf6e8f-fcb1-471d-8596-f22a3359d116\", \"source\": \"workspace.default.bank_loan\", \"columns\": [\"age\", \"__frequency\"], \"rows\": 78, \"coverage\": \"complete\", \"conditions\": [], \"predicate_known\": false, \"grain\": \"aggregate\", \"aggregation\": \"SELECT \\\"age\\\", COUNT(*) AS \\\"__frequency\\\" FROM \\\"workspace\\\".\\\"default\\\".\\\"bank_loan\\\" WHERE NOT \\\"age\\\" IS NULL GROUP BY \\\"age\\\"\", \"snapshot\": \"2026-10-08T14:08:59.588201+00:00\", \"query\": \"SELECT `age`, COUNT(*) AS `__frequency` FROM `workspace`.`default`.`bank_loan` WHERE `age` IS NOT NULL GROUP BY `age`\", \"parent_id\": \"\", \"parent_ids\": [], \"role\": \"aggregate\", \"root_id\": \"\", \"row_selection\": {}}, \"preview\": [{\"age\": 42, \"__frequency\": 20947}, {\"age\": 38, \"__frequency\": 24429}, {\"age\": 36, \"__frequency\": 31022}, {\"age\": 27, \"__frequency\": 13207}, {\"age\": 26, \"__frequency\": 11779}, {\"age\": 24, \"__frequency\": 4162}, {\"age\": 39, \"__frequency\": 25380}, {\"age\": 50, \"__frequency\": 15463}, {\"age\": 46, \"__frequency\": 20486}, {\"age\": 32, \"__frequency\": 37235}], \"evidence_ids\": [\"3bbf6e8f-fcb1-471d-8596-f22a3359d116\"], \"error_code\": null, \"retryable\": false, \"user_action\": \"\", \"scope\": \"도구가 반환한 구조화 결과 범위입니다.\"}",
+        "additional_kwargs": {},
+        "response_metadata": {},
+        "type": "tool",
+        "name": "query_databricks",
+        "id": "1af42a1b-bc27-481d-96fb-f611c5a2326d",
+        "tool_call_id": "c02f58d3-5390-43bd-b229-8c9ca320caf0",
+        "artifact": null,
+        "status": "success"
+      }
+    },
+    {
+      "type": "ai",
+      "data": {
+        "content": "",
+        "additional_kwargs": {},
+        "response_metadata": {},
+        "type": "ai",
+        "name": null,
+        "id": "8e8db531-9e13-44a1-b6dc-a38fbad34434",
+        "tool_calls": [
+          {
+            "name": "query_databricks",
+            "args": {
+              "source": "workspace.default.bank_loan",
+              "query": "SELECT `age`, COUNT(*) AS `__frequency` FROM `workspace`.`default`.`bank_loan` WHERE `age` IS NOT NULL GROUP BY `age`",
+              "reason": "age 히스토그램에 필요한 값별 빈도를 조회합니다. 원본 행 전체는 가져오지 않습니다."
+            },
+            "id": "c02f58d3-5390-43bd-b229-8c9ca320caf0",
+            "type": "tool_call"
+          }
+        ],
+        "invalid_tool_calls": [],
+        "usage_metadata": null
+      }
+    },
+    {
+      "type": "tool",
+      "data": {
+        "content": "{\"status\": \"planned\", \"histogram_plan\": {\"source\": \"workspace.default.bank_loan\", \"query\": \"SELECT `age`, COUNT(*) AS `__frequency` FROM `workspace`.`default`.`bank_loan` WHERE `age` IS NOT NULL GROUP BY `age`\", \"reason\": \"age 히스토그램에 필요한 값별 빈도를 조회합니다. 원본 행 전체는 가져오지 않습니다.\", \"value_column\": \"age\", \"weight_column\": \"__frequency\", \"bins\": 8}, \"evidence_ids\": [], \"error_code\": null, \"retryable\": false, \"user_action\": \"\", \"scope\": \"도구가 반환한 구조화 결과 범위입니다.\"}",
+        "additional_kwargs": {},
+        "response_metadata": {},
+        "type": "tool",
+        "name": "prepare_histogram",
+        "id": "ef15da24-ac98-4301-a1a4-291b95e6862f",
+        "tool_call_id": "65b45b7e-9ac3-44b4-bfd0-7238191a9b09",
+        "artifact": null,
+        "status": "success"
+      }
+    }
+  ],
+  "assets": {
+    "a6c1cc35-a649-4c16-8ba8-6951ce6b67c8": {
+      "kind": "dataset",
+      "metadata": {
+        "id": "a6c1cc35-a649-4c16-8ba8-6951ce6b67c8",
+        "source": "workspace.information_schema.tables",
+        "columns": [
+          "table_catalog",
+          "table_schema",
+          "table_name",
+          "table_type"
+        ],
+        "rows": 5,
+        "coverage": "unknown",
+        "conditions": [],
+        "predicate_known": false,
+        "grain": "raw",
+        "aggregation": "",
+        "snapshot": "2026-10-08T14:07:03.956501+00:00",
+        "query": "SELECT table_catalog, table_schema, table_name, table_type FROM `workspace`.information_schema.tables WHERE table_schema = 'default' ORDER BY table_catalog, table_schema, table_name LIMIT 100",
+        "parent_id": "",
+        "parent_ids": [],
+        "role": "root",
+        "root_id": "a6c1cc35-a649-4c16-8ba8-6951ce6b67c8",
+        "row_selection": {}
+      },
+      "metadata_sha256": "1902088b8f7962c94e64857b6e4beabf00ea11fc592384d762f79511ada28324",
+      "payload_sha256": "19b8b635f939d831d98dd05fe9672ce2084e9f1337b5372d6f9599f33323f296"
+    },
+    "66bf7504-4ceb-4d72-a2db-f465306d9bef": {
+      "kind": "dataset",
+      "metadata": {
+        "id": "66bf7504-4ceb-4d72-a2db-f465306d9bef",
+        "source": "workspace.default.bank_loan",
+        "columns": [
+          "id",
+          "age",
+          "job",
+          "marital",
+          "education",
+          "default",
+          "balance",
+          "housing",
+          "loan",
+          "contact",
+          "day",
+          "month",
+          "duration",
+          "campaign",
+          "pdays",
+          "previous",
+          "poutcome",
+          "y"
+        ],
+        "rows": 0,
+        "coverage": "unknown",
+        "conditions": [],
+        "predicate_known": false,
+        "grain": "raw",
+        "aggregation": "",
+        "snapshot": "2026-10-08T14:07:53.938848+00:00",
+        "query": "SELECT * FROM `workspace`.`default`.`bank_loan` LIMIT 0",
+        "parent_id": "",
+        "parent_ids": [],
+        "role": "root",
+        "root_id": "66bf7504-4ceb-4d72-a2db-f465306d9bef",
+        "row_selection": {}
+      },
+      "metadata_sha256": "a6fb888166eb44f7f0bfa9db020d1870d6260273265648e74914f41d21fa007e",
+      "payload_sha256": "3933192480108dbca076450e6e6a9013402052e79e2e8831f476686c64815fcb"
+    },
+    "3bbf6e8f-fcb1-471d-8596-f22a3359d116": {
+      "kind": "dataset",
+      "metadata": {
+        "id": "3bbf6e8f-fcb1-471d-8596-f22a3359d116",
+        "source": "workspace.default.bank_loan",
+        "columns": [
+          "age",
+          "__frequency"
+        ],
+        "rows": 78,
+        "coverage": "complete",
+        "conditions": [],
+        "predicate_known": false,
+        "grain": "aggregate",
+        "aggregation": "SELECT \"age\", COUNT(*) AS \"__frequency\" FROM \"workspace\".\"default\".\"bank_loan\" WHERE NOT \"age\" IS NULL GROUP BY \"age\"",
+        "snapshot": "2026-10-08T14:08:59.588201+00:00",
+        "query": "SELECT `age`, COUNT(*) AS `__frequency` FROM `workspace`.`default`.`bank_loan` WHERE `age` IS NOT NULL GROUP BY `age`",
+        "parent_id": "",
+        "parent_ids": [],
+        "role": "aggregate",
+        "root_id": "",
+        "row_selection": {}
+      },
+      "metadata_sha256": "c6067b6e753f4a06f25e51bdabdf3130a7cb7c44bc549330c51f5f7a2a2c24fe",
+      "payload_sha256": "f3f07d3f8bffc816d7d0dc767f618f9f5b905608322edcdc2c45cbd98fc58821"
+    },
+    "f6091fa6-11b3-4b59-aa57-9abc79595045": {
+      "kind": "chart",
+      "metadata": {
+        "id": "f6091fa6-11b3-4b59-aa57-9abc79595045",
+        "dataset_id": "3bbf6e8f-fcb1-471d-8596-f22a3359d116",
+        "title": "age 분포",
+        "reason": "값별 빈도를 가중치로 사용했습니다. 원본 행을 펼치거나 표본을 만들지 않았습니다.",
+        "kind": "histogram",
+        "columns": [
+          "age"
+        ],
+        "scope": "빈도 합계 750,000 · complete · SELECT `age`, COUNT(*) AS `__frequency` FROM `workspace`.`default`.`bank_loan` WHERE `age` IS NOT NULL GROUP BY `age`",
+        "render_spec": {
+          "aggregation": "count",
+          "bins": 8,
+          "bin_counts": [
+            41846.0,
+            294174.0,
+            194626.0,
+            156552.0,
+            55423.0,
+            5273.0,
+            1968.0,
+            138.0
+          ],
+          "bin_edges": [
+            18.0,
+            27.625,
+            37.25,
+            46.875,
+            56.5,
+            66.125,
+            75.75,
+            85.375,
+            95.0
+          ],
+          "total_count": 750000,
+          "null_policy": "exclude"
+        }
+      },
+      "metadata_sha256": "e7c190aee099d9660f73a82ce184f2e73a36e13704c0bf6fb67f1341ee834348",
+      "payload_sha256": "cf56ffef0a7e3aeb3fe93310693e33aea5d3ec0776caa6cdae30ab9105eb6fd6"
+    }
+  },
+  "selection": "",
+  "current": {
+    "request_id": "f089984086a94ad0bbc724729a9c5c87",
+    "request_text": "age 의 histogram 그려줘",
+    "status": "complete",
+    "stop_reason": null,
+    "intent_origin": "llm",
+    "goal": {
+      "objective": "age 의 histogram 그려줘",
+      "mode": "execute",
+      "source_reference": "previous_analysis",
+      "sources": [
+        "workspace.default.bank_loan"
+      ],
+      "columns": [
+        "age"
+      ],
+      "conditions": [],
+      "any_conditions": [],
+      "measure_conditions": [],
+      "ratio": null,
+      "current_result_only": false,
+      "fresh_source_required": false,
+      "question": "",
+      "tasks": [
+        {
+          "capability": "chart",
+          "options": {
+            "kind": "histogram",
+            "axes": {
+              "x": "age"
+            }
+          }
+        }
+      ]
+    },
+    "model_calls": 3,
+    "model_seconds": 29.035465334018227,
+    "scope": {
+      "conditions": [],
+      "any_conditions": [],
+      "measure_conditions": [],
+      "ratio": null,
+      "sources": [
+        "workspace.default.bank_loan"
+      ],
+      "columns": [],
+      "unresolved": [],
+      "join_edges": []
+    },
+    "required_sources": [
+      "workspace.default.bank_loan"
+    ],
+    "required_columns": [
+      "age"
+    ],
+    "artifact_ids": [
+      "f6091fa6-11b3-4b59-aa57-9abc79595045"
+    ],
+    "evidence_ids": [
+      "3bbf6e8f-fcb1-471d-8596-f22a3359d116"
+    ],
+    "chart_axes": {
+      "x": "age"
+    },
+    "kind": "histogram",
+    "failed": {},
+    "confirmed_analysis": {
+      "request_id": "f089984086a94ad0bbc724729a9c5c87",
+      "request_text": "age 의 histogram 그려줘",
+      "status": "complete",
+      "intent_origin": "llm",
+      "goal_pending": false,
+      "request_started_at": 1791468508.198682,
+      "required_sources": [
+        "workspace.default.bank_loan"
+      ],
+      "required_columns": [
+        "age"
+      ],
+      "explicit_columns": [
+        "age"
+      ],
+      "scope": {
+        "conditions": [],
+        "any_conditions": [],
+        "measure_conditions": [],
+        "ratio": null,
+        "sources": [
+          "workspace.default.bank_loan"
+        ],
+        "columns": [],
+        "unresolved": [],
+        "join_edges": []
+      },
+      "previous_scope": {
+        "conditions": [],
+        "any_conditions": [],
+        "measure_conditions": [],
+        "ratio": null,
+        "sources": [
+          "workspace.default.bank_loan"
+        ],
+        "columns": [],
+        "unresolved": [],
+        "join_edges": []
+      },
+      "chart": true,
+      "kind": "histogram",
+      "calculation": false,
+      "operations": [],
+      "metadata_kind": null,
+      "catalog_discovery_source": "",
+      "catalog_discovery_schema": "",
+      "profile_kind": null,
+      "preview_limit": 0,
+      "data_load": false,
+      "whole_row_count": false,
+      "current_result_only": false,
+      "fresh_source_required": false,
+      "requested_result_rows": null,
+      "requested_join": false,
+      "join": false,
+      "join_how": null,
+      "statistical_kind": null,
+      "latest_per_key_spec": null,
+      "row_preview_spec": null,
+      "chart_spec_requested": false,
+      "value_list_requested": false,
+      "operation_pending": false,
+      "schema_semantic": false,
+      "outlier_spec": null,
+      "outlier_column": null,
+      "time_series_frequency": null,
+      "histogram_bins": null,
+      "chart_cumulative": false,
+      "processed": [
+        "65b45b7e-9ac3-44b4-bfd0-7238191a9b09",
+        "c02f58d3-5390-43bd-b229-8c9ca320caf0",
+        "61c88ea6-6676-4fc6-8398-65384e4bb7e3"
+      ],
+      "sent_calls": [
+        "65b45b7e-9ac3-44b4-bfd0-7238191a9b09",
+        "c02f58d3-5390-43bd-b229-8c9ca320caf0",
+        "61c88ea6-6676-4fc6-8398-65384e4bb7e3"
+      ],
+      "evidence_ids": [
+        "3bbf6e8f-fcb1-471d-8596-f22a3359d116"
+      ],
+      "artifact_ids": [
+        "f6091fa6-11b3-4b59-aa57-9abc79595045"
+      ],
+      "failed": {},
+      "failed_signatures": {},
+      "attempts": 0,
+      "model_calls": 3,
+      "model_seconds": 29.035465334018227,
+      "remote_query_ids": [
+        "c02f58d3-5390-43bd-b229-8c9ca320caf0"
+      ],
+      "remote_query_evidence": {
+        "c02f58d3-5390-43bd-b229-8c9ca320caf0": {
+          "dataset_id": "3bbf6e8f-fcb1-471d-8596-f22a3359d116",
+          "source": "workspace.default.bank_loan",
+          "query": "SELECT `age`, COUNT(*) AS `__frequency` FROM `workspace`.`default`.`bank_loan` WHERE `age` IS NOT NULL GROUP BY `age`",
+          "rows": 78,
+          "columns": [
+            "age",
+            "__frequency"
+          ],
+          "coverage": "complete"
+        }
+      },
+      "columns": [
+        "age"
+      ],
+      "schema_subject": {
+        "table": "workspace.default.bank_loan",
+        "authority": "approved_select_star_result",
+        "schema_fingerprint": "dded86b439924fe70abec19bcf84c031cd4aabdcc09a54af0e91b7413752db4a",
+        "selection_at_observation": ""
+      },
+      "preview_evidence": null,
+      "outlier_aggregate_evidence": {},
+      "count_rate_evidence": null,
+      "count_rate_layout": null,
+      "count_rate_group_column": null,
+      "winsor_evidence": null,
+      "winsor_spec": null,
+      "winsor_column": null,
+      "pivot_evidence": null,
+      "pivot_requested": false,
+      "pivot_index_columns": [],
+      "pivot_column_columns": [],
+      "pivot_conditions": [],
+      "pivot_margins_name": "전체",
+      "pivot_derived_bins": [],
+      "group_summary_requested": false,
+      "group_summary_columns": [],
+      "group_summary_metrics": [],
+      "group_summary_conditions": [],
+      "group_summary_evidence": null,
+      "remote_result_requested": true,
+      "accounted_model_failures": 0,
+      "accounted_model_failure_seconds": 0.0,
+      "model_retries": 0,
+      "accounted_aux_calls": 3,
+      "accounted_aux_seconds": 29.035465334018227,
+      "_new_model_failure_seconds": 0.0,
+      "requested_subject": {},
+      "goal": {
+        "objective": "age 의 histogram 그려줘",
+        "mode": "execute",
+        "source_reference": "previous_analysis",
+        "sources": [
+          "workspace.default.bank_loan"
+        ],
+        "columns": [
+          "age"
+        ],
+        "conditions": [],
+        "any_conditions": [],
+        "measure_conditions": [],
+        "ratio": null,
+        "current_result_only": false,
+        "fresh_source_required": false,
+        "question": "",
+        "tasks": [
+          {
+            "capability": "chart",
+            "options": {
+              "kind": "histogram",
+              "axes": {
+                "x": "age"
+              }
+            }
+          }
+        ]
+      },
+      "goal_version": 1,
+      "explanation_only": false,
+      "goal_question": "",
+      "chart_axes": {
+        "x": "age"
+      },
+      "categorical_distribution": false,
+      "plan": {
+        "source": "workspace.default.bank_loan",
+        "query": "SELECT `age`, COUNT(*) AS `__frequency` FROM `workspace`.`default`.`bank_loan` WHERE `age` IS NOT NULL GROUP BY `age`",
+        "reason": "age 히스토그램에 필요한 값별 빈도를 조회합니다. 원본 행 전체는 가져오지 않습니다.",
+        "value_column": "age",
+        "weight_column": "__frequency",
+        "bins": 8
+      },
+      "plan_call": "65b45b7e-9ac3-44b4-bfd0-7238191a9b09",
+      "query_seen": "65b45b7e-9ac3-44b4-bfd0-7238191a9b09",
+      "loaded_dataset": "3bbf6e8f-fcb1-471d-8596-f22a3359d116",
+      "stop_reason": null,
+      "selection_at_confirmation": ""
+    }
+  },
+  "run_id": "241f2e83263c4ca880ec462362c09258",
+  "run": [
+    {
+      "time": "2026-10-08T14:08:28.198176+00:00",
+      "event": "run_started",
+      "run_id": "241f2e83263c4ca880ec462362c09258",
+      "instance_id": "ed18f3f677ea",
+      "pid": 42888,
+      "runtime": {
+        "revision_at_first_runtime": "e29c5bb39818e45d5042bdfa2c3097a05a147502",
+        "packages": {
+          "langchain": "1.4.0",
+          "langchain-core": "1.6.2",
+          "langgraph": "1.2.11",
+          "streamlit": "1.63.0",
+          "sqlglot": "30.18.0"
+        },
+        "python_version": "3.11.13",
+        "identity_captured_at": "2026-10-08T14:05:50.944082+00:00",
+        "route": "langgraph-v1",
+        "model_class": "ChatOllama",
+        "require_remote_approval": false,
+        "loaded_delivery_guard": "fb1f0cb9b5e4a3a1",
+        "data_backend": "databricks",
+        "intent_mode": "llm",
+        "goal_version": 1,
+        "goal_model": "qwen3:8b",
+        "planner_model": "qwen3:8b"
+      },
+      "operation": "submit",
+      "process_peak_rss_bytes": 337281024
+    },
+    {
+      "time": "2026-10-08T14:08:28.204276+00:00",
+      "event": "goal_interpretation_started",
+      "run_id": "241f2e83263c4ca880ec462362c09258",
+      "instance_id": "ed18f3f677ea",
+      "pid": 42888,
+      "request_id": "f089984086a94ad0bbc724729a9c5c87",
+      "origin": "llm",
+      "goal_version": 1
+    },
+    {
+      "time": "2026-10-08T14:08:28.206161+00:00",
+      "event": "model_payload_budget",
+      "run_id": "241f2e83263c4ca880ec462362c09258",
+      "instance_id": "ed18f3f677ea",
+      "pid": 42888,
+      "payload_bytes": 10614,
+      "payload_bytes_before_projection": 10614,
+      "template_headroom": 640,
+      "input_budget_units": 14336,
+      "output_reserved": 2048,
+      "context_window": 16384,
+      "tool_count": 0,
+      "message_count": 1,
+      "older_turns_compacted": false,
+      "within_budget": true,
+      "observations_compacted": false,
+      "schema_compacted": false,
+      "system_catalog_compacted": false,
+      "tool_menu_compacted": false,
+      "minimal_discovery_menu": false,
+      "reasoning_compacted": false,
+      "minimal_catalog": false,
+      "builtin_instructions_compacted": false,
+      "components": {
+        "system_bytes": 6661,
+        "message_content_bytes": 3357,
+        "tool_calls_bytes": 0,
+        "reasoning_bytes": 0,
+        "tool_schema_bytes": 0,
+        "tool_names": []
+      },
+      "measurement": "conservative_utf8_bytes_not_actual_token_count"
+    },
+    {
+      "time": "2026-10-08T14:08:43.388026+00:00",
+      "event": "goal_semantic_review_started",
+      "run_id": "241f2e83263c4ca880ec462362c09258",
+      "instance_id": "ed18f3f677ea",
+      "pid": 42888,
+      "request_id": "f089984086a94ad0bbc724729a9c5c87"
+    },
+    {
+      "time": "2026-10-08T14:08:43.389038+00:00",
+      "event": "model_payload_budget",
+      "run_id": "241f2e83263c4ca880ec462362c09258",
+      "instance_id": "ed18f3f677ea",
+      "pid": 42888,
+      "payload_bytes": 11074,
+      "payload_bytes_before_projection": 11074,
+      "template_headroom": 640,
+      "input_budget_units": 14336,
+      "output_reserved": 2048,
+      "context_window": 16384,
+      "tool_count": 0,
+      "message_count": 1,
+      "older_turns_compacted": false,
+      "within_budget": true,
+      "observations_compacted": false,
+      "schema_compacted": false,
+      "system_catalog_compacted": false,
+      "tool_menu_compacted": false,
+      "minimal_discovery_menu": false,
+      "reasoning_compacted": false,
+      "minimal_catalog": false,
+      "builtin_instructions_compacted": false,
+      "components": {
+        "system_bytes": 6661,
+        "message_content_bytes": 3761,
+        "tool_calls_bytes": 0,
+        "reasoning_bytes": 0,
+        "tool_schema_bytes": 0,
+        "tool_names": []
+      },
+      "measurement": "conservative_utf8_bytes_not_actual_token_count"
+    },
+    {
+      "time": "2026-10-08T14:08:53.149752+00:00",
+      "event": "model_payload_budget",
+      "run_id": "241f2e83263c4ca880ec462362c09258",
+      "instance_id": "ed18f3f677ea",
+      "pid": 42888,
+      "payload_bytes": 2008,
+      "payload_bytes_before_projection": 2008,
+      "template_headroom": 640,
+      "input_budget_units": 14336,
+      "output_reserved": 2048,
+      "context_window": 16384,
+      "tool_count": 0,
+      "message_count": 1,
+      "older_turns_compacted": false,
+      "within_budget": true,
+      "observations_compacted": false,
+      "schema_compacted": false,
+      "system_catalog_compacted": false,
+      "tool_menu_compacted": false,
+      "minimal_discovery_menu": false,
+      "reasoning_compacted": false,
+      "minimal_catalog": false,
+      "builtin_instructions_compacted": false,
+      "components": {
+        "system_bytes": 1101,
+        "message_content_bytes": 736,
+        "tool_calls_bytes": 0,
+        "reasoning_bytes": 0,
+        "tool_schema_bytes": 0,
+        "tool_names": []
+      },
+      "measurement": "conservative_utf8_bytes_not_actual_token_count"
+    },
+    {
+      "time": "2026-10-08T14:08:57.263083+00:00",
+      "event": "goal_population_audited",
+      "run_id": "241f2e83263c4ca880ec462362c09258",
+      "instance_id": "ed18f3f677ea",
+      "pid": 42888,
+      "request_id": "f089984086a94ad0bbc724729a9c5c87",
+      "changed": false,
+      "condition_count": 0,
+      "alternative_count": 0
+    },
+    {
+      "time": "2026-10-08T14:08:57.268855+00:00",
+      "event": "goal_interpretation_completed",
+      "run_id": "241f2e83263c4ca880ec462362c09258",
+      "instance_id": "ed18f3f677ea",
+      "pid": 42888,
+      "request_id": "f089984086a94ad0bbc724729a9c5c87",
+      "origin": "llm",
+      "mode": "execute",
+      "capabilities": [
+        "chart"
+      ],
+      "attempts": 2,
+      "goal_version": 1
+    },
+    {
+      "time": "2026-10-08T14:08:57.270988+00:00",
+      "event": "recovery_transition",
+      "run_id": "241f2e83263c4ca880ec462362c09258",
+      "instance_id": "ed18f3f677ea",
+      "pid": 42888,
+      "request_id": "f089984086a94ad0bbc724729a9c5c87",
+      "tool": "prepare_histogram"
+    },
+    {
+      "time": "2026-10-08T14:08:57.274837+00:00",
+      "event": "tool_started",
+      "run_id": "241f2e83263c4ca880ec462362c09258",
+      "instance_id": "ed18f3f677ea",
+      "pid": 42888,
+      "tool": "prepare_histogram"
+    },
+    {
+      "time": "2026-10-08T14:08:57.277652+00:00",
+      "event": "tool_completed",
+      "run_id": "241f2e83263c4ca880ec462362c09258",
+      "instance_id": "ed18f3f677ea",
+      "pid": 42888,
+      "tool": "prepare_histogram",
+      "status": "planned",
+      "error_code": null,
+      "elapsed_seconds": 0.003,
+      "applied_corrections": []
+    },
+    {
+      "time": "2026-10-08T14:08:57.281269+00:00",
+      "event": "recovery_transition",
+      "run_id": "241f2e83263c4ca880ec462362c09258",
+      "instance_id": "ed18f3f677ea",
+      "pid": 42888,
+      "request_id": "f089984086a94ad0bbc724729a9c5c87",
+      "tool": "query_databricks"
+    },
+    {
+      "time": "2026-10-08T14:08:57.287252+00:00",
+      "event": "remote_query_authorized",
+      "run_id": "241f2e83263c4ca880ec462362c09258",
+      "instance_id": "ed18f3f677ea",
+      "pid": 42888,
+      "tool_call_id": "c02f58d3-5390-43bd-b229-8c9ca320caf0",
+      "authorization": "automatic_read_policy"
+    },
+    {
+      "time": "2026-10-08T14:08:57.287556+00:00",
+      "event": "remote_query_started",
+      "run_id": "241f2e83263c4ca880ec462362c09258",
+      "instance_id": "ed18f3f677ea",
+      "pid": 42888,
+      "ledger_status": "auto_authorized",
+      "cached_receipt": false
+    },
+    {
+      "time": "2026-10-08T14:08:59.843995+00:00",
+      "event": "remote_query_finished",
+      "run_id": "241f2e83263c4ca880ec462362c09258",
+      "instance_id": "ed18f3f677ea",
+      "pid": 42888,
+      "ledger_status": "completed",
+      "status": "ready",
+      "cached_receipt": false
+    },
+    {
+      "time": "2026-10-08T14:08:59.846116+00:00",
+      "event": "remote_result_verified",
+      "run_id": "241f2e83263c4ca880ec462362c09258",
+      "instance_id": "ed18f3f677ea",
+      "pid": 42888,
+      "request_id": "f089984086a94ad0bbc724729a9c5c87",
+      "tool_call_id": "c02f58d3-5390-43bd-b229-8c9ca320caf0",
+      "dataset_id": "3bbf6e8f-fcb1-471d-8596-f22a3359d116",
+      "rows": 78
+    },
+    {
+      "time": "2026-10-08T14:08:59.846833+00:00",
+      "event": "calculation_evidence",
+      "run_id": "241f2e83263c4ca880ec462362c09258",
+      "instance_id": "ed18f3f677ea",
+      "pid": 42888,
+      "request_id": "f089984086a94ad0bbc724729a9c5c87",
+      "dataset_id": "3bbf6e8f-fcb1-471d-8596-f22a3359d116",
+      "source": "workspace.default.bank_loan",
+      "coverage": "complete",
+      "grain": "aggregate"
+    },
+    {
+      "time": "2026-10-08T14:08:59.847152+00:00",
+      "event": "recovery_transition",
+      "run_id": "241f2e83263c4ca880ec462362c09258",
+      "instance_id": "ed18f3f677ea",
+      "pid": 42888,
+      "request_id": "f089984086a94ad0bbc724729a9c5c87",
+      "tool": "render_histogram"
+    },
+    {
+      "time": "2026-10-08T14:08:59.849053+00:00",
+      "event": "tool_started",
+      "run_id": "241f2e83263c4ca880ec462362c09258",
+      "instance_id": "ed18f3f677ea",
+      "pid": 42888,
+      "tool": "render_histogram"
+    },
+    {
+      "time": "2026-10-08T14:09:07.044505+00:00",
+      "event": "tool_completed",
+      "run_id": "241f2e83263c4ca880ec462362c09258",
+      "instance_id": "ed18f3f677ea",
+      "pid": 42888,
+      "tool": "render_histogram",
+      "status": "ready",
+      "error_code": null,
+      "elapsed_seconds": 7.196,
+      "applied_corrections": []
+    },
+    {
+      "time": "2026-10-08T14:09:07.058194+00:00",
+      "event": "completion_checked",
+      "run_id": "241f2e83263c4ca880ec462362c09258",
+      "instance_id": "ed18f3f677ea",
+      "pid": 42888,
+      "request_id": "f089984086a94ad0bbc724729a9c5c87",
+      "status": "complete",
+      "reason": null,
+      "attempts": 0,
+      "required_capabilities": [
+        "remote_query",
+        "chart"
+      ],
+      "missing_capabilities": [],
+      "model_calls": 3,
+      "tool_calls": 3,
+      "model_seconds": 29.035,
+      "dataset_ids": [
+        "3bbf6e8f-fcb1-471d-8596-f22a3359d116"
+      ],
+      "artifact_ids": [
+        "f6091fa6-11b3-4b59-aa57-9abc79595045"
+      ]
+    },
+    {
+      "time": "2026-10-08T14:09:07.061612+00:00",
+      "event": "run_completed",
+      "run_id": "241f2e83263c4ca880ec462362c09258",
+      "instance_id": "ed18f3f677ea",
+      "pid": 42888,
+      "status": "answered",
+      "elapsed_seconds": 38.865,
+      "process_peak_rss_bytes": 337281024,
+      "frame_cache_bytes": 0
+    },
+    {
+      "time": "2026-10-08T14:09:07.061672+00:00",
+      "event": "turn_slo",
+      "run_id": "241f2e83263c4ca880ec462362c09258",
+      "instance_id": "ed18f3f677ea",
+      "pid": 42888,
+      "elapsed_seconds": 38.865,
+      "limit": 180.0,
+      "status": "ok"
+    }
+  ],
+  "requested_prompt": "age 의 histogram 그려줘",
+  "current_matches_run": true,
+  "request_checkpoint_verified": true
+}

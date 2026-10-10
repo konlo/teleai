@@ -1,0 +1,308 @@
+{
+  "evaluation": "final build / actual browser / one fresh continuous conversation / no manual resubmissions",
+  "session": {
+    "conversation": "efda474d-7c93-4bc1-9834-31af879b1576",
+    "scope": "ccf9c5f6d58ecf99399cb150810c6051b0223abfa39541b857a049eeb9a3b18f",
+    "url": "http://127.0.0.1:8504/Telly?conversation=efda474d-7c93-4bc1-9834-31af879b1576",
+    "model": "qwen3:8b",
+    "backend": "mysql"
+  },
+  "baseline_journey_passed": 3,
+  "baseline_journey_total": 10,
+  "passed": 10,
+  "total": 10,
+  "results": [
+    {
+      "id": 1,
+      "prompt": "지금 연결된 DB에서 분석 가능한 테이블 이름들을 알려줄래?",
+      "passed": true,
+      "error": null,
+      "model_calls": 2,
+      "elapsed_seconds": 62.727,
+      "remote_queries": 1,
+      "automatic_repairs": []
+    },
+    {
+      "id": 2,
+      "prompt": "은행 대출 데이터 bank_loan에는 어떤 컬럼이 들어 있어?",
+      "passed": true,
+      "error": null,
+      "model_calls": 3,
+      "elapsed_seconds": 80.39,
+      "remote_queries": 0,
+      "automatic_repairs": []
+    },
+    {
+      "id": 3,
+      "prompt": "여기 education에 들어있는 값 종류를 전부 알려줘.",
+      "passed": true,
+      "error": null,
+      "model_calls": 3,
+      "elapsed_seconds": 91.922,
+      "remote_queries": 1,
+      "automatic_repairs": [
+        {
+          "time": "2026-10-06T11:31:45.798380+00:00",
+          "event": "goal_population_audited",
+          "run_id": "2e740ea5ff0b4b10844bea7928ada0d5",
+          "instance_id": "d979a7a8e564",
+          "pid": 35294,
+          "request_id": "6f5ed3b4-2acb-499b-a5be-34daeaf04fdd",
+          "changed": false,
+          "condition_count": 0,
+          "alternative_count": 0
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "prompt": "방금 확인한 값들이 얼마나 많은지 막대 그림으로 보여줘.",
+      "passed": true,
+      "error": null,
+      "model_calls": 3,
+      "elapsed_seconds": 114.149,
+      "remote_queries": 1,
+      "automatic_repairs": [
+        {
+          "time": "2026-10-06T11:34:34.806465+00:00",
+          "event": "goal_population_audited",
+          "run_id": "33aa4a2792a64c1dbd7869fb6fafe48e",
+          "instance_id": "d979a7a8e564",
+          "pid": 35294,
+          "request_id": "e7aaae73-d7dd-46ac-9036-8de04c263a04",
+          "changed": false,
+          "condition_count": 0,
+          "alternative_count": 0
+        }
+      ]
+    },
+    {
+      "id": 5,
+      "prompt": "education이 primary인 사람 중 나이가 30세 이상 40세 이하인 사람들의 age 분포를 그려줘.",
+      "passed": true,
+      "error": null,
+      "model_calls": 3,
+      "elapsed_seconds": 128.555,
+      "remote_queries": 1,
+      "automatic_repairs": [
+        {
+          "time": "2026-10-06T11:37:37.996327+00:00",
+          "event": "goal_population_audited",
+          "run_id": "ce65d874b74e4c799d2e218dfb62b5ac",
+          "instance_id": "d979a7a8e564",
+          "pid": 35294,
+          "request_id": "7bde8ca9-4a9c-4f26-aa1e-4212b9d7d155",
+          "changed": true,
+          "condition_count": 2,
+          "alternative_count": 0
+        }
+      ]
+    },
+    {
+      "id": 6,
+      "prompt": "나이 조건은 그대로 두고 secondary도 포함해서 다시 그려줄래?",
+      "passed": true,
+      "error": null,
+      "model_calls": 3,
+      "elapsed_seconds": 116.659,
+      "remote_queries": 1,
+      "automatic_repairs": [
+        {
+          "time": "2026-10-06T11:40:46.334138+00:00",
+          "event": "goal_population_audited",
+          "run_id": "57126d38da77435dabcf23409f9475eb",
+          "instance_id": "d979a7a8e564",
+          "pid": 35294,
+          "request_id": "cd9c60e1-deb8-4ef6-8a25-9a63e6278157",
+          "changed": true,
+          "condition_count": 3,
+          "alternative_count": 0
+        }
+      ]
+    },
+    {
+      "id": 7,
+      "prompt": "같은 사람들을 대상으로 구간을 5개로 나눠 histogram을 보여줘.",
+      "passed": true,
+      "error": null,
+      "model_calls": 3,
+      "elapsed_seconds": 137.653,
+      "remote_queries": 0,
+      "automatic_repairs": [
+        {
+          "time": "2026-10-06T11:44:14.515790+00:00",
+          "event": "goal_population_audited",
+          "run_id": "333091e4decc41a59aead21a25bf980f",
+          "instance_id": "d979a7a8e564",
+          "pid": 35294,
+          "request_id": "0752d519-b2ab-47d7-a1e1-d2e63d6a5876",
+          "changed": false,
+          "condition_count": 3,
+          "alternative_count": 0
+        }
+      ]
+    },
+    {
+      "id": 8,
+      "prompt": "이제 조건을 전부 없애고 bank_loan 전체의 age를 가로축, balance를 세로축으로 산점도를 그려줘.",
+      "passed": true,
+      "error": null,
+      "model_calls": 3,
+      "elapsed_seconds": 110.767,
+      "remote_queries": 1,
+      "automatic_repairs": [
+        {
+          "time": "2026-10-06T11:49:43.869101+00:00",
+          "event": "goal_population_audited",
+          "run_id": "12bb2415608c4d28bfbde4b8f2661110",
+          "instance_id": "d979a7a8e564",
+          "pid": 35294,
+          "request_id": "75204b86-8dce-4247-9327-dbeb4f4b2028",
+          "changed": false,
+          "condition_count": 0,
+          "alternative_count": 0
+        }
+      ]
+    },
+    {
+      "id": 9,
+      "prompt": "이번에는 stormtrooper에서 row 10개만 표로 보고 싶어.",
+      "passed": true,
+      "error": null,
+      "model_calls": 4,
+      "elapsed_seconds": 103.621,
+      "remote_queries": 1,
+      "automatic_repairs": [
+        {
+          "time": "2026-10-06T11:51:18.942262+00:00",
+          "event": "goal_contract_error",
+          "run_id": "04be8c3092554818908a6672e18ded43",
+          "instance_id": "d979a7a8e564",
+          "pid": 35294,
+          "request_id": "1bb39a3d-ca4a-4280-92cd-60a4e462c586",
+          "error_code": "goal_schema_invalid",
+          "detail": "current_result_only cannot use an unrelated selected dataset; a named table preview needs false"
+        }
+      ]
+    },
+    {
+      "id": 10,
+      "prompt": "그 테이블의 컬럼 이름과 DB 데이터 타입을 모두 다시 알려줘. 차트는 만들지 말아줘.",
+      "passed": true,
+      "error": null,
+      "model_calls": 3,
+      "elapsed_seconds": 121.407,
+      "remote_queries": 0,
+      "automatic_repairs": [
+        {
+          "time": "2026-10-06T11:53:55.582503+00:00",
+          "event": "goal_obligations_coalesced",
+          "run_id": "82f19d213b6a48a782e412c28aab7483",
+          "instance_id": "d979a7a8e564",
+          "pid": 35294,
+          "request_id": "9e7e698a-4531-48e8-8f14-1a4d2cd349dc",
+          "contract": "metadata_names_and_types"
+        },
+        {
+          "time": "2026-10-06T11:53:55.583491+00:00",
+          "event": "goal_contract_error",
+          "run_id": "82f19d213b6a48a782e412c28aab7483",
+          "instance_id": "d979a7a8e564",
+          "pid": 35294,
+          "request_id": "9e7e698a-4531-48e8-8f14-1a4d2cd349dc",
+          "error_code": "goal_schema_invalid",
+          "detail": "explanation cannot execute tasks. Showing schema, names, types or stored data requires mode execute. A prohibition on charts only removes chart tasks; preserve the positive metadata/data request."
+        },
+        {
+          "time": "2026-10-06T11:54:27.534774+00:00",
+          "event": "goal_obligations_coalesced",
+          "run_id": "82f19d213b6a48a782e412c28aab7483",
+          "instance_id": "d979a7a8e564",
+          "pid": 35294,
+          "request_id": "9e7e698a-4531-48e8-8f14-1a4d2cd349dc",
+          "contract": "metadata_names_and_types"
+        },
+        {
+          "time": "2026-10-06T11:54:58.026349+00:00",
+          "event": "goal_obligations_coalesced",
+          "run_id": "82f19d213b6a48a782e412c28aab7483",
+          "instance_id": "d979a7a8e564",
+          "pid": 35294,
+          "request_id": "9e7e698a-4531-48e8-8f14-1a4d2cd349dc",
+          "contract": "metadata_names_and_types"
+        }
+      ]
+    }
+  ],
+  "preservation": {
+    "changed_or_missing_assets": [],
+    "final_asset_count": 12,
+    "older_conversations": [
+      {
+        "scope": "0d8cdaafece22d76ffe25df91dc688cf8f4c01a6561f9af6583881cdc33ceae9",
+        "baseline": "docs/evaluation/2026-10-06_agent_repair/15.json",
+        "verified_asset_count": 47,
+        "changed_or_missing": [],
+        "selection_unchanged": true,
+        "verified_at": "2026-10-06T11:57:41.612544+00:00"
+      },
+      {
+        "scope": "bf763b666c411bb90f192276c2968fddb92a9b716688774be4a6100c6b6cd375",
+        "baseline": "docs/evaluation/2026-10-06_ten_prompt_journey/10.json",
+        "verified_asset_count": 4,
+        "changed_or_missing": [],
+        "selection_unchanged": true,
+        "verified_at": "2026-10-06T11:57:41.616287+00:00"
+      },
+      {
+        "scope": "38519874b157d31aed1568fa008fbf88a595e6aefffc22601d4f12f1e03c27d6",
+        "baseline": "docs/evaluation/2026-10-06_ten_prompt_repair/accepted_10.json",
+        "verified_asset_count": 13,
+        "changed_or_missing": [],
+        "selection_unchanged": true,
+        "verified_at": "2026-10-06T11:57:41.621458+00:00"
+      }
+    ]
+  },
+  "tests": {
+    "total": 640,
+    "passed": 636,
+    "skipped": 4,
+    "log": "acceptance_unit_tests.log"
+  },
+  "limitations": [
+    "MySQL local evaluation only; company Databricks not validated in this run",
+    "Same frozen ten prompts after repair; not unseen-language generalization",
+    "Local model latency remains material; no general production GO",
+    "Not an official DeepEval or Spider 2.0 score"
+  ],
+  "intermediate_failures": [
+    "intermediate_inventory_failure.json",
+    "r2_03_complete.json",
+    "final_06.json",
+    "corrected_09.json",
+    "repaired_10.json",
+    "recovered_10.json"
+  ],
+  "browser_images": {
+    "count": 5,
+    "all_loaded": true,
+    "evidence": "acceptance_rendered_images.json"
+  },
+  "manual_submissions": 10,
+  "acceptance_passed": true,
+  "source_sha256": {
+    "core/analysis_agent/goal_contract.py": "8d408d4d8bcab943bcf39b6c34a34eafe1bab88a158d625e1beaf8e394cd4f47",
+    "core/analysis_agent/goal_interpreter.py": "ef89c89573fc2fe7ddd23c8fddee0302591d51d9e53468fda3bc620c98e5a794",
+    "core/analysis_agent/source_references.py": "a64432929aec11a1c1a173adb149b841af7fcd9c04ef05c98ba79aa7c68538f4",
+    "core/analysis_agent/population_audit.py": "e104cf7337de6a2687057983ce1e345238ccbebf8ae48851385d685b11d85050",
+    "core/analysis_agent/goal_normalization.py": "701c80d5544fa0b066bb6e6621df06dce70cef13e0cfa848b6163de5dea08813",
+    "core/analysis_agent/recovery.py": "68538d89449057e2bef1557d76568b7867b3cada16fafa6afe152c24289ce883",
+    "core/analysis_agent/value_list.py": "de032298034d1265b91ff2951686b874bd585c22940bebe3595e2ca0a06a0a86"
+  },
+  "latency_seconds": {
+    "min": 62.727,
+    "max": 137.653,
+    "total": 1067.85
+  }
+}

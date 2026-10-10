@@ -53,7 +53,7 @@ def token(key,record):
     return digest([key,record['version'],record['observation']])
 
 
-def instruction(current,available):
+def instruction(current,available,approval_required=False):
     contracts=active_contracts(current)
     plan={'verified':[c.name for c in contracts if c.satisfied(current)],
           'remaining':[{'goal':c.name,'candidate_tools':[t for t in c.tools if t in available]}
@@ -64,4 +64,6 @@ def instruction(current,available):
          'do not repeat unchanged discovery. If essential information is missing, ask a different targeted '
          'inspection question or explain the precise missing requirement. Discover tool schemas when needed. '
          'Preserve original source, filters, denominator and coverage. Do not reload or sample data to escape this loop. '
-         'Any remote SQL still needs exact-query approval. Do not declare success without verified evidence.')
+         +('Remote SQL requires the configured exact-query approval.' if approval_required else
+           'Necessary read-only SQL follows the automatic runtime policy; do not ask for approval or wait.')+
+         ' Preserve SQL/scope validation and the execution ledger. Do not declare success without verified evidence.')

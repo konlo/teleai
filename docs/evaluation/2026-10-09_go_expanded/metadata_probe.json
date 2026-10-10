@@ -1,0 +1,50 @@
+{
+  "mode": "actual model role probe, not complete agent execution",
+  "cases": [
+    {
+      "prompt": "이 테이블의 컬럼 이름과 database 데이터 타입을 함께 표로 보여줘. 히스토그램은 만들지 마.",
+      "actual": {
+        "schema_request": true,
+        "include_database_types": true,
+        "column_family": "all"
+      },
+      "pass": true
+    },
+    {
+      "prompt": "alibaba_ssd 테이블의 컬럼 이름과 database 데이터 타입을 함께 표로 보여줘.",
+      "actual": {
+        "schema_request": true,
+        "include_database_types": true,
+        "column_family": "all"
+      },
+      "pass": true
+    },
+    {
+      "prompt": "이전 자료의 자료형과 필드 이름을 함께 정리해 줘",
+      "actual": {
+        "schema_request": true,
+        "include_database_types": true,
+        "column_family": "all"
+      },
+      "pass": true
+    },
+    {
+      "prompt": "테이블 열 이름만 알려줘",
+      "actual": {
+        "schema_request": true,
+        "include_database_types": false,
+        "column_family": "all"
+      },
+      "pass": true
+    },
+    {
+      "prompt": "데이터 타입이 무엇인지 설명해줘",
+      "actual": {
+        "schema_request": false,
+        "include_database_types": false,
+        "column_family": "all"
+      },
+      "pass": true
+    }
+  ]
+}

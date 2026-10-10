@@ -1,0 +1,353 @@
+{
+  "assets": {
+    "1544597d-51b0-4661-86d2-3e3587014fdb": {
+      "kind": "dataset",
+      "metadata": {
+        "id": "1544597d-51b0-4661-86d2-3e3587014fdb",
+        "source": "information_schema.tables",
+        "columns": [
+          "TABLE_SCHEMA",
+          "TABLE_NAME",
+          "TABLE_TYPE"
+        ],
+        "rows": 7,
+        "coverage": "unknown",
+        "conditions": [],
+        "predicate_known": false,
+        "grain": "raw",
+        "aggregation": "",
+        "snapshot": "2026-10-06T04:48:11.094212+00:00",
+        "query": "SELECT table_schema, table_name, table_type FROM information_schema.tables WHERE table_schema = 'teleai_default' ORDER BY table_name LIMIT 100",
+        "parent_id": "",
+        "parent_ids": [],
+        "role": "root",
+        "root_id": "1544597d-51b0-4661-86d2-3e3587014fdb",
+        "row_selection": {}
+      },
+      "metadata_sha256": "4d8a61d19cdb3827b15ad3bf3c2e4f39cde2685f0588488e2305f31472a6dcca",
+      "payload_sha256": "372844c886cd58f8ef309861fc6bb1a9265e5de25cd71d7493b1199d66a13318"
+    }
+  },
+  "selection": "",
+  "current": {
+    "request_id": "27138b4d-8cad-47c4-8ac6-2dab68cc3a70",
+    "request_text": "지금 연결된 DB에서 분석 가능한 테이블 이름들을 알려줄래?",
+    "status": "complete",
+    "stop_reason": null,
+    "intent_origin": "llm",
+    "goal": {
+      "objective": "table_list",
+      "mode": "execute",
+      "source_reference": "explicit",
+      "sources": [
+        "teleai_default._tianchi_ssd_shared300k_import",
+        "teleai_default.alibaba_ssd",
+        "teleai_default.bank_loan",
+        "teleai_default.error_test",
+        "teleai_default.ncr_ride",
+        "teleai_default.stormtrooper",
+        "teleai_default.titanic"
+      ],
+      "columns": [],
+      "conditions": [],
+      "any_conditions": [],
+      "measure_conditions": [],
+      "ratio": null,
+      "current_result_only": false,
+      "fresh_source_required": false,
+      "question": "",
+      "tasks": [
+        {
+          "capability": "table_list",
+          "options": {
+            "catalog": "teleai_default",
+            "schema": ""
+          }
+        }
+      ]
+    },
+    "model_calls": 2,
+    "model_seconds": 37.106439666982624,
+    "scope": {
+      "conditions": [],
+      "any_conditions": [],
+      "measure_conditions": [],
+      "ratio": null,
+      "sources": [
+        "teleai_default._tianchi_ssd_shared300k_import",
+        "teleai_default.alibaba_ssd",
+        "teleai_default.bank_loan",
+        "teleai_default.error_test",
+        "teleai_default.ncr_ride",
+        "teleai_default.stormtrooper",
+        "teleai_default.titanic"
+      ],
+      "columns": [],
+      "unresolved": [],
+      "join_edges": []
+    },
+    "required_sources": [
+      "information_schema.tables"
+    ],
+    "required_columns": [],
+    "artifact_ids": [],
+    "evidence_ids": [],
+    "kind": null,
+    "failed": {}
+  },
+  "run_id": "35e03703ca7b44ba8480fd4c60a81146",
+  "run": [
+    {
+      "time": "2026-10-06T04:47:33.896317+00:00",
+      "event": "run_started",
+      "run_id": "35e03703ca7b44ba8480fd4c60a81146",
+      "instance_id": "6df70d3544f7",
+      "pid": 29590,
+      "runtime": {
+        "revision_at_first_runtime": "febd34ae5cbbfbcc7023ea8e0412b84572cd7763",
+        "packages": {
+          "langchain": "1.4.0",
+          "langchain-core": "1.6.2",
+          "langgraph": "1.2.11",
+          "streamlit": "1.63.0",
+          "sqlglot": "30.18.0"
+        },
+        "python_version": "3.11.13",
+        "identity_captured_at": "2026-10-06T03:10:47.558100+00:00",
+        "route": "langgraph-v1",
+        "model_class": "ChatOllama",
+        "require_remote_approval": false,
+        "loaded_delivery_guard": "45c393f977353fe9",
+        "data_backend": "mysql",
+        "intent_mode": "llm",
+        "goal_version": 1,
+        "goal_model": "qwen3:8b",
+        "planner_model": "qwen3:8b"
+      },
+      "operation": "submit",
+      "process_peak_rss_bytes": 378978304
+    },
+    {
+      "time": "2026-10-06T04:47:33.899184+00:00",
+      "event": "goal_interpretation_started",
+      "run_id": "35e03703ca7b44ba8480fd4c60a81146",
+      "instance_id": "6df70d3544f7",
+      "pid": 29590,
+      "request_id": "27138b4d-8cad-47c4-8ac6-2dab68cc3a70",
+      "origin": "llm",
+      "goal_version": 1
+    },
+    {
+      "time": "2026-10-06T04:47:33.899515+00:00",
+      "event": "model_payload_budget",
+      "run_id": "35e03703ca7b44ba8480fd4c60a81146",
+      "instance_id": "6df70d3544f7",
+      "pid": 29590,
+      "payload_bytes": 9378,
+      "payload_bytes_before_projection": 9378,
+      "template_headroom": 640,
+      "input_budget_units": 14336,
+      "output_reserved": 2048,
+      "context_window": 16384,
+      "tool_count": 0,
+      "message_count": 1,
+      "older_turns_compacted": false,
+      "within_budget": true,
+      "observations_compacted": false,
+      "schema_compacted": false,
+      "system_catalog_compacted": false,
+      "tool_menu_compacted": false,
+      "minimal_discovery_menu": false,
+      "reasoning_compacted": false,
+      "minimal_catalog": false,
+      "builtin_instructions_compacted": false,
+      "components": {
+        "system_bytes": 6086,
+        "message_content_bytes": 2813,
+        "tool_calls_bytes": 0,
+        "reasoning_bytes": 0,
+        "tool_schema_bytes": 0,
+        "tool_names": []
+      },
+      "measurement": "conservative_utf8_bytes_not_actual_token_count"
+    },
+    {
+      "time": "2026-10-06T04:47:59.240536+00:00",
+      "event": "goal_semantic_review_started",
+      "run_id": "35e03703ca7b44ba8480fd4c60a81146",
+      "instance_id": "6df70d3544f7",
+      "pid": 29590,
+      "request_id": "27138b4d-8cad-47c4-8ac6-2dab68cc3a70"
+    },
+    {
+      "time": "2026-10-06T04:47:59.241743+00:00",
+      "event": "model_payload_budget",
+      "run_id": "35e03703ca7b44ba8480fd4c60a81146",
+      "instance_id": "6df70d3544f7",
+      "pid": 29590,
+      "payload_bytes": 10043,
+      "payload_bytes_before_projection": 10043,
+      "template_headroom": 640,
+      "input_budget_units": 14336,
+      "output_reserved": 2048,
+      "context_window": 16384,
+      "tool_count": 0,
+      "message_count": 1,
+      "older_turns_compacted": false,
+      "within_budget": true,
+      "observations_compacted": false,
+      "schema_compacted": false,
+      "system_catalog_compacted": false,
+      "tool_menu_compacted": false,
+      "minimal_discovery_menu": false,
+      "reasoning_compacted": false,
+      "minimal_catalog": false,
+      "builtin_instructions_compacted": false,
+      "components": {
+        "system_bytes": 6086,
+        "message_content_bytes": 3414,
+        "tool_calls_bytes": 0,
+        "reasoning_bytes": 0,
+        "tool_schema_bytes": 0,
+        "tool_names": []
+      },
+      "measurement": "conservative_utf8_bytes_not_actual_token_count"
+    },
+    {
+      "time": "2026-10-06T04:48:11.010880+00:00",
+      "event": "goal_interpretation_completed",
+      "run_id": "35e03703ca7b44ba8480fd4c60a81146",
+      "instance_id": "6df70d3544f7",
+      "pid": 29590,
+      "request_id": "27138b4d-8cad-47c4-8ac6-2dab68cc3a70",
+      "origin": "llm",
+      "mode": "execute",
+      "capabilities": [
+        "table_list"
+      ],
+      "attempts": 2,
+      "goal_version": 1
+    },
+    {
+      "time": "2026-10-06T04:48:11.011787+00:00",
+      "event": "recovery_transition",
+      "run_id": "35e03703ca7b44ba8480fd4c60a81146",
+      "instance_id": "6df70d3544f7",
+      "pid": 29590,
+      "request_id": "27138b4d-8cad-47c4-8ac6-2dab68cc3a70",
+      "tool": "plan_source_discovery"
+    },
+    {
+      "time": "2026-10-06T04:48:11.018018+00:00",
+      "event": "tool_started",
+      "run_id": "35e03703ca7b44ba8480fd4c60a81146",
+      "instance_id": "6df70d3544f7",
+      "pid": 29590,
+      "tool": "plan_source_discovery"
+    },
+    {
+      "time": "2026-10-06T04:48:11.020963+00:00",
+      "event": "tool_completed",
+      "run_id": "35e03703ca7b44ba8480fd4c60a81146",
+      "instance_id": "6df70d3544f7",
+      "pid": 29590,
+      "tool": "plan_source_discovery",
+      "status": "planned",
+      "error_code": null,
+      "elapsed_seconds": 0.003,
+      "applied_corrections": []
+    },
+    {
+      "time": "2026-10-06T04:48:11.024539+00:00",
+      "event": "recovery_transition",
+      "run_id": "35e03703ca7b44ba8480fd4c60a81146",
+      "instance_id": "6df70d3544f7",
+      "pid": 29590,
+      "request_id": "27138b4d-8cad-47c4-8ac6-2dab68cc3a70",
+      "tool": "query_databricks"
+    },
+    {
+      "time": "2026-10-06T04:48:11.029271+00:00",
+      "event": "remote_query_authorized",
+      "run_id": "35e03703ca7b44ba8480fd4c60a81146",
+      "instance_id": "6df70d3544f7",
+      "pid": 29590,
+      "tool_call_id": "c1b1065f-5115-4fb3-bd06-cc9068be9d25",
+      "authorization": "automatic_read_policy"
+    },
+    {
+      "time": "2026-10-06T04:48:11.029405+00:00",
+      "event": "remote_query_started",
+      "run_id": "35e03703ca7b44ba8480fd4c60a81146",
+      "instance_id": "6df70d3544f7",
+      "pid": 29590,
+      "ledger_status": "auto_authorized",
+      "cached_receipt": false
+    },
+    {
+      "time": "2026-10-06T04:48:11.107852+00:00",
+      "event": "remote_query_finished",
+      "run_id": "35e03703ca7b44ba8480fd4c60a81146",
+      "instance_id": "6df70d3544f7",
+      "pid": 29590,
+      "ledger_status": "completed",
+      "status": "ready",
+      "cached_receipt": false
+    },
+    {
+      "time": "2026-10-06T04:48:11.109429+00:00",
+      "event": "remote_result_verified",
+      "run_id": "35e03703ca7b44ba8480fd4c60a81146",
+      "instance_id": "6df70d3544f7",
+      "pid": 29590,
+      "request_id": "27138b4d-8cad-47c4-8ac6-2dab68cc3a70",
+      "tool_call_id": "c1b1065f-5115-4fb3-bd06-cc9068be9d25",
+      "dataset_id": "1544597d-51b0-4661-86d2-3e3587014fdb",
+      "rows": 7
+    },
+    {
+      "time": "2026-10-06T04:48:11.113149+00:00",
+      "event": "completion_checked",
+      "run_id": "35e03703ca7b44ba8480fd4c60a81146",
+      "instance_id": "6df70d3544f7",
+      "pid": 29590,
+      "request_id": "27138b4d-8cad-47c4-8ac6-2dab68cc3a70",
+      "status": "complete",
+      "reason": null,
+      "attempts": 0,
+      "required_capabilities": [
+        "remote_query"
+      ],
+      "missing_capabilities": [],
+      "model_calls": 2,
+      "tool_calls": 2,
+      "model_seconds": 37.106,
+      "dataset_ids": [],
+      "artifact_ids": []
+    },
+    {
+      "time": "2026-10-06T04:48:11.115301+00:00",
+      "event": "run_completed",
+      "run_id": "35e03703ca7b44ba8480fd4c60a81146",
+      "instance_id": "6df70d3544f7",
+      "pid": 29590,
+      "status": "answered",
+      "elapsed_seconds": 37.219,
+      "process_peak_rss_bytes": 378978304,
+      "frame_cache_bytes": 0
+    },
+    {
+      "time": "2026-10-06T04:48:11.115359+00:00",
+      "event": "turn_slo",
+      "run_id": "35e03703ca7b44ba8480fd4c60a81146",
+      "instance_id": "6df70d3544f7",
+      "pid": 29590,
+      "elapsed_seconds": 37.219,
+      "limit": 180.0,
+      "status": "ok"
+    }
+  ],
+  "requested_prompt": "지금 연결된 DB에서 분석 가능한 테이블 이름들을 알려줄래?",
+  "current_matches_run": true,
+  "request_checkpoint_verified": true
+}

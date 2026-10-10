@@ -1,0 +1,63 @@
+{
+  "id": 9,
+  "prompt": "legend를 넣어서 primary과 secondary 에 따라서 색을 좀 넣어줘, ",
+  "status": "exhausted",
+  "goal": {
+    "objective": "chart",
+    "mode": "execute",
+    "source_reference": "previous_analysis",
+    "sources": [
+      "teleai_default.bank_loan"
+    ],
+    "columns": [
+      "age"
+    ],
+    "conditions": [
+      {
+        "column": "education",
+        "op": "in",
+        "value": [
+          "primary",
+          "secondary"
+        ]
+      },
+      {
+        "column": "age",
+        "op": "ge",
+        "value": 30
+      },
+      {
+        "column": "age",
+        "op": "le",
+        "value": 40
+      }
+    ],
+    "any_conditions": [],
+    "measure_conditions": [],
+    "ratio": null,
+    "current_result_only": true,
+    "fresh_source_required": false,
+    "question": "",
+    "tasks": [
+      {
+        "capability": "chart",
+        "options": {
+          "kind": "histogram",
+          "axes": {
+            "x": "age"
+          },
+          "category": "education",
+          "legend": true,
+          "stacked": false,
+          "palette": "default"
+        }
+      }
+    ]
+  },
+  "reason": "repeated_failed_tool",
+  "run_id": "317c943ecc764f08a8d3ed02619736b2",
+  "model_calls": 7,
+  "chart_metadata": [],
+  "verdict": "FAIL",
+  "error": "repeated_failed_tool"
+}

@@ -1,0 +1,165 @@
+{
+  "created_at": "2026-10-10T14:50:53.197715+09:00",
+  "final_build": {
+    "product_sha256": "7b8156a1aa6691aed3fd7e3c74b73b3c24f441b534104cac4240a7e5021169df",
+    "hash_scope": [
+      "core/**/*.py",
+      "utils/**/*.py",
+      "ui/**/*.py",
+      "pages/Telly.py",
+      "requirements.txt"
+    ],
+    "env_included": false
+  },
+  "environment": "loopback MySQL/Ollama gemma4:e4b; .env unchanged",
+  "release_readiness": "General/company production NO-GO. Scoped historical ten-row chart repair verified.",
+  "implemented": [
+    "C01 request/context decision support and stale-goal admission",
+    "C02 durable plan revision/failure/correction/verification journal and planner context",
+    "Verified historical display references with local prefix binding; no silent whole-source substitution",
+    "Full-current-quote provider grammar; deduplicated references and task-specific goal instructions"
+  ],
+  "regression": {
+    "passed": 966,
+    "skipped": 4,
+    "subtests_passed": 665,
+    "warnings": 640,
+    "seconds": 124.54,
+    "scope": "tests + migration; scripted/provider mocks are not a language benchmark score"
+  },
+  "browser_case_lineage": "01 and 02 ran on d7b8669128f67c21c0f5b87715e122c47396c288f67e749253bdf70f593cf3c3. 03 is the final build after server restart and a fresh request following exhaustion of the old request. Not a new same-build full three-turn score.",
+  "browser_cases": [
+    {
+      "stage": "01",
+      "passed": true,
+      "run": {
+        "time": "2026-10-10T05:33:32.871824+00:00",
+        "event": "run_completed",
+        "run_id": "cad16a80a8b44c95ba60ca261c9aa616",
+        "instance_id": "6e875dac0c45",
+        "pid": 95981,
+        "status": "answered",
+        "elapsed_seconds": 45.994,
+        "process_peak_rss_bytes": 323928064,
+        "frame_cache_bytes": 0
+      },
+      "model_calls": 4,
+      "tool_calls": 1,
+      "data_queries_this_run": 1,
+      "oracle": {
+        "raw_rows": 10,
+        "raw_columns": [
+          "age",
+          "balance",
+          "education"
+        ],
+        "row_scope_matches": true,
+        "expected_balance_mean": 1732.9,
+        "expected_education_frequencies": {
+          "secondary": 9,
+          "primary": 1
+        },
+        "passed": true
+      },
+      "decision_support_bound": true
+    },
+    {
+      "stage": "02",
+      "passed": true,
+      "run": {
+        "time": "2026-10-10T05:35:42.634872+00:00",
+        "event": "run_completed",
+        "run_id": "44e42c22652d4773ba18091f0ce5d226",
+        "instance_id": "6e875dac0c45",
+        "pid": 95981,
+        "status": "answered",
+        "elapsed_seconds": 89.921,
+        "process_peak_rss_bytes": 323928064,
+        "frame_cache_bytes": 0
+      },
+      "model_calls": 8,
+      "tool_calls": 1,
+      "data_queries_this_run": 0,
+      "oracle": {
+        "raw_rows": 10,
+        "raw_columns": [
+          "age",
+          "balance",
+          "education"
+        ],
+        "row_scope_matches": true,
+        "expected_balance_mean": 1732.9,
+        "expected_education_frequencies": {
+          "secondary": 9,
+          "primary": 1
+        },
+        "observed_scalar_values": [
+          1732.9
+        ],
+        "passed": true
+      },
+      "decision_support_bound": true
+    },
+    {
+      "stage": "03",
+      "passed": true,
+      "run": {
+        "time": "2026-10-10T05:48:27.602539+00:00",
+        "event": "run_completed",
+        "run_id": "93416fbade234833bbc297cec0d5503f",
+        "instance_id": "51023d61e9e3",
+        "pid": 96365,
+        "status": "answered",
+        "elapsed_seconds": 55.383,
+        "process_peak_rss_bytes": 315146240,
+        "frame_cache_bytes": 950
+      },
+      "model_calls": 6,
+      "tool_calls": 1,
+      "data_queries_this_run": 0,
+      "oracle": {
+        "raw_rows": 10,
+        "raw_columns": [
+          "age",
+          "balance",
+          "education"
+        ],
+        "row_scope_matches": true,
+        "expected_balance_mean": 1732.9,
+        "expected_education_frequencies": {
+          "secondary": 9,
+          "primary": 1
+        },
+        "chart_frequencies_match": true,
+        "passed": true
+      },
+      "decision_support_bound": true
+    }
+  ],
+  "preservation": "Verified unchanged pre-existing asset digests and retained original selection in stages 02 and 03. Final chart: secondary 9, primary 1, total 10; valid PNG; no additional DB query.",
+  "failures_preserved": [
+    "first_browser_failure.json",
+    "second_browser_attempt.json",
+    "wrong_population.json",
+    "historical_budget_failure.json",
+    "display_quote_failure.json",
+    "chart_budget_failure.json",
+    "resume_budget_exhausted.json"
+  ],
+  "failure_measurement_note": "model_calls in a failed checkpoint may be zero after rollback despite earlier successful auxiliary calls. Inspect per-run diagnostics; do not use that value as a zero-call performance claim.",
+  "remaining": {
+    "C03": "Independent per-task populations, repeated capabilities and general dependency plans",
+    "C04": "Model-call/latency reduction, request deadline/profile, and truthful exhausted-budget resume guidance. Mean 89.921s and chart 55.383s do not satisfy an established service SLA.",
+    "C05": "Held-out schemas/phrasing, long conversations/repeated journeys, actual Windows/Azure/Databricks and official benchmark evidence"
+  },
+  "limitations": [
+    "Quote/value equality does not prove natural-language entailment.",
+    "A single repaired real chart is not broad model reliability or an official DeepEval/Spider score.",
+    "Historical display references retain the most recent eight outputs; expired/ambiguous references must clarify.",
+    "Dataset prefixes are materialized locally, originals preserved; generic multi-population plans remain incomplete."
+  ],
+  "screenshots": [
+    "final_browser.png"
+  ],
+  "commit_or_push": false
+}

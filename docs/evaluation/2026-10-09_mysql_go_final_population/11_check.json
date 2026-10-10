@@ -1,0 +1,99 @@
+{
+  "id": 11,
+  "prompt": "education별 색상 구분과 legend를 넣어줘",
+  "status": "complete",
+  "goal": {
+    "objective": "requested work",
+    "mode": "execute",
+    "source_reference": "previous_analysis",
+    "sources": [
+      "teleai_default.bank_loan"
+    ],
+    "columns": [
+      "education"
+    ],
+    "conditions": [
+      {
+        "column": "age",
+        "op": "ge",
+        "value": 30
+      },
+      {
+        "column": "age",
+        "op": "le",
+        "value": 40
+      },
+      {
+        "column": "education",
+        "op": "in",
+        "value": [
+          "primary",
+          "secondary"
+        ]
+      }
+    ],
+    "any_conditions": [],
+    "measure_conditions": [],
+    "ratio": null,
+    "current_result_only": false,
+    "fresh_source_required": false,
+    "question": "",
+    "tasks": [
+      {
+        "capability": "chart",
+        "options": {
+          "kind": "bar",
+          "axes": {
+            "x": "education"
+          },
+          "legend": true,
+          "stacked": false,
+          "palette": "high_contrast"
+        }
+      }
+    ]
+  },
+  "reason": null,
+  "run_id": "228f536a91cb431abf7de1d422232ddf",
+  "model_calls": 6,
+  "chart_metadata": [
+    {
+      "id": "06d0261b-237f-408e-a976-814fdb43b727",
+      "dataset_id": "b69b864b-7b4e-4d28-9c83-53897fe2abca",
+      "title": "education 분포",
+      "reason": "범주별 실제 COUNT(*) 빈도를 표시합니다. 결측은 제외했습니다.",
+      "kind": "bar",
+      "columns": [
+        "education"
+      ],
+      "scope": "빈도 합계 208,699 · complete · SELECT `education`, COUNT(*) AS `__frequency` FROM `teleai_default`.`bank_loan` WHERE `education` IS NOT NULL AND (`age` >= 30 AND `age` <= 40 AND `education` IN ('primary', 'secondary')) GROUP BY `education`",
+      "render_spec": {
+        "aggregation": "count",
+        "labels": [
+          "secondary",
+          "primary"
+        ],
+        "counts": [
+          181260,
+          27439
+        ],
+        "total_count": 208699,
+        "has_more_categories": false,
+        "null_policy": "exclude",
+        "legend": true,
+        "legend_labels": [
+          "secondary",
+          "primary"
+        ],
+        "stacked": false,
+        "palette": "high_contrast",
+        "colors": [
+          "#0072B2",
+          "#D55E00"
+        ]
+      }
+    }
+  ],
+  "expectation_adjudication": "Unspecified plot axes may retain the preceding education subject. No numerical axis was explicitly requested.",
+  "verdict": "PASS"
+}

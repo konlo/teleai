@@ -1,0 +1,5 @@
+{
+  "primary": "SELECT SUM(balance) AS total,AVG(balance) AS mean,COUNT(*) AS n FROM bank_loan WHERE age BETWEEN 30 AND 40 AND education='primary'",
+  "primary_secondary": "SELECT SUM(balance) AS total,AVG(balance) AS mean,COUNT(*) AS n FROM bank_loan WHERE age BETWEEN 30 AND 40 AND education IN ('primary','secondary')",
+  "age_frequency": "SELECT age,COUNT(*) AS n FROM bank_loan WHERE age BETWEEN 30 AND 40 AND education IN ('primary','secondary') GROUP BY age ORDER BY age"
+}

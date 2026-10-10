@@ -1,0 +1,64 @@
+{
+  "reviewed_at": "2026-10-10T13:48:11.695787+09:00",
+  "kind": "code_grounded_reasoning_review",
+  "verdict": "Structured goal/action/observation and supported result verification exist; general multi-stage reasoning/planning completeness is not established.",
+  "private_model_chain_of_thought_inspected": false,
+  "product_code_changed": false,
+  "findings": [
+    {
+      "priority": "P1",
+      "issue": "Goal proposer and semantic reviewer use the same goal model and reviewer receives proposed_goal; correlated misunderstanding remains possible.",
+      "evidence": "core/analysis_agent/goal_interpreter.py:441-458",
+      "next": "Ground each obligation in current user evidence and observed facts; test ambiguity, negation, scope changes and independent expected outcomes."
+    },
+    {
+      "priority": "P1",
+      "issue": "All tasks inherit shared scope; duplicate capabilities disallowed; initial dependencies empty.",
+      "evidence": [
+        "core/analysis_agent/execution_plan.py:22-36",
+        "core/analysis_agent/goal_contract.py:123"
+      ],
+      "next": "Separate goal from per-task plans with distinct scope, input/output references, dependencies, acceptance checks and observable revision reasons."
+    },
+    {
+      "priority": "P1",
+      "issue": "Multiple small interpretation/review roles consume request budget; prior actual final 10-row task used 7 model calls and 75.618 seconds.",
+      "evidence": "docs/evaluation/2026-10-10_tao_strengthening/report.json",
+      "next": "Measure simple/complex planning profiles, total deadline and held-out recovery latency without weakening meaning checks."
+    },
+    {
+      "priority": "P2",
+      "issue": "Ollama main tool model has reasoning=True, structured JSON roles and custom Python execution profile set reasoning=False; this alone is not evidence of absence of reasoning or failure cause. Azure role adapter does not configure reasoning effort.",
+      "evidence": [
+        "core/analysis_agent/model_provider.py:79-94",
+        "core/analysis_agent/model_roles.py:6-13",
+        "core/analysis_agent/python_planning.py:7-17"
+      ],
+      "next": "Evaluate provider-supported complex planning settings separately from compact output/code emission, with quality, condition preservation and latency outcomes."
+    }
+  ],
+  "strengths": [
+    "Actual LangChain tool loop with current structured goal.",
+    "Verified remaining work supplied to planner.",
+    "Tool failure guidance preserves source, filters, coverage and completed work.",
+    "Independent supported numeric contract verification rejects wrong execution before publishing child datasets.",
+    "Context compaction removes completed reasoning text before tool arguments/observations; hidden CoT is not execution evidence."
+  ],
+  "current_validation": {
+    "command": "python -m pytest tests/test_python_planning_profile.py tests/test_python_result_verification.py -q",
+    "passed": 16,
+    "subtests_passed": 19,
+    "seconds": 4.75,
+    "kind": "local contract/profile tests; not new real-model reasoning benchmark"
+  },
+  "prior_real_model_evidence": {
+    "source": "../2026-10-10_tao_strengthening/report.json",
+    "final_elapsed_seconds": 75.618,
+    "model_calls": 7,
+    "tool_calls": 1,
+    "semantic_verified": true,
+    "additional_remote_queries": 0,
+    "qualification": "A prior single final run after fixes; not repeated stability, general CoT quality score or Azure/Databricks release evidence."
+  },
+  "general_operational_go": false
+}

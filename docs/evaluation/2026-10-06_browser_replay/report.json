@@ -1,0 +1,616 @@
+{
+  "generated_at": "2026-10-06T08:56:55.424357+09:00",
+  "verdict": "NO-GO",
+  "scope": "실제 브라우저의 기존 대화에 21턴 순서대로 입력. actual Ollama gemma4:e4b + MySQL 개발8504/PID15962. 제품 코드 변경 없음.",
+  "method": "UI 입력으로만 요청 실행. 완료 로그·goal·receipt·PNG·DOM과 독립 MySQL oracle 대조. capture.py는 읽기 전용.",
+  "counts": {
+    "requests": 21,
+    "correct_outputs": 13,
+    "failed": 7,
+    "blocked_after_failed_prerequisite": 1,
+    "main_cases_correct_rate": "13/20 = 65%; case21 is a dependent journey, not an independent language score"
+  },
+  "limitations": [
+    "전체 이력의 반복 요청을 모두 실행한 것이 아닌 대표 여정. 17/18은 추가 probe, 19는 준비 반복.",
+    "한 번의 기존 대화·기존 cache 결과. 새 대화/cold start/재시작/다른 표현의 안정성을 증명하지 않는다.",
+    "회사 Databricks 및 공식 DeepEval/Spider2 점수는 이번에 실행하지 않았다. 대규모 최초 DB 성능 재측정과 구분.",
+    "case10은 명시적 sample 제한 문구 없이 전체750000행으로 해석. 표시10행을 의도하는 경우의 분석 모집단은 별도 수용검사 필요.",
+    "불허 goal options 키·값은 현재 로그에 저장되지 않아 generic error에서 정확한 항목명을 확정할 수 없다."
+  ],
+  "preservation": {
+    "original_assets": 35,
+    "final_assets": 36,
+    "missing": [],
+    "changed": [],
+    "new_asset_ids": [
+      "0f80e734-ca0c-436f-8c72-a7c79cccb361"
+    ],
+    "selection_unchanged": true,
+    "old_assets_sha256_unchanged": true
+  },
+  "schema_oracle_checks": {
+    "13_schema_types": {
+      "table": "teleai_default.alibaba_ssd",
+      "columns": 107,
+      "exact_match": true
+    },
+    "18_storm_types_ellipsis": {
+      "table": "teleai_default.stormtrooper",
+      "columns": 13,
+      "exact_match": true
+    }
+  },
+  "cases": [
+    {
+      "case": 1,
+      "id": "01_inventory",
+      "prompt": "어떤 데이타를 볼 수 있지 ?",
+      "verdict": "FAIL",
+      "reason": "inventory 목표 mode와 task 불일치. 두 번의 해석 모두 거절; 목록 없음.",
+      "run_id": "232235853a1d44f484cd2a04e418d51d",
+      "runtime_status": "blocked",
+      "elapsed_seconds": 24.969,
+      "model_calls": 2,
+      "data_query_completions": 0,
+      "evidence": "01_inventory_run.json",
+      "errors": [
+        {
+          "time": "2026-10-05T23:38:32.358852+00:00",
+          "event": "goal_contract_error",
+          "run_id": "232235853a1d44f484cd2a04e418d51d",
+          "instance_id": "ee8877026f42",
+          "pid": 15962,
+          "request_id": "45277cc1-1894-44c4-822d-6fb0a0088eaa",
+          "error_code": "goal_schema_invalid",
+          "detail": "explanation cannot execute tasks"
+        },
+        {
+          "time": "2026-10-05T23:38:36.912650+00:00",
+          "event": "goal_contract_error",
+          "run_id": "232235853a1d44f484cd2a04e418d51d",
+          "instance_id": "ee8877026f42",
+          "pid": 15962,
+          "request_id": "45277cc1-1894-44c4-822d-6fb0a0088eaa",
+          "error_code": "goal_schema_invalid",
+          "detail": "explanation cannot execute tasks"
+        }
+      ]
+    },
+    {
+      "case": 2,
+      "id": "02_bank_columns_alias",
+      "prompt": "은행 대출 관련 데이타를 보고 싶은데 어떤 항목들을 볼 수 있지 ?",
+      "verdict": "PASS",
+      "reason": "은행 대출이라는 별칭을 bank_loan으로 연결, 실제 18컬럼 출력.",
+      "run_id": "cec1bb3630be417fbbc4c05b837ec23f",
+      "runtime_status": "answered",
+      "elapsed_seconds": 15.75,
+      "model_calls": 1,
+      "data_query_completions": 0,
+      "evidence": "early_failures.json",
+      "errors": []
+    },
+    {
+      "case": 3,
+      "id": "03_age_histogram",
+      "prompt": "age에 대한 histogram을 보여줘",
+      "verdict": "FAIL",
+      "reason": "chart 목표 options 계약 오류 두 번. 이미지/SQL 없음.",
+      "run_id": "07d2b42c5d6d4c298cce3e62c3157cf0",
+      "runtime_status": "blocked",
+      "elapsed_seconds": 20.343,
+      "model_calls": 2,
+      "data_query_completions": 0,
+      "evidence": "03_age_histogram.json",
+      "errors": [
+        {
+          "time": "2026-10-05T23:39:50.535044+00:00",
+          "event": "goal_contract_error",
+          "run_id": "07d2b42c5d6d4c298cce3e62c3157cf0",
+          "instance_id": "ee8877026f42",
+          "pid": 15962,
+          "request_id": "b3ba5f3b-1064-49cf-87e1-b695dae33323",
+          "error_code": "goal_schema_invalid",
+          "detail": "unsupported task options"
+        },
+        {
+          "time": "2026-10-05T23:39:55.269428+00:00",
+          "event": "goal_contract_error",
+          "run_id": "07d2b42c5d6d4c298cce3e62c3157cf0",
+          "instance_id": "ee8877026f42",
+          "pid": 15962,
+          "request_id": "b3ba5f3b-1064-49cf-87e1-b695dae33323",
+          "error_code": "goal_schema_invalid",
+          "detail": "unsupported task options"
+        }
+      ]
+    },
+    {
+      "case": 4,
+      "id": "04_education_values",
+      "prompt": "education은 어떤 값들로 되어 있지 ?",
+      "verdict": "FAIL",
+      "reason": "값 목록을 범주형 컬럼 목록으로 오해. longtext를 numeric으로 분류해 0개라고 잘못 완료.",
+      "run_id": "30d788cdb1634765af9a292bdddab5dd",
+      "runtime_status": "answered",
+      "elapsed_seconds": 15.157,
+      "model_calls": 1,
+      "data_query_completions": 0,
+      "evidence": "04_education_values.json",
+      "errors": []
+    },
+    {
+      "case": 5,
+      "id": "05_histogram_ellipsis",
+      "prompt": "histogram을 그려줘",
+      "verdict": "FAIL",
+      "reason": "education 대상은 유지했으나 planner 두 번째 호출 전 입력 예산 차단, 이미지 없음.",
+      "run_id": "e3f73e5458184d94968307ad0c42b7de",
+      "runtime_status": "incomplete",
+      "elapsed_seconds": 39.554,
+      "model_calls": 2,
+      "data_query_completions": 0,
+      "evidence": "05_histogram_ellipsis.json",
+      "errors": [
+        {
+          "time": "2026-10-05T23:42:07.479127+00:00",
+          "event": "error",
+          "run_id": "e3f73e5458184d94968307ad0c42b7de",
+          "instance_id": "ee8877026f42",
+          "pid": 15962,
+          "error_category": null,
+          "error_id": "c1d2626636d7",
+          "stage": "agent_stream",
+          "error_type": "ModelContextBudgetExceeded",
+          "database_errno": null,
+          "http_status": null,
+          "frames": [
+            {
+              "file": "factory.py",
+              "line": 329,
+              "function": "inner_handler"
+            },
+            {
+              "file": "factory.py",
+              "line": 339,
+              "function": "composed"
+            },
+            {
+              "file": "tool_focus.py",
+              "line": 42,
+              "function": "wrap_model_call"
+            },
+            {
+              "file": "factory.py",
+              "line": 329,
+              "function": "inner_handler"
+            },
+            {
+              "file": "factory.py",
+              "line": 339,
+              "function": "composed"
+            },
+            {
+              "file": "tool_focus.py",
+              "line": 16,
+              "function": "wrap_model_call"
+            },
+            {
+              "file": "factory.py",
+              "line": 329,
+              "function": "inner_handler"
+            },
+            {
+              "file": "factory.py",
+              "line": 339,
+              "function": "composed"
+            },
+            {
+              "file": "model_context.py",
+              "line": 151,
+              "function": "wrap_model_call"
+            },
+            {
+              "file": "factory.py",
+              "line": 329,
+              "function": "inner_handler"
+            },
+            {
+              "file": "factory.py",
+              "line": 339,
+              "function": "composed"
+            },
+            {
+              "file": "model_context.py",
+              "line": 299,
+              "function": "wrap_model_call"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "case": 6,
+      "id": "06_filtered_primary",
+      "prompt": "education이 primary 이고 age가 30~40인 사람들을 시각화 해줘",
+      "verdict": "FAIL",
+      "reason": "primary 및 30~40 조건부 시각화 목표 계약 오류 두 번, 실행/이미지 없음.",
+      "run_id": "ee9faac3220149369806ef23295f2a37",
+      "runtime_status": "blocked",
+      "elapsed_seconds": 27.209,
+      "model_calls": 2,
+      "data_query_completions": 0,
+      "evidence": "06_filtered_primary.json",
+      "errors": [
+        {
+          "time": "2026-10-05T23:42:48.589806+00:00",
+          "event": "goal_contract_error",
+          "run_id": "ee9faac3220149369806ef23295f2a37",
+          "instance_id": "ee8877026f42",
+          "pid": 15962,
+          "request_id": "843f5778-a660-4a1b-9386-720bb9744848",
+          "error_code": "goal_schema_invalid",
+          "detail": "unsupported task options"
+        },
+        {
+          "time": "2026-10-05T23:42:56.437649+00:00",
+          "event": "goal_contract_error",
+          "run_id": "ee9faac3220149369806ef23295f2a37",
+          "instance_id": "ee8877026f42",
+          "pid": 15962,
+          "request_id": "843f5778-a660-4a1b-9386-720bb9744848",
+          "error_code": "goal_schema_invalid",
+          "detail": "unsupported task options"
+        }
+      ]
+    },
+    {
+      "case": 7,
+      "id": "07_filtered_multiple",
+      "prompt": "education이 primary과 secondary 이고 age가 30~40인 사람들을 시각화 해줘",
+      "verdict": "FAIL",
+      "reason": "primary/secondary 및 30~40 조건부 시각화 목표 계약 오류 두 번, 실행/이미지 없음.",
+      "run_id": "f0cecc5957544941b805be6dc6bdc860",
+      "runtime_status": "blocked",
+      "elapsed_seconds": 27.464,
+      "model_calls": 2,
+      "data_query_completions": 0,
+      "evidence": "07_filtered_multiple.json",
+      "errors": [
+        {
+          "time": "2026-10-05T23:43:37.750815+00:00",
+          "event": "goal_contract_error",
+          "run_id": "f0cecc5957544941b805be6dc6bdc860",
+          "instance_id": "ee8877026f42",
+          "pid": 15962,
+          "request_id": "acb3c9ec-ac5a-4e4f-9d44-c25555641004",
+          "error_code": "goal_schema_invalid",
+          "detail": "unsupported task options"
+        },
+        {
+          "time": "2026-10-05T23:43:45.784902+00:00",
+          "event": "goal_contract_error",
+          "run_id": "f0cecc5957544941b805be6dc6bdc860",
+          "instance_id": "ee8877026f42",
+          "pid": 15962,
+          "request_id": "acb3c9ec-ac5a-4e4f-9d44-c25555641004",
+          "error_code": "goal_schema_invalid",
+          "detail": "unsupported task options"
+        }
+      ]
+    },
+    {
+      "case": 8,
+      "id": "08_columns_followup",
+      "prompt": "테이블의 column 다시 보여줘",
+      "verdict": "PASS",
+      "reason": "bank_loan 컬럼 18개를 다시 표시.",
+      "run_id": "15bd21b8be324bf38c5337a28b5f68d9",
+      "runtime_status": "answered",
+      "elapsed_seconds": 16.512,
+      "model_calls": 1,
+      "data_query_completions": 0,
+      "evidence": "08_columns_followup.json",
+      "errors": []
+    },
+    {
+      "case": 9,
+      "id": "09_preview",
+      "prompt": "데이타 10개 row만 추출해서 table로 보여줘",
+      "verdict": "PASS",
+      "reason": "저장된 bank_loan 10행·18열을 실제 표로 표시.",
+      "run_id": "d607039a1002402b8a55a8ca3afd887b",
+      "runtime_status": "answered",
+      "elapsed_seconds": 14.855,
+      "model_calls": 1,
+      "data_query_completions": 0,
+      "evidence": "09_preview.json",
+      "errors": []
+    },
+    {
+      "case": 10,
+      "id": "10_scatter",
+      "prompt": "age를 x축으로 하고 balance를 Y축으로 하는 scatter plot를 그려줘",
+      "verdict": "PASS",
+      "reason": "age x / balance y 실제 PNG와 전체 750000행·132613좌표 근거 표시, 저장 차트 재사용.",
+      "run_id": "4b75929a09994905a9935ea7d5d86e13",
+      "runtime_status": "answered",
+      "elapsed_seconds": 15.982,
+      "model_calls": 1,
+      "data_query_completions": 0,
+      "evidence": "10_scatter.json",
+      "errors": []
+    },
+    {
+      "case": 11,
+      "id": "11_scatter_full",
+      "prompt": "전체 데이타에 대해서 age와 balance scatter plot으로 그려줘",
+      "verdict": "PASS",
+      "reason": "명시적 전체 산점도 요청도 같은 유효 전체 차트를 표시; 최신 히스토그램 오표시 없음.",
+      "run_id": "d6a10ce75e224c7981e03f804d5e7926",
+      "runtime_status": "answered",
+      "elapsed_seconds": 16.327,
+      "model_calls": 1,
+      "data_query_completions": 0,
+      "evidence": "11_scatter_full.json",
+      "errors": []
+    },
+    {
+      "case": 12,
+      "id": "12_alibaba_columns",
+      "prompt": "alibaba_ssd column list 보여줘",
+      "verdict": "PASS",
+      "reason": "alibaba_ssd 스키마 107컬럼 표시.",
+      "run_id": "397bda7a14b142d498c6b56335966f07",
+      "runtime_status": "answered",
+      "elapsed_seconds": 15.288,
+      "model_calls": 1,
+      "data_query_completions": 0,
+      "evidence": "12_alibaba_columns.json",
+      "errors": []
+    },
+    {
+      "case": 13,
+      "id": "13_schema_types",
+      "prompt": "table schema에 data type이 있지 않아 ?",
+      "verdict": "PASS",
+      "reason": "타입 후속에서 alibaba_ssd 유지. 107개 DB 타입은 독립 schema oracle과 일치.",
+      "run_id": "108dd6e7c38a4aea9a12002303a8a313",
+      "runtime_status": "answered",
+      "elapsed_seconds": 16.828,
+      "model_calls": 1,
+      "data_query_completions": 0,
+      "evidence": "13_schema_types.json",
+      "errors": []
+    },
+    {
+      "case": 14,
+      "id": "14_storm_rows",
+      "prompt": "stormtrooper table row 10개 보여줘",
+      "verdict": "PASS",
+      "reason": "stormtrooper 10행·13열 실제 표, 테이블 목록으로 오분류하지 않음.",
+      "run_id": "b57dd6d567124d5e9505ccbbf1622123",
+      "runtime_status": "answered",
+      "elapsed_seconds": 18.546,
+      "model_calls": 1,
+      "data_query_completions": 0,
+      "evidence": "14_storm_rows.json",
+      "errors": []
+    },
+    {
+      "case": 15,
+      "id": "15_ncr_columns",
+      "prompt": "ncr_ride 테이블의 column을 보여줘",
+      "verdict": "PASS",
+      "reason": "ncr_ride 21컬럼 표시.",
+      "run_id": "4c3f7c3609934924940ce34c58318b4e",
+      "runtime_status": "answered",
+      "elapsed_seconds": 18.749,
+      "model_calls": 1,
+      "data_query_completions": 0,
+      "evidence": "15_ncr_columns.json",
+      "errors": []
+    },
+    {
+      "case": 16,
+      "id": "16_ncr_rows_ellipsis",
+      "prompt": "데이타 row 10개를 보여줘",
+      "verdict": "PASS",
+      "reason": "테이블명을 생략한 후속에도 ncr_ride 유지, MySQL에서 10행·21열 조회·저장·표시.",
+      "run_id": "eafbf1d5a26445d2ba4e4998efd9a00f",
+      "runtime_status": "answered",
+      "elapsed_seconds": 20.98,
+      "model_calls": 1,
+      "data_query_completions": 1,
+      "evidence": "16_ncr_rows_ellipsis.json",
+      "errors": []
+    },
+    {
+      "case": 17,
+      "id": "17_no_chart_columns",
+      "prompt": "stormtrooper 히스토그램은 그리지 말고 그 테이블 컬럼 목록만 보여줘",
+      "verdict": "PASS",
+      "reason": "추가 부정 지시 probe: stormtrooper 컬럼 13개만 출력, 최신 결과에 차트 없음.",
+      "run_id": "a556b8cf421a44bc982576217eb9d11a",
+      "runtime_status": "answered",
+      "elapsed_seconds": 21.606,
+      "model_calls": 1,
+      "data_query_completions": 0,
+      "evidence": "17_no_chart_columns.json",
+      "errors": []
+    },
+    {
+      "case": 18,
+      "id": "18_storm_types_ellipsis",
+      "prompt": "그 테이블의 데이터 타입도 보여줘",
+      "verdict": "PASS",
+      "reason": "추가 생략 지시 probe: stormtrooper DB 타입 유지, 독립 oracle 일치.",
+      "run_id": "31fcb21ebed04c45a1391597abacc7f3",
+      "runtime_status": "answered",
+      "elapsed_seconds": 21.573,
+      "model_calls": 1,
+      "data_query_completions": 0,
+      "evidence": "18_storm_types_ellipsis.json",
+      "errors": []
+    },
+    {
+      "case": 19,
+      "id": "19_alibaba_return",
+      "prompt": "alibaba_ssd column list 보여줘",
+      "verdict": "PASS",
+      "reason": "대규모 분석 준비: alibaba_ssd 107컬럼으로 다시 전환.",
+      "run_id": "433b9828741f4d26bc13b2c118b157bf",
+      "runtime_status": "answered",
+      "elapsed_seconds": 20.404,
+      "model_calls": 1,
+      "data_query_completions": 0,
+      "evidence": "19_alibaba_return.json",
+      "errors": []
+    },
+    {
+      "case": 20,
+      "id": "20_large_distribution",
+      "prompt": "n_1 column의 데이타 분포를 보여줘",
+      "verdict": "FAIL",
+      "reason": "분포 대신 distinct profile로 재해석; 생성 SQL의 MySQL 1064 후 unknown으로 차단, 이미지 없음. MySQL인데 Databricks 안내.",
+      "run_id": "0c0d11d4a093414694df824a6bf32c76",
+      "runtime_status": "blocked",
+      "elapsed_seconds": 83.246,
+      "model_calls": 3,
+      "data_query_completions": 1,
+      "evidence": "20_large_distribution.json",
+      "errors": [
+        {
+          "time": "2026-10-05T23:51:45.390887+00:00",
+          "event": "goal_contract_error",
+          "run_id": "0c0d11d4a093414694df824a6bf32c76",
+          "instance_id": "ee8877026f42",
+          "pid": 15962,
+          "request_id": "7d4b45e8-8e3b-4923-b861-1f1e836acab7",
+          "error_code": "goal_schema_invalid",
+          "detail": "duplicate capability; use options for multiple measures"
+        },
+        {
+          "time": "2026-10-05T23:52:45.514634+00:00",
+          "event": "error",
+          "run_id": "0c0d11d4a093414694df824a6bf32c76",
+          "instance_id": "ee8877026f42",
+          "pid": 15962,
+          "error_category": null,
+          "error_id": "6cb38ea7e59d",
+          "stage": "query_databricks",
+          "error_type": "ProgrammingError",
+          "database_errno": 1064,
+          "http_status": null,
+          "frames": [
+            {
+              "file": "runtime.py",
+              "line": 210,
+              "function": "query_databricks"
+            },
+            {
+              "file": "approvals.py",
+              "line": 101,
+              "function": "execute"
+            },
+            {
+              "file": "mysql.py",
+              "line": 124,
+              "function": "execute"
+            },
+            {
+              "file": "cursor_cext.py",
+              "line": 353,
+              "function": "execute"
+            },
+            {
+              "file": "context_propagation.py",
+              "line": 97,
+              "function": "wrapper"
+            },
+            {
+              "file": "connection_cext.py",
+              "line": 781,
+              "function": "cmd_query"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "case": 21,
+      "id": "21_y_axis_followup",
+      "prompt": "y축을 10000으로해줘",
+      "verdict": "BLOCKED_DEPENDENCY",
+      "reason": "직전 분포 차트 미생성으로 축 변경 여정 불완전. 별도로 chart kind/options 계약 오류도 발생; 범위 변경 이미지 없음.",
+      "run_id": "62f1facd3738491792fe1e0a707a831e",
+      "runtime_status": "blocked",
+      "elapsed_seconds": 29.017,
+      "model_calls": 2,
+      "data_query_completions": 0,
+      "evidence": "21_y_axis_followup.json",
+      "errors": [
+        {
+          "time": "2026-10-05T23:53:24.710723+00:00",
+          "event": "goal_contract_error",
+          "run_id": "62f1facd3738491792fe1e0a707a831e",
+          "instance_id": "ee8877026f42",
+          "pid": 15962,
+          "request_id": "74e590f9-b2ad-4e2a-bdd4-f5a1ab6e102d",
+          "error_code": "goal_schema_invalid",
+          "detail": "invalid chart kind"
+        },
+        {
+          "time": "2026-10-05T23:53:32.635233+00:00",
+          "event": "goal_contract_error",
+          "run_id": "62f1facd3738491792fe1e0a707a831e",
+          "instance_id": "ee8877026f42",
+          "pid": 15962,
+          "request_id": "74e590f9-b2ad-4e2a-bdd4-f5a1ab6e102d",
+          "error_code": "goal_schema_invalid",
+          "detail": "unsupported task options"
+        }
+      ]
+    }
+  ],
+  "last_failed_sql": {
+    "id": "96b7d2f5-701d-4409-b587-0e34b255df0a",
+    "status": "unknown",
+    "source": "teleai_default.alibaba_ssd",
+    "query": "SELECT COUNT(n_1) AS count, MIN(n_1) AS min_value, MAX(n_1) AS max_value, AVG(n_1) AS average, STDDEV(n_1) AS stddev, CAST(PERCENTILE_CONT(0.25) WITHIN GROUP (ORDER BY n_1) AS DOUBLE) AS p25, CAST(PERCENTILE_CONT(0.75) WITHIN GROUP (ORDER BY n_1) AS DOUBLE) AS p75 FROM teleai_default.alibaba_ssd"
+  },
+  "root_causes": [
+    {
+      "priority": "P0",
+      "issue": "LLM goal JSON grammarはoptionsを汎用objectとして許可し、手動validatorだけがcapability別キーを後から拒否。フィードバックは不正キー・許容キーなし。2回の再解釈で基本chartが復旧しない。",
+      "evidence": "core/analysis_agent/goal_contract.py:44,97; case1/3/6/7/21"
+    },
+    {
+      "priority": "P0",
+      "issue": "意味が違うが構造が正しいgoalがそのまま実行/完了。値一覧→列一覧、分布→distinct profile。",
+      "evidence": "case4/20; request-goal semantic acceptance未十分"
+    },
+    {
+      "priority": "P0",
+      "issue": "longtextはnumeric regexのlongに先に一致。MySQLの文字列schemaをnumericと誤判定。隔離実行でも再現。",
+      "evidence": "core/analysis_agent/recovery.py:44; _dtype_family(longtext)=numeric; 独立bank schema"
+    },
+    {
+      "priority": "P0",
+      "issue": "モデルビューを最小化した後も12295>12288でHTTP前停止。教育histogramのモデル実行loopが結果へ到達しない。",
+      "evidence": "05_histogram_ellipsis.json; error c1d2626636d7; second planner budget"
+    },
+    {
+      "priority": "P0",
+      "issue": "生成SQLの方言検査/MySQLエラー1064の確定分類・安全なSQL修復が不足。ProgrammingErrorをunknown ledgerにして停止、UIはDatabricks案内。",
+      "evidence": "20_large_distribution.json; error6cb38ea7e59d; last_failed_sql"
+    }
+  ],
+  "next_acceptance_gate": [
+    "capability別options grammarと精密な修正フィードバック; 表inventory・chart・filter・axis全件で実モデル構造失敗なし。",
+    "元依頼とgoalの意味照合、schema SQL型正規化、値一覧と頻度分布の出力義務を独立oracleで検証。",
+    "入力予算超過をループ開始前に予防/安全な探索・段階分割で自律復旧。",
+    "バックエンドSQL構文事前検査、確定1064は接続障害/実行不明と分離して再生成。",
+    "既存cache/cold start/新会話、条件継続・変更・失敗後復旧・legend/stack・大規模再使用を同じoracleで再評価。"
+  ]
+}

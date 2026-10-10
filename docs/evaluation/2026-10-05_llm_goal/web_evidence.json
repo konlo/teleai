@@ -1,0 +1,183 @@
+{
+  "backend": "mysql development, existing user conversation",
+  "baseline_assets": 35,
+  "current_assets": 35,
+  "existing_hashes_preserved": true,
+  "selection_preserved": true,
+  "selected_id": "cc9874a4-b012-429f-b463-bf969acee0bc",
+  "runs_including_initial_failures": [
+    {
+      "run_id": "320d8acc5d314f48b15fc9e4fe8a2270",
+      "operation": "submit",
+      "status": "incomplete",
+      "seconds": 0.019,
+      "capabilities": null,
+      "model_calls": null,
+      "data_queries": 0,
+      "goal_input_bytes": 16382,
+      "within_budget": false,
+      "error_id": "5c98b40753a2"
+    },
+    {
+      "run_id": "2720a21d78a34d62b0ce2562cac1a6f9",
+      "operation": "resume",
+      "status": "answered",
+      "seconds": 21.15,
+      "capabilities": [
+        "row_preview"
+      ],
+      "model_calls": null,
+      "data_queries": 0,
+      "goal_input_bytes": 12089,
+      "within_budget": true,
+      "error_id": null
+    },
+    {
+      "run_id": "0e0bf3f53f964caa89df2aa11a9e64f5",
+      "operation": "submit",
+      "status": "answered",
+      "seconds": 15.784,
+      "capabilities": [
+        "row_preview"
+      ],
+      "model_calls": 1,
+      "data_queries": 0,
+      "goal_input_bytes": 11761,
+      "within_budget": true,
+      "error_id": null
+    },
+    {
+      "run_id": "6ec9487dfdcd4cd6baa7ac45fede95a2",
+      "operation": "submit",
+      "status": "answered",
+      "seconds": 16.115,
+      "capabilities": [
+        "metadata"
+      ],
+      "model_calls": 1,
+      "data_queries": 0,
+      "goal_input_bytes": 12317,
+      "within_budget": true,
+      "error_id": null
+    },
+    {
+      "run_id": "7b0e071bde544981ac063bbe9c2cb284",
+      "operation": "submit",
+      "status": "answered",
+      "seconds": 26.405,
+      "capabilities": [
+        "metadata"
+      ],
+      "model_calls": 1,
+      "data_queries": 0,
+      "goal_input_bytes": 12473,
+      "within_budget": true,
+      "error_id": null
+    }
+  ],
+  "final_goal": {
+    "objective": "Show the data types for the columns in the specified table.",
+    "mode": "execute",
+    "sources": [
+      "teleai_default.stormtrooper"
+    ],
+    "columns": [],
+    "conditions": [],
+    "any_conditions": [],
+    "measure_conditions": [],
+    "ratio": null,
+    "current_result_only": false,
+    "fresh_source_required": false,
+    "question": "teleai_default.stormtrooper 테이블의 컬럼 데이터 타입을 보여주세요.",
+    "tasks": [
+      {
+        "capability": "metadata",
+        "options": {
+          "kind": "dtypes"
+        }
+      }
+    ]
+  },
+  "final_status": "complete",
+  "final_source": [
+    "teleai_default.stormtrooper"
+  ],
+  "final_metadata": {
+    "table": "teleai_default.stormtrooper",
+    "kind": "dtypes",
+    "columns": [
+      "flight_id",
+      "date_str",
+      "latitude",
+      "longitude",
+      "pressure_altitude",
+      "cdo",
+      "cth",
+      "glm_event_density",
+      "glm_optical_flux",
+      "cdo025",
+      "cth025",
+      "cth025_diff_feet",
+      "cdo_dist_km"
+    ],
+    "schema": [
+      {
+        "name": "flight_id",
+        "dtype": "longtext"
+      },
+      {
+        "name": "date_str",
+        "dtype": "datetime"
+      },
+      {
+        "name": "latitude",
+        "dtype": "double"
+      },
+      {
+        "name": "longitude",
+        "dtype": "double"
+      },
+      {
+        "name": "pressure_altitude",
+        "dtype": "double"
+      },
+      {
+        "name": "cdo",
+        "dtype": "double"
+      },
+      {
+        "name": "cth",
+        "dtype": "double"
+      },
+      {
+        "name": "glm_event_density",
+        "dtype": "double"
+      },
+      {
+        "name": "glm_optical_flux",
+        "dtype": "double"
+      },
+      {
+        "name": "cdo025",
+        "dtype": "double"
+      },
+      {
+        "name": "cth025",
+        "dtype": "double"
+      },
+      {
+        "name": "cth025_diff_feet",
+        "dtype": "double"
+      },
+      {
+        "name": "cdo_dist_km",
+        "dtype": "double"
+      }
+    ],
+    "selected_columns": [],
+    "authority": "approved_select_star_result",
+    "type_authority": "current_database_metadata",
+    "scope": "로딩된 SELECT * 결과의 실제 컬럼입니다. 해당 결과의 생성 시점 스키마를 나타냅니다.",
+    "schema_changed": false
+  }
+}

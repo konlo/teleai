@@ -136,6 +136,25 @@ class DataContractTests(unittest.TestCase):
         data = self.store.frames[second['loaded_dataset']]
         self.assertTrue((data[COLUMN] >= 40).all())
 
+    def test_reordered_conjunction_reuses_verified_source_counts_for_display_changes(self):
+        self.context.reference_context=[{'table':SOURCE,'columns':[{'name':COLUMN,'dtype':'int64'}]}]
+        plan=self.tools['prepare_histogram'](SOURCE,COLUMN,
+            f'{COLUMN} >= 20 AND {COLUMN} <= 40')['histogram_plan']
+        counts=self.store.register(pd.DataFrame({COLUMN:[20,30],'__frequency':[3,4]}),
+            source=SOURCE,query=plan['query'],coverage='complete',predicate_known=True,
+            grain='aggregate',aggregation=plan['query'])
+        result=self.tools['prepare_histogram'](SOURCE,COLUMN,
+            f'({COLUMN} <= 40) AND ({COLUMN} >= 20)',legend=True)
+        self.assertEqual(result['status'],'ready',result)
+        self.assertEqual(result['loaded_dataset'],counts.id)
+        self.context.propose_query.assert_not_called()
+        changed=self.tools['prepare_histogram'](SOURCE,COLUMN,
+            f'{COLUMN} <= 40 AND {COLUMN} >= 30',legend=True)
+        self.assertEqual(changed['status'],'planned')
+        fresh=self.tools['prepare_histogram'](SOURCE,COLUMN,
+            f'{COLUMN} <= 40 AND {COLUMN} >= 20',fresh_source_required=True)
+        self.assertEqual(fresh['status'],'planned')
+
     def test_subset_only_histogram_proposes_loading_without_execution(self):
         self.raw(self.frame[self.frame[COLUMN] >= 20], conditions=(Condition(COLUMN, 'ge', 20),))
         result = self.tools['prepare_histogram'](SOURCE, COLUMN)

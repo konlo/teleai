@@ -1,0 +1,278 @@
+{
+  "tested_at": "2026-10-06T13:57:13.368148+09:00",
+  "environment": {
+    "backend": "local_mysql",
+    "goal_model": "qwen3:8b",
+    "planner_model": "qwen3:8b",
+    "pid": 29590,
+    "browser_url": "http://127.0.0.1:8504/Telly?conversation=c516ed22-29b6-4023-8881-2cd3dd0152f6",
+    "fresh_conversation": true,
+    "cold_process_start": false,
+    "submission": "10 sequential real browser textbox prompts; no API substitute; no manual retry; no product edits during evaluation"
+  },
+  "score": {
+    "completed_correct": 3,
+    "direct_failures": 2,
+    "dependent_incomplete": 5,
+    "total": 10,
+    "journey_completion_percent": 30,
+    "note": "One dependent journey; 7 incomplete turns are not 7 independent defects. Not an official DeepEval or Spider2 score."
+  },
+  "cases": [
+    {
+      "id": 1,
+      "prompt": "지금 연결된 DB에서 분석 가능한 테이블 이름들을 알려줄래?",
+      "expected": {
+        "tables": 7
+      },
+      "result": "pass",
+      "status": "complete",
+      "checkpoint_verified": true,
+      "model_calls": 2,
+      "elapsed_seconds": 37.219,
+      "error": null,
+      "request_id": "27138b4d-8cad-47c4-8ac6-2dab68cc3a70",
+      "run_id": "35e03703ca7b44ba8480fd4c60a81146",
+      "ui_capture_id": 1
+    },
+    {
+      "id": 2,
+      "prompt": "은행 대출 데이터 bank_loan에는 어떤 컬럼이 들어 있어?",
+      "expected": {
+        "source": "bank_loan",
+        "columns": 18
+      },
+      "result": "fail",
+      "status": "blocked",
+      "checkpoint_verified": true,
+      "model_calls": 4,
+      "elapsed_seconds": 30.778,
+      "error": "previous_analysis source mismatch; verified subject is ['information_schema.tables']",
+      "request_id": "2f368074-c3f4-402d-89af-7ab6694d603c",
+      "run_id": "dd7f8a832c07437589506a3736adb81c",
+      "ui_capture_id": 2
+    },
+    {
+      "id": 3,
+      "prompt": "여기 education에 들어있는 값 종류를 전부 알려줘.",
+      "expected": {
+        "source": "bank_loan",
+        "values": [
+          "primary",
+          "secondary",
+          "tertiary",
+          "unknown"
+        ]
+      },
+      "result": "dependent_incomplete",
+      "status": "blocked",
+      "checkpoint_verified": true,
+      "model_calls": 4,
+      "elapsed_seconds": 37.525,
+      "error": "previous_analysis source mismatch; verified subject is ['information_schema.tables']",
+      "request_id": "a7997a08-2a7e-4453-8576-1a25732f6ec9",
+      "run_id": "acc3ceb0ac744f6da8ae8f0a19a2fa6e",
+      "ui_capture_id": 3
+    },
+    {
+      "id": 4,
+      "prompt": "방금 확인한 값들이 얼마나 많은지 막대 그림으로 보여줘.",
+      "expected": {
+        "source": "bank_loan",
+        "column": "education",
+        "frequencies": {
+          "secondary": 401683,
+          "primary": 99510,
+          "tertiary": 227508,
+          "unknown": 21299
+        }
+      },
+      "result": "dependent_incomplete",
+      "status": "blocked",
+      "checkpoint_verified": true,
+      "model_calls": 3,
+      "elapsed_seconds": 30.859,
+      "error": "previous_analysis source mismatch; verified subject is ['information_schema.tables']",
+      "request_id": "fe2e850d-93d6-4bd0-ab6a-a62f8b34981c",
+      "run_id": "e33306229b5f4f4c8f5613689dc7a330",
+      "ui_capture_id": 4
+    },
+    {
+      "id": 5,
+      "prompt": "education이 primary인 사람 중 나이가 30세 이상 40세 이하인 사람들의 age 분포를 그려줘.",
+      "expected": {
+        "source": "bank_loan",
+        "column": "age",
+        "count": 27439,
+        "filters": "primary AND 30<=age<=40"
+      },
+      "result": "dependent_incomplete",
+      "status": "blocked",
+      "checkpoint_verified": true,
+      "model_calls": 4,
+      "elapsed_seconds": 58.951,
+      "error": "selected_dataset has no verified source",
+      "request_id": "5ae96e93-c19d-49fc-863f-28238b2b6b14",
+      "run_id": "143d49e5ada34ba98d4455db693d58f1",
+      "ui_capture_id": 5
+    },
+    {
+      "id": 6,
+      "prompt": "나이 조건은 그대로 두고 secondary도 포함해서 다시 그려줄래?",
+      "expected": {
+        "source": "bank_loan",
+        "column": "age",
+        "count": 208699,
+        "filters": "primary OR secondary AND 30<=age<=40"
+      },
+      "result": "dependent_incomplete",
+      "status": "blocked",
+      "checkpoint_verified": true,
+      "model_calls": 3,
+      "elapsed_seconds": 37.212,
+      "error": "previous_analysis source mismatch; verified subject is ['information_schema.tables']",
+      "request_id": "78bdb7b4-c424-4b75-8e46-0528b2431a79",
+      "run_id": "3bb29c5e485448a99dd16a5baca67c47",
+      "ui_capture_id": 6
+    },
+    {
+      "id": 7,
+      "prompt": "같은 사람들을 대상으로 구간을 5개로 나눠 histogram을 보여줘.",
+      "expected": {
+        "source": "bank_loan",
+        "column": "age",
+        "count": 208699,
+        "bins": 5
+      },
+      "result": "dependent_incomplete",
+      "status": "blocked",
+      "checkpoint_verified": true,
+      "model_calls": 4,
+      "elapsed_seconds": 46.977,
+      "error": "previous_analysis source mismatch; verified subject is ['information_schema.tables']",
+      "request_id": "69a4b56d-1dae-45a4-a690-017417bd7053",
+      "run_id": "bc18b33a89e44372b6dac345c557acbd",
+      "ui_capture_id": 7
+    },
+    {
+      "id": 8,
+      "prompt": "이제 조건을 전부 없애고 bank_loan 전체의 age를 가로축, balance를 세로축으로 산점도를 그려줘.",
+      "expected": {
+        "source": "bank_loan",
+        "raw_rows": 750000,
+        "distinct_coordinates": 132613,
+        "axes": [
+          "age",
+          "balance"
+        ]
+      },
+      "result": "pass",
+      "status": "complete",
+      "checkpoint_verified": true,
+      "model_calls": 3,
+      "elapsed_seconds": 33.697,
+      "error": null,
+      "request_id": "757471c5-c0ca-47dd-839a-6a6adf2d81e3",
+      "run_id": "b1cdac9817ae4230a932e7ea55ac3958",
+      "ui_capture_id": 8
+    },
+    {
+      "id": 9,
+      "prompt": "이번에는 stormtrooper에서 row 10개만 표로 보고 싶어.",
+      "expected": {
+        "source": "stormtrooper",
+        "rows": 10,
+        "columns": 13
+      },
+      "result": "pass",
+      "status": "complete",
+      "checkpoint_verified": true,
+      "model_calls": 4,
+      "elapsed_seconds": 34.845,
+      "error": null,
+      "request_id": "f154d72f-15a1-4478-8b2b-bd1f510d393a",
+      "run_id": "398cff2f5de4420185fbf8015a498d93",
+      "ui_capture_id": 9
+    },
+    {
+      "id": 10,
+      "prompt": "그 테이블의 컬럼 이름과 DB 데이터 타입을 모두 다시 알려줘. 차트는 만들지 말아줘.",
+      "expected": {
+        "source": "stormtrooper",
+        "columns": 13,
+        "no_new_chart": true
+      },
+      "result": "fail",
+      "status": "blocked",
+      "checkpoint_verified": true,
+      "model_calls": 2,
+      "elapsed_seconds": 31.266,
+      "error": "explanation cannot execute tasks",
+      "request_id": "3296b7d7-e8bd-4db0-91bf-14ca925d8f7e",
+      "run_id": "78f9140903d746e7bb44b53ab542f0b7",
+      "ui_capture_id": 10
+    }
+  ],
+  "independent_checks": {
+    "scatter_coordinate_count": 132613,
+    "scatter_frequency_sum": 750000,
+    "scatter_columns": [
+      "age",
+      "balance",
+      "__telly_coordinate_frequency"
+    ],
+    "scatter_duplicate_coordinates": 0,
+    "stormtrooper_rows": 10,
+    "stormtrooper_columns": [
+      "flight_id",
+      "date_str",
+      "latitude",
+      "longitude",
+      "pressure_altitude",
+      "cdo",
+      "cth",
+      "glm_event_density",
+      "glm_optical_flux",
+      "cdo025",
+      "cth025",
+      "cth025_diff_feet",
+      "cdo_dist_km"
+    ],
+    "stormtrooper_schema_matches_oracle": true,
+    "inventory_matches_oracle": true,
+    "prior_assets_missing": [],
+    "prior_assets_changed": [],
+    "chart_count_before_last": 1,
+    "chart_count_after_last": 1
+  },
+  "root_findings": [
+    {
+      "severity": "P0",
+      "evidence": "02.json",
+      "finding": "Independent source-reference audit classified explicitly named bank_loan as previous_analysis; hard enforcement anchored it to information_schema.tables and repair did not recover."
+    },
+    {
+      "severity": "P0",
+      "evidence": "03.json through 07.json",
+      "finding": "The failed requested subject/conditions were not available as a usable follow-up context; confirmed context remained inventory, so subsequent references did not produce requested analyses."
+    },
+    {
+      "severity": "P0",
+      "evidence": "10.json",
+      "finding": "LLM repeatedly combined explanation mode with metadata execution tasks when request prohibited only charting; structural repair did not recover."
+    }
+  ],
+  "positive_recovery": "09 repaired unrelated current_result_only plan before executing correct 10-row table preview; model_calls=4.",
+  "limitations": [
+    "Single warm-process fresh-conversation journey; no repeated reliability estimate.",
+    "Large-data coverage tested only for 750000-row bank scatter; no new full alibaba scan.",
+    "Company Databricks and official DeepEval/Spider2 not evaluated.",
+    "Failures preserved; no product fixes or retries concealed in score."
+  ],
+  "release_decision": "NO-GO: core discovery-to-schema and follow-up metadata journey failures",
+  "source_sha256": {
+    "core/analysis_agent/goal_interpreter.py": "bd1fd3acb2cc3d75bfe59ae2bf24ba06eaec97e42860e54ca0e796e93f22930d",
+    "core/analysis_agent/goal_contract.py": "ce63315e3ad06d8410d6db8067a475b8dfb3b53bd1e592329beb22e10e30846a",
+    "core/analysis_agent/conversation_context.py": "ed976d1a989880d0cfde30d8de9cf881e4b92f21d7fe06444573510eb35d06ff"
+  }
+}

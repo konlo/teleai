@@ -1,0 +1,206 @@
+[
+  {
+    "backend": "mysql",
+    "status": "answered",
+    "elapsed_seconds": 0.484,
+    "queries": [
+      "SELECT `age`, COUNT(*) AS `__frequency` FROM teleai_default.bank_loan WHERE age IS NOT NULL AND age BETWEEN 30 AND 40 AND education IN ('primary','secondary') GROUP BY age",
+      "SELECT `age`, `education`, COUNT(*) AS `__frequency` FROM `teleai_default`.`bank_loan` WHERE `age` IS NOT NULL AND (`age` >= 30 AND `age` <= 40 AND `education` IN ('primary', 'secondary')) GROUP BY `age`, `education`"
+    ],
+    "model_calls": 0,
+    "scope": {
+      "conditions": [
+        {
+          "column": "age",
+          "op": "ge",
+          "value": 30
+        },
+        {
+          "column": "age",
+          "op": "le",
+          "value": 40
+        },
+        {
+          "column": "education",
+          "op": "in",
+          "value": [
+            "primary",
+            "secondary"
+          ]
+        }
+      ],
+      "any_conditions": [],
+      "measure_conditions": [],
+      "ratio": null,
+      "unresolved": [],
+      "columns": [
+        "age",
+        "education"
+      ],
+      "sources": [
+        "teleai_default.bank_loan"
+      ]
+    },
+    "run_id": "855f38d9e79c4ec6a98e44c2f5f54d82",
+    "answer": "원격 조회가 완료되어 결과 22행을 저장했습니다.\n\neducation별 age 분포 이미지를 생성했습니다.\n분석 범위: 빈도 합계 208,699 · complete · 그룹 결측 제외 0 · SELECT `age`, `education`, COUNT(*) AS `__frequency` FROM `teleai_default`.`bank_loan` WHERE `age` IS NOT NULL AND (`age` >= 30 AND `age` <= 40 AND `education` IN ('primary', 'secondary')) GROUP BY `age`, `education`",
+    "render_spec": {
+      "kind": "histogram",
+      "x": "age",
+      "category": "education",
+      "bins": 8,
+      "legend": true,
+      "legend_labels": [
+        "primary",
+        "secondary"
+      ],
+      "colors": [
+        "#3278b9",
+        "#e58632"
+      ],
+      "bin_edges": [
+        30.0,
+        31.25,
+        32.5,
+        33.75,
+        35.0,
+        36.25,
+        37.5,
+        38.75,
+        40.0
+      ],
+      "series_counts": [
+        [
+          3015,
+          2336,
+          2357,
+          2324,
+          5197,
+          2714,
+          2677,
+          6819
+        ],
+        [
+          34015,
+          19889,
+          18085,
+          18462,
+          34644,
+          15689,
+          13982,
+          26494
+        ]
+      ],
+      "group_totals": [
+        27439,
+        181260
+      ],
+      "total_count": 208699,
+      "excluded_null_group_count": 0,
+      "null_policy": "exclude"
+    },
+    "repeat_status": "answered",
+    "repeat_queries": 0
+  },
+  {
+    "backend": "databricks",
+    "status": "answered",
+    "elapsed_seconds": 9.516,
+    "queries": [
+      "SELECT `age`, COUNT(*) AS `__frequency` FROM workspace.default.bank_loan WHERE age IS NOT NULL AND age BETWEEN 30 AND 40 AND education IN ('primary','secondary') GROUP BY age",
+      "SELECT `age`, `education`, COUNT(*) AS `__frequency` FROM `workspace`.`default`.`bank_loan` WHERE `age` IS NOT NULL AND (`age` >= 30 AND `age` <= 40 AND `education` IN ('primary', 'secondary')) GROUP BY `age`, `education`"
+    ],
+    "model_calls": 0,
+    "scope": {
+      "conditions": [
+        {
+          "column": "age",
+          "op": "ge",
+          "value": 30
+        },
+        {
+          "column": "age",
+          "op": "le",
+          "value": 40
+        },
+        {
+          "column": "education",
+          "op": "in",
+          "value": [
+            "primary",
+            "secondary"
+          ]
+        }
+      ],
+      "any_conditions": [],
+      "measure_conditions": [],
+      "ratio": null,
+      "unresolved": [],
+      "columns": [
+        "age",
+        "education"
+      ],
+      "sources": [
+        "workspace.default.bank_loan"
+      ]
+    },
+    "run_id": "7d2a8bc550ff42bc8669a0ffdac020ce",
+    "answer": "원격 조회가 완료되어 결과 22행을 저장했습니다.\n\neducation별 age 분포 이미지를 생성했습니다.\n분석 범위: 빈도 합계 208,699 · complete · 그룹 결측 제외 0 · SELECT `age`, `education`, COUNT(*) AS `__frequency` FROM `workspace`.`default`.`bank_loan` WHERE `age` IS NOT NULL AND (`age` >= 30 AND `age` <= 40 AND `education` IN ('primary', 'secondary')) GROUP BY `age`, `education`",
+    "render_spec": {
+      "kind": "histogram",
+      "x": "age",
+      "category": "education",
+      "bins": 8,
+      "legend": true,
+      "legend_labels": [
+        "primary",
+        "secondary"
+      ],
+      "colors": [
+        "#3278b9",
+        "#e58632"
+      ],
+      "bin_edges": [
+        30.0,
+        31.25,
+        32.5,
+        33.75,
+        35.0,
+        36.25,
+        37.5,
+        38.75,
+        40.0
+      ],
+      "series_counts": [
+        [
+          3015,
+          2336,
+          2357,
+          2324,
+          5197,
+          2714,
+          2677,
+          6819
+        ],
+        [
+          34015,
+          19889,
+          18085,
+          18462,
+          34644,
+          15689,
+          13982,
+          26494
+        ]
+      ],
+      "group_totals": [
+        27439,
+        181260
+      ],
+      "total_count": 208699,
+      "excluded_null_group_count": 0,
+      "null_policy": "exclude"
+    },
+    "repeat_status": "answered",
+    "repeat_queries": 0
+  }
+]

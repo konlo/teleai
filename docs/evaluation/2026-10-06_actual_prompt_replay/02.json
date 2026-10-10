@@ -1,0 +1,713 @@
+{
+  "assets": {
+    "dcaff821-1cb5-4f5a-ada2-1a609e2cdf7f": {
+      "kind": "dataset",
+      "metadata": {
+        "id": "dcaff821-1cb5-4f5a-ada2-1a609e2cdf7f",
+        "source": "information_schema.tables",
+        "columns": [
+          "TABLE_SCHEMA",
+          "TABLE_NAME",
+          "TABLE_TYPE"
+        ],
+        "rows": 7,
+        "coverage": "unknown",
+        "conditions": [],
+        "predicate_known": false,
+        "grain": "raw",
+        "aggregation": "",
+        "snapshot": "2026-10-06T13:55:46.308535+00:00",
+        "query": "SELECT table_schema, table_name, table_type FROM information_schema.tables WHERE table_schema = 'teleai_default' ORDER BY table_name LIMIT 100",
+        "parent_id": "",
+        "parent_ids": [],
+        "role": "root",
+        "root_id": "dcaff821-1cb5-4f5a-ada2-1a609e2cdf7f",
+        "row_selection": {}
+      },
+      "metadata_sha256": "3935c1bcad4cb8eb208a02d3685779edb3a1fcf4e56cea83bec379b69c4724c3",
+      "payload_sha256": "372844c886cd58f8ef309861fc6bb1a9265e5de25cd71d7493b1199d66a13318"
+    }
+  },
+  "selection": "",
+  "current": {
+    "request_id": "a7bed39f-6f3b-45ae-a761-f37d2e0dca5f",
+    "request_text": "bank_loan 컬럼들을 보여줘",
+    "status": "complete",
+    "stop_reason": null,
+    "intent_origin": "llm",
+    "goal": {
+      "objective": "bank_loan 컬럼들을 보여줘",
+      "mode": "execute",
+      "source_reference": "explicit",
+      "sources": [
+        "teleai_default.bank_loan"
+      ],
+      "columns": [
+        "id",
+        "age",
+        "job",
+        "marital",
+        "education",
+        "default",
+        "balance",
+        "housing"
+      ],
+      "conditions": [],
+      "any_conditions": [],
+      "measure_conditions": [],
+      "ratio": null,
+      "current_result_only": false,
+      "fresh_source_required": false,
+      "question": "",
+      "tasks": [
+        {
+          "capability": "metadata",
+          "options": {
+            "kind": "columns"
+          }
+        }
+      ]
+    },
+    "model_calls": 3,
+    "model_seconds": 27.029225876001874,
+    "scope": {
+      "conditions": [],
+      "any_conditions": [],
+      "measure_conditions": [],
+      "ratio": null,
+      "sources": [
+        "teleai_default.bank_loan"
+      ],
+      "columns": [],
+      "unresolved": [],
+      "join_edges": []
+    },
+    "required_sources": [
+      "teleai_default.bank_loan"
+    ],
+    "required_columns": [
+      "id",
+      "age",
+      "job",
+      "marital",
+      "education",
+      "default",
+      "balance",
+      "housing"
+    ],
+    "artifact_ids": [],
+    "evidence_ids": [],
+    "metadata_evidence": {
+      "table": "teleai_default.bank_loan",
+      "kind": "columns",
+      "columns": [
+        "id",
+        "age",
+        "job",
+        "marital",
+        "education",
+        "default",
+        "balance",
+        "housing",
+        "loan",
+        "contact",
+        "day",
+        "month",
+        "duration",
+        "campaign",
+        "pdays",
+        "previous",
+        "poutcome",
+        "y"
+      ],
+      "schema": [
+        {
+          "name": "id",
+          "dtype": "bigint"
+        },
+        {
+          "name": "age",
+          "dtype": "bigint"
+        },
+        {
+          "name": "job",
+          "dtype": "longtext"
+        },
+        {
+          "name": "marital",
+          "dtype": "longtext"
+        },
+        {
+          "name": "education",
+          "dtype": "longtext"
+        },
+        {
+          "name": "default",
+          "dtype": "longtext"
+        },
+        {
+          "name": "balance",
+          "dtype": "bigint"
+        },
+        {
+          "name": "housing",
+          "dtype": "longtext"
+        },
+        {
+          "name": "loan",
+          "dtype": "longtext"
+        },
+        {
+          "name": "contact",
+          "dtype": "longtext"
+        },
+        {
+          "name": "day",
+          "dtype": "bigint"
+        },
+        {
+          "name": "month",
+          "dtype": "longtext"
+        },
+        {
+          "name": "duration",
+          "dtype": "bigint"
+        },
+        {
+          "name": "campaign",
+          "dtype": "bigint"
+        },
+        {
+          "name": "pdays",
+          "dtype": "bigint"
+        },
+        {
+          "name": "previous",
+          "dtype": "bigint"
+        },
+        {
+          "name": "poutcome",
+          "dtype": "longtext"
+        },
+        {
+          "name": "y",
+          "dtype": "bigint"
+        }
+      ],
+      "selected_columns": [],
+      "authority": "saved_snapshot",
+      "type_authority": null,
+      "scope": "저장된 스키마 스냅샷입니다. observed_at과 freshness를 함께 확인해야 합니다.",
+      "schema_changed": false
+    },
+    "kind": null,
+    "failed": {},
+    "confirmed_analysis": {
+      "request_id": "a7bed39f-6f3b-45ae-a761-f37d2e0dca5f",
+      "request_text": "bank_loan 컬럼들을 보여줘",
+      "status": "complete",
+      "intent_origin": "llm",
+      "goal_pending": false,
+      "request_started_at": 1791295034.619099,
+      "required_sources": [
+        "teleai_default.bank_loan"
+      ],
+      "required_columns": [
+        "id",
+        "age",
+        "job",
+        "marital",
+        "education",
+        "default",
+        "balance",
+        "housing"
+      ],
+      "explicit_columns": [
+        "id",
+        "age",
+        "job",
+        "marital",
+        "education",
+        "default",
+        "balance",
+        "housing"
+      ],
+      "scope": {
+        "conditions": [],
+        "any_conditions": [],
+        "measure_conditions": [],
+        "ratio": null,
+        "sources": [
+          "teleai_default.bank_loan"
+        ],
+        "columns": [],
+        "unresolved": [],
+        "join_edges": []
+      },
+      "previous_scope": {
+        "conditions": [],
+        "any_conditions": [],
+        "measure_conditions": [],
+        "ratio": null,
+        "sources": [],
+        "columns": [],
+        "unresolved": [],
+        "join_edges": []
+      },
+      "chart": false,
+      "kind": null,
+      "calculation": false,
+      "operations": [],
+      "metadata_kind": "columns",
+      "catalog_discovery_source": "",
+      "catalog_discovery_schema": "",
+      "profile_kind": null,
+      "preview_limit": 0,
+      "data_load": false,
+      "whole_row_count": false,
+      "current_result_only": false,
+      "fresh_source_required": false,
+      "requested_result_rows": null,
+      "requested_join": false,
+      "join": false,
+      "join_how": null,
+      "statistical_kind": null,
+      "latest_per_key_spec": null,
+      "row_preview_spec": null,
+      "chart_spec_requested": false,
+      "value_list_requested": false,
+      "operation_pending": false,
+      "schema_semantic": false,
+      "outlier_spec": null,
+      "outlier_column": null,
+      "time_series_frequency": null,
+      "histogram_bins": null,
+      "chart_cumulative": false,
+      "processed": [
+        "10c0acef-bdce-4cc1-b845-7fbf14f0b09d"
+      ],
+      "sent_calls": [
+        "10c0acef-bdce-4cc1-b845-7fbf14f0b09d"
+      ],
+      "evidence_ids": [],
+      "artifact_ids": [],
+      "failed": {},
+      "failed_signatures": {},
+      "attempts": 0,
+      "model_calls": 3,
+      "model_seconds": 27.029225876001874,
+      "remote_query_ids": [],
+      "remote_query_evidence": {},
+      "columns": [],
+      "preview_evidence": null,
+      "outlier_aggregate_evidence": {},
+      "count_rate_evidence": null,
+      "count_rate_layout": null,
+      "count_rate_group_column": null,
+      "winsor_evidence": null,
+      "winsor_spec": null,
+      "winsor_column": null,
+      "pivot_evidence": null,
+      "pivot_requested": false,
+      "pivot_index_columns": [],
+      "pivot_column_columns": [],
+      "pivot_conditions": [],
+      "pivot_margins_name": "전체",
+      "pivot_derived_bins": [],
+      "group_summary_requested": false,
+      "group_summary_columns": [],
+      "group_summary_metrics": [],
+      "group_summary_conditions": [],
+      "group_summary_evidence": null,
+      "remote_result_requested": false,
+      "accounted_model_failures": 0,
+      "accounted_model_failure_seconds": 0.0,
+      "model_retries": 0,
+      "accounted_aux_calls": 3,
+      "accounted_aux_seconds": 27.029225876001874,
+      "_new_model_failure_seconds": 0.0,
+      "requested_subject": {},
+      "goal": {
+        "objective": "bank_loan 컬럼들을 보여줘",
+        "mode": "execute",
+        "source_reference": "explicit",
+        "sources": [
+          "teleai_default.bank_loan"
+        ],
+        "columns": [
+          "id",
+          "age",
+          "job",
+          "marital",
+          "education",
+          "default",
+          "balance",
+          "housing"
+        ],
+        "conditions": [],
+        "any_conditions": [],
+        "measure_conditions": [],
+        "ratio": null,
+        "current_result_only": false,
+        "fresh_source_required": false,
+        "question": "",
+        "tasks": [
+          {
+            "capability": "metadata",
+            "options": {
+              "kind": "columns"
+            }
+          }
+        ]
+      },
+      "goal_version": 1,
+      "explanation_only": false,
+      "goal_question": "",
+      "discovery_progress": {
+        "0028eb9f65134f181f9985e73541ed925e48f162b703803dc2649c787d4c7183": {
+          "tool": "inspect_table_context",
+          "version": "538e5a5f4333d5ade08cc54cb128936b4c601970a279ce17e76f1dd0ae8d6993",
+          "observation": "e99bbde3b0a7a59da15d333bb0bf64da89aa88f504dbd23e569e7b39cebe8a7e",
+          "count": 1
+        }
+      },
+      "schema_subject": {
+        "table": "teleai_default.bank_loan",
+        "authority": "saved_snapshot",
+        "schema_fingerprint": "cfba026bd6e2f7e7abfaea70da69b9d2ead26c1fd72cb8535a1fa71e8cdc13dc",
+        "selection_at_observation": ""
+      },
+      "metadata_evidence": {
+        "table": "teleai_default.bank_loan",
+        "kind": "columns",
+        "columns": [
+          "id",
+          "age",
+          "job",
+          "marital",
+          "education",
+          "default",
+          "balance",
+          "housing",
+          "loan",
+          "contact",
+          "day",
+          "month",
+          "duration",
+          "campaign",
+          "pdays",
+          "previous",
+          "poutcome",
+          "y"
+        ],
+        "schema": [
+          {
+            "name": "id",
+            "dtype": "bigint"
+          },
+          {
+            "name": "age",
+            "dtype": "bigint"
+          },
+          {
+            "name": "job",
+            "dtype": "longtext"
+          },
+          {
+            "name": "marital",
+            "dtype": "longtext"
+          },
+          {
+            "name": "education",
+            "dtype": "longtext"
+          },
+          {
+            "name": "default",
+            "dtype": "longtext"
+          },
+          {
+            "name": "balance",
+            "dtype": "bigint"
+          },
+          {
+            "name": "housing",
+            "dtype": "longtext"
+          },
+          {
+            "name": "loan",
+            "dtype": "longtext"
+          },
+          {
+            "name": "contact",
+            "dtype": "longtext"
+          },
+          {
+            "name": "day",
+            "dtype": "bigint"
+          },
+          {
+            "name": "month",
+            "dtype": "longtext"
+          },
+          {
+            "name": "duration",
+            "dtype": "bigint"
+          },
+          {
+            "name": "campaign",
+            "dtype": "bigint"
+          },
+          {
+            "name": "pdays",
+            "dtype": "bigint"
+          },
+          {
+            "name": "previous",
+            "dtype": "bigint"
+          },
+          {
+            "name": "poutcome",
+            "dtype": "longtext"
+          },
+          {
+            "name": "y",
+            "dtype": "bigint"
+          }
+        ],
+        "selected_columns": [],
+        "authority": "saved_snapshot",
+        "type_authority": null,
+        "scope": "저장된 스키마 스냅샷입니다. observed_at과 freshness를 함께 확인해야 합니다.",
+        "schema_changed": false
+      },
+      "stop_reason": null,
+      "selection_at_confirmation": ""
+    }
+  },
+  "run_id": "46234fe42fed4aa09ae0a1fdde066dbd",
+  "run": [
+    {
+      "time": "2026-10-06T13:57:14.614172+00:00",
+      "event": "run_started",
+      "run_id": "46234fe42fed4aa09ae0a1fdde066dbd",
+      "instance_id": "f41035060e49",
+      "pid": 35294,
+      "runtime": {
+        "revision_at_first_runtime": "febd34ae5cbbfbcc7023ea8e0412b84572cd7763",
+        "packages": {
+          "langchain": "1.4.0",
+          "langchain-core": "1.6.2",
+          "langgraph": "1.2.11",
+          "streamlit": "1.63.0",
+          "sqlglot": "30.18.0"
+        },
+        "python_version": "3.11.13",
+        "identity_captured_at": "2026-10-06T11:24:19.087371+00:00",
+        "route": "langgraph-v1",
+        "model_class": "ChatOllama",
+        "require_remote_approval": false,
+        "loaded_delivery_guard": "45c393f977353fe9",
+        "data_backend": "mysql",
+        "intent_mode": "llm",
+        "goal_version": 1,
+        "goal_model": "qwen3:8b",
+        "planner_model": "qwen3:8b"
+      },
+      "operation": "submit",
+      "process_peak_rss_bytes": 343588864
+    },
+    {
+      "time": "2026-10-06T13:57:14.619454+00:00",
+      "event": "goal_interpretation_started",
+      "run_id": "46234fe42fed4aa09ae0a1fdde066dbd",
+      "instance_id": "f41035060e49",
+      "pid": 35294,
+      "request_id": "a7bed39f-6f3b-45ae-a761-f37d2e0dca5f",
+      "origin": "llm",
+      "goal_version": 1
+    },
+    {
+      "time": "2026-10-06T13:57:14.620229+00:00",
+      "event": "model_payload_budget",
+      "run_id": "46234fe42fed4aa09ae0a1fdde066dbd",
+      "instance_id": "f41035060e49",
+      "pid": 35294,
+      "payload_bytes": 10916,
+      "payload_bytes_before_projection": 10916,
+      "template_headroom": 640,
+      "input_budget_units": 14336,
+      "output_reserved": 2048,
+      "context_window": 16384,
+      "tool_count": 0,
+      "message_count": 1,
+      "older_turns_compacted": false,
+      "within_budget": true,
+      "observations_compacted": false,
+      "schema_compacted": false,
+      "system_catalog_compacted": false,
+      "tool_menu_compacted": false,
+      "minimal_discovery_menu": false,
+      "reasoning_compacted": false,
+      "minimal_catalog": false,
+      "builtin_instructions_compacted": false,
+      "components": {
+        "system_bytes": 6661,
+        "message_content_bytes": 3647,
+        "tool_calls_bytes": 0,
+        "reasoning_bytes": 0,
+        "tool_schema_bytes": 0,
+        "tool_names": []
+      },
+      "measurement": "conservative_utf8_bytes_not_actual_token_count"
+    },
+    {
+      "time": "2026-10-06T13:57:31.567803+00:00",
+      "event": "goal_source_reference_audited",
+      "run_id": "46234fe42fed4aa09ae0a1fdde066dbd",
+      "instance_id": "f41035060e49",
+      "pid": 35294,
+      "request_id": "a7bed39f-6f3b-45ae-a761-f37d2e0dca5f",
+      "reference": "explicit"
+    },
+    {
+      "time": "2026-10-06T13:57:31.568651+00:00",
+      "event": "goal_semantic_review_started",
+      "run_id": "46234fe42fed4aa09ae0a1fdde066dbd",
+      "instance_id": "f41035060e49",
+      "pid": 35294,
+      "request_id": "a7bed39f-6f3b-45ae-a761-f37d2e0dca5f"
+    },
+    {
+      "time": "2026-10-06T13:57:31.569307+00:00",
+      "event": "model_payload_budget",
+      "run_id": "46234fe42fed4aa09ae0a1fdde066dbd",
+      "instance_id": "f41035060e49",
+      "pid": 35294,
+      "payload_bytes": 11508,
+      "payload_bytes_before_projection": 11508,
+      "template_headroom": 640,
+      "input_budget_units": 14336,
+      "output_reserved": 2048,
+      "context_window": 16384,
+      "tool_count": 0,
+      "message_count": 1,
+      "older_turns_compacted": false,
+      "within_budget": true,
+      "observations_compacted": false,
+      "schema_compacted": false,
+      "system_catalog_compacted": false,
+      "tool_menu_compacted": false,
+      "minimal_discovery_menu": false,
+      "reasoning_compacted": false,
+      "minimal_catalog": false,
+      "builtin_instructions_compacted": false,
+      "components": {
+        "system_bytes": 6661,
+        "message_content_bytes": 4171,
+        "tool_calls_bytes": 0,
+        "reasoning_bytes": 0,
+        "tool_schema_bytes": 0,
+        "tool_names": []
+      },
+      "measurement": "conservative_utf8_bytes_not_actual_token_count"
+    },
+    {
+      "time": "2026-10-06T13:57:41.654885+00:00",
+      "event": "goal_interpretation_completed",
+      "run_id": "46234fe42fed4aa09ae0a1fdde066dbd",
+      "instance_id": "f41035060e49",
+      "pid": 35294,
+      "request_id": "a7bed39f-6f3b-45ae-a761-f37d2e0dca5f",
+      "origin": "llm",
+      "mode": "execute",
+      "capabilities": [
+        "metadata"
+      ],
+      "attempts": 2,
+      "goal_version": 1
+    },
+    {
+      "time": "2026-10-06T13:57:41.661000+00:00",
+      "event": "recovery_transition",
+      "run_id": "46234fe42fed4aa09ae0a1fdde066dbd",
+      "instance_id": "f41035060e49",
+      "pid": 35294,
+      "request_id": "a7bed39f-6f3b-45ae-a761-f37d2e0dca5f",
+      "tool": "inspect_table_context"
+    },
+    {
+      "time": "2026-10-06T13:57:41.667180+00:00",
+      "event": "tool_started",
+      "run_id": "46234fe42fed4aa09ae0a1fdde066dbd",
+      "instance_id": "f41035060e49",
+      "pid": 35294,
+      "tool": "inspect_table_context"
+    },
+    {
+      "time": "2026-10-06T13:57:41.669596+00:00",
+      "event": "tool_completed",
+      "run_id": "46234fe42fed4aa09ae0a1fdde066dbd",
+      "instance_id": "f41035060e49",
+      "pid": 35294,
+      "tool": "inspect_table_context",
+      "status": "ready",
+      "error_code": null,
+      "elapsed_seconds": 0.002,
+      "applied_corrections": []
+    },
+    {
+      "time": "2026-10-06T13:57:41.672792+00:00",
+      "event": "schema_subject_confirmed",
+      "run_id": "46234fe42fed4aa09ae0a1fdde066dbd",
+      "instance_id": "f41035060e49",
+      "pid": 35294,
+      "request_id": "a7bed39f-6f3b-45ae-a761-f37d2e0dca5f",
+      "table": "teleai_default.bank_loan",
+      "authority": "saved_snapshot"
+    },
+    {
+      "time": "2026-10-06T13:57:41.673321+00:00",
+      "event": "completion_checked",
+      "run_id": "46234fe42fed4aa09ae0a1fdde066dbd",
+      "instance_id": "f41035060e49",
+      "pid": 35294,
+      "request_id": "a7bed39f-6f3b-45ae-a761-f37d2e0dca5f",
+      "status": "complete",
+      "reason": null,
+      "attempts": 0,
+      "required_capabilities": [
+        "metadata"
+      ],
+      "missing_capabilities": [],
+      "model_calls": 3,
+      "tool_calls": 1,
+      "model_seconds": 27.029,
+      "dataset_ids": [],
+      "artifact_ids": []
+    },
+    {
+      "time": "2026-10-06T13:57:41.675476+00:00",
+      "event": "run_completed",
+      "run_id": "46234fe42fed4aa09ae0a1fdde066dbd",
+      "instance_id": "f41035060e49",
+      "pid": 35294,
+      "status": "answered",
+      "elapsed_seconds": 27.062,
+      "process_peak_rss_bytes": 343588864,
+      "frame_cache_bytes": 0
+    },
+    {
+      "time": "2026-10-06T13:57:41.675541+00:00",
+      "event": "turn_slo",
+      "run_id": "46234fe42fed4aa09ae0a1fdde066dbd",
+      "instance_id": "f41035060e49",
+      "pid": 35294,
+      "elapsed_seconds": 27.062,
+      "limit": 180.0,
+      "status": "ok"
+    }
+  ],
+  "requested_prompt": "bank_loan 컬럼들을 보여줘",
+  "current_matches_run": true,
+  "request_checkpoint_verified": true
+}

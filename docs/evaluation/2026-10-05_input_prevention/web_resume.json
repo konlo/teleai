@@ -1,0 +1,87 @@
+{
+  "report_version": 1,
+  "found": true,
+  "run_id": "97424e250ace4c98b6521d07a7fca48b",
+  "log_integrity": {
+    "malformed_lines": 0,
+    "bounded_read": false,
+    "unreadable_files": 0
+  },
+  "time_utc": "2026-10-05T09:31:04.989761+00:00",
+  "instance_id": "ecc50f5420e6",
+  "pid": 11020,
+  "runtime": {
+    "route": "langgraph-v1",
+    "model_class": "ChatOllama",
+    "data_backend": "mysql",
+    "revision_at_first_runtime": "febd34ae5cbbfbcc7023ea8e0412b84572cd7763",
+    "loaded_delivery_guard": "0b31d473d77d2dc4",
+    "require_remote_approval": false,
+    "python_version": "3.11.13",
+    "packages": {
+      "langchain": "1.4.0",
+      "langchain-core": "1.6.2",
+      "langgraph": "1.2.11",
+      "streamlit": "1.63.0",
+      "sqlglot": "30.18.0"
+    }
+  },
+  "status": "answered",
+  "elapsed_seconds": 32.249,
+  "last_event": "turn_slo",
+  "flags": [
+    "NO_TOOL_EXECUTION_OBSERVED"
+  ],
+  "model_calls": 1,
+  "input_budget": {
+    "payload_bytes": 10549,
+    "payload_bytes_before_projection": 23161,
+    "template_headroom": 1088,
+    "input_budget_units": 12288,
+    "output_reserved": 4096,
+    "context_window": 16384,
+    "tool_count": 2,
+    "message_count": 4,
+    "within_budget": true,
+    "older_turns_compacted": true,
+    "schema_compacted": true,
+    "system_catalog_compacted": true,
+    "tool_menu_compacted": true,
+    "minimal_discovery_menu": true,
+    "reasoning_compacted": true,
+    "observations_compacted": false,
+    "components": {
+      "system_bytes": 5797,
+      "message_content_bytes": 3018,
+      "tool_calls_bytes": 143,
+      "reasoning_bytes": 0,
+      "tool_schema_bytes": 762,
+      "tool_names": [
+        "search_analysis_tools",
+        "read_analysis_skill"
+      ]
+    },
+    "measurement": "conservative_utf8_bytes_not_actual_token_count"
+  },
+  "proposed_tool_calls": 0,
+  "local_tools_started": {},
+  "local_tools_rejected": {},
+  "last_tool_events": [],
+  "remote": {
+    "started": 0,
+    "finished": 0,
+    "states": {},
+    "cached_receipts": 0
+  },
+  "completion": {
+    "status": null,
+    "reason": null,
+    "required_capabilities": [],
+    "missing_capabilities": [],
+    "attempts": 0
+  },
+  "recovery_replans": 0,
+  "deferred_reply_blocks": 0,
+  "error_count": 0,
+  "errors": []
+}

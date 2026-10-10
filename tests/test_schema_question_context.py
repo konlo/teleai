@@ -130,7 +130,7 @@ class SchemaQuestionContextTests(unittest.TestCase):
                 self.assertFalse(proof['schema_changed'])
                 result=r.submit('lab.events table schema의 data type 알려줘')
                 self.assertEqual(result['status'],'answered',result)
-                self.assertIn('captured_on: date',result['text'])
+                self.assertIn('| captured_on | date |',result['text'])
                 self.assertIn('현재 DB 메타데이터',result['text'])
                 for bad in [dict(context,training_status='trained'),
                             dict(context,observed_at='2020-01-01T00:00:00+00:00'),

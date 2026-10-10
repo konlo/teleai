@@ -1,0 +1,392 @@
+{
+  "generated_at": "2026-10-06T12:17:55.335246+09:00",
+  "verdict": "Reproduced failure batch fixed and retested; unrestricted production NO-GO",
+  "method": "Actual browser form submission, UI observations/PNG screenshots, matching run/request IDs, DB oracles for bank counts/schema, receipt/count-preserving checks for existing large cached aggregate. No direct runtime submissions for web cases.",
+  "scope": "15 representative behaviors retried at their respective fixing stages, not15 independent final-version cold-start trials. Latest full build directly retested named rows, omitted-table columns, full scatter and new5-bin histogram.",
+  "server": {
+    "url": "http://127.0.0.1:8504/Telly?conversation=0728dee0-d555-4aa2-853b-1101679346da",
+    "pid": 29590,
+    "backend": "mysql",
+    "goal_model": "qwen3:8b",
+    "planner_model": "qwen3:8b",
+    "model_config_saved_to_ignored_local_env": true,
+    "credentials_and_backend_env_unchanged": true
+  },
+  "cases": [
+    {
+      "id": "01",
+      "kind": "inventory",
+      "prompt": "어떤 데이타를 볼 수 있지 ?",
+      "verdict": "PASS",
+      "checked_output": "7 tables",
+      "run_id": "3b8e41cf1c4845b4aa3a9be2cf588544",
+      "elapsed_seconds": 20.005,
+      "model_calls": 1,
+      "capabilities": [
+        "table_list"
+      ],
+      "source_reference": "legacy_goal",
+      "execution_sources": [
+        "information_schema.tables"
+      ],
+      "source_audits": 0,
+      "goal_rejections": 0,
+      "remote_queries_started": 1,
+      "evidence": "01.json"
+    },
+    {
+      "id": "02b",
+      "kind": "dataset fields",
+      "prompt": "은행 대출 관련 데이타를 보고 싶은데 어떤 항목들을 볼 수 있지 ?",
+      "verdict": "PASS",
+      "checked_output": "18 bank_loan fields",
+      "run_id": "bef16b80ebbe4e449084cb9eeb23c897",
+      "elapsed_seconds": 20.495,
+      "model_calls": 2,
+      "capabilities": [
+        "metadata"
+      ],
+      "source_reference": "legacy_goal",
+      "execution_sources": [
+        "teleai_default.bank_loan"
+      ],
+      "source_audits": 0,
+      "goal_rejections": 0,
+      "remote_queries_started": 0,
+      "evidence": "02b.json"
+    },
+    {
+      "id": "03b",
+      "kind": "age histogram",
+      "prompt": "age에 대한 histogram을 보여줘",
+      "verdict": "PASS",
+      "checked_output": "750000 population",
+      "run_id": "77646ecff22046d4810fcbe143b17689",
+      "elapsed_seconds": 15.602,
+      "model_calls": 1,
+      "capabilities": [
+        "chart"
+      ],
+      "source_reference": "legacy_goal",
+      "execution_sources": [
+        "teleai_default.bank_loan"
+      ],
+      "source_audits": 0,
+      "goal_rejections": 0,
+      "remote_queries_started": 0,
+      "evidence": "03b.json"
+    },
+    {
+      "id": "04",
+      "kind": "category values",
+      "prompt": "education은 어떤 값들로 되어 있지 ?",
+      "verdict": "PASS",
+      "checked_output": "four education values",
+      "run_id": "456783e3a246411eaaa0f9fdbea736ed",
+      "elapsed_seconds": 14.541,
+      "model_calls": 1,
+      "capabilities": [
+        "value_list"
+      ],
+      "source_reference": "legacy_goal",
+      "execution_sources": [
+        "teleai_default.bank_loan"
+      ],
+      "source_audits": 0,
+      "goal_rejections": 0,
+      "remote_queries_started": 0,
+      "evidence": "04.json"
+    },
+    {
+      "id": "05",
+      "kind": "ellipsis histogram",
+      "prompt": "histogram을 그려줘",
+      "verdict": "PASS",
+      "checked_output": "education frequencies, not age",
+      "run_id": "e2f48514758b4b17829843f39a23648c",
+      "elapsed_seconds": 15.234,
+      "model_calls": 1,
+      "capabilities": [
+        "chart"
+      ],
+      "source_reference": "legacy_goal",
+      "execution_sources": [
+        "teleai_default.bank_loan"
+      ],
+      "source_audits": 0,
+      "goal_rejections": 0,
+      "remote_queries_started": 0,
+      "evidence": "05.json"
+    },
+    {
+      "id": "06q_final",
+      "kind": "conjunctive primary filter",
+      "prompt": "education이 primary 이고 age가 30~40인 사람들을 시각화 해줘",
+      "verdict": "PASS",
+      "checked_output": "27439",
+      "run_id": "83ce2b3b65f14cf89f82ddcfe60dcbdc",
+      "elapsed_seconds": 127.248,
+      "model_calls": 2,
+      "capabilities": [
+        "chart"
+      ],
+      "source_reference": "legacy_goal",
+      "execution_sources": [
+        "teleai_default.bank_loan"
+      ],
+      "source_audits": 0,
+      "goal_rejections": 0,
+      "remote_queries_started": 1,
+      "evidence": "06q_final.json"
+    },
+    {
+      "id": "07r",
+      "kind": "range and multiple categories",
+      "prompt": "education이 primary과 secondary 이고 age가 30~40인 사람들을 시각화 해줘",
+      "verdict": "PASS",
+      "checked_output": "208699",
+      "run_id": "3c211e152dc1424bb29f1da3eb44f405",
+      "elapsed_seconds": 50.43,
+      "model_calls": 2,
+      "capabilities": [
+        "chart"
+      ],
+      "source_reference": "legacy_goal",
+      "execution_sources": [
+        "teleai_default.bank_loan"
+      ],
+      "source_audits": 0,
+      "goal_rejections": 0,
+      "remote_queries_started": 1,
+      "evidence": "07r.json"
+    },
+    {
+      "id": "08",
+      "kind": "wide schema switch",
+      "prompt": "alibaba_ssd column list 보여줘",
+      "verdict": "PASS",
+      "checked_output": "107 fields",
+      "run_id": "ce352265263d4361babec8742b144dfc",
+      "elapsed_seconds": 26.398,
+      "model_calls": 2,
+      "capabilities": [
+        "metadata"
+      ],
+      "source_reference": "legacy_goal",
+      "execution_sources": [
+        "teleai_default.alibaba_ssd"
+      ],
+      "source_audits": 0,
+      "goal_rejections": 0,
+      "remote_queries_started": 0,
+      "evidence": "08.json"
+    },
+    {
+      "id": "09b",
+      "kind": "large cached distribution",
+      "prompt": "n_1 column의 데이타 분포를 보여줘",
+      "verdict": "PASS",
+      "checked_output": "182673242 preserved frequency sum; unrestricted Y",
+      "run_id": "f23ee9e8bf8341bcbc0bd737f544147e",
+      "elapsed_seconds": 27.244,
+      "model_calls": 2,
+      "capabilities": [
+        "chart"
+      ],
+      "source_reference": "legacy_goal",
+      "execution_sources": [
+        "teleai_default.alibaba_ssd"
+      ],
+      "source_audits": 0,
+      "goal_rejections": 0,
+      "remote_queries_started": 0,
+      "evidence": "09b.json"
+    },
+    {
+      "id": "10b",
+      "kind": "Y-axis follow-up",
+      "prompt": "y축을 10000으로해줘",
+      "verdict": "PASS",
+      "checked_output": "same dataset/counts; Y maximum10000",
+      "run_id": "092908bc5cc14d91bd0ddc8d01b6bc73",
+      "elapsed_seconds": 48.312,
+      "model_calls": 3,
+      "capabilities": [
+        "chart_adjust"
+      ],
+      "source_reference": "legacy_goal",
+      "execution_sources": [
+        "teleai_default.alibaba_ssd"
+      ],
+      "source_audits": 0,
+      "goal_rejections": 1,
+      "remote_queries_started": 0,
+      "evidence": "10b.json"
+    },
+    {
+      "id": "11",
+      "kind": "row 10 phrasing",
+      "prompt": "stormtrooper table row 10개 보여줘",
+      "verdict": "PASS",
+      "checked_output": "10 stormtrooper rows,13 columns",
+      "run_id": "a7b09d27423244bb9174e3fbe1930517",
+      "elapsed_seconds": 41.961,
+      "model_calls": 3,
+      "capabilities": [
+        "row_preview"
+      ],
+      "source_reference": "legacy_goal",
+      "execution_sources": [
+        "teleai_default.stormtrooper"
+      ],
+      "source_audits": 0,
+      "goal_rejections": 1,
+      "remote_queries_started": 0,
+      "evidence": "11.json"
+    },
+    {
+      "id": "13c",
+      "kind": "10 row phrasing",
+      "prompt": "stormtrooper 테이블에서 10개 row를 표로 보여줘",
+      "verdict": "PASS",
+      "checked_output": "10 stormtrooper rows after latest reference audit",
+      "run_id": "1382170dd94d4329aa4ccb7b508de5b1",
+      "elapsed_seconds": 24.04,
+      "model_calls": 4,
+      "capabilities": [
+        "row_preview"
+      ],
+      "source_reference": "explicit",
+      "execution_sources": [
+        "teleai_default.stormtrooper"
+      ],
+      "source_audits": 1,
+      "goal_rejections": 1,
+      "remote_queries_started": 0,
+      "evidence": "13c.json"
+    },
+    {
+      "id": "12c",
+      "kind": "omitted table with chart prohibition",
+      "prompt": "테이블의 column 다시 보여줘. 그림은 그리지 마",
+      "verdict": "PASS",
+      "checked_output": "13 stormtrooper fields, no chart; original bank_loan retained",
+      "run_id": "f08f34e362e24b04ad4f51f71bf68cea",
+      "elapsed_seconds": 47.648,
+      "model_calls": 5,
+      "capabilities": [
+        "metadata"
+      ],
+      "source_reference": "previous_analysis",
+      "execution_sources": [
+        "teleai_default.stormtrooper"
+      ],
+      "source_audits": 1,
+      "goal_rejections": 2,
+      "remote_queries_started": 0,
+      "evidence": "12c.json"
+    },
+    {
+      "id": "14",
+      "kind": "whole source scatter",
+      "prompt": "bank_loan 전체 데이터에 대해서 age와 balance scatter plot으로 그려줘",
+      "verdict": "PASS",
+      "checked_output": "750000 rows,132613 exact unique coordinates, x age/y balance",
+      "run_id": "81eb8d3800ff43f683828d17327d9c39",
+      "elapsed_seconds": 35.539,
+      "model_calls": 3,
+      "capabilities": [
+        "chart"
+      ],
+      "source_reference": "explicit",
+      "execution_sources": [
+        "teleai_default.bank_loan"
+      ],
+      "source_audits": 1,
+      "goal_rejections": 0,
+      "remote_queries_started": 0,
+      "evidence": "14.json"
+    },
+    {
+      "id": "15",
+      "kind": "new histogram bins",
+      "prompt": "age histogram을 5개 구간으로 그려줘",
+      "verdict": "PASS",
+      "checked_output": "5 bins,750000 total",
+      "run_id": "5cf1ac15c8124330875d4eceb7a80443",
+      "elapsed_seconds": 32.449,
+      "model_calls": 2,
+      "capabilities": [
+        "chart"
+      ],
+      "source_reference": "explicit",
+      "execution_sources": [
+        "teleai_default.bank_loan"
+      ],
+      "source_audits": 0,
+      "goal_rejections": 0,
+      "remote_queries_started": 0,
+      "evidence": "15.json"
+    }
+  ],
+  "intermediate_false_completions_retained": [
+    {
+      "evidence": "06.json",
+      "problem": "gemma omitted primary and treated30~40 as IN endpoints; incorrect51016 output"
+    },
+    {
+      "evidence": "09.json",
+      "problem": "cached clipped Y image used for a fresh unrestricted distribution"
+    },
+    {
+      "evidence": "12.json",
+      "problem": "stormtrooper follow-up reverted to bank_loan"
+    },
+    {
+      "evidence": "12b_final.json",
+      "problem": "reference field alone did not stop the model from choosing selected_dataset"
+    }
+  ],
+  "intermediate_stale_checkpoint_capture": {
+    "evidence": "13.json",
+    "problem": "source reference repair budget overflow before new checkpoint; prior current state is not its result"
+  },
+  "preservation": {
+    "baseline_assets": 36,
+    "final_assets": 47,
+    "missing": [],
+    "changed_metadata_or_payload_sha256": [],
+    "selection_unchanged": true,
+    "added_assets": 11
+  },
+  "verification": {
+    "unit_tests_run": 628,
+    "unit_tests_passed": 624,
+    "unit_tests_skipped": 4,
+    "unit_evidence": "unit_audit_final.log",
+    "migration_tests_passed": 137,
+    "migration_evidence": "migration_audit_final.log",
+    "boundary_and_goal_budget_tests_passed": 38,
+    "boundary_evidence": "reference_audit_verified.log",
+    "syntax_and_git_diff_check": "PASS"
+  },
+  "limitations": [
+    "One existing local MySQL conversation with durable caches; not company Databricks or a remote deployment.",
+    "Large cached182673242 population was not scanned again; receipt, scope and chart frequencies were verified.",
+    "Fresh conversation/cold-start, broad unseen paraphrases, advanced multi-output EDA and generated Python autonomy require further qualification.",
+    "DeepEval/Spider2 official benchmark scores not produced in this task.",
+    "Same-model semantic review alone previously accepted false goals; independent source reading reduces the observed failure but is not a guarantee of all natural-language semantics.",
+    "Local Ollama latency remains material; final four user turns took24.04,47.648,35.539 and32.449 seconds."
+  ],
+  "source_sha256": {
+    "goal_schema.py": "d1c1b5a5be4b6f42a8d6a80afa321c6efd7804b3f60b463aedf0f34702a3698c",
+    "goal_contract.py": "ce63315e3ad06d8410d6db8067a475b8dfb3b53bd1e592329beb22e10e30846a",
+    "goal_interpreter.py": "bd1fd3acb2cc3d75bfe59ae2bf24ba06eaec97e42860e54ca0e796e93f22930d",
+    "conversation_context.py": "ed976d1a989880d0cfde30d8de9cf881e4b92f21d7fe06444573510eb35d06ff",
+    "dtypes.py": "3f237bbac56b37cd32f0826f334e38658f5eb7190038bfc79e20d88e138702b3",
+    "model_context.py": "e16cd64ebf11693ed72564c14b786acae7bf5326afeef0f0089f3d92c0601694",
+    "recovery.py": "3b8758ed8a19b4373639a2124452a8d46efdfc08d1f99a197a7d9681e91c1ed2",
+    "sql_recovery.py": "b44c1ce215631456178a0332ad6defcc8f0788e7975e646ecf2904ada79ab3f3",
+    "sql_preflight.py": "088501f6137354084b288ed962deab34b7a89223b8e7842b2099de179f3df56b"
+  }
+}

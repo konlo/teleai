@@ -1,0 +1,107 @@
+{
+  "result": {
+    "status": "answered",
+    "text": "요청한 분석 결과입니다.",
+    "elapsed_seconds": 0.028
+  },
+  "structural_test_only": true,
+  "model_messages": [],
+  "queries": 0,
+  "resolved_request": "여기에 time or date에 관련된 항목이 있을까 ? column들을 확인해줘\n사용자의 대상 정정: alibaba_ssd 이 테이블에서 찾아줘야지",
+  "sources": [
+    "teleai_default.alibaba_ssd"
+  ],
+  "scope": {
+    "conditions": [],
+    "any_conditions": [],
+    "sources": [
+      "teleai_default.alibaba_ssd"
+    ],
+    "join_edges": [],
+    "measure_conditions": [],
+    "ratio": null,
+    "unresolved": [],
+    "columns": []
+  },
+  "budget": [
+    {
+      "time": "2026-10-05T09:26:02.841276+00:00",
+      "event": "model_payload_budget",
+      "run_id": "bb143f20cdac488ab16910464235605d",
+      "instance_id": "0cca3110c5c8",
+      "pid": 10836,
+      "payload_bytes": 12313,
+      "payload_bytes_before_projection": 23161,
+      "template_headroom": 1344,
+      "input_budget_units": 12288,
+      "output_reserved": 4096,
+      "context_window": 16384,
+      "tool_count": 4,
+      "message_count": 4,
+      "older_turns_compacted": true,
+      "within_budget": false,
+      "observations_compacted": false,
+      "schema_compacted": true,
+      "system_catalog_compacted": true,
+      "tool_menu_compacted": true,
+      "components": {
+        "system_bytes": 5797,
+        "message_content_bytes": 3018,
+        "tool_calls_bytes": 143,
+        "reasoning_bytes": 649,
+        "tool_schema_bytes": 1849,
+        "tool_names": [
+          "search_analysis_tools",
+          "read_analysis_skill",
+          "inspect_table_context",
+          "query_databricks"
+        ]
+      },
+      "measurement": "conservative_utf8_bytes_not_actual_token_count"
+    }
+  ],
+  "root": "/var/folders/l2/tbdqdhz53rl8rj9dgv065l_c0000gn/T/telly-input-prevention-obl9jnhn",
+  "first_replay_failure": {
+    "error_id": "0b8ea24d7f7f",
+    "status": "incomplete",
+    "error_type": "ModelContextBudgetExceeded",
+    "error_category": null,
+    "text": "모델 입력과 도구 정의가 응답 공간을 포함한 한도를 넘었습니다 (오류 ID: 0b8ea24d7f7f). 현재 요청·조건·기존 결과를 보존하고 호출 전에 중단했습니다. 같은 입력을 재시도하기보다 분석 단계를 나누거나 모델 문맥 설정을 점검해야 합니다.",
+    "elapsed_seconds": 0.361
+  },
+  "final_budget": {
+    "time": "2026-10-05T09:28:50.219839+00:00",
+    "event": "model_payload_budget",
+    "run_id": "0165700ea22f4ad3b3a23ba54efa40d9",
+    "instance_id": "97166b53808a",
+    "pid": 10971,
+    "payload_bytes": 10549,
+    "payload_bytes_before_projection": 23161,
+    "template_headroom": 1088,
+    "input_budget_units": 12288,
+    "output_reserved": 4096,
+    "context_window": 16384,
+    "tool_count": 2,
+    "message_count": 4,
+    "older_turns_compacted": true,
+    "within_budget": true,
+    "observations_compacted": false,
+    "schema_compacted": true,
+    "system_catalog_compacted": true,
+    "tool_menu_compacted": true,
+    "minimal_discovery_menu": true,
+    "reasoning_compacted": true,
+    "components": {
+      "system_bytes": 5797,
+      "message_content_bytes": 3018,
+      "tool_calls_bytes": 143,
+      "reasoning_bytes": 0,
+      "tool_schema_bytes": 762,
+      "tool_names": [
+        "search_analysis_tools",
+        "read_analysis_skill"
+      ]
+    },
+    "measurement": "conservative_utf8_bytes_not_actual_token_count"
+  }
+}

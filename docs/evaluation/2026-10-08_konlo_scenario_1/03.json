@@ -1,0 +1,707 @@
+{
+  "assets": {
+    "362957e7-07ea-4139-87ed-13a6800e61c1": {
+      "kind": "dataset",
+      "metadata": {
+        "id": "362957e7-07ea-4139-87ed-13a6800e61c1",
+        "source": "information_schema.tables",
+        "columns": [
+          "TABLE_SCHEMA",
+          "TABLE_NAME",
+          "TABLE_TYPE"
+        ],
+        "rows": 7,
+        "coverage": "unknown",
+        "conditions": [],
+        "predicate_known": false,
+        "grain": "raw",
+        "aggregation": "",
+        "snapshot": "2026-10-07T15:10:20.241288+00:00",
+        "query": "SELECT table_schema, table_name, table_type FROM information_schema.tables WHERE table_schema = 'teleai_default' ORDER BY table_name LIMIT 100",
+        "parent_id": "",
+        "parent_ids": [],
+        "role": "root",
+        "root_id": "362957e7-07ea-4139-87ed-13a6800e61c1",
+        "row_selection": {}
+      },
+      "metadata_sha256": "d59b333bb219b0d8f75b205e07073edc801ae5b93e27621012fb7a97cfbd7dde",
+      "payload_sha256": "372844c886cd58f8ef309861fc6bb1a9265e5de25cd71d7493b1199d66a13318"
+    },
+    "e8ace4a0-2920-4444-b7fd-a4eb745b5a81": {
+      "kind": "dataset",
+      "metadata": {
+        "id": "e8ace4a0-2920-4444-b7fd-a4eb745b5a81",
+        "source": "teleai_default.bank_loan",
+        "columns": [
+          "age",
+          "__frequency"
+        ],
+        "rows": 78,
+        "coverage": "complete",
+        "conditions": [],
+        "predicate_known": false,
+        "grain": "aggregate",
+        "aggregation": "SELECT `age`, COUNT(*) AS `__frequency` FROM `teleai_default`.`bank_loan` WHERE NOT `age` IS NULL GROUP BY `age`",
+        "snapshot": "2026-10-07T15:11:52.730979+00:00",
+        "query": "SELECT `age`, COUNT(*) AS `__frequency` FROM `teleai_default`.`bank_loan` WHERE `age` IS NOT NULL GROUP BY `age`",
+        "parent_id": "",
+        "parent_ids": [],
+        "role": "aggregate",
+        "root_id": "",
+        "row_selection": {}
+      },
+      "metadata_sha256": "e183680106fab1065196f0921c547c71916d183d388da38182be2b7000245fe5",
+      "payload_sha256": "f3f07d3f8bffc816d7d0dc767f618f9f5b905608322edcdc2c45cbd98fc58821"
+    },
+    "0fe4b004-895c-47c7-bd1d-673a4dd6a8e6": {
+      "kind": "chart",
+      "metadata": {
+        "id": "0fe4b004-895c-47c7-bd1d-673a4dd6a8e6",
+        "dataset_id": "e8ace4a0-2920-4444-b7fd-a4eb745b5a81",
+        "title": "age 분포",
+        "reason": "값별 빈도를 가중치로 사용했습니다. 원본 행을 펼치거나 표본을 만들지 않았습니다.",
+        "kind": "histogram",
+        "columns": [
+          "age"
+        ],
+        "scope": "빈도 합계 750,000 · complete · SELECT `age`, COUNT(*) AS `__frequency` FROM `teleai_default`.`bank_loan` WHERE `age` IS NOT NULL GROUP BY `age`",
+        "render_spec": {
+          "aggregation": "count",
+          "bins": 8,
+          "bin_counts": [
+            41846.0,
+            294174.0,
+            194626.0,
+            156552.0,
+            55423.0,
+            5273.0,
+            1968.0,
+            138.0
+          ],
+          "bin_edges": [
+            18.0,
+            27.625,
+            37.25,
+            46.875,
+            56.5,
+            66.125,
+            75.75,
+            85.375,
+            95.0
+          ],
+          "total_count": 750000,
+          "null_policy": "exclude"
+        }
+      },
+      "metadata_sha256": "f85b20fadfdf60f6cac3c16b84aa248d82ce749e7ef80f9647913124552cda95",
+      "payload_sha256": "cf56ffef0a7e3aeb3fe93310693e33aea5d3ec0776caa6cdae30ab9105eb6fd6"
+    }
+  },
+  "selection": "",
+  "current": {
+    "request_id": "0b79dc78-a51d-4d99-97c6-a855a6ac0e6e",
+    "request_text": "age 의 histogram 그려줘",
+    "status": "complete",
+    "stop_reason": null,
+    "intent_origin": "llm",
+    "goal": {
+      "objective": "age 의 histogram 그려줘",
+      "mode": "execute",
+      "source_reference": "explicit",
+      "sources": [
+        "teleai_default.bank_loan"
+      ],
+      "columns": [
+        "age"
+      ],
+      "conditions": [],
+      "any_conditions": [],
+      "measure_conditions": [],
+      "ratio": null,
+      "current_result_only": false,
+      "fresh_source_required": false,
+      "question": "",
+      "tasks": [
+        {
+          "capability": "chart",
+          "options": {
+            "kind": "histogram",
+            "axes": {
+              "x": "age"
+            }
+          }
+        }
+      ]
+    },
+    "model_calls": 3,
+    "model_seconds": 30.837418082999648,
+    "scope": {
+      "conditions": [],
+      "any_conditions": [],
+      "measure_conditions": [],
+      "ratio": null,
+      "sources": [
+        "teleai_default.bank_loan"
+      ],
+      "columns": [],
+      "unresolved": [],
+      "join_edges": []
+    },
+    "required_sources": [
+      "teleai_default.bank_loan"
+    ],
+    "required_columns": [
+      "age"
+    ],
+    "artifact_ids": [
+      "0fe4b004-895c-47c7-bd1d-673a4dd6a8e6"
+    ],
+    "evidence_ids": [
+      "e8ace4a0-2920-4444-b7fd-a4eb745b5a81"
+    ],
+    "chart_axes": {
+      "x": "age"
+    },
+    "kind": "histogram",
+    "failed": {},
+    "confirmed_analysis": {
+      "request_id": "0b79dc78-a51d-4d99-97c6-a855a6ac0e6e",
+      "request_text": "age 의 histogram 그려줘",
+      "status": "complete",
+      "intent_origin": "llm",
+      "goal_pending": false,
+      "request_started_at": 1791385881.462338,
+      "required_sources": [
+        "teleai_default.bank_loan"
+      ],
+      "required_columns": [
+        "age"
+      ],
+      "explicit_columns": [
+        "age"
+      ],
+      "scope": {
+        "conditions": [],
+        "any_conditions": [],
+        "measure_conditions": [],
+        "ratio": null,
+        "sources": [
+          "teleai_default.bank_loan"
+        ],
+        "columns": [],
+        "unresolved": [],
+        "join_edges": []
+      },
+      "previous_scope": {
+        "conditions": [],
+        "any_conditions": [],
+        "measure_conditions": [],
+        "ratio": null,
+        "sources": [
+          "teleai_default.bank_loan"
+        ],
+        "columns": [],
+        "unresolved": [],
+        "join_edges": []
+      },
+      "chart": true,
+      "kind": "histogram",
+      "calculation": false,
+      "operations": [],
+      "metadata_kind": null,
+      "catalog_discovery_source": "",
+      "catalog_discovery_schema": "",
+      "profile_kind": null,
+      "preview_limit": 0,
+      "data_load": false,
+      "whole_row_count": false,
+      "current_result_only": false,
+      "fresh_source_required": false,
+      "requested_result_rows": null,
+      "requested_join": false,
+      "join": false,
+      "join_how": null,
+      "statistical_kind": null,
+      "latest_per_key_spec": null,
+      "row_preview_spec": null,
+      "chart_spec_requested": false,
+      "value_list_requested": false,
+      "operation_pending": false,
+      "schema_semantic": false,
+      "outlier_spec": null,
+      "outlier_column": null,
+      "time_series_frequency": null,
+      "histogram_bins": null,
+      "chart_cumulative": false,
+      "processed": [
+        "fa51e3e6-1dc8-4ee0-80e3-61fef124a53b",
+        "50cbd505-8fa3-425d-a4df-4ee73b2af629",
+        "55ec276d-b985-4746-8a91-5016aefdba14"
+      ],
+      "sent_calls": [
+        "fa51e3e6-1dc8-4ee0-80e3-61fef124a53b",
+        "50cbd505-8fa3-425d-a4df-4ee73b2af629",
+        "55ec276d-b985-4746-8a91-5016aefdba14"
+      ],
+      "evidence_ids": [
+        "e8ace4a0-2920-4444-b7fd-a4eb745b5a81"
+      ],
+      "artifact_ids": [
+        "0fe4b004-895c-47c7-bd1d-673a4dd6a8e6"
+      ],
+      "failed": {},
+      "failed_signatures": {},
+      "attempts": 0,
+      "model_calls": 3,
+      "model_seconds": 30.837418082999648,
+      "remote_query_ids": [
+        "50cbd505-8fa3-425d-a4df-4ee73b2af629"
+      ],
+      "remote_query_evidence": {
+        "50cbd505-8fa3-425d-a4df-4ee73b2af629": {
+          "dataset_id": "e8ace4a0-2920-4444-b7fd-a4eb745b5a81",
+          "source": "teleai_default.bank_loan",
+          "query": "SELECT `age`, COUNT(*) AS `__frequency` FROM `teleai_default`.`bank_loan` WHERE `age` IS NOT NULL GROUP BY `age`",
+          "rows": 78,
+          "columns": [
+            "age",
+            "__frequency"
+          ],
+          "coverage": "complete"
+        }
+      },
+      "columns": [
+        "age"
+      ],
+      "schema_subject": {
+        "table": "teleai_default.bank_loan",
+        "authority": "saved_snapshot",
+        "schema_fingerprint": "cfba026bd6e2f7e7abfaea70da69b9d2ead26c1fd72cb8535a1fa71e8cdc13dc",
+        "selection_at_observation": ""
+      },
+      "preview_evidence": null,
+      "outlier_aggregate_evidence": {},
+      "count_rate_evidence": null,
+      "count_rate_layout": null,
+      "count_rate_group_column": null,
+      "winsor_evidence": null,
+      "winsor_spec": null,
+      "winsor_column": null,
+      "pivot_evidence": null,
+      "pivot_requested": false,
+      "pivot_index_columns": [],
+      "pivot_column_columns": [],
+      "pivot_conditions": [],
+      "pivot_margins_name": "전체",
+      "pivot_derived_bins": [],
+      "group_summary_requested": false,
+      "group_summary_columns": [],
+      "group_summary_metrics": [],
+      "group_summary_conditions": [],
+      "group_summary_evidence": null,
+      "remote_result_requested": true,
+      "accounted_model_failures": 0,
+      "accounted_model_failure_seconds": 0.0,
+      "model_retries": 0,
+      "accounted_aux_calls": 3,
+      "accounted_aux_seconds": 30.837418082999648,
+      "_new_model_failure_seconds": 0.0,
+      "requested_subject": {},
+      "goal": {
+        "objective": "age 의 histogram 그려줘",
+        "mode": "execute",
+        "source_reference": "explicit",
+        "sources": [
+          "teleai_default.bank_loan"
+        ],
+        "columns": [
+          "age"
+        ],
+        "conditions": [],
+        "any_conditions": [],
+        "measure_conditions": [],
+        "ratio": null,
+        "current_result_only": false,
+        "fresh_source_required": false,
+        "question": "",
+        "tasks": [
+          {
+            "capability": "chart",
+            "options": {
+              "kind": "histogram",
+              "axes": {
+                "x": "age"
+              }
+            }
+          }
+        ]
+      },
+      "goal_version": 1,
+      "explanation_only": false,
+      "goal_question": "",
+      "chart_axes": {
+        "x": "age"
+      },
+      "categorical_distribution": false,
+      "plan": {
+        "source": "teleai_default.bank_loan",
+        "query": "SELECT `age`, COUNT(*) AS `__frequency` FROM `teleai_default`.`bank_loan` WHERE `age` IS NOT NULL GROUP BY `age`",
+        "reason": "age 히스토그램에 필요한 값별 빈도를 조회합니다. 원본 행 전체는 가져오지 않습니다.",
+        "value_column": "age",
+        "weight_column": "__frequency",
+        "bins": 8
+      },
+      "plan_call": "fa51e3e6-1dc8-4ee0-80e3-61fef124a53b",
+      "query_seen": "fa51e3e6-1dc8-4ee0-80e3-61fef124a53b",
+      "loaded_dataset": "e8ace4a0-2920-4444-b7fd-a4eb745b5a81",
+      "stop_reason": null,
+      "selection_at_confirmation": ""
+    }
+  },
+  "run_id": "9499e3991d974c9d94341877a4bd05db",
+  "run": [
+    {
+      "time": "2026-10-07T15:11:21.449774+00:00",
+      "event": "run_started",
+      "run_id": "9499e3991d974c9d94341877a4bd05db",
+      "instance_id": "9f56857949f3",
+      "pid": 11893,
+      "runtime": {
+        "revision_at_first_runtime": "febd34ae5cbbfbcc7023ea8e0412b84572cd7763",
+        "packages": {
+          "langchain": "1.4.0",
+          "langchain-core": "1.6.2",
+          "langgraph": "1.2.11",
+          "streamlit": "1.63.0",
+          "sqlglot": "30.18.0"
+        },
+        "python_version": "3.11.13",
+        "identity_captured_at": "2026-10-07T15:04:54.847120+00:00",
+        "route": "langgraph-v1",
+        "model_class": "ChatOllama",
+        "require_remote_approval": false,
+        "loaded_delivery_guard": "45c393f977353fe9",
+        "data_backend": "mysql",
+        "intent_mode": "llm",
+        "goal_version": 1,
+        "goal_model": "qwen3:8b",
+        "planner_model": "qwen3:8b"
+      },
+      "operation": "submit",
+      "process_peak_rss_bytes": 380305408
+    },
+    {
+      "time": "2026-10-07T15:11:21.462819+00:00",
+      "event": "goal_interpretation_started",
+      "run_id": "9499e3991d974c9d94341877a4bd05db",
+      "instance_id": "9f56857949f3",
+      "pid": 11893,
+      "request_id": "0b79dc78-a51d-4d99-97c6-a855a6ac0e6e",
+      "origin": "llm",
+      "goal_version": 1
+    },
+    {
+      "time": "2026-10-07T15:11:21.463507+00:00",
+      "event": "model_payload_budget",
+      "run_id": "9499e3991d974c9d94341877a4bd05db",
+      "instance_id": "9f56857949f3",
+      "pid": 11893,
+      "payload_bytes": 11450,
+      "payload_bytes_before_projection": 11450,
+      "template_headroom": 640,
+      "input_budget_units": 14336,
+      "output_reserved": 2048,
+      "context_window": 16384,
+      "tool_count": 0,
+      "message_count": 1,
+      "older_turns_compacted": false,
+      "within_budget": true,
+      "observations_compacted": false,
+      "schema_compacted": false,
+      "system_catalog_compacted": false,
+      "tool_menu_compacted": false,
+      "minimal_discovery_menu": false,
+      "reasoning_compacted": false,
+      "minimal_catalog": false,
+      "builtin_instructions_compacted": false,
+      "components": {
+        "system_bytes": 6661,
+        "message_content_bytes": 4129,
+        "tool_calls_bytes": 0,
+        "reasoning_bytes": 0,
+        "tool_schema_bytes": 0,
+        "tool_names": []
+      },
+      "measurement": "conservative_utf8_bytes_not_actual_token_count"
+    },
+    {
+      "time": "2026-10-07T15:11:37.898270+00:00",
+      "event": "goal_semantic_review_started",
+      "run_id": "9499e3991d974c9d94341877a4bd05db",
+      "instance_id": "9f56857949f3",
+      "pid": 11893,
+      "request_id": "0b79dc78-a51d-4d99-97c6-a855a6ac0e6e"
+    },
+    {
+      "time": "2026-10-07T15:11:37.899133+00:00",
+      "event": "model_payload_budget",
+      "run_id": "9499e3991d974c9d94341877a4bd05db",
+      "instance_id": "9f56857949f3",
+      "pid": 11893,
+      "payload_bytes": 11932,
+      "payload_bytes_before_projection": 11932,
+      "template_headroom": 640,
+      "input_budget_units": 14336,
+      "output_reserved": 2048,
+      "context_window": 16384,
+      "tool_count": 0,
+      "message_count": 1,
+      "older_turns_compacted": false,
+      "within_budget": true,
+      "observations_compacted": false,
+      "schema_compacted": false,
+      "system_catalog_compacted": false,
+      "tool_menu_compacted": false,
+      "minimal_discovery_menu": false,
+      "reasoning_compacted": false,
+      "minimal_catalog": false,
+      "builtin_instructions_compacted": false,
+      "components": {
+        "system_bytes": 6661,
+        "message_content_bytes": 4555,
+        "tool_calls_bytes": 0,
+        "reasoning_bytes": 0,
+        "tool_schema_bytes": 0,
+        "tool_names": []
+      },
+      "measurement": "conservative_utf8_bytes_not_actual_token_count"
+    },
+    {
+      "time": "2026-10-07T15:11:47.285613+00:00",
+      "event": "model_payload_budget",
+      "run_id": "9499e3991d974c9d94341877a4bd05db",
+      "instance_id": "9f56857949f3",
+      "pid": 11893,
+      "payload_bytes": 2884,
+      "payload_bytes_before_projection": 2884,
+      "template_headroom": 640,
+      "input_budget_units": 14336,
+      "output_reserved": 2048,
+      "context_window": 16384,
+      "tool_count": 0,
+      "message_count": 1,
+      "older_turns_compacted": false,
+      "within_budget": true,
+      "observations_compacted": false,
+      "schema_compacted": false,
+      "system_catalog_compacted": false,
+      "tool_menu_compacted": false,
+      "minimal_discovery_menu": false,
+      "reasoning_compacted": false,
+      "minimal_catalog": false,
+      "builtin_instructions_compacted": false,
+      "components": {
+        "system_bytes": 1101,
+        "message_content_bytes": 1536,
+        "tool_calls_bytes": 0,
+        "reasoning_bytes": 0,
+        "tool_schema_bytes": 0,
+        "tool_names": []
+      },
+      "measurement": "conservative_utf8_bytes_not_actual_token_count"
+    },
+    {
+      "time": "2026-10-07T15:11:52.318148+00:00",
+      "event": "goal_population_audited",
+      "run_id": "9499e3991d974c9d94341877a4bd05db",
+      "instance_id": "9f56857949f3",
+      "pid": 11893,
+      "request_id": "0b79dc78-a51d-4d99-97c6-a855a6ac0e6e",
+      "changed": false,
+      "condition_count": 0,
+      "alternative_count": 0
+    },
+    {
+      "time": "2026-10-07T15:11:52.323213+00:00",
+      "event": "goal_interpretation_completed",
+      "run_id": "9499e3991d974c9d94341877a4bd05db",
+      "instance_id": "9f56857949f3",
+      "pid": 11893,
+      "request_id": "0b79dc78-a51d-4d99-97c6-a855a6ac0e6e",
+      "origin": "llm",
+      "mode": "execute",
+      "capabilities": [
+        "chart"
+      ],
+      "attempts": 2,
+      "goal_version": 1
+    },
+    {
+      "time": "2026-10-07T15:11:52.327114+00:00",
+      "event": "recovery_transition",
+      "run_id": "9499e3991d974c9d94341877a4bd05db",
+      "instance_id": "9f56857949f3",
+      "pid": 11893,
+      "request_id": "0b79dc78-a51d-4d99-97c6-a855a6ac0e6e",
+      "tool": "prepare_histogram"
+    },
+    {
+      "time": "2026-10-07T15:11:52.334068+00:00",
+      "event": "tool_started",
+      "run_id": "9499e3991d974c9d94341877a4bd05db",
+      "instance_id": "9f56857949f3",
+      "pid": 11893,
+      "tool": "prepare_histogram"
+    },
+    {
+      "time": "2026-10-07T15:11:52.341553+00:00",
+      "event": "tool_completed",
+      "run_id": "9499e3991d974c9d94341877a4bd05db",
+      "instance_id": "9f56857949f3",
+      "pid": 11893,
+      "tool": "prepare_histogram",
+      "status": "planned",
+      "error_code": null,
+      "elapsed_seconds": 0.007,
+      "applied_corrections": []
+    },
+    {
+      "time": "2026-10-07T15:11:52.346163+00:00",
+      "event": "recovery_transition",
+      "run_id": "9499e3991d974c9d94341877a4bd05db",
+      "instance_id": "9f56857949f3",
+      "pid": 11893,
+      "request_id": "0b79dc78-a51d-4d99-97c6-a855a6ac0e6e",
+      "tool": "query_databricks"
+    },
+    {
+      "time": "2026-10-07T15:11:52.352510+00:00",
+      "event": "remote_query_authorized",
+      "run_id": "9499e3991d974c9d94341877a4bd05db",
+      "instance_id": "9f56857949f3",
+      "pid": 11893,
+      "tool_call_id": "50cbd505-8fa3-425d-a4df-4ee73b2af629",
+      "authorization": "automatic_read_policy"
+    },
+    {
+      "time": "2026-10-07T15:11:52.352751+00:00",
+      "event": "remote_query_started",
+      "run_id": "9499e3991d974c9d94341877a4bd05db",
+      "instance_id": "9f56857949f3",
+      "pid": 11893,
+      "ledger_status": "auto_authorized",
+      "cached_receipt": false
+    },
+    {
+      "time": "2026-10-07T15:11:52.745556+00:00",
+      "event": "remote_query_finished",
+      "run_id": "9499e3991d974c9d94341877a4bd05db",
+      "instance_id": "9f56857949f3",
+      "pid": 11893,
+      "ledger_status": "completed",
+      "status": "ready",
+      "cached_receipt": false
+    },
+    {
+      "time": "2026-10-07T15:11:52.747839+00:00",
+      "event": "remote_result_verified",
+      "run_id": "9499e3991d974c9d94341877a4bd05db",
+      "instance_id": "9f56857949f3",
+      "pid": 11893,
+      "request_id": "0b79dc78-a51d-4d99-97c6-a855a6ac0e6e",
+      "tool_call_id": "50cbd505-8fa3-425d-a4df-4ee73b2af629",
+      "dataset_id": "e8ace4a0-2920-4444-b7fd-a4eb745b5a81",
+      "rows": 78
+    },
+    {
+      "time": "2026-10-07T15:11:52.749025+00:00",
+      "event": "calculation_evidence",
+      "run_id": "9499e3991d974c9d94341877a4bd05db",
+      "instance_id": "9f56857949f3",
+      "pid": 11893,
+      "request_id": "0b79dc78-a51d-4d99-97c6-a855a6ac0e6e",
+      "dataset_id": "e8ace4a0-2920-4444-b7fd-a4eb745b5a81",
+      "source": "teleai_default.bank_loan",
+      "coverage": "complete",
+      "grain": "aggregate"
+    },
+    {
+      "time": "2026-10-07T15:11:52.749388+00:00",
+      "event": "recovery_transition",
+      "run_id": "9499e3991d974c9d94341877a4bd05db",
+      "instance_id": "9f56857949f3",
+      "pid": 11893,
+      "request_id": "0b79dc78-a51d-4d99-97c6-a855a6ac0e6e",
+      "tool": "render_histogram"
+    },
+    {
+      "time": "2026-10-07T15:11:52.750983+00:00",
+      "event": "tool_started",
+      "run_id": "9499e3991d974c9d94341877a4bd05db",
+      "instance_id": "9f56857949f3",
+      "pid": 11893,
+      "tool": "render_histogram"
+    },
+    {
+      "time": "2026-10-07T15:12:00.051895+00:00",
+      "event": "tool_completed",
+      "run_id": "9499e3991d974c9d94341877a4bd05db",
+      "instance_id": "9f56857949f3",
+      "pid": 11893,
+      "tool": "render_histogram",
+      "status": "ready",
+      "error_code": null,
+      "elapsed_seconds": 7.301,
+      "applied_corrections": []
+    },
+    {
+      "time": "2026-10-07T15:12:00.061542+00:00",
+      "event": "completion_checked",
+      "run_id": "9499e3991d974c9d94341877a4bd05db",
+      "instance_id": "9f56857949f3",
+      "pid": 11893,
+      "request_id": "0b79dc78-a51d-4d99-97c6-a855a6ac0e6e",
+      "status": "complete",
+      "reason": null,
+      "attempts": 0,
+      "required_capabilities": [
+        "remote_query",
+        "chart"
+      ],
+      "missing_capabilities": [],
+      "model_calls": 3,
+      "tool_calls": 3,
+      "model_seconds": 30.837,
+      "dataset_ids": [
+        "e8ace4a0-2920-4444-b7fd-a4eb745b5a81"
+      ],
+      "artifact_ids": [
+        "0fe4b004-895c-47c7-bd1d-673a4dd6a8e6"
+      ]
+    },
+    {
+      "time": "2026-10-07T15:12:00.065241+00:00",
+      "event": "run_completed",
+      "run_id": "9499e3991d974c9d94341877a4bd05db",
+      "instance_id": "9f56857949f3",
+      "pid": 11893,
+      "status": "answered",
+      "elapsed_seconds": 38.618,
+      "process_peak_rss_bytes": 380305408,
+      "frame_cache_bytes": 0
+    },
+    {
+      "time": "2026-10-07T15:12:00.065339+00:00",
+      "event": "turn_slo",
+      "run_id": "9499e3991d974c9d94341877a4bd05db",
+      "instance_id": "9f56857949f3",
+      "pid": 11893,
+      "elapsed_seconds": 38.618,
+      "limit": 180.0,
+      "status": "ok"
+    }
+  ],
+  "requested_prompt": "age 의 histogram 그려줘",
+  "current_matches_run": true,
+  "request_checkpoint_verified": true
+}

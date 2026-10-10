@@ -1,0 +1,27 @@
+{
+  "recorded_at": "2026-10-03T13:40:26.567396+00:00",
+  "command": ".telly_runtime/v1-venv/bin/python -m pytest tests migration -q",
+  "passed": 691,
+  "failed": 0,
+  "skipped": 4,
+  "subtests_passed": 483,
+  "seconds": 97.56,
+  "targeted": {
+    "passed": 8,
+    "subtests_passed": 4,
+    "seconds": 2.41
+  },
+  "intermediate": {
+    "passed": 687,
+    "failed": 3,
+    "skipped": 4,
+    "seconds": 95.59,
+    "cause": "suspend_analysis clears row_preview_spec to None; corrected None-safe before_step access"
+  },
+  "live_initial_repeat_failure": "Both engines repeated a LIMIT query because sampled predicate_known=False was rejected; query-provenance identity reuse corrected and final repeat_queries=0.",
+  "compileall": "pass",
+  "git_diff_check": "pass",
+  "server_health": "ok",
+  "server_pid": 21127,
+  "release_scope": "This row-preview journey is verified; broader agent GO is not established."
+}

@@ -1,0 +1,1004 @@
+{
+  "conversation": "25c61453-a01a-4ab4-8fd6-b1833680b1ec",
+  "stage": "03",
+  "run": {
+    "time": "2026-10-10T05:17:07.672242+00:00",
+    "event": "run_completed",
+    "run_id": "a5936dfc353e4bc1ae45792f409f2282",
+    "instance_id": "e12b695ee298",
+    "pid": 95036,
+    "status": "answered",
+    "elapsed_seconds": 60.396,
+    "process_peak_rss_bytes": 324173824,
+    "frame_cache_bytes": 0
+  },
+  "goal": {
+    "objective": "requested work",
+    "mode": "execute",
+    "source_reference": "previous_analysis",
+    "sources": [
+      "teleai_default.bank_loan"
+    ],
+    "columns": [
+      "education"
+    ],
+    "conditions": [
+      {
+        "column": "age",
+        "op": "ge",
+        "value": 30
+      },
+      {
+        "column": "age",
+        "op": "le",
+        "value": 40
+      },
+      {
+        "column": "education",
+        "op": "in",
+        "value": [
+          "primary",
+          "secondary"
+        ]
+      }
+    ],
+    "any_conditions": [],
+    "measure_conditions": [],
+    "ratio": null,
+    "current_result_only": false,
+    "fresh_source_required": false,
+    "question": "",
+    "tasks": [
+      {
+        "capability": "chart",
+        "options": {
+          "kind": "histogram",
+          "axes": {
+            "x": "education"
+          },
+          "legend": true,
+          "stacked": false,
+          "palette": "default"
+        }
+      }
+    ]
+  },
+  "scope": {
+    "conditions": [
+      {
+        "column": "age",
+        "op": "ge",
+        "value": 30
+      },
+      {
+        "column": "age",
+        "op": "le",
+        "value": 40
+      },
+      {
+        "column": "education",
+        "op": "in",
+        "value": [
+          "primary",
+          "secondary"
+        ]
+      }
+    ],
+    "any_conditions": [],
+    "measure_conditions": [],
+    "ratio": null,
+    "sources": [
+      "teleai_default.bank_loan"
+    ],
+    "columns": [
+      "age",
+      "education"
+    ],
+    "unresolved": [],
+    "join_edges": []
+  },
+  "model_calls": 6,
+  "sent_calls": [
+    "00b63279-64d6-4eea-999a-4c6cbe1f452a",
+    "64f596f5-b1e7-4220-a655-6922cad8d0f4",
+    "50378f2e-825a-4835-bc1c-172c4511d97a"
+  ],
+  "decision_support_bound": true,
+  "decision_support": {
+    "status": "supported",
+    "request_sha256": "a6997aa2ea7a069f3d10e828c4cc00e49a6878983b8b0bf92dc05c371c5776bf",
+    "goal_sha256": "7002a4866ea02b181b5ea0782790a68877c39aeeeae6a287bd97b0b418dbc851",
+    "bindings": [
+      {
+        "path": "/tasks/0",
+        "origin": "request",
+        "quote": "처음 보여준 10개 행의 education 분포를 빈도 막대차트로 보여줘. 처음의 age와 education 조건을 유지하고 DB를 다시 조회하지 마.",
+        "reference": ""
+      },
+      {
+        "path": "/sources/0",
+        "origin": "request",
+        "quote": "처음 보여준 10개 행의 education 분포를 빈도 막대차트로 보여줘. 처음의 age와 education 조건을 유지하고 DB를 다시 조회하지 마.",
+        "reference": ""
+      },
+      {
+        "path": "/columns/0",
+        "origin": "request",
+        "quote": "education",
+        "reference": ""
+      },
+      {
+        "path": "/conditions/0",
+        "origin": "request",
+        "quote": "처음 보여준 10개 행의 education 분포를 빈도 막대차트로 보여줘. 처음의 age와 education 조건을 유지하고 DB를 다시 조회하지 마.",
+        "reference": ""
+      },
+      {
+        "path": "/conditions/1",
+        "origin": "request",
+        "quote": "처음 보여준 10개 행의 education 분포를 빈도 막대차트로 보여줘. 처음의 age와 education 조건을 유지하고 DB를 다시 조회하지 마.",
+        "reference": ""
+      },
+      {
+        "path": "/conditions/2",
+        "origin": "request",
+        "quote": "처음 보여준 10개 행의 education 분포를 빈도 막대차트로 보여줘. 처음의 age와 education 조건을 유지하고 DB를 다시 조회하지 마.",
+        "reference": ""
+      }
+    ],
+    "linguistic_entailment_proven": false,
+    "executable_goal_sha256": "7002a4866ea02b181b5ea0782790a68877c39aeeeae6a287bd97b0b418dbc851"
+  },
+  "plan": {
+    "status": "ready",
+    "plan": {
+      "id": "041ec3e8c9714264b2e4da8370ac13b3",
+      "tasks": [
+        {
+          "id": "8785d2f28367a409e580",
+          "capability": "chart",
+          "options": {
+            "kind": "histogram",
+            "axes": {
+              "x": "education"
+            },
+            "legend": true,
+            "stacked": false,
+            "palette": "default"
+          },
+          "scope": {
+            "required_sources": [
+              "teleai_default.bank_loan"
+            ],
+            "required_columns": [
+              "education"
+            ],
+            "scope": {
+              "conditions": [
+                {
+                  "column": "age",
+                  "op": "ge",
+                  "value": 30
+                },
+                {
+                  "column": "age",
+                  "op": "le",
+                  "value": 40
+                },
+                {
+                  "column": "education",
+                  "op": "in",
+                  "value": [
+                    "primary",
+                    "secondary"
+                  ]
+                }
+              ],
+              "any_conditions": [],
+              "measure_conditions": [],
+              "ratio": null,
+              "sources": [
+                "teleai_default.bank_loan"
+              ],
+              "columns": [
+                "age",
+                "education"
+              ],
+              "unresolved": [],
+              "join_edges": []
+            },
+            "current_result_only": false,
+            "fresh_source_required": false
+          },
+          "depends_on": [],
+          "postconditions": null,
+          "verification_receipt": [
+            "43367937-1ebd-4056-a5ad-90497b25e9c3"
+          ],
+          "status": "verified",
+          "completion_contract": "chart",
+          "evidence_ids": [
+            "e367ddad-4e7e-4010-aff8-f6f85cdf45d1"
+          ],
+          "artifact_ids": [
+            "43367937-1ebd-4056-a5ad-90497b25e9c3"
+          ]
+        }
+      ],
+      "goal": {
+        "objective": "requested work",
+        "mode": "execute",
+        "source_reference": "previous_analysis",
+        "sources": [
+          "teleai_default.bank_loan"
+        ],
+        "columns": [
+          "education"
+        ],
+        "conditions": [
+          {
+            "column": "age",
+            "op": "ge",
+            "value": 30
+          },
+          {
+            "column": "age",
+            "op": "le",
+            "value": 40
+          },
+          {
+            "column": "education",
+            "op": "in",
+            "value": [
+              "primary",
+              "secondary"
+            ]
+          }
+        ],
+        "any_conditions": [],
+        "measure_conditions": [],
+        "ratio": null,
+        "current_result_only": false,
+        "fresh_source_required": false,
+        "question": "",
+        "tasks": [
+          {
+            "capability": "chart",
+            "options": {
+              "kind": "histogram",
+              "axes": {
+                "x": "education"
+              },
+              "legend": true,
+              "stacked": false,
+              "palette": "default"
+            }
+          }
+        ]
+      },
+      "status": "complete",
+      "scope_mode": "shared_goal_scope",
+      "decision_evidence": {
+        "status": "supported",
+        "request_sha256": "a6997aa2ea7a069f3d10e828c4cc00e49a6878983b8b0bf92dc05c371c5776bf",
+        "goal_sha256": "7002a4866ea02b181b5ea0782790a68877c39aeeeae6a287bd97b0b418dbc851",
+        "bindings": [
+          {
+            "path": "/tasks/0",
+            "origin": "request",
+            "quote": "처음 보여준 10개 행의 education 분포를 빈도 막대차트로 보여줘. 처음의 age와 education 조건을 유지하고 DB를 다시 조회하지 마.",
+            "reference": ""
+          },
+          {
+            "path": "/sources/0",
+            "origin": "request",
+            "quote": "처음 보여준 10개 행의 education 분포를 빈도 막대차트로 보여줘. 처음의 age와 education 조건을 유지하고 DB를 다시 조회하지 마.",
+            "reference": ""
+          },
+          {
+            "path": "/columns/0",
+            "origin": "request",
+            "quote": "education",
+            "reference": ""
+          },
+          {
+            "path": "/conditions/0",
+            "origin": "request",
+            "quote": "처음 보여준 10개 행의 education 분포를 빈도 막대차트로 보여줘. 처음의 age와 education 조건을 유지하고 DB를 다시 조회하지 마.",
+            "reference": ""
+          },
+          {
+            "path": "/conditions/1",
+            "origin": "request",
+            "quote": "처음 보여준 10개 행의 education 분포를 빈도 막대차트로 보여줘. 처음의 age와 education 조건을 유지하고 DB를 다시 조회하지 마.",
+            "reference": ""
+          },
+          {
+            "path": "/conditions/2",
+            "origin": "request",
+            "quote": "처음 보여준 10개 행의 education 분포를 빈도 막대차트로 보여줘. 처음의 age와 education 조건을 유지하고 DB를 다시 조회하지 마.",
+            "reference": ""
+          }
+        ],
+        "linguistic_entailment_proven": false,
+        "executable_goal_sha256": "7002a4866ea02b181b5ea0782790a68877c39aeeeae6a287bd97b0b418dbc851"
+      },
+      "revision": 3
+    },
+    "recent_events": [
+      {
+        "sequence": 14,
+        "kind": "plan_created",
+        "at": "2026-10-10T05:17:00.326491+00:00",
+        "revision": 1
+      },
+      {
+        "sequence": 15,
+        "kind": "task_pending",
+        "at": "2026-10-10T05:17:00.327249+00:00",
+        "task_id": "8785d2f28367a409e580",
+        "capability": "chart",
+        "revision": 1
+      },
+      {
+        "sequence": 16,
+        "kind": "plan_status_changed",
+        "at": "2026-10-10T05:17:00.327298+00:00",
+        "status": "working",
+        "stop_reason": null,
+        "revision": 1
+      },
+      {
+        "sequence": 17,
+        "kind": "tool_dispatched",
+        "at": "2026-10-10T05:17:00.340967+00:00",
+        "call_id": "00b63279-64d6-4eea-999a-4c6cbe1f452a",
+        "tool": "prepare_histogram",
+        "arguments_sha256": "7c057f1d6c1525520d39affb4273364cfc57db103580e120eb187214a1888e70",
+        "revision": 1
+      },
+      {
+        "sequence": 18,
+        "kind": "tool_dispatched",
+        "at": "2026-10-10T05:17:00.899575+00:00",
+        "call_id": "64f596f5-b1e7-4220-a655-6922cad8d0f4",
+        "tool": "query_databricks",
+        "arguments_sha256": "dcc9e3daf3563c5c6ff902b3af7d91d3e1827db39ebdd98a987cf36cea43f412",
+        "revision": 1
+      },
+      {
+        "sequence": 19,
+        "kind": "task_verified",
+        "at": "2026-10-10T05:17:07.665393+00:00",
+        "task_id": "8785d2f28367a409e580",
+        "capability": "chart",
+        "revision": 2
+      },
+      {
+        "sequence": 20,
+        "kind": "tool_dispatched",
+        "at": "2026-10-10T05:17:07.665648+00:00",
+        "call_id": "50378f2e-825a-4835-bc1c-172c4511d97a",
+        "tool": "render_histogram",
+        "arguments_sha256": "fac18c045b30d9313d8b08c5fd8f7eb1de74600182d565433c00ce3a41aa8bda",
+        "revision": 2
+      },
+      {
+        "sequence": 21,
+        "kind": "plan_status_changed",
+        "at": "2026-10-10T05:17:07.669037+00:00",
+        "status": "complete",
+        "stop_reason": null,
+        "revision": 3
+      }
+    ]
+  },
+  "datasets": [
+    {
+      "id": "8468a0a0-ab02-46e2-b359-3950faeaf6aa",
+      "source": "teleai_default.bank_loan",
+      "rows": 10,
+      "columns": [
+        "age",
+        "balance",
+        "education"
+      ],
+      "parent_id": "",
+      "digest": "41c286759e756f3757bc8380c5174d32b3ccf2c679e87e3749a01f51ad7fb411"
+    },
+    {
+      "id": "dd2b6771-b3a7-4d85-acbf-f00a4344c9e7",
+      "source": "teleai_default.bank_loan",
+      "rows": 1,
+      "columns": [
+        "average"
+      ],
+      "parent_id": "8468a0a0-ab02-46e2-b359-3950faeaf6aa",
+      "digest": "465dd3e4c206bf4740592344d94281f98560e9a458c7ec98fa15a38b037bcc75"
+    },
+    {
+      "id": "e367ddad-4e7e-4010-aff8-f6f85cdf45d1",
+      "source": "teleai_default.bank_loan",
+      "rows": 2,
+      "columns": [
+        "education",
+        "__frequency"
+      ],
+      "parent_id": "",
+      "digest": "1eec124ba9206ffff53d1b08b8362cbe979e20aca532c70b792e0171134ffed8"
+    }
+  ],
+  "selected_dataset": "",
+  "additional_queries_this_run": 1,
+  "total_queries": 2,
+  "tool_calls": 2,
+  "diagnostics": [
+    {
+      "time": "2026-10-10T05:16:07.277903+00:00",
+      "event": "run_started",
+      "run_id": "a5936dfc353e4bc1ae45792f409f2282",
+      "instance_id": "e12b695ee298",
+      "pid": 95036,
+      "runtime": {
+        "revision_at_first_runtime": "3a7206654b3d2fab7cd145893fd52970e397dd07",
+        "packages": {
+          "langchain": "1.4.0",
+          "langchain-core": "1.6.2",
+          "langgraph": "1.2.11",
+          "streamlit": "1.63.0",
+          "sqlglot": "30.18.0"
+        },
+        "python_version": "3.11.13",
+        "identity_captured_at": "2026-10-10T05:11:16.736267+00:00",
+        "route": "langgraph-v1",
+        "model_class": "ChatOllama",
+        "require_remote_approval": false,
+        "loaded_delivery_guard": "892057222e9ed9b4",
+        "data_backend": "mysql",
+        "intent_mode": "llm",
+        "goal_version": 1,
+        "goal_model": "gemma4:e4b",
+        "planner_model": "gemma4:e4b"
+      },
+      "operation": "submit",
+      "process_peak_rss_bytes": 324173824
+    },
+    {
+      "time": "2026-10-10T05:16:07.282949+00:00",
+      "event": "goal_interpretation_started",
+      "run_id": "a5936dfc353e4bc1ae45792f409f2282",
+      "instance_id": "e12b695ee298",
+      "pid": 95036,
+      "request_id": "041ec3e8c9714264b2e4da8370ac13b3",
+      "origin": "llm",
+      "goal_version": 1
+    },
+    {
+      "time": "2026-10-10T05:16:07.283739+00:00",
+      "event": "model_payload_budget",
+      "run_id": "a5936dfc353e4bc1ae45792f409f2282",
+      "instance_id": "e12b695ee298",
+      "pid": 95036,
+      "payload_bytes": 2025,
+      "payload_bytes_before_projection": 2025,
+      "template_headroom": 640,
+      "input_budget_units": 14336,
+      "output_reserved": 2048,
+      "context_window": 16384,
+      "tool_count": 0,
+      "message_count": 1,
+      "older_turns_compacted": false,
+      "within_budget": true,
+      "observations_compacted": false,
+      "schema_compacted": false,
+      "system_catalog_compacted": false,
+      "tool_menu_compacted": false,
+      "minimal_discovery_menu": false,
+      "reasoning_compacted": false,
+      "minimal_catalog": false,
+      "builtin_instructions_compacted": false,
+      "repair_history_compacted": false,
+      "components": {
+        "system_bytes": 1332,
+        "message_content_bytes": 564,
+        "tool_calls_bytes": 0,
+        "reasoning_bytes": 0,
+        "tool_schema_bytes": 0,
+        "tool_names": []
+      },
+      "measurement": "conservative_utf8_bytes_not_actual_token_count"
+    },
+    {
+      "time": "2026-10-10T05:16:09.768724+00:00",
+      "event": "goal_literal_subjects_read",
+      "run_id": "a5936dfc353e4bc1ae45792f409f2282",
+      "instance_id": "e12b695ee298",
+      "pid": 95036,
+      "request_id": "041ec3e8c9714264b2e4da8370ac13b3",
+      "candidate_count": 3,
+      "table_count": 0
+    },
+    {
+      "time": "2026-10-10T05:16:09.772562+00:00",
+      "event": "model_payload_budget",
+      "run_id": "a5936dfc353e4bc1ae45792f409f2282",
+      "instance_id": "e12b695ee298",
+      "pid": 95036,
+      "payload_bytes": 8070,
+      "payload_bytes_before_projection": 8070,
+      "template_headroom": 640,
+      "input_budget_units": 14336,
+      "output_reserved": 2048,
+      "context_window": 16384,
+      "tool_count": 0,
+      "message_count": 1,
+      "older_turns_compacted": false,
+      "within_budget": true,
+      "observations_compacted": false,
+      "schema_compacted": false,
+      "system_catalog_compacted": false,
+      "tool_menu_compacted": false,
+      "minimal_discovery_menu": false,
+      "reasoning_compacted": false,
+      "minimal_catalog": false,
+      "builtin_instructions_compacted": false,
+      "repair_history_compacted": false,
+      "components": {
+        "system_bytes": 6126,
+        "message_content_bytes": 1608,
+        "tool_calls_bytes": 0,
+        "reasoning_bytes": 0,
+        "tool_schema_bytes": 0,
+        "tool_names": []
+      },
+      "measurement": "conservative_utf8_bytes_not_actual_token_count"
+    },
+    {
+      "time": "2026-10-10T05:16:14.826138+00:00",
+      "event": "model_payload_budget",
+      "run_id": "a5936dfc353e4bc1ae45792f409f2282",
+      "instance_id": "e12b695ee298",
+      "pid": 95036,
+      "payload_bytes": 3359,
+      "payload_bytes_before_projection": 3359,
+      "template_headroom": 640,
+      "input_budget_units": 14336,
+      "output_reserved": 2048,
+      "context_window": 16384,
+      "tool_count": 0,
+      "message_count": 1,
+      "older_turns_compacted": false,
+      "within_budget": true,
+      "observations_compacted": false,
+      "schema_compacted": false,
+      "system_catalog_compacted": false,
+      "tool_menu_compacted": false,
+      "minimal_discovery_menu": false,
+      "reasoning_compacted": false,
+      "minimal_catalog": false,
+      "builtin_instructions_compacted": false,
+      "repair_history_compacted": false,
+      "components": {
+        "system_bytes": 2888,
+        "message_content_bytes": 280,
+        "tool_calls_bytes": 0,
+        "reasoning_bytes": 0,
+        "tool_schema_bytes": 0,
+        "tool_names": []
+      },
+      "measurement": "conservative_utf8_bytes_not_actual_token_count"
+    },
+    {
+      "time": "2026-10-10T05:16:17.942445+00:00",
+      "event": "goal_population_basis_rejected",
+      "run_id": "a5936dfc353e4bc1ae45792f409f2282",
+      "instance_id": "e12b695ee298",
+      "pid": 95036,
+      "request_id": "041ec3e8c9714264b2e4da8370ac13b3",
+      "attempt": 1,
+      "error_type": "ValueError",
+      "detail": "Population reference needs a CURRENT request restriction quote",
+      "basis": "source_population",
+      "quote_is_current": true,
+      "changes_filters": false
+    },
+    {
+      "time": "2026-10-10T05:16:17.942777+00:00",
+      "event": "model_payload_budget",
+      "run_id": "a5936dfc353e4bc1ae45792f409f2282",
+      "instance_id": "e12b695ee298",
+      "pid": 95036,
+      "payload_bytes": 3696,
+      "payload_bytes_before_projection": 3696,
+      "template_headroom": 704,
+      "input_budget_units": 14336,
+      "output_reserved": 2048,
+      "context_window": 16384,
+      "tool_count": 0,
+      "message_count": 2,
+      "older_turns_compacted": false,
+      "within_budget": true,
+      "observations_compacted": false,
+      "schema_compacted": false,
+      "system_catalog_compacted": false,
+      "tool_menu_compacted": false,
+      "minimal_discovery_menu": false,
+      "reasoning_compacted": false,
+      "minimal_catalog": false,
+      "builtin_instructions_compacted": false,
+      "repair_history_compacted": false,
+      "components": {
+        "system_bytes": 2888,
+        "message_content_bytes": 583,
+        "tool_calls_bytes": 0,
+        "reasoning_bytes": 0,
+        "tool_schema_bytes": 0,
+        "tool_names": []
+      },
+      "measurement": "conservative_utf8_bytes_not_actual_token_count"
+    },
+    {
+      "time": "2026-10-10T05:16:19.216230+00:00",
+      "event": "goal_population_basis_read",
+      "run_id": "a5936dfc353e4bc1ae45792f409f2282",
+      "instance_id": "e12b695ee298",
+      "pid": 95036,
+      "request_id": "041ec3e8c9714264b2e4da8370ac13b3",
+      "basis": "source_population",
+      "has_current_quote": false,
+      "changes_filters": false,
+      "filter_change_quote_verified": false
+    },
+    {
+      "time": "2026-10-10T05:16:19.216586+00:00",
+      "event": "goal_tasks_selected",
+      "run_id": "a5936dfc353e4bc1ae45792f409f2282",
+      "instance_id": "e12b695ee298",
+      "pid": 95036,
+      "request_id": "041ec3e8c9714264b2e4da8370ac13b3",
+      "mode": "execute",
+      "capabilities": [
+        "chart"
+      ],
+      "chart_kind": "histogram",
+      "metadata_kind": "",
+      "source_reference": "previous_analysis",
+      "current_result_only": false
+    },
+    {
+      "time": "2026-10-10T05:16:19.218329+00:00",
+      "event": "model_payload_budget",
+      "run_id": "a5936dfc353e4bc1ae45792f409f2282",
+      "instance_id": "e12b695ee298",
+      "pid": 95036,
+      "payload_bytes": 11088,
+      "payload_bytes_before_projection": 11088,
+      "template_headroom": 640,
+      "input_budget_units": 14336,
+      "output_reserved": 2048,
+      "context_window": 16384,
+      "tool_count": 0,
+      "message_count": 1,
+      "older_turns_compacted": false,
+      "within_budget": true,
+      "observations_compacted": false,
+      "schema_compacted": false,
+      "system_catalog_compacted": false,
+      "tool_menu_compacted": false,
+      "minimal_discovery_menu": false,
+      "reasoning_compacted": false,
+      "minimal_catalog": false,
+      "builtin_instructions_compacted": false,
+      "repair_history_compacted": false,
+      "components": {
+        "system_bytes": 7618,
+        "message_content_bytes": 2912,
+        "tool_calls_bytes": 0,
+        "reasoning_bytes": 0,
+        "tool_schema_bytes": 0,
+        "tool_names": []
+      },
+      "measurement": "conservative_utf8_bytes_not_actual_token_count"
+    },
+    {
+      "time": "2026-10-10T05:16:33.318211+00:00",
+      "event": "goal_semantic_review_started",
+      "run_id": "a5936dfc353e4bc1ae45792f409f2282",
+      "instance_id": "e12b695ee298",
+      "pid": 95036,
+      "request_id": "041ec3e8c9714264b2e4da8370ac13b3"
+    },
+    {
+      "time": "2026-10-10T05:16:33.319788+00:00",
+      "event": "model_payload_budget",
+      "run_id": "a5936dfc353e4bc1ae45792f409f2282",
+      "instance_id": "e12b695ee298",
+      "pid": 95036,
+      "payload_bytes": 12964,
+      "payload_bytes_before_projection": 12964,
+      "template_headroom": 640,
+      "input_budget_units": 14336,
+      "output_reserved": 2048,
+      "context_window": 16384,
+      "tool_count": 0,
+      "message_count": 1,
+      "older_turns_compacted": false,
+      "within_budget": true,
+      "observations_compacted": false,
+      "schema_compacted": false,
+      "system_catalog_compacted": false,
+      "tool_menu_compacted": false,
+      "minimal_discovery_menu": false,
+      "reasoning_compacted": false,
+      "minimal_catalog": false,
+      "builtin_instructions_compacted": false,
+      "repair_history_compacted": false,
+      "components": {
+        "system_bytes": 8786,
+        "message_content_bytes": 3502,
+        "tool_calls_bytes": 0,
+        "reasoning_bytes": 0,
+        "tool_schema_bytes": 0,
+        "tool_names": []
+      },
+      "measurement": "conservative_utf8_bytes_not_actual_token_count"
+    },
+    {
+      "time": "2026-10-10T05:17:00.319311+00:00",
+      "event": "goal_population_contract_applied",
+      "run_id": "a5936dfc353e4bc1ae45792f409f2282",
+      "instance_id": "e12b695ee298",
+      "pid": 95036,
+      "request_id": "041ec3e8c9714264b2e4da8370ac13b3",
+      "basis": "unchanged_filters",
+      "same_source": true,
+      "changed": false
+    },
+    {
+      "time": "2026-10-10T05:17:00.324026+00:00",
+      "event": "goal_decision_support_verified",
+      "run_id": "a5936dfc353e4bc1ae45792f409f2282",
+      "instance_id": "e12b695ee298",
+      "pid": 95036,
+      "request_id": "041ec3e8c9714264b2e4da8370ac13b3",
+      "decision_count": 6,
+      "request_sha256": "a6997aa2ea7a069f3d10e828c4cc00e49a6878983b8b0bf92dc05c371c5776bf",
+      "goal_sha256": "7002a4866ea02b181b5ea0782790a68877c39aeeeae6a287bd97b0b418dbc851",
+      "linguistic_entailment_proven": false
+    },
+    {
+      "time": "2026-10-10T05:17:00.324366+00:00",
+      "event": "goal_interpretation_completed",
+      "run_id": "a5936dfc353e4bc1ae45792f409f2282",
+      "instance_id": "e12b695ee298",
+      "pid": 95036,
+      "request_id": "041ec3e8c9714264b2e4da8370ac13b3",
+      "origin": "llm",
+      "mode": "execute",
+      "capabilities": [
+        "chart"
+      ],
+      "attempts": 2,
+      "goal_version": 1
+    },
+    {
+      "time": "2026-10-10T05:17:00.329691+00:00",
+      "event": "recovery_transition",
+      "run_id": "a5936dfc353e4bc1ae45792f409f2282",
+      "instance_id": "e12b695ee298",
+      "pid": 95036,
+      "request_id": "041ec3e8c9714264b2e4da8370ac13b3",
+      "tool": "prepare_histogram"
+    },
+    {
+      "time": "2026-10-10T05:17:00.333577+00:00",
+      "event": "tool_started",
+      "run_id": "a5936dfc353e4bc1ae45792f409f2282",
+      "instance_id": "e12b695ee298",
+      "pid": 95036,
+      "tool": "prepare_histogram"
+    },
+    {
+      "time": "2026-10-10T05:17:00.337837+00:00",
+      "event": "tool_completed",
+      "run_id": "a5936dfc353e4bc1ae45792f409f2282",
+      "instance_id": "e12b695ee298",
+      "pid": 95036,
+      "tool": "prepare_histogram",
+      "status": "planned",
+      "error_code": null,
+      "elapsed_seconds": 0.004,
+      "applied_corrections": []
+    },
+    {
+      "time": "2026-10-10T05:17:00.342600+00:00",
+      "event": "recovery_transition",
+      "run_id": "a5936dfc353e4bc1ae45792f409f2282",
+      "instance_id": "e12b695ee298",
+      "pid": 95036,
+      "request_id": "041ec3e8c9714264b2e4da8370ac13b3",
+      "tool": "query_databricks"
+    },
+    {
+      "time": "2026-10-10T05:17:00.350369+00:00",
+      "event": "remote_query_authorized",
+      "run_id": "a5936dfc353e4bc1ae45792f409f2282",
+      "instance_id": "e12b695ee298",
+      "pid": 95036,
+      "tool_call_id": "64f596f5-b1e7-4220-a655-6922cad8d0f4",
+      "authorization": "automatic_read_policy"
+    },
+    {
+      "time": "2026-10-10T05:17:00.350621+00:00",
+      "event": "remote_query_started",
+      "run_id": "a5936dfc353e4bc1ae45792f409f2282",
+      "instance_id": "e12b695ee298",
+      "pid": 95036,
+      "ledger_status": "auto_authorized",
+      "cached_receipt": false
+    },
+    {
+      "time": "2026-10-10T05:17:00.892655+00:00",
+      "event": "remote_query_finished",
+      "run_id": "a5936dfc353e4bc1ae45792f409f2282",
+      "instance_id": "e12b695ee298",
+      "pid": 95036,
+      "ledger_status": "completed",
+      "status": "ready",
+      "cached_receipt": false
+    },
+    {
+      "time": "2026-10-10T05:17:00.897225+00:00",
+      "event": "remote_result_verified",
+      "run_id": "a5936dfc353e4bc1ae45792f409f2282",
+      "instance_id": "e12b695ee298",
+      "pid": 95036,
+      "request_id": "041ec3e8c9714264b2e4da8370ac13b3",
+      "tool_call_id": "64f596f5-b1e7-4220-a655-6922cad8d0f4",
+      "dataset_id": "e367ddad-4e7e-4010-aff8-f6f85cdf45d1",
+      "rows": 2
+    },
+    {
+      "time": "2026-10-10T05:17:00.898712+00:00",
+      "event": "calculation_evidence",
+      "run_id": "a5936dfc353e4bc1ae45792f409f2282",
+      "instance_id": "e12b695ee298",
+      "pid": 95036,
+      "request_id": "041ec3e8c9714264b2e4da8370ac13b3",
+      "dataset_id": "e367ddad-4e7e-4010-aff8-f6f85cdf45d1",
+      "source": "teleai_default.bank_loan",
+      "coverage": "complete",
+      "grain": "aggregate"
+    },
+    {
+      "time": "2026-10-10T05:17:00.900081+00:00",
+      "event": "recovery_transition",
+      "run_id": "a5936dfc353e4bc1ae45792f409f2282",
+      "instance_id": "e12b695ee298",
+      "pid": 95036,
+      "request_id": "041ec3e8c9714264b2e4da8370ac13b3",
+      "tool": "render_histogram"
+    },
+    {
+      "time": "2026-10-10T05:17:00.901482+00:00",
+      "event": "tool_started",
+      "run_id": "a5936dfc353e4bc1ae45792f409f2282",
+      "instance_id": "e12b695ee298",
+      "pid": 95036,
+      "tool": "render_histogram"
+    },
+    {
+      "time": "2026-10-10T05:17:07.657181+00:00",
+      "event": "tool_completed",
+      "run_id": "a5936dfc353e4bc1ae45792f409f2282",
+      "instance_id": "e12b695ee298",
+      "pid": 95036,
+      "tool": "render_histogram",
+      "status": "ready",
+      "error_code": null,
+      "elapsed_seconds": 6.756,
+      "applied_corrections": []
+    },
+    {
+      "time": "2026-10-10T05:17:07.669649+00:00",
+      "event": "completion_checked",
+      "run_id": "a5936dfc353e4bc1ae45792f409f2282",
+      "instance_id": "e12b695ee298",
+      "pid": 95036,
+      "request_id": "041ec3e8c9714264b2e4da8370ac13b3",
+      "status": "complete",
+      "reason": null,
+      "attempts": 0,
+      "required_capabilities": [
+        "remote_query",
+        "chart"
+      ],
+      "missing_capabilities": [],
+      "model_calls": 6,
+      "tool_calls": 3,
+      "model_seconds": 53.001,
+      "dataset_ids": [
+        "e367ddad-4e7e-4010-aff8-f6f85cdf45d1"
+      ],
+      "artifact_ids": [
+        "43367937-1ebd-4056-a5ad-90497b25e9c3"
+      ]
+    },
+    {
+      "time": "2026-10-10T05:17:07.672242+00:00",
+      "event": "run_completed",
+      "run_id": "a5936dfc353e4bc1ae45792f409f2282",
+      "instance_id": "e12b695ee298",
+      "pid": 95036,
+      "status": "answered",
+      "elapsed_seconds": 60.396,
+      "process_peak_rss_bytes": 324173824,
+      "frame_cache_bytes": 0
+    },
+    {
+      "time": "2026-10-10T05:17:07.672300+00:00",
+      "event": "turn_slo",
+      "run_id": "a5936dfc353e4bc1ae45792f409f2282",
+      "instance_id": "e12b695ee298",
+      "pid": 95036,
+      "elapsed_seconds": 60.396,
+      "limit": 180.0,
+      "status": "ok"
+    }
+  ],
+  "charts": [
+    {
+      "id": "43367937-1ebd-4056-a5ad-90497b25e9c3",
+      "kind": "bar",
+      "render_spec": {
+        "aggregation": "count",
+        "labels": [
+          "secondary",
+          "primary"
+        ],
+        "counts": [
+          181260,
+          27439
+        ],
+        "total_count": 208699,
+        "has_more_categories": false,
+        "null_policy": "exclude",
+        "legend": true,
+        "legend_labels": [
+          "secondary",
+          "primary"
+        ],
+        "stacked": false,
+        "palette": "default",
+        "colors": [
+          "#1f77b4",
+          "#ff7f0e"
+        ]
+      },
+      "scope": "빈도 합계 208,699 · complete · SELECT `education`, COUNT(*) AS `__frequency` FROM `teleai_default`.`bank_loan` WHERE `education` IS NOT NULL AND (`age` >= 30 AND `age` <= 40 AND `education` IN ('primary', 'secondary')) GROUP BY `education`",
+      "columns": [
+        "education"
+      ],
+      "dataset_id": "e367ddad-4e7e-4010-aff8-f6f85cdf45d1",
+      "png_valid": true
+    }
+  ],
+  "originals_preserved": true,
+  "oracle": {
+    "raw_rows": 10,
+    "raw_columns": [
+      "age",
+      "balance",
+      "education"
+    ],
+    "row_scope_matches": true,
+    "expected_balance_mean": 1732.9,
+    "expected_education_frequencies": {
+      "secondary": 9,
+      "primary": 1
+    },
+    "chart_frequencies_match": false,
+    "passed": false
+  },
+  "passed": false
+}

@@ -1,0 +1,786 @@
+{
+  "source": "independent read-only MySQL SQL; not derived from agent goal",
+  "schemas": {
+    "_tianchi_ssd_shared300k_import": [
+      {
+        "name": "source_file",
+        "dtype": "varchar"
+      },
+      {
+        "name": "source_sha256",
+        "dtype": "char"
+      },
+      {
+        "name": "selection_sha256",
+        "dtype": "char"
+      },
+      {
+        "name": "expected_source_rows",
+        "dtype": "bigint"
+      },
+      {
+        "name": "expected_selected_rows",
+        "dtype": "bigint"
+      },
+      {
+        "name": "expected_canonical_sha256",
+        "dtype": "char"
+      },
+      {
+        "name": "committed_rows",
+        "dtype": "bigint"
+      },
+      {
+        "name": "last_source_row",
+        "dtype": "bigint"
+      },
+      {
+        "name": "verified_rows",
+        "dtype": "bigint"
+      },
+      {
+        "name": "target_canonical_sha256",
+        "dtype": "char"
+      },
+      {
+        "name": "status",
+        "dtype": "varchar"
+      },
+      {
+        "name": "updated_at",
+        "dtype": "datetime"
+      }
+    ],
+    "alibaba_ssd": [
+      {
+        "name": "disk_id",
+        "dtype": "varchar"
+      },
+      {
+        "name": "ds",
+        "dtype": "varchar"
+      },
+      {
+        "name": "model",
+        "dtype": "varchar"
+      },
+      {
+        "name": "n_1",
+        "dtype": "varchar"
+      },
+      {
+        "name": "r_1",
+        "dtype": "varchar"
+      },
+      {
+        "name": "n_2",
+        "dtype": "varchar"
+      },
+      {
+        "name": "r_2",
+        "dtype": "varchar"
+      },
+      {
+        "name": "n_3",
+        "dtype": "varchar"
+      },
+      {
+        "name": "r_3",
+        "dtype": "varchar"
+      },
+      {
+        "name": "n_4",
+        "dtype": "varchar"
+      },
+      {
+        "name": "r_4",
+        "dtype": "varchar"
+      },
+      {
+        "name": "n_5",
+        "dtype": "varchar"
+      },
+      {
+        "name": "r_5",
+        "dtype": "varchar"
+      },
+      {
+        "name": "n_6",
+        "dtype": "varchar"
+      },
+      {
+        "name": "r_6",
+        "dtype": "varchar"
+      },
+      {
+        "name": "n_7",
+        "dtype": "varchar"
+      },
+      {
+        "name": "r_7",
+        "dtype": "varchar"
+      },
+      {
+        "name": "n_8",
+        "dtype": "varchar"
+      },
+      {
+        "name": "r_8",
+        "dtype": "varchar"
+      },
+      {
+        "name": "n_9",
+        "dtype": "varchar"
+      },
+      {
+        "name": "r_9",
+        "dtype": "varchar"
+      },
+      {
+        "name": "n_10",
+        "dtype": "varchar"
+      },
+      {
+        "name": "r_10",
+        "dtype": "varchar"
+      },
+      {
+        "name": "n_11",
+        "dtype": "varchar"
+      },
+      {
+        "name": "r_11",
+        "dtype": "varchar"
+      },
+      {
+        "name": "n_12",
+        "dtype": "varchar"
+      },
+      {
+        "name": "r_12",
+        "dtype": "varchar"
+      },
+      {
+        "name": "n_13",
+        "dtype": "varchar"
+      },
+      {
+        "name": "r_13",
+        "dtype": "varchar"
+      },
+      {
+        "name": "n_170",
+        "dtype": "varchar"
+      },
+      {
+        "name": "r_170",
+        "dtype": "varchar"
+      },
+      {
+        "name": "n_171",
+        "dtype": "varchar"
+      },
+      {
+        "name": "r_171",
+        "dtype": "varchar"
+      },
+      {
+        "name": "n_172",
+        "dtype": "varchar"
+      },
+      {
+        "name": "r_172",
+        "dtype": "varchar"
+      },
+      {
+        "name": "n_173",
+        "dtype": "varchar"
+      },
+      {
+        "name": "r_173",
+        "dtype": "varchar"
+      },
+      {
+        "name": "n_174",
+        "dtype": "varchar"
+      },
+      {
+        "name": "r_174",
+        "dtype": "varchar"
+      },
+      {
+        "name": "n_177",
+        "dtype": "varchar"
+      },
+      {
+        "name": "r_177",
+        "dtype": "varchar"
+      },
+      {
+        "name": "n_180",
+        "dtype": "varchar"
+      },
+      {
+        "name": "r_180",
+        "dtype": "varchar"
+      },
+      {
+        "name": "n_181",
+        "dtype": "varchar"
+      },
+      {
+        "name": "r_181",
+        "dtype": "varchar"
+      },
+      {
+        "name": "n_182",
+        "dtype": "varchar"
+      },
+      {
+        "name": "r_182",
+        "dtype": "varchar"
+      },
+      {
+        "name": "n_183",
+        "dtype": "varchar"
+      },
+      {
+        "name": "r_183",
+        "dtype": "varchar"
+      },
+      {
+        "name": "n_184",
+        "dtype": "varchar"
+      },
+      {
+        "name": "r_184",
+        "dtype": "varchar"
+      },
+      {
+        "name": "n_187",
+        "dtype": "varchar"
+      },
+      {
+        "name": "r_187",
+        "dtype": "varchar"
+      },
+      {
+        "name": "n_188",
+        "dtype": "varchar"
+      },
+      {
+        "name": "r_188",
+        "dtype": "varchar"
+      },
+      {
+        "name": "n_189",
+        "dtype": "varchar"
+      },
+      {
+        "name": "r_189",
+        "dtype": "varchar"
+      },
+      {
+        "name": "n_190",
+        "dtype": "varchar"
+      },
+      {
+        "name": "r_190",
+        "dtype": "varchar"
+      },
+      {
+        "name": "n_191",
+        "dtype": "varchar"
+      },
+      {
+        "name": "r_191",
+        "dtype": "varchar"
+      },
+      {
+        "name": "n_192",
+        "dtype": "varchar"
+      },
+      {
+        "name": "r_192",
+        "dtype": "varchar"
+      },
+      {
+        "name": "n_193",
+        "dtype": "varchar"
+      },
+      {
+        "name": "r_193",
+        "dtype": "varchar"
+      },
+      {
+        "name": "n_194",
+        "dtype": "varchar"
+      },
+      {
+        "name": "r_194",
+        "dtype": "varchar"
+      },
+      {
+        "name": "n_195",
+        "dtype": "varchar"
+      },
+      {
+        "name": "r_195",
+        "dtype": "varchar"
+      },
+      {
+        "name": "n_196",
+        "dtype": "varchar"
+      },
+      {
+        "name": "r_196",
+        "dtype": "varchar"
+      },
+      {
+        "name": "n_197",
+        "dtype": "varchar"
+      },
+      {
+        "name": "r_197",
+        "dtype": "varchar"
+      },
+      {
+        "name": "n_198",
+        "dtype": "varchar"
+      },
+      {
+        "name": "r_198",
+        "dtype": "varchar"
+      },
+      {
+        "name": "n_199",
+        "dtype": "varchar"
+      },
+      {
+        "name": "r_199",
+        "dtype": "varchar"
+      },
+      {
+        "name": "n_200",
+        "dtype": "varchar"
+      },
+      {
+        "name": "r_200",
+        "dtype": "varchar"
+      },
+      {
+        "name": "n_204",
+        "dtype": "varchar"
+      },
+      {
+        "name": "r_204",
+        "dtype": "varchar"
+      },
+      {
+        "name": "n_205",
+        "dtype": "varchar"
+      },
+      {
+        "name": "r_205",
+        "dtype": "varchar"
+      },
+      {
+        "name": "n_206",
+        "dtype": "varchar"
+      },
+      {
+        "name": "r_206",
+        "dtype": "varchar"
+      },
+      {
+        "name": "n_207",
+        "dtype": "varchar"
+      },
+      {
+        "name": "r_207",
+        "dtype": "varchar"
+      },
+      {
+        "name": "n_211",
+        "dtype": "varchar"
+      },
+      {
+        "name": "r_211",
+        "dtype": "varchar"
+      },
+      {
+        "name": "n_233",
+        "dtype": "varchar"
+      },
+      {
+        "name": "r_233",
+        "dtype": "varchar"
+      },
+      {
+        "name": "n_240",
+        "dtype": "varchar"
+      },
+      {
+        "name": "r_240",
+        "dtype": "varchar"
+      },
+      {
+        "name": "n_241",
+        "dtype": "varchar"
+      },
+      {
+        "name": "r_241",
+        "dtype": "varchar"
+      },
+      {
+        "name": "n_242",
+        "dtype": "varchar"
+      },
+      {
+        "name": "r_242",
+        "dtype": "varchar"
+      },
+      {
+        "name": "n_244",
+        "dtype": "varchar"
+      },
+      {
+        "name": "r_244",
+        "dtype": "varchar"
+      },
+      {
+        "name": "n_245",
+        "dtype": "varchar"
+      },
+      {
+        "name": "r_245",
+        "dtype": "varchar"
+      },
+      {
+        "name": "n_175",
+        "dtype": "varchar"
+      },
+      {
+        "name": "r_175",
+        "dtype": "varchar"
+      },
+      {
+        "name": "n_232",
+        "dtype": "varchar"
+      },
+      {
+        "name": "r_232",
+        "dtype": "varchar"
+      },
+      {
+        "name": "__source_file",
+        "dtype": "varchar"
+      },
+      {
+        "name": "__source_row_number",
+        "dtype": "int"
+      }
+    ],
+    "bank_loan": [
+      {
+        "name": "id",
+        "dtype": "bigint"
+      },
+      {
+        "name": "age",
+        "dtype": "bigint"
+      },
+      {
+        "name": "job",
+        "dtype": "longtext"
+      },
+      {
+        "name": "marital",
+        "dtype": "longtext"
+      },
+      {
+        "name": "education",
+        "dtype": "longtext"
+      },
+      {
+        "name": "default",
+        "dtype": "longtext"
+      },
+      {
+        "name": "balance",
+        "dtype": "bigint"
+      },
+      {
+        "name": "housing",
+        "dtype": "longtext"
+      },
+      {
+        "name": "loan",
+        "dtype": "longtext"
+      },
+      {
+        "name": "contact",
+        "dtype": "longtext"
+      },
+      {
+        "name": "day",
+        "dtype": "bigint"
+      },
+      {
+        "name": "month",
+        "dtype": "longtext"
+      },
+      {
+        "name": "duration",
+        "dtype": "bigint"
+      },
+      {
+        "name": "campaign",
+        "dtype": "bigint"
+      },
+      {
+        "name": "pdays",
+        "dtype": "bigint"
+      },
+      {
+        "name": "previous",
+        "dtype": "bigint"
+      },
+      {
+        "name": "poutcome",
+        "dtype": "longtext"
+      },
+      {
+        "name": "y",
+        "dtype": "bigint"
+      }
+    ],
+    "error_test": [
+      {
+        "name": "ID",
+        "dtype": "bigint"
+      },
+      {
+        "name": "name",
+        "dtype": "longtext"
+      },
+      {
+        "name": "fault_code",
+        "dtype": "longtext"
+      },
+      {
+        "name": "read",
+        "dtype": "bigint"
+      },
+      {
+        "name": "write",
+        "dtype": "bigint"
+      }
+    ],
+    "ncr_ride": [
+      {
+        "name": "Date",
+        "dtype": "date"
+      },
+      {
+        "name": "Time",
+        "dtype": "datetime"
+      },
+      {
+        "name": "Booking ID",
+        "dtype": "longtext"
+      },
+      {
+        "name": "Booking Status",
+        "dtype": "longtext"
+      },
+      {
+        "name": "Customer ID",
+        "dtype": "longtext"
+      },
+      {
+        "name": "Vehicle Type",
+        "dtype": "longtext"
+      },
+      {
+        "name": "Pickup Location",
+        "dtype": "longtext"
+      },
+      {
+        "name": "Drop Location",
+        "dtype": "longtext"
+      },
+      {
+        "name": "Avg VTAT",
+        "dtype": "longtext"
+      },
+      {
+        "name": "Avg CTAT",
+        "dtype": "longtext"
+      },
+      {
+        "name": "Cancelled Rides by Customer",
+        "dtype": "longtext"
+      },
+      {
+        "name": "Reason for cancelling by Customer",
+        "dtype": "longtext"
+      },
+      {
+        "name": "Cancelled Rides by Driver",
+        "dtype": "longtext"
+      },
+      {
+        "name": "Driver Cancellation Reason",
+        "dtype": "longtext"
+      },
+      {
+        "name": "Incomplete Rides",
+        "dtype": "longtext"
+      },
+      {
+        "name": "Incomplete Rides Reason",
+        "dtype": "longtext"
+      },
+      {
+        "name": "Booking Value",
+        "dtype": "longtext"
+      },
+      {
+        "name": "Ride Distance",
+        "dtype": "longtext"
+      },
+      {
+        "name": "Driver Ratings",
+        "dtype": "longtext"
+      },
+      {
+        "name": "Customer Rating",
+        "dtype": "longtext"
+      },
+      {
+        "name": "Payment Method",
+        "dtype": "longtext"
+      }
+    ],
+    "stormtrooper": [
+      {
+        "name": "flight_id",
+        "dtype": "longtext"
+      },
+      {
+        "name": "date_str",
+        "dtype": "datetime"
+      },
+      {
+        "name": "latitude",
+        "dtype": "double"
+      },
+      {
+        "name": "longitude",
+        "dtype": "double"
+      },
+      {
+        "name": "pressure_altitude",
+        "dtype": "double"
+      },
+      {
+        "name": "cdo",
+        "dtype": "double"
+      },
+      {
+        "name": "cth",
+        "dtype": "double"
+      },
+      {
+        "name": "glm_event_density",
+        "dtype": "double"
+      },
+      {
+        "name": "glm_optical_flux",
+        "dtype": "double"
+      },
+      {
+        "name": "cdo025",
+        "dtype": "double"
+      },
+      {
+        "name": "cth025",
+        "dtype": "double"
+      },
+      {
+        "name": "cth025_diff_feet",
+        "dtype": "double"
+      },
+      {
+        "name": "cdo_dist_km",
+        "dtype": "double"
+      }
+    ],
+    "titanic": [
+      {
+        "name": "PassengerId",
+        "dtype": "bigint"
+      },
+      {
+        "name": "Survived",
+        "dtype": "bigint"
+      },
+      {
+        "name": "Pclass",
+        "dtype": "bigint"
+      },
+      {
+        "name": "Name",
+        "dtype": "longtext"
+      },
+      {
+        "name": "Sex",
+        "dtype": "longtext"
+      },
+      {
+        "name": "Age",
+        "dtype": "double"
+      },
+      {
+        "name": "SibSp",
+        "dtype": "bigint"
+      },
+      {
+        "name": "Parch",
+        "dtype": "bigint"
+      },
+      {
+        "name": "Ticket",
+        "dtype": "longtext"
+      },
+      {
+        "name": "Fare",
+        "dtype": "double"
+      },
+      {
+        "name": "Cabin",
+        "dtype": "longtext"
+      },
+      {
+        "name": "Embarked",
+        "dtype": "longtext"
+      }
+    ]
+  },
+  "education_counts": {
+    "secondary": 401683,
+    "primary": 99510,
+    "tertiary": 227508,
+    "unknown": 21299
+  },
+  "age30_40_primary_secondary_counts": {
+    "secondary": 181260,
+    "primary": 27439
+  },
+  "bank_loan_counts": {
+    "rows": 750000,
+    "nonnull_age": 750000,
+    "nonnull_balance": 750000
+  }
+}

@@ -1,0 +1,314 @@
+{
+  "recent_transcript": [
+    {
+      "type": "human",
+      "data": {
+        "content": "지금 볼 수있는 table를 보여줘",
+        "additional_kwargs": {},
+        "response_metadata": {},
+        "type": "human",
+        "name": null,
+        "id": "a7381a6c4dfc42d0aaf97a02526a99cc"
+      }
+    }
+  ],
+  "assets": {},
+  "selection": "",
+  "current": {
+    "request_id": "a7381a6c4dfc42d0aaf97a02526a99cc",
+    "request_text": "지금 볼 수있는 table를 보여줘",
+    "status": "working",
+    "intent_origin": "llm",
+    "goal_pending": true,
+    "request_started_at": 1791508764.9749591,
+    "required_sources": [],
+    "required_columns": [],
+    "explicit_columns": [],
+    "scope": {
+      "sources": [],
+      "columns": [],
+      "conditions": [],
+      "any_conditions": [],
+      "measure_conditions": [],
+      "ratio": null,
+      "join_edges": [],
+      "unresolved": []
+    },
+    "previous_scope": {},
+    "confirmed_analysis": {},
+    "chart": false,
+    "kind": null,
+    "calculation": false,
+    "operations": [],
+    "metadata_kind": null,
+    "catalog_discovery_source": "",
+    "catalog_discovery_schema": "",
+    "profile_kind": null,
+    "preview_limit": 0,
+    "data_load": false,
+    "whole_row_count": false,
+    "current_result_only": false,
+    "fresh_source_required": false,
+    "requested_result_rows": null,
+    "requested_join": false,
+    "join": false,
+    "join_how": null,
+    "statistical_kind": null,
+    "latest_per_key_spec": null,
+    "row_preview_spec": null,
+    "chart_spec_requested": false,
+    "value_list_requested": false,
+    "operation_pending": false,
+    "schema_semantic": false,
+    "outlier_spec": null,
+    "outlier_column": null,
+    "time_series_frequency": null,
+    "histogram_bins": null,
+    "chart_cumulative": false,
+    "processed": [],
+    "sent_calls": [],
+    "evidence_ids": [],
+    "artifact_ids": [],
+    "failed": {},
+    "failed_signatures": {},
+    "attempts": 0,
+    "model_calls": 0,
+    "model_seconds": 0.0,
+    "remote_query_ids": [],
+    "remote_query_evidence": {},
+    "columns": []
+  },
+  "run_id": "2762424876814368b350f3c3437a01ff",
+  "run": [
+    {
+      "time": "2026-10-09T01:19:24.974080+00:00",
+      "event": "run_started",
+      "run_id": "2762424876814368b350f3c3437a01ff",
+      "instance_id": "e31a6068379d",
+      "pid": 53142,
+      "runtime": {
+        "revision_at_first_runtime": "3a7206654b3d2fab7cd145893fd52970e397dd07",
+        "packages": {
+          "langchain": "1.4.0",
+          "langchain-core": "1.6.2",
+          "langgraph": "1.2.11",
+          "streamlit": "1.63.0",
+          "sqlglot": "30.18.0"
+        },
+        "python_version": "3.11.13",
+        "identity_captured_at": "2026-10-09T01:18:10.701274+00:00",
+        "route": "langgraph-v1",
+        "model_class": "ChatOllama",
+        "require_remote_approval": false,
+        "loaded_delivery_guard": "892057222e9ed9b4",
+        "data_backend": "mysql",
+        "intent_mode": "llm",
+        "goal_version": 1,
+        "goal_model": "qwen3:8b",
+        "planner_model": "qwen3:8b"
+      },
+      "operation": "submit",
+      "process_peak_rss_bytes": 312606720
+    },
+    {
+      "time": "2026-10-09T01:19:24.979664+00:00",
+      "event": "goal_interpretation_started",
+      "run_id": "2762424876814368b350f3c3437a01ff",
+      "instance_id": "e31a6068379d",
+      "pid": 53142,
+      "request_id": "a7381a6c4dfc42d0aaf97a02526a99cc",
+      "origin": "llm",
+      "goal_version": 1
+    },
+    {
+      "time": "2026-10-09T01:19:24.982560+00:00",
+      "event": "model_payload_budget",
+      "run_id": "2762424876814368b350f3c3437a01ff",
+      "instance_id": "e31a6068379d",
+      "pid": 53142,
+      "payload_bytes": 3258,
+      "payload_bytes_before_projection": 3258,
+      "template_headroom": 640,
+      "input_budget_units": 14336,
+      "output_reserved": 2048,
+      "context_window": 16384,
+      "tool_count": 0,
+      "message_count": 1,
+      "older_turns_compacted": false,
+      "within_budget": true,
+      "observations_compacted": false,
+      "schema_compacted": false,
+      "system_catalog_compacted": false,
+      "tool_menu_compacted": false,
+      "minimal_discovery_menu": false,
+      "reasoning_compacted": false,
+      "minimal_catalog": false,
+      "builtin_instructions_compacted": false,
+      "components": {
+        "system_bytes": 2337,
+        "message_content_bytes": 767,
+        "tool_calls_bytes": 0,
+        "reasoning_bytes": 0,
+        "tool_schema_bytes": 0,
+        "tool_names": []
+      },
+      "measurement": "conservative_utf8_bytes_not_actual_token_count"
+    },
+    {
+      "time": "2026-10-09T01:19:31.069579+00:00",
+      "event": "goal_task_selection_rejected",
+      "run_id": "2762424876814368b350f3c3437a01ff",
+      "instance_id": "e31a6068379d",
+      "pid": 53142,
+      "request_id": "a7381a6c4dfc42d0aaf97a02526a99cc",
+      "attempt": 1,
+      "error_type": "ValueError",
+      "detail": "No selected dataset exists. Discovery of available data needs table_list; choose the requested source reference, not an unavailable selected result."
+    },
+    {
+      "time": "2026-10-09T01:19:31.070053+00:00",
+      "event": "model_payload_budget",
+      "run_id": "2762424876814368b350f3c3437a01ff",
+      "instance_id": "e31a6068379d",
+      "pid": 53142,
+      "payload_bytes": 3543,
+      "payload_bytes_before_projection": 3543,
+      "template_headroom": 704,
+      "input_budget_units": 14336,
+      "output_reserved": 2048,
+      "context_window": 16384,
+      "tool_count": 0,
+      "message_count": 2,
+      "older_turns_compacted": false,
+      "within_budget": true,
+      "observations_compacted": false,
+      "schema_compacted": false,
+      "system_catalog_compacted": false,
+      "tool_menu_compacted": false,
+      "minimal_discovery_menu": false,
+      "reasoning_compacted": false,
+      "minimal_catalog": false,
+      "builtin_instructions_compacted": false,
+      "components": {
+        "system_bytes": 2337,
+        "message_content_bytes": 1022,
+        "tool_calls_bytes": 0,
+        "reasoning_bytes": 0,
+        "tool_schema_bytes": 0,
+        "tool_names": []
+      },
+      "measurement": "conservative_utf8_bytes_not_actual_token_count"
+    },
+    {
+      "time": "2026-10-09T01:19:33.723514+00:00",
+      "event": "goal_task_selection_rejected",
+      "run_id": "2762424876814368b350f3c3437a01ff",
+      "instance_id": "e31a6068379d",
+      "pid": 53142,
+      "request_id": "a7381a6c4dfc42d0aaf97a02526a99cc",
+      "attempt": 2,
+      "error_type": "ValueError",
+      "detail": "No selected dataset exists. Discovery of available data needs table_list; choose the requested source reference, not an unavailable selected result."
+    },
+    {
+      "time": "2026-10-09T01:19:33.728893+00:00",
+      "event": "error",
+      "run_id": "2762424876814368b350f3c3437a01ff",
+      "instance_id": "e31a6068379d",
+      "pid": 53142,
+      "error_category": null,
+      "error_id": "b1ab0952bf19",
+      "stage": "agent_stream",
+      "error_type": "ValueError",
+      "database_errno": null,
+      "http_status": null,
+      "frames": [
+        {
+          "file": "runtime.py",
+          "line": 451,
+          "function": "_invoke"
+        },
+        {
+          "file": "runtime.py",
+          "line": 399,
+          "function": "_stream_with_local_recovery"
+        },
+        {
+          "file": "main.py",
+          "line": 2967,
+          "function": "stream"
+        },
+        {
+          "file": "_runner.py",
+          "line": 207,
+          "function": "tick"
+        },
+        {
+          "file": "_retry.py",
+          "line": 617,
+          "function": "run_with_retry"
+        },
+        {
+          "file": "_runnable.py",
+          "line": 707,
+          "function": "invoke"
+        },
+        {
+          "file": "_runnable.py",
+          "line": 447,
+          "function": "invoke"
+        },
+        {
+          "file": "recovery.py",
+          "line": 169,
+          "function": "before_model"
+        },
+        {
+          "file": "recovery.py",
+          "line": 4074,
+          "function": "before_step"
+        },
+        {
+          "file": "goal_interpreter.py",
+          "line": 195,
+          "function": "interpret"
+        },
+        {
+          "file": "task_selection.py",
+          "line": 94,
+          "function": "select"
+        },
+        {
+          "file": "task_selection.py",
+          "line": 74,
+          "function": "validate"
+        }
+      ]
+    },
+    {
+      "time": "2026-10-09T01:19:33.728994+00:00",
+      "event": "run_completed",
+      "run_id": "2762424876814368b350f3c3437a01ff",
+      "instance_id": "e31a6068379d",
+      "pid": 53142,
+      "status": "incomplete",
+      "elapsed_seconds": 8.752,
+      "error_id": "b1ab0952bf19"
+    },
+    {
+      "time": "2026-10-09T01:19:33.729093+00:00",
+      "event": "turn_slo",
+      "run_id": "2762424876814368b350f3c3437a01ff",
+      "instance_id": "e31a6068379d",
+      "pid": 53142,
+      "elapsed_seconds": 8.752,
+      "limit": 180.0,
+      "status": "error",
+      "process_peak_rss_bytes": 312606720,
+      "frame_cache_bytes": 0
+    }
+  ],
+  "requested_prompt": "지금 볼 수있는 table를 보여줘",
+  "current_matches_run": true,
+  "request_checkpoint_verified": true
+}

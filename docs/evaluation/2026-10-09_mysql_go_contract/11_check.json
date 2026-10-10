@@ -1,0 +1,124 @@
+{
+  "id": 11,
+  "prompt": "education별 색상 구분과 legend를 넣어줘",
+  "status": "complete",
+  "goal": {
+    "objective": "requested work",
+    "mode": "execute",
+    "source_reference": "explicit",
+    "sources": [
+      "teleai_default.bank_loan"
+    ],
+    "columns": [
+      "education",
+      "age"
+    ],
+    "conditions": [
+      {
+        "column": "education",
+        "op": "in",
+        "value": [
+          "primary",
+          "secondary"
+        ]
+      }
+    ],
+    "any_conditions": [],
+    "measure_conditions": [],
+    "ratio": null,
+    "current_result_only": false,
+    "fresh_source_required": false,
+    "question": "",
+    "tasks": [
+      {
+        "capability": "chart",
+        "options": {
+          "kind": "histogram",
+          "axes": {
+            "x": "age"
+          },
+          "category": "education",
+          "legend": true,
+          "stacked": false,
+          "palette": "high_contrast"
+        }
+      }
+    ]
+  },
+  "reason": null,
+  "run_id": "9e6ff4127fa04563a882fd4af16a4429",
+  "model_calls": 7,
+  "chart_metadata": [
+    {
+      "id": "63b4d52c-7067-4e9b-a2ee-b18a75137917",
+      "dataset_id": "56c01916-6f60-4fbf-8d78-fc549575c577",
+      "title": "education별 age 분포",
+      "reason": "공통 bin의 그룹별 COUNT(*)를 서로 다른 색의 막대로 표시하고 범례를 추가했습니다.",
+      "kind": "histogram",
+      "columns": [
+        "age",
+        "education"
+      ],
+      "scope": "빈도 합계 501,193 · complete · 그룹 결측 제외 0 · SELECT `age`, `education`, COUNT(*) AS `__frequency` FROM `teleai_default`.`bank_loan` WHERE `age` IS NOT NULL AND (`education` IN ('primary', 'secondary')) GROUP BY `age`, `education`",
+      "render_spec": {
+        "kind": "histogram",
+        "x": "age",
+        "category": "education",
+        "bins": 8,
+        "legend": true,
+        "stacked": false,
+        "palette": "high_contrast",
+        "legend_labels": [
+          "primary",
+          "secondary"
+        ],
+        "colors": [
+          "#003f5c",
+          "#ffa600"
+        ],
+        "bin_edges": [
+          18.0,
+          27.625,
+          37.25,
+          46.875,
+          56.5,
+          66.125,
+          75.75,
+          85.375,
+          95.0
+        ],
+        "series_counts": [
+          [
+            1990,
+            19779,
+            29794,
+            30851,
+            14189,
+            1809,
+            1016,
+            82
+          ],
+          [
+            27828,
+            160314,
+            106296,
+            79681,
+            24972,
+            1974,
+            583,
+            35
+          ]
+        ],
+        "group_totals": [
+          99510,
+          401683
+        ],
+        "total_count": 501193,
+        "excluded_null_group_count": 0,
+        "null_policy": "exclude"
+      }
+    }
+  ],
+  "verdict": "FAIL",
+  "error": "wrong population total"
+}

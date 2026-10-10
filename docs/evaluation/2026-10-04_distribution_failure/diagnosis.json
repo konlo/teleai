@@ -1,0 +1,367 @@
+{
+  "request": "n_1 column의 데이타 분포를 보여줘",
+  "error_id": "3193b28cf8e7",
+  "run_id": "3295f182368f4df9b3bf530018af6bd9",
+  "interpretation": {
+    "chart": false,
+    "kind": null,
+    "metadata_kind": "columns",
+    "required_columns": [
+      "n_1"
+    ],
+    "required_sources": [],
+    "scope": {
+      "conditions": [],
+      "any_conditions": [],
+      "sources": [
+        "teleai_default.bank_loan"
+      ],
+      "join_edges": [],
+      "measure_conditions": [],
+      "ratio": null,
+      "unresolved": [],
+      "columns": []
+    }
+  },
+  "previous_preview": {
+    "request_text": "데이타 10row만 보여줘",
+    "required_sources": [
+      "teleai_default.alibaba_ssd"
+    ],
+    "scope": {
+      "conditions": [],
+      "any_conditions": [],
+      "sources": [
+        "teleai_default.bank_loan"
+      ],
+      "join_edges": [],
+      "measure_conditions": [],
+      "ratio": null,
+      "unresolved": [],
+      "columns": []
+    },
+    "table_preview_evidence": {
+      "dataset_id": "c43a1490-815a-4f16-a3f6-6efecccb66e0",
+      "source": "teleai_default.alibaba_ssd",
+      "snapshot": "2026-10-04T12:48:05.303771+00:00",
+      "columns": [
+        "disk_id",
+        "ds",
+        "model",
+        "n_1",
+        "r_1",
+        "n_2",
+        "r_2",
+        "n_3",
+        "r_3",
+        "n_4",
+        "r_4",
+        "n_5",
+        "r_5",
+        "n_6",
+        "r_6",
+        "n_7",
+        "r_7",
+        "n_8",
+        "r_8",
+        "n_9",
+        "r_9",
+        "n_10",
+        "r_10",
+        "n_11",
+        "r_11",
+        "n_12",
+        "r_12",
+        "n_13",
+        "r_13",
+        "n_170",
+        "r_170",
+        "n_171",
+        "r_171",
+        "n_172",
+        "r_172",
+        "n_173",
+        "r_173",
+        "n_174",
+        "r_174",
+        "n_177",
+        "r_177",
+        "n_180",
+        "r_180",
+        "n_181",
+        "r_181",
+        "n_182",
+        "r_182",
+        "n_183",
+        "r_183",
+        "n_184",
+        "r_184",
+        "n_187",
+        "r_187",
+        "n_188",
+        "r_188",
+        "n_189",
+        "r_189",
+        "n_190",
+        "r_190",
+        "n_191",
+        "r_191",
+        "n_192",
+        "r_192",
+        "n_193",
+        "r_193",
+        "n_194",
+        "r_194",
+        "n_195",
+        "r_195",
+        "n_196",
+        "r_196",
+        "n_197",
+        "r_197",
+        "n_198",
+        "r_198",
+        "n_199",
+        "r_199",
+        "n_200",
+        "r_200",
+        "n_204",
+        "r_204",
+        "n_205",
+        "r_205",
+        "n_206",
+        "r_206",
+        "n_207",
+        "r_207",
+        "n_211",
+        "r_211",
+        "n_233",
+        "r_233",
+        "n_240",
+        "r_240",
+        "n_241",
+        "r_241",
+        "n_242",
+        "r_242",
+        "n_244",
+        "r_244",
+        "n_245",
+        "r_245",
+        "n_175",
+        "r_175",
+        "n_232",
+        "r_232",
+        "__source_file",
+        "__source_row_number"
+      ],
+      "total_rows": 10,
+      "rows": 10,
+      "limit": 10
+    }
+  },
+  "events": [
+    {
+      "time": "2026-10-04T13:02:55.083718+00:00",
+      "event": "run_started",
+      "run_id": "3295f182368f4df9b3bf530018af6bd9",
+      "instance_id": "1bf341731ea0",
+      "pid": 6162,
+      "runtime": {
+        "revision_at_first_runtime": "febd34ae5cbbfbcc7023ea8e0412b84572cd7763",
+        "packages": {
+          "langchain": "1.4.0",
+          "langchain-core": "1.6.2",
+          "langgraph": "1.2.11",
+          "streamlit": "1.63.0",
+          "sqlglot": "30.18.0"
+        },
+        "python_version": "3.11.13",
+        "identity_captured_at": "2026-10-04T13:02:54.665056+00:00",
+        "route": "langgraph-v1",
+        "model_class": "ChatOllama",
+        "require_remote_approval": false,
+        "loaded_delivery_guard": "7558acebe3fabbfe",
+        "data_backend": "mysql"
+      },
+      "operation": "submit",
+      "process_peak_rss_bytes": 370868224
+    },
+    {
+      "time": "2026-10-04T13:02:55.333613+00:00",
+      "event": "summarization_started",
+      "run_id": "3295f182368f4df9b3bf530018af6bd9",
+      "instance_id": "1bf341731ea0",
+      "pid": 6162,
+      "span_id": "fc8c9716d910",
+      "message_count": 29
+    },
+    {
+      "time": "2026-10-04T13:03:32.566148+00:00",
+      "event": "summarization_finished",
+      "run_id": "3295f182368f4df9b3bf530018af6bd9",
+      "instance_id": "1bf341731ea0",
+      "pid": 6162,
+      "span_id": "fc8c9716d910",
+      "status": "ok",
+      "elapsed_seconds": 37.232,
+      "message_count": 29,
+      "summarized": true
+    },
+    {
+      "time": "2026-10-04T13:03:32.572351+00:00",
+      "event": "model_call_started",
+      "run_id": "3295f182368f4df9b3bf530018af6bd9",
+      "instance_id": "1bf341731ea0",
+      "pid": 6162,
+      "span_id": "58062962b5c4",
+      "message_count": 9
+    },
+    {
+      "time": "2026-10-04T13:03:32.605374+00:00",
+      "event": "context_budget",
+      "run_id": "3295f182368f4df9b3bf530018af6bd9",
+      "instance_id": "1bf341731ea0",
+      "pid": 6162,
+      "characters": 27000,
+      "limit": 32000
+    },
+    {
+      "time": "2026-10-04T13:03:32.605680+00:00",
+      "event": "model_tools_focused",
+      "run_id": "3295f182368f4df9b3bf530018af6bd9",
+      "instance_id": "1bf341731ea0",
+      "pid": 6162,
+      "mode": "progressive",
+      "tool_count": 8,
+      "registered_tool_count": 35
+    },
+    {
+      "time": "2026-10-04T13:03:32.607670+00:00",
+      "event": "model_payload_budget",
+      "run_id": "3295f182368f4df9b3bf530018af6bd9",
+      "instance_id": "1bf341731ea0",
+      "pid": 6162,
+      "payload_bytes": 16108,
+      "template_headroom": 1216,
+      "input_budget_units": 12288,
+      "output_reserved": 4096,
+      "context_window": 16384,
+      "tool_count": 4,
+      "message_count": 2,
+      "older_turns_compacted": true,
+      "within_budget": false,
+      "tool_menu_compacted": true,
+      "measurement": "conservative_utf8_bytes_not_actual_token_count"
+    },
+    {
+      "time": "2026-10-04T13:03:32.607779+00:00",
+      "event": "model_call_finished",
+      "run_id": "3295f182368f4df9b3bf530018af6bd9",
+      "instance_id": "1bf341731ea0",
+      "pid": 6162,
+      "span_id": "58062962b5c4",
+      "status": "error",
+      "error_type": "ModelContextBudgetExceeded",
+      "elapsed_seconds": 0.035,
+      "message_count": 9
+    },
+    {
+      "time": "2026-10-04T13:03:32.616863+00:00",
+      "event": "error",
+      "run_id": "3295f182368f4df9b3bf530018af6bd9",
+      "instance_id": "1bf341731ea0",
+      "pid": 6162,
+      "error_category": null,
+      "error_id": "3193b28cf8e7",
+      "stage": "agent_stream",
+      "error_type": "ModelContextBudgetExceeded",
+      "http_status": null,
+      "frames": [
+        {
+          "file": "factory.py",
+          "line": 329,
+          "function": "inner_handler"
+        },
+        {
+          "file": "factory.py",
+          "line": 339,
+          "function": "composed"
+        },
+        {
+          "file": "tool_focus.py",
+          "line": 41,
+          "function": "wrap_model_call"
+        },
+        {
+          "file": "factory.py",
+          "line": 329,
+          "function": "inner_handler"
+        },
+        {
+          "file": "factory.py",
+          "line": 339,
+          "function": "composed"
+        },
+        {
+          "file": "tool_focus.py",
+          "line": 16,
+          "function": "wrap_model_call"
+        },
+        {
+          "file": "factory.py",
+          "line": 329,
+          "function": "inner_handler"
+        },
+        {
+          "file": "factory.py",
+          "line": 339,
+          "function": "composed"
+        },
+        {
+          "file": "model_context.py",
+          "line": 92,
+          "function": "wrap_model_call"
+        },
+        {
+          "file": "factory.py",
+          "line": 329,
+          "function": "inner_handler"
+        },
+        {
+          "file": "factory.py",
+          "line": 339,
+          "function": "composed"
+        },
+        {
+          "file": "model_context.py",
+          "line": 193,
+          "function": "wrap_model_call"
+        }
+      ]
+    },
+    {
+      "time": "2026-10-04T13:03:32.616941+00:00",
+      "event": "run_completed",
+      "run_id": "3295f182368f4df9b3bf530018af6bd9",
+      "instance_id": "1bf341731ea0",
+      "pid": 6162,
+      "status": "incomplete",
+      "elapsed_seconds": 37.534,
+      "error_id": "3193b28cf8e7"
+    },
+    {
+      "time": "2026-10-04T13:03:32.616994+00:00",
+      "event": "turn_slo",
+      "run_id": "3295f182368f4df9b3bf530018af6bd9",
+      "instance_id": "1bf341731ea0",
+      "pid": 6162,
+      "elapsed_seconds": 37.534,
+      "limit": 180.0,
+      "status": "error",
+      "process_peak_rss_bytes": 373063680,
+      "frame_cache_bytes": 0
+    }
+  ],
+  "projected_dataset_catalog_bytes": 4531,
+  "dataset_catalog_count": 15,
+  "inspection_only": true
+}

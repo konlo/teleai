@@ -128,7 +128,8 @@ class LLMGoalTests(unittest.TestCase):
                     'description':'설명'*100} for j in range(200)]} for i in range(32)]
                 r.context.reference_context[:]=refs
                 payload=r.recovery.goal_interpreter.payload({'request_id':'new','request_text':'테이블들을 살펴봐'},[])
-                self.assertEqual(sum(len(t['columns']) for t in payload['tables']),0)
+                self.assertEqual(sum(len(t['columns']) for t in payload['tables']),len(DATA.columns))
+                self.assertEqual(payload['tables'][0]['origin'],'retained_dataset_projection_not_database_schema')
                 self.assertEqual(payload['table_count'],32)
                 self.assertEqual(len(r.context.reference_context[0]['columns']),200)
                 current={'request_id':'new','request_text':'같은 테이블의 타입',
@@ -137,6 +138,20 @@ class LLMGoalTests(unittest.TestCase):
                 self.assertEqual(sum(len(t['columns']) for t in payload['tables']),8)
                 self.assertEqual(payload['tables'][-1]['column_count'],200)
                 self.assertEqual(len(r.context.reference_context[-1]['columns']),200)
+            finally:r.close()
+
+    def test_retained_schema_fallback_never_replaces_a_named_subject(self):
+        with tempfile.TemporaryDirectory() as root:
+            r,raw=self.runtime(root,GoalModel(goals=[goal('calculation',{'operations':['AVG']},columns=['reading'])]))
+            try:
+                r.context.reference_context[:]=[]
+                payload=r.recovery.goal_interpreter.payload({'request_id':'local','request_text':'reading 평균'},[])
+                self.assertEqual(payload['tables'][0]['table'],raw.source)
+                self.assertEqual(payload['tables'][0]['columns'][0]['name'],'reading')
+                absent=r.recovery.goal_interpreter.payload({'request_id':'new',
+                    'request_text':'otherdb.missing 컬럼',
+                    'requested_subject':{'sources':['otherdb.missing'],'request_id':'new'}},[])
+                self.assertFalse(any(t['table']==raw.source for t in absent['tables']))
             finally:r.close()
 
     def test_pending_or_invalid_goal_is_never_complete(self):

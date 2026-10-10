@@ -1,0 +1,158 @@
+{
+  "model": "gemma4:e4b",
+  "kind": "standalone intent role fixture, NOT end-to-end score",
+  "results": [
+    {
+      "id": 1,
+      "prompt": "지금 볼 수있는 table를 보여줘",
+      "verdict": "PASS",
+      "selection": {
+        "mode": "execute",
+        "capabilities": [
+          "table_list"
+        ],
+        "source_reference": "explicit",
+        "source_mentions": [],
+        "current_result_only": false,
+        "chart_kind": ""
+      },
+      "seconds": 7.194
+    },
+    {
+      "id": 2,
+      "prompt": "어떤 데이타를 볼 수 있지 ?",
+      "verdict": "FAIL",
+      "error_type": "ValueError",
+      "reason": "selection mode needs executable obligations",
+      "seconds": 4.279
+    },
+    {
+      "id": 3,
+      "prompt": "bank_loan 컬럼들을 보여줘",
+      "verdict": "PASS",
+      "selection": {
+        "mode": "execute",
+        "capabilities": [
+          "metadata"
+        ],
+        "source_reference": "explicit",
+        "source_mentions": [],
+        "current_result_only": false,
+        "chart_kind": ""
+      },
+      "seconds": 4.148
+    },
+    {
+      "id": 4,
+      "prompt": "education은 어떤 값들로 되어 있지 ?",
+      "verdict": "PASS",
+      "selection": {
+        "mode": "execute",
+        "capabilities": [
+          "value_list"
+        ],
+        "source_reference": "previous_analysis",
+        "source_mentions": [],
+        "current_result_only": false,
+        "chart_kind": ""
+      },
+      "seconds": 2.223
+    },
+    {
+      "id": 5,
+      "prompt": "histogram을 그려줘",
+      "verdict": "PASS",
+      "selection": {
+        "mode": "execute",
+        "capabilities": [
+          "chart"
+        ],
+        "source_reference": "previous_analysis",
+        "source_mentions": [],
+        "current_result_only": false,
+        "chart_kind": "histogram"
+      },
+      "seconds": 2.265
+    },
+    {
+      "id": 6,
+      "prompt": "education이 primary과 secondary 이고 age가 30~40인 사람들을 시각화 해줘",
+      "verdict": "PASS",
+      "selection": {
+        "mode": "execute",
+        "capabilities": [
+          "chart"
+        ],
+        "source_reference": "previous_analysis",
+        "source_mentions": [],
+        "current_result_only": false,
+        "chart_kind": "histogram"
+      },
+      "seconds": 2.41
+    },
+    {
+      "id": 7,
+      "prompt": "데이타 10개 row만 추출해서 table로 보여줘",
+      "verdict": "PASS",
+      "selection": {
+        "mode": "execute",
+        "capabilities": [
+          "row_preview"
+        ],
+        "source_reference": "previous_analysis",
+        "source_mentions": [],
+        "current_result_only": false,
+        "chart_kind": ""
+      },
+      "seconds": 4.405
+    },
+    {
+      "id": 8,
+      "prompt": "age와 balance의 관계를 그려줘봐",
+      "verdict": "PASS",
+      "selection": {
+        "mode": "execute",
+        "capabilities": [
+          "chart"
+        ],
+        "source_reference": "previous_analysis",
+        "source_mentions": [],
+        "current_result_only": false,
+        "chart_kind": "scatter"
+      },
+      "seconds": 2.525
+    },
+    {
+      "id": 9,
+      "prompt": "방금 보여준 10행 데이터의 age를 x축, balance를 y축으로 scatter plot을 그려줘",
+      "verdict": "PASS",
+      "selection": {
+        "mode": "execute",
+        "capabilities": [
+          "chart"
+        ],
+        "source_reference": "previous_analysis",
+        "source_mentions": [],
+        "current_result_only": true,
+        "chart_kind": "scatter"
+      },
+      "seconds": 2.477
+    },
+    {
+      "id": 10,
+      "prompt": "tianchi_ssd_shared300k_raw 이 table row 수가 몇개야 ?",
+      "verdict": "FAIL",
+      "selection": {
+        "mode": "execute",
+        "capabilities": [
+          "row_count"
+        ],
+        "source_reference": "previous_analysis",
+        "source_mentions": [],
+        "current_result_only": false,
+        "chart_kind": ""
+      },
+      "seconds": 2.453
+    }
+  ]
+}

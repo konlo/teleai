@@ -1,0 +1,21 @@
+{
+  "error_id": "f92d6702f5e8",
+  "measurement": "UTF8 bytes + fixed template headroom; not actual model tokens",
+  "logged_payload_bytes": 12153,
+  "logged_template_headroom": 1216,
+  "combined_budget_estimate": 13369,
+  "headroom_formula": "512 + 128*4 + 64*(2+1)",
+  "logged_tool_count": 4,
+  "messages_before": 23,
+  "messages_after": 2,
+  "checkpoint_user_request_utf8_bytes": 25,
+  "checkpoint_confirmed_context_json_utf8_bytes": 577,
+  "base_instruction_utf8_bytes": 2702,
+  "final_tools": [
+    "query_databricks",
+    "inspect_table_context",
+    "search_analysis_tools",
+    "read_analysis_skill"
+  ],
+  "limitations": "Historical final system prompt and individual tool-schema byte sizes were not logged; component values do not form a full additive decomposition. Base instructions unchanged since that failure. Confirmed context excludes its message prefix/JSON framing."
+}

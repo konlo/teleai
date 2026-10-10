@@ -1,0 +1,86 @@
+{
+  "created_at": "2026-10-09T19:06:14.800266+09:00",
+  "verdict": "LOCAL_BASIC_EDA_PROMPT_EVALUATION_PASS",
+  "local_usage": "READY_FOR_SINGLE_USER_LOOPBACK_TESTING",
+  "production_release": "NOT_VERIFIED",
+  "scope": {
+    "database": "local MySQL",
+    "model": "local Ollama gemma4:e4b",
+    "host": "127.0.0.1:8504",
+    "features": [
+      "catalog/schema/DB types",
+      "categorical values/counts",
+      "range/membership followups",
+      "histogram/rebin/legend/palette/stack",
+      "weighted complete-source scatter",
+      "row preview/displayed rows/whole-source return",
+      "missing-source clarification"
+    ]
+  },
+  "prompt_evaluation": {
+    "konlo": {
+      "passed": 31,
+      "total": 31,
+      "successful_output": 29,
+      "expected_missing_source_clarification": 2
+    },
+    "ai": {
+      "passed": 10,
+      "total": 10
+    },
+    "retries": 0,
+    "product_source_changes_during_final_replays": 0,
+    "existing_asset_mutations": 0,
+    "published_asset_losses": 0,
+    "browser_contracts_passed": 41,
+    "db_and_png_contracts_passed": 41
+  },
+  "regression": {
+    "full_suite": {
+      "passed": 714,
+      "skipped_opt_in_mysql": 4,
+      "total": 718,
+      "seconds": 217.238
+    },
+    "opt_in_actual_mysql": {
+      "passed": 4,
+      "total": 4,
+      "seconds": 62.634
+    },
+    "unique_tests_exercised": 718
+  },
+  "latency_seconds": {
+    "median": 44.807,
+    "max": 65.407,
+    "total": 1705.4149999999993,
+    "sla_acceptance": "not established; measured only"
+  },
+  "model_calls_total": 208,
+  "same_product_build": true,
+  "git": {
+    "head": "3a7206654b3d2fab7cd145893fd52970e397dd07",
+    "tested_source": "uncommitted working tree; build hashes preserved",
+    "pushed": false
+  },
+  "official_benchmark_scores": {
+    "DeepEval": null,
+    "Spider2": null
+  },
+  "remaining_for_broader_go": [
+    "company Windows/Azure/Databricks actual deployment journeys",
+    "held-out schema and advanced multi-step EDA/autonomous recovery evaluation",
+    "generated Python sandbox execution and bounded repair",
+    "nested population expressions and task-specific dependency scopes",
+    "actual very-large/wide database transfer and memory/deadline/SLA validation",
+    "official DeepEval/Spider2 protocol runs; local scenario score is not an official benchmark score"
+  ],
+  "evidence_directories": [
+    "2026-10-09_mysql_go_konlo_output",
+    "2026-10-09_mysql_go_ai10_output"
+  ],
+  "final_static_checks": {
+    "compileall": "PASS",
+    "pip_check": "PASS",
+    "git_diff_check": "PASS"
+  }
+}

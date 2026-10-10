@@ -1,0 +1,19 @@
+{
+  "recorded_at": "2026-10-03T14:32:42.062462+00:00",
+  "command": ".telly_runtime/v1-venv/bin/python -m pytest tests migration -q",
+  "passed": 697,
+  "failed": 0,
+  "skipped": 4,
+  "subtests_passed": 491,
+  "seconds": 135.02,
+  "targeted": {
+    "passed": 17,
+    "subtests_passed": 7,
+    "seconds": 12.29
+  },
+  "reproduction": "Old footer creates a second image after new incomplete scatter; corrected test keeps only historical image",
+  "compileall": "pass",
+  "git_diff_check": "pass",
+  "server_health": "ok",
+  "release_scope": "UI request/result association fixed; full-source scatter still incomplete; not generic agent GO."
+}

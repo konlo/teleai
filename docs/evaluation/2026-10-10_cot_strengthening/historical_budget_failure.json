@@ -1,0 +1,540 @@
+{
+  "conversation": "0bf6fc8f-34b3-4593-9110-7109850e6c24",
+  "stage": "02",
+  "run": {
+    "time": "2026-10-10T05:30:33.571777+00:00",
+    "event": "run_completed",
+    "run_id": "4634b894fa6549d4b79417a07a0e3bc4",
+    "instance_id": "40a1c74b622c",
+    "pid": 95743,
+    "status": "incomplete",
+    "elapsed_seconds": 49.742,
+    "error_id": "3b06a4f2d8b2"
+  },
+  "goal": null,
+  "scope": {
+    "sources": [],
+    "columns": [],
+    "conditions": [],
+    "any_conditions": [],
+    "measure_conditions": [],
+    "ratio": null,
+    "join_edges": [],
+    "unresolved": []
+  },
+  "model_calls": 0,
+  "sent_calls": [],
+  "decision_support_bound": false,
+  "decision_support": null,
+  "plan": {
+    "status": "needs_context",
+    "error_code": "plan_not_found"
+  },
+  "datasets": [
+    {
+      "id": "27f6f915-c11e-4f14-972f-cb391c0bb8e9",
+      "source": "teleai_default.bank_loan",
+      "rows": 10,
+      "columns": [
+        "age",
+        "balance",
+        "education"
+      ],
+      "parent_id": "",
+      "digest": "41c286759e756f3757bc8380c5174d32b3ccf2c679e87e3749a01f51ad7fb411"
+    }
+  ],
+  "selected_dataset": "",
+  "additional_queries_this_run": 0,
+  "total_queries": 1,
+  "tool_calls": 0,
+  "diagnostics": [
+    {
+      "time": "2026-10-10T05:29:43.823789+00:00",
+      "event": "run_started",
+      "run_id": "4634b894fa6549d4b79417a07a0e3bc4",
+      "instance_id": "40a1c74b622c",
+      "pid": 95743,
+      "runtime": {
+        "revision_at_first_runtime": "3a7206654b3d2fab7cd145893fd52970e397dd07",
+        "packages": {
+          "langchain": "1.4.0",
+          "langchain-core": "1.6.2",
+          "langgraph": "1.2.11",
+          "streamlit": "1.63.0",
+          "sqlglot": "30.18.0"
+        },
+        "python_version": "3.11.13",
+        "identity_captured_at": "2026-10-10T05:28:11.144540+00:00",
+        "route": "langgraph-v1",
+        "model_class": "ChatOllama",
+        "require_remote_approval": false,
+        "loaded_delivery_guard": "fe636ce820546fac",
+        "data_backend": "mysql",
+        "intent_mode": "llm",
+        "goal_version": 1,
+        "goal_model": "gemma4:e4b",
+        "planner_model": "gemma4:e4b"
+      },
+      "operation": "submit",
+      "process_peak_rss_bytes": 320946176
+    },
+    {
+      "time": "2026-10-10T05:29:43.826949+00:00",
+      "event": "goal_interpretation_started",
+      "run_id": "4634b894fa6549d4b79417a07a0e3bc4",
+      "instance_id": "40a1c74b622c",
+      "pid": 95743,
+      "request_id": "ce87f19ea1044fe1a1255acb70129354",
+      "origin": "llm",
+      "goal_version": 1
+    },
+    {
+      "time": "2026-10-10T05:29:43.827936+00:00",
+      "event": "model_payload_budget",
+      "run_id": "4634b894fa6549d4b79417a07a0e3bc4",
+      "instance_id": "40a1c74b622c",
+      "pid": 95743,
+      "payload_bytes": 2071,
+      "payload_bytes_before_projection": 2071,
+      "template_headroom": 640,
+      "input_budget_units": 14336,
+      "output_reserved": 2048,
+      "context_window": 16384,
+      "tool_count": 0,
+      "message_count": 1,
+      "older_turns_compacted": false,
+      "within_budget": true,
+      "observations_compacted": false,
+      "schema_compacted": false,
+      "system_catalog_compacted": false,
+      "tool_menu_compacted": false,
+      "minimal_discovery_menu": false,
+      "reasoning_compacted": false,
+      "minimal_catalog": false,
+      "builtin_instructions_compacted": false,
+      "repair_history_compacted": false,
+      "components": {
+        "system_bytes": 1332,
+        "message_content_bytes": 602,
+        "tool_calls_bytes": 0,
+        "reasoning_bytes": 0,
+        "tool_schema_bytes": 0,
+        "tool_names": []
+      },
+      "measurement": "conservative_utf8_bytes_not_actual_token_count"
+    },
+    {
+      "time": "2026-10-10T05:29:46.691319+00:00",
+      "event": "goal_literal_subjects_read",
+      "run_id": "4634b894fa6549d4b79417a07a0e3bc4",
+      "instance_id": "40a1c74b622c",
+      "pid": 95743,
+      "request_id": "ce87f19ea1044fe1a1255acb70129354",
+      "candidate_count": 4,
+      "table_count": 0
+    },
+    {
+      "time": "2026-10-10T05:29:46.694043+00:00",
+      "event": "model_payload_budget",
+      "run_id": "4634b894fa6549d4b79417a07a0e3bc4",
+      "instance_id": "40a1c74b622c",
+      "pid": 95743,
+      "payload_bytes": 8715,
+      "payload_bytes_before_projection": 8715,
+      "template_headroom": 640,
+      "input_budget_units": 14336,
+      "output_reserved": 2048,
+      "context_window": 16384,
+      "tool_count": 0,
+      "message_count": 1,
+      "older_turns_compacted": false,
+      "within_budget": true,
+      "observations_compacted": false,
+      "schema_compacted": false,
+      "system_catalog_compacted": false,
+      "tool_menu_compacted": false,
+      "minimal_discovery_menu": false,
+      "reasoning_compacted": false,
+      "minimal_catalog": false,
+      "builtin_instructions_compacted": false,
+      "repair_history_compacted": false,
+      "components": {
+        "system_bytes": 6126,
+        "message_content_bytes": 2171,
+        "tool_calls_bytes": 0,
+        "reasoning_bytes": 0,
+        "tool_schema_bytes": 0,
+        "tool_names": []
+      },
+      "measurement": "conservative_utf8_bytes_not_actual_token_count"
+    },
+    {
+      "time": "2026-10-10T05:29:54.167113+00:00",
+      "event": "model_payload_budget",
+      "run_id": "4634b894fa6549d4b79417a07a0e3bc4",
+      "instance_id": "40a1c74b622c",
+      "pid": 95743,
+      "payload_bytes": 3788,
+      "payload_bytes_before_projection": 3788,
+      "template_headroom": 640,
+      "input_budget_units": 14336,
+      "output_reserved": 2048,
+      "context_window": 16384,
+      "tool_count": 0,
+      "message_count": 1,
+      "older_turns_compacted": false,
+      "within_budget": true,
+      "observations_compacted": false,
+      "schema_compacted": false,
+      "system_catalog_compacted": false,
+      "tool_menu_compacted": false,
+      "minimal_discovery_menu": false,
+      "reasoning_compacted": false,
+      "minimal_catalog": false,
+      "builtin_instructions_compacted": false,
+      "repair_history_compacted": false,
+      "components": {
+        "system_bytes": 2304,
+        "message_content_bytes": 1237,
+        "tool_calls_bytes": 0,
+        "reasoning_bytes": 0,
+        "tool_schema_bytes": 0,
+        "tool_names": []
+      },
+      "measurement": "conservative_utf8_bytes_not_actual_token_count"
+    },
+    {
+      "time": "2026-10-10T05:29:59.585785+00:00",
+      "event": "goal_measure_obligation_reviewed",
+      "run_id": "4634b894fa6549d4b79417a07a0e3bc4",
+      "instance_id": "40a1c74b622c",
+      "pid": 95743,
+      "request_id": "ce87f19ea1044fe1a1255acb70129354",
+      "original_capability": "calculation",
+      "capability": "calculation",
+      "operations": [
+        "AVG"
+      ],
+      "changed": true
+    },
+    {
+      "time": "2026-10-10T05:29:59.591054+00:00",
+      "event": "model_payload_budget",
+      "run_id": "4634b894fa6549d4b79417a07a0e3bc4",
+      "instance_id": "40a1c74b622c",
+      "pid": 95743,
+      "payload_bytes": 4799,
+      "payload_bytes_before_projection": 4799,
+      "template_headroom": 640,
+      "input_budget_units": 14336,
+      "output_reserved": 2048,
+      "context_window": 16384,
+      "tool_count": 0,
+      "message_count": 1,
+      "older_turns_compacted": false,
+      "within_budget": true,
+      "observations_compacted": false,
+      "schema_compacted": false,
+      "system_catalog_compacted": false,
+      "tool_menu_compacted": false,
+      "minimal_discovery_menu": false,
+      "reasoning_compacted": false,
+      "minimal_catalog": false,
+      "builtin_instructions_compacted": false,
+      "repair_history_compacted": false,
+      "components": {
+        "system_bytes": 3487,
+        "message_content_bytes": 1048,
+        "tool_calls_bytes": 0,
+        "reasoning_bytes": 0,
+        "tool_schema_bytes": 0,
+        "tool_names": []
+      },
+      "measurement": "conservative_utf8_bytes_not_actual_token_count"
+    },
+    {
+      "time": "2026-10-10T05:30:08.333965+00:00",
+      "event": "goal_population_basis_rejected",
+      "run_id": "4634b894fa6549d4b79417a07a0e3bc4",
+      "instance_id": "40a1c74b622c",
+      "pid": 95743,
+      "request_id": "ce87f19ea1044fe1a1255acb70129354",
+      "attempt": 1,
+      "error_type": "ValueError",
+      "detail": "Population reference needs a CURRENT request restriction quote",
+      "basis": "displayed_result",
+      "quote_is_current": false,
+      "changes_filters": false
+    },
+    {
+      "time": "2026-10-10T05:30:08.334717+00:00",
+      "event": "model_payload_budget",
+      "run_id": "4634b894fa6549d4b79417a07a0e3bc4",
+      "instance_id": "40a1c74b622c",
+      "pid": 95743,
+      "payload_bytes": 5178,
+      "payload_bytes_before_projection": 5178,
+      "template_headroom": 704,
+      "input_budget_units": 14336,
+      "output_reserved": 2048,
+      "context_window": 16384,
+      "tool_count": 0,
+      "message_count": 2,
+      "older_turns_compacted": false,
+      "within_budget": true,
+      "observations_compacted": false,
+      "schema_compacted": false,
+      "system_catalog_compacted": false,
+      "tool_menu_compacted": false,
+      "minimal_discovery_menu": false,
+      "reasoning_compacted": false,
+      "minimal_catalog": false,
+      "builtin_instructions_compacted": false,
+      "repair_history_compacted": false,
+      "components": {
+        "system_bytes": 3487,
+        "message_content_bytes": 1393,
+        "tool_calls_bytes": 0,
+        "reasoning_bytes": 0,
+        "tool_schema_bytes": 0,
+        "tool_names": []
+      },
+      "measurement": "conservative_utf8_bytes_not_actual_token_count"
+    },
+    {
+      "time": "2026-10-10T05:30:12.523316+00:00",
+      "event": "goal_population_basis_read",
+      "run_id": "4634b894fa6549d4b79417a07a0e3bc4",
+      "instance_id": "40a1c74b622c",
+      "pid": 95743,
+      "request_id": "ce87f19ea1044fe1a1255acb70129354",
+      "basis": "displayed_result",
+      "has_current_quote": true,
+      "changes_filters": false,
+      "filter_change_quote_verified": false
+    },
+    {
+      "time": "2026-10-10T05:30:12.523429+00:00",
+      "event": "goal_tasks_selected",
+      "run_id": "4634b894fa6549d4b79417a07a0e3bc4",
+      "instance_id": "40a1c74b622c",
+      "pid": 95743,
+      "request_id": "ce87f19ea1044fe1a1255acb70129354",
+      "mode": "execute",
+      "capabilities": [
+        "calculation"
+      ],
+      "chart_kind": "",
+      "metadata_kind": "",
+      "source_reference": "previous_analysis",
+      "current_result_only": true
+    },
+    {
+      "time": "2026-10-10T05:30:12.524175+00:00",
+      "event": "model_payload_budget",
+      "run_id": "4634b894fa6549d4b79417a07a0e3bc4",
+      "instance_id": "40a1c74b622c",
+      "pid": 95743,
+      "payload_bytes": 12833,
+      "payload_bytes_before_projection": 12833,
+      "template_headroom": 640,
+      "input_budget_units": 14336,
+      "output_reserved": 2048,
+      "context_window": 16384,
+      "tool_count": 0,
+      "message_count": 1,
+      "older_turns_compacted": false,
+      "within_budget": true,
+      "observations_compacted": false,
+      "schema_compacted": false,
+      "system_catalog_compacted": false,
+      "tool_menu_compacted": false,
+      "minimal_discovery_menu": false,
+      "reasoning_compacted": false,
+      "minimal_catalog": false,
+      "builtin_instructions_compacted": false,
+      "repair_history_compacted": false,
+      "components": {
+        "system_bytes": 7618,
+        "message_content_bytes": 4445,
+        "tool_calls_bytes": 0,
+        "reasoning_bytes": 0,
+        "tool_schema_bytes": 0,
+        "tool_names": []
+      },
+      "measurement": "conservative_utf8_bytes_not_actual_token_count"
+    },
+    {
+      "time": "2026-10-10T05:30:33.558545+00:00",
+      "event": "goal_semantic_review_started",
+      "run_id": "4634b894fa6549d4b79417a07a0e3bc4",
+      "instance_id": "40a1c74b622c",
+      "pid": 95743,
+      "request_id": "ce87f19ea1044fe1a1255acb70129354"
+    },
+    {
+      "time": "2026-10-10T05:30:33.561024+00:00",
+      "event": "model_payload_budget",
+      "run_id": "4634b894fa6549d4b79417a07a0e3bc4",
+      "instance_id": "40a1c74b622c",
+      "pid": 95743,
+      "payload_bytes": 14646,
+      "payload_bytes_before_projection": 14646,
+      "template_headroom": 640,
+      "input_budget_units": 14336,
+      "output_reserved": 2048,
+      "context_window": 16384,
+      "tool_count": 0,
+      "message_count": 1,
+      "older_turns_compacted": false,
+      "within_budget": false,
+      "observations_compacted": false,
+      "schema_compacted": false,
+      "system_catalog_compacted": false,
+      "tool_menu_compacted": false,
+      "minimal_discovery_menu": false,
+      "reasoning_compacted": false,
+      "minimal_catalog": false,
+      "builtin_instructions_compacted": false,
+      "repair_history_compacted": false,
+      "components": {
+        "system_bytes": 8786,
+        "message_content_bytes": 4984,
+        "tool_calls_bytes": 0,
+        "reasoning_bytes": 0,
+        "tool_schema_bytes": 0,
+        "tool_names": []
+      },
+      "measurement": "conservative_utf8_bytes_not_actual_token_count"
+    },
+    {
+      "time": "2026-10-10T05:30:33.561987+00:00",
+      "event": "model_inference_failed",
+      "run_id": "4634b894fa6549d4b79417a07a0e3bc4",
+      "instance_id": "40a1c74b622c",
+      "pid": 95743,
+      "request_id": "ce87f19ea1044fe1a1255acb70129354",
+      "error_type": "ModelContextBudgetExceeded",
+      "http_status": null,
+      "error_category": null,
+      "retry_scheduled": false,
+      "retry_delay_seconds": null
+    },
+    {
+      "time": "2026-10-10T05:30:33.571645+00:00",
+      "event": "error",
+      "run_id": "4634b894fa6549d4b79417a07a0e3bc4",
+      "instance_id": "40a1c74b622c",
+      "pid": 95743,
+      "error_category": null,
+      "error_id": "3b06a4f2d8b2",
+      "stage": "agent_stream",
+      "error_type": "ModelContextBudgetExceeded",
+      "database_errno": null,
+      "http_status": null,
+      "frames": [
+        {
+          "file": "main.py",
+          "line": 2967,
+          "function": "stream"
+        },
+        {
+          "file": "_runner.py",
+          "line": 207,
+          "function": "tick"
+        },
+        {
+          "file": "_retry.py",
+          "line": 617,
+          "function": "run_with_retry"
+        },
+        {
+          "file": "_runnable.py",
+          "line": 707,
+          "function": "invoke"
+        },
+        {
+          "file": "_runnable.py",
+          "line": 447,
+          "function": "invoke"
+        },
+        {
+          "file": "recovery.py",
+          "line": 169,
+          "function": "before_model"
+        },
+        {
+          "file": "recovery.py",
+          "line": 4087,
+          "function": "before_step"
+        },
+        {
+          "file": "goal_interpreter.py",
+          "line": 407,
+          "function": "interpret"
+        },
+        {
+          "file": "model_recovery.py",
+          "line": 134,
+          "function": "auxiliary_call"
+        },
+        {
+          "file": "model_recovery.py",
+          "line": 159,
+          "function": "invoke"
+        },
+        {
+          "file": "goal_interpreter.py",
+          "line": 405,
+          "function": "invoke"
+        },
+        {
+          "file": "model_context.py",
+          "line": 340,
+          "function": "wrap_model_call"
+        }
+      ]
+    },
+    {
+      "time": "2026-10-10T05:30:33.571777+00:00",
+      "event": "run_completed",
+      "run_id": "4634b894fa6549d4b79417a07a0e3bc4",
+      "instance_id": "40a1c74b622c",
+      "pid": 95743,
+      "status": "incomplete",
+      "elapsed_seconds": 49.742,
+      "error_id": "3b06a4f2d8b2"
+    },
+    {
+      "time": "2026-10-10T05:30:33.571901+00:00",
+      "event": "turn_slo",
+      "run_id": "4634b894fa6549d4b79417a07a0e3bc4",
+      "instance_id": "40a1c74b622c",
+      "pid": 95743,
+      "elapsed_seconds": 49.742,
+      "limit": 180.0,
+      "status": "error",
+      "process_peak_rss_bytes": 320946176,
+      "frame_cache_bytes": 0
+    }
+  ],
+  "originals_preserved": true,
+  "oracle": {
+    "raw_rows": 10,
+    "raw_columns": [
+      "age",
+      "balance",
+      "education"
+    ],
+    "row_scope_matches": true,
+    "expected_balance_mean": 1732.9,
+    "expected_education_frequencies": {
+      "secondary": 9,
+      "primary": 1
+    },
+    "observed_scalar_values": [],
+    "passed": false
+  },
+  "passed": false
+}
