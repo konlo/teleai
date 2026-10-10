@@ -126,6 +126,16 @@ def public_input_budget(value):
     return result
 
 
+def public_attempt_budget(value):
+    if not isinstance(value,dict) or not value:return {}
+    result={key:number(value.get(key)) for key in (
+        'calls_used','call_limit','total_call_limit','reserved_calls','seconds_used',
+        'seconds_limit','seconds_remaining','provider_failures','auxiliary_calls','retries')}
+    result['reason']=value.get('reason') if value.get('reason') in {'calls','time','calls_and_time'} else None
+    result['call_kind']=value.get('call_kind') if value.get('call_kind') in {'agent','auxiliary'} else None
+    return result
+
+
 def summarize(path, *, run_id=None, error_id=None):
     """Exact selectors never silently fall back to another request."""
     if run_id and error_id:raise ValueError('Choose run_id or error_id, not both')
@@ -150,6 +160,7 @@ def summarize(path, *, run_id=None, error_id=None):
     errors=[]
     for e in selected:
         if e.get('event')!='error':continue
+        if selected_error is not None and e is not selected_error:continue
         frames=e.get('frames',[])
         errors.append({'error_id':identifier(e.get('error_id')),'stage':token(e.get('stage')),
                        'error_type':token(e.get('error_type')),'http_status':number(e.get('http_status')),
@@ -157,6 +168,7 @@ def summarize(path, *, run_id=None, error_id=None):
                        'database_errno':number(e.get('database_errno')),
                        'os_errno':number(e.get('os_errno')),
                        'winerror':number(e.get('winerror')),
+                       'attempt_budget':public_attempt_budget(e.get('attempt_budget')),
                        'frames':[{'file':token(f.get('file')),'line':number(f.get('line')),
                                   'function':token(f.get('function'))} for f in frames[-3:] if isinstance(f,dict)] if isinstance(frames,list) else []})
     status='awaiting_approval' if finish.get('event')=='run_paused' else finish.get('status')
@@ -211,6 +223,12 @@ def brief(report):
     last=report['errors'][-1] if report['errors'] else {}
     budget=report.get('input_budget') or {}
     budget_text=(f" / 입력 추정(bytes): {budget.get('payload_bytes')}+{budget.get('template_headroom')}/{budget.get('input_budget_units')}" if budget else '')
+    attempt=last.get('attempt_budget') or {}
+    attempt_text=(f"모델 실행 제한: 원인={attempt.get('reason')} / 호출={attempt.get('calls_used')}/{attempt.get('call_limit')}"
+        f" (전체 한도={attempt.get('total_call_limit')}, 예약={attempt.get('reserved_calls')})"
+        f" / 시간={attempt.get('seconds_used')}/{attempt.get('seconds_limit')}초"
+        f" / 역할={attempt.get('call_kind')} / 보조 호출={attempt.get('auxiliary_calls')}"
+        f" / 공급자 실패={attempt.get('provider_failures')} / 재시도={attempt.get('retries')}" if attempt else '')
     return '\n'.join([
         f"시각(UTC): {report['time_utc']}",
         f"실행 ID: {report['run_id']} / 오류 ID: {last.get('error_id')}",
@@ -225,5 +243,6 @@ def brief(report):
         + (f" / OS errno={last.get('os_errno')}, WinError={last.get('winerror')}"
            if last.get('os_errno') is not None or last.get('winerror') is not None else ''),
         f"오류 위치: {last.get('frames',[])}",
+        *([attempt_text] if attempt_text else []),
         f"로그 완전성: {report['log_integrity']}",
     ])

@@ -49,8 +49,11 @@ class Diagnostics:
         frames = [{'file': Path(f.filename).name, 'line': f.lineno, 'function': f.name}
                   for f in traceback.extract_tb(exc.__traceback__)]
         from core.analysis_agent.model_errors import model_error_category
+        from core.analysis_agent.model_recovery import ModelAttemptBudgetExceeded
+        budget = exc.attempt_budget if isinstance(exc, ModelAttemptBudgetExceeded) else None
         self.emit('error', error_category=model_error_category(exc), run_id=run_id or self.run_id, error_id=error_id, stage=stage,
             error_type=type(exc).__name__,
+            attempt_budget=budget,
             database_errno=getattr(exc,'errno',None) if not isinstance(exc,OSError) else None,
             os_errno=getattr(exc,'errno',None) if isinstance(exc,OSError) else None,
             winerror=getattr(exc,'winerror',None) if isinstance(exc,OSError) else None,
