@@ -143,6 +143,20 @@ def reconcile(result, scope, request, same_source):
     return {k:result[k] for k in ('conditions','any_conditions')}
 
 
+def verify_filter_grounding(interpreter,current,result,goal,scope):
+    grounded={c['column'] for key in result for c in goal[key]}
+    grounded.update(c['column'] for key in result for c in scope.get(key,[]))
+    from core.analysis_agent.source_references import identifier_mentioned
+    for key in result:
+        for condition in result[key]:
+            column=condition['column']
+            if column not in grounded and not identifier_mentioned(column,current['request_text']):
+                interpreter.diagnostics.emit('goal_population_audit_conflict',request_id=current['request_id'],
+                    resolution='ungrounded_new_filter_column',column=column)
+                raise ValueError('Population audit introduced ungrounded filter column '+column+
+                    '. Output row limits are not column filters. Rebuild conditions from the original request.')
+
+
 def audit(interpreter,current,data,goal,selection=None):
     """Return full resulting filters; never accept an existing plan as evidence."""
     from core.analysis_agent.intent_memory import prior_intent
@@ -185,17 +199,25 @@ Do not invent NULL predicates or restrictions. Keep explicitly requested or prev
     for attempt in range(2):
         response=(interpreter.model_recovery.auxiliary_call(current,invoke)
                   if interpreter.model_recovery else invoke())
-        raw=json.loads(response.content)
+        raw={}
+        error_code='invalid_population_json'
         try:
+            raw=json.loads(response.content)
+            error_code='invalid_population_delta'
+            if not isinstance(raw,dict):raise ValueError('Population audit must return a JSON object')
+            result=reconcile(raw,scope,current['request_text'],same_source)
+            error_code='unrequested_null_filter'
             if null_declared(raw) and not (null_declared(goal) or null_declared(scope)):
                 raise ValueError('Unrequested NULL predicate: absent from reviewed request goal and confirmed prior population. Re-read the original request; do not invent a missing-value filter for an ordinary aggregate.')
-            result=reconcile(raw,scope,current['request_text'],same_source)
+            error_code='ungrounded_filter_column'
+            verify_filter_grounding(interpreter,current,result,goal,scope)
             break
-        except ValueError as exc:
+        except (ValueError,TypeError,KeyError) as exc:
+            metadata=raw if isinstance(raw,dict) else {}
             interpreter.diagnostics.emit('goal_population_delta_rejected',request_id=current['request_id'],
-                attempt=attempt+1,detail=str(exc),change=raw.get('change'),
-                has_current_quote=isinstance(raw.get('evidence_quote'),str) and bool(raw['evidence_quote'].strip())
-                    and raw['evidence_quote'] in current['request_text'])
+                attempt=attempt+1,error_code=error_code,detail=str(exc),change=metadata.get('change'),
+                has_current_quote=isinstance(metadata.get('evidence_quote'),str) and bool(metadata['evidence_quote'].strip())
+                    and metadata['evidence_quote'] in current['request_text'])
             if attempt:
                 from core.analysis_agent.population_equivalence import equivalent
                 if same_source and equivalent(goal,scope):
@@ -210,17 +232,6 @@ Do not invent NULL predicates or restrictions. Keep explicitly requested or prev
             req.messages.append(HumanMessage(content='Repair ONLY the population delta: '+str(exc)+
                 '. Re-read EVERY current restriction. Preserve unmentioned prior dimensions. '
                 'For a modified population evidence_quote copies the full CURRENT_USER_REQUEST exactly.'))
-    grounded={c['column'] for key in result for c in goal[key]}
-    grounded.update(c['column'] for key in result for c in scope.get(key,[]))
-    from core.analysis_agent.source_references import identifier_mentioned
-    for key in result:
-        for condition in result[key]:
-            column=condition['column']
-            if column not in grounded and not identifier_mentioned(column,current['request_text']):
-                interpreter.diagnostics.emit('goal_population_audit_conflict',request_id=current['request_id'],
-                    resolution='ungrounded_new_filter_column',column=column)
-                raise ValueError('Population audit introduced ungrounded filter column '+column+
-                    '. Output row limits are not column filters. Rebuild conditions from the original request.')
     interpreter.diagnostics.emit('goal_population_audited',request_id=current['request_id'],
         changed=any(result[k]!=goal[k] for k in result),condition_count=len(result['conditions']),
         alternative_count=len(result['any_conditions']))

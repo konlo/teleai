@@ -2,8 +2,8 @@
 
 ## Current Status
 
-- **Last Updated**: 2026-10-10T20:41:01.420861+09:00
-- **Status**: Windows batch 저장 fsync 호환 수정 및 sidebar 테이블 목록 구현 완료. 전달된 model_recovery.invoke 기존156행은 문맥 크기가 아닌 모델 호출/시간 예산 소진 경로로 확인. 오류 ID별 예산 snapshot·진단/안내 보강과 관련69검사 통과; 회사 Windows/Azure 재검증·운영 GO는 미확인.
+- **Last Updated**: 2026-10-10T21:18:08+09:00
+- **Status**: Windows 저장 호환·Azure 요청별 호출50·대상 판별 재사용은 push 완료. 목록→컬럼→10행→histogram의 population_audit 기존222행 오류는 근거 없는 새 필터 검증으로 확인했고 동일 역할 안에서 유한 수정하도록 로컬 보강. 관련94검사/43subtests 통과; 회사 Windows/Azure/Databricks 실제 재검증·운영 GO는 미확인.
 - **Evidence**: [추론·계획 보강 보고서](docs/evaluation/2026-10-10_cot_strengthening/report.json). 최종제품7b8156a1aa6691aed3fd7e3c74b73b3c24f441b534104cac4240a7e5021169df: 전체966PASS/4SKIP·665subtests(124.54초), compileall/diffcheck PASS.
 - **Actual UI**: 조건부10행→평균1732.9는 앞build에서 확인했다. 수정/서버재시작/소진된 이전요청 종료 후 최종build에서 같은 차트 원문55.383초/6모델/1도구로 secondary9·primary1 막대 PNG 일치. 이들을 최종build 전체3턴/반복 안정성 점수로 합산하지 않는다.
 - **Preservation**: 기존 asset digest 변경0·원본선택 유지·평균/최종차트 추가DB조회0. 최초 잘못된208699행 완료·예산 초과·인용 실패·누적예산 재개 중단을 별도 보존했다.
@@ -11,6 +11,8 @@
 - **Boundaries**: 인용/관측값 일치는 자연어 의미의 일반 증명이 아니다. 독립 task 모집단/DAG·호출 지연/deadline·소진예산 재개 안내·운영/장기대화/공식평가가 남아 있다.
 
 ## Next Action Items — 현재 남은 운영 범위
+
+- [ ] 회사 histogram 오류 수정 배포 후 같은 목록→컬럼→10행→분포 여정 재검증. 새 범위 검토 요약의 오류 코드/거절·완료 횟수와 원본 보존·차트/범위 일치 확인. 실제 추가된 필터 컬럼은 미확인.
 
 - [x] **C01 판단 근거**: goal 출력·조건·출처를 CURRENT 인용 또는 정확히 일치하는 이전/관측 맥락에 연결한다. 지정 구현/검증 완료; 의미 entailment 일반 증명과 구분.
 - [x] **C02 관찰 기반 계획 이력**: 도구 실패·인자 수정·의존성 수정·검증 완료를 영속 저장하고 다음 planner에 연결. 지정 구현/검증 완료.
@@ -3430,3 +3432,19 @@ Task definitions and acceptance conditions: docs/agent_remaining_tasks_2026-09-1
 - **Action**: Azure 요청별 전체50/보조49의 한도, 동일 대상 판별 재사용 및 역할 계측, 문서/기록/검사를 확인하고 현재 branch로 commit·push한다. 같은 사용자 후속 prompt가 독립 예산을 받는 회귀도 확인한다.
 - **Validation**: 최종 관련12개 test files 79 passed / 46 subtests passed (11.15초), git diff --check PASS. 새 회귀는 같은 사용자/같은 대화에서 첫요청49회 후 두번째 모델호출0 시작과 독립 장부, 이전 confirmed source 유지, 동일 미완료 ID 재개 사용량49 유지/보조호출 차단 확인. 회사 실제Azure 서비스 검증으로 합산하지 않음.
 - **Push Outcome**: 기능 commit c8b3044를 origin/codex/agentic-analysis-rc-2026-09-14로 push 성공. git ls-remote 전체 commit ID가 로컬 HEAD와 일치, 작업 트리 clean 확인. Azure 호출50/다음 프롬프트 독립 예산, subject 판별 재사용, 역할 계측 및 관련 tests/docs 모두 포함. 회사 서버 git pull·완전 재시작 및 실제Azure 검증은 미수행. 이 완료 기록을 별도 commit으로 push한다.
+
+## [2026-10-10 21:02:40] [Agent: /root] User Request: 요청해석 모델 응답 실행계약 불충족 원인 분석에 필요한 정보 안내
+- **Action**: 해석 계약 실패 stage 및 오류ID 진단 선택 경로를 확인하고 회사 원문로그 반출 없이 확인 가능한 최소 요청/직전맥락/오류단계·유형·frames·버전·모델 계수를 안내한다.
+- **Finding/Outcome**: GoalInterpreter.blocked는 goal_task_selection 또는 goal_validation 단계·error ID·예외 frames를 남김. 같은 대화에서 해당 오류ID로 진단 요약 조회를 안내하고 실패 prompt와 직전맥락(익명화 가능), 최근오류 단계/유형/HTTP와 오류위치, 버전 및 역할별 진입을 최소 증거로 요청. 유형/frames만으로 불충분하면 내부 계약 검증 상세를 추가 확인해야 하며 현재 public summary에 예외 본문은 없음. 제품 수정 없음.
+
+## [2026-10-10 21:09:24] [Agent: /root] User Request: 목록→컬럼→row10→unsafeshutdowns histogram, goal_validation ValueError / goal_interpreter533 / population_audit222
+- **Action**: 제공된 회사 여정과 population_audit 실패 위치를 조사해 표시10행/전체 source 범위 판정 및 goal 검증 충돌을 재현한다. 특정 컬럼 hardcoding 없이 검증/재계획 공통 기능을 확인한다.
+- **Finding**: 기존 population_audit222행은 요청/검증 목표/확정 조건에서 근거 없는 컬럼 필터를 범위 검토 모델이 추가한 경우의 ValueError다. 실제 회사 추가 컬럼은 미확인이며 row10을 필터로 만든 것으로 단정하지 않는다. 검증이 범위 수정 루프 밖에 있어 해당 역할 수정 대신 큰 목표 해석 루프로 실패가 전파되는 agent 복구 결함 확인. 수정 전 신규 재현 검사1FAIL이 정확히 기존222행을 재현.
+- **Artifact Update**: population_audit 필터 grounding/JSON/계약 검증을 동일 역할의 최대2회 수정 루프 안으로 이동. 두 번 실패한 뒤 같은 출처의 검토 목표와 이전 조건이 동등한 경우에만 기존 조건 유지; 새 출처/변경 조건은 fail closed. 원격 실행/조건 검증/호출 예산 확대 없음. support_report 및 server_failure_diagnostics에 원문 없는 범위 검토 오류코드·거절/완료·복구 계수 추가. 데이터별 이름과 원본20행 fixture는 tests/fixtures/population_histogram_followup.json으로 분리.
+- **Validation**: 관련12 test files 94PASS/43subtests (11.36초), diffcheck PASS. 추가 회귀 assertions 후 신규6 tests/3subtests PASS (8.11초). production graph+대역 모델/DB 목록 executor에서 목록→schema→preview10→histogram4턴 완료. 잘못된 필터1회→동일 역할 수정1회 후 목표 생성 재시도 없이 정상 PNG·원본20행의 각 값 빈도를 독립 value_counts와 대조; preview10에 제한되지 않음, 원본 digest/선택 유지·목록 조회 외 추가DB호출0. JSON/list/누락 계약 수정, 이전 필터 보존, 새 출처·변경 범위의 잘못된 fallback 거절 및 공개 요약 원문 제외 확인.
+- **Outcome/Limit**: 오류 주입한 로컬 구조 회귀이며 실제 Azure 자연어/회사 Databricks 성공 점수로 합산하지 않음. 회사 추가 필터·실제 데이터 규모/현재 배포 revision은 미확인. 이번 수정은 working tree에 있고 commit/push/회사 배포/프로세스 재시작은 미수행; 운영 GO 갱신 없음. 현재 .env/원격 장부/기존 저장 자산 변경 없음.
+
+## [2026-10-10 21:20:17] [Agent: /root] User Request: push해줘
+- **Action**: 범위 검토 오류의 동일 역할 복구, 원문 없는 진단 계수, 외부 histogram fixture/관련 회귀와 문서를 현재 codex/agentic-analysis-rc-2026-09-14 branch로 commit·push하고 원격 commit 일치를 확인한다.
+- **Validation**: 이전 수정 검증94PASS/43subtests 및 최종 신규6PASS/3subtests 유지. 새로운 제품 변경 없음, git diff --check PASS. 회사 배포·실제 Azure/Databricks 검증과 Git push를 구분한다.
+- **Outcome**: 기능 commit 05c9a0c58587ea23f2dfa219e40f4532dd809d31 push 성공. origin branch의 git ls-remote 전체 hash가 로컬 HEAD와 일치 확인. 이 완료 기록도 별도 문서 commit으로 push한다. 회사 서버 pull·전체 프로세스 재시작과 동일 여정 실제 검증은 미수행.
