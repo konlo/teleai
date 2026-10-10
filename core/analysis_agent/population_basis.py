@@ -2,6 +2,7 @@
 import json
 from types import SimpleNamespace
 from langchain_core.messages import HumanMessage, SystemMessage
+from core.analysis_agent.json_contract import invoke_role
 
 SCHEMA={'type':'object','additionalProperties':False,'required':['basis','quote','changes_filters','filter_change_quote'],
     'properties':{'basis':{'type':'string','enum':['source_population','unfiltered_source','displayed_result','selected_original','unavailable_result']},
@@ -100,7 +101,7 @@ def read(interpreter,current,data):
     def override(**changes):
         revised=SimpleNamespace(**{**vars(req),**changes});revised.override=override;return revised
     req.override=override
-    def invoke():return interpreter.budget.wrap_model_call(req,lambda r:model.invoke([r.system_message,*r.messages]))
+    def invoke():return invoke_role(model,req,interpreter.budget)
     for attempt in range(2):
         response=(interpreter.model_recovery.auxiliary_call(current,invoke) if interpreter.model_recovery else invoke())
         value=json.loads(response.content)

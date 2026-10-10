@@ -5,6 +5,7 @@ import os
 from types import SimpleNamespace
 
 from langchain_core.messages import HumanMessage, SystemMessage
+from core.analysis_agent.json_contract import invoke_role
 from core.analysis_agent.goal_contract import OPTIONS, compile_goal, response_schema, validate_goal
 from core.analysis_agent.goal_schema import compact_option_protocol
 from core.analysis_agent.model_context import ModelContextBudgetMiddleware
@@ -57,6 +58,8 @@ ordering latest rows is not refresh. Unsupported/ambiguous semantics require cla
 
 Output obligations (negation removes ONLY the forbidden action; preserve positive requests):
 - available tables/datasets = table_list, not data_load or explanation.
+  table_list catalog/schema options must equal selected_output_contract.inventory_scope.
+  Empty namespace slots mean the configured catalog and no schema filter; never invent namespace names.
 - ONE table's fields/names/types = metadata columns/dtypes (dtypes includes names).
 - which columns are numeric/categorical = metadata numeric_columns/categorical_columns.
 - VALUES of one column = value_list with columns=[THAT column], not field list or distinct count.
@@ -151,7 +154,11 @@ class GoalInterpreter:
             'literal_qualified_mentions':qualified_mentions(current['request_text']),
             'requested_previous_subject':current.get('requested_subject'),
             'last_verified_sources':(current.get('confirmed_analysis') or {}).get('required_sources',[])},ensure_ascii=False))
-        call=lambda:self.reference_model.invoke([prompt,request])
+        req=SimpleNamespace(state={'recovery':current},system_message=prompt,messages=[request],tools=[])
+        def override(**changes):
+            revised=SimpleNamespace(**{**vars(req),**changes});revised.override=override;return revised
+        req.override=override
+        call=lambda:invoke_role(self.reference_model,req,self.budget)
         response=self.model_recovery.auxiliary_call(current,call) if self.model_recovery else call()
         value=json.loads(response.content)
         if not isinstance(value,dict) or set(value)!={'reference'} or value['reference'] not in {'explicit','previous_analysis','selected_dataset'}:
@@ -262,6 +269,9 @@ class GoalInterpreter:
         if selection and selection['capabilities']==['table_list']:
             schema['properties']['sources']={'const':[]}
             schema['properties']['source_reference']={'const':'explicit'}
+            if 'inventory_scope' in selection:
+                for branch in schema['properties']['tasks']['items']['anyOf']:
+                    branch['properties']['options']={'const':selection['inventory_scope']}
             return
         if selection and selection.get('output_reference'):
             from core.analysis_agent.goal_contract import canonical_sources
@@ -351,6 +361,19 @@ class GoalInterpreter:
             'namespace':getattr(self.context,'source_namespace',''),
             'conversation_text_not_evidence':history,'task_options':compact_option_protocol()}
 
+    def blocked(self,current,error,stage):
+        """A contract refusal is a diagnosable failure, even without an HTTP error."""
+        result=deepcopy(current)
+        if self.model_recovery:self.model_recovery.ledger.sync(result)
+        error_id=self.diagnostics.failure(error,stage=stage)
+        result.update(goal_pending=False,goal_interpretation_error=True,status='blocked',
+            stop_reason='goal_unverified',goal_contract_error=str(error)[:200],
+            goal_error_id=error_id,failure_stage=stage)
+        self.diagnostics.emit('goal_interpretation_failed',request_id=current['request_id'],
+            error_id=error_id,stage=stage,reason='output_contract_unverified',
+            database_tool_dispatched=False)
+        return result
+
     def interpret(self,current,messages,remote_available=False):
         self.diagnostics.emit('goal_interpretation_started',request_id=current['request_id'],origin='llm',goal_version=1)
         if self.model_recovery and self.model_recovery.on_progress:
@@ -361,11 +384,7 @@ class GoalInterpreter:
         except (ValueError,TypeError,KeyError) as exc:
             from core.analysis_agent.model_context import ModelContextBudgetExceeded
             if isinstance(exc,ModelContextBudgetExceeded):raise
-            result=deepcopy(current)
-            if self.model_recovery:self.model_recovery.ledger.sync(result)
-            result.update(goal_pending=False,goal_interpretation_error=True,status='blocked',
-                stop_reason='goal_unverified',goal_contract_error='task selection: '+str(exc)[:180])
-            return result
+            return self.blocked(current,exc,'goal_task_selection')
         goal_model=self.selected_goal_model(selection,data)
         if selection:
             data['selected_output_contract']=selection_view(selection)
@@ -392,6 +411,7 @@ class GoalInterpreter:
         else:
             current.pop('requested_output_reference',None)
         error=None
+        last_exception=None
         reviewed=False
         failures=0
         error_counts={}
@@ -411,7 +431,7 @@ class GoalInterpreter:
             def override(**changes):
                 revised=SimpleNamespace(**{**vars(req),**changes});revised.override=override;return revised
             req.override=override
-            def invoke():return self.budget.wrap_model_call(req,lambda r:goal_model.invoke([r.system_message,*r.messages]))
+            def invoke():return invoke_role(goal_model,req,self.budget)
             try:
                 response=(self.model_recovery.auxiliary_call(current,invoke) if self.model_recovery else invoke())
                 content=response.content
@@ -532,6 +552,7 @@ class GoalInterpreter:
             except (ValueError,TypeError,KeyError) as exc:
                 from core.analysis_agent.model_context import ModelContextBudgetExceeded
                 if isinstance(exc,ModelContextBudgetExceeded):raise
+                last_exception=exc
                 error=str(exc)
                 if isinstance(candidate,dict):
                     data['proposed_goal']=candidate
@@ -585,8 +606,5 @@ class GoalInterpreter:
                             data.pop('proposed_goal',None);reviewed=False;error=None;error_counts.clear()
                             continue
                     break
-        result=deepcopy(current)
-        if self.model_recovery:self.model_recovery.ledger.sync(result)
-        result.update(goal_pending=False,goal_interpretation_error=True,status='blocked',stop_reason='goal_unverified',
-            goal_contract_error=(error or 'Goal interpretation budget ended before semantic verification')[:200])
-        return result
+        return self.blocked(current,last_exception or ValueError(error or 'Goal interpretation budget ended before semantic verification'),
+                            'goal_validation')

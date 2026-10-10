@@ -7,6 +7,7 @@ import json
 from copy import deepcopy
 from types import SimpleNamespace
 from langchain_core.messages import HumanMessage, SystemMessage
+from core.analysis_agent.json_contract import invoke_role
 from core.analysis_agent.goal_schema import OPTION_SCHEMAS
 
 SCHEMA={'type':'object','additionalProperties':False,
@@ -294,8 +295,7 @@ def select(interpreter,current,data):
     def override(**changes):
         revised=SimpleNamespace(**{**vars(req),**changes});revised.override=override;return revised
     req.override=override
-    def invoke():return interpreter.budget.wrap_model_call(req,lambda r:
-        model.invoke([r.system_message,*r.messages]))
+    def invoke():return invoke_role(model,req,interpreter.budget)
     for attempt in range(2):
         response=(interpreter.model_recovery.auxiliary_call(current,invoke)
                   if interpreter.model_recovery else invoke())
@@ -320,6 +320,8 @@ def select(interpreter,current,data):
         if set(value['capabilities']).issubset({'table_list','metadata','data_load'})
         else read_population(interpreter,current,data))
     value={**value,**basis}
+    if value['capabilities']==['table_list']:
+        value['inventory_scope']=data.get('literal_inventory_scope',{'catalog':'','schema':''})
     if basis.get('population_basis')=='unavailable_result':
         value.update(mode='clarify',capabilities=[],chart_kind='',output_columns=[],group_column='',scalar_operations=[])
     interpreter.diagnostics.emit('goal_tasks_selected',request_id=current['request_id'],
@@ -345,6 +347,11 @@ def verify_goal(goal,selection,context,enforce_obligations=True):
         if canonical_sources(goal['sources'],context)!=expected:
             raise ValueError('Use exact literal requested table identities '+repr(expected)+'; never substitute a similar/previous table')
     for task in goal['tasks']:
+        if task['capability']=='table_list' and 'inventory_scope' in selection:
+            expected=selection['inventory_scope']
+            if any(task['options'].get(key,'')!=expected[key] for key in ('catalog','schema')):
+                raise ValueError('Inventory namespaces must match independently read CURRENT identifiers; '
+                                 'no named namespace means empty options and the configured catalog, not an invented schema filter')
         if (enforce_obligations and task['capability']=='chart_adjust' and selection.get('chart_edit_fields')
                 and set(task['options'])!=set(selection['chart_edit_fields'])):
             raise ValueError('Chart edit must preserve independently selected display fields')

@@ -7,6 +7,7 @@ import json
 import re
 from types import SimpleNamespace
 from langchain_core.messages import HumanMessage,SystemMessage
+from core.analysis_agent.json_contract import invoke_role
 from core.analysis_agent.source_references import qualified_mentions
 
 
@@ -25,12 +26,13 @@ def candidates(text):
 
 
 def read(interpreter,current,data):
+    data['literal_inventory_scope']={'catalog':'','schema':''}
     tokens=candidates(current['request_text'])
     if not tokens or interpreter.selection_model is None:return []
     from core.analysis_agent.model_roles import json_role
     names=[t['source'] for t in tokens]
     roles={'type':'object','additionalProperties':False,'required':names,
-        'properties':{name:{'type':'string','enum':['requested_table','excluded_table','other']} for name in names}}
+        'properties':{name:{'type':'string','enum':['requested_table','excluded_table','requested_catalog','requested_schema','other']} for name in names}}
     schema={'type':'object','additionalProperties':False,'required':['candidate_roles'],
         'properties':{'candidate_roles':roles}}
     model=json_role(interpreter.selection_model,schema,1024) or interpreter.selection_model
@@ -39,6 +41,11 @@ def read(interpreter,current,data):
         'requested_table means a physical table the user asks to inspect, count or analyze; excluded_table means '
         'a physical table explicitly excluded; other includes columns, category values, chart/action names '
         'and generic words like table/row/DB/database/SQL. Never substitute a previous table. '
+        'requested_catalog and requested_schema mean ONLY physical namespaces explicitly named '
+        'for catalog/schema discovery, e.g. listing tables within a named namespace. Generic '
+        'words catalog/schema/table/list are other unless explicitly used as physical identifiers. '
+        'No named namespace means no namespace candidate; never invent a namespace or classify '
+        'a column/action as a namespace. A catalog.schema namespace may be requested_schema. '
         'A literal table name before/after a request for its rows/columns/count identifies that table, even if '
         'it is UNKNOWN or NOT loaded. Never substitute the previous table or select a table being explicitly '
         'excluded. Omitted-table follow-ups classify their column/action candidates as other. '
@@ -51,6 +58,7 @@ def read(interpreter,current,data):
     payload={'CURRENT_REQUEST':current['request_text'],'identifier_candidates':[
         {'name':v['source'],'literal':v['quote']} for v in tokens],
         'known_literal_catalog_matches':data.get('literal_source_mentions',[]),
+        'CONFIGURED_CATALOG':data.get('namespace',''),
         'ACTIVE_SOURCE':((data.get('requested_previous_analysis') or data.get('verified_previous') or {}).get('required_sources',[])
             or ([data['selected_dataset']['source']] if data.get('selected_dataset') else [])),
         'OBSERVED_COLUMNS':[{'table':t.get('table'),'columns':[c['name'] for c in t.get('columns',[])]}
@@ -60,16 +68,37 @@ def read(interpreter,current,data):
     def override(**changes):
         revised=SimpleNamespace(**{**vars(req),**changes});revised.override=override;return revised
     req.override=override
-    def invoke():return interpreter.budget.wrap_model_call(req,lambda r:model.invoke([r.system_message,*r.messages]))
+    def invoke():return invoke_role(model,req,interpreter.budget)
     for attempt in range(2):
         response=(interpreter.model_recovery.auxiliary_call(current,invoke)
                   if interpreter.model_recovery else invoke())
-        raw=json.loads(response.content)
-        classification=raw.get('candidate_roles') if isinstance(raw,dict) else None
-        if (not isinstance(raw,dict) or set(raw)!={'candidate_roles'}
-                or not isinstance(classification,dict) or set(classification)!=set(names)
-                or any(role not in {'requested_table','excluded_table','other'} for role in classification.values())):
-            raise ValueError('each CURRENT literal candidate needs a semantic subject role')
+        try:
+            raw=json.loads(response.content)
+            classification=raw.get('candidate_roles') if isinstance(raw,dict) else None
+            if (not isinstance(raw,dict) or set(raw)!={'candidate_roles'}
+                    or not isinstance(classification,dict) or set(classification)!=set(names)
+                    or any(role not in {'requested_table','excluded_table','requested_catalog','requested_schema','other'} for role in classification.values())):
+                raise ValueError('each CURRENT literal candidate needs a semantic subject role')
+        except (ValueError,TypeError) as exc:
+            interpreter.diagnostics.emit('goal_subject_contract_rejected',request_id=current['request_id'],
+                attempt=attempt+1,error_type=type(exc).__name__)
+            if attempt:raise
+            req.messages.append(HumanMessage(content='Repair the response shape: candidate_roles must '
+                'contain every supplied identifier name with one allowed semantic role. Re-read '
+                'CURRENT_REQUEST; return the complete JSON output contract without prose.'))
+            continue
+        for item in tokens:
+            role=classification[item['source']]
+            if role not in {'requested_catalog','requested_schema'}:continue
+            parts=item['source'].replace('`','').split('.')
+            if len(parts)>(1 if role=='requested_catalog' else 2):
+                raise ValueError('Discovery namespaces must identify a catalog or schema, not a table')
+            values=({'catalog':parts[0]} if role=='requested_catalog' else
+                    {'catalog':parts[0],'schema':parts[1]} if len(parts)==2 else {'schema':parts[0]})
+            for key,namespace in values.items():
+                prior=data['literal_inventory_scope'][key]
+                if prior and prior!=namespace:raise ValueError('Discovery requires one unambiguous namespace')
+                data['literal_inventory_scope'][key]=namespace
         value={'table_indexes':[i for i,t in enumerate(tokens) if classification[t['source']]=='requested_table']}
         if not isinstance(value,dict) or value.get('table_indexes') or not payload['known_literal_catalog_matches'] or attempt:break
         interpreter.diagnostics.emit('goal_literal_subjects_recheck',request_id=current['request_id'],
