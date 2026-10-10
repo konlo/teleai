@@ -1,0 +1,345 @@
+{
+  "conversation": "2d20b7a7-a716-4330-b60b-a4345e13443e",
+  "status": "complete",
+  "goal": {
+    "objective": "requested work",
+    "mode": "execute",
+    "source_reference": "previous_analysis",
+    "sources": [
+      "teleai_default.bank_loan"
+    ],
+    "columns": [
+      "age",
+      "balance"
+    ],
+    "conditions": [],
+    "any_conditions": [],
+    "measure_conditions": [],
+    "ratio": null,
+    "current_result_only": true,
+    "fresh_source_required": false,
+    "question": "",
+    "tasks": [
+      {
+        "capability": "advanced_eda",
+        "options": {
+          "kind": "correlation_heatmap"
+        }
+      }
+    ]
+  },
+  "model_calls": 7,
+  "tool_calls": null,
+  "elapsed_model_seconds": 57.54649486829294,
+  "selected_dataset_id": "",
+  "dataset_count": 2,
+  "datasets": [
+    {
+      "id": "6a83772d-172e-4d0c-bae8-3c72b786d4ac",
+      "source": "teleai_default.bank_loan",
+      "rows": 10,
+      "columns": [
+        "id",
+        "age",
+        "job",
+        "marital",
+        "education",
+        "default",
+        "balance",
+        "housing",
+        "loan",
+        "contact",
+        "day",
+        "month",
+        "duration",
+        "campaign",
+        "pdays",
+        "previous",
+        "poutcome",
+        "y"
+      ],
+      "coverage": "unknown",
+      "parent_id": "",
+      "digest": "06e8443c9fb358517faac21487988d5be8e970e0984b9fffcaf7849dc7e74a7e"
+    },
+    {
+      "id": "1eb46756-04ad-451a-b5af-05966718a5a5",
+      "source": "teleai_default.bank_loan",
+      "rows": 10,
+      "columns": [
+        "age",
+        "age_rolling"
+      ],
+      "coverage": "unknown",
+      "parent_id": "6a83772d-172e-4d0c-bae8-3c72b786d4ac",
+      "digest": "95edae0a768e30d86cfd51dc51e97220c19a5a38881fc0c083c02f2cbf7ee784"
+    }
+  ],
+  "new_evidence": {
+    "custom_analysis_evidence": null,
+    "advanced_eda_evidence": {
+      "dataset_id": "6a83772d-172e-4d0c-bae8-3c72b786d4ac",
+      "kind": "correlation_heatmap",
+      "columns": [
+        "age",
+        "balance"
+      ],
+      "scope": "보유 10행 · unknown · 표본화 없음",
+      "sampled": false,
+      "statistics": {
+        "missing_counts": {
+          "age": 0,
+          "balance": 0
+        },
+        "total_rows": 10,
+        "input_digest": "06e8443c9fb358517faac21487988d5be8e970e0984b9fffcaf7849dc7e74a7e",
+        "correlation": {
+          "age": {
+            "age": 1.0,
+            "balance": 0.025100640576938622
+          },
+          "balance": {
+            "age": 0.025100640576938622,
+            "balance": 1.0
+          }
+        },
+        "pairwise_valid_counts": {
+          "age": {
+            "age": 10,
+            "balance": 10
+          },
+          "balance": {
+            "age": 10,
+            "balance": 10
+          }
+        }
+      }
+    },
+    "export_evidence": null,
+    "table_preview_evidence": null
+  },
+  "original_preserved": true,
+  "charts": [
+    {
+      "id": "48814c26-ec45-481d-b55b-d1d9bdc87a97",
+      "expected_correlation": 0.025100640576938584,
+      "actual_correlation": 0.025100640576938622,
+      "oracle_pass": true,
+      "scope": "보유 10행 · unknown · 표본화 없음"
+    },
+    {
+      "id": "04186463-323a-4444-a044-66b29526fb6c",
+      "expected_correlation": 0.025100640576938584,
+      "actual_correlation": 0.025100640576938622,
+      "oracle_pass": true,
+      "scope": "보유 10행 · unknown · 표본화 없음"
+    }
+  ],
+  "exports": [
+    {
+      "id": "8bbc8bb7-0d8c-4245-8559-c20f5961c4c7",
+      "manifest": {
+        "dataset": {
+          "id": "6a83772d-172e-4d0c-bae8-3c72b786d4ac",
+          "source": "teleai_default.bank_loan",
+          "columns": [
+            "id",
+            "age",
+            "job",
+            "marital",
+            "education",
+            "default",
+            "balance",
+            "housing",
+            "loan",
+            "contact",
+            "day",
+            "month",
+            "duration",
+            "campaign",
+            "pdays",
+            "previous",
+            "poutcome",
+            "y"
+          ],
+          "rows": 10,
+          "coverage": "unknown",
+          "conditions": [],
+          "predicate_known": false,
+          "grain": "raw",
+          "aggregation": "",
+          "snapshot": "2026-10-09T23:55:38.271091+00:00",
+          "query": "SELECT * FROM `teleai_default`.`bank_loan` LIMIT 10",
+          "parent_id": "",
+          "parent_ids": [],
+          "role": "root",
+          "root_id": "6a83772d-172e-4d0c-bae8-3c72b786d4ac",
+          "row_selection": {}
+        },
+        "format": "csv",
+        "coverage_note": "Coverage and conditions describe this saved result, not necessarily the whole source table."
+      },
+      "csv_rows": 10,
+      "original_values_equal": true,
+      "exported_columns_match_receipt": true,
+      "exported_values_equal_to_source": true
+    },
+    {
+      "id": "ecebab6d-55b0-48dd-a19f-58bd6e35980a",
+      "manifest": {
+        "dataset": {
+          "id": "6a83772d-172e-4d0c-bae8-3c72b786d4ac",
+          "source": "teleai_default.bank_loan",
+          "columns": [
+            "id",
+            "age",
+            "job",
+            "marital",
+            "education",
+            "default",
+            "balance",
+            "housing",
+            "loan",
+            "contact",
+            "day",
+            "month",
+            "duration",
+            "campaign",
+            "pdays",
+            "previous",
+            "poutcome",
+            "y"
+          ],
+          "rows": 10,
+          "coverage": "unknown",
+          "conditions": [],
+          "predicate_known": false,
+          "grain": "raw",
+          "aggregation": "",
+          "snapshot": "2026-10-09T23:55:38.271091+00:00",
+          "query": "SELECT * FROM `teleai_default`.`bank_loan` LIMIT 10",
+          "parent_id": "",
+          "parent_ids": [],
+          "role": "root",
+          "root_id": "6a83772d-172e-4d0c-bae8-3c72b786d4ac",
+          "row_selection": {}
+        },
+        "exported_columns": [
+          "age",
+          "balance"
+        ],
+        "format": "csv",
+        "coverage_note": "Coverage and conditions describe this saved result, not necessarily the whole source table."
+      },
+      "csv_rows": 10,
+      "original_values_equal": false,
+      "exported_columns_match_receipt": true,
+      "exported_values_equal_to_source": true
+    }
+  ],
+  "runs": [
+    {
+      "run_id": "0f0d3684ff3d4ba685827a09fcf6aebe",
+      "status": "answered",
+      "elapsed_seconds": 30.416,
+      "error_id": null
+    },
+    {
+      "run_id": "bbe02316c62d4b0bac0b241bc4619841",
+      "status": "incomplete",
+      "elapsed_seconds": 39.619,
+      "error_id": "59e811033444"
+    },
+    {
+      "run_id": "3b7eafefe9294712bdb55699a319f773",
+      "status": "answered",
+      "elapsed_seconds": 105.565,
+      "error_id": null
+    },
+    {
+      "run_id": "3902596354214b359d896a98059ab215",
+      "status": "exhausted",
+      "elapsed_seconds": 81.192,
+      "error_id": null
+    },
+    {
+      "run_id": "08059f800440440fb0eb70c8bd043530",
+      "status": "answered",
+      "elapsed_seconds": 51.289,
+      "error_id": null
+    },
+    {
+      "run_id": "c7d18ba6b9074235b1f35f29a89ce132",
+      "status": "incomplete",
+      "elapsed_seconds": 102.367,
+      "error_id": "dd95331cb808"
+    },
+    {
+      "run_id": "ab145934ea8f472599ce199d9779cd00",
+      "status": "incomplete",
+      "elapsed_seconds": 163.702,
+      "error_id": "a9604a69c800"
+    },
+    {
+      "run_id": "481b64eaa01f4068a6ba1a083602d9a1",
+      "status": "blocked",
+      "elapsed_seconds": 22.125,
+      "error_id": null
+    },
+    {
+      "run_id": "86790801b784476fa8b093a5dcb2a37b",
+      "status": "incomplete",
+      "elapsed_seconds": 161.437,
+      "error_id": "dc70f0ddf955"
+    },
+    {
+      "run_id": "a4dce6eacb304f10a4926f6beba7a84d",
+      "status": "exhausted",
+      "elapsed_seconds": 235.251,
+      "error_id": null
+    },
+    {
+      "run_id": "94f2f239b4c742eea98d5f044672fda9",
+      "status": "exhausted",
+      "elapsed_seconds": 186.647,
+      "error_id": null
+    },
+    {
+      "run_id": "5ccca768714a4722bfd286ff2fe968a2",
+      "status": "answered",
+      "elapsed_seconds": 59.161,
+      "error_id": null
+    },
+    {
+      "run_id": "85a9abdb565d4a5d8cbc1792a2f41212",
+      "status": "answered",
+      "elapsed_seconds": 61.483,
+      "error_id": null
+    },
+    {
+      "run_id": "e097b491faa64409a9df9b9e2dd206c2",
+      "status": "blocked",
+      "elapsed_seconds": 22.071,
+      "error_id": null
+    },
+    {
+      "run_id": "91cb4c97e85b4be486ee57f8e34db2e9",
+      "status": "answered",
+      "elapsed_seconds": 63.565,
+      "error_id": null
+    },
+    {
+      "run_id": "c97cc94552114c8abbc0b04fd6ac5f50",
+      "status": "blocked",
+      "elapsed_seconds": 170.245,
+      "error_id": null
+    },
+    {
+      "run_id": "895334d1a1f74bf68c302ef3d72ddbdb",
+      "status": "answered",
+      "elapsed_seconds": 66.09,
+      "error_id": null
+    }
+  ],
+  "remote_queries_started": 1
+}

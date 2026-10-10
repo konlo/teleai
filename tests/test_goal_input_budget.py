@@ -34,6 +34,47 @@ class GoalInputBudgetTests(unittest.TestCase):
             {'recovery':current},SystemMessage(content=INSTRUCTIONS+'\nProtocol examples:\n'+protocol_examples()))
         projected=ModelContextBudgetMiddleware(SimpleNamespace(num_ctx=16384,num_predict=2048)).wrap_model_call(req,lambda r:r)
         self.assertEqual(json.loads(projected.messages[0].content)['request'],current['request_text'])
+        # The independent review adds its proposal and output contract. The
+        # first interpretation alone missed the real follow-up overflow.
+        payload['selected_output_contract']={'mode':'execute','capabilities':['metadata'],
+            'source_reference':'explicit','source_mentions':[{'name':'table_199','quote':'table_199'}],
+            'chart_kind':'','population_basis':'source_population','result_reference_quote':'',
+            'current_result_only':False}
+        payload['proposed_goal']=goal('metadata',{'kind':'dtypes'},sources=[refs[-1]['table']])
+        payload['requested_previous_analysis']={'required_sources':[refs[-1]['table']],
+            'status':'interpreted_not_completed',
+            'scope':{'conditions':[{'column':'field_'+str(i),'op':'eq','value':i} for i in range(12)]}}
+        req.messages=[HumanMessage(content=json.dumps(payload,ensure_ascii=False,separators=(',',':')))]
+        reviewed=ModelContextBudgetMiddleware(SimpleNamespace(num_ctx=16384,num_predict=2048)).wrap_model_call(req,lambda r:r)
+        self.assertEqual(json.loads(reviewed.messages[0].content)['requested_previous_analysis'],payload['requested_previous_analysis'])
+
+    def test_goal_role_uses_selected_obligations_without_losing_shared_guardrails(self):
+        from core.analysis_agent.goal_instructions import for_selection
+        instructions=for_selection(INSTRUCTIONS,{'mode':'execute','capabilities':['chart']})
+        self.assertLess(len(instructions.encode()),len(INSTRUCTIONS.encode())-2000)
+        for rule in ('CURRENT request overrides context','Never invent NULL filters',
+                     'ONE x column','numerical relationship','visual distribution'):
+            self.assertIn(rule,instructions)
+        self.assertNotIn('Custom transformation =',instructions)
+        custom=for_selection(INSTRUCTIONS,{'mode':'execute','capabilities':['custom_analysis']})
+        self.assertIn('Default min_periods=window',custom)
+        self.assertIn('result_contract=',custom)
+        compound=for_selection(INSTRUCTIONS,{'mode':'execute','capabilities':['chart','calculation']})
+        self.assertIn('Scalar measures =',compound)
+        self.assertIn('visual distribution',compound)
+        self.assertEqual(for_selection(INSTRUCTIONS,None),INSTRUCTIONS)
+
+    def test_selected_display_contract_does_not_duplicate_receipt_or_user_history(self):
+        from core.analysis_agent.goal_interpreter import selection_view
+        reference={'reference_id':'past:0','request_text':'private earlier wording',
+                   'scope':{'conditions':[{'column':'field','op':'ge','value':30}]},
+                   'display_evidence':{'dataset_id':'original','rows':10}}
+        selected={'current_result_only':True,'population_basis':'displayed_result','output_reference':reference}
+        view=selection_view(selected)
+        self.assertEqual(view['output_reference_id'],'past:0')
+        self.assertNotIn('output_reference',view)
+        self.assertNotIn('private earlier wording',json.dumps(view))
+        self.assertEqual(selected['output_reference'],reference)
 
     def test_failure_before_inference_keeps_request_confirmed_goal_and_restart_resume(self):
         with tempfile.TemporaryDirectory() as root:

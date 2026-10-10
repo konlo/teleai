@@ -1,0 +1,90 @@
+{
+  "id": 6,
+  "prompt": "education이 primary 이고 age가 30~40인 사람들을 시각화 해줘",
+  "status": "complete",
+  "goal": {
+    "objective": "requested work",
+    "mode": "execute",
+    "source_reference": "previous_analysis",
+    "sources": [
+      "teleai_default.bank_loan"
+    ],
+    "columns": [
+      "education"
+    ],
+    "conditions": [
+      {
+        "column": "education",
+        "op": "eq",
+        "value": "primary"
+      },
+      {
+        "column": "age",
+        "op": "between",
+        "value": [
+          30,
+          40
+        ]
+      }
+    ],
+    "any_conditions": [],
+    "measure_conditions": [],
+    "ratio": null,
+    "current_result_only": false,
+    "fresh_source_required": false,
+    "question": "",
+    "tasks": [
+      {
+        "capability": "chart",
+        "options": {
+          "kind": "histogram",
+          "axes": {
+            "x": "education"
+          },
+          "legend": true,
+          "stacked": false,
+          "palette": "default"
+        }
+      }
+    ]
+  },
+  "reason": null,
+  "run_id": "ac9a841027c046b891f6227d40a38249",
+  "model_calls": 6,
+  "chart_metadata": [
+    {
+      "id": "a8f37c6b-e3c8-4863-b2e0-3b94ba0987d7",
+      "dataset_id": "778e679e-481e-4ad5-a213-fd1d53bedbc1",
+      "title": "education 분포",
+      "reason": "범주별 실제 COUNT(*) 빈도를 표시합니다. 결측은 제외했습니다.",
+      "kind": "bar",
+      "columns": [
+        "education"
+      ],
+      "scope": "빈도 합계 27,439 · complete · SELECT `education`, COUNT(*) AS `__frequency` FROM `teleai_default`.`bank_loan` WHERE `education` IS NOT NULL AND (`education` = 'primary' AND `age` >= 30 AND `age` <= 40) GROUP BY `education`",
+      "render_spec": {
+        "aggregation": "count",
+        "labels": [
+          "primary"
+        ],
+        "counts": [
+          27439
+        ],
+        "total_count": 27439,
+        "has_more_categories": false,
+        "null_policy": "exclude",
+        "legend": true,
+        "legend_labels": [
+          "primary"
+        ],
+        "stacked": false,
+        "palette": "default",
+        "colors": [
+          "#1f77b4"
+        ]
+      }
+    }
+  ],
+  "expectation_adjudication": "Unspecified plot axes may retain the preceding education subject. No numerical axis was explicitly requested.",
+  "verdict": "PASS"
+}

@@ -1,0 +1,41 @@
+{
+  "state": "complete",
+  "request_id": "9719f3d8-b77f-47c6-b3e4-7f1a36589d0d",
+  "scope": {
+    "conditions": [],
+    "any_conditions": [],
+    "sources": [
+      "teleai_default.bank_loan"
+    ],
+    "join_edges": [],
+    "measure_conditions": [],
+    "ratio": null,
+    "unresolved": [],
+    "columns": [
+      "age",
+      "balance"
+    ]
+  },
+  "chart_id": "a2fab79c-de05-467d-a826-14aad71def58",
+  "kind": "scatter",
+  "render_spec": {
+    "mode": "exact_coordinate_frequency",
+    "source": "teleai_default.bank_loan",
+    "query": "SELECT `age`, `balance`, COUNT(*) AS `__telly_coordinate_frequency` FROM `teleai_default`.`bank_loan` WHERE `age` IS NOT NULL AND `balance` IS NOT NULL GROUP BY `age`, `balance`",
+    "snapshot": "2026-10-04T12:34:40.243085+00:00",
+    "x": "age",
+    "y": "balance",
+    "coordinate_count": 132613,
+    "drawable_rows": 750000,
+    "weight_column": "__telly_coordinate_frequency",
+    "data_sha256": "56a6272329b399a90bd24386eea1f14df29e43c365b7d2f82fb01915d09bdc2c"
+  },
+  "rows": 132613,
+  "sum_frequency": 750000,
+  "model_calls": 0,
+  "remote_query_ids": [],
+  "oracle_agrees": true,
+  "assets_before_repeat_preserved": true,
+  "old_assets_preserved": true,
+  "selection_unchanged": true
+}

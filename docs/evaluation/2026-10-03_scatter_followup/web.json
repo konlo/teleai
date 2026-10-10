@@ -1,0 +1,885 @@
+{
+  "recorded_at": "2026-10-03T14:17:22.186762+00:00",
+  "conversation": "0728dee0-d555-4aa2-853b-1101679346da",
+  "selected_dataset_id": "cac7c3b3-165f-4c3f-9965-9278fad98bf5",
+  "selection_preserved": true,
+  "dataset_count": 8,
+  "status": "complete",
+  "display_dataset_id": "d86b859b-9aa0-40fc-9124-6b6beb6e467f",
+  "axes": {},
+  "artifact_ids": [
+    "6882734b-ce0e-4489-b4a1-b936d5c4e783"
+  ],
+  "screenshot": "final_web.png",
+  "runs": [
+    {
+      "run_id": "21336c749f6147e991da43ecf7d9429a",
+      "events": [
+        {
+          "time": "2026-10-03T13:42:04.321227+00:00",
+          "event": "run_started",
+          "run_id": "21336c749f6147e991da43ecf7d9429a",
+          "instance_id": "f3d10a08ef40",
+          "pid": 21127,
+          "runtime": {
+            "revision_at_first_runtime": "febd34ae5cbbfbcc7023ea8e0412b84572cd7763",
+            "packages": {
+              "langchain": "1.4.0",
+              "langchain-core": "1.6.2",
+              "langgraph": "1.2.11",
+              "streamlit": "1.63.0",
+              "sqlglot": "30.18.0"
+            },
+            "python_version": "3.11.13",
+            "identity_captured_at": "2026-10-03T13:39:34.517452+00:00",
+            "route": "langgraph-v1",
+            "model_class": "ChatOllama",
+            "require_remote_approval": false,
+            "loaded_delivery_guard": "269dcd1387bcd7ef",
+            "data_backend": "mysql"
+          },
+          "operation": "submit",
+          "process_peak_rss_bytes": 376848384
+        },
+        {
+          "time": "2026-10-03T13:42:04.546781+00:00",
+          "event": "summarization_started",
+          "run_id": "21336c749f6147e991da43ecf7d9429a",
+          "instance_id": "f3d10a08ef40",
+          "pid": 21127,
+          "span_id": "42608f97eeaf",
+          "message_count": 37
+        },
+        {
+          "time": "2026-10-03T13:42:41.940602+00:00",
+          "event": "summarization_finished",
+          "run_id": "21336c749f6147e991da43ecf7d9429a",
+          "instance_id": "f3d10a08ef40",
+          "pid": 21127,
+          "span_id": "42608f97eeaf",
+          "status": "ok",
+          "elapsed_seconds": 37.393,
+          "message_count": 37,
+          "summarized": true
+        },
+        {
+          "time": "2026-10-03T13:42:41.954030+00:00",
+          "event": "model_call_started",
+          "run_id": "21336c749f6147e991da43ecf7d9429a",
+          "instance_id": "f3d10a08ef40",
+          "pid": 21127,
+          "span_id": "8b2d84262149",
+          "message_count": 9
+        },
+        {
+          "time": "2026-10-03T13:42:42.071564+00:00",
+          "event": "context_budget",
+          "run_id": "21336c749f6147e991da43ecf7d9429a",
+          "instance_id": "f3d10a08ef40",
+          "pid": 21127,
+          "characters": 17592,
+          "limit": 32000
+        },
+        {
+          "time": "2026-10-03T13:43:42.084326+00:00",
+          "event": "model_inference_failed",
+          "run_id": "21336c749f6147e991da43ecf7d9429a",
+          "instance_id": "f3d10a08ef40",
+          "pid": 21127,
+          "request_id": "2873ca75-a3e0-454f-b460-1505eada7596",
+          "error_type": "ReadTimeout",
+          "http_status": null,
+          "error_category": null,
+          "retry_scheduled": true,
+          "retry_delay_seconds": 1.0
+        },
+        {
+          "time": "2026-10-03T13:44:53.407368+00:00",
+          "event": "model_call_finished",
+          "run_id": "21336c749f6147e991da43ecf7d9429a",
+          "instance_id": "f3d10a08ef40",
+          "pid": 21127,
+          "span_id": "8b2d84262149",
+          "status": "ok",
+          "elapsed_seconds": 131.453,
+          "message_count": 9,
+          "tool_call_count": 1
+        },
+        {
+          "time": "2026-10-03T13:44:53.427718+00:00",
+          "event": "tool_started",
+          "run_id": "21336c749f6147e991da43ecf7d9429a",
+          "instance_id": "f3d10a08ef40",
+          "pid": 21127,
+          "tool": "render_chart_spec"
+        },
+        {
+          "time": "2026-10-03T13:45:05.106651+00:00",
+          "event": "tool_completed",
+          "run_id": "21336c749f6147e991da43ecf7d9429a",
+          "instance_id": "f3d10a08ef40",
+          "pid": 21127,
+          "tool": "render_chart_spec",
+          "status": "ready",
+          "error_code": null,
+          "elapsed_seconds": 11.679,
+          "applied_corrections": []
+        },
+        {
+          "time": "2026-10-03T13:45:05.117351+00:00",
+          "event": "summarization_started",
+          "run_id": "21336c749f6147e991da43ecf7d9429a",
+          "instance_id": "f3d10a08ef40",
+          "pid": 21127,
+          "span_id": "89a7fdf254e4",
+          "message_count": 11
+        },
+        {
+          "time": "2026-10-03T13:45:33.874719+00:00",
+          "event": "summarization_finished",
+          "run_id": "21336c749f6147e991da43ecf7d9429a",
+          "instance_id": "f3d10a08ef40",
+          "pid": 21127,
+          "span_id": "89a7fdf254e4",
+          "status": "ok",
+          "elapsed_seconds": 28.757,
+          "message_count": 11,
+          "summarized": true
+        },
+        {
+          "time": "2026-10-03T13:45:33.884749+00:00",
+          "event": "model_call_started",
+          "run_id": "21336c749f6147e991da43ecf7d9429a",
+          "instance_id": "f3d10a08ef40",
+          "pid": 21127,
+          "span_id": "b6a18396bd27",
+          "message_count": 9
+        },
+        {
+          "time": "2026-10-03T13:45:33.930077+00:00",
+          "event": "context_budget",
+          "run_id": "21336c749f6147e991da43ecf7d9429a",
+          "instance_id": "f3d10a08ef40",
+          "pid": 21127,
+          "characters": 18024,
+          "limit": 32000
+        },
+        {
+          "time": "2026-10-03T13:45:33.931043+00:00",
+          "event": "model_call_finished",
+          "run_id": "21336c749f6147e991da43ecf7d9429a",
+          "instance_id": "f3d10a08ef40",
+          "pid": 21127,
+          "span_id": "b6a18396bd27",
+          "status": "error",
+          "error_type": "ModelAttemptBudgetExceeded",
+          "elapsed_seconds": 0.046,
+          "message_count": 9
+        },
+        {
+          "time": "2026-10-03T13:45:33.942535+00:00",
+          "event": "error",
+          "run_id": "21336c749f6147e991da43ecf7d9429a",
+          "instance_id": "f3d10a08ef40",
+          "pid": 21127,
+          "error_category": null,
+          "error_id": "6207538786e3",
+          "stage": "agent_stream",
+          "error_type": "ModelAttemptBudgetExceeded",
+          "http_status": null,
+          "frames": [
+            {
+              "file": "factory.py",
+              "line": 329,
+              "function": "inner_handler"
+            },
+            {
+              "file": "factory.py",
+              "line": 339,
+              "function": "composed"
+            },
+            {
+              "file": "tool_focus.py",
+              "line": 89,
+              "function": "wrap_model_call"
+            },
+            {
+              "file": "factory.py",
+              "line": 329,
+              "function": "inner_handler"
+            },
+            {
+              "file": "factory.py",
+              "line": 339,
+              "function": "composed"
+            },
+            {
+              "file": "tool_focus.py",
+              "line": 41,
+              "function": "wrap_model_call"
+            },
+            {
+              "file": "factory.py",
+              "line": 329,
+              "function": "inner_handler"
+            },
+            {
+              "file": "factory.py",
+              "line": 339,
+              "function": "composed"
+            },
+            {
+              "file": "tool_focus.py",
+              "line": 16,
+              "function": "wrap_model_call"
+            },
+            {
+              "file": "factory.py",
+              "line": 329,
+              "function": "inner_handler"
+            },
+            {
+              "file": "model_recovery.py",
+              "line": 126,
+              "function": "wrap_model_call"
+            },
+            {
+              "file": "model_recovery.py",
+              "line": 156,
+              "function": "invoke"
+            }
+          ]
+        },
+        {
+          "time": "2026-10-03T13:45:33.942847+00:00",
+          "event": "run_completed",
+          "run_id": "21336c749f6147e991da43ecf7d9429a",
+          "instance_id": "f3d10a08ef40",
+          "pid": 21127,
+          "status": "incomplete",
+          "elapsed_seconds": 209.617,
+          "error_id": "6207538786e3"
+        },
+        {
+          "time": "2026-10-03T13:45:33.943490+00:00",
+          "event": "turn_slo",
+          "run_id": "21336c749f6147e991da43ecf7d9429a",
+          "instance_id": "f3d10a08ef40",
+          "pid": 21127,
+          "elapsed_seconds": 209.617,
+          "limit": 180.0,
+          "status": "violation",
+          "process_peak_rss_bytes": 376848384,
+          "frame_cache_bytes": 0
+        },
+        {
+          "time": "2026-10-03T13:47:02.165647+00:00",
+          "event": "error",
+          "run_id": "21336c749f6147e991da43ecf7d9429a",
+          "instance_id": "f3d10a08ef40",
+          "pid": 21127,
+          "error_category": null,
+          "error_id": "9698239eabcd",
+          "stage": "ui_action",
+          "error_type": "ValueError",
+          "http_status": null,
+          "frames": [
+            {
+              "file": "analysis_page.py",
+              "line": 86,
+              "function": "action"
+            },
+            {
+              "file": "analysis_page.py",
+              "line": 257,
+              "function": "<lambda>"
+            },
+            {
+              "file": "runtime.py",
+              "line": 510,
+              "function": "submit"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "run_id": "1922f7e8283946cc99d06dcadeb446a1",
+      "events": [
+        {
+          "time": "2026-10-03T14:05:36.737739+00:00",
+          "event": "run_started",
+          "run_id": "1922f7e8283946cc99d06dcadeb446a1",
+          "instance_id": "4a75f7a079d5",
+          "pid": 22938,
+          "runtime": {
+            "revision_at_first_runtime": "febd34ae5cbbfbcc7023ea8e0412b84572cd7763",
+            "packages": {
+              "langchain": "1.4.0",
+              "langchain-core": "1.6.2",
+              "langgraph": "1.2.11",
+              "streamlit": "1.63.0",
+              "sqlglot": "30.18.0"
+            },
+            "python_version": "3.11.13",
+            "identity_captured_at": "2026-10-03T14:05:14.348776+00:00",
+            "route": "langgraph-v1",
+            "model_class": "ChatOllama",
+            "require_remote_approval": false,
+            "loaded_delivery_guard": "269dcd1387bcd7ef",
+            "data_backend": "mysql"
+          },
+          "operation": "resume",
+          "process_peak_rss_bytes": 379682816
+        },
+        {
+          "time": "2026-10-03T14:05:36.749284+00:00",
+          "event": "completion_checked",
+          "run_id": "1922f7e8283946cc99d06dcadeb446a1",
+          "instance_id": "4a75f7a079d5",
+          "pid": 22938,
+          "request_id": "2873ca75-a3e0-454f-b460-1505eada7596",
+          "status": "complete",
+          "reason": null,
+          "attempts": 0,
+          "required_capabilities": [
+            "chart"
+          ],
+          "missing_capabilities": [],
+          "model_calls": 4,
+          "tool_calls": 1,
+          "model_seconds": 168.875,
+          "dataset_ids": [],
+          "artifact_ids": [
+            "f3bb3a81-8897-4095-aadc-80307b2fc50d"
+          ]
+        },
+        {
+          "time": "2026-10-03T14:05:36.754453+00:00",
+          "event": "run_completed",
+          "run_id": "1922f7e8283946cc99d06dcadeb446a1",
+          "instance_id": "4a75f7a079d5",
+          "pid": 22938,
+          "status": "answered",
+          "elapsed_seconds": 0.023,
+          "process_peak_rss_bytes": 379846656,
+          "frame_cache_bytes": 0
+        },
+        {
+          "time": "2026-10-03T14:05:36.754670+00:00",
+          "event": "turn_slo",
+          "run_id": "1922f7e8283946cc99d06dcadeb446a1",
+          "instance_id": "4a75f7a079d5",
+          "pid": 22938,
+          "elapsed_seconds": 0.023,
+          "limit": 180.0,
+          "status": "ok"
+        }
+      ]
+    },
+    {
+      "run_id": "e93511ce0cde4a84a59d62b51c2073d2",
+      "events": [
+        {
+          "time": "2026-10-03T14:06:08.950904+00:00",
+          "event": "run_started",
+          "run_id": "e93511ce0cde4a84a59d62b51c2073d2",
+          "instance_id": "4a75f7a079d5",
+          "pid": 22938,
+          "runtime": {
+            "revision_at_first_runtime": "febd34ae5cbbfbcc7023ea8e0412b84572cd7763",
+            "packages": {
+              "langchain": "1.4.0",
+              "langchain-core": "1.6.2",
+              "langgraph": "1.2.11",
+              "streamlit": "1.63.0",
+              "sqlglot": "30.18.0"
+            },
+            "python_version": "3.11.13",
+            "identity_captured_at": "2026-10-03T14:05:14.348776+00:00",
+            "route": "langgraph-v1",
+            "model_class": "ChatOllama",
+            "require_remote_approval": false,
+            "loaded_delivery_guard": "269dcd1387bcd7ef",
+            "data_backend": "mysql"
+          },
+          "operation": "submit",
+          "process_peak_rss_bytes": 381616128
+        },
+        {
+          "time": "2026-10-03T14:06:09.206904+00:00",
+          "event": "recovery_transition",
+          "run_id": "e93511ce0cde4a84a59d62b51c2073d2",
+          "instance_id": "4a75f7a079d5",
+          "pid": 22938,
+          "request_id": "e3fe1c59-6f7e-43cc-9cde-e108858e90a2",
+          "tool": "render_chart_spec"
+        },
+        {
+          "time": "2026-10-03T14:06:09.208856+00:00",
+          "event": "tool_started",
+          "run_id": "e93511ce0cde4a84a59d62b51c2073d2",
+          "instance_id": "4a75f7a079d5",
+          "pid": 22938,
+          "tool": "render_chart_spec"
+        },
+        {
+          "time": "2026-10-03T14:06:17.147140+00:00",
+          "event": "tool_completed",
+          "run_id": "e93511ce0cde4a84a59d62b51c2073d2",
+          "instance_id": "4a75f7a079d5",
+          "pid": 22938,
+          "tool": "render_chart_spec",
+          "status": "ready",
+          "error_code": null,
+          "elapsed_seconds": 7.938,
+          "applied_corrections": []
+        },
+        {
+          "time": "2026-10-03T14:06:17.157156+00:00",
+          "event": "completion_checked",
+          "run_id": "e93511ce0cde4a84a59d62b51c2073d2",
+          "instance_id": "4a75f7a079d5",
+          "pid": 22938,
+          "request_id": "e3fe1c59-6f7e-43cc-9cde-e108858e90a2",
+          "status": "complete",
+          "reason": null,
+          "attempts": 0,
+          "required_capabilities": [
+            "chart"
+          ],
+          "missing_capabilities": [],
+          "model_calls": 0,
+          "tool_calls": 1,
+          "model_seconds": 0.0,
+          "dataset_ids": [],
+          "artifact_ids": [
+            "4d3272f1-dc0a-4294-b378-88029112187d"
+          ]
+        },
+        {
+          "time": "2026-10-03T14:06:17.159488+00:00",
+          "event": "run_completed",
+          "run_id": "e93511ce0cde4a84a59d62b51c2073d2",
+          "instance_id": "4a75f7a079d5",
+          "pid": 22938,
+          "status": "answered",
+          "elapsed_seconds": 8.211,
+          "process_peak_rss_bytes": 392773632,
+          "frame_cache_bytes": 0
+        },
+        {
+          "time": "2026-10-03T14:06:17.159540+00:00",
+          "event": "turn_slo",
+          "run_id": "e93511ce0cde4a84a59d62b51c2073d2",
+          "instance_id": "4a75f7a079d5",
+          "pid": 22938,
+          "elapsed_seconds": 8.211,
+          "limit": 180.0,
+          "status": "ok"
+        }
+      ]
+    },
+    {
+      "run_id": "00683ff8e3544044a5224f260a28614e",
+      "events": [
+        {
+          "time": "2026-10-03T14:08:05.940758+00:00",
+          "event": "run_started",
+          "run_id": "00683ff8e3544044a5224f260a28614e",
+          "instance_id": "4a75f7a079d5",
+          "pid": 22938,
+          "runtime": {
+            "revision_at_first_runtime": "febd34ae5cbbfbcc7023ea8e0412b84572cd7763",
+            "packages": {
+              "langchain": "1.4.0",
+              "langchain-core": "1.6.2",
+              "langgraph": "1.2.11",
+              "streamlit": "1.63.0",
+              "sqlglot": "30.18.0"
+            },
+            "python_version": "3.11.13",
+            "identity_captured_at": "2026-10-03T14:05:14.348776+00:00",
+            "route": "langgraph-v1",
+            "model_class": "ChatOllama",
+            "require_remote_approval": false,
+            "loaded_delivery_guard": "269dcd1387bcd7ef",
+            "data_backend": "mysql"
+          },
+          "operation": "submit",
+          "process_peak_rss_bytes": 393691136
+        },
+        {
+          "time": "2026-10-03T14:08:06.166739+00:00",
+          "event": "summarization_started",
+          "run_id": "00683ff8e3544044a5224f260a28614e",
+          "instance_id": "4a75f7a079d5",
+          "pid": 22938,
+          "span_id": "94dbe5e9e32d",
+          "message_count": 15
+        },
+        {
+          "time": "2026-10-03T14:08:06.166844+00:00",
+          "event": "summarization_finished",
+          "run_id": "00683ff8e3544044a5224f260a28614e",
+          "instance_id": "4a75f7a079d5",
+          "pid": 22938,
+          "span_id": "94dbe5e9e32d",
+          "status": "ok",
+          "elapsed_seconds": 0.0,
+          "message_count": 15,
+          "summarized": false
+        },
+        {
+          "time": "2026-10-03T14:08:06.167247+00:00",
+          "event": "model_call_started",
+          "run_id": "00683ff8e3544044a5224f260a28614e",
+          "instance_id": "4a75f7a079d5",
+          "pid": 22938,
+          "span_id": "fc906b6b1818",
+          "message_count": 15
+        },
+        {
+          "time": "2026-10-03T14:08:06.174262+00:00",
+          "event": "context_budget",
+          "run_id": "00683ff8e3544044a5224f260a28614e",
+          "instance_id": "4a75f7a079d5",
+          "pid": 22938,
+          "characters": 19385,
+          "limit": 32000
+        },
+        {
+          "time": "2026-10-03T14:09:06.188509+00:00",
+          "event": "model_inference_failed",
+          "run_id": "00683ff8e3544044a5224f260a28614e",
+          "instance_id": "4a75f7a079d5",
+          "pid": 22938,
+          "request_id": "405152e5-3a2e-408e-9d0e-7e93e69abd7d",
+          "error_type": "ReadTimeout",
+          "http_status": null,
+          "error_category": null,
+          "retry_scheduled": true,
+          "retry_delay_seconds": 1.0
+        },
+        {
+          "time": "2026-10-03T14:10:07.240770+00:00",
+          "event": "model_inference_failed",
+          "run_id": "00683ff8e3544044a5224f260a28614e",
+          "instance_id": "4a75f7a079d5",
+          "pid": 22938,
+          "request_id": "405152e5-3a2e-408e-9d0e-7e93e69abd7d",
+          "error_type": "ReadTimeout",
+          "http_status": null,
+          "error_category": null,
+          "retry_scheduled": false,
+          "retry_delay_seconds": null
+        },
+        {
+          "time": "2026-10-03T14:10:07.242847+00:00",
+          "event": "model_call_finished",
+          "run_id": "00683ff8e3544044a5224f260a28614e",
+          "instance_id": "4a75f7a079d5",
+          "pid": 22938,
+          "span_id": "fc906b6b1818",
+          "status": "error",
+          "error_type": "ReadTimeout",
+          "elapsed_seconds": 121.075,
+          "message_count": 15
+        },
+        {
+          "time": "2026-10-03T14:10:07.316285+00:00",
+          "event": "error",
+          "run_id": "00683ff8e3544044a5224f260a28614e",
+          "instance_id": "4a75f7a079d5",
+          "pid": 22938,
+          "error_category": null,
+          "error_id": "8ba14bb31264",
+          "stage": "agent_stream",
+          "error_type": "ReadTimeout",
+          "http_status": null,
+          "frames": [
+            {
+              "file": "chat_models.py",
+              "line": 1224,
+              "function": "_iterate_over_stream"
+            },
+            {
+              "file": "chat_models.py",
+              "line": 1122,
+              "function": "_create_chat_stream"
+            },
+            {
+              "file": "_client.py",
+              "line": 184,
+              "function": "inner"
+            },
+            {
+              "file": "contextlib.py",
+              "line": 137,
+              "function": "__enter__"
+            },
+            {
+              "file": "_client.py",
+              "line": 868,
+              "function": "stream"
+            },
+            {
+              "file": "_client.py",
+              "line": 914,
+              "function": "send"
+            },
+            {
+              "file": "_client.py",
+              "line": 942,
+              "function": "_send_handling_auth"
+            },
+            {
+              "file": "_client.py",
+              "line": 979,
+              "function": "_send_handling_redirects"
+            },
+            {
+              "file": "_client.py",
+              "line": 1014,
+              "function": "_send_single_request"
+            },
+            {
+              "file": "default.py",
+              "line": 249,
+              "function": "handle_request"
+            },
+            {
+              "file": "contextlib.py",
+              "line": 158,
+              "function": "__exit__"
+            },
+            {
+              "file": "default.py",
+              "line": 118,
+              "function": "map_httpcore_exceptions"
+            }
+          ]
+        },
+        {
+          "time": "2026-10-03T14:10:07.316658+00:00",
+          "event": "run_completed",
+          "run_id": "00683ff8e3544044a5224f260a28614e",
+          "instance_id": "4a75f7a079d5",
+          "pid": 22938,
+          "status": "incomplete",
+          "elapsed_seconds": 121.35,
+          "error_id": "8ba14bb31264"
+        },
+        {
+          "time": "2026-10-03T14:10:07.316979+00:00",
+          "event": "turn_slo",
+          "run_id": "00683ff8e3544044a5224f260a28614e",
+          "instance_id": "4a75f7a079d5",
+          "pid": 22938,
+          "elapsed_seconds": 121.35,
+          "limit": 180.0,
+          "status": "error",
+          "process_peak_rss_bytes": 393691136,
+          "frame_cache_bytes": 0
+        }
+      ]
+    },
+    {
+      "run_id": "91ce73a1d9de469ca0fd0f8a412271ef",
+      "events": [
+        {
+          "time": "2026-10-03T14:14:20.279836+00:00",
+          "event": "run_started",
+          "run_id": "91ce73a1d9de469ca0fd0f8a412271ef",
+          "instance_id": "071d9a92504c",
+          "pid": 23371,
+          "runtime": {
+            "revision_at_first_runtime": "febd34ae5cbbfbcc7023ea8e0412b84572cd7763",
+            "packages": {
+              "langchain": "1.4.0",
+              "langchain-core": "1.6.2",
+              "langgraph": "1.2.11",
+              "streamlit": "1.63.0",
+              "sqlglot": "30.18.0"
+            },
+            "python_version": "3.11.13",
+            "identity_captured_at": "2026-10-03T14:13:26.500206+00:00",
+            "route": "langgraph-v1",
+            "model_class": "ChatOllama",
+            "require_remote_approval": false,
+            "loaded_delivery_guard": "269dcd1387bcd7ef",
+            "data_backend": "mysql"
+          },
+          "operation": "resume",
+          "process_peak_rss_bytes": 365133824
+        },
+        {
+          "time": "2026-10-03T14:14:20.289738+00:00",
+          "event": "tool_started",
+          "run_id": "91ce73a1d9de469ca0fd0f8a412271ef",
+          "instance_id": "071d9a92504c",
+          "pid": 23371,
+          "tool": "render_chart_spec"
+        },
+        {
+          "time": "2026-10-03T14:14:36.738774+00:00",
+          "event": "tool_completed",
+          "run_id": "91ce73a1d9de469ca0fd0f8a412271ef",
+          "instance_id": "071d9a92504c",
+          "pid": 23371,
+          "tool": "render_chart_spec",
+          "status": "ready",
+          "error_code": null,
+          "elapsed_seconds": 16.449,
+          "applied_corrections": []
+        },
+        {
+          "time": "2026-10-03T14:14:36.759925+00:00",
+          "event": "completion_checked",
+          "run_id": "91ce73a1d9de469ca0fd0f8a412271ef",
+          "instance_id": "071d9a92504c",
+          "pid": 23371,
+          "request_id": "405152e5-3a2e-408e-9d0e-7e93e69abd7d",
+          "status": "complete",
+          "reason": null,
+          "attempts": 0,
+          "required_capabilities": [
+            "chart"
+          ],
+          "missing_capabilities": [],
+          "model_calls": 2,
+          "tool_calls": 1,
+          "model_seconds": 121.047,
+          "dataset_ids": [],
+          "artifact_ids": [
+            "96643abd-de7c-4a41-9618-4ee0f9d98087"
+          ]
+        },
+        {
+          "time": "2026-10-03T14:14:36.764179+00:00",
+          "event": "run_completed",
+          "run_id": "91ce73a1d9de469ca0fd0f8a412271ef",
+          "instance_id": "071d9a92504c",
+          "pid": 23371,
+          "status": "answered",
+          "elapsed_seconds": 16.495,
+          "process_peak_rss_bytes": 365133824,
+          "frame_cache_bytes": 0
+        },
+        {
+          "time": "2026-10-03T14:14:36.764297+00:00",
+          "event": "turn_slo",
+          "run_id": "91ce73a1d9de469ca0fd0f8a412271ef",
+          "instance_id": "071d9a92504c",
+          "pid": 23371,
+          "elapsed_seconds": 16.495,
+          "limit": 180.0,
+          "status": "ok"
+        }
+      ]
+    },
+    {
+      "run_id": "dc7a256490c84a1fa39bb9882c6fddd8",
+      "events": [
+        {
+          "time": "2026-10-03T14:15:31.684564+00:00",
+          "event": "run_started",
+          "run_id": "dc7a256490c84a1fa39bb9882c6fddd8",
+          "instance_id": "071d9a92504c",
+          "pid": 23371,
+          "runtime": {
+            "revision_at_first_runtime": "febd34ae5cbbfbcc7023ea8e0412b84572cd7763",
+            "packages": {
+              "langchain": "1.4.0",
+              "langchain-core": "1.6.2",
+              "langgraph": "1.2.11",
+              "streamlit": "1.63.0",
+              "sqlglot": "30.18.0"
+            },
+            "python_version": "3.11.13",
+            "identity_captured_at": "2026-10-03T14:13:26.500206+00:00",
+            "route": "langgraph-v1",
+            "model_class": "ChatOllama",
+            "require_remote_approval": false,
+            "loaded_delivery_guard": "269dcd1387bcd7ef",
+            "data_backend": "mysql"
+          },
+          "operation": "submit",
+          "process_peak_rss_bytes": 365133824
+        },
+        {
+          "time": "2026-10-03T14:15:32.283897+00:00",
+          "event": "recovery_transition",
+          "run_id": "dc7a256490c84a1fa39bb9882c6fddd8",
+          "instance_id": "071d9a92504c",
+          "pid": 23371,
+          "request_id": "91e7cda5-7114-4cd5-9f70-5b8027132ce9",
+          "tool": "render_chart_spec"
+        },
+        {
+          "time": "2026-10-03T14:15:32.287496+00:00",
+          "event": "tool_started",
+          "run_id": "dc7a256490c84a1fa39bb9882c6fddd8",
+          "instance_id": "071d9a92504c",
+          "pid": 23371,
+          "tool": "render_chart_spec"
+        },
+        {
+          "time": "2026-10-03T14:15:32.389399+00:00",
+          "event": "tool_completed",
+          "run_id": "dc7a256490c84a1fa39bb9882c6fddd8",
+          "instance_id": "071d9a92504c",
+          "pid": 23371,
+          "tool": "render_chart_spec",
+          "status": "ready",
+          "error_code": null,
+          "elapsed_seconds": 0.102,
+          "applied_corrections": []
+        },
+        {
+          "time": "2026-10-03T14:15:32.409004+00:00",
+          "event": "completion_checked",
+          "run_id": "dc7a256490c84a1fa39bb9882c6fddd8",
+          "instance_id": "071d9a92504c",
+          "pid": 23371,
+          "request_id": "91e7cda5-7114-4cd5-9f70-5b8027132ce9",
+          "status": "complete",
+          "reason": null,
+          "attempts": 0,
+          "required_capabilities": [
+            "chart"
+          ],
+          "missing_capabilities": [],
+          "model_calls": 0,
+          "tool_calls": 1,
+          "model_seconds": 0.0,
+          "dataset_ids": [],
+          "artifact_ids": [
+            "6882734b-ce0e-4489-b4a1-b936d5c4e783"
+          ]
+        },
+        {
+          "time": "2026-10-03T14:15:32.413468+00:00",
+          "event": "run_completed",
+          "run_id": "dc7a256490c84a1fa39bb9882c6fddd8",
+          "instance_id": "071d9a92504c",
+          "pid": 23371,
+          "status": "answered",
+          "elapsed_seconds": 0.738,
+          "process_peak_rss_bytes": 365133824,
+          "frame_cache_bytes": 0
+        },
+        {
+          "time": "2026-10-03T14:15:32.413585+00:00",
+          "event": "turn_slo",
+          "run_id": "dc7a256490c84a1fa39bb9882c6fddd8",
+          "instance_id": "071d9a92504c",
+          "pid": 23371,
+          "elapsed_seconds": 0.738,
+          "limit": 180.0,
+          "status": "ok"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,219 @@
+{
+  "recorded_at": "2026-10-03T14:22:43.333547+00:00",
+  "run_id": "c684c749d39c43a6b560031b16cbd903",
+  "error_id": "65a8460de89e",
+  "request": "전체 데이타에 대해서 age와 balance scatter plot으로 그려줘",
+  "failure_stage": "model inference before any tool execution",
+  "retry_timeout_seconds": [
+    60,
+    60
+  ],
+  "elapsed_seconds": 121.417,
+  "tool_starts": 0,
+  "raw_dataset_available": "10-row preview only; aggregate outputs lack balance",
+  "full_population_source_load_plan": null,
+  "ui_visible_chart": "Previous age-frequency chart; not the requested full-population scatter",
+  "resume_behavior": "Model checkpoint remains; retry may repeat inference failure. No resume/reload performed in this inspection.",
+  "design_gap": "Source-wide raw scatter planning when only a preview exists; current raw load cap 100000 requires a truthful population/resource plan.",
+  "events": [
+    {
+      "time": "2026-10-03T14:18:11.808163+00:00",
+      "event": "run_started",
+      "run_id": "c684c749d39c43a6b560031b16cbd903",
+      "instance_id": "071d9a92504c",
+      "pid": 23371,
+      "runtime": {
+        "revision_at_first_runtime": "febd34ae5cbbfbcc7023ea8e0412b84572cd7763",
+        "packages": {
+          "langchain": "1.4.0",
+          "langchain-core": "1.6.2",
+          "langgraph": "1.2.11",
+          "streamlit": "1.63.0",
+          "sqlglot": "30.18.0"
+        },
+        "python_version": "3.11.13",
+        "identity_captured_at": "2026-10-03T14:13:26.500206+00:00",
+        "route": "langgraph-v1",
+        "model_class": "ChatOllama",
+        "require_remote_approval": false,
+        "loaded_delivery_guard": "269dcd1387bcd7ef",
+        "data_backend": "mysql"
+      },
+      "operation": "submit",
+      "process_peak_rss_bytes": 365133824
+    },
+    {
+      "time": "2026-10-03T14:18:12.053482+00:00",
+      "event": "summarization_started",
+      "run_id": "c684c749d39c43a6b560031b16cbd903",
+      "instance_id": "071d9a92504c",
+      "pid": 23371,
+      "span_id": "a4c1a27529e6",
+      "message_count": 23
+    },
+    {
+      "time": "2026-10-03T14:18:12.053681+00:00",
+      "event": "summarization_finished",
+      "run_id": "c684c749d39c43a6b560031b16cbd903",
+      "instance_id": "071d9a92504c",
+      "pid": 23371,
+      "span_id": "a4c1a27529e6",
+      "status": "ok",
+      "elapsed_seconds": 0.0,
+      "message_count": 23,
+      "summarized": false
+    },
+    {
+      "time": "2026-10-03T14:18:12.053964+00:00",
+      "event": "model_call_started",
+      "run_id": "c684c749d39c43a6b560031b16cbd903",
+      "instance_id": "071d9a92504c",
+      "pid": 23371,
+      "span_id": "83da15488765",
+      "message_count": 23
+    },
+    {
+      "time": "2026-10-03T14:18:12.060410+00:00",
+      "event": "context_budget",
+      "run_id": "c684c749d39c43a6b560031b16cbd903",
+      "instance_id": "071d9a92504c",
+      "pid": 23371,
+      "characters": 21927,
+      "limit": 32000
+    },
+    {
+      "time": "2026-10-03T14:19:12.076002+00:00",
+      "event": "model_inference_failed",
+      "run_id": "c684c749d39c43a6b560031b16cbd903",
+      "instance_id": "071d9a92504c",
+      "pid": 23371,
+      "request_id": "ca3476d0-d5b7-4572-ac37-94059b6fc702",
+      "error_type": "ReadTimeout",
+      "http_status": null,
+      "error_category": null,
+      "retry_scheduled": true,
+      "retry_delay_seconds": 1.0
+    },
+    {
+      "time": "2026-10-03T14:20:13.112576+00:00",
+      "event": "model_inference_failed",
+      "run_id": "c684c749d39c43a6b560031b16cbd903",
+      "instance_id": "071d9a92504c",
+      "pid": 23371,
+      "request_id": "ca3476d0-d5b7-4572-ac37-94059b6fc702",
+      "error_type": "ReadTimeout",
+      "http_status": null,
+      "error_category": null,
+      "retry_scheduled": false,
+      "retry_delay_seconds": null
+    },
+    {
+      "time": "2026-10-03T14:20:13.119669+00:00",
+      "event": "model_call_finished",
+      "run_id": "c684c749d39c43a6b560031b16cbd903",
+      "instance_id": "071d9a92504c",
+      "pid": 23371,
+      "span_id": "83da15488765",
+      "status": "error",
+      "error_type": "ReadTimeout",
+      "elapsed_seconds": 121.064,
+      "message_count": 23
+    },
+    {
+      "time": "2026-10-03T14:20:13.268959+00:00",
+      "event": "error",
+      "run_id": "c684c749d39c43a6b560031b16cbd903",
+      "instance_id": "071d9a92504c",
+      "pid": 23371,
+      "error_category": null,
+      "error_id": "65a8460de89e",
+      "stage": "agent_stream",
+      "error_type": "ReadTimeout",
+      "http_status": null,
+      "frames": [
+        {
+          "file": "chat_models.py",
+          "line": 1224,
+          "function": "_iterate_over_stream"
+        },
+        {
+          "file": "chat_models.py",
+          "line": 1122,
+          "function": "_create_chat_stream"
+        },
+        {
+          "file": "_client.py",
+          "line": 184,
+          "function": "inner"
+        },
+        {
+          "file": "contextlib.py",
+          "line": 137,
+          "function": "__enter__"
+        },
+        {
+          "file": "_client.py",
+          "line": 868,
+          "function": "stream"
+        },
+        {
+          "file": "_client.py",
+          "line": 914,
+          "function": "send"
+        },
+        {
+          "file": "_client.py",
+          "line": 942,
+          "function": "_send_handling_auth"
+        },
+        {
+          "file": "_client.py",
+          "line": 979,
+          "function": "_send_handling_redirects"
+        },
+        {
+          "file": "_client.py",
+          "line": 1014,
+          "function": "_send_single_request"
+        },
+        {
+          "file": "default.py",
+          "line": 249,
+          "function": "handle_request"
+        },
+        {
+          "file": "contextlib.py",
+          "line": 158,
+          "function": "__exit__"
+        },
+        {
+          "file": "default.py",
+          "line": 118,
+          "function": "map_httpcore_exceptions"
+        }
+      ]
+    },
+    {
+      "time": "2026-10-03T14:20:13.269509+00:00",
+      "event": "run_completed",
+      "run_id": "c684c749d39c43a6b560031b16cbd903",
+      "instance_id": "071d9a92504c",
+      "pid": 23371,
+      "status": "incomplete",
+      "elapsed_seconds": 121.417,
+      "error_id": "65a8460de89e"
+    },
+    {
+      "time": "2026-10-03T14:20:13.270276+00:00",
+      "event": "turn_slo",
+      "run_id": "c684c749d39c43a6b560031b16cbd903",
+      "instance_id": "071d9a92504c",
+      "pid": 23371,
+      "elapsed_seconds": 121.417,
+      "limit": 180.0,
+      "status": "error",
+      "process_peak_rss_bytes": 365133824,
+      "frame_cache_bytes": 0
+    }
+  ]
+}

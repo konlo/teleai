@@ -1,0 +1,383 @@
+{
+  "assets": {
+    "35634cfe-18ee-4295-a77c-df651f48e2f1": {
+      "kind": "dataset",
+      "metadata": {
+        "id": "35634cfe-18ee-4295-a77c-df651f48e2f1",
+        "source": "information_schema.tables",
+        "columns": [
+          "TABLE_SCHEMA",
+          "TABLE_NAME",
+          "TABLE_TYPE"
+        ],
+        "rows": 7,
+        "coverage": "unknown",
+        "conditions": [],
+        "predicate_known": false,
+        "grain": "raw",
+        "aggregation": "",
+        "snapshot": "2026-10-06T10:14:32.141500+00:00",
+        "query": "SELECT table_schema, table_name, table_type FROM information_schema.tables WHERE table_schema = 'teleai_default' ORDER BY table_name LIMIT 100",
+        "parent_id": "",
+        "parent_ids": [],
+        "role": "root",
+        "root_id": "35634cfe-18ee-4295-a77c-df651f48e2f1",
+        "row_selection": {}
+      },
+      "metadata_sha256": "3471e044cea1c5aa235d4311e3f6c292c1e9e08ccb8d9a87522c8cc6e2982c67",
+      "payload_sha256": "372844c886cd58f8ef309861fc6bb1a9265e5de25cd71d7493b1199d66a13318"
+    },
+    "490407c0-a188-4f50-845a-36debea131cc": {
+      "kind": "dataset",
+      "metadata": {
+        "id": "490407c0-a188-4f50-845a-36debea131cc",
+        "source": "teleai_default.bank_loan",
+        "columns": [
+          "education"
+        ],
+        "rows": 4,
+        "coverage": "unknown",
+        "conditions": [],
+        "predicate_known": false,
+        "grain": "raw",
+        "aggregation": "",
+        "snapshot": "2026-10-06T10:17:25.197906+00:00",
+        "query": "SELECT DISTINCT `education` FROM `teleai_default`.`bank_loan` ORDER BY `education` LIMIT 101",
+        "parent_id": "",
+        "parent_ids": [],
+        "role": "root",
+        "root_id": "490407c0-a188-4f50-845a-36debea131cc",
+        "row_selection": {}
+      },
+      "metadata_sha256": "3542d0613e8ea22a61d2f42f955743829acc967d6a704a2f0445514e88348dc7",
+      "payload_sha256": "74b3461b7a2df5b4b027d189c92a816d5b09e235b4762c70275fde641051d181"
+    }
+  },
+  "selection": "",
+  "current": {
+    "request_id": "f656305f-fee9-46f1-8567-570c6d906ca1",
+    "request_text": "여기 education에 들어있는 값 종류를 전부 알려줘.",
+    "status": "complete",
+    "stop_reason": null,
+    "intent_origin": "llm",
+    "goal": {
+      "objective": "education 컬럼의 값 종류를 모두 알려줘",
+      "mode": "execute",
+      "source_reference": "explicit",
+      "sources": [
+        "teleai_default.bank_loan"
+      ],
+      "columns": [
+        "education"
+      ],
+      "conditions": [],
+      "any_conditions": [],
+      "measure_conditions": [],
+      "ratio": null,
+      "current_result_only": false,
+      "fresh_source_required": false,
+      "question": "",
+      "tasks": [
+        {
+          "capability": "value_list",
+          "options": {}
+        }
+      ]
+    },
+    "model_calls": 2,
+    "model_seconds": 62.8624398749962,
+    "scope": {
+      "conditions": [],
+      "any_conditions": [],
+      "measure_conditions": [],
+      "ratio": null,
+      "sources": [
+        "teleai_default.bank_loan"
+      ],
+      "columns": [],
+      "unresolved": [],
+      "join_edges": []
+    },
+    "required_sources": [
+      "teleai_default.bank_loan"
+    ],
+    "required_columns": [
+      "education"
+    ],
+    "artifact_ids": [],
+    "evidence_ids": [],
+    "value_list_evidence": {
+      "dataset_id": "490407c0-a188-4f50-845a-36debea131cc",
+      "source": "teleai_default.bank_loan",
+      "column": "education",
+      "values": [
+        "primary",
+        "secondary",
+        "tertiary",
+        "unknown"
+      ],
+      "has_more": false,
+      "scope": "모집단 조건의 고유값",
+      "conditions": [],
+      "reused": true
+    },
+    "kind": null,
+    "failed": {}
+  },
+  "run_id": "f381fc1a8d1d45ddbe1302304fd07fad",
+  "run": [
+    {
+      "time": "2026-10-06T10:16:21.608257+00:00",
+      "event": "run_started",
+      "run_id": "f381fc1a8d1d45ddbe1302304fd07fad",
+      "instance_id": "0dcbc97ad957",
+      "pid": 33963,
+      "runtime": {
+        "revision_at_first_runtime": "febd34ae5cbbfbcc7023ea8e0412b84572cd7763",
+        "packages": {
+          "langchain": "1.4.0",
+          "langchain-core": "1.6.2",
+          "langgraph": "1.2.11",
+          "streamlit": "1.63.0",
+          "sqlglot": "30.18.0"
+        },
+        "python_version": "3.11.13",
+        "identity_captured_at": "2026-10-06T10:12:55.285387+00:00",
+        "route": "langgraph-v1",
+        "model_class": "ChatOllama",
+        "require_remote_approval": false,
+        "loaded_delivery_guard": "45c393f977353fe9",
+        "data_backend": "mysql",
+        "intent_mode": "llm",
+        "goal_version": 1,
+        "goal_model": "qwen3:8b",
+        "planner_model": "qwen3:8b"
+      },
+      "operation": "submit",
+      "process_peak_rss_bytes": 322387968
+    },
+    {
+      "time": "2026-10-06T10:16:21.614729+00:00",
+      "event": "goal_interpretation_started",
+      "run_id": "f381fc1a8d1d45ddbe1302304fd07fad",
+      "instance_id": "0dcbc97ad957",
+      "pid": 33963,
+      "request_id": "f656305f-fee9-46f1-8567-570c6d906ca1",
+      "origin": "llm",
+      "goal_version": 1
+    },
+    {
+      "time": "2026-10-06T10:16:21.619847+00:00",
+      "event": "model_payload_budget",
+      "run_id": "f381fc1a8d1d45ddbe1302304fd07fad",
+      "instance_id": "0dcbc97ad957",
+      "pid": 33963,
+      "payload_bytes": 11642,
+      "payload_bytes_before_projection": 11642,
+      "template_headroom": 640,
+      "input_budget_units": 14336,
+      "output_reserved": 2048,
+      "context_window": 16384,
+      "tool_count": 0,
+      "message_count": 1,
+      "older_turns_compacted": false,
+      "within_budget": true,
+      "observations_compacted": false,
+      "schema_compacted": false,
+      "system_catalog_compacted": false,
+      "tool_menu_compacted": false,
+      "minimal_discovery_menu": false,
+      "reasoning_compacted": false,
+      "minimal_catalog": false,
+      "builtin_instructions_compacted": false,
+      "components": {
+        "system_bytes": 6661,
+        "message_content_bytes": 4321,
+        "tool_calls_bytes": 0,
+        "reasoning_bytes": 0,
+        "tool_schema_bytes": 0,
+        "tool_names": []
+      },
+      "measurement": "conservative_utf8_bytes_not_actual_token_count"
+    },
+    {
+      "time": "2026-10-06T10:17:02.429735+00:00",
+      "event": "goal_semantic_review_started",
+      "run_id": "f381fc1a8d1d45ddbe1302304fd07fad",
+      "instance_id": "0dcbc97ad957",
+      "pid": 33963,
+      "request_id": "f656305f-fee9-46f1-8567-570c6d906ca1"
+    },
+    {
+      "time": "2026-10-06T10:17:02.433001+00:00",
+      "event": "model_payload_budget",
+      "run_id": "f381fc1a8d1d45ddbe1302304fd07fad",
+      "instance_id": "0dcbc97ad957",
+      "pid": 33963,
+      "payload_bytes": 12107,
+      "payload_bytes_before_projection": 12107,
+      "template_headroom": 640,
+      "input_budget_units": 14336,
+      "output_reserved": 2048,
+      "context_window": 16384,
+      "tool_count": 0,
+      "message_count": 1,
+      "older_turns_compacted": false,
+      "within_budget": true,
+      "observations_compacted": false,
+      "schema_compacted": false,
+      "system_catalog_compacted": false,
+      "tool_menu_compacted": false,
+      "minimal_discovery_menu": false,
+      "reasoning_compacted": false,
+      "minimal_catalog": false,
+      "builtin_instructions_compacted": false,
+      "components": {
+        "system_bytes": 6661,
+        "message_content_bytes": 4740,
+        "tool_calls_bytes": 0,
+        "reasoning_bytes": 0,
+        "tool_schema_bytes": 0,
+        "tool_names": []
+      },
+      "measurement": "conservative_utf8_bytes_not_actual_token_count"
+    },
+    {
+      "time": "2026-10-06T10:17:24.492970+00:00",
+      "event": "goal_interpretation_completed",
+      "run_id": "f381fc1a8d1d45ddbe1302304fd07fad",
+      "instance_id": "0dcbc97ad957",
+      "pid": 33963,
+      "request_id": "f656305f-fee9-46f1-8567-570c6d906ca1",
+      "origin": "llm",
+      "mode": "execute",
+      "capabilities": [
+        "value_list"
+      ],
+      "attempts": 2,
+      "goal_version": 1
+    },
+    {
+      "time": "2026-10-06T10:17:24.498326+00:00",
+      "event": "recovery_transition",
+      "run_id": "f381fc1a8d1d45ddbe1302304fd07fad",
+      "instance_id": "0dcbc97ad957",
+      "pid": 33963,
+      "request_id": "f656305f-fee9-46f1-8567-570c6d906ca1",
+      "tool": "inspect_value_list"
+    },
+    {
+      "time": "2026-10-06T10:17:24.508585+00:00",
+      "event": "tool_started",
+      "run_id": "f381fc1a8d1d45ddbe1302304fd07fad",
+      "instance_id": "0dcbc97ad957",
+      "pid": 33963,
+      "tool": "inspect_value_list"
+    },
+    {
+      "time": "2026-10-06T10:17:24.515049+00:00",
+      "event": "tool_completed",
+      "run_id": "f381fc1a8d1d45ddbe1302304fd07fad",
+      "instance_id": "0dcbc97ad957",
+      "pid": 33963,
+      "tool": "inspect_value_list",
+      "status": "planned",
+      "error_code": null,
+      "elapsed_seconds": 0.006,
+      "applied_corrections": []
+    },
+    {
+      "time": "2026-10-06T10:17:24.521377+00:00",
+      "event": "recovery_transition",
+      "run_id": "f381fc1a8d1d45ddbe1302304fd07fad",
+      "instance_id": "0dcbc97ad957",
+      "pid": 33963,
+      "request_id": "f656305f-fee9-46f1-8567-570c6d906ca1",
+      "tool": "query_databricks"
+    },
+    {
+      "time": "2026-10-06T10:17:24.528911+00:00",
+      "event": "remote_query_authorized",
+      "run_id": "f381fc1a8d1d45ddbe1302304fd07fad",
+      "instance_id": "0dcbc97ad957",
+      "pid": 33963,
+      "tool_call_id": "62df206e-9788-40dd-a98a-b1e5689d00ee",
+      "authorization": "automatic_read_policy"
+    },
+    {
+      "time": "2026-10-06T10:17:24.529181+00:00",
+      "event": "remote_query_started",
+      "run_id": "f381fc1a8d1d45ddbe1302304fd07fad",
+      "instance_id": "0dcbc97ad957",
+      "pid": 33963,
+      "ledger_status": "auto_authorized",
+      "cached_receipt": false
+    },
+    {
+      "time": "2026-10-06T10:17:25.215406+00:00",
+      "event": "remote_query_finished",
+      "run_id": "f381fc1a8d1d45ddbe1302304fd07fad",
+      "instance_id": "0dcbc97ad957",
+      "pid": 33963,
+      "ledger_status": "completed",
+      "status": "ready",
+      "cached_receipt": false
+    },
+    {
+      "time": "2026-10-06T10:17:25.222393+00:00",
+      "event": "remote_result_verified",
+      "run_id": "f381fc1a8d1d45ddbe1302304fd07fad",
+      "instance_id": "0dcbc97ad957",
+      "pid": 33963,
+      "request_id": "f656305f-fee9-46f1-8567-570c6d906ca1",
+      "tool_call_id": "62df206e-9788-40dd-a98a-b1e5689d00ee",
+      "dataset_id": "490407c0-a188-4f50-845a-36debea131cc",
+      "rows": 4
+    },
+    {
+      "time": "2026-10-06T10:17:25.231035+00:00",
+      "event": "completion_checked",
+      "run_id": "f381fc1a8d1d45ddbe1302304fd07fad",
+      "instance_id": "0dcbc97ad957",
+      "pid": 33963,
+      "request_id": "f656305f-fee9-46f1-8567-570c6d906ca1",
+      "status": "complete",
+      "reason": null,
+      "attempts": 0,
+      "required_capabilities": [
+        "value_list",
+        "remote_query"
+      ],
+      "missing_capabilities": [],
+      "model_calls": 2,
+      "tool_calls": 2,
+      "model_seconds": 62.862,
+      "dataset_ids": [],
+      "artifact_ids": []
+    },
+    {
+      "time": "2026-10-06T10:17:25.235838+00:00",
+      "event": "run_completed",
+      "run_id": "f381fc1a8d1d45ddbe1302304fd07fad",
+      "instance_id": "0dcbc97ad957",
+      "pid": 33963,
+      "status": "answered",
+      "elapsed_seconds": 63.628,
+      "process_peak_rss_bytes": 322387968,
+      "frame_cache_bytes": 0
+    },
+    {
+      "time": "2026-10-06T10:17:25.235934+00:00",
+      "event": "turn_slo",
+      "run_id": "f381fc1a8d1d45ddbe1302304fd07fad",
+      "instance_id": "0dcbc97ad957",
+      "pid": 33963,
+      "elapsed_seconds": 63.628,
+      "limit": 180.0,
+      "status": "ok"
+    }
+  ],
+  "requested_prompt": "여기 education에 들어있는 값 종류를 전부 알려줘.",
+  "current_matches_run": true,
+  "request_checkpoint_verified": true
+}

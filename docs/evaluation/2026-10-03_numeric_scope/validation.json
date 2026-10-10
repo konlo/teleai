@@ -1,0 +1,561 @@
+{
+  "generated_at": "2026-10-03T18:26:39+09:00",
+  "scope": "numeric scope/source recovery, compound numeric preparation/chart completion and metadata receipt regressions",
+  "release_status": "NO-GO for unrestricted autonomous analytics",
+  "final_regression": {
+    "command": ".telly_runtime/v1-venv/bin/python -m pytest tests migration -q --tb=short --disable-warnings",
+    "exit_code": 0,
+    "passed": 671,
+    "skipped": 4,
+    "subtests_passed": 471,
+    "seconds": 92.25,
+    "failed": 0,
+    "failed_cases": [],
+    "skipped_cases": [
+      {
+        "case": "tests.test_mysql_backend_live.MySQLBackendLiveTests.test_live_mysql_column_definition_tool_executes_and_reuses_metadata",
+        "reason": "local MySQL evaluation DB required"
+      },
+      {
+        "case": "tests.test_mysql_backend_live.MySQLBackendLiveTests.test_live_mysql_latest_histogram_and_relationship_metadata_use_mysql_sql",
+        "reason": "local MySQL evaluation DB required"
+      },
+      {
+        "case": "tests.test_mysql_backend_live.MySQLBackendLiveTests.test_read_only_execution_and_dynamic_schema",
+        "reason": "local MySQL evaluation DB required"
+      },
+      {
+        "case": "tests.test_mysql_backend_live.MySQLBackendLiveTests.test_streamlit_agent_lists_live_tables",
+        "reason": "local MySQL evaluation DB required"
+      }
+    ]
+  },
+  "related_regressions": {
+    "numeric_relevant_final.txt": {
+      "passed": 155,
+      "subtests_passed": 233,
+      "seconds": 37.82,
+      "failed": 0,
+      "failed_cases": []
+    },
+    "numeric_eda_repair_v2.txt": {
+      "passed": 65,
+      "subtests_passed": 62,
+      "seconds": 19.64,
+      "failed": 0,
+      "failed_cases": []
+    },
+    "remaining_contracts_v2.txt": {
+      "passed": 66,
+      "subtests_passed": 4,
+      "seconds": 13.28,
+      "failed": 0,
+      "failed_cases": []
+    },
+    "numeric_test_isolation.txt": {
+      "passed": 46,
+      "subtests_passed": 2,
+      "seconds": 12.26,
+      "failed": 0,
+      "failed_cases": []
+    }
+  },
+  "intermediate_full_v6": {
+    "failed": 26,
+    "passed": 651,
+    "skipped": 4,
+    "subtests_passed": 465,
+    "seconds": 91.95,
+    "failed_cases": [
+      "FAILED tests/test_automatic_databricks.py::AutomaticReadTests::test_cancelled_legacy_query_never_auto_authorized",
+      "FAILED tests/test_automatic_databricks.py::AutomaticReadTests::test_connection_change_invalidates_legacy_query",
+      "FAILED tests/test_automatic_databricks.py::AutomaticReadTests::test_manual_checkpoint_resumes_under_auto_policy_once",
+      "FAILED tests/test_automatic_databricks.py::AutomaticReadTests::test_model_query_finishes_without_interrupt_or_fictional_user_approval",
+      "FAILED tests/test_automatic_databricks.py::AutomaticReadTests::test_unknown_submission_is_not_replayed",
+      "SUBFAILED(case='scalar_chart', rename=False) tests/test_compound_eda_contract.py::CompoundEdaTests::test_all_goals_and_actual_histogram_bins",
+      "SUBFAILED(case='scalar_chart', rename=True) tests/test_compound_eda_contract.py::CompoundEdaTests::test_all_goals_and_actual_histogram_bins",
+      "SUBFAILED(case='filtered_scalar_chart', rename=False) tests/test_compound_eda_contract.py::CompoundEdaTests::test_all_goals_and_actual_histogram_bins",
+      "SUBFAILED(case='filtered_scalar_chart', rename=True) tests/test_compound_eda_contract.py::CompoundEdaTests::test_all_goals_and_actual_histogram_bins",
+      "SUBFAILED(case='custom_chart', rename=False) tests/test_compound_eda_contract.py::CompoundEdaTests::test_all_goals_and_actual_histogram_bins",
+      "SUBFAILED(case='custom_chart', rename=True) tests/test_compound_eda_contract.py::CompoundEdaTests::test_all_goals_and_actual_histogram_bins",
+      "FAILED tests/test_deferred_reply_delivery.py::DeferredReplyDeliveryTests::test_main_entrypoint_hides_tool_narration_and_renders_real_returned_listing",
+      "FAILED tests/test_remote_result_completion.py::RemoteResultCompletionTests::test_catalog_query_plan_without_tool_is_not_completion",
+      "FAILED tests/test_remote_result_completion.py::RemoteResultCompletionTests::test_completed_listing_is_rendered_from_receipt_not_model_promise",
+      "FAILED tests/test_remote_result_completion.py::RemoteResultCompletionTests::test_completed_receipt_for_mismatched_result_is_not_published",
+      "FAILED tests/test_remote_result_completion.py::RemoteResultCompletionTests::test_empty_result_is_completed_zero_rows_not_waiting",
+      "FAILED tests/test_remote_result_completion.py::RemoteResultCompletionTests::test_explicit_catalog_columns_are_not_an_unspecified_statistic",
+      "FAILED tests/test_remote_result_completion.py::RemoteResultCompletionTests::test_proven_connection_failure_reports_no_submission",
+      "FAILED tests/test_remote_result_completion.py::RemoteResultCompletionTests::test_real_page_shows_listing_after_approval_button",
+      "FAILED tests/test_remote_result_completion.py::RemoteResultCompletionTests::test_rejected_query_never_runs_or_promises_future_results",
+      "FAILED tests/test_remote_result_completion.py::RemoteResultCompletionTests::test_rendering_bound_does_not_claim_an_entire_large_listing",
+      "FAILED tests/test_remote_result_completion.py::RemoteResultCompletionTests::test_reopen_repairs_old_deferred_reply_using_existing_receipt_only",
+      "FAILED tests/test_remote_result_completion.py::RemoteResultCompletionTests::test_restart_and_duplicate_approval_do_not_resubmit",
+      "FAILED tests/test_remote_result_completion.py::RemoteResultCompletionTests::test_unexecuted_promise_is_not_a_successful_answer",
+      "FAILED tests/test_remote_result_completion.py::RemoteResultCompletionTests::test_unknown_submission_stops_without_an_automatic_retry",
+      "FAILED migration/test_completion_contracts.py::CompletionTests::test_histogram_ambiguous_roots_require_explicit_dataset_selection"
+    ]
+  },
+  "intermediate_full_v7": {
+    "failed": 192,
+    "passed": 538,
+    "skipped": 4,
+    "subtests_passed": 412,
+    "seconds": 276.35,
+    "failed_cases": [
+      "FAILED tests/test_analysis_aggregate.py::AnalysisAggregateTests::test_inlier_grouped_mean_uses_detector_column_without_guessing",
+      "FAILED tests/test_analysis_aggregate.py::AnalysisAggregateTests::test_outlier_top_group_and_overall_mean_complete_without_model",
+      "FAILED tests/test_analysis_chart_range_followup.py::ChartRangeFollowupTests::test_range_followup_creates_new_local_chart_and_preserves_root",
+      "FAILED tests/test_analysis_chart_spec.py::ChartSpecTests::test_calendar_month_cumulative_line_is_completed_without_model",
+      "FAILED tests/test_analysis_chart_spec.py::ChartSpecTests::test_english_boxplot_followup_returns_to_raw_rows_without_model",
+      "FAILED tests/test_analysis_chart_spec.py::ChartSpecTests::test_explicit_chart_png_and_lineage_survive_runtime_restart",
+      "FAILED tests/test_analysis_chart_spec.py::ChartSpecTests::test_grouped_boxplot_is_completed_deterministically_without_model",
+      "FAILED tests/test_analysis_chart_spec.py::ChartSpecTests::test_ordered_frequency_line_is_completed_without_model",
+      "FAILED tests/test_analysis_chart_spec.py::ChartSpecTests::test_scatter_request_is_completed_deterministically_without_model",
+      "FAILED tests/test_analysis_compare.py::AnalysisComparisonTests::test_agent_compares_parent_and_inlier_cohort_without_model",
+      "FAILED tests/test_analysis_completion_contract.py::CompletionContractTests::test_compound_statistics_and_chart_select_raw_among_prior_subsets",
+      "FAILED tests/test_analysis_completion_contract.py::CompletionContractTests::test_graph_rejects_missing_renderer_output_without_losing_raw",
+      "FAILED tests/test_analysis_completion_contract.py::CompletionContractTests::test_timed_out_model_checkpoint_resumes_compound_outputs_without_model",
+      "FAILED tests/test_analysis_count_rate_chart.py::CountRateChartTests::test_production_graph_runs_without_model_and_survives_restart",
+      "FAILED tests/test_analysis_count_rate_chart.py::CountRateChartTests::test_split_panel_request_runs_without_model",
+      "FAILED tests/test_analysis_full_read_budget.py::FullReadBudgetTests::test_selected_column_prefix_uses_saved_preview_without_model_or_remote",
+      "FAILED tests/test_analysis_grounded_continuation.py::GroundedContinuationTests::test_compound_label_uses_one_numeric_measure_and_preserves_raw",
+      "FAILED tests/test_analysis_grounded_continuation.py::GroundedContinuationTests::test_explicit_quoted_filter_does_not_require_profile_value_membership",
+      "FAILED tests/test_analysis_grounded_continuation.py::GroundedContinuationTests::test_filtered_frequency_is_table_neutral_includes_null_and_keeps_raw",
+      "FAILED tests/test_analysis_grounded_continuation.py::GroundedContinuationTests::test_qualified_count_clarification_survives_restart_and_reuses_original",
+      "FAILED tests/test_analysis_group_summary.py::AnalysisGroupSummaryTests::test_explicit_group_summary_completes_without_model_or_remote_reload",
+      "FAILED tests/test_analysis_group_summary.py::AnalysisGroupSummaryTests::test_named_group_comparison_filters_only_requested_observed_values",
+      "FAILED tests/test_analysis_join.py::AnalysisJoinTests::test_joined_dataset_can_feed_grounded_followup_aggregation",
+      "FAILED tests/test_analysis_join.py::AnalysisJoinTests::test_real_fixture_join_matches_independent_oracle",
+      "FAILED tests/test_analysis_join.py::AnalysisJoinTests::test_unambiguous_join_completes_without_model_and_survives_restart",
+      "FAILED tests/test_analysis_metadata_discovery.py::ColumnDiscoveryTests::test_approval_restart_discovery_binding_and_original_preservation",
+      "FAILED tests/test_analysis_numeric.py::NumericPreparationTests::test_model_preparation_continues_both_goals_with_one_model_call",
+      "FAILED tests/test_analysis_numeric.py::NumericPreparationTests::test_quoted_measure_used_for_filter_and_average_then_reset_chart",
+      "FAILED tests/test_analysis_numeric_scope.py::NumericScopeTests::test_exhausted_paused_request_keeps_repaired_scope_and_ends_without_inference",
+      "FAILED tests/test_analysis_numeric_scope.py::NumericScopeTests::test_filtered_chart_and_followup_preserve_origin_after_restart",
+      "SUBFAILED(dialect='mysql') tests/test_analysis_numeric_scope.py::NumericScopeTests::test_schema_only_range_request_pushes_counts_to_database_without_inference",
+      "SUBFAILED(dialect='databricks') tests/test_analysis_numeric_scope.py::NumericScopeTests::test_schema_only_range_request_pushes_counts_to_database_without_inference",
+      "FAILED tests/test_analysis_numeric_scope.py::NumericScopeTests::test_verified_filtered_raw_sql_continues_to_real_images_without_another_model_call",
+      "FAILED tests/test_analysis_operation_binding.py::OperationBindingTests::test_bound_operation_keeps_fixed_filter_and_snapshot",
+      "FAILED tests/test_analysis_operation_binding.py::OperationBindingTests::test_exclusion_inverts_single_predicate_without_model_or_raw_decode",
+      "FAILED tests/test_analysis_operation_binding.py::OperationBindingTests::test_interpretation_executes_calculation_preserves_original_and_restarts",
+      "FAILED tests/test_analysis_operation_binding.py::OperationBindingTests::test_unfamiliar_followup_changes_operator_instead_of_inheriting_max",
+      "FAILED tests/test_analysis_outliers.py::AnalysisOutlierTests::test_compound_outlier_cohort_metric_completes_without_model_or_remote",
+      "FAILED tests/test_analysis_outliers.py::AnalysisOutlierTests::test_explicit_loaded_row_count_selects_root_over_derived_raw_result",
+      "FAILED tests/test_analysis_outliers.py::AnalysisOutlierTests::test_model_node_checkpoint_resumes_iqr_without_model_or_remote",
+      "FAILED tests/test_analysis_outliers.py::AnalysisOutlierTests::test_structured_evidence_survives_restart",
+      "SUBFAILED(method='iqr') tests/test_analysis_outliers.py::AnalysisOutlierTests::test_unambiguous_iqr_and_sigma_prompts_route_without_model",
+      "SUBFAILED(method='zscore') tests/test_analysis_outliers.py::AnalysisOutlierTests::test_unambiguous_iqr_and_sigma_prompts_route_without_model",
+      "SUBFAILED(method='quantile') tests/test_analysis_outliers.py::AnalysisOutlierTests::test_unambiguous_iqr_and_sigma_prompts_route_without_model",
+      "FAILED tests/test_analysis_outliers.py::AnalysisOutlierTests::test_unambiguous_winsorization_routes_without_model_and_survives_restart",
+      "SUBFAILED(prompt='직업(job)과 혼인상태(marital)별 고객 수 피벗 테이블을 생성하고, 행과 열의 전체 총합계(margins=True)를 표기해줘.') tests/test_analysis_pivot.py::AnalysisPivotTests::test_explicit_pivot_prompts_run_without_model_and_survive_restart",
+      "SUBFAILED(prompt='교육수준(education)과 주택대출(housing)별 평균 잔액(balance) 피벗 테이블을 만들고, 전체 평균 총계(margins=True)를 포함해줘.') tests/test_analysis_pivot.py::AnalysisPivotTests::test_explicit_pivot_prompts_run_without_model_and_survive_restart",
+      "SUBFAILED(prompt='타이타닉 승객 등급(Pclass)과 성별(Sex)에 따른 생존율 피벗 테이블을 백분율로 출력해줘.') tests/test_analysis_pivot.py::AnalysisPivotTests::test_explicit_pivot_prompts_run_without_model_and_survive_restart",
+      "SUBFAILED(prompt=\"월(month)과 통신 수단(contact)에 따른 마케팅 예금 가입 성공 건수(y='yes') 피벗 테이블을 출력해줘.\") tests/test_analysis_pivot.py::AnalysisPivotTests::test_explicit_pivot_prompts_run_without_model_and_survive_restart",
+      "SUBFAILED(prompt='이전 마케팅 결과(poutcome)와 이번 가입 결과(y) 간의 교차 빈도표를 작성하고 전체 대비 백분율(normalize=True)을 구해줘.') tests/test_analysis_pivot.py::AnalysisPivotTests::test_explicit_pivot_prompts_run_without_model_and_survive_restart",
+      "FAILED tests/test_analysis_pivot.py::AnalysisPivotTests::test_multiple_aggregation_plan_preserves_list_and_completes",
+      "FAILED tests/test_analysis_pivot.py::AnalysisPivotTests::test_new_pivot_axes_replace_inherited_filters_on_the_same_columns",
+      "FAILED tests/test_analysis_projection.py::ProjectionTests::test_agent_boxplot_uses_file_backed_column_without_full_decode",
+      "FAILED tests/test_analysis_projection.py::ProjectionTests::test_agent_histogram_uses_file_backed_column_without_remote_or_model",
+      "FAILED tests/test_analysis_projection.py::ProjectionTests::test_distribution_wording_produces_histogram_without_model",
+      "FAILED tests/test_analysis_projection.py::ProjectionTests::test_file_backed_scalar_and_correlation_do_not_decode_full_frame",
+      "FAILED tests/test_analysis_scalar_recovery.py::ScalarRecoveryTests::test_exhausted_checkpoint_resumes_exact_loaded_sample_locally",
+      "FAILED tests/test_analysis_scalar_recovery.py::ScalarRecoveryTests::test_explicit_loaded_sample_size_selects_original_after_derived_result",
+      "SUBFAILED(prompt='보유 데이터에서 2026-08의 value 평균을 계산해줘.') tests/test_analysis_scalar_recovery.py::ScalarRecoveryTests::test_loaded_dataframe_scalar_followups_never_need_the_model",
+      "SUBFAILED(prompt='그중 segment A만 계산해줘.') tests/test_analysis_scalar_recovery.py::ScalarRecoveryTests::test_loaded_dataframe_scalar_followups_never_need_the_model",
+      "SUBFAILED(prompt='평균 말고 중앙값으로 바꿔줘.') tests/test_analysis_scalar_recovery.py::ScalarRecoveryTests::test_loaded_dataframe_scalar_followups_never_need_the_model",
+      "SUBFAILED(prompt='같은 그룹의 이전 달 중앙값도 계산해줘.') tests/test_analysis_scalar_recovery.py::ScalarRecoveryTests::test_loaded_dataframe_scalar_followups_never_need_the_model",
+      "FAILED tests/test_analysis_scalar_recovery.py::ScalarRecoveryTests::test_scalar_recovery_uses_runtime_schema_instead_of_known_table_columns",
+      "FAILED tests/test_analysis_scalar_recovery.py::ScalarRecoveryTests::test_unqualified_single_scalar_reuses_unique_complete_raw_dataset",
+      "FAILED tests/test_analysis_schema_refresh_recovery.py::SchemaRefreshRecoveryTests::test_elliptical_followup_uses_prior_table_label_without_another_model_call",
+      "FAILED tests/test_analysis_schema_refresh_recovery.py::SchemaRefreshRecoveryTests::test_forbidden_schema_probe_stops_without_model_retry",
+      "FAILED tests/test_analysis_schema_refresh_recovery.py::SchemaRefreshRecoveryTests::test_fresh_schema_answers_without_approval_or_model",
+      "FAILED tests/test_analysis_schema_refresh_recovery.py::SchemaRefreshRecoveryTests::test_rejected_schema_refresh_does_not_query_or_retry_model",
+      "FAILED tests/test_analysis_schema_refresh_recovery.py::SchemaRefreshRecoveryTests::test_stale_followup_proposes_exact_zero_row_query_and_preserves_root",
+      "FAILED tests/test_analysis_schema_refresh_recovery.py::SchemaRefreshRecoveryTests::test_stale_schema_without_remote_connection_stops_clearly",
+      "FAILED tests/test_analysis_schema_refresh_recovery.py::SchemaRefreshRecoveryTests::test_zero_row_probe_does_not_invent_column_types",
+      "FAILED tests/test_analysis_selection_ui.py::SelectionUiTests::test_explicit_boxplot_tool_result_shows_actual_image_in_chat",
+      "FAILED tests/test_analysis_selection_ui.py::SelectionUiTests::test_selected_column_prefix_renders_grounded_preview_without_model",
+      "FAILED tests/test_analysis_semantic_binding.py::SemanticBindingTests::test_numeric_mean_requires_two_grounded_interpretations_then_real_calculation",
+      "FAILED tests/test_analysis_semantic_binding.py::SemanticBindingTests::test_reversed_encoding_prior_current_and_raw_preservation",
+      "FAILED tests/test_analysis_semantic_binding.py::SemanticBindingTests::test_two_agreeing_models_cannot_substitute_duration_for_event_count",
+      "SUBFAILED(kind='paired_t') tests/test_analysis_statistics.py::AnalysisStatisticsTests::test_every_supported_intent_routes_without_model_when_columns_are_unambiguous",
+      "SUBFAILED(kind='chi_square') tests/test_analysis_statistics.py::AnalysisStatisticsTests::test_every_supported_intent_routes_without_model_when_columns_are_unambiguous",
+      "SUBFAILED(kind='one_way_anova') tests/test_analysis_statistics.py::AnalysisStatisticsTests::test_every_supported_intent_routes_without_model_when_columns_are_unambiguous",
+      "SUBFAILED(kind='mann_whitney') tests/test_analysis_statistics.py::AnalysisStatisticsTests::test_every_supported_intent_routes_without_model_when_columns_are_unambiguous",
+      "SUBFAILED(kind='mean_ci') tests/test_analysis_statistics.py::AnalysisStatisticsTests::test_every_supported_intent_routes_without_model_when_columns_are_unambiguous",
+      "FAILED tests/test_analysis_statistics.py::AnalysisStatisticsTests::test_production_graph_matches_independent_fixture_oracle_without_model",
+      "FAILED tests/test_analysis_statistics.py::AnalysisStatisticsTests::test_structured_statistical_evidence_survives_runtime_restart",
+      "FAILED tests/test_analysis_time_series.py::TimeSeriesTests::test_production_graph_prepares_and_renders_without_model_or_remote",
+      "FAILED tests/test_analysis_tool_contracts.py::AnalysisToolContractTests::test_generic_table_list_executes_exact_catalog_plan_without_model",
+      "FAILED tests/test_analysis_tool_contracts.py::AnalysisToolContractTests::test_production_graph_profiles_one_loaded_dataset_without_model_or_remote",
+      "FAILED tests/test_analysis_tool_contracts.py::AnalysisToolContractTests::test_schema_scoped_table_list_proposes_only_named_schema",
+      "FAILED tests/test_analysis_tool_discovery.py::DiscoveryTests::test_followup_measure_may_also_be_the_inherited_predicate_after_restart",
+      "SUBFAILED(interrupted=False) tests/test_analysis_tool_discovery.py::DiscoveryTests::test_predicate_measure_followup_completes_without_model_and_recovers_old_timeout",
+      "SUBFAILED(interrupted=True) tests/test_analysis_tool_discovery.py::DiscoveryTests::test_predicate_measure_followup_completes_without_model_and_recovers_old_timeout",
+      "FAILED tests/test_analysis_value_list.py::ValueListTests::test_approval_and_truncated_values_are_not_full_population",
+      "FAILED tests/test_analysis_value_list.py::ValueListTests::test_chart_followup_uses_recent_values_not_older_numeric_chart_after_restart",
+      "FAILED tests/test_analysis_value_list.py::ValueListTests::test_completed_filtered_receipt_is_not_reused_for_a_different_population",
+      "FAILED tests/test_analysis_value_list.py::ValueListTests::test_followup_preserves_value_list_filter_and_does_not_bind_unknown_named_axis",
+      "FAILED tests/test_analysis_value_list.py::ValueListTests::test_local_complete_original_uses_projection_batches_without_sql",
+      "FAILED tests/test_analysis_value_list.py::ValueListTests::test_remote_followup_counts_population_not_distinct_rows",
+      "FAILED tests/test_analysis_value_list.py::ValueListTests::test_remote_values_repeat_restart_filters_and_preserve_raw",
+      "FAILED tests/test_analysis_value_list.py::ValueListTests::test_saved_categorical_count_timeout_resumes_without_model_or_sql",
+      "FAILED tests/test_analysis_value_list.py::ValueListTests::test_unreceipted_wrong_column_or_scope_cannot_complete",
+      "FAILED tests/test_automatic_databricks.py::AutomaticReadTests::test_page_automatically_resumes_legacy_pending_approval",
+      "FAILED tests/test_automatic_databricks.py::AutomaticReadTests::test_page_executes_without_approval_button_and_rerun_does_not_reload",
+      "FAILED tests/test_automatic_databricks.py::AutomaticReadTests::test_timed_out_histogram_checkpoint_resumes_from_verified_schema",
+      "FAILED tests/test_automatic_databricks.py::AutomaticReadTests::test_zero_row_schema_to_histogram_uses_one_aggregate_without_model",
+      "FAILED tests/test_chart_delivery.py::ChartDeliveryTests::test_final_attachment_displays_even_without_tool_messages_and_survives_rerun",
+      "FAILED tests/test_chart_delivery.py::ChartDeliveryTests::test_plain_chart_title_cannot_complete_without_attached_image",
+      "SUBFAILED(case='scalar_chart', rename=False) tests/test_compound_eda_contract.py::CompoundEdaTests::test_all_goals_and_actual_histogram_bins",
+      "SUBFAILED(case='scalar_chart', rename=True) tests/test_compound_eda_contract.py::CompoundEdaTests::test_all_goals_and_actual_histogram_bins",
+      "SUBFAILED(case='filtered_scalar_chart', rename=False) tests/test_compound_eda_contract.py::CompoundEdaTests::test_all_goals_and_actual_histogram_bins",
+      "SUBFAILED(case='filtered_scalar_chart', rename=True) tests/test_compound_eda_contract.py::CompoundEdaTests::test_all_goals_and_actual_histogram_bins",
+      "SUBFAILED(case='grouped_scalar', rename=False) tests/test_compound_eda_contract.py::CompoundEdaTests::test_all_goals_and_actual_histogram_bins",
+      "SUBFAILED(case='grouped_scalar', rename=True) tests/test_compound_eda_contract.py::CompoundEdaTests::test_all_goals_and_actual_histogram_bins",
+      "SUBFAILED(case='custom_chart', rename=False) tests/test_compound_eda_contract.py::CompoundEdaTests::test_all_goals_and_actual_histogram_bins",
+      "SUBFAILED(case='custom_chart', rename=True) tests/test_compound_eda_contract.py::CompoundEdaTests::test_all_goals_and_actual_histogram_bins",
+      "FAILED tests/test_compound_eda_contract.py::CompoundEdaTests::test_bin_wording_and_persisted_card_reject_wrong_completion",
+      "FAILED tests/test_conversation_transitions.py::ConversationTransitionTests::test_explanation_restart_and_explicit_ui_selection",
+      "SUBFAILED(case='selective_filter', renamed=False) tests/test_conversation_transitions.py::ConversationTransitionTests::test_original_and_renamed_failure_journeys",
+      "SUBFAILED(case='topic_pause_return', renamed=False) tests/test_conversation_transitions.py::ConversationTransitionTests::test_original_and_renamed_failure_journeys",
+      "SUBFAILED(case='language_source_switch', renamed=False) tests/test_conversation_transitions.py::ConversationTransitionTests::test_original_and_renamed_failure_journeys",
+      "SUBFAILED(case='selective_filter', renamed=True) tests/test_conversation_transitions.py::ConversationTransitionTests::test_original_and_renamed_failure_journeys",
+      "SUBFAILED(case='topic_pause_return', renamed=True) tests/test_conversation_transitions.py::ConversationTransitionTests::test_original_and_renamed_failure_journeys",
+      "SUBFAILED(case='language_source_switch', renamed=True) tests/test_conversation_transitions.py::ConversationTransitionTests::test_original_and_renamed_failure_journeys",
+      "FAILED tests/test_data_backend_isolation.py::BackendIsolationTests::test_databricks_page_lists_tables_then_columns_without_mysql_import",
+      "FAILED tests/test_data_backend_isolation.py::BackendIsolationTests::test_fresh_install_discovers_names_then_probes_schema_without_cached_profiles",
+      "SUBFAILED(renamed=False) tests/test_data_preservation_acceptance.py::DataPreservationAcceptanceTests::test_grounded_filtered_histogram_completes_without_model_or_reload",
+      "SUBFAILED(renamed=True) tests/test_data_preservation_acceptance.py::DataPreservationAcceptanceTests::test_grounded_filtered_histogram_completes_without_model_or_reload",
+      "FAILED tests/test_group_streaming.py::GroupStreamingTests::test_agent_completes_grouped_eda_from_retained_data_without_reload",
+      "FAILED tests/test_latest_distribution.py::LatestDistributionTests::test_ambiguous_order_resolves_after_restart_with_verified_attachment",
+      "SUBFAILED(mode='local', stage='before') tests/test_latest_filters.py::LatestFilterTests::test_explicit_stage_local_and_remote_graph",
+      "SUBFAILED(mode='local', stage='after') tests/test_latest_filters.py::LatestFilterTests::test_explicit_stage_local_and_remote_graph",
+      "SUBFAILED(mode='remote', stage='before') tests/test_latest_filters.py::LatestFilterTests::test_explicit_stage_local_and_remote_graph",
+      "SUBFAILED(mode='remote', stage='after') tests/test_latest_filters.py::LatestFilterTests::test_explicit_stage_local_and_remote_graph",
+      "FAILED tests/test_latest_filters.py::LatestFilterTests::test_filter_cannot_hide_ambiguous_winner_or_coerce_value",
+      "SUBFAILED(mode='local', stage='before') tests/test_latest_filters.py::LatestFilterTests::test_numeric_histogram_bins_followup_keeps_filter_stage",
+      "SUBFAILED(mode='local', stage='after') tests/test_latest_filters.py::LatestFilterTests::test_numeric_histogram_bins_followup_keeps_filter_stage",
+      "SUBFAILED(mode='remote', stage='before') tests/test_latest_filters.py::LatestFilterTests::test_numeric_histogram_bins_followup_keeps_filter_stage",
+      "SUBFAILED(mode='remote', stage='after') tests/test_latest_filters.py::LatestFilterTests::test_numeric_histogram_bins_followup_keeps_filter_stage",
+      "FAILED tests/test_latest_filters.py::LatestFilterTests::test_remote_stage_change_does_not_reuse_wrong_receipt",
+      "FAILED tests/test_latest_filters.py::LatestFilterTests::test_stage_clarification_then_change_survives_restart",
+      "FAILED tests/test_latest_null_continuation.py::LatestNullContinuationTests::test_all_missing_do_not_publish",
+      "FAILED tests/test_latest_null_continuation.py::LatestNullContinuationTests::test_infinity_is_not_silently_treated_as_missing",
+      "FAILED tests/test_latest_null_continuation.py::LatestNullContinuationTests::test_large_retained_null_policy_scans_batches_not_full_projection",
+      "SUBFAILED(mode='local') tests/test_latest_null_continuation.py::LatestNullContinuationTests::test_local_and_remote_followup_preserves_fallback_older_valid_record",
+      "SUBFAILED(mode='remote') tests/test_latest_null_continuation.py::LatestNullContinuationTests::test_local_and_remote_followup_preserves_fallback_older_valid_record",
+      "FAILED tests/test_latest_sql.py::LatestSQLTests::test_large_tool_uses_sql_and_survives_restart",
+      "FAILED tests/test_latest_tie_continuation.py::LatestTieContinuationTests::test_local_followup_restart_and_raw_preservation",
+      "FAILED tests/test_latest_tie_continuation.py::LatestTieContinuationTests::test_remote_followup_recomputes_once_then_reuses_after_restart",
+      "FAILED tests/test_latest_tie_continuation.py::LatestTieContinuationTests::test_remote_numeric_bins_with_explicit_tie_order",
+      "FAILED tests/test_latest_tie_continuation.py::LatestTieContinuationTests::test_unresolved_second_tie_and_changed_source_never_choose_arbitrarily",
+      "FAILED tests/test_live_evaluator_exit.py::LiveEvaluatorExitTests::test_large_data_oracle_failure_returns_nonzero_even_when_agent_answers",
+      "FAILED tests/test_local_continuation.py::LocalContinuationTests::test_filter_is_preserved_in_automatic_calculation",
+      "FAILED tests/test_local_continuation.py::LocalContinuationTests::test_followup_filter_reset_restores_raw_for_mean_and_chart",
+      "FAILED tests/test_local_continuation.py::LocalContinuationTests::test_local_failure_stops_without_model_or_remote_retry",
+      "FAILED tests/test_local_continuation.py::LocalContinuationTests::test_more_than_one_local_obligation_finishes_after_model_outage",
+      "FAILED tests/test_local_continuation.py::LocalContinuationTests::test_partial_chart_is_kept_and_missing_mean_finishes_without_user_resume",
+      "FAILED tests/test_local_continuation.py::LocalContinuationTests::test_prepared_chart_uses_output_dataset_not_explicit_raw_input",
+      "FAILED tests/test_local_continuation.py::LocalContinuationTests::test_restart_keeps_local_only_mode_and_new_request_clears_it",
+      "FAILED tests/test_local_continuation.py::LocalContinuationTests::test_tool_budget_cannot_be_reset_by_provider_failure",
+      "FAILED tests/test_model_recovery.py::ModelRecoveryTests::test_semantic_interpretation_shares_retry_ledger_and_counts_each_attempt_once",
+      "SUBFAILED(dialect='mysql', request='observations 컬럼들을 보여줘') tests/test_mysql_metadata_contract.py::MySQLMetadataContractTests::test_plural_schema_request_uses_observed_schema_for_both_engines",
+      "SUBFAILED(dialect='mysql', request='observations 필드들을 알려줘') tests/test_mysql_metadata_contract.py::MySQLMetadataContractTests::test_plural_schema_request_uses_observed_schema_for_both_engines",
+      "SUBFAILED(dialect='mysql', request='show columns for observations') tests/test_mysql_metadata_contract.py::MySQLMetadataContractTests::test_plural_schema_request_uses_observed_schema_for_both_engines",
+      "SUBFAILED(dialect='databricks', request='observations 컬럼들을 보여줘') tests/test_mysql_metadata_contract.py::MySQLMetadataContractTests::test_plural_schema_request_uses_observed_schema_for_both_engines",
+      "SUBFAILED(dialect='databricks', request='observations 필드들을 알려줘') tests/test_mysql_metadata_contract.py::MySQLMetadataContractTests::test_plural_schema_request_uses_observed_schema_for_both_engines",
+      "SUBFAILED(dialect='databricks', request='show columns for observations') tests/test_mysql_metadata_contract.py::MySQLMetadataContractTests::test_plural_schema_request_uses_observed_schema_for_both_engines",
+      "FAILED tests/test_mysql_metadata_contract.py::MySQLMetadataContractTests::test_unique_value_request_is_not_misclassified_as_column_listing",
+      "SUBFAILED(rows=11) tests/test_remote_latest.py::RemoteLatestTests::test_bad_data_never_publishes_chart",
+      "SUBFAILED(rows=10) tests/test_remote_latest.py::RemoteLatestTests::test_bad_data_never_publishes_chart",
+      "SUBFAILED(rows=0) tests/test_remote_latest.py::RemoteLatestTests::test_bad_data_never_publishes_chart",
+      "FAILED tests/test_remote_latest.py::RemoteLatestTests::test_cached_only_request_and_wrong_query_are_not_allowed",
+      "FAILED tests/test_remote_latest.py::RemoteLatestTests::test_category_limit_and_corrupt_counts_never_complete",
+      "FAILED tests/test_remote_latest.py::RemoteLatestTests::test_manual_approval_and_unknown_execution_preserved",
+      "FAILED tests/test_remote_latest.py::RemoteLatestTests::test_plan_execute_validate_chart_without_loading_raw",
+      "FAILED tests/test_remote_latest.py::RemoteLatestTests::test_stale_schema_refreshes_before_business_query",
+      "FAILED tests/test_remote_latest_histogram.py::RemoteLatestHistogramTests::test_explicit_composite_keys_use_all_key_columns",
+      "SUBFAILED(bins=5) tests/test_remote_latest_histogram.py::RemoteLatestHistogramTests::test_negative_boundary_empty_and_constant_bins",
+      "SUBFAILED(bins=4) tests/test_remote_latest_histogram.py::RemoteLatestHistogramTests::test_negative_boundary_empty_and_constant_bins",
+      "SUBFAILED(bins=25) tests/test_remote_latest_histogram.py::RemoteLatestHistogramTests::test_negative_boundary_empty_and_constant_bins",
+      "FAILED tests/test_runtime_performance_input.py::RuntimePerformanceInputTests::test_benchmark_uses_observed_numeric_columns_without_table_names",
+      "FAILED migration/test_approval_rollout.py::GraphApprovalTests::test_complete_local_histogram_bypasses_model_and_remote",
+      "FAILED migration/test_approval_rollout.py::GraphApprovalTests::test_current_loaded_numbered_sample_histogram_stays_local",
+      "FAILED migration/test_cached_chart_ui.py::CachedChartUITests::test_repeated_prepared_chart_displays_without_duplicate_widget_keys",
+      "FAILED migration/test_completion_contracts.py::CompletionTests::test_column_count_uses_metadata_without_loading_or_numeric_sql",
+      "FAILED migration/test_completion_contracts.py::CompletionTests::test_complete_cached_plan_ends_without_model_or_remote_call",
+      "FAILED migration/test_completion_contracts.py::CompletionTests::test_current_sample_pearson_correlation_reuses_loaded_dataframe",
+      "FAILED migration/test_completion_contracts.py::CompletionTests::test_exact_filtered_dataset_is_counted_without_second_model_call",
+      "FAILED migration/test_completion_contracts.py::CompletionTests::test_grounded_count_and_ratio_obligations_share_one_local_result",
+      "FAILED migration/test_completion_contracts.py::CompletionTests::test_grounded_filtered_count_has_deterministic_local_fallback",
+      "FAILED migration/test_completion_contracts.py::CompletionTests::test_grounded_pearson_correlation_uses_local_dataframe_without_model",
+      "FAILED migration/test_completion_contracts.py::CompletionTests::test_grounded_ratio_has_deterministic_percent_fallback",
+      "FAILED migration/test_completion_contracts.py::CompletionTests::test_schema_dtype_and_type_subsets_are_table_neutral_and_model_free",
+      "FAILED migration/test_multi_aggregate_recovery.py::MultiAggregateRecoveryTests::test_average_and_oldest_are_computed_locally_without_model_or_remote",
+      "FAILED migration/test_recovery_journey.py::PlannedJourneyTests::test_controller_connects_plan_approval_and_render_despite_model_stopping"
+    ],
+    "classification": "test harness global planner patch leak, fixed with runtime-instance patch and caller cleanup; not 192 independent product defects"
+  },
+  "prior_intent_parser_only_comparison": {
+    "failed": 25,
+    "passed": 18,
+    "subtests_passed": 4,
+    "seconds": 11.53,
+    "failed_cases": [
+      "SUBFAILED(case='scalar_chart', rename=False) tests/test_compound_eda_contract.py::CompoundEdaTests::test_all_goals_and_actual_histogram_bins",
+      "SUBFAILED(case='scalar_chart', rename=True) tests/test_compound_eda_contract.py::CompoundEdaTests::test_all_goals_and_actual_histogram_bins",
+      "SUBFAILED(case='filtered_scalar_chart', rename=False) tests/test_compound_eda_contract.py::CompoundEdaTests::test_all_goals_and_actual_histogram_bins",
+      "SUBFAILED(case='filtered_scalar_chart', rename=True) tests/test_compound_eda_contract.py::CompoundEdaTests::test_all_goals_and_actual_histogram_bins",
+      "SUBFAILED(case='custom_chart', rename=False) tests/test_compound_eda_contract.py::CompoundEdaTests::test_all_goals_and_actual_histogram_bins",
+      "SUBFAILED(case='custom_chart', rename=True) tests/test_compound_eda_contract.py::CompoundEdaTests::test_all_goals_and_actual_histogram_bins",
+      "FAILED tests/test_automatic_databricks.py::AutomaticReadTests::test_cancelled_legacy_query_never_auto_authorized",
+      "FAILED tests/test_automatic_databricks.py::AutomaticReadTests::test_connection_change_invalidates_legacy_query",
+      "FAILED tests/test_automatic_databricks.py::AutomaticReadTests::test_manual_checkpoint_resumes_under_auto_policy_once",
+      "FAILED tests/test_automatic_databricks.py::AutomaticReadTests::test_model_query_finishes_without_interrupt_or_fictional_user_approval",
+      "FAILED tests/test_automatic_databricks.py::AutomaticReadTests::test_unknown_submission_is_not_replayed",
+      "FAILED tests/test_remote_result_completion.py::RemoteResultCompletionTests::test_catalog_query_plan_without_tool_is_not_completion",
+      "FAILED tests/test_remote_result_completion.py::RemoteResultCompletionTests::test_completed_listing_is_rendered_from_receipt_not_model_promise",
+      "FAILED tests/test_remote_result_completion.py::RemoteResultCompletionTests::test_completed_receipt_for_mismatched_result_is_not_published",
+      "FAILED tests/test_remote_result_completion.py::RemoteResultCompletionTests::test_empty_result_is_completed_zero_rows_not_waiting",
+      "FAILED tests/test_remote_result_completion.py::RemoteResultCompletionTests::test_explicit_catalog_columns_are_not_an_unspecified_statistic",
+      "FAILED tests/test_remote_result_completion.py::RemoteResultCompletionTests::test_proven_connection_failure_reports_no_submission",
+      "FAILED tests/test_remote_result_completion.py::RemoteResultCompletionTests::test_real_page_shows_listing_after_approval_button",
+      "FAILED tests/test_remote_result_completion.py::RemoteResultCompletionTests::test_rejected_query_never_runs_or_promises_future_results",
+      "FAILED tests/test_remote_result_completion.py::RemoteResultCompletionTests::test_rendering_bound_does_not_claim_an_entire_large_listing",
+      "FAILED tests/test_remote_result_completion.py::RemoteResultCompletionTests::test_reopen_repairs_old_deferred_reply_using_existing_receipt_only",
+      "FAILED tests/test_remote_result_completion.py::RemoteResultCompletionTests::test_restart_and_duplicate_approval_do_not_resubmit",
+      "FAILED tests/test_remote_result_completion.py::RemoteResultCompletionTests::test_unexecuted_promise_is_not_a_successful_answer",
+      "FAILED tests/test_remote_result_completion.py::RemoteResultCompletionTests::test_unknown_submission_stops_without_an_automatic_retry",
+      "FAILED tests/test_deferred_reply_delivery.py::DeferredReplyDeliveryTests::test_main_entrypoint_hides_tool_narration_and_renders_real_returned_listing"
+    ],
+    "limitation": "isolated HEAD intent parser with other current local changes; not a clean full prior repository comparison"
+  },
+  "prior_migration_intent_parser_only_comparison": {
+    "failed": 1,
+    "passed": 2,
+    "seconds": 10.4,
+    "failed_cases": [
+      "FAILED migration/test_completion_contracts.py::CompletionTests::test_histogram_ambiguous_roots_require_explicit_dataset_selection"
+    ]
+  },
+  "adjudication": [
+    "Numeric range grammar/source binding, UUID false-range and exact SQL null-population comparison corrected.",
+    "Verified numeric child now rebinds stale categorical histogram intent/plan while preserving mean/filter/raw goals.",
+    "Catalog projection requests no longer require unspecified scalar operation binding.",
+    "Scripted receipt tests now use actual catalog and registered discovery plan; controller/UI path retained separately.",
+    "Ambiguous raw root test accepts diagnostic + model needs_context observations and validates final chosen snapshot.",
+    "Temporary TestCase cleanup leak removed; no production recovery disabled or test failures omitted."
+  ],
+  "actual_backends": [
+    {
+      "artifact": "mysql.json",
+      "backend": "mysql",
+      "scope": "live_adapter_and_agent_deterministic_range_chart_not_free_form_model",
+      "status": "PASS",
+      "conditions": [
+        {
+          "column": "age",
+          "op": "ge",
+          "value": 30
+        },
+        {
+          "column": "age",
+          "op": "le",
+          "value": 40
+        },
+        {
+          "column": "education",
+          "op": "eq",
+          "value": "primary"
+        }
+      ],
+      "sql_executions": 2,
+      "model_calls": 0,
+      "frequency_rows": 11,
+      "tool_calls": [
+        "23e0583d-a946-47aa-a4cd-bc64378ec22a",
+        "5f7c575a-30ad-4ee9-8e3f-519e14db7334",
+        "396e9226-65d2-4261-a1ff-ef7f2d8f7d1b"
+      ],
+      "frequency_sum": 27439,
+      "png_bytes": 11076,
+      "query": "SELECT `age`, COUNT(*) AS `__frequency` FROM `teleai_default`.`bank_loan` WHERE `age` IS NOT NULL AND (`age` >= 30 AND `age` <= 40 AND `education` = 'primary') GROUP BY `age`"
+    },
+    {
+      "artifact": "databricks.json",
+      "backend": "databricks",
+      "scope": "live_adapter_and_agent_deterministic_range_chart_not_free_form_model",
+      "status": "PASS",
+      "conditions": [
+        {
+          "column": "age",
+          "op": "ge",
+          "value": 30
+        },
+        {
+          "column": "age",
+          "op": "le",
+          "value": 40
+        },
+        {
+          "column": "education",
+          "op": "eq",
+          "value": "primary"
+        }
+      ],
+      "sql_executions": 2,
+      "model_calls": 0,
+      "frequency_rows": 11,
+      "tool_calls": [
+        "d25f7396-f48c-445d-aba4-38dfa459a60d",
+        "73493887-88b8-4ffd-bf1f-1765fb774a2e",
+        "faff27d5-3444-4838-a3f8-c16a2ab9f564"
+      ],
+      "frequency_sum": 27439,
+      "png_bytes": 11076,
+      "query": "SELECT `age`, COUNT(*) AS `__frequency` FROM `workspace`.`default`.`bank_loan` WHERE `age` IS NOT NULL AND (`age` >= 30 AND `age` <= 40 AND `education` = 'primary') GROUP BY `age`"
+    },
+    {
+      "artifact": "mysql_multi.json",
+      "backend": "mysql",
+      "scope": "live_adapter_and_agent_deterministic_range_chart_not_free_form_model",
+      "status": "PASS",
+      "conditions": [
+        {
+          "column": "age",
+          "op": "ge",
+          "value": 30
+        },
+        {
+          "column": "age",
+          "op": "le",
+          "value": 40
+        },
+        {
+          "column": "education",
+          "op": "in",
+          "value": [
+            "primary",
+            "secondary"
+          ]
+        }
+      ],
+      "sql_executions": 2,
+      "model_calls": 0,
+      "frequency_rows": 11,
+      "tool_calls": [
+        "c9bedf68-32ac-4246-9935-2c0343359ea3",
+        "ed08851c-9d82-4cd9-b7c5-4f4cfac8f6ec",
+        "7c75ce5d-2b15-4a6b-822f-4c13e23ac88b"
+      ],
+      "frequency_sum": 208699,
+      "png_bytes": 12208,
+      "query": "SELECT `age`, COUNT(*) AS `__frequency` FROM `teleai_default`.`bank_loan` WHERE `age` IS NOT NULL AND (`age` >= 30 AND `age` <= 40 AND `education` IN ('primary', 'secondary')) GROUP BY `age`"
+    },
+    {
+      "artifact": "databricks_multi.json",
+      "backend": "databricks",
+      "scope": "live_adapter_and_agent_deterministic_range_chart_not_free_form_model",
+      "status": "PASS",
+      "conditions": [
+        {
+          "column": "age",
+          "op": "ge",
+          "value": 30
+        },
+        {
+          "column": "age",
+          "op": "le",
+          "value": 40
+        },
+        {
+          "column": "education",
+          "op": "in",
+          "value": [
+            "primary",
+            "secondary"
+          ]
+        }
+      ],
+      "sql_executions": 2,
+      "model_calls": 0,
+      "frequency_rows": 11,
+      "tool_calls": [
+        "726d9e96-0ac8-467f-a2e8-2edd2afa2dd4",
+        "2a1c49d7-480f-4ee2-82ed-caba34a3eacc",
+        "aab70376-6b32-48c7-895c-5a8fe9640761"
+      ],
+      "frequency_sum": 208699,
+      "png_bytes": 12208,
+      "query": "SELECT `age`, COUNT(*) AS `__frequency` FROM `workspace`.`default`.`bank_loan` WHERE `age` IS NOT NULL AND (`age` >= 30 AND `age` <= 40 AND `education` IN ('primary', 'secondary')) GROUP BY `age`"
+    }
+  ],
+  "actual_web": [
+    {
+      "run_id": "220221d7385041b3acd5e110fb482dd7",
+      "status": "answered",
+      "elapsed_seconds": 8.072,
+      "additional_model_calls": 0,
+      "additional_sql_executions": 1,
+      "verified_rows": [
+        11
+      ],
+      "scope_rejections": 1
+    },
+    {
+      "run_id": "9afd3bbc699946a58c5511ebd2e44b8a",
+      "status": "answered",
+      "elapsed_seconds": 8.196,
+      "additional_model_calls": 0,
+      "additional_sql_executions": 1,
+      "verified_rows": [
+        11
+      ],
+      "scope_rejections": 0
+    },
+    {
+      "run_id": "e8e59a667e8e442c8bc1078ba7efd721",
+      "status": "answered",
+      "elapsed_seconds": 0.331,
+      "additional_model_calls": 0,
+      "additional_sql_executions": 0,
+      "verified_rows": [],
+      "scope_rejections": 0
+    },
+    {
+      "run_id": "eee4cb04b7e340998a40ad0ca7b8d19a",
+      "status": "answered",
+      "elapsed_seconds": 0.502,
+      "additional_model_calls": 0,
+      "additional_sql_executions": 0,
+      "verified_rows": [],
+      "scope_rejections": 0,
+      "reused_frequency_sum": 208699,
+      "screenshot": "final_followup_web.png",
+      "verification": "current_web_after_rerun"
+    }
+  ],
+  "local_checks": {
+    "compileall_exit_code": 0,
+    "git_diff_check_exit_code": 0,
+    "server_health": "ok",
+    "server_port": 8504,
+    "server_backend": "mysql"
+  },
+  "remaining": [
+    "Independent actual-model held-out evaluation for new phrasing/schemas and free-form multi-step SQL.",
+    "General Ollama request latency/timeouts not solved by these deterministic recovery results.",
+    "Company Databricks host/network/permissions require that environment smoke; not verified on this PC."
+  ],
+  "counting": "Subtests and related suites overlap; do not sum them into agent quality score. Scripted models are not actual LLM performance evidence.",
+  "git": "No commit or push in this continuation; prior staged/unstaged changes preserved.",
+  "actual_mysql_live_suite": {
+    "command": "TELLY_TEST_MYSQL=1 .telly_runtime/v1-venv/bin/python -m pytest tests/test_mysql_backend_live.py -q --tb=short --disable-warnings",
+    "exit_code": 0,
+    "passed": 4,
+    "failed": 0,
+    "seconds": 11.84,
+    "scope": "real MySQL execution/schema/column definitions/latest histogram/relationships and Streamlit list-followup"
+  }
+}

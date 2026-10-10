@@ -23,11 +23,12 @@ from utils.analysis_datasets import project_dataset, stored_dataset_digest
 WEIGHT = '__telly_coordinate_frequency'
 
 
-def coordinate_query(source, x, y):
+def coordinate_query(source, x, y, where_sql=''):
     def quote(name): return '`' + name.replace('`', '``') + '`'
     return (f'SELECT {quote(x)}, {quote(y)}, COUNT(*) AS {quote(WEIGHT)} '
             f'FROM {".".join(quote(p) for p in source.split("."))} '
             f'WHERE {quote(x)} IS NOT NULL AND {quote(y)} IS NOT NULL '
+            +('AND ('+where_sql+') ' if where_sql else '')+
             f'GROUP BY {quote(x)}, {quote(y)}')
 
 
@@ -35,7 +36,9 @@ def fetch_limit(query, dialect, max_rows, max_coordinate_rows=None):
     """Separate coordinate units from raw-row policy, only for the exact plan.
 
     This limit is opt-in at adapter construction. Ordinary SQL, raw SELECTs,
-    other aggregates and modified coordinate queries keep the generic cap.
+    other aggregates and changed projections keep the generic cap. Valid
+    source predicates narrow the exact coordinate population without changing
+    its units, so they retain the coordinate cap.
     """
     if max_coordinate_rows is None:return max_rows
     from sqlglot import exp, parse_one
@@ -44,13 +47,25 @@ def fetch_limit(query, dialect, max_rows, max_coordinate_rows=None):
         tree=parse_one(query,read=dialect)
         selections=tree.expressions
         tables=list(tree.find_all(exp.Table))
-        if (len(selections)!=3 or len(tables)!=1 or not all(
+        if (len(selections)!=3 or len(tables)!=1 or len(list(tree.find_all(exp.Select)))!=1 or not all(
                 isinstance(c,exp.Column) and not c.table for c in selections[:2])):
             return max_rows
         x,y=(c.name for c in selections[:2])
         if x==y or WEIGHT in (x,y):return max_rows
         expected=parse_one(coordinate_query(table_identity(tables[0]),x,y),read=dialect)
         if tree==expected:return max_coordinate_rows
+        where=tree.args.get('where')
+        if where:
+            def terms(node):
+                if isinstance(node,exp.Paren):return terms(node.this)
+                if isinstance(node,exp.And):return terms(node.this)+terms(node.expression)
+                return [node]
+            actual=terms(where.this)
+            required=terms(expected.args['where'].this)
+            if all(any(term==want for term in actual) for want in required):
+                normalized=tree.copy()
+                normalized.set('where',expected.args['where'].copy())
+                if normalized==expected:return max_coordinate_rows
     except (ValueError,TypeError,AttributeError):pass
     return max_rows
 
@@ -61,8 +76,9 @@ def target(context, current):
     if (not context or current.get('kind') != 'scatter' or not current.get('chart')
             or current.get('current_result_only') or current.get('calculation')
             or current.get('chart_group_spec') or current.get('requested_join')
-            or any(scope.get(k) for k in ('conditions', 'any_conditions', 'unresolved',
+            or any(scope.get(k) for k in ('any_conditions', 'unresolved',
                                          'ratio', 'measure_conditions', 'join_edges'))
+            or (scope.get('conditions') and current.get('intent_origin')!='llm')
             or (current.get('intent_origin')!='llm' and not re.search(r'전체|모든|모집단|\b(?:all|whole|entire|population)\b', text, re.I))):
         return None
     sources = current.get('required_sources') or []
@@ -81,10 +97,14 @@ def target(context, current):
         axes = dict(zip(('x', 'y'), columns))
     if set(axes.values()) != set(columns):
         return None
-    return {'source': sources[0], **axes}
+    result={'source': sources[0], **axes}
+    if scope.get('conditions'):
+        from core.analysis_agent.predicate_sql import where_sql
+        result['where_sql']=where_sql(scope['conditions'],context.sql_dialect)
+    return result
 
 
-def plan_for(context, source, x, y):
+def plan_for(context, source, x, y, where_sql=''):
     observed = resolve_table_context(context.reference_context, context.datasets, source)
     if observed.get('status') != 'ready':
         raise ValueError('Fresh source schema is required')
@@ -94,15 +114,15 @@ def plan_for(context, source, x, y):
             r'int|float|double|decimal|numeric|real|number', str(types[c]), re.I) for c in (x, y)):
         raise ValueError('Two observed numeric axes are required')
     source = table['table']
-    sql = coordinate_query(source,x,y)
+    sql = coordinate_query(source,x,y,where_sql)
     from core.analysis_load_plan import source_plan
     source_plan(source, sql, dialect=context.sql_dialect)
     return {'source': source, 'query': sql,
             'reason': '전체 원본의 두 수치 축을 정확한 좌표별 빈도로 집계합니다. 표본 없이 중복 좌표의 전송만 줄이며 원본은 보존합니다.'}
 
 
-def proof(context, dataset_id, source, x, y):
-    plan = plan_for(context, source, x, y)
+def proof(context, dataset_id, source, x, y, where_sql=''):
+    plan = plan_for(context, source, x, y,where_sql)
     info = context.datasets.metadata[dataset_id]
     receipt = context.remote_receipt_reader(dataset_id) if context.remote_receipt_reader else None
     if (not receipt or receipt.get('status') != 'completed' or info.query != plan['query']
@@ -131,14 +151,14 @@ def proof(context, dataset_id, source, x, y):
             'weight_column': WEIGHT, 'data_sha256': stored_dataset_digest(context.datasets, info.id)}
 
 
-def prepare(context, source, x, y, fresh=False, dataset_id=''):
-    plan = plan_for(context, source, x, y)
+def prepare(context, source, x, y, fresh=False, dataset_id='',where_sql=''):
+    plan = plan_for(context, source, x, y,where_sql)
     candidates = ([dataset_id] if dataset_id else [] if fresh else
                   [i.id for i in reversed(list(context.datasets.metadata.values()))
                    if i.query == plan['query'] and i.coverage == 'complete'])
     for identity in candidates:
         try:
-            checked = proof(context, identity, source, x, y)
+            checked = proof(context, identity, source, x, y,where_sql)
         except ValueError:
             if dataset_id:
                 return {'status': 'unavailable', 'error_code': 'whole_scatter_incomplete',

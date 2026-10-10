@@ -1,0 +1,914 @@
+{
+  "date": "2026-10-04",
+  "server_pid": 2466,
+  "backend": "mysql",
+  "url": "http://127.0.0.1:8504/Telly?conversation=0728dee0-d555-4aa2-853b-1101679346da",
+  "steps": [
+    {
+      "name": "columns",
+      "result": {
+        "time": "2026-10-04T07:02:09.756157+00:00",
+        "event": "run_completed",
+        "run_id": "c0470f2227404bbf9226b999c66373bb",
+        "instance_id": "3f2272bbf0b2",
+        "pid": 2466,
+        "status": "answered",
+        "elapsed_seconds": 0.352,
+        "process_peak_rss_bytes": 374210560,
+        "frame_cache_bytes": 0
+      },
+      "analysis_sql_submissions": 0,
+      "model_calls_started": 0,
+      "summaries": [],
+      "tools": [
+        {
+          "time": "2026-10-04T07:02:09.743337+00:00",
+          "event": "tool_started",
+          "run_id": "c0470f2227404bbf9226b999c66373bb",
+          "instance_id": "3f2272bbf0b2",
+          "pid": 2466,
+          "tool": "inspect_table_context"
+        },
+        {
+          "time": "2026-10-04T07:02:09.748703+00:00",
+          "event": "tool_completed",
+          "run_id": "c0470f2227404bbf9226b999c66373bb",
+          "instance_id": "3f2272bbf0b2",
+          "pid": 2466,
+          "tool": "inspect_table_context",
+          "status": "ready",
+          "error_code": null,
+          "elapsed_seconds": 0.005,
+          "applied_corrections": []
+        }
+      ]
+    },
+    {
+      "name": "preview_10rows",
+      "result": {
+        "time": "2026-10-04T07:02:37.641110+00:00",
+        "event": "run_completed",
+        "run_id": "a6cfbdbf93404cc18f1556ad8893f7b8",
+        "instance_id": "3f2272bbf0b2",
+        "pid": 2466,
+        "status": "answered",
+        "elapsed_seconds": 0.259,
+        "process_peak_rss_bytes": 378847232,
+        "frame_cache_bytes": 0
+      },
+      "analysis_sql_submissions": 0,
+      "model_calls_started": 0,
+      "summaries": [],
+      "tools": [
+        {
+          "time": "2026-10-04T07:02:37.623858+00:00",
+          "event": "tool_started",
+          "run_id": "a6cfbdbf93404cc18f1556ad8893f7b8",
+          "instance_id": "3f2272bbf0b2",
+          "pid": 2466,
+          "tool": "prepare_row_preview"
+        },
+        {
+          "time": "2026-10-04T07:02:37.633034+00:00",
+          "event": "tool_completed",
+          "run_id": "a6cfbdbf93404cc18f1556ad8893f7b8",
+          "instance_id": "3f2272bbf0b2",
+          "pid": 2466,
+          "tool": "prepare_row_preview",
+          "status": "ready",
+          "error_code": null,
+          "elapsed_seconds": 0.009,
+          "applied_corrections": []
+        }
+      ]
+    },
+    {
+      "name": "scatter_10rows",
+      "result": {
+        "time": "2026-10-04T07:03:24.436664+00:00",
+        "event": "run_completed",
+        "run_id": "88732fff54b64e20830d2b80352d85b2",
+        "instance_id": "3f2272bbf0b2",
+        "pid": 2466,
+        "status": "answered",
+        "elapsed_seconds": 8.607,
+        "process_peak_rss_bytes": 384958464,
+        "frame_cache_bytes": 0
+      },
+      "analysis_sql_submissions": 0,
+      "model_calls_started": 0,
+      "summaries": [],
+      "tools": [
+        {
+          "time": "2026-10-04T07:03:16.091396+00:00",
+          "event": "tool_started",
+          "run_id": "88732fff54b64e20830d2b80352d85b2",
+          "instance_id": "3f2272bbf0b2",
+          "pid": 2466,
+          "tool": "render_chart_spec"
+        },
+        {
+          "time": "2026-10-04T07:03:24.424746+00:00",
+          "event": "tool_completed",
+          "run_id": "88732fff54b64e20830d2b80352d85b2",
+          "instance_id": "3f2272bbf0b2",
+          "pid": 2466,
+          "tool": "render_chart_spec",
+          "status": "ready",
+          "error_code": null,
+          "elapsed_seconds": 8.333,
+          "applied_corrections": []
+        }
+      ]
+    },
+    {
+      "name": "scatter_whole_source",
+      "result": {
+        "time": "2026-10-04T07:07:14.743712+00:00",
+        "event": "run_completed",
+        "run_id": "fa670b17b2574a6e99942069d4266cdb",
+        "instance_id": "3f2272bbf0b2",
+        "pid": 2466,
+        "status": "incomplete",
+        "elapsed_seconds": 207.789,
+        "error_id": "c3a097b5d105"
+      },
+      "analysis_sql_submissions": 0,
+      "model_calls_started": 2,
+      "summaries": [
+        {
+          "time": "2026-10-04T07:04:19.073203+00:00",
+          "event": "summarization_finished",
+          "run_id": "fa670b17b2574a6e99942069d4266cdb",
+          "instance_id": "3f2272bbf0b2",
+          "pid": 2466,
+          "span_id": "9bf81f6b341d",
+          "status": "ok",
+          "elapsed_seconds": 31.884,
+          "message_count": 44,
+          "summarized": true
+        },
+        {
+          "time": "2026-10-04T07:06:14.697881+00:00",
+          "event": "summarization_finished",
+          "run_id": "fa670b17b2574a6e99942069d4266cdb",
+          "instance_id": "3f2272bbf0b2",
+          "pid": 2466,
+          "span_id": "a7537643be3e",
+          "status": "ok",
+          "elapsed_seconds": 13.497,
+          "message_count": 12,
+          "summarized": true
+        }
+      ],
+      "tools": [
+        {
+          "time": "2026-10-04T07:06:01.194204+00:00",
+          "event": "tool_started",
+          "run_id": "fa670b17b2574a6e99942069d4266cdb",
+          "instance_id": "3f2272bbf0b2",
+          "pid": 2466,
+          "tool": "render_chart_spec"
+        },
+        {
+          "time": "2026-10-04T07:06:01.194934+00:00",
+          "event": "tool_rejected",
+          "run_id": "fa670b17b2574a6e99942069d4266cdb",
+          "instance_id": "3f2272bbf0b2",
+          "pid": 2466,
+          "tool": "render_chart_spec",
+          "reason": "dataset_not_loaded"
+        }
+      ]
+    },
+    {
+      "name": "scatter_after_failure_10rows",
+      "result": {
+        "time": "2026-10-04T07:09:14.298997+00:00",
+        "event": "run_completed",
+        "run_id": "45123880d6eb4b0980831bf245dd3868",
+        "instance_id": "3f2272bbf0b2",
+        "pid": 2466,
+        "status": "answered",
+        "elapsed_seconds": 0.317,
+        "process_peak_rss_bytes": 384958464,
+        "frame_cache_bytes": 0
+      },
+      "analysis_sql_submissions": 0,
+      "model_calls_started": 0,
+      "summaries": [],
+      "tools": [
+        {
+          "time": "2026-10-04T07:09:14.242221+00:00",
+          "event": "tool_started",
+          "run_id": "45123880d6eb4b0980831bf245dd3868",
+          "instance_id": "3f2272bbf0b2",
+          "pid": 2466,
+          "tool": "render_chart_spec"
+        },
+        {
+          "time": "2026-10-04T07:09:14.289847+00:00",
+          "event": "tool_completed",
+          "run_id": "45123880d6eb4b0980831bf245dd3868",
+          "instance_id": "3f2272bbf0b2",
+          "pid": 2466,
+          "tool": "render_chart_spec",
+          "status": "ready",
+          "error_code": null,
+          "elapsed_seconds": 0.048,
+          "applied_corrections": []
+        }
+      ]
+    }
+  ],
+  "original_assets_preserved": true,
+  "selection_preserved": true,
+  "dataset_count": 8,
+  "chart_count": 11,
+  "final_status": "complete",
+  "final_model_calls": 0,
+  "events": [
+    {
+      "time": "2026-10-04T07:02:09.398315+00:00",
+      "event": "analysis_cancelled",
+      "run_id": null,
+      "instance_id": "3f2272bbf0b2",
+      "pid": 2466,
+      "reason": "replaced_by_user",
+      "request_id": "7093637c-675d-40ed-ac39-47484757c3fd",
+      "pending_nodes": [
+        "model"
+      ],
+      "datasets_preserved": 8,
+      "charts_preserved": 9
+    },
+    {
+      "time": "2026-10-04T07:02:09.407599+00:00",
+      "event": "run_started",
+      "run_id": "c0470f2227404bbf9226b999c66373bb",
+      "instance_id": "3f2272bbf0b2",
+      "pid": 2466,
+      "runtime": {
+        "revision_at_first_runtime": "febd34ae5cbbfbcc7023ea8e0412b84572cd7763",
+        "packages": {
+          "langchain": "1.4.0",
+          "langchain-core": "1.6.2",
+          "langgraph": "1.2.11",
+          "streamlit": "1.63.0",
+          "sqlglot": "30.18.0"
+        },
+        "python_version": "3.11.13",
+        "identity_captured_at": "2026-10-04T07:01:18.829700+00:00",
+        "route": "langgraph-v1",
+        "model_class": "ChatOllama",
+        "require_remote_approval": false,
+        "loaded_delivery_guard": "d95b3cf173c342e8",
+        "data_backend": "mysql"
+      },
+      "operation": "submit",
+      "process_peak_rss_bytes": 366936064
+    },
+    {
+      "time": "2026-10-04T07:02:09.740843+00:00",
+      "event": "recovery_transition",
+      "run_id": "c0470f2227404bbf9226b999c66373bb",
+      "instance_id": "3f2272bbf0b2",
+      "pid": 2466,
+      "request_id": "237d0750-ab8b-44d3-9840-593bee8e86d5",
+      "tool": "inspect_table_context"
+    },
+    {
+      "time": "2026-10-04T07:02:09.743337+00:00",
+      "event": "tool_started",
+      "run_id": "c0470f2227404bbf9226b999c66373bb",
+      "instance_id": "3f2272bbf0b2",
+      "pid": 2466,
+      "tool": "inspect_table_context"
+    },
+    {
+      "time": "2026-10-04T07:02:09.748703+00:00",
+      "event": "tool_completed",
+      "run_id": "c0470f2227404bbf9226b999c66373bb",
+      "instance_id": "3f2272bbf0b2",
+      "pid": 2466,
+      "tool": "inspect_table_context",
+      "status": "ready",
+      "error_code": null,
+      "elapsed_seconds": 0.005,
+      "applied_corrections": []
+    },
+    {
+      "time": "2026-10-04T07:02:09.753902+00:00",
+      "event": "completion_checked",
+      "run_id": "c0470f2227404bbf9226b999c66373bb",
+      "instance_id": "3f2272bbf0b2",
+      "pid": 2466,
+      "request_id": "237d0750-ab8b-44d3-9840-593bee8e86d5",
+      "status": "complete",
+      "reason": null,
+      "attempts": 0,
+      "required_capabilities": [
+        "metadata"
+      ],
+      "missing_capabilities": [],
+      "model_calls": 0,
+      "tool_calls": 1,
+      "model_seconds": 0.0,
+      "dataset_ids": [],
+      "artifact_ids": []
+    },
+    {
+      "time": "2026-10-04T07:02:09.756157+00:00",
+      "event": "run_completed",
+      "run_id": "c0470f2227404bbf9226b999c66373bb",
+      "instance_id": "3f2272bbf0b2",
+      "pid": 2466,
+      "status": "answered",
+      "elapsed_seconds": 0.352,
+      "process_peak_rss_bytes": 374210560,
+      "frame_cache_bytes": 0
+    },
+    {
+      "time": "2026-10-04T07:02:09.756204+00:00",
+      "event": "turn_slo",
+      "run_id": "c0470f2227404bbf9226b999c66373bb",
+      "instance_id": "3f2272bbf0b2",
+      "pid": 2466,
+      "elapsed_seconds": 0.352,
+      "limit": 180.0,
+      "status": "ok"
+    },
+    {
+      "time": "2026-10-04T07:02:37.387860+00:00",
+      "event": "run_started",
+      "run_id": "a6cfbdbf93404cc18f1556ad8893f7b8",
+      "instance_id": "3f2272bbf0b2",
+      "pid": 2466,
+      "runtime": {
+        "revision_at_first_runtime": "febd34ae5cbbfbcc7023ea8e0412b84572cd7763",
+        "packages": {
+          "langchain": "1.4.0",
+          "langchain-core": "1.6.2",
+          "langgraph": "1.2.11",
+          "streamlit": "1.63.0",
+          "sqlglot": "30.18.0"
+        },
+        "python_version": "3.11.13",
+        "identity_captured_at": "2026-10-04T07:01:18.829700+00:00",
+        "route": "langgraph-v1",
+        "model_class": "ChatOllama",
+        "require_remote_approval": false,
+        "loaded_delivery_guard": "d95b3cf173c342e8",
+        "data_backend": "mysql"
+      },
+      "operation": "submit",
+      "process_peak_rss_bytes": 377995264
+    },
+    {
+      "time": "2026-10-04T07:02:37.621526+00:00",
+      "event": "recovery_transition",
+      "run_id": "a6cfbdbf93404cc18f1556ad8893f7b8",
+      "instance_id": "3f2272bbf0b2",
+      "pid": 2466,
+      "request_id": "9485b7ed-e132-4ba2-959f-e5f76dd587a7",
+      "tool": "prepare_row_preview"
+    },
+    {
+      "time": "2026-10-04T07:02:37.623858+00:00",
+      "event": "tool_started",
+      "run_id": "a6cfbdbf93404cc18f1556ad8893f7b8",
+      "instance_id": "3f2272bbf0b2",
+      "pid": 2466,
+      "tool": "prepare_row_preview"
+    },
+    {
+      "time": "2026-10-04T07:02:37.633034+00:00",
+      "event": "tool_completed",
+      "run_id": "a6cfbdbf93404cc18f1556ad8893f7b8",
+      "instance_id": "3f2272bbf0b2",
+      "pid": 2466,
+      "tool": "prepare_row_preview",
+      "status": "ready",
+      "error_code": null,
+      "elapsed_seconds": 0.009,
+      "applied_corrections": []
+    },
+    {
+      "time": "2026-10-04T07:02:37.638803+00:00",
+      "event": "completion_checked",
+      "run_id": "a6cfbdbf93404cc18f1556ad8893f7b8",
+      "instance_id": "3f2272bbf0b2",
+      "pid": 2466,
+      "request_id": "9485b7ed-e132-4ba2-959f-e5f76dd587a7",
+      "status": "complete",
+      "reason": null,
+      "attempts": 0,
+      "required_capabilities": [
+        "row_preview"
+      ],
+      "missing_capabilities": [],
+      "model_calls": 0,
+      "tool_calls": 1,
+      "model_seconds": 0.0,
+      "dataset_ids": [],
+      "artifact_ids": []
+    },
+    {
+      "time": "2026-10-04T07:02:37.641110+00:00",
+      "event": "run_completed",
+      "run_id": "a6cfbdbf93404cc18f1556ad8893f7b8",
+      "instance_id": "3f2272bbf0b2",
+      "pid": 2466,
+      "status": "answered",
+      "elapsed_seconds": 0.259,
+      "process_peak_rss_bytes": 378847232,
+      "frame_cache_bytes": 0
+    },
+    {
+      "time": "2026-10-04T07:02:37.641150+00:00",
+      "event": "turn_slo",
+      "run_id": "a6cfbdbf93404cc18f1556ad8893f7b8",
+      "instance_id": "3f2272bbf0b2",
+      "pid": 2466,
+      "elapsed_seconds": 0.259,
+      "limit": 180.0,
+      "status": "ok"
+    },
+    {
+      "time": "2026-10-04T07:03:15.833317+00:00",
+      "event": "run_started",
+      "run_id": "88732fff54b64e20830d2b80352d85b2",
+      "instance_id": "3f2272bbf0b2",
+      "pid": 2466,
+      "runtime": {
+        "revision_at_first_runtime": "febd34ae5cbbfbcc7023ea8e0412b84572cd7763",
+        "packages": {
+          "langchain": "1.4.0",
+          "langchain-core": "1.6.2",
+          "langgraph": "1.2.11",
+          "streamlit": "1.63.0",
+          "sqlglot": "30.18.0"
+        },
+        "python_version": "3.11.13",
+        "identity_captured_at": "2026-10-04T07:01:18.829700+00:00",
+        "route": "langgraph-v1",
+        "model_class": "ChatOllama",
+        "require_remote_approval": false,
+        "loaded_delivery_guard": "d95b3cf173c342e8",
+        "data_backend": "mysql"
+      },
+      "operation": "submit",
+      "process_peak_rss_bytes": 384401408
+    },
+    {
+      "time": "2026-10-04T07:03:16.088904+00:00",
+      "event": "recovery_transition",
+      "run_id": "88732fff54b64e20830d2b80352d85b2",
+      "instance_id": "3f2272bbf0b2",
+      "pid": 2466,
+      "request_id": "2a9072b8-e6b0-4a8f-b565-ed795c7f9e91",
+      "tool": "render_chart_spec"
+    },
+    {
+      "time": "2026-10-04T07:03:16.091396+00:00",
+      "event": "tool_started",
+      "run_id": "88732fff54b64e20830d2b80352d85b2",
+      "instance_id": "3f2272bbf0b2",
+      "pid": 2466,
+      "tool": "render_chart_spec"
+    },
+    {
+      "time": "2026-10-04T07:03:24.424746+00:00",
+      "event": "tool_completed",
+      "run_id": "88732fff54b64e20830d2b80352d85b2",
+      "instance_id": "3f2272bbf0b2",
+      "pid": 2466,
+      "tool": "render_chart_spec",
+      "status": "ready",
+      "error_code": null,
+      "elapsed_seconds": 8.333,
+      "applied_corrections": []
+    },
+    {
+      "time": "2026-10-04T07:03:24.434171+00:00",
+      "event": "completion_checked",
+      "run_id": "88732fff54b64e20830d2b80352d85b2",
+      "instance_id": "3f2272bbf0b2",
+      "pid": 2466,
+      "request_id": "2a9072b8-e6b0-4a8f-b565-ed795c7f9e91",
+      "status": "complete",
+      "reason": null,
+      "attempts": 0,
+      "required_capabilities": [
+        "chart"
+      ],
+      "missing_capabilities": [],
+      "model_calls": 0,
+      "tool_calls": 1,
+      "model_seconds": 0.0,
+      "dataset_ids": [],
+      "artifact_ids": [
+        "ca7499d9-e4f3-4ac3-852e-906b22da49b9"
+      ]
+    },
+    {
+      "time": "2026-10-04T07:03:24.436664+00:00",
+      "event": "run_completed",
+      "run_id": "88732fff54b64e20830d2b80352d85b2",
+      "instance_id": "3f2272bbf0b2",
+      "pid": 2466,
+      "status": "answered",
+      "elapsed_seconds": 8.607,
+      "process_peak_rss_bytes": 384958464,
+      "frame_cache_bytes": 0
+    },
+    {
+      "time": "2026-10-04T07:03:24.436711+00:00",
+      "event": "turn_slo",
+      "run_id": "88732fff54b64e20830d2b80352d85b2",
+      "instance_id": "3f2272bbf0b2",
+      "pid": 2466,
+      "elapsed_seconds": 8.607,
+      "limit": 180.0,
+      "status": "ok"
+    },
+    {
+      "time": "2026-10-04T07:03:46.941299+00:00",
+      "event": "run_started",
+      "run_id": "fa670b17b2574a6e99942069d4266cdb",
+      "instance_id": "3f2272bbf0b2",
+      "pid": 2466,
+      "runtime": {
+        "revision_at_first_runtime": "febd34ae5cbbfbcc7023ea8e0412b84572cd7763",
+        "packages": {
+          "langchain": "1.4.0",
+          "langchain-core": "1.6.2",
+          "langgraph": "1.2.11",
+          "streamlit": "1.63.0",
+          "sqlglot": "30.18.0"
+        },
+        "python_version": "3.11.13",
+        "identity_captured_at": "2026-10-04T07:01:18.829700+00:00",
+        "route": "langgraph-v1",
+        "model_class": "ChatOllama",
+        "require_remote_approval": false,
+        "loaded_delivery_guard": "d95b3cf173c342e8",
+        "data_backend": "mysql"
+      },
+      "operation": "submit",
+      "process_peak_rss_bytes": 384958464
+    },
+    {
+      "time": "2026-10-04T07:03:47.188171+00:00",
+      "event": "summarization_started",
+      "run_id": "fa670b17b2574a6e99942069d4266cdb",
+      "instance_id": "3f2272bbf0b2",
+      "pid": 2466,
+      "span_id": "9bf81f6b341d",
+      "message_count": 44
+    },
+    {
+      "time": "2026-10-04T07:04:19.073203+00:00",
+      "event": "summarization_finished",
+      "run_id": "fa670b17b2574a6e99942069d4266cdb",
+      "instance_id": "3f2272bbf0b2",
+      "pid": 2466,
+      "span_id": "9bf81f6b341d",
+      "status": "ok",
+      "elapsed_seconds": 31.884,
+      "message_count": 44,
+      "summarized": true
+    },
+    {
+      "time": "2026-10-04T07:04:19.081237+00:00",
+      "event": "model_call_started",
+      "run_id": "fa670b17b2574a6e99942069d4266cdb",
+      "instance_id": "3f2272bbf0b2",
+      "pid": 2466,
+      "span_id": "f8d96f8d4db9",
+      "message_count": 9
+    },
+    {
+      "time": "2026-10-04T07:04:19.111280+00:00",
+      "event": "context_budget",
+      "run_id": "fa670b17b2574a6e99942069d4266cdb",
+      "instance_id": "3f2272bbf0b2",
+      "pid": 2466,
+      "characters": 18556,
+      "limit": 32000
+    },
+    {
+      "time": "2026-10-04T07:06:01.177285+00:00",
+      "event": "model_call_finished",
+      "run_id": "fa670b17b2574a6e99942069d4266cdb",
+      "instance_id": "3f2272bbf0b2",
+      "pid": 2466,
+      "span_id": "f8d96f8d4db9",
+      "status": "ok",
+      "elapsed_seconds": 102.093,
+      "message_count": 9,
+      "tool_call_count": 1
+    },
+    {
+      "time": "2026-10-04T07:06:01.194204+00:00",
+      "event": "tool_started",
+      "run_id": "fa670b17b2574a6e99942069d4266cdb",
+      "instance_id": "3f2272bbf0b2",
+      "pid": 2466,
+      "tool": "render_chart_spec"
+    },
+    {
+      "time": "2026-10-04T07:06:01.194934+00:00",
+      "event": "tool_rejected",
+      "run_id": "fa670b17b2574a6e99942069d4266cdb",
+      "instance_id": "3f2272bbf0b2",
+      "pid": 2466,
+      "tool": "render_chart_spec",
+      "reason": "dataset_not_loaded"
+    },
+    {
+      "time": "2026-10-04T07:06:01.197913+00:00",
+      "event": "tool_repair_diagnosed",
+      "run_id": "fa670b17b2574a6e99942069d4266cdb",
+      "instance_id": "3f2272bbf0b2",
+      "pid": 2466,
+      "request_id": "11c7ee62-92e3-46ce-b191-5f03532dee53",
+      "failure_ids": [
+        "af3b8a8bfd58e940"
+      ]
+    },
+    {
+      "time": "2026-10-04T07:06:01.200807+00:00",
+      "event": "summarization_started",
+      "run_id": "fa670b17b2574a6e99942069d4266cdb",
+      "instance_id": "3f2272bbf0b2",
+      "pid": 2466,
+      "span_id": "a7537643be3e",
+      "message_count": 12
+    },
+    {
+      "time": "2026-10-04T07:06:14.697881+00:00",
+      "event": "summarization_finished",
+      "run_id": "fa670b17b2574a6e99942069d4266cdb",
+      "instance_id": "3f2272bbf0b2",
+      "pid": 2466,
+      "span_id": "a7537643be3e",
+      "status": "ok",
+      "elapsed_seconds": 13.497,
+      "message_count": 12,
+      "summarized": true
+    },
+    {
+      "time": "2026-10-04T07:06:14.702031+00:00",
+      "event": "model_call_started",
+      "run_id": "fa670b17b2574a6e99942069d4266cdb",
+      "instance_id": "3f2272bbf0b2",
+      "pid": 2466,
+      "span_id": "cb6eed5725df",
+      "message_count": 9
+    },
+    {
+      "time": "2026-10-04T07:06:14.717670+00:00",
+      "event": "context_budget",
+      "run_id": "fa670b17b2574a6e99942069d4266cdb",
+      "instance_id": "3f2272bbf0b2",
+      "pid": 2466,
+      "characters": 19168,
+      "limit": 32000
+    },
+    {
+      "time": "2026-10-04T07:07:14.725128+00:00",
+      "event": "model_inference_failed",
+      "run_id": "fa670b17b2574a6e99942069d4266cdb",
+      "instance_id": "3f2272bbf0b2",
+      "pid": 2466,
+      "request_id": "11c7ee62-92e3-46ce-b191-5f03532dee53",
+      "error_type": "ReadTimeout",
+      "http_status": null,
+      "error_category": null,
+      "retry_scheduled": false,
+      "retry_delay_seconds": null
+    },
+    {
+      "time": "2026-10-04T07:07:14.725417+00:00",
+      "event": "model_call_finished",
+      "run_id": "fa670b17b2574a6e99942069d4266cdb",
+      "instance_id": "3f2272bbf0b2",
+      "pid": 2466,
+      "span_id": "cb6eed5725df",
+      "status": "error",
+      "error_type": "ReadTimeout",
+      "elapsed_seconds": 60.022,
+      "message_count": 9
+    },
+    {
+      "time": "2026-10-04T07:07:14.743611+00:00",
+      "event": "error",
+      "run_id": "fa670b17b2574a6e99942069d4266cdb",
+      "instance_id": "3f2272bbf0b2",
+      "pid": 2466,
+      "error_category": null,
+      "error_id": "c3a097b5d105",
+      "stage": "agent_stream",
+      "error_type": "ReadTimeout",
+      "http_status": null,
+      "frames": [
+        {
+          "file": "chat_models.py",
+          "line": 1224,
+          "function": "_iterate_over_stream"
+        },
+        {
+          "file": "chat_models.py",
+          "line": 1122,
+          "function": "_create_chat_stream"
+        },
+        {
+          "file": "_client.py",
+          "line": 184,
+          "function": "inner"
+        },
+        {
+          "file": "contextlib.py",
+          "line": 137,
+          "function": "__enter__"
+        },
+        {
+          "file": "_client.py",
+          "line": 868,
+          "function": "stream"
+        },
+        {
+          "file": "_client.py",
+          "line": 914,
+          "function": "send"
+        },
+        {
+          "file": "_client.py",
+          "line": 942,
+          "function": "_send_handling_auth"
+        },
+        {
+          "file": "_client.py",
+          "line": 979,
+          "function": "_send_handling_redirects"
+        },
+        {
+          "file": "_client.py",
+          "line": 1014,
+          "function": "_send_single_request"
+        },
+        {
+          "file": "default.py",
+          "line": 249,
+          "function": "handle_request"
+        },
+        {
+          "file": "contextlib.py",
+          "line": 158,
+          "function": "__exit__"
+        },
+        {
+          "file": "default.py",
+          "line": 118,
+          "function": "map_httpcore_exceptions"
+        }
+      ]
+    },
+    {
+      "time": "2026-10-04T07:07:14.743712+00:00",
+      "event": "run_completed",
+      "run_id": "fa670b17b2574a6e99942069d4266cdb",
+      "instance_id": "3f2272bbf0b2",
+      "pid": 2466,
+      "status": "incomplete",
+      "elapsed_seconds": 207.789,
+      "error_id": "c3a097b5d105"
+    },
+    {
+      "time": "2026-10-04T07:07:14.743768+00:00",
+      "event": "turn_slo",
+      "run_id": "fa670b17b2574a6e99942069d4266cdb",
+      "instance_id": "3f2272bbf0b2",
+      "pid": 2466,
+      "elapsed_seconds": 207.789,
+      "limit": 180.0,
+      "status": "violation",
+      "process_peak_rss_bytes": 384958464,
+      "frame_cache_bytes": 0
+    },
+    {
+      "time": "2026-10-04T07:09:13.975415+00:00",
+      "event": "analysis_cancelled",
+      "run_id": "fa670b17b2574a6e99942069d4266cdb",
+      "instance_id": "3f2272bbf0b2",
+      "pid": 2466,
+      "reason": "replaced_by_user",
+      "request_id": "11c7ee62-92e3-46ce-b191-5f03532dee53",
+      "pending_nodes": [
+        "model"
+      ],
+      "datasets_preserved": 8,
+      "charts_preserved": 10
+    },
+    {
+      "time": "2026-10-04T07:09:13.985068+00:00",
+      "event": "run_started",
+      "run_id": "45123880d6eb4b0980831bf245dd3868",
+      "instance_id": "3f2272bbf0b2",
+      "pid": 2466,
+      "runtime": {
+        "revision_at_first_runtime": "febd34ae5cbbfbcc7023ea8e0412b84572cd7763",
+        "packages": {
+          "langchain": "1.4.0",
+          "langchain-core": "1.6.2",
+          "langgraph": "1.2.11",
+          "streamlit": "1.63.0",
+          "sqlglot": "30.18.0"
+        },
+        "python_version": "3.11.13",
+        "identity_captured_at": "2026-10-04T07:01:18.829700+00:00",
+        "route": "langgraph-v1",
+        "model_class": "ChatOllama",
+        "require_remote_approval": false,
+        "loaded_delivery_guard": "d95b3cf173c342e8",
+        "data_backend": "mysql"
+      },
+      "operation": "submit",
+      "process_peak_rss_bytes": 384958464
+    },
+    {
+      "time": "2026-10-04T07:09:14.240219+00:00",
+      "event": "recovery_transition",
+      "run_id": "45123880d6eb4b0980831bf245dd3868",
+      "instance_id": "3f2272bbf0b2",
+      "pid": 2466,
+      "request_id": "6ab53dd3-5608-42bd-bee1-a3a236f2f1f0",
+      "tool": "render_chart_spec"
+    },
+    {
+      "time": "2026-10-04T07:09:14.242221+00:00",
+      "event": "tool_started",
+      "run_id": "45123880d6eb4b0980831bf245dd3868",
+      "instance_id": "3f2272bbf0b2",
+      "pid": 2466,
+      "tool": "render_chart_spec"
+    },
+    {
+      "time": "2026-10-04T07:09:14.289847+00:00",
+      "event": "tool_completed",
+      "run_id": "45123880d6eb4b0980831bf245dd3868",
+      "instance_id": "3f2272bbf0b2",
+      "pid": 2466,
+      "tool": "render_chart_spec",
+      "status": "ready",
+      "error_code": null,
+      "elapsed_seconds": 0.048,
+      "applied_corrections": []
+    },
+    {
+      "time": "2026-10-04T07:09:14.297212+00:00",
+      "event": "completion_checked",
+      "run_id": "45123880d6eb4b0980831bf245dd3868",
+      "instance_id": "3f2272bbf0b2",
+      "pid": 2466,
+      "request_id": "6ab53dd3-5608-42bd-bee1-a3a236f2f1f0",
+      "status": "complete",
+      "reason": null,
+      "attempts": 0,
+      "required_capabilities": [
+        "chart"
+      ],
+      "missing_capabilities": [],
+      "model_calls": 0,
+      "tool_calls": 1,
+      "model_seconds": 0.0,
+      "dataset_ids": [],
+      "artifact_ids": [
+        "1389ba5e-92a7-452e-a9d6-469e4a8229ce"
+      ]
+    },
+    {
+      "time": "2026-10-04T07:09:14.298997+00:00",
+      "event": "run_completed",
+      "run_id": "45123880d6eb4b0980831bf245dd3868",
+      "instance_id": "3f2272bbf0b2",
+      "pid": 2466,
+      "status": "answered",
+      "elapsed_seconds": 0.317,
+      "process_peak_rss_bytes": 384958464,
+      "frame_cache_bytes": 0
+    },
+    {
+      "time": "2026-10-04T07:09:14.299037+00:00",
+      "event": "turn_slo",
+      "run_id": "45123880d6eb4b0980831bf245dd3868",
+      "instance_id": "3f2272bbf0b2",
+      "pid": 2466,
+      "elapsed_seconds": 0.317,
+      "limit": 180.0,
+      "status": "ok"
+    }
+  ],
+  "limitation": "Whole-source scatter remains incomplete; company Databricks not evaluated in this replay."
+}

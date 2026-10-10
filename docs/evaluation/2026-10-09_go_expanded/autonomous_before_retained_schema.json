@@ -1,0 +1,396 @@
+{
+  "generated_at": "2026-10-09T14:22:21.847386+00:00",
+  "provider": "ollama",
+  "policy": {
+    "require_remote_approval": false,
+    "max_remote_rows": 100000,
+    "max_scatter_coordinates": 250000,
+    "max_dataset_columns": 256,
+    "max_dataset_bytes": 536870912,
+    "max_full_read_bytes": 134217728,
+    "max_join_rows": 100000,
+    "max_join_expansion_ratio": 5.0,
+    "frame_cache_bytes": 67108864,
+    "scope_disk_quota_bytes": 2147483648,
+    "retention_days": 30,
+    "model_timeout_seconds": 60.0,
+    "turn_slo_seconds": 180.0
+  },
+  "mode": "real-model synthetic journeys; deterministic rescue disabled",
+  "limitations": [
+    "Some cases inject a first faulty call; subsequent decisions use the live model.",
+    "No real remote SQL executor is connected; this does not validate loading.",
+    "Missing retained schema in initial intent view reproduced. Product repaired; first failures preserved and remaining cases rerun from fresh runtimes."
+  ],
+  "results": [
+    {
+      "id": "repeated_discovery",
+      "status": "FAIL",
+      "intent_mode": "llm",
+      "fault_phase": "execution_planner_only",
+      "injected_first_call": true,
+      "live_calls": 1,
+      "turns": [
+        {
+          "prompt": "reading 평균을 알려줘.",
+          "status": "FAIL",
+          "agent_status": "exhausted",
+          "final_output": "반복 실행 한도에 도달해 분석을 중단했습니다. 검증된 완료 결과가 없으며 기존 데이터는 보존했습니다.",
+          "expected": 9.0,
+          "actual": null,
+          "model_calls": 10,
+          "search_used": false,
+          "tools": [
+            "list_analysis_context",
+            "list_analysis_context"
+          ],
+          "chart_count": 0,
+          "raw_unchanged": true,
+          "approval_requests": 0,
+          "remote_executions": 0,
+          "stop_reason": "model_call_budget",
+          "elapsed_seconds": 82.785,
+          "repair_events": [
+            {
+              "time": "2026-10-09T14:18:13.791157+00:00",
+              "event": "tool_progress_stalled",
+              "run_id": "7cd377b0ee754bf29f86352d7e8151be",
+              "instance_id": "97f34f7f45dc",
+              "pid": 73484,
+              "request_id": "3960efa888954413a243626584f08923",
+              "observation_ids": [
+                "dc1b78cfea643b4bb3ce3384508786a0b94306edc00036ae3e697010bbbefce2"
+              ],
+              "missing": [
+                "statistics"
+              ]
+            },
+            {
+              "time": "2026-10-09T14:18:13.796976+00:00",
+              "event": "tool_progress_duplicate_blocked",
+              "run_id": "7cd377b0ee754bf29f86352d7e8151be",
+              "instance_id": "97f34f7f45dc",
+              "pid": 73484,
+              "request_id": "3960efa888954413a243626584f08923",
+              "observation_ids": [
+                "dc1b78cfea643b4bb3ce3384508786a0b94306edc00036ae3e697010bbbefce2"
+              ],
+              "missing": [
+                "statistics"
+              ]
+            }
+          ],
+          "goal": {
+            "objective": "requested work",
+            "mode": "execute",
+            "source_reference": "selected_dataset",
+            "sources": [
+              "unfamiliar.observations"
+            ],
+            "columns": [
+              "reading"
+            ],
+            "conditions": [],
+            "any_conditions": [],
+            "measure_conditions": [],
+            "ratio": null,
+            "current_result_only": false,
+            "fresh_source_required": false,
+            "question": "",
+            "tasks": [
+              {
+                "capability": "statistics",
+                "options": {
+                  "test": "mean_ci"
+                }
+              }
+            ]
+          },
+          "intent_events": [
+            {
+              "time": "2026-10-09T14:17:37.343514+00:00",
+              "event": "goal_interpretation_started",
+              "run_id": "7cd377b0ee754bf29f86352d7e8151be",
+              "instance_id": "97f34f7f45dc",
+              "pid": 73484,
+              "request_id": "3960efa888954413a243626584f08923",
+              "origin": "llm",
+              "goal_version": 1
+            },
+            {
+              "time": "2026-10-09T14:17:38.008278+00:00",
+              "event": "goal_literal_subjects_read",
+              "run_id": "7cd377b0ee754bf29f86352d7e8151be",
+              "instance_id": "97f34f7f45dc",
+              "pid": 73484,
+              "request_id": "3960efa888954413a243626584f08923",
+              "candidate_count": 1,
+              "table_count": 0
+            },
+            {
+              "time": "2026-10-09T14:17:42.434168+00:00",
+              "event": "goal_tasks_selected",
+              "run_id": "7cd377b0ee754bf29f86352d7e8151be",
+              "instance_id": "97f34f7f45dc",
+              "pid": 73484,
+              "request_id": "3960efa888954413a243626584f08923",
+              "mode": "explain",
+              "capabilities": [],
+              "chart_kind": "",
+              "metadata_kind": "",
+              "source_reference": "selected_dataset",
+              "current_result_only": false
+            },
+            {
+              "time": "2026-10-09T14:17:59.377872+00:00",
+              "event": "goal_obligations_coalesced",
+              "run_id": "7cd377b0ee754bf29f86352d7e8151be",
+              "instance_id": "97f34f7f45dc",
+              "pid": 73484,
+              "request_id": "3960efa888954413a243626584f08923",
+              "contract": "declared_output_fields"
+            },
+            {
+              "time": "2026-10-09T14:17:59.380968+00:00",
+              "event": "goal_structure_rejected",
+              "run_id": "7cd377b0ee754bf29f86352d7e8151be",
+              "instance_id": "97f34f7f45dc",
+              "pid": 73484,
+              "request_id": "3960efa888954413a243626584f08923",
+              "attempt": 1,
+              "error_type": "ValueError"
+            },
+            {
+              "time": "2026-10-09T14:17:59.381150+00:00",
+              "event": "goal_contract_error",
+              "run_id": "7cd377b0ee754bf29f86352d7e8151be",
+              "instance_id": "97f34f7f45dc",
+              "pid": 73484,
+              "request_id": "3960efa888954413a243626584f08923",
+              "error_code": "goal_schema_invalid",
+              "detail": "statistical columns required"
+            },
+            {
+              "time": "2026-10-09T14:18:05.289182+00:00",
+              "event": "goal_semantic_review_started",
+              "run_id": "7cd377b0ee754bf29f86352d7e8151be",
+              "instance_id": "97f34f7f45dc",
+              "pid": 73484,
+              "request_id": "3960efa888954413a243626584f08923"
+            },
+            {
+              "time": "2026-10-09T14:18:11.024707+00:00",
+              "event": "goal_obligations_coalesced",
+              "run_id": "7cd377b0ee754bf29f86352d7e8151be",
+              "instance_id": "97f34f7f45dc",
+              "pid": 73484,
+              "request_id": "3960efa888954413a243626584f08923",
+              "contract": "declared_output_fields"
+            },
+            {
+              "time": "2026-10-09T14:18:13.746091+00:00",
+              "event": "goal_population_audited",
+              "run_id": "7cd377b0ee754bf29f86352d7e8151be",
+              "instance_id": "97f34f7f45dc",
+              "pid": 73484,
+              "request_id": "3960efa888954413a243626584f08923",
+              "changed": false,
+              "condition_count": 0,
+              "alternative_count": 0
+            },
+            {
+              "time": "2026-10-09T14:18:13.749233+00:00",
+              "event": "goal_interpretation_completed",
+              "run_id": "7cd377b0ee754bf29f86352d7e8151be",
+              "instance_id": "97f34f7f45dc",
+              "pid": 73484,
+              "request_id": "3960efa888954413a243626584f08923",
+              "origin": "llm",
+              "mode": "execute",
+              "capabilities": [
+                "statistics"
+              ],
+              "attempts": 3,
+              "goal_version": 1
+            }
+          ],
+          "injected_calls": 3,
+          "phase_order": [
+            "goal_interpretation_completed",
+            "tool_started",
+            "tool_started"
+          ],
+          "executed_tools": [
+            "list_analysis_context",
+            "list_analysis_context"
+          ],
+          "model_recovery": {
+            "failures": 0,
+            "failed_seconds": 0.0,
+            "retries": 0,
+            "next_allowed_at": 0.0,
+            "aux_calls": 6,
+            "aux_seconds": 36.375512500992045
+          },
+          "model_failure_events": [],
+          "error_type": null,
+          "error_category": null
+        }
+      ]
+    },
+    {
+      "id": "discover_mean",
+      "status": "FAIL",
+      "intent_mode": "llm",
+      "fault_phase": "execution_planner_only",
+      "injected_first_call": false,
+      "live_calls": 3,
+      "turns": [
+        {
+          "prompt": "로컬 평균 집계 도구의 입력 규칙을 검색해서 확인한 뒤 reading 평균을 계산해줘.",
+          "status": "FAIL",
+          "agent_status": "exhausted",
+          "final_output": "반복 실행 한도에 도달해 분석을 중단했습니다. 검증된 완료 결과가 없으며 기존 데이터는 보존했습니다.",
+          "expected": 9.0,
+          "actual": null,
+          "model_calls": 7,
+          "search_used": true,
+          "tools": [
+            "search_analysis_tools",
+            "aggregate_dataset"
+          ],
+          "chart_count": 0,
+          "raw_unchanged": true,
+          "approval_requests": 0,
+          "remote_executions": 0,
+          "stop_reason": "model_time_budget",
+          "elapsed_seconds": 201.665,
+          "repair_events": [],
+          "goal": {
+            "objective": "requested work",
+            "mode": "execute",
+            "source_reference": "selected_dataset",
+            "sources": [
+              "unfamiliar.observations"
+            ],
+            "columns": [],
+            "conditions": [],
+            "any_conditions": [],
+            "measure_conditions": [],
+            "ratio": null,
+            "current_result_only": false,
+            "fresh_source_required": false,
+            "question": "",
+            "tasks": [
+              {
+                "capability": "metadata",
+                "options": {
+                  "kind": "columns"
+                }
+              }
+            ]
+          },
+          "intent_events": [
+            {
+              "time": "2026-10-09T14:19:00.170557+00:00",
+              "event": "goal_interpretation_started",
+              "run_id": "08c84dc0625941938aaae9d6e85e4272",
+              "instance_id": "83bb57e9ad04",
+              "pid": 73484,
+              "request_id": "18649048d50c4ccfbaf79329ef488ae8",
+              "origin": "llm",
+              "goal_version": 1
+            },
+            {
+              "time": "2026-10-09T14:19:03.727141+00:00",
+              "event": "goal_literal_subjects_read",
+              "run_id": "08c84dc0625941938aaae9d6e85e4272",
+              "instance_id": "83bb57e9ad04",
+              "pid": 73484,
+              "request_id": "18649048d50c4ccfbaf79329ef488ae8",
+              "candidate_count": 1,
+              "table_count": 0
+            },
+            {
+              "time": "2026-10-09T14:19:12.353658+00:00",
+              "event": "goal_tasks_selected",
+              "run_id": "08c84dc0625941938aaae9d6e85e4272",
+              "instance_id": "83bb57e9ad04",
+              "pid": 73484,
+              "request_id": "18649048d50c4ccfbaf79329ef488ae8",
+              "mode": "explain",
+              "capabilities": [],
+              "chart_kind": "",
+              "metadata_kind": "",
+              "source_reference": "selected_dataset",
+              "current_result_only": false
+            },
+            {
+              "time": "2026-10-09T14:19:36.884691+00:00",
+              "event": "goal_obligations_coalesced",
+              "run_id": "08c84dc0625941938aaae9d6e85e4272",
+              "instance_id": "83bb57e9ad04",
+              "pid": 73484,
+              "request_id": "18649048d50c4ccfbaf79329ef488ae8",
+              "contract": "declared_output_fields"
+            },
+            {
+              "time": "2026-10-09T14:19:36.888056+00:00",
+              "event": "goal_semantic_review_started",
+              "run_id": "08c84dc0625941938aaae9d6e85e4272",
+              "instance_id": "83bb57e9ad04",
+              "pid": 73484,
+              "request_id": "18649048d50c4ccfbaf79329ef488ae8"
+            },
+            {
+              "time": "2026-10-09T14:19:45.458787+00:00",
+              "event": "goal_obligations_coalesced",
+              "run_id": "08c84dc0625941938aaae9d6e85e4272",
+              "instance_id": "83bb57e9ad04",
+              "pid": 73484,
+              "request_id": "18649048d50c4ccfbaf79329ef488ae8",
+              "contract": "declared_output_fields"
+            },
+            {
+              "time": "2026-10-09T14:19:45.460980+00:00",
+              "event": "goal_interpretation_completed",
+              "run_id": "08c84dc0625941938aaae9d6e85e4272",
+              "instance_id": "83bb57e9ad04",
+              "pid": 73484,
+              "request_id": "18649048d50c4ccfbaf79329ef488ae8",
+              "origin": "llm",
+              "mode": "execute",
+              "capabilities": [
+                "metadata"
+              ],
+              "attempts": 2,
+              "goal_version": 1
+            }
+          ],
+          "injected_calls": 0,
+          "phase_order": [
+            "goal_interpretation_completed",
+            "tool_started",
+            "tool_started"
+          ],
+          "executed_tools": [
+            "search_analysis_tools",
+            "aggregate_dataset"
+          ],
+          "model_recovery": {
+            "failures": 0,
+            "failed_seconds": 0.0,
+            "retries": 0,
+            "next_allowed_at": 0.0,
+            "aux_calls": 4,
+            "aux_seconds": 45.2716308759409
+          },
+          "model_failure_events": [],
+          "error_type": null,
+          "error_category": null
+        }
+      ]
+    }
+  ],
+  "run_status": "STOPPED_AFTER_TWO_COMPLETED_FAILURES"
+}

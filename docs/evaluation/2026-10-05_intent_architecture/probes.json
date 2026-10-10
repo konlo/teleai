@@ -1,0 +1,284 @@
+{
+  "scope": "isolated current parser and before_model transition; NoInference model; no actual SQL or web requests executed",
+  "cases": [
+    {
+      "id": "row-positive",
+      "request": "observations table row 10개 보여줘",
+      "expected_semantics": "preview 10 rows",
+      "parsed": {
+        "chart": false,
+        "kind": null,
+        "metadata_kind": null,
+        "operations": [],
+        "calculation": false,
+        "row_preview_spec": {
+          "limit": 10,
+          "question": ""
+        },
+        "catalog_discovery_source": "",
+        "required_sources": [
+          "lab.observations"
+        ],
+        "required_columns": [],
+        "scope": {
+          "conditions": [],
+          "any_conditions": [],
+          "sources": [
+            "lab.observations"
+          ],
+          "join_edges": [],
+          "measure_conditions": [],
+          "ratio": null,
+          "unresolved": [],
+          "columns": []
+        }
+      },
+      "before_model_jump": "tools",
+      "controller_tools": [
+        "prepare_row_preview"
+      ]
+    },
+    {
+      "id": "row-negated",
+      "request": "observations table row 10개 보여주지 말고 테이블 목록만 보여줘",
+      "expected_semantics": "table inventory, not preview",
+      "parsed": {
+        "chart": false,
+        "kind": null,
+        "metadata_kind": null,
+        "operations": [],
+        "calculation": false,
+        "row_preview_spec": {
+          "limit": 10,
+          "question": ""
+        },
+        "catalog_discovery_source": "",
+        "required_sources": [
+          "lab.observations"
+        ],
+        "required_columns": [],
+        "scope": {
+          "conditions": [],
+          "any_conditions": [],
+          "sources": [
+            "lab.observations"
+          ],
+          "join_edges": [],
+          "measure_conditions": [],
+          "ratio": null,
+          "unresolved": [],
+          "columns": []
+        }
+      },
+      "before_model_jump": "tools",
+      "controller_tools": [
+        "prepare_row_preview"
+      ]
+    },
+    {
+      "id": "row-words",
+      "request": "observations에서 열 개 행을 보여줘",
+      "expected_semantics": "preview 10 rows",
+      "parsed": {
+        "chart": false,
+        "kind": null,
+        "metadata_kind": null,
+        "operations": [],
+        "calculation": false,
+        "catalog_discovery_source": "",
+        "required_sources": [
+          "lab.observations"
+        ],
+        "required_columns": [],
+        "scope": {
+          "conditions": [],
+          "any_conditions": [],
+          "sources": [
+            "lab.observations"
+          ],
+          "join_edges": [],
+          "measure_conditions": [],
+          "ratio": null,
+          "unresolved": [],
+          "columns": []
+        }
+      },
+      "before_model_jump": null,
+      "controller_tools": []
+    },
+    {
+      "id": "row-english",
+      "request": "Give me ten records from observations",
+      "expected_semantics": "preview 10 rows",
+      "parsed": {
+        "chart": false,
+        "kind": null,
+        "metadata_kind": null,
+        "operations": [],
+        "calculation": false,
+        "catalog_discovery_source": "",
+        "required_sources": [
+          "lab.observations"
+        ],
+        "required_columns": [],
+        "scope": {
+          "conditions": [],
+          "any_conditions": [],
+          "sources": [
+            "lab.observations"
+          ],
+          "join_edges": [],
+          "measure_conditions": [],
+          "ratio": null,
+          "unresolved": [],
+          "columns": []
+        }
+      },
+      "before_model_jump": null,
+      "controller_tools": []
+    },
+    {
+      "id": "chart-negated",
+      "request": "observations의 reading 히스토그램은 그리지 말고 컬럼 목록만 보여줘",
+      "expected_semantics": "column metadata, not chart",
+      "parsed": {
+        "chart": true,
+        "kind": "histogram",
+        "metadata_kind": null,
+        "operations": [],
+        "calculation": false,
+        "catalog_discovery_source": "",
+        "required_sources": [
+          "lab.observations"
+        ],
+        "required_columns": [
+          "reading"
+        ],
+        "scope": {
+          "conditions": [],
+          "any_conditions": [],
+          "sources": [
+            "lab.observations"
+          ],
+          "join_edges": [],
+          "measure_conditions": [],
+          "ratio": null,
+          "unresolved": [],
+          "columns": [
+            "reading"
+          ]
+        }
+      },
+      "before_model_jump": "tools",
+      "controller_tools": [
+        "prepare_histogram"
+      ]
+    },
+    {
+      "id": "operation-negated",
+      "request": "observations의 reading 평균은 계산하지 말고 합계만 알려줘",
+      "expected_semantics": "SUM only, not AVG",
+      "parsed": {
+        "chart": false,
+        "kind": null,
+        "metadata_kind": null,
+        "operations": [
+          "AVG",
+          "SUM"
+        ],
+        "calculation": true,
+        "catalog_discovery_source": "",
+        "required_sources": [
+          "lab.observations"
+        ],
+        "required_columns": [
+          "reading"
+        ],
+        "scope": {
+          "conditions": [],
+          "any_conditions": [],
+          "sources": [
+            "lab.observations"
+          ],
+          "join_edges": [],
+          "measure_conditions": [],
+          "ratio": null,
+          "unresolved": [],
+          "columns": [
+            "reading"
+          ]
+        }
+      },
+      "before_model_jump": "tools",
+      "controller_tools": [
+        "local_analysis_sql"
+      ]
+    },
+    {
+      "id": "distribution-negated-explain",
+      "request": "observations의 reading 분포를 설명만 하지 말고 그려줘",
+      "expected_semantics": "distribution chart",
+      "parsed": {
+        "chart": true,
+        "kind": null,
+        "metadata_kind": null,
+        "operations": [],
+        "calculation": false,
+        "catalog_discovery_source": "",
+        "required_sources": [
+          "lab.observations"
+        ],
+        "required_columns": [
+          "reading"
+        ],
+        "scope": {
+          "conditions": [],
+          "any_conditions": [],
+          "sources": [
+            "lab.observations"
+          ],
+          "join_edges": [],
+          "measure_conditions": [],
+          "ratio": null,
+          "unresolved": [],
+          "columns": [
+            "reading"
+          ]
+        }
+      },
+      "before_model_jump": null,
+      "controller_tools": []
+    },
+    {
+      "id": "followup-reformulate",
+      "request": "observations에서 처음 열 줄만 살펴볼 수 있을까?",
+      "expected_semantics": "preview 10 rows",
+      "parsed": {
+        "chart": false,
+        "kind": null,
+        "metadata_kind": null,
+        "operations": [],
+        "calculation": false,
+        "catalog_discovery_source": "",
+        "required_sources": [
+          "lab.observations"
+        ],
+        "required_columns": [],
+        "scope": {
+          "conditions": [],
+          "any_conditions": [],
+          "sources": [
+            "lab.observations"
+          ],
+          "join_edges": [],
+          "measure_conditions": [],
+          "ratio": null,
+          "unresolved": [],
+          "columns": []
+        }
+      },
+      "before_model_jump": null,
+      "controller_tools": []
+    }
+  ]
+}

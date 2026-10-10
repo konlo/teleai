@@ -1,0 +1,69 @@
+{
+  "id": 5,
+  "prompt": "histogram을 그려줘",
+  "status": "complete",
+  "goal": {
+    "objective": "histogram",
+    "mode": "execute",
+    "source_reference": "previous_analysis",
+    "sources": [
+      "workspace.default.bank_loan"
+    ],
+    "columns": [
+      "education"
+    ],
+    "conditions": [],
+    "any_conditions": [],
+    "measure_conditions": [],
+    "ratio": null,
+    "current_result_only": false,
+    "fresh_source_required": false,
+    "question": "",
+    "tasks": [
+      {
+        "capability": "chart",
+        "options": {
+          "kind": "histogram",
+          "axes": {
+            "x": "education"
+          }
+        }
+      }
+    ]
+  },
+  "reason": null,
+  "run_id": "594a79e5b6ed476c8c2b88c2a4fd690e",
+  "model_calls": 3,
+  "chart_metadata": [
+    {
+      "id": "2f56983f-4eb6-4e91-8258-0d6848e3e19b",
+      "dataset_id": "e8b9d3a7-4f91-4437-9381-ba8999658ad2",
+      "title": "education 분포",
+      "reason": "범주별 실제 COUNT(*) 빈도를 표시합니다. 결측은 제외했습니다.",
+      "kind": "bar",
+      "columns": [
+        "education"
+      ],
+      "scope": "빈도 합계 750,000 · complete · SELECT `education`, COUNT(*) AS `__frequency` FROM `workspace`.`default`.`bank_loan` WHERE `education` IS NOT NULL GROUP BY `education`",
+      "render_spec": {
+        "aggregation": "count",
+        "labels": [
+          "secondary",
+          "tertiary",
+          "primary",
+          "unknown"
+        ],
+        "counts": [
+          401683,
+          227508,
+          99510,
+          21299
+        ],
+        "total_count": 750000,
+        "has_more_categories": false,
+        "null_policy": "exclude"
+      }
+    }
+  ],
+  "verdict": "PASS"
+}

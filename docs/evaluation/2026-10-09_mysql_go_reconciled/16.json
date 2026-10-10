@@ -1,0 +1,1666 @@
+{
+  "recent_transcript": [
+    {
+      "type": "ai",
+      "data": {
+        "content": "teleai_default.bank_loan의 데이터 10행, 18열을 표로 표시했습니다. 원본과 기존 분석 기준은 보존했습니다. 이 미리보기는 전체 분포 통계가 아닙니다.\n\n원격 조회가 완료되어 결과 10행을 저장했습니다.",
+        "additional_kwargs": {
+          "analysis_status": "answered",
+          "analysis_controller_result": true,
+          "analysis_artifact_ids": [],
+          "analysis_table_preview": {
+            "dataset_id": "a4813ad0-36e7-4368-b84d-228989a3756a",
+            "source": "teleai_default.bank_loan",
+            "snapshot": "2026-10-09T07:20:41.270641+00:00",
+            "columns": [
+              "id",
+              "age",
+              "job",
+              "marital",
+              "education",
+              "default",
+              "balance",
+              "housing",
+              "loan",
+              "contact",
+              "day",
+              "month",
+              "duration",
+              "campaign",
+              "pdays",
+              "previous",
+              "poutcome",
+              "y"
+            ],
+            "total_rows": 10,
+            "rows": 10,
+            "limit": 10
+          }
+        },
+        "response_metadata": {},
+        "type": "ai",
+        "name": null,
+        "id": "e5aa5537-69c0-4b1a-ab05-5503f66fe08b",
+        "tool_calls": [],
+        "invalid_tool_calls": [],
+        "usage_metadata": null
+      }
+    },
+    {
+      "type": "tool",
+      "data": {
+        "content": "{\"status\": \"ready\", \"dataset\": {\"id\": \"a4813ad0-36e7-4368-b84d-228989a3756a\", \"source\": \"teleai_default.bank_loan\", \"columns\": [\"id\", \"age\", \"job\", \"marital\", \"education\", \"default\", \"balance\", \"housing\", \"loan\", \"contact\", \"day\", \"month\", \"duration\", \"campaign\", \"pdays\", \"previous\", \"poutcome\", \"y\"], \"rows\": 10, \"coverage\": \"unknown\", \"conditions\": [], \"predicate_known\": false, \"grain\": \"raw\", \"aggregation\": \"\", \"snapshot\": \"2026-10-09T07:20:41.270641+00:00\", \"query\": \"SELECT * FROM `teleai_default`.`bank_loan` WHERE (`age` >= 30 AND `age` <= 40 AND `education` IN ('primary', 'secondary')) LIMIT 10\", \"parent_id\": \"\", \"parent_ids\": [], \"role\": \"root\", \"root_id\": \"a4813ad0-36e7-4368-b84d-228989a3756a\", \"row_selection\": {}}, \"preview\": [{\"id\": 1, \"age\": 38, \"job\": \"blue-collar\", \"marital\": \"married\", \"education\": \"secondary\", \"default\": \"no\", \"balance\": 514, \"housing\": \"no\", \"loan\": \"no\", \"contact\": \"unknown\", \"day\": 18, \"month\": \"jun\", \"duration\": 185, \"campaign\": 1, \"pdays\": -1, \"previous\": 0, \"poutcome\": \"unknown\", \"y\": 0}, {\"id\": 2, \"age\": 36, \"job\": \"blue-collar\", \"marital\": \"married\", \"education\": \"secondary\", \"default\": \"no\", \"balance\": 602, \"housing\": \"yes\", \"loan\": \"no\", \"contact\": \"unknown\", \"day\": 14, \"month\": \"may\", \"duration\": 111, \"campaign\": 2, \"pdays\": -1, \"previous\": 0, \"poutcome\": \"unknown\", \"y\": 0}, {\"id\": 6, \"age\": 39, \"job\": \"blue-collar\", \"marital\": \"married\", \"education\": \"secondary\", \"default\": \"no\", \"balance\": 0, \"housing\": \"no\", \"loan\": \"no\", \"contact\": \"telephone\", \"day\": 21, \"month\": \"nov\", \"duration\": 90, \"campaign\": 1, \"pdays\": -1, \"previous\": 0, \"poutcome\": \"unknown\", \"y\": 0}, {\"id\": 13, \"age\": 32, \"job\": \"blue-collar\", \"marital\": \"married\", \"education\": \"secondary\", \"default\": \"no\", \"balance\": 471, \"housing\": \"yes\", \"loan\": \"no\", \"contact\": \"unknown\", \"day\": 12, \"month\": \"may\", \"duration\": 157, \"campaign\": 3, \"pdays\": -1, \"previous\": 0, \"poutcome\": \"unknown\", \"y\": 0}, {\"id\": 14, \"age\": 38, \"job\": \"blue-collar\", \"marital\": \"married\", \"education\": \"secondary\", \"default\": \"no\", \"balance\": 1686, \"housing\": \"yes\", \"loan\": \"no\", \"contact\": \"unknown\", \"day\": 26, \"month\": \"may\", \"duration\": 393, \"campaign\": 2, \"pdays\": -1, \"previous\": 0, \"poutcome\": \"unknown\", \"y\": 0}, {\"id\": 15, \"age\": 37, \"job\": \"technician\", \"marital\": \"married\", \"education\": \"secondary\", \"default\": \"no\", \"balance\": 2564, \"housing\": \"no\", \"loan\": \"no\", \"contact\": \"cellular\", \"day\": 21, \"month\": \"aug\", \"duration\": 73, \"campaign\": 3, \"pdays\": -1, \"previous\": 0, \"poutcome\": \"unknown\", \"y\": 0}, {\"id\": 22, \"age\": 35, \"job\": \"blue-collar\", \"marital\": \"married\", \"education\": \"secondary\", \"default\": \"no\", \"balance\": 8648, \"housing\": \"no\", \"loan\": \"no\", \"contact\": \"unknown\", \"day\": 6, \"month\": \"jun\", \"duration\": 527, \"campaign\": 1, \"pdays\": -1, \"previous\": 0, \"poutcome\": \"unknown\", \"y\": 0}, {\"id\": 23, \"age\": 32, \"job\": \"technician\", \"marital\": \"married\", \"education\": \"secondary\", \"default\": \"no\", \"balance\": 707, \"housing\": \"yes\", \"loan\": \"yes\", \"contact\": \"cellular\", \"day\": 18, \"month\": \"nov\", \"duration\": 41, \"campaign\": 1, \"pdays\": 175, \"previous\": 3, \"poutcome\": \"other\", \"y\": 0}, {\"id\": 28, \"age\": 39, \"job\": \"services\", \"marital\": \"married\", \"education\": \"secondary\", \"default\": \"no\", \"balance\": 0, \"housing\": \"no\", \"loan\": \"no\", \"contact\": \"unknown\", \"day\": 5, \"month\": \"jun\", \"duration\": 81, \"campaign\": 1, \"pdays\": -1, \"previous\": 0, \"poutcome\": \"unknown\", \"y\": 0}, {\"id\": 29, \"age\": 36, \"job\": \"blue-collar\", \"marital\": \"single\", \"education\": \"primary\", \"default\": \"no\", \"balance\": 2137, \"housing\": \"no\", \"loan\": \"no\", \"contact\": \"unknown\", \"day\": 17, \"month\": \"jun\", \"duration\": 121, \"campaign\": 1, \"pdays\": -1, \"previous\": 0, \"poutcome\": \"unknown\", \"y\": 0}], \"evidence_ids\": [\"a4813ad0-36e7-4368-b84d-228989a3756a\"], \"error_code\": null, \"retryable\": false, \"user_action\": \"\", \"scope\": \"도구가 반환한 구조화 결과 범위입니다.\"}",
+        "additional_kwargs": {},
+        "response_metadata": {},
+        "type": "tool",
+        "name": "query_databricks",
+        "id": "f7682496-43ae-426f-b80b-b368046d6901",
+        "tool_call_id": "176cb8c3-7c01-4a25-988f-3c64fcc31f9c",
+        "artifact": null,
+        "status": "success"
+      }
+    },
+    {
+      "type": "ai",
+      "data": {
+        "content": "",
+        "additional_kwargs": {},
+        "response_metadata": {},
+        "type": "ai",
+        "name": null,
+        "id": "99228d69-751a-4ce2-9267-c5054334987a",
+        "tool_calls": [
+          {
+            "name": "query_databricks",
+            "args": {
+              "source": "teleai_default.bank_loan",
+              "query": "SELECT * FROM `teleai_default`.`bank_loan` WHERE (`age` >= 30 AND `age` <= 40 AND `education` IN ('primary', 'secondary')) LIMIT 10",
+              "reason": "요청한 표 미리보기용으로 최대 10행만 조회합니다. 기존 분석 기준은 유지합니다."
+            },
+            "id": "176cb8c3-7c01-4a25-988f-3c64fcc31f9c",
+            "type": "tool_call"
+          }
+        ],
+        "invalid_tool_calls": [],
+        "usage_metadata": null
+      }
+    },
+    {
+      "type": "tool",
+      "data": {
+        "content": "{\"status\": \"planned\", \"row_preview_plan\": {\"source\": \"teleai_default.bank_loan\", \"query\": \"SELECT * FROM `teleai_default`.`bank_loan` WHERE (`age` >= 30 AND `age` <= 40 AND `education` IN ('primary', 'secondary')) LIMIT 10\", \"reason\": \"요청한 표 미리보기용으로 최대 10행만 조회합니다. 기존 분석 기준은 유지합니다.\"}, \"evidence_ids\": [], \"error_code\": null, \"retryable\": false, \"user_action\": \"\", \"scope\": \"도구가 반환한 구조화 결과 범위입니다.\"}",
+        "additional_kwargs": {},
+        "response_metadata": {},
+        "type": "tool",
+        "name": "prepare_row_preview",
+        "id": "4d339702-55d1-4605-b044-652546966b3f",
+        "tool_call_id": "0adc7efe-1c51-4a5c-b003-5a3688e76f26",
+        "artifact": null,
+        "status": "success"
+      }
+    },
+    {
+      "type": "ai",
+      "data": {
+        "content": "",
+        "additional_kwargs": {},
+        "response_metadata": {},
+        "type": "ai",
+        "name": null,
+        "id": "25d17fe5-e52b-4dcf-9909-da4491f1eedb",
+        "tool_calls": [
+          {
+            "name": "prepare_row_preview",
+            "args": {
+              "source": "teleai_default.bank_loan",
+              "limit": 10,
+              "where_sql": "`age` >= 30 AND `age` <= 40 AND `education` IN ('primary', 'secondary')",
+              "current_result_only": false,
+              "fresh": false
+            },
+            "id": "0adc7efe-1c51-4a5c-b003-5a3688e76f26",
+            "type": "tool_call"
+          }
+        ],
+        "invalid_tool_calls": [],
+        "usage_metadata": null
+      }
+    },
+    {
+      "type": "human",
+      "data": {
+        "content": "데이타 10개 row만 추출해서 table로 보여줘 ",
+        "additional_kwargs": {},
+        "response_metadata": {},
+        "type": "human",
+        "name": null,
+        "id": "01e4c0969ef94bee8e443ba9bc599c48"
+      }
+    }
+  ],
+  "assets": {
+    "0b1cd7a3-ded2-4c9f-aa4c-dabc90569caf": {
+      "kind": "dataset",
+      "metadata": {
+        "id": "0b1cd7a3-ded2-4c9f-aa4c-dabc90569caf",
+        "source": "information_schema.tables",
+        "columns": [
+          "TABLE_SCHEMA",
+          "TABLE_NAME",
+          "TABLE_TYPE"
+        ],
+        "rows": 7,
+        "coverage": "unknown",
+        "conditions": [],
+        "predicate_known": false,
+        "grain": "raw",
+        "aggregation": "",
+        "snapshot": "2026-10-09T07:06:04.127084+00:00",
+        "query": "SELECT table_schema, table_name, table_type FROM information_schema.tables WHERE table_schema = 'teleai_default' ORDER BY table_name LIMIT 100",
+        "parent_id": "",
+        "parent_ids": [],
+        "role": "root",
+        "root_id": "0b1cd7a3-ded2-4c9f-aa4c-dabc90569caf",
+        "row_selection": {}
+      },
+      "metadata_sha256": "8927762689cff9952fd52ab7d0dce9574324527efd13fa1dda0886c2f29a5337",
+      "payload_sha256": "372844c886cd58f8ef309861fc6bb1a9265e5de25cd71d7493b1199d66a13318"
+    },
+    "13a34cd1-776d-4ff3-ba77-9321f173d2a2": {
+      "kind": "dataset",
+      "metadata": {
+        "id": "13a34cd1-776d-4ff3-ba77-9321f173d2a2",
+        "source": "teleai_default.bank_loan",
+        "columns": [
+          "age",
+          "__frequency"
+        ],
+        "rows": 78,
+        "coverage": "complete",
+        "conditions": [],
+        "predicate_known": false,
+        "grain": "aggregate",
+        "aggregation": "SELECT `age`, COUNT(*) AS `__frequency` FROM `teleai_default`.`bank_loan` WHERE NOT `age` IS NULL GROUP BY `age`",
+        "snapshot": "2026-10-09T07:07:00.469543+00:00",
+        "query": "SELECT `age`, COUNT(*) AS `__frequency` FROM `teleai_default`.`bank_loan` WHERE `age` IS NOT NULL GROUP BY `age`",
+        "parent_id": "",
+        "parent_ids": [],
+        "role": "aggregate",
+        "root_id": "",
+        "row_selection": {}
+      },
+      "metadata_sha256": "f99c20153435a014f6c1b63e769a6e5e3d208b96f1d1b1a1f67c5c56d2448225",
+      "payload_sha256": "f3f07d3f8bffc816d7d0dc767f618f9f5b905608322edcdc2c45cbd98fc58821"
+    },
+    "089e169e-cc24-4f08-8d1a-6e17b7c30ce6": {
+      "kind": "chart",
+      "metadata": {
+        "id": "089e169e-cc24-4f08-8d1a-6e17b7c30ce6",
+        "dataset_id": "13a34cd1-776d-4ff3-ba77-9321f173d2a2",
+        "title": "age 분포",
+        "reason": "값별 빈도를 가중치로 사용했습니다. 원본 행을 펼치거나 표본을 만들지 않았습니다.",
+        "kind": "histogram",
+        "columns": [
+          "age"
+        ],
+        "scope": "빈도 합계 750,000 · complete · SELECT `age`, COUNT(*) AS `__frequency` FROM `teleai_default`.`bank_loan` WHERE `age` IS NOT NULL GROUP BY `age`",
+        "render_spec": {
+          "aggregation": "count",
+          "bins": 8,
+          "bin_counts": [
+            41846.0,
+            294174.0,
+            194626.0,
+            156552.0,
+            55423.0,
+            5273.0,
+            1968.0,
+            138.0
+          ],
+          "bin_edges": [
+            18.0,
+            27.625,
+            37.25,
+            46.875,
+            56.5,
+            66.125,
+            75.75,
+            85.375,
+            95.0
+          ],
+          "total_count": 750000,
+          "null_policy": "exclude",
+          "legend": true,
+          "legend_labels": [
+            "age"
+          ],
+          "stacked": false,
+          "palette": "default"
+        }
+      },
+      "metadata_sha256": "b77e4ef2367781fdb243a65d805f649b6e067f6ae3a10eeefe3cc4c12c981977",
+      "payload_sha256": "df83ca51c85698998580534d234c52b63079df5ea75c9f10906661e82b78bd0e"
+    },
+    "43b37db2-addf-450b-b306-0cb7234b3460": {
+      "kind": "dataset",
+      "metadata": {
+        "id": "43b37db2-addf-450b-b306-0cb7234b3460",
+        "source": "teleai_default.bank_loan",
+        "columns": [
+          "education"
+        ],
+        "rows": 4,
+        "coverage": "unknown",
+        "conditions": [],
+        "predicate_known": false,
+        "grain": "raw",
+        "aggregation": "",
+        "snapshot": "2026-10-09T07:08:14.331933+00:00",
+        "query": "SELECT DISTINCT `education` FROM `teleai_default`.`bank_loan` ORDER BY `education` LIMIT 101",
+        "parent_id": "",
+        "parent_ids": [],
+        "role": "root",
+        "root_id": "43b37db2-addf-450b-b306-0cb7234b3460",
+        "row_selection": {}
+      },
+      "metadata_sha256": "4384ab56c4f823c0e9bfa992b42dd2f92b77ae2263f15b4fdee284932b3d6525",
+      "payload_sha256": "74b3461b7a2df5b4b027d189c92a816d5b09e235b4762c70275fde641051d181"
+    },
+    "bae8c6be-0d02-442b-a630-8fa254fb01db": {
+      "kind": "dataset",
+      "metadata": {
+        "id": "bae8c6be-0d02-442b-a630-8fa254fb01db",
+        "source": "teleai_default.bank_loan",
+        "columns": [
+          "education",
+          "__frequency"
+        ],
+        "rows": 4,
+        "coverage": "complete",
+        "conditions": [],
+        "predicate_known": false,
+        "grain": "aggregate",
+        "aggregation": "SELECT `education`, COUNT(*) AS `__frequency` FROM `teleai_default`.`bank_loan` WHERE NOT `education` IS NULL GROUP BY `education`",
+        "snapshot": "2026-10-09T07:08:57.934508+00:00",
+        "query": "SELECT `education`, COUNT(*) AS `__frequency` FROM `teleai_default`.`bank_loan` WHERE `education` IS NOT NULL GROUP BY `education`",
+        "parent_id": "",
+        "parent_ids": [],
+        "role": "aggregate",
+        "root_id": "",
+        "row_selection": {}
+      },
+      "metadata_sha256": "dab0d21abb59642a23de02169bf3c49a70419b46ad455b3b0258369b96f9f616",
+      "payload_sha256": "a42ab5c2a6e9aff30b82f7c6b804692a34aea7a3e74f435ce51eb577ee370121"
+    },
+    "b5b2ea1f-c6ff-4837-a2f7-acaa329e3940": {
+      "kind": "chart",
+      "metadata": {
+        "id": "b5b2ea1f-c6ff-4837-a2f7-acaa329e3940",
+        "dataset_id": "bae8c6be-0d02-442b-a630-8fa254fb01db",
+        "title": "education 분포",
+        "reason": "범주별 실제 COUNT(*) 빈도를 표시합니다. 결측은 제외했습니다.",
+        "kind": "bar",
+        "columns": [
+          "education"
+        ],
+        "scope": "빈도 합계 750,000 · complete · SELECT `education`, COUNT(*) AS `__frequency` FROM `teleai_default`.`bank_loan` WHERE `education` IS NOT NULL GROUP BY `education`",
+        "render_spec": {
+          "aggregation": "count",
+          "labels": [
+            "secondary",
+            "tertiary",
+            "primary",
+            "unknown"
+          ],
+          "counts": [
+            401683,
+            227508,
+            99510,
+            21299
+          ],
+          "total_count": 750000,
+          "has_more_categories": false,
+          "null_policy": "exclude",
+          "legend": true,
+          "legend_labels": [
+            "secondary",
+            "tertiary",
+            "primary",
+            "unknown"
+          ],
+          "stacked": false,
+          "palette": "default",
+          "colors": [
+            "#1f77b4",
+            "#ff7f0e",
+            "#2ca02c",
+            "#d62728"
+          ]
+        }
+      },
+      "metadata_sha256": "1ea24c2ecd9747c9fb4a746c4ce8903afaf5ad273d7a9ac3999077ee804af755",
+      "payload_sha256": "25215c7e84762b72d52f6a140e599a05ac2e169c63f56513ea27168a5b801cc0"
+    },
+    "c1c4abe3-2200-4968-9b94-354ef7ad1e1e": {
+      "kind": "dataset",
+      "metadata": {
+        "id": "c1c4abe3-2200-4968-9b94-354ef7ad1e1e",
+        "source": "teleai_default.bank_loan",
+        "columns": [
+          "education",
+          "__frequency"
+        ],
+        "rows": 1,
+        "coverage": "complete",
+        "conditions": [],
+        "predicate_known": false,
+        "grain": "aggregate",
+        "aggregation": "SELECT `education`, COUNT(*) AS `__frequency` FROM `teleai_default`.`bank_loan` WHERE NOT `education` IS NULL AND (`education` = 'primary' AND `age` >= 30 AND `age` <= 40) GROUP BY `education`",
+        "snapshot": "2026-10-09T07:10:13.579441+00:00",
+        "query": "SELECT `education`, COUNT(*) AS `__frequency` FROM `teleai_default`.`bank_loan` WHERE `education` IS NOT NULL AND (`education` = 'primary' AND `age` >= 30 AND `age` <= 40) GROUP BY `education`",
+        "parent_id": "",
+        "parent_ids": [],
+        "role": "aggregate",
+        "root_id": "",
+        "row_selection": {}
+      },
+      "metadata_sha256": "b7ed88f2b7e23165e2820fc3c5c989813c4dfa311a4987faa1812cac71172bbc",
+      "payload_sha256": "971553d5a202becf64e1bf4c3e332e2cce20e787daa5cf74ec4be9746012a938"
+    },
+    "23a07043-081a-4e82-adb9-a8632fdc7d06": {
+      "kind": "chart",
+      "metadata": {
+        "id": "23a07043-081a-4e82-adb9-a8632fdc7d06",
+        "dataset_id": "c1c4abe3-2200-4968-9b94-354ef7ad1e1e",
+        "title": "education 분포",
+        "reason": "범주별 실제 COUNT(*) 빈도를 표시합니다. 결측은 제외했습니다.",
+        "kind": "bar",
+        "columns": [
+          "education"
+        ],
+        "scope": "빈도 합계 27,439 · complete · SELECT `education`, COUNT(*) AS `__frequency` FROM `teleai_default`.`bank_loan` WHERE `education` IS NOT NULL AND (`education` = 'primary' AND `age` >= 30 AND `age` <= 40) GROUP BY `education`",
+        "render_spec": {
+          "aggregation": "count",
+          "labels": [
+            "primary"
+          ],
+          "counts": [
+            27439
+          ],
+          "total_count": 27439,
+          "has_more_categories": false,
+          "null_policy": "exclude",
+          "legend": true,
+          "legend_labels": [
+            "primary"
+          ],
+          "stacked": false,
+          "palette": "default",
+          "colors": [
+            "#1f77b4"
+          ]
+        }
+      },
+      "metadata_sha256": "252b531ae28ca16e19be782bfd3b60249e83c55df5603449f7a4548856805d01",
+      "payload_sha256": "bb0cbe8f7a78f05c36bb0251cab5dbffd39b7616d89b1fa596e24d5226311956"
+    },
+    "26fa0793-a534-43aa-85b9-ff572de3efcc": {
+      "kind": "dataset",
+      "metadata": {
+        "id": "26fa0793-a534-43aa-85b9-ff572de3efcc",
+        "source": "teleai_default.bank_loan",
+        "columns": [
+          "education",
+          "__frequency"
+        ],
+        "rows": 2,
+        "coverage": "complete",
+        "conditions": [],
+        "predicate_known": false,
+        "grain": "aggregate",
+        "aggregation": "SELECT `education`, COUNT(*) AS `__frequency` FROM `teleai_default`.`bank_loan` WHERE NOT `education` IS NULL AND (`education` IN ('primary', 'secondary') AND `age` >= 30 AND `age` <= 40) GROUP BY `education`",
+        "snapshot": "2026-10-09T07:11:10.509717+00:00",
+        "query": "SELECT `education`, COUNT(*) AS `__frequency` FROM `teleai_default`.`bank_loan` WHERE `education` IS NOT NULL AND (`education` IN ('primary', 'secondary') AND `age` >= 30 AND `age` <= 40) GROUP BY `education`",
+        "parent_id": "",
+        "parent_ids": [],
+        "role": "aggregate",
+        "root_id": "",
+        "row_selection": {}
+      },
+      "metadata_sha256": "ed9e4692a86a6195aeabef2ef9de0b8669db2ca6d24e8b3748825e3a655580b0",
+      "payload_sha256": "f41dee146f98fc32ff93a9986498c711d4b52dd3399eb62d6a56002ab7047943"
+    },
+    "061e0c75-1f01-4896-af34-c438d3e99383": {
+      "kind": "chart",
+      "metadata": {
+        "id": "061e0c75-1f01-4896-af34-c438d3e99383",
+        "dataset_id": "26fa0793-a534-43aa-85b9-ff572de3efcc",
+        "title": "education 분포",
+        "reason": "범주별 실제 COUNT(*) 빈도를 표시합니다. 결측은 제외했습니다.",
+        "kind": "bar",
+        "columns": [
+          "education"
+        ],
+        "scope": "빈도 합계 208,699 · complete · SELECT `education`, COUNT(*) AS `__frequency` FROM `teleai_default`.`bank_loan` WHERE `education` IS NOT NULL AND (`education` IN ('primary', 'secondary') AND `age` >= 30 AND `age` <= 40) GROUP BY `education`",
+        "render_spec": {
+          "aggregation": "count",
+          "labels": [
+            "secondary",
+            "primary"
+          ],
+          "counts": [
+            181260,
+            27439
+          ],
+          "total_count": 208699,
+          "has_more_categories": false,
+          "null_policy": "exclude",
+          "legend": true,
+          "legend_labels": [
+            "secondary",
+            "primary"
+          ],
+          "stacked": false,
+          "palette": "default",
+          "colors": [
+            "#1f77b4",
+            "#ff7f0e"
+          ]
+        }
+      },
+      "metadata_sha256": "de1933f218deb19a6aee9d36d713eafc43c4b8a0ab2d298df0830bd97c7ac769",
+      "payload_sha256": "be078874a79df59a685bd1660e7dc8d6ccf7f7207683aa93796d4b3701fb0571"
+    },
+    "37751cd3-a6f4-41e5-aaea-faeda968c0da": {
+      "kind": "chart",
+      "metadata": {
+        "id": "37751cd3-a6f4-41e5-aaea-faeda968c0da",
+        "dataset_id": "26fa0793-a534-43aa-85b9-ff572de3efcc",
+        "title": "education 분포",
+        "reason": "범주별 실제 COUNT(*) 빈도를 표시합니다. 결측은 제외했습니다.",
+        "kind": "bar",
+        "columns": [
+          "education"
+        ],
+        "scope": "빈도 합계 208,699 · complete · SELECT `education`, COUNT(*) AS `__frequency` FROM `teleai_default`.`bank_loan` WHERE `education` IS NOT NULL AND (`education` IN ('primary', 'secondary') AND `age` >= 30 AND `age` <= 40) GROUP BY `education`",
+        "render_spec": {
+          "aggregation": "count",
+          "labels": [
+            "secondary",
+            "primary"
+          ],
+          "counts": [
+            181260,
+            27439
+          ],
+          "total_count": 208699,
+          "has_more_categories": false,
+          "null_policy": "exclude",
+          "legend": true,
+          "legend_labels": [
+            "secondary",
+            "primary"
+          ],
+          "stacked": false,
+          "palette": "high_contrast",
+          "colors": [
+            "#0072B2",
+            "#D55E00"
+          ]
+        }
+      },
+      "metadata_sha256": "16b8546ba0c0887c516e63ae6267cc3d754e6f31edff8091b504e7c6aacbadfa",
+      "payload_sha256": "a2eac3f553f6a777d28a90887cef57f4bb777e5d3c14cf5579d9ab42b7dc9fa3"
+    },
+    "be53573b-f9ef-4bac-8d1d-983541f266ab": {
+      "kind": "chart",
+      "metadata": {
+        "id": "be53573b-f9ef-4bac-8d1d-983541f266ab",
+        "dataset_id": "26fa0793-a534-43aa-85b9-ff572de3efcc",
+        "title": "education 분포",
+        "reason": "범주별 실제 COUNT(*) 빈도를 표시합니다. 결측은 제외했습니다.",
+        "kind": "bar",
+        "columns": [
+          "education"
+        ],
+        "scope": "빈도 합계 208,699 · complete · SELECT `education`, COUNT(*) AS `__frequency` FROM `teleai_default`.`bank_loan` WHERE `education` IS NOT NULL AND (`education` IN ('primary', 'secondary') AND `age` >= 30 AND `age` <= 40) GROUP BY `education`",
+        "render_spec": {
+          "aggregation": "count",
+          "labels": [
+            "secondary",
+            "primary"
+          ],
+          "counts": [
+            181260,
+            27439
+          ],
+          "total_count": 208699,
+          "has_more_categories": false,
+          "null_policy": "exclude",
+          "legend": true,
+          "legend_labels": [
+            "secondary",
+            "primary"
+          ],
+          "stacked": true,
+          "palette": "high_contrast",
+          "colors": [
+            "#0072B2",
+            "#D55E00"
+          ]
+        }
+      },
+      "metadata_sha256": "5da9057a666d75299dc9d80f7c28d159b9dff39e7bed9c25dc945626f9da3922",
+      "payload_sha256": "3ad66b159faa0ca78c8a2a3ec7e2ecf3a9462b113d710a82d8296f1ae602d7c6"
+    },
+    "a4813ad0-36e7-4368-b84d-228989a3756a": {
+      "kind": "dataset",
+      "metadata": {
+        "id": "a4813ad0-36e7-4368-b84d-228989a3756a",
+        "source": "teleai_default.bank_loan",
+        "columns": [
+          "id",
+          "age",
+          "job",
+          "marital",
+          "education",
+          "default",
+          "balance",
+          "housing",
+          "loan",
+          "contact",
+          "day",
+          "month",
+          "duration",
+          "campaign",
+          "pdays",
+          "previous",
+          "poutcome",
+          "y"
+        ],
+        "rows": 10,
+        "coverage": "unknown",
+        "conditions": [],
+        "predicate_known": false,
+        "grain": "raw",
+        "aggregation": "",
+        "snapshot": "2026-10-09T07:20:41.270641+00:00",
+        "query": "SELECT * FROM `teleai_default`.`bank_loan` WHERE (`age` >= 30 AND `age` <= 40 AND `education` IN ('primary', 'secondary')) LIMIT 10",
+        "parent_id": "",
+        "parent_ids": [],
+        "role": "root",
+        "root_id": "a4813ad0-36e7-4368-b84d-228989a3756a",
+        "row_selection": {}
+      },
+      "metadata_sha256": "99fc2e6074e6d31ef65c7f8e9eeab299973bd4d87cc6d8a30d9f3d942b1eed24",
+      "payload_sha256": "f2f9c2c5f5a970c8d8bf7265953351646e3e03be3a10ff91bd85b47e5144d76b"
+    }
+  },
+  "selection": "",
+  "current": {
+    "request_id": "01e4c0969ef94bee8e443ba9bc599c48",
+    "request_text": "데이타 10개 row만 추출해서 table로 보여줘 ",
+    "status": "complete",
+    "intent_origin": "llm",
+    "goal_pending": false,
+    "request_started_at": 1791530398.4845,
+    "required_sources": [
+      "teleai_default.bank_loan"
+    ],
+    "required_columns": [],
+    "explicit_columns": [],
+    "scope": {
+      "conditions": [
+        {
+          "column": "age",
+          "op": "ge",
+          "value": 30
+        },
+        {
+          "column": "age",
+          "op": "le",
+          "value": 40
+        },
+        {
+          "column": "education",
+          "op": "in",
+          "value": [
+            "primary",
+            "secondary"
+          ]
+        }
+      ],
+      "any_conditions": [],
+      "measure_conditions": [],
+      "ratio": null,
+      "sources": [
+        "teleai_default.bank_loan"
+      ],
+      "columns": [
+        "age",
+        "education"
+      ],
+      "unresolved": [],
+      "join_edges": []
+    },
+    "previous_scope": {
+      "conditions": [
+        {
+          "column": "age",
+          "op": "ge",
+          "value": 30
+        },
+        {
+          "column": "age",
+          "op": "le",
+          "value": 40
+        },
+        {
+          "column": "education",
+          "op": "in",
+          "value": [
+            "primary",
+            "secondary"
+          ]
+        }
+      ],
+      "any_conditions": [],
+      "measure_conditions": [],
+      "ratio": null,
+      "sources": [
+        "teleai_default.bank_loan"
+      ],
+      "columns": [
+        "age",
+        "education"
+      ],
+      "unresolved": [],
+      "join_edges": []
+    },
+    "confirmed_analysis": {
+      "request_id": "01e4c0969ef94bee8e443ba9bc599c48",
+      "request_text": "데이타 10개 row만 추출해서 table로 보여줘 ",
+      "status": "complete",
+      "intent_origin": "llm",
+      "goal_pending": false,
+      "request_started_at": 1791530398.4845,
+      "required_sources": [
+        "teleai_default.bank_loan"
+      ],
+      "required_columns": [],
+      "explicit_columns": [],
+      "scope": {
+        "conditions": [
+          {
+            "column": "age",
+            "op": "ge",
+            "value": 30
+          },
+          {
+            "column": "age",
+            "op": "le",
+            "value": 40
+          },
+          {
+            "column": "education",
+            "op": "in",
+            "value": [
+              "primary",
+              "secondary"
+            ]
+          }
+        ],
+        "any_conditions": [],
+        "measure_conditions": [],
+        "ratio": null,
+        "sources": [
+          "teleai_default.bank_loan"
+        ],
+        "columns": [
+          "age",
+          "education"
+        ],
+        "unresolved": [],
+        "join_edges": []
+      },
+      "previous_scope": {
+        "conditions": [
+          {
+            "column": "age",
+            "op": "ge",
+            "value": 30
+          },
+          {
+            "column": "age",
+            "op": "le",
+            "value": 40
+          },
+          {
+            "column": "education",
+            "op": "in",
+            "value": [
+              "primary",
+              "secondary"
+            ]
+          }
+        ],
+        "any_conditions": [],
+        "measure_conditions": [],
+        "ratio": null,
+        "sources": [
+          "teleai_default.bank_loan"
+        ],
+        "columns": [
+          "age",
+          "education"
+        ],
+        "unresolved": [],
+        "join_edges": []
+      },
+      "chart": false,
+      "kind": null,
+      "calculation": false,
+      "operations": [],
+      "metadata_kind": null,
+      "catalog_discovery_source": "",
+      "catalog_discovery_schema": "",
+      "profile_kind": null,
+      "preview_limit": 0,
+      "data_load": false,
+      "whole_row_count": false,
+      "current_result_only": false,
+      "fresh_source_required": false,
+      "requested_result_rows": null,
+      "requested_join": false,
+      "join": false,
+      "join_how": null,
+      "statistical_kind": null,
+      "latest_per_key_spec": null,
+      "row_preview_spec": {
+        "limit": 10,
+        "question": ""
+      },
+      "chart_spec_requested": false,
+      "value_list_requested": false,
+      "operation_pending": false,
+      "schema_semantic": false,
+      "outlier_spec": null,
+      "outlier_column": null,
+      "time_series_frequency": null,
+      "histogram_bins": null,
+      "chart_cumulative": false,
+      "processed": [
+        "0adc7efe-1c51-4a5c-b003-5a3688e76f26",
+        "176cb8c3-7c01-4a25-988f-3c64fcc31f9c"
+      ],
+      "sent_calls": [
+        "0adc7efe-1c51-4a5c-b003-5a3688e76f26",
+        "176cb8c3-7c01-4a25-988f-3c64fcc31f9c"
+      ],
+      "evidence_ids": [],
+      "artifact_ids": [],
+      "failed": {},
+      "failed_signatures": {},
+      "attempts": 0,
+      "model_calls": 6,
+      "model_seconds": 42.725625374063384,
+      "remote_query_ids": [
+        "176cb8c3-7c01-4a25-988f-3c64fcc31f9c"
+      ],
+      "remote_query_evidence": {
+        "176cb8c3-7c01-4a25-988f-3c64fcc31f9c": {
+          "dataset_id": "a4813ad0-36e7-4368-b84d-228989a3756a",
+          "source": "teleai_default.bank_loan",
+          "query": "SELECT * FROM `teleai_default`.`bank_loan` WHERE (`age` >= 30 AND `age` <= 40 AND `education` IN ('primary', 'secondary')) LIMIT 10",
+          "rows": 10,
+          "columns": [
+            "id",
+            "age",
+            "job",
+            "marital",
+            "education",
+            "default",
+            "balance",
+            "housing",
+            "loan",
+            "contact",
+            "day",
+            "month",
+            "duration",
+            "campaign",
+            "pdays",
+            "previous",
+            "poutcome",
+            "y"
+          ],
+          "coverage": "unknown"
+        }
+      },
+      "columns": [],
+      "output_references": [
+        {
+          "capability": "table_list",
+          "request_text": "지금 볼 수있는 table를 보여줘",
+          "required_sources": [
+            "information_schema.tables"
+          ],
+          "required_columns": []
+        },
+        {
+          "capability": "value_list",
+          "request_text": "education은 어떤 값들로 되어 있지 ?",
+          "required_sources": [
+            "teleai_default.bank_loan"
+          ],
+          "required_columns": [
+            "education"
+          ]
+        },
+        {
+          "capability": "chart",
+          "request_text": "이거 legend를 넣어줘",
+          "required_sources": [
+            "teleai_default.bank_loan"
+          ],
+          "required_columns": [
+            "education"
+          ]
+        },
+        {
+          "capability": "metadata",
+          "request_text": "테이블의 column 다시 보여줘",
+          "required_sources": [
+            "teleai_default.bank_loan"
+          ],
+          "required_columns": []
+        }
+      ],
+      "schema_subject": {
+        "table": "teleai_default.bank_loan",
+        "authority": "saved_snapshot",
+        "schema_fingerprint": "cfba026bd6e2f7e7abfaea70da69b9d2ead26c1fd72cb8535a1fa71e8cdc13dc",
+        "selection_at_observation": ""
+      },
+      "preview_evidence": null,
+      "outlier_aggregate_evidence": {},
+      "count_rate_evidence": null,
+      "count_rate_layout": null,
+      "count_rate_group_column": null,
+      "winsor_evidence": null,
+      "winsor_spec": null,
+      "winsor_column": null,
+      "pivot_evidence": null,
+      "pivot_requested": false,
+      "pivot_index_columns": [],
+      "pivot_column_columns": [],
+      "pivot_conditions": [],
+      "pivot_margins_name": "전체",
+      "pivot_derived_bins": [],
+      "group_summary_requested": false,
+      "group_summary_columns": [],
+      "group_summary_metrics": [],
+      "group_summary_conditions": [],
+      "group_summary_evidence": null,
+      "remote_result_requested": true,
+      "accounted_model_failures": 0,
+      "accounted_model_failure_seconds": 0.0,
+      "model_retries": 0,
+      "accounted_aux_calls": 6,
+      "accounted_aux_seconds": 42.725625374063384,
+      "_new_model_failure_seconds": 0.0,
+      "requested_subject": {},
+      "goal": {
+        "objective": "requested work",
+        "mode": "execute",
+        "source_reference": "explicit",
+        "sources": [
+          "teleai_default.bank_loan"
+        ],
+        "columns": [],
+        "conditions": [
+          {
+            "column": "age",
+            "op": "ge",
+            "value": 30
+          },
+          {
+            "column": "age",
+            "op": "le",
+            "value": 40
+          },
+          {
+            "column": "education",
+            "op": "in",
+            "value": [
+              "primary",
+              "secondary"
+            ]
+          }
+        ],
+        "any_conditions": [],
+        "measure_conditions": [],
+        "ratio": null,
+        "current_result_only": false,
+        "fresh_source_required": false,
+        "question": "",
+        "tasks": [
+          {
+            "capability": "row_preview",
+            "options": {
+              "limit": 10
+            }
+          }
+        ]
+      },
+      "goal_version": 1,
+      "explanation_only": false,
+      "goal_question": "",
+      "row_preview_plan": {
+        "source": "teleai_default.bank_loan",
+        "query": "SELECT * FROM `teleai_default`.`bank_loan` WHERE (`age` >= 30 AND `age` <= 40 AND `education` IN ('primary', 'secondary')) LIMIT 10",
+        "reason": "요청한 표 미리보기용으로 최대 10행만 조회합니다. 기존 분석 기준은 유지합니다."
+      },
+      "table_preview_evidence": {
+        "dataset_id": "a4813ad0-36e7-4368-b84d-228989a3756a",
+        "source": "teleai_default.bank_loan",
+        "snapshot": "2026-10-09T07:20:41.270641+00:00",
+        "columns": [
+          "id",
+          "age",
+          "job",
+          "marital",
+          "education",
+          "default",
+          "balance",
+          "housing",
+          "loan",
+          "contact",
+          "day",
+          "month",
+          "duration",
+          "campaign",
+          "pdays",
+          "previous",
+          "poutcome",
+          "y"
+        ],
+        "total_rows": 10,
+        "rows": 10,
+        "limit": 10
+      },
+      "stop_reason": null,
+      "selection_at_confirmation": ""
+    },
+    "chart": false,
+    "kind": null,
+    "calculation": false,
+    "operations": [],
+    "metadata_kind": null,
+    "catalog_discovery_source": "",
+    "catalog_discovery_schema": "",
+    "profile_kind": null,
+    "preview_limit": 0,
+    "data_load": false,
+    "whole_row_count": false,
+    "current_result_only": false,
+    "fresh_source_required": false,
+    "requested_result_rows": null,
+    "requested_join": false,
+    "join": false,
+    "join_how": null,
+    "statistical_kind": null,
+    "latest_per_key_spec": null,
+    "row_preview_spec": {
+      "limit": 10,
+      "question": ""
+    },
+    "chart_spec_requested": false,
+    "value_list_requested": false,
+    "operation_pending": false,
+    "schema_semantic": false,
+    "outlier_spec": null,
+    "outlier_column": null,
+    "time_series_frequency": null,
+    "histogram_bins": null,
+    "chart_cumulative": false,
+    "processed": [
+      "0adc7efe-1c51-4a5c-b003-5a3688e76f26",
+      "176cb8c3-7c01-4a25-988f-3c64fcc31f9c"
+    ],
+    "sent_calls": [
+      "0adc7efe-1c51-4a5c-b003-5a3688e76f26",
+      "176cb8c3-7c01-4a25-988f-3c64fcc31f9c"
+    ],
+    "evidence_ids": [],
+    "artifact_ids": [],
+    "failed": {},
+    "failed_signatures": {},
+    "attempts": 0,
+    "model_calls": 6,
+    "model_seconds": 42.725625374063384,
+    "remote_query_ids": [
+      "176cb8c3-7c01-4a25-988f-3c64fcc31f9c"
+    ],
+    "remote_query_evidence": {
+      "176cb8c3-7c01-4a25-988f-3c64fcc31f9c": {
+        "dataset_id": "a4813ad0-36e7-4368-b84d-228989a3756a",
+        "source": "teleai_default.bank_loan",
+        "query": "SELECT * FROM `teleai_default`.`bank_loan` WHERE (`age` >= 30 AND `age` <= 40 AND `education` IN ('primary', 'secondary')) LIMIT 10",
+        "rows": 10,
+        "columns": [
+          "id",
+          "age",
+          "job",
+          "marital",
+          "education",
+          "default",
+          "balance",
+          "housing",
+          "loan",
+          "contact",
+          "day",
+          "month",
+          "duration",
+          "campaign",
+          "pdays",
+          "previous",
+          "poutcome",
+          "y"
+        ],
+        "coverage": "unknown"
+      }
+    },
+    "columns": [],
+    "output_references": [
+      {
+        "capability": "table_list",
+        "request_text": "지금 볼 수있는 table를 보여줘",
+        "required_sources": [
+          "information_schema.tables"
+        ],
+        "required_columns": []
+      },
+      {
+        "capability": "value_list",
+        "request_text": "education은 어떤 값들로 되어 있지 ?",
+        "required_sources": [
+          "teleai_default.bank_loan"
+        ],
+        "required_columns": [
+          "education"
+        ]
+      },
+      {
+        "capability": "chart",
+        "request_text": "이거 legend를 넣어줘",
+        "required_sources": [
+          "teleai_default.bank_loan"
+        ],
+        "required_columns": [
+          "education"
+        ]
+      },
+      {
+        "capability": "metadata",
+        "request_text": "테이블의 column 다시 보여줘",
+        "required_sources": [
+          "teleai_default.bank_loan"
+        ],
+        "required_columns": []
+      }
+    ],
+    "schema_subject": {
+      "table": "teleai_default.bank_loan",
+      "authority": "saved_snapshot",
+      "schema_fingerprint": "cfba026bd6e2f7e7abfaea70da69b9d2ead26c1fd72cb8535a1fa71e8cdc13dc",
+      "selection_at_observation": ""
+    },
+    "preview_evidence": null,
+    "outlier_aggregate_evidence": {},
+    "count_rate_evidence": null,
+    "count_rate_layout": null,
+    "count_rate_group_column": null,
+    "winsor_evidence": null,
+    "winsor_spec": null,
+    "winsor_column": null,
+    "pivot_evidence": null,
+    "pivot_requested": false,
+    "pivot_index_columns": [],
+    "pivot_column_columns": [],
+    "pivot_conditions": [],
+    "pivot_margins_name": "전체",
+    "pivot_derived_bins": [],
+    "group_summary_requested": false,
+    "group_summary_columns": [],
+    "group_summary_metrics": [],
+    "group_summary_conditions": [],
+    "group_summary_evidence": null,
+    "remote_result_requested": true,
+    "accounted_model_failures": 0,
+    "accounted_model_failure_seconds": 0.0,
+    "model_retries": 0,
+    "accounted_aux_calls": 6,
+    "accounted_aux_seconds": 42.725625374063384,
+    "_new_model_failure_seconds": 0.0,
+    "requested_subject": {},
+    "goal": {
+      "objective": "requested work",
+      "mode": "execute",
+      "source_reference": "explicit",
+      "sources": [
+        "teleai_default.bank_loan"
+      ],
+      "columns": [],
+      "conditions": [
+        {
+          "column": "age",
+          "op": "ge",
+          "value": 30
+        },
+        {
+          "column": "age",
+          "op": "le",
+          "value": 40
+        },
+        {
+          "column": "education",
+          "op": "in",
+          "value": [
+            "primary",
+            "secondary"
+          ]
+        }
+      ],
+      "any_conditions": [],
+      "measure_conditions": [],
+      "ratio": null,
+      "current_result_only": false,
+      "fresh_source_required": false,
+      "question": "",
+      "tasks": [
+        {
+          "capability": "row_preview",
+          "options": {
+            "limit": 10
+          }
+        }
+      ]
+    },
+    "goal_version": 1,
+    "explanation_only": false,
+    "goal_question": "",
+    "row_preview_plan": {
+      "source": "teleai_default.bank_loan",
+      "query": "SELECT * FROM `teleai_default`.`bank_loan` WHERE (`age` >= 30 AND `age` <= 40 AND `education` IN ('primary', 'secondary')) LIMIT 10",
+      "reason": "요청한 표 미리보기용으로 최대 10행만 조회합니다. 기존 분석 기준은 유지합니다."
+    },
+    "table_preview_evidence": {
+      "dataset_id": "a4813ad0-36e7-4368-b84d-228989a3756a",
+      "source": "teleai_default.bank_loan",
+      "snapshot": "2026-10-09T07:20:41.270641+00:00",
+      "columns": [
+        "id",
+        "age",
+        "job",
+        "marital",
+        "education",
+        "default",
+        "balance",
+        "housing",
+        "loan",
+        "contact",
+        "day",
+        "month",
+        "duration",
+        "campaign",
+        "pdays",
+        "previous",
+        "poutcome",
+        "y"
+      ],
+      "total_rows": 10,
+      "rows": 10,
+      "limit": 10
+    },
+    "stop_reason": null,
+    "selection_at_confirmation": ""
+  },
+  "run_id": "56461764ba9a4a3f9d3656296a639901",
+  "run": [
+    {
+      "time": "2026-10-09T07:19:58.483562+00:00",
+      "event": "run_started",
+      "run_id": "56461764ba9a4a3f9d3656296a639901",
+      "instance_id": "38484b14e9cc",
+      "pid": 63524,
+      "runtime": {
+        "revision_at_first_runtime": "3a7206654b3d2fab7cd145893fd52970e397dd07",
+        "packages": {
+          "langchain": "1.4.0",
+          "langchain-core": "1.6.2",
+          "langgraph": "1.2.11",
+          "streamlit": "1.63.0",
+          "sqlglot": "30.18.0"
+        },
+        "python_version": "3.11.13",
+        "identity_captured_at": "2026-10-09T07:00:53.925043+00:00",
+        "route": "langgraph-v1",
+        "model_class": "ChatOllama",
+        "require_remote_approval": false,
+        "loaded_delivery_guard": "892057222e9ed9b4",
+        "data_backend": "mysql",
+        "intent_mode": "llm",
+        "goal_version": 1,
+        "goal_model": "gemma4:e4b",
+        "planner_model": "gemma4:e4b"
+      },
+      "operation": "submit",
+      "process_peak_rss_bytes": 361955328
+    },
+    {
+      "time": "2026-10-09T07:19:58.489096+00:00",
+      "event": "goal_interpretation_started",
+      "run_id": "56461764ba9a4a3f9d3656296a639901",
+      "instance_id": "38484b14e9cc",
+      "pid": 63524,
+      "request_id": "01e4c0969ef94bee8e443ba9bc599c48",
+      "origin": "llm",
+      "goal_version": 1
+    },
+    {
+      "time": "2026-10-09T07:19:58.489805+00:00",
+      "event": "model_payload_budget",
+      "run_id": "56461764ba9a4a3f9d3656296a639901",
+      "instance_id": "38484b14e9cc",
+      "pid": 63524,
+      "payload_bytes": 1441,
+      "payload_bytes_before_projection": 1441,
+      "template_headroom": 640,
+      "input_budget_units": 14336,
+      "output_reserved": 2048,
+      "context_window": 16384,
+      "tool_count": 0,
+      "message_count": 1,
+      "older_turns_compacted": false,
+      "within_budget": true,
+      "observations_compacted": false,
+      "schema_compacted": false,
+      "system_catalog_compacted": false,
+      "tool_menu_compacted": false,
+      "minimal_discovery_menu": false,
+      "reasoning_compacted": false,
+      "minimal_catalog": false,
+      "builtin_instructions_compacted": false,
+      "components": {
+        "system_bytes": 1132,
+        "message_content_bytes": 216,
+        "tool_calls_bytes": 0,
+        "reasoning_bytes": 0,
+        "tool_schema_bytes": 0,
+        "tool_names": []
+      },
+      "measurement": "conservative_utf8_bytes_not_actual_token_count"
+    },
+    {
+      "time": "2026-10-09T07:20:01.157793+00:00",
+      "event": "goal_literal_subjects_read",
+      "run_id": "56461764ba9a4a3f9d3656296a639901",
+      "instance_id": "38484b14e9cc",
+      "pid": 63524,
+      "request_id": "01e4c0969ef94bee8e443ba9bc599c48",
+      "candidate_count": 2,
+      "table_count": 0
+    },
+    {
+      "time": "2026-10-09T07:20:01.160463+00:00",
+      "event": "model_payload_budget",
+      "run_id": "56461764ba9a4a3f9d3656296a639901",
+      "instance_id": "38484b14e9cc",
+      "pid": 63524,
+      "payload_bytes": 5547,
+      "payload_bytes_before_projection": 5547,
+      "template_headroom": 640,
+      "input_budget_units": 14336,
+      "output_reserved": 2048,
+      "context_window": 16384,
+      "tool_count": 0,
+      "message_count": 1,
+      "older_turns_compacted": false,
+      "within_budget": true,
+      "observations_compacted": false,
+      "schema_compacted": false,
+      "system_catalog_compacted": false,
+      "tool_menu_compacted": false,
+      "minimal_discovery_menu": false,
+      "reasoning_compacted": false,
+      "minimal_catalog": false,
+      "builtin_instructions_compacted": false,
+      "components": {
+        "system_bytes": 3920,
+        "message_content_bytes": 1344,
+        "tool_calls_bytes": 0,
+        "reasoning_bytes": 0,
+        "tool_schema_bytes": 0,
+        "tool_names": []
+      },
+      "measurement": "conservative_utf8_bytes_not_actual_token_count"
+    },
+    {
+      "time": "2026-10-09T07:20:06.570372+00:00",
+      "event": "model_payload_budget",
+      "run_id": "56461764ba9a4a3f9d3656296a639901",
+      "instance_id": "38484b14e9cc",
+      "pid": 63524,
+      "payload_bytes": 2671,
+      "payload_bytes_before_projection": 2671,
+      "template_headroom": 640,
+      "input_budget_units": 14336,
+      "output_reserved": 2048,
+      "context_window": 16384,
+      "tool_count": 0,
+      "message_count": 1,
+      "older_turns_compacted": false,
+      "within_budget": true,
+      "observations_compacted": false,
+      "schema_compacted": false,
+      "system_catalog_compacted": false,
+      "tool_menu_compacted": false,
+      "minimal_discovery_menu": false,
+      "reasoning_compacted": false,
+      "minimal_catalog": false,
+      "builtin_instructions_compacted": false,
+      "components": {
+        "system_bytes": 2322,
+        "message_content_bytes": 171,
+        "tool_calls_bytes": 0,
+        "reasoning_bytes": 0,
+        "tool_schema_bytes": 0,
+        "tool_names": []
+      },
+      "measurement": "conservative_utf8_bytes_not_actual_token_count"
+    },
+    {
+      "time": "2026-10-09T07:20:10.155499+00:00",
+      "event": "goal_population_basis_read",
+      "run_id": "56461764ba9a4a3f9d3656296a639901",
+      "instance_id": "38484b14e9cc",
+      "pid": 63524,
+      "request_id": "01e4c0969ef94bee8e443ba9bc599c48",
+      "basis": "source_population",
+      "has_current_quote": false
+    },
+    {
+      "time": "2026-10-09T07:20:10.155581+00:00",
+      "event": "goal_tasks_selected",
+      "run_id": "56461764ba9a4a3f9d3656296a639901",
+      "instance_id": "38484b14e9cc",
+      "pid": 63524,
+      "request_id": "01e4c0969ef94bee8e443ba9bc599c48",
+      "mode": "execute",
+      "capabilities": [
+        "row_preview"
+      ],
+      "chart_kind": "",
+      "source_reference": "explicit",
+      "current_result_only": false
+    },
+    {
+      "time": "2026-10-09T07:20:10.155999+00:00",
+      "event": "model_payload_budget",
+      "run_id": "56461764ba9a4a3f9d3656296a639901",
+      "instance_id": "38484b14e9cc",
+      "pid": 63524,
+      "payload_bytes": 10704,
+      "payload_bytes_before_projection": 10704,
+      "template_headroom": 640,
+      "input_budget_units": 14336,
+      "output_reserved": 2048,
+      "context_window": 16384,
+      "tool_count": 0,
+      "message_count": 1,
+      "older_turns_compacted": false,
+      "within_budget": true,
+      "observations_compacted": false,
+      "schema_compacted": false,
+      "system_catalog_compacted": false,
+      "tool_menu_compacted": false,
+      "minimal_discovery_menu": false,
+      "reasoning_compacted": false,
+      "minimal_catalog": false,
+      "builtin_instructions_compacted": false,
+      "components": {
+        "system_bytes": 6101,
+        "message_content_bytes": 4001,
+        "tool_calls_bytes": 0,
+        "reasoning_bytes": 0,
+        "tool_schema_bytes": 0,
+        "tool_names": []
+      },
+      "measurement": "conservative_utf8_bytes_not_actual_token_count"
+    },
+    {
+      "time": "2026-10-09T07:20:27.338595+00:00",
+      "event": "goal_semantic_review_started",
+      "run_id": "56461764ba9a4a3f9d3656296a639901",
+      "instance_id": "38484b14e9cc",
+      "pid": 63524,
+      "request_id": "01e4c0969ef94bee8e443ba9bc599c48"
+    },
+    {
+      "time": "2026-10-09T07:20:27.339667+00:00",
+      "event": "model_payload_budget",
+      "run_id": "56461764ba9a4a3f9d3656296a639901",
+      "instance_id": "38484b14e9cc",
+      "pid": 63524,
+      "payload_bytes": 11103,
+      "payload_bytes_before_projection": 11103,
+      "template_headroom": 640,
+      "input_budget_units": 14336,
+      "output_reserved": 2048,
+      "context_window": 16384,
+      "tool_count": 0,
+      "message_count": 1,
+      "older_turns_compacted": false,
+      "within_budget": true,
+      "observations_compacted": false,
+      "schema_compacted": false,
+      "system_catalog_compacted": false,
+      "tool_menu_compacted": false,
+      "minimal_discovery_menu": false,
+      "reasoning_compacted": false,
+      "minimal_catalog": false,
+      "builtin_instructions_compacted": false,
+      "components": {
+        "system_bytes": 6101,
+        "message_content_bytes": 4354,
+        "tool_calls_bytes": 0,
+        "reasoning_bytes": 0,
+        "tool_schema_bytes": 0,
+        "tool_names": []
+      },
+      "measurement": "conservative_utf8_bytes_not_actual_token_count"
+    },
+    {
+      "time": "2026-10-09T07:20:32.681150+00:00",
+      "event": "model_payload_budget",
+      "run_id": "56461764ba9a4a3f9d3656296a639901",
+      "instance_id": "38484b14e9cc",
+      "pid": 63524,
+      "payload_bytes": 3012,
+      "payload_bytes_before_projection": 3012,
+      "template_headroom": 640,
+      "input_budget_units": 14336,
+      "output_reserved": 2048,
+      "context_window": 16384,
+      "tool_count": 0,
+      "message_count": 1,
+      "older_turns_compacted": false,
+      "within_budget": true,
+      "observations_compacted": false,
+      "schema_compacted": false,
+      "system_catalog_compacted": false,
+      "tool_menu_compacted": false,
+      "minimal_discovery_menu": false,
+      "reasoning_compacted": false,
+      "minimal_catalog": false,
+      "builtin_instructions_compacted": false,
+      "components": {
+        "system_bytes": 1972,
+        "message_content_bytes": 847,
+        "tool_calls_bytes": 0,
+        "reasoning_bytes": 0,
+        "tool_schema_bytes": 0,
+        "tool_names": []
+      },
+      "measurement": "conservative_utf8_bytes_not_actual_token_count"
+    },
+    {
+      "time": "2026-10-09T07:20:41.229125+00:00",
+      "event": "goal_population_audited",
+      "run_id": "56461764ba9a4a3f9d3656296a639901",
+      "instance_id": "38484b14e9cc",
+      "pid": 63524,
+      "request_id": "01e4c0969ef94bee8e443ba9bc599c48",
+      "changed": true,
+      "condition_count": 3,
+      "alternative_count": 0
+    },
+    {
+      "time": "2026-10-09T07:20:41.230245+00:00",
+      "event": "goal_interpretation_completed",
+      "run_id": "56461764ba9a4a3f9d3656296a639901",
+      "instance_id": "38484b14e9cc",
+      "pid": 63524,
+      "request_id": "01e4c0969ef94bee8e443ba9bc599c48",
+      "origin": "llm",
+      "mode": "execute",
+      "capabilities": [
+        "row_preview"
+      ],
+      "attempts": 2,
+      "goal_version": 1
+    },
+    {
+      "time": "2026-10-09T07:20:41.232103+00:00",
+      "event": "recovery_transition",
+      "run_id": "56461764ba9a4a3f9d3656296a639901",
+      "instance_id": "38484b14e9cc",
+      "pid": 63524,
+      "request_id": "01e4c0969ef94bee8e443ba9bc599c48",
+      "tool": "prepare_row_preview"
+    },
+    {
+      "time": "2026-10-09T07:20:41.241769+00:00",
+      "event": "tool_started",
+      "run_id": "56461764ba9a4a3f9d3656296a639901",
+      "instance_id": "38484b14e9cc",
+      "pid": 63524,
+      "tool": "prepare_row_preview"
+    },
+    {
+      "time": "2026-10-09T07:20:41.248413+00:00",
+      "event": "tool_completed",
+      "run_id": "56461764ba9a4a3f9d3656296a639901",
+      "instance_id": "38484b14e9cc",
+      "pid": 63524,
+      "tool": "prepare_row_preview",
+      "status": "planned",
+      "error_code": null,
+      "elapsed_seconds": 0.007,
+      "applied_corrections": []
+    },
+    {
+      "time": "2026-10-09T07:20:41.254886+00:00",
+      "event": "recovery_transition",
+      "run_id": "56461764ba9a4a3f9d3656296a639901",
+      "instance_id": "38484b14e9cc",
+      "pid": 63524,
+      "request_id": "01e4c0969ef94bee8e443ba9bc599c48",
+      "tool": "query_databricks"
+    },
+    {
+      "time": "2026-10-09T07:20:41.262457+00:00",
+      "event": "remote_query_authorized",
+      "run_id": "56461764ba9a4a3f9d3656296a639901",
+      "instance_id": "38484b14e9cc",
+      "pid": 63524,
+      "tool_call_id": "176cb8c3-7c01-4a25-988f-3c64fcc31f9c",
+      "authorization": "automatic_read_policy"
+    },
+    {
+      "time": "2026-10-09T07:20:41.262794+00:00",
+      "event": "remote_query_started",
+      "run_id": "56461764ba9a4a3f9d3656296a639901",
+      "instance_id": "38484b14e9cc",
+      "pid": 63524,
+      "ledger_status": "auto_authorized",
+      "cached_receipt": false
+    },
+    {
+      "time": "2026-10-09T07:20:41.281291+00:00",
+      "event": "remote_query_finished",
+      "run_id": "56461764ba9a4a3f9d3656296a639901",
+      "instance_id": "38484b14e9cc",
+      "pid": 63524,
+      "ledger_status": "completed",
+      "status": "ready",
+      "cached_receipt": false
+    },
+    {
+      "time": "2026-10-09T07:20:41.285009+00:00",
+      "event": "remote_result_verified",
+      "run_id": "56461764ba9a4a3f9d3656296a639901",
+      "instance_id": "38484b14e9cc",
+      "pid": 63524,
+      "request_id": "01e4c0969ef94bee8e443ba9bc599c48",
+      "tool_call_id": "176cb8c3-7c01-4a25-988f-3c64fcc31f9c",
+      "dataset_id": "a4813ad0-36e7-4368-b84d-228989a3756a",
+      "rows": 10
+    },
+    {
+      "time": "2026-10-09T07:20:41.288668+00:00",
+      "event": "completion_checked",
+      "run_id": "56461764ba9a4a3f9d3656296a639901",
+      "instance_id": "38484b14e9cc",
+      "pid": 63524,
+      "request_id": "01e4c0969ef94bee8e443ba9bc599c48",
+      "status": "complete",
+      "reason": null,
+      "attempts": 0,
+      "required_capabilities": [
+        "row_preview",
+        "remote_query"
+      ],
+      "missing_capabilities": [],
+      "model_calls": 6,
+      "tool_calls": 2,
+      "model_seconds": 42.726,
+      "dataset_ids": [],
+      "artifact_ids": []
+    },
+    {
+      "time": "2026-10-09T07:20:41.294010+00:00",
+      "event": "run_completed",
+      "run_id": "56461764ba9a4a3f9d3656296a639901",
+      "instance_id": "38484b14e9cc",
+      "pid": 63524,
+      "status": "answered",
+      "elapsed_seconds": 42.815,
+      "process_peak_rss_bytes": 361955328,
+      "frame_cache_bytes": 0
+    },
+    {
+      "time": "2026-10-09T07:20:41.294099+00:00",
+      "event": "turn_slo",
+      "run_id": "56461764ba9a4a3f9d3656296a639901",
+      "instance_id": "38484b14e9cc",
+      "pid": 63524,
+      "elapsed_seconds": 42.815,
+      "limit": 180.0,
+      "status": "ok"
+    }
+  ],
+  "requested_prompt": "데이타 10개 row만 추출해서 table로 보여줘 ",
+  "current_matches_run": true,
+  "request_checkpoint_verified": true
+}

@@ -1,0 +1,177 @@
+{
+  "updated_at": "2026-10-10T09:55:56.750201+09:00",
+  "request": "Implement seven audited agent tool gaps and validate actual user journeys",
+  "build": {
+    "head": "3a7206654b3d2fab7cd145893fd52970e397dd07",
+    "product_sha256": "93a29a4ebeb2ca66b405f7d435dd4b70c79836737674e8eb3ad0cbb9047732ab",
+    "file_count": 175,
+    "hash_scope": [
+      "core/**/*.py",
+      "utils/**/*.py",
+      "ui/**/*.py",
+      "pages/Telly.py",
+      "requirements.txt"
+    ],
+    "env_included": false,
+    "commit_or_push_performed": false
+  },
+  "new_tools": [
+    "get_analysis_tool_contract",
+    "plan_analysis_execution",
+    "inspect_execution_status",
+    "cancel_database_query",
+    "inspect_backend_health",
+    "diagnose_analysis_failure",
+    "inspect_analysis_plan",
+    "update_analysis_dependencies",
+    "execute_analysis_python",
+    "render_advanced_eda",
+    "export_analysis_result"
+  ],
+  "features": [
+    {
+      "gap": "Exact registered contracts and failure recovery",
+      "status": "implemented",
+      "evidence": [
+        "tool_contracts.json",
+        "projected_export_browser_evidence.json"
+      ],
+      "scope": "Actual local/remote registered input schemas, bounded capability fallback, typed repair observations; no new global semantic-search model"
+    },
+    {
+      "gap": "Large-data execution planning",
+      "status": "partial",
+      "scope": "Goal-preserving reuse vs DB aggregation vs projected batch route and local memory estimates",
+      "remaining": "Backend EXPLAIN, scan/transfer/cost estimates and real large-load performance are unverified; remote estimates remain null"
+    },
+    {
+      "gap": "Database state, health, failure and cancellation",
+      "status": "partial",
+      "scope": "Owned operation ledger, SELECT 1 health, active driver cancel and result discard after cancel/deadline",
+      "evidence": [
+        "mysql_cancel_probe.json"
+      ],
+      "remaining": "Remote provider polling and confirmed server-side termination are unavailable; restart-unknown operations are never automatically resubmitted"
+    },
+    {
+      "gap": "Persistent task dependencies",
+      "status": "partial",
+      "scope": "SQLite plan, immutable task identities, evidence-based status, dependency admission, cycle and verified-task rewrite rejection",
+      "remaining": "Shared-goal scope only; arbitrary independent per-task sources/populations and repeated capability tasks are not implemented"
+    },
+    {
+      "gap": "Generated Python execution",
+      "status": "implemented_bounded",
+      "scope": "Restricted pd/np AST, worker-private data copy, code/input hashes, validated child dataset, structured errors and finite repair; terminal print(table) adapter",
+      "evidence": [
+        "python_browser_evidence.json",
+        "python_screen.png"
+      ],
+      "remaining": "Not an OS sandbox; Linux address-space cap only, no hard memory cap on macOS/Windows; compound OR/join populations require further work"
+    },
+    {
+      "gap": "Advanced multi-panel EDA",
+      "status": "partial",
+      "scope": "Numeric correlation heatmap, bounded seeded scatter matrix, distribution panels with actual PNG, statistics and data digests",
+      "remaining": "No categorical faceting/comprehensive EDA report; numeric 2..6 columns, full-read preflight and explicit scatter sampling"
+    },
+    {
+      "gap": "Verified result export",
+      "status": "implemented_bounded",
+      "scope": "CSV/Parquet/PNG ZIP plus source/scope/coverage manifest, explicit projected columns, scope-owned UI download",
+      "evidence": [
+        "projected_download_evidence.json"
+      ],
+      "remaining": "100000 rows/16 MiB payload; bulk streaming export not implemented"
+    }
+  ],
+  "integration_fixes": [
+    "Current-result restriction persists through export/Python/EDA receipts",
+    "Computed output names are not mistaken for observed input columns",
+    "Projected row previews honor selected columns",
+    "Compressed model menus retain primary required capability",
+    "Failed repair history is compacted only in model view, with latest error/code and durable history preserved",
+    "Bounded Ollama Python code-emission profile does not change Azure or global model settings",
+    "Worker-local DataFrame writes and terminal printed tables adapt common generated pandas scripts without mutating originals",
+    "Population contract repair explains actual exact-quote violation and emits phase diagnostics",
+    "EDA point budget supports small retained datasets; correlation and distributions always compute all retained rows",
+    "Rejected input feedback includes actual offending value and expected contract; local tool failures are no longer mislabeled as generated SQL failures"
+  ],
+  "browser_environment": {
+    "backend": "mysql",
+    "model_provider": "ollama",
+    "model": "gemma4:e4b",
+    "port": 8504,
+    "conversation": "2d20b7a7-a716-4330-b60b-a4345e13443e"
+  },
+  "browser_journeys": [
+    {
+      "request": "10 rows with age and balance only",
+      "result": "PASS_after_fix",
+      "evidence": "projected_preview_browser_evidence.json",
+      "checks": "10 rows, 2 columns, no extra source query"
+    },
+    {
+      "request": "Sort retained 10 rows and compute two-row age_rolling in Python",
+      "result": "PASS_after_fix",
+      "evidence": "python_browser_evidence.json",
+      "checks": "Exact sorted age and all 9 rolling means; original hash unchanged"
+    },
+    {
+      "request": "Export those ten rows with age/balance only",
+      "result": "PASS_after_fix_with_agent_self_repair",
+      "evidence": "projected_export_browser_evidence.json",
+      "checks": "Current quote initially invalid, corrected automatically within same run; actual download CSV 10x2 matches source values and manifest"
+    },
+    {
+      "request": "Repeat identical ten-row age/balance heatmap after point-contract fix",
+      "result": "PASS_after_fix",
+      "evidence": "final_heatmap_browser_evidence.json",
+      "screen": "final_heatmap_screen.png",
+      "checks": {
+        "rows": 10,
+        "sampling": false,
+        "independent_correlation_match": true,
+        "original_preserved": true,
+        "remote_queries_started_in_entire_session": 1,
+        "elapsed_seconds": 66.09
+      },
+      "preserved_failed_evidence": "final_heatmap_input_failed.json"
+    }
+  ],
+  "preservation": {
+    "original_digest_unchanged": true,
+    "remote_queries_in_browser_session": 1,
+    "additional_source_queries_for_followups": 0,
+    "env_changed": false,
+    "commit_or_push": false
+  },
+  "verification": {
+    "full_suite": "914 passed, 4 skipped, 617 subtests passed in 138.47 seconds",
+    "previous_build_suite": "913 passed, 4 skipped, 615 subtests",
+    "focused_latest_population_feedback": "26 passed",
+    "compileall": "PASS",
+    "git_diff_check": "PASS",
+    "full_suite_exit_code": 0,
+    "full_suite_evidence": "final_tests.log",
+    "small_eda_repair_tests": "49 passed, 14 subtests",
+    "final_build_digest_verified": true
+  },
+  "release": {
+    "overall_go": false,
+    "official_deepeval_score": null,
+    "official_spider2_score": null,
+    "existing_limited_local_go_not_expanded": true,
+    "reason": "Bounded tool implementation and selected user journeys do not establish general autonomous agent quality"
+  },
+  "remaining_validation": [
+    "Latest identical build original31+AI10 and heldout/long-topic-switch repeated journeys",
+    "Independent delegated anomaly QA still has separate unresolved semantic failures (3 PASS / 9 FAIL); no GO inferred",
+    "Company Windows/Azure/Databricks end-to-end and real driver cancellation",
+    "Real large-data load memory/transfer/cost and latency/SLA",
+    "Official DeepEval/Spider2 protocols"
+  ],
+  "failure_retention": "Initial blocked/exhausted/context/time-limit runs, canceled intermediate requests and failed test logs preserved. Successful retries are not counted as first-attempt reliability.",
+  "build_alignment": "Actual browser cases span successive repaired builds. Final build repeated the exact failed heatmap; earlier Python/export passes are retained separately. Latest whole 31+10/heldout/company-provider journeys were not run.",
+  "runtime_pid": 89908
+}

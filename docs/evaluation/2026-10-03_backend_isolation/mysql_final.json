@@ -1,0 +1,47 @@
+{
+  "status": "PASS",
+  "backend": "mysql",
+  "scope": "live_adapter_and_deterministic_journey_not_llm_quality",
+  "cold_start": true,
+  "checks": [
+    {
+      "phase": "table_list",
+      "status": "PASS",
+      "elapsed_seconds": 0.037
+    },
+    {
+      "phase": "cold_start_schema_discovery",
+      "status": "PASS",
+      "elapsed_seconds": 0.073
+    },
+    {
+      "phase": "columns_followup",
+      "status": "PASS",
+      "elapsed_seconds": 0.097
+    },
+    {
+      "phase": "bounded_raw_load",
+      "status": "PASS",
+      "elapsed_seconds": 0.048
+    },
+    {
+      "phase": "remote_histogram",
+      "status": "PASS",
+      "elapsed_seconds": 8.225
+    },
+    {
+      "phase": "histogram_reuse",
+      "status": "PASS",
+      "elapsed_seconds": 0.133
+    },
+    {
+      "phase": "raw_preservation_and_no_requery",
+      "status": "PASS"
+    }
+  ],
+  "sql_executions": 4,
+  "schema_columns": 18,
+  "raw_rows": 10,
+  "png_bytes": 10756,
+  "elapsed_seconds": 9.858
+}

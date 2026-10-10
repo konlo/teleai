@@ -1,0 +1,91 @@
+{
+  "result": {
+    "status": "answered",
+    "text": "n_1 분포 이미지를 생성했습니다.\n분석 범위: 빈도 합계 182,673,242 · complete · SELECT `n_1`, COUNT(*) AS `__frequency` FROM `teleai_default`.`alibaba_ssd` WHERE `n_1` IS NOT NULL GROUP BY `n_1`",
+    "elapsed_seconds": 7.802
+  },
+  "queries": 0,
+  "model_calls": 0,
+  "axis_spec": {
+    "dataset_id": "05f10df7-ff49-4c63-b633-a550ef2013b5",
+    "value_column": "n_1",
+    "weight_column": "__frequency",
+    "categorical": true,
+    "y_max": 10000.0
+  },
+  "artifact_ids": [
+    "7a666619-e64e-469d-b347-6b2e1478fb36"
+  ],
+  "root": "/var/folders/l2/tbdqdhz53rl8rj9dgv065l_c0000gn/T/telly-axis-restart-zloqh4kp",
+  "chart_spec": {
+    "aggregation": "count",
+    "labels": [
+      "",
+      "100.0",
+      "130.0",
+      "100",
+      "\\N",
+      "130",
+      "96.0",
+      "97.0",
+      "98.0",
+      "99.0",
+      "128.0",
+      "129.0",
+      "88.0",
+      "126.0",
+      "125.0",
+      "127.0",
+      "90.0",
+      "123.0",
+      "95.0",
+      "120.0",
+      "94.0",
+      "91.0",
+      "92.0",
+      "93.0",
+      "85.0",
+      "86.0",
+      "87.0",
+      "89.0"
+    ],
+    "counts": [
+      85020499,
+      84519326,
+      13129245,
+      1946,
+      1249,
+      224,
+      213,
+      155,
+      141,
+      64,
+      26,
+      23,
+      20,
+      18,
+      15,
+      15,
+      15,
+      11,
+      10,
+      9,
+      5,
+      4,
+      3,
+      2,
+      1,
+      1,
+      1,
+      1
+    ],
+    "total_count": 182673242,
+    "has_more_categories": false,
+    "null_policy": "exclude",
+    "y_limits": [
+      0.0,
+      10000.0
+    ]
+  },
+  "reason": "범주별 실제 COUNT(*) 빈도를 표시합니다. 결측은 제외했습니다. Y축 표시 범위는 0~10000이며 이를 넘는 막대는 잘려 보입니다. 실제 빈도는 유지했습니다."
+}

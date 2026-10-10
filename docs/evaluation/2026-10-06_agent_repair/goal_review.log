@@ -1,0 +1,22 @@
+..........F....F........2026-10-06 11:24:08.797 WARNING streamlit.runtime.scriptrunner_utils.script_run_context: Thread 'MainThread': missing ScriptRunContext! This warning can be ignored when running in bare mode.
+...
+======================================================================
+FAIL: test_followup_gets_previous_confirmed_goal_and_restart_keeps_evidence (tests.test_llm_goal.LLMGoalTests.test_followup_gets_previous_confirmed_goal_and_restart_keeps_evidence)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/najongseong/git_repository/teleai/tests/test_llm_goal.py", line 164, in test_followup_gets_previous_confirmed_goal_and_restart_keeps_evidence
+    self.assertEqual(model.goal_calls,2)
+AssertionError: 4 != 2
+
+======================================================================
+FAIL: test_unrelated_selected_dataset_is_repaired_by_model_before_preview (tests.test_llm_goal.LLMGoalTests.test_unrelated_selected_dataset_is_repaired_by_model_before_preview)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/najongseong/git_repository/teleai/tests/test_llm_goal.py", line 151, in test_unrelated_selected_dataset_is_repaired_by_model_before_preview
+    self.assertEqual(model.goal_calls,2)
+AssertionError: 3 != 2
+
+----------------------------------------------------------------------
+Ran 27 tests in 10.591s
+
+FAILED (failures=2)

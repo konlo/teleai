@@ -1,0 +1,305 @@
+{
+  "scope": "local MySQL/Ollama only",
+  "source_changes_during_replay": 0,
+  "completed": 31,
+  "verdicts": {
+    "PASS": 19,
+    "FAIL": 12
+  },
+  "cases": [
+    {
+      "id": 1,
+      "prompt": "지금 볼 수있는 table를 보여줘",
+      "status": "complete",
+      "reason": null,
+      "run_id": "2410c9e99f8046f5bc73910571157886",
+      "model_calls": 4,
+      "verdict": "PASS"
+    },
+    {
+      "id": 2,
+      "prompt": "bank_loan 컬럼들을 보여줘",
+      "status": "complete",
+      "reason": null,
+      "run_id": "b274b77f6c9e47438403306216ae6270",
+      "model_calls": 4,
+      "verified_metadata_columns": 18,
+      "verdict": "PASS"
+    },
+    {
+      "id": 3,
+      "prompt": "age 의 histogram 그려줘",
+      "status": "complete",
+      "reason": null,
+      "run_id": "63fb63c1f5d244099d69940134daeab7",
+      "model_calls": 9,
+      "verdict": "FAIL",
+      "error": "contract mismatch"
+    },
+    {
+      "id": 4,
+      "prompt": "education은 어떤 값들로 되어 있지 ?",
+      "status": "complete",
+      "reason": null,
+      "run_id": "bf25ab378a78467babdecc4f1180deb3",
+      "model_calls": 6,
+      "verdict": "PASS"
+    },
+    {
+      "id": 5,
+      "prompt": "histogram을 그려줘",
+      "status": "blocked",
+      "reason": "goal_unverified",
+      "run_id": "2072740aff144c07b86951f44a4c295a",
+      "model_calls": 8,
+      "verdict": "FAIL",
+      "error": "goal_unverified"
+    },
+    {
+      "id": 6,
+      "prompt": "education이 primary 이고 age가 30~40인 사람들을 시각화 해줘",
+      "status": "complete",
+      "reason": null,
+      "run_id": "71f08c188fc04f069aecdc5ad873d862",
+      "model_calls": 5,
+      "verdict": "PASS"
+    },
+    {
+      "id": 7,
+      "prompt": "education이 primary과 secondary 이고 age가 30~40인 사람들을 시각화 해줘 ",
+      "status": "complete",
+      "reason": null,
+      "run_id": "2c9f7f4054004e04a43e47d2d7d67d69",
+      "model_calls": 6,
+      "verdict": "PASS"
+    },
+    {
+      "id": 8,
+      "prompt": "같은 조건을 유지해서 histogram을 다시 보여줘",
+      "status": "complete",
+      "reason": null,
+      "run_id": "b3baeb841da746de9bc21c6bf21446d4",
+      "model_calls": 6,
+      "verdict": "PASS"
+    },
+    {
+      "id": 9,
+      "verdict": "FAIL",
+      "reason": "ModelAttemptBudgetExceeded",
+      "run_id": "2b5bb557fa2f4185a5b27403fec7421c",
+      "error_id": "ba7ca222ec01"
+    },
+    {
+      "id": 10,
+      "prompt": "색 구별이 안 되고 있어 ",
+      "status": "blocked",
+      "reason": "goal_unverified",
+      "run_id": "a89ae0a45bdc462f9cfb26202eedf306",
+      "model_calls": 8,
+      "verdict": "FAIL",
+      "error": "goal_unverified"
+    },
+    {
+      "id": 11,
+      "prompt": "education별 색상 구분과 legend를 넣어줘",
+      "status": "complete",
+      "reason": null,
+      "run_id": "43528887382b44fb9a594de4e3e3c381",
+      "model_calls": 7,
+      "verdict": "FAIL",
+      "error": "wrong population total"
+    },
+    {
+      "id": 12,
+      "verdict": "FAIL",
+      "reason": "ModelAttemptBudgetExceeded",
+      "run_id": "11d998a44e1845f99ac5cc0b78f838b0",
+      "error_id": "0324d720a7f6"
+    },
+    {
+      "id": 13,
+      "verdict": "FAIL",
+      "reason": "ModelAttemptBudgetExceeded",
+      "run_id": "9109510d58234aebb89e6f40a3fed9ae",
+      "error_id": "7f83bb71ebbd"
+    },
+    {
+      "id": 14,
+      "verdict": "FAIL",
+      "reason": "ModelAttemptBudgetExceeded",
+      "run_id": "a57768829b6f4fd9b95f001b9599dd85",
+      "error_id": "84e8779f0056"
+    },
+    {
+      "id": 15,
+      "prompt": "테이블의 column 다시 보여줘",
+      "status": "complete",
+      "reason": null,
+      "run_id": "f24a9e706eb646ee83c83e590ac35fc7",
+      "model_calls": 4,
+      "verified_metadata_columns": 18,
+      "verdict": "PASS"
+    },
+    {
+      "id": 16,
+      "prompt": "데이타 10개 row만 추출해서 table로 보여줘 ",
+      "status": "complete",
+      "reason": null,
+      "run_id": "3353009b0c2a42d2b1a2069e26645083",
+      "model_calls": 5,
+      "verified_preview_shape": [
+        10,
+        18
+      ],
+      "verdict": "FAIL",
+      "error": "preview lost preceding population conditions"
+    },
+    {
+      "id": 17,
+      "prompt": "age를 x축으로 하고 balance를 Y축으로 하는 scatter plot를 그려줘",
+      "status": "complete",
+      "reason": null,
+      "run_id": "951c8e576afb415986fca4ecad1cf20b",
+      "model_calls": 6,
+      "verdict": "FAIL",
+      "error": "unrequested prior-population removal"
+    },
+    {
+      "id": 18,
+      "prompt": "age와 balance의 관계를 그려줘봐",
+      "status": "complete",
+      "reason": null,
+      "run_id": "87f0bffdfef145a194b6b17679044ce9",
+      "model_calls": 6,
+      "verdict": "FAIL",
+      "error": "contract mismatch"
+    },
+    {
+      "id": 19,
+      "prompt": "전체 데이타에 대해서 age와 balance scatter plot으로 그려줘",
+      "status": "complete",
+      "reason": null,
+      "run_id": "52f13070d1e5421c815ca0ab4c8e6d1f",
+      "model_calls": 6,
+      "verdict": "PASS"
+    },
+    {
+      "id": 20,
+      "prompt": "age와 balance 의 scatter plot으로 그려줘",
+      "status": "complete",
+      "reason": null,
+      "run_id": "b9609312e57641b4a5ffb0b5616ca652",
+      "model_calls": 6,
+      "verdict": "PASS"
+    },
+    {
+      "id": 21,
+      "prompt": "bank_loan 데이터를 10개 row로 보여줘",
+      "status": "complete",
+      "reason": null,
+      "run_id": "03982d494d3243e6b2f71e67740b3e2c",
+      "model_calls": 4,
+      "verified_preview_shape": [
+        10,
+        18
+      ],
+      "verdict": "PASS"
+    },
+    {
+      "id": 22,
+      "prompt": "방금 보여준 10행 데이터의 age를 x축, balance를 y축으로 scatter plot을 그려줘",
+      "status": "complete",
+      "reason": null,
+      "run_id": "523197926b624b9a8f056f3e17658916",
+      "model_calls": 6,
+      "verdict": "PASS"
+    },
+    {
+      "id": 23,
+      "prompt": "전체 데이타를 이용해서 age와 balance의 관계를 다시 scatter plot으로 그려줘",
+      "status": "complete",
+      "reason": null,
+      "run_id": "6b9324f2be91418aa036a5f904dbb075",
+      "model_calls": 6,
+      "verdict": "PASS"
+    },
+    {
+      "id": 24,
+      "prompt": "내가 볼 수 있는 table 다시 한번 보여줘",
+      "status": "complete",
+      "reason": null,
+      "run_id": "0efb635baa3542ddbe559fb3f814a172",
+      "model_calls": 4,
+      "verdict": "PASS"
+    },
+    {
+      "id": 25,
+      "prompt": "_tianchi_ssd_shared300k_import  row 수가 몇개야 ?",
+      "status": "complete",
+      "reason": null,
+      "run_id": "1112932c344e43049420e6a68520b633",
+      "model_calls": 5,
+      "verified_row_count": 716,
+      "verdict": "PASS"
+    },
+    {
+      "id": 26,
+      "prompt": "table 다시 한번 보여줘",
+      "status": "complete",
+      "reason": null,
+      "run_id": "b3e924c9488040baab7719e2cdc8d6bb",
+      "model_calls": 5,
+      "verdict": "FAIL",
+      "error": "current request did not produce table inventory"
+    },
+    {
+      "id": 27,
+      "prompt": "tianchi_ssd_shared300k_raw 이 table row 수가 몇개야 ?",
+      "status": "needs_context",
+      "reason": "goal_clarification",
+      "run_id": "93bfa54b225e4e7aaae17ec69938ed36",
+      "model_calls": 4,
+      "verdict": "PASS",
+      "verified_missing_source": true
+    },
+    {
+      "id": 28,
+      "prompt": "이 테이블의 column들을 보여줘",
+      "status": "needs_context",
+      "reason": "goal_clarification",
+      "run_id": "c4a440290d3542a7bf44481be7411e2c",
+      "model_calls": 4,
+      "verdict": "PASS",
+      "verified_missing_source": true
+    },
+    {
+      "id": 29,
+      "prompt": "teleai_default.bank_loan 전체 데이타를 이용해서 age와 balance의 관계를 다시 scatter plot으로 그려줘",
+      "status": "complete",
+      "reason": null,
+      "run_id": "f18d5dcdda154fac8c7c40c22a47a4b3",
+      "model_calls": 5,
+      "verdict": "PASS"
+    },
+    {
+      "id": 30,
+      "prompt": "table column를보여줘",
+      "status": "complete",
+      "reason": null,
+      "run_id": "62d977318c7e41489e01dbb1cebf3551",
+      "model_calls": 4,
+      "verified_metadata_columns": 18,
+      "verdict": "PASS"
+    },
+    {
+      "id": 31,
+      "prompt": "teleai_default.bank_loan 전체 데이터의 age와 balance scatter plot을 다시 그려줘",
+      "status": "complete",
+      "reason": null,
+      "run_id": "ea7d2ff0c31446709d77cf2ade93188e",
+      "model_calls": 5,
+      "verdict": "PASS"
+    }
+  ],
+  "release": "NO-GO"
+}

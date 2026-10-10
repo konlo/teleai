@@ -1,0 +1,13 @@
+.........F...........................
+======================================================================
+FAIL: test_wide_catalog_is_a_bounded_model_view_not_removed_schema (tests.test_llm_goal.LLMGoalTests.test_wide_catalog_is_a_bounded_model_view_not_removed_schema)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/najongseong/git_repository/teleai/tests/test_llm_goal.py", line 131, in test_wide_catalog_is_a_bounded_model_view_not_removed_schema
+    self.assertEqual(sum(len(t['columns']) for t in payload['tables']),24)
+AssertionError: 0 != 24
+
+----------------------------------------------------------------------
+Ran 37 tests in 8.936s
+
+FAILED (failures=1)

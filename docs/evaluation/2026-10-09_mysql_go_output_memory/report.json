@@ -1,0 +1,51 @@
+{
+  "completed": 31,
+  "raw_verdicts": {
+    "PASS": 26,
+    "FAIL": 4,
+    "CHECKER_ERROR": 1
+  },
+  "source_changes_during_replay": 0,
+  "release": "NO-GO",
+  "failures": [
+    {
+      "id": 9,
+      "verdict": "FAIL",
+      "reason": "ModelAttemptBudgetExceeded",
+      "run_id": "7328f583bc0348f4a42f95689b92fa16",
+      "error_id": "c6349eff333d"
+    },
+    {
+      "id": 10,
+      "verdict": "CHECKER_ERROR",
+      "error_type": "IndexError"
+    },
+    {
+      "id": 19,
+      "status": "complete",
+      "reason": null,
+      "run_id": "6d70b446dd0c46ad8300d703907c4bf5",
+      "model_calls": 6,
+      "verdict": "FAIL",
+      "error": "contract mismatch"
+    },
+    {
+      "id": 20,
+      "status": "complete",
+      "reason": null,
+      "run_id": "5d64ed8fa4134472b83ca348ebda267b",
+      "model_calls": 6,
+      "verdict": "FAIL",
+      "error": "contract mismatch"
+    },
+    {
+      "id": 25,
+      "status": "exhausted",
+      "reason": "model_time_budget",
+      "run_id": "af2ba77da73d4bb68fb82a92cc0f3fd7",
+      "model_calls": 9,
+      "verdict": "FAIL",
+      "error": "model_time_budget"
+    }
+  ]
+}

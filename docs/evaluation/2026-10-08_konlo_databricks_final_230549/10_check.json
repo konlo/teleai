@@ -1,0 +1,87 @@
+{
+  "id": 10,
+  "prompt": "색 구별이 안 되고 있어 ",
+  "status": "complete",
+  "goal": {
+    "objective": "Adjust the chart to improve color distinction between categories",
+    "mode": "execute",
+    "source_reference": "previous_analysis",
+    "sources": [
+      "workspace.default.bank_loan"
+    ],
+    "columns": [
+      "education",
+      "age"
+    ],
+    "conditions": [
+      {
+        "column": "education",
+        "op": "in",
+        "value": [
+          "primary",
+          "secondary"
+        ]
+      },
+      {
+        "column": "age",
+        "op": "ge",
+        "value": 30
+      },
+      {
+        "column": "age",
+        "op": "le",
+        "value": 40
+      }
+    ],
+    "any_conditions": [],
+    "measure_conditions": [],
+    "ratio": null,
+    "current_result_only": true,
+    "fresh_source_required": false,
+    "question": "",
+    "tasks": [
+      {
+        "capability": "chart_adjust",
+        "options": {
+          "y_max": 100
+        }
+      }
+    ]
+  },
+  "reason": null,
+  "run_id": "b1459925adab42d9b88673fe78a51754",
+  "model_calls": 2,
+  "chart_metadata": [
+    {
+      "id": "d80f6366-8ffc-4619-ae4f-c586f281d672",
+      "dataset_id": "d0dd8739-138c-49ee-a316-d9f41b42fadf",
+      "title": "education 분포",
+      "reason": "범주별 실제 COUNT(*) 빈도를 표시합니다. 결측은 제외했습니다. Y축 표시 범위는 0~100이며 이를 넘는 막대는 잘려 보입니다. 실제 빈도는 유지했습니다.",
+      "kind": "bar",
+      "columns": [
+        "education"
+      ],
+      "scope": "빈도 합계 208,699 · complete · SELECT `education`, COUNT(*) AS `__frequency` FROM `workspace`.`default`.`bank_loan` WHERE `education` IS NOT NULL AND (`education` IN ('primary', 'secondary') AND `age` >= 30 AND `age` <= 40) GROUP BY `education`",
+      "render_spec": {
+        "aggregation": "count",
+        "labels": [
+          "secondary",
+          "primary"
+        ],
+        "counts": [
+          181260,
+          27439
+        ],
+        "total_count": 208699,
+        "has_more_categories": false,
+        "null_policy": "exclude",
+        "y_limits": [
+          0.0,
+          100.0
+        ]
+      }
+    }
+  ],
+  "verdict": "FAIL",
+  "error": "contract mismatch"
+}

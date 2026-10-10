@@ -1,0 +1,69 @@
+{
+  "status": "completed",
+  "result": {
+    "status": "ready",
+    "dataset": {
+      "id": "05f10df7-ff49-4c63-b633-a550ef2013b5",
+      "source": "teleai_default.alibaba_ssd",
+      "columns": [
+        "n_1",
+        "__frequency"
+      ],
+      "rows": 28,
+      "coverage": "complete",
+      "conditions": [],
+      "predicate_known": false,
+      "grain": "aggregate",
+      "aggregation": "SELECT `n_1`, COUNT(*) AS `__frequency` FROM `teleai_default`.`alibaba_ssd` WHERE NOT `n_1` IS NULL GROUP BY `n_1`",
+      "snapshot": "2026-10-04T13:45:36.044497+00:00",
+      "query": "SELECT `n_1`, COUNT(*) AS `__frequency` FROM `teleai_default`.`alibaba_ssd` WHERE `n_1` IS NOT NULL GROUP BY `n_1`",
+      "parent_id": "",
+      "parent_ids": [],
+      "role": "aggregate",
+      "root_id": "",
+      "row_selection": {}
+    },
+    "preview": [
+      {
+        "n_1": "",
+        "__frequency": 85020499
+      },
+      {
+        "n_1": "100",
+        "__frequency": 1946
+      },
+      {
+        "n_1": "100.0",
+        "__frequency": 84519326
+      },
+      {
+        "n_1": "120.0",
+        "__frequency": 9
+      },
+      {
+        "n_1": "123.0",
+        "__frequency": 11
+      },
+      {
+        "n_1": "125.0",
+        "__frequency": 15
+      },
+      {
+        "n_1": "126.0",
+        "__frequency": 18
+      },
+      {
+        "n_1": "127.0",
+        "__frequency": 15
+      },
+      {
+        "n_1": "128.0",
+        "__frequency": 26
+      },
+      {
+        "n_1": "129.0",
+        "__frequency": 23
+      }
+    ]
+  }
+}

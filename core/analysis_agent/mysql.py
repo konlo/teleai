@@ -103,6 +103,8 @@ def _empty_schema(columns, description):
 
 
 def make_executor(config: MySQLConfig, datasets, *, max_rows=100_000, max_coordinate_rows=None):
+    from core.analysis_agent.query_control import QueryControl
+    control=QueryControl()
     def execute(envelope):
         if envelope['connection'] != config.identity():
             raise PermissionError('MySQL 연결 설정이 변경되어 기존 조회를 실행할 수 없습니다.')
@@ -120,8 +122,20 @@ def make_executor(config: MySQLConfig, datasets, *, max_rows=100_000, max_coordi
             raise QueryNotSubmitted() from exc
         try:
             cursor = connection.cursor(buffered=False)
+            def cancel():
+                # The connection ID comes from this runtime's own active session.
+                identifier=connection.connection_id
+                if type(identifier) is not int or identifier<=0:raise ValueError('Invalid active session ID')
+                controller=config.connect()
+                try:
+                    target=controller.cursor()
+                    try:target.execute('KILL QUERY '+str(identifier))
+                    finally:target.close()
+                finally:controller.close()
+            control.start(cancel if type(getattr(connection,'connection_id',None)) is int else None)
             try:
                 cursor.execute(query)
+                control.validate_result()
                 description = cursor.description
                 if description is None:
                     raise ValueError('조회 결과의 컬럼 정보를 확인할 수 없습니다.')
@@ -148,6 +162,7 @@ def make_executor(config: MySQLConfig, datasets, *, max_rows=100_000, max_coordi
                         return
                     while observed <= row_limit:
                         rows = cursor.fetchmany(min(1024, row_limit + 1 - observed))
+                        control.validate_result()
                         if not rows:
                             break
                         frame = pd.DataFrame.from_records(rows, columns=columns)
@@ -189,6 +204,21 @@ def make_executor(config: MySQLConfig, datasets, *, max_rows=100_000, max_coordi
             raise
         finally:
             connection.close()
+            control.finish()
+    def probe():
+        try:
+            connection=config.connect()
+            try:
+                cursor=connection.cursor()
+                try:
+                    cursor.execute('SELECT 1');ok=tuple(cursor.fetchone() or ())==(1,)
+                finally:cursor.close()
+            finally:connection.close()
+            return {'status':'ready' if ok else 'unavailable','backend':'mysql','probe_sql':'SELECT 1'}
+        except Exception as exc:
+            return {'status':'unavailable','backend':'mysql','error_type':type(exc).__name__,'error_code':'database_probe_failed','retryable':False}
+    execute.probe=probe
+    execute.control=control
     return execute
 
 

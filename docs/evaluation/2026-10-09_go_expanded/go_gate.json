@@ -1,0 +1,82 @@
+{
+  "updated_at": "2026-10-10T02:58:51.402363+09:00",
+  "build": "build_go_final.json",
+  "product_hash_changes": [],
+  "local_mysql_ollama_specified_basic_eda": "GO_FOR_SINGLE_USER_TESTING",
+  "general_agent_production_release": "NO_GO_NOT_FULLY_VERIFIED",
+  "company_windows_azure_databricks": "NOT_VERIFIED",
+  "separate_server": "EXCLUDED_BY_USER",
+  "runtime": {
+    "backend": "mysql",
+    "model_provider": "ollama",
+    "model": "gemma4:e4b",
+    "url": "http://127.0.0.1:8504/Telly?conversation=6259f45e-1c5d-4879-84c2-052f030a3f4c"
+  },
+  "evidence": {
+    "latest_build_regression": {
+      "pass": 884,
+      "skip": 4,
+      "subtests_pass": 591,
+      "seconds": 125.6,
+      "log": ".telly_runtime/go_compound_grammar_all.log"
+    },
+    "latest_build_live_mysql": {
+      "pass": 4,
+      "seconds": 48.23,
+      "log": ".telly_runtime/go_final_mysql_all_serial.log"
+    },
+    "distinct_cases_with_successful_execution": 888,
+    "latest_build_browser_compound": {
+      "status": "PASS",
+      "seconds": 38.14,
+      "mean": 34.82,
+      "frequency_total": 208699,
+      "check": "web_release_candidate/12_check.json",
+      "initial_attempt": "FAIL (different earlier build), preserved as 11_failed_initial.json"
+    },
+    "earlier_release_candidate_browser10": {
+      "pass": 10,
+      "fail": 0,
+      "check": "web_release_candidate/frozen_results.json",
+      "different_build": true
+    },
+    "population_authority_build_restart_journey": {
+      "status": "PASS",
+      "actual": [
+        2,
+        15
+      ],
+      "seconds": [
+        49.973,
+        75.971
+      ],
+      "path": "autonomous_change_authority_final.json",
+      "different_build": "before compound grammar and error-terminal patch"
+    },
+    "official_deepeval_score": null,
+    "official_spider2_score": null
+  },
+  "retained_failures": [
+    "web/frozen_results.json",
+    "web_final/frozen_results.json",
+    "autonomous_frozen.json",
+    "autonomous_release_candidate.json",
+    "autonomous_repair_phases.json",
+    "autonomous_go_final.json",
+    "autonomous_null_authority_final.json",
+    "web_release_candidate/11_failed_initial.json",
+    ".telly_runtime/go_change_authority_mysql_live.log"
+  ],
+  "limitations": [
+    "Only scoped single-user basic EDA testing; no operational SLA acceptance",
+    "Latest expanded strict8 and original31/AI10 not all repeated on latest build; different builds are not summed",
+    "Earlier actual UI AppTest exceeded45s while other tests ran; serial repeats passed, stability/SLA remains unverified",
+    "Company Windows/Azure/Databricks real journey unverified",
+    "Real large DB transfer, peak memory, cost and whole-request hard deadline unverified",
+    "Generated Python isolation/code repair and advanced task-specific populations/dependencies incomplete",
+    "Official DeepEval/Spider2 protocol scores unrun; no Codex/Claude parity claim",
+    "Recovery module responsibility separation incomplete"
+  ],
+  "env_changes": false,
+  "git_commit_or_push_this_request": false
+}

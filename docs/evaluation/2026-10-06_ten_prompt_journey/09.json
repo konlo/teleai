@@ -1,0 +1,520 @@
+{
+  "assets": {
+    "1544597d-51b0-4661-86d2-3e3587014fdb": {
+      "kind": "dataset",
+      "metadata": {
+        "id": "1544597d-51b0-4661-86d2-3e3587014fdb",
+        "source": "information_schema.tables",
+        "columns": [
+          "TABLE_SCHEMA",
+          "TABLE_NAME",
+          "TABLE_TYPE"
+        ],
+        "rows": 7,
+        "coverage": "unknown",
+        "conditions": [],
+        "predicate_known": false,
+        "grain": "raw",
+        "aggregation": "",
+        "snapshot": "2026-10-06T04:48:11.094212+00:00",
+        "query": "SELECT table_schema, table_name, table_type FROM information_schema.tables WHERE table_schema = 'teleai_default' ORDER BY table_name LIMIT 100",
+        "parent_id": "",
+        "parent_ids": [],
+        "role": "root",
+        "root_id": "1544597d-51b0-4661-86d2-3e3587014fdb",
+        "row_selection": {}
+      },
+      "metadata_sha256": "4d8a61d19cdb3827b15ad3bf3c2e4f39cde2685f0588488e2305f31472a6dcca",
+      "payload_sha256": "372844c886cd58f8ef309861fc6bb1a9265e5de25cd71d7493b1199d66a13318"
+    },
+    "2575449e-7955-4521-99b5-10b6c62c17ad": {
+      "kind": "dataset",
+      "metadata": {
+        "id": "2575449e-7955-4521-99b5-10b6c62c17ad",
+        "source": "teleai_default.bank_loan",
+        "columns": [
+          "age",
+          "balance",
+          "__telly_coordinate_frequency"
+        ],
+        "rows": 132613,
+        "coverage": "complete",
+        "conditions": [],
+        "predicate_known": false,
+        "grain": "aggregate",
+        "aggregation": "SELECT `age`, `balance`, COUNT(*) AS `__telly_coordinate_frequency` FROM `teleai_default`.`bank_loan` WHERE NOT `age` IS NULL AND NOT `balance` IS NULL GROUP BY `age`, `balance`",
+        "snapshot": "2026-10-06T04:54:25.530249+00:00",
+        "query": "SELECT `age`, `balance`, COUNT(*) AS `__telly_coordinate_frequency` FROM `teleai_default`.`bank_loan` WHERE `age` IS NOT NULL AND `balance` IS NOT NULL GROUP BY `age`, `balance`",
+        "parent_id": "",
+        "parent_ids": [],
+        "role": "aggregate",
+        "root_id": "",
+        "row_selection": {}
+      },
+      "metadata_sha256": "47b6dcb56b9b2abca7b67fd9664fbe159850c5473ba57dc6d93c8c1e7db87464",
+      "payload_sha256": "f0b5cc601f0e5630187037e5d0d8c98fdd1a2eeadea9e7017f0925049b066c2c"
+    },
+    "b2b8df5b-8f54-4ee3-8270-8be2531010a1": {
+      "kind": "chart",
+      "metadata": {
+        "id": "b2b8df5b-8f54-4ee3-8270-8be2531010a1",
+        "dataset_id": "2575449e-7955-4521-99b5-10b6c62c17ad",
+        "title": "age와 balance 관계",
+        "reason": "전체 유효 좌표를 표시하고 중복 빈도를 색상으로 표현합니다.",
+        "kind": "scatter",
+        "columns": [
+          "age",
+          "balance"
+        ],
+        "scope": "전체 유효 원본 750,000행 · 고유 좌표 132,613개 · 동일 좌표는 빈도로 압축 · 표본/구간 집계 없음 · 두 축의 NULL 제외 · complete",
+        "render_spec": {
+          "mode": "exact_coordinate_frequency",
+          "source": "teleai_default.bank_loan",
+          "query": "SELECT `age`, `balance`, COUNT(*) AS `__telly_coordinate_frequency` FROM `teleai_default`.`bank_loan` WHERE `age` IS NOT NULL AND `balance` IS NOT NULL GROUP BY `age`, `balance`",
+          "snapshot": "2026-10-06T04:54:25.530249+00:00",
+          "x": "age",
+          "y": "balance",
+          "coordinate_count": 132613,
+          "drawable_rows": 750000,
+          "weight_column": "__telly_coordinate_frequency",
+          "data_sha256": "56a6272329b399a90bd24386eea1f14df29e43c365b7d2f82fb01915d09bdc2c"
+        }
+      },
+      "metadata_sha256": "adf78de849c608fbd4b470be6a2d79abd58b68bf6dd47ea32efeca9036fffd5e",
+      "payload_sha256": "f87b0ce1c2325cd6c0fe853a2aabc2577de5ae0365fb437fd2ab63cc15beb6af"
+    },
+    "378f6d0a-4bde-46e7-8f60-b0ae198a0b57": {
+      "kind": "dataset",
+      "metadata": {
+        "id": "378f6d0a-4bde-46e7-8f60-b0ae198a0b57",
+        "source": "teleai_default.stormtrooper",
+        "columns": [
+          "flight_id",
+          "date_str",
+          "latitude",
+          "longitude",
+          "pressure_altitude",
+          "cdo",
+          "cth",
+          "glm_event_density",
+          "glm_optical_flux",
+          "cdo025",
+          "cth025",
+          "cth025_diff_feet",
+          "cdo_dist_km"
+        ],
+        "rows": 10,
+        "coverage": "unknown",
+        "conditions": [],
+        "predicate_known": false,
+        "grain": "raw",
+        "aggregation": "",
+        "snapshot": "2026-10-06T04:55:23.353672+00:00",
+        "query": "SELECT * FROM `teleai_default`.`stormtrooper` LIMIT 10",
+        "parent_id": "",
+        "parent_ids": [],
+        "role": "root",
+        "root_id": "378f6d0a-4bde-46e7-8f60-b0ae198a0b57",
+        "row_selection": {}
+      },
+      "metadata_sha256": "fbfd03045107107acb36897245928b45776acacbe5ff64240942cd3dcd2251b3",
+      "payload_sha256": "fc2cf2d269c83473cf957663f54d833efa43d6280d6d58904d940a4b6c7c6980"
+    }
+  },
+  "selection": "",
+  "current": {
+    "request_id": "f154d72f-15a1-4478-8b2b-bd1f510d393a",
+    "request_text": "이번에는 stormtrooper에서 row 10개만 표로 보고 싶어.",
+    "status": "complete",
+    "stop_reason": null,
+    "intent_origin": "llm",
+    "goal": {
+      "objective": "row_preview",
+      "mode": "execute",
+      "source_reference": "explicit",
+      "sources": [
+        "teleai_default.stormtrooper"
+      ],
+      "columns": [],
+      "conditions": [],
+      "any_conditions": [],
+      "measure_conditions": [],
+      "ratio": null,
+      "current_result_only": false,
+      "fresh_source_required": false,
+      "question": "",
+      "tasks": [
+        {
+          "capability": "row_preview",
+          "options": {
+            "limit": 10
+          }
+        }
+      ]
+    },
+    "model_calls": 4,
+    "model_seconds": 34.75830837500689,
+    "scope": {
+      "conditions": [],
+      "any_conditions": [],
+      "measure_conditions": [],
+      "ratio": null,
+      "sources": [
+        "teleai_default.stormtrooper"
+      ],
+      "columns": [],
+      "unresolved": [],
+      "join_edges": []
+    },
+    "required_sources": [
+      "teleai_default.stormtrooper"
+    ],
+    "required_columns": [],
+    "artifact_ids": [],
+    "evidence_ids": [],
+    "table_preview_evidence": {
+      "dataset_id": "378f6d0a-4bde-46e7-8f60-b0ae198a0b57",
+      "source": "teleai_default.stormtrooper",
+      "snapshot": "2026-10-06T04:55:23.353672+00:00",
+      "columns": [
+        "flight_id",
+        "date_str",
+        "latitude",
+        "longitude",
+        "pressure_altitude",
+        "cdo",
+        "cth",
+        "glm_event_density",
+        "glm_optical_flux",
+        "cdo025",
+        "cth025",
+        "cth025_diff_feet",
+        "cdo_dist_km"
+      ],
+      "total_rows": 10,
+      "rows": 10,
+      "limit": 10
+    },
+    "kind": null,
+    "failed": {}
+  },
+  "run_id": "398cff2f5de4420185fbf8015a498d93",
+  "run": [
+    {
+      "time": "2026-10-06T04:54:48.543327+00:00",
+      "event": "run_started",
+      "run_id": "398cff2f5de4420185fbf8015a498d93",
+      "instance_id": "6df70d3544f7",
+      "pid": 29590,
+      "runtime": {
+        "revision_at_first_runtime": "febd34ae5cbbfbcc7023ea8e0412b84572cd7763",
+        "packages": {
+          "langchain": "1.4.0",
+          "langchain-core": "1.6.2",
+          "langgraph": "1.2.11",
+          "streamlit": "1.63.0",
+          "sqlglot": "30.18.0"
+        },
+        "python_version": "3.11.13",
+        "identity_captured_at": "2026-10-06T03:10:47.558100+00:00",
+        "route": "langgraph-v1",
+        "model_class": "ChatOllama",
+        "require_remote_approval": false,
+        "loaded_delivery_guard": "45c393f977353fe9",
+        "data_backend": "mysql",
+        "intent_mode": "llm",
+        "goal_version": 1,
+        "goal_model": "qwen3:8b",
+        "planner_model": "qwen3:8b"
+      },
+      "operation": "submit",
+      "process_peak_rss_bytes": 378978304
+    },
+    {
+      "time": "2026-10-06T04:54:48.547909+00:00",
+      "event": "goal_interpretation_started",
+      "run_id": "398cff2f5de4420185fbf8015a498d93",
+      "instance_id": "6df70d3544f7",
+      "pid": 29590,
+      "request_id": "f154d72f-15a1-4478-8b2b-bd1f510d393a",
+      "origin": "llm",
+      "goal_version": 1
+    },
+    {
+      "time": "2026-10-06T04:54:48.548636+00:00",
+      "event": "model_payload_budget",
+      "run_id": "398cff2f5de4420185fbf8015a498d93",
+      "instance_id": "6df70d3544f7",
+      "pid": 29590,
+      "payload_bytes": 10464,
+      "payload_bytes_before_projection": 10464,
+      "template_headroom": 640,
+      "input_budget_units": 14336,
+      "output_reserved": 2048,
+      "context_window": 16384,
+      "tool_count": 0,
+      "message_count": 1,
+      "older_turns_compacted": false,
+      "within_budget": true,
+      "observations_compacted": false,
+      "schema_compacted": false,
+      "system_catalog_compacted": false,
+      "tool_menu_compacted": false,
+      "minimal_discovery_menu": false,
+      "reasoning_compacted": false,
+      "minimal_catalog": false,
+      "builtin_instructions_compacted": false,
+      "components": {
+        "system_bytes": 6086,
+        "message_content_bytes": 3769,
+        "tool_calls_bytes": 0,
+        "reasoning_bytes": 0,
+        "tool_schema_bytes": 0,
+        "tool_names": []
+      },
+      "measurement": "conservative_utf8_bytes_not_actual_token_count"
+    },
+    {
+      "time": "2026-10-06T04:55:05.816259+00:00",
+      "event": "goal_source_reference_audited",
+      "run_id": "398cff2f5de4420185fbf8015a498d93",
+      "instance_id": "6df70d3544f7",
+      "pid": 29590,
+      "request_id": "f154d72f-15a1-4478-8b2b-bd1f510d393a",
+      "reference": "explicit"
+    },
+    {
+      "time": "2026-10-06T04:55:05.817888+00:00",
+      "event": "goal_structure_rejected",
+      "run_id": "398cff2f5de4420185fbf8015a498d93",
+      "instance_id": "6df70d3544f7",
+      "pid": 29590,
+      "request_id": "f154d72f-15a1-4478-8b2b-bd1f510d393a",
+      "attempt": 1,
+      "error_type": "ValueError"
+    },
+    {
+      "time": "2026-10-06T04:55:05.817983+00:00",
+      "event": "goal_contract_error",
+      "run_id": "398cff2f5de4420185fbf8015a498d93",
+      "instance_id": "6df70d3544f7",
+      "pid": 29590,
+      "request_id": "f154d72f-15a1-4478-8b2b-bd1f510d393a",
+      "error_code": "goal_schema_invalid",
+      "detail": "current_result_only cannot use an unrelated selected dataset; a named table preview needs false"
+    },
+    {
+      "time": "2026-10-06T04:55:05.818674+00:00",
+      "event": "model_payload_budget",
+      "run_id": "398cff2f5de4420185fbf8015a498d93",
+      "instance_id": "6df70d3544f7",
+      "pid": 29590,
+      "payload_bytes": 11136,
+      "payload_bytes_before_projection": 11136,
+      "template_headroom": 640,
+      "input_budget_units": 14336,
+      "output_reserved": 2048,
+      "context_window": 16384,
+      "tool_count": 0,
+      "message_count": 1,
+      "older_turns_compacted": false,
+      "within_budget": true,
+      "observations_compacted": false,
+      "schema_compacted": false,
+      "system_catalog_compacted": false,
+      "tool_menu_compacted": false,
+      "minimal_discovery_menu": false,
+      "reasoning_compacted": false,
+      "minimal_catalog": false,
+      "builtin_instructions_compacted": false,
+      "components": {
+        "system_bytes": 6086,
+        "message_content_bytes": 4390,
+        "tool_calls_bytes": 0,
+        "reasoning_bytes": 0,
+        "tool_schema_bytes": 0,
+        "tool_names": []
+      },
+      "measurement": "conservative_utf8_bytes_not_actual_token_count"
+    },
+    {
+      "time": "2026-10-06T04:55:14.835882+00:00",
+      "event": "goal_semantic_review_started",
+      "run_id": "398cff2f5de4420185fbf8015a498d93",
+      "instance_id": "6df70d3544f7",
+      "pid": 29590,
+      "request_id": "f154d72f-15a1-4478-8b2b-bd1f510d393a"
+    },
+    {
+      "time": "2026-10-06T04:55:14.836455+00:00",
+      "event": "model_payload_budget",
+      "run_id": "398cff2f5de4420185fbf8015a498d93",
+      "instance_id": "6df70d3544f7",
+      "pid": 29590,
+      "payload_bytes": 10953,
+      "payload_bytes_before_projection": 10953,
+      "template_headroom": 640,
+      "input_budget_units": 14336,
+      "output_reserved": 2048,
+      "context_window": 16384,
+      "tool_count": 0,
+      "message_count": 1,
+      "older_turns_compacted": false,
+      "within_budget": true,
+      "observations_compacted": false,
+      "schema_compacted": false,
+      "system_catalog_compacted": false,
+      "tool_menu_compacted": false,
+      "minimal_discovery_menu": false,
+      "reasoning_compacted": false,
+      "minimal_catalog": false,
+      "builtin_instructions_compacted": false,
+      "components": {
+        "system_bytes": 6086,
+        "message_content_bytes": 4208,
+        "tool_calls_bytes": 0,
+        "reasoning_bytes": 0,
+        "tool_schema_bytes": 0,
+        "tool_names": []
+      },
+      "measurement": "conservative_utf8_bytes_not_actual_token_count"
+    },
+    {
+      "time": "2026-10-06T04:55:23.314572+00:00",
+      "event": "goal_interpretation_completed",
+      "run_id": "398cff2f5de4420185fbf8015a498d93",
+      "instance_id": "6df70d3544f7",
+      "pid": 29590,
+      "request_id": "f154d72f-15a1-4478-8b2b-bd1f510d393a",
+      "origin": "llm",
+      "mode": "execute",
+      "capabilities": [
+        "row_preview"
+      ],
+      "attempts": 3,
+      "goal_version": 1
+    },
+    {
+      "time": "2026-10-06T04:55:23.317908+00:00",
+      "event": "recovery_transition",
+      "run_id": "398cff2f5de4420185fbf8015a498d93",
+      "instance_id": "6df70d3544f7",
+      "pid": 29590,
+      "request_id": "f154d72f-15a1-4478-8b2b-bd1f510d393a",
+      "tool": "prepare_row_preview"
+    },
+    {
+      "time": "2026-10-06T04:55:23.330738+00:00",
+      "event": "tool_started",
+      "run_id": "398cff2f5de4420185fbf8015a498d93",
+      "instance_id": "6df70d3544f7",
+      "pid": 29590,
+      "tool": "prepare_row_preview"
+    },
+    {
+      "time": "2026-10-06T04:55:23.335793+00:00",
+      "event": "tool_completed",
+      "run_id": "398cff2f5de4420185fbf8015a498d93",
+      "instance_id": "6df70d3544f7",
+      "pid": 29590,
+      "tool": "prepare_row_preview",
+      "status": "planned",
+      "error_code": null,
+      "elapsed_seconds": 0.005,
+      "applied_corrections": []
+    },
+    {
+      "time": "2026-10-06T04:55:23.340215+00:00",
+      "event": "recovery_transition",
+      "run_id": "398cff2f5de4420185fbf8015a498d93",
+      "instance_id": "6df70d3544f7",
+      "pid": 29590,
+      "request_id": "f154d72f-15a1-4478-8b2b-bd1f510d393a",
+      "tool": "query_databricks"
+    },
+    {
+      "time": "2026-10-06T04:55:23.344106+00:00",
+      "event": "remote_query_authorized",
+      "run_id": "398cff2f5de4420185fbf8015a498d93",
+      "instance_id": "6df70d3544f7",
+      "pid": 29590,
+      "tool_call_id": "6d002201-1459-4128-91f8-bb56a1849857",
+      "authorization": "automatic_read_policy"
+    },
+    {
+      "time": "2026-10-06T04:55:23.344286+00:00",
+      "event": "remote_query_started",
+      "run_id": "398cff2f5de4420185fbf8015a498d93",
+      "instance_id": "6df70d3544f7",
+      "pid": 29590,
+      "ledger_status": "auto_authorized",
+      "cached_receipt": false
+    },
+    {
+      "time": "2026-10-06T04:55:23.373757+00:00",
+      "event": "remote_query_finished",
+      "run_id": "398cff2f5de4420185fbf8015a498d93",
+      "instance_id": "6df70d3544f7",
+      "pid": 29590,
+      "ledger_status": "completed",
+      "status": "ready",
+      "cached_receipt": false
+    },
+    {
+      "time": "2026-10-06T04:55:23.376144+00:00",
+      "event": "remote_result_verified",
+      "run_id": "398cff2f5de4420185fbf8015a498d93",
+      "instance_id": "6df70d3544f7",
+      "pid": 29590,
+      "request_id": "f154d72f-15a1-4478-8b2b-bd1f510d393a",
+      "tool_call_id": "6d002201-1459-4128-91f8-bb56a1849857",
+      "dataset_id": "378f6d0a-4bde-46e7-8f60-b0ae198a0b57",
+      "rows": 10
+    },
+    {
+      "time": "2026-10-06T04:55:23.383395+00:00",
+      "event": "completion_checked",
+      "run_id": "398cff2f5de4420185fbf8015a498d93",
+      "instance_id": "6df70d3544f7",
+      "pid": 29590,
+      "request_id": "f154d72f-15a1-4478-8b2b-bd1f510d393a",
+      "status": "complete",
+      "reason": null,
+      "attempts": 0,
+      "required_capabilities": [
+        "row_preview",
+        "remote_query"
+      ],
+      "missing_capabilities": [],
+      "model_calls": 4,
+      "tool_calls": 2,
+      "model_seconds": 34.758,
+      "dataset_ids": [],
+      "artifact_ids": []
+    },
+    {
+      "time": "2026-10-06T04:55:23.386532+00:00",
+      "event": "run_completed",
+      "run_id": "398cff2f5de4420185fbf8015a498d93",
+      "instance_id": "6df70d3544f7",
+      "pid": 29590,
+      "status": "answered",
+      "elapsed_seconds": 34.845,
+      "process_peak_rss_bytes": 378978304,
+      "frame_cache_bytes": 0
+    },
+    {
+      "time": "2026-10-06T04:55:23.386589+00:00",
+      "event": "turn_slo",
+      "run_id": "398cff2f5de4420185fbf8015a498d93",
+      "instance_id": "6df70d3544f7",
+      "pid": 29590,
+      "elapsed_seconds": 34.845,
+      "limit": 180.0,
+      "status": "ok"
+    }
+  ],
+  "requested_prompt": "이번에는 stormtrooper에서 row 10개만 표로 보고 싶어.",
+  "current_matches_run": true,
+  "request_checkpoint_verified": true
+}

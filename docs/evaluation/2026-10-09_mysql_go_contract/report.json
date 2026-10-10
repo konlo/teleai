@@ -1,0 +1,2028 @@
+{
+  "submitted": 31,
+  "passed": 16,
+  "failed": 15,
+  "not_run": 0,
+  "go": "NO-GO",
+  "source_changes_during_replay": [],
+  "checks": [
+    {
+      "id": 1,
+      "prompt": "지금 볼 수있는 table를 보여줘",
+      "status": "complete",
+      "goal": {
+        "objective": "requested work",
+        "mode": "execute",
+        "source_reference": "explicit",
+        "sources": [],
+        "columns": [],
+        "conditions": [],
+        "any_conditions": [],
+        "measure_conditions": [],
+        "ratio": null,
+        "current_result_only": false,
+        "fresh_source_required": false,
+        "question": "",
+        "tasks": [
+          {
+            "capability": "table_list",
+            "options": {}
+          }
+        ]
+      },
+      "reason": null,
+      "run_id": "5a3b188de3624d85a7a74d232e123279",
+      "model_calls": 4,
+      "chart_metadata": [],
+      "verdict": "PASS"
+    },
+    {
+      "id": 2,
+      "prompt": "bank_loan 컬럼들을 보여줘",
+      "status": "complete",
+      "goal": {
+        "objective": "requested work",
+        "mode": "execute",
+        "source_reference": "explicit",
+        "sources": [
+          "teleai_default.bank_loan"
+        ],
+        "columns": [],
+        "conditions": [],
+        "any_conditions": [],
+        "measure_conditions": [],
+        "ratio": null,
+        "current_result_only": false,
+        "fresh_source_required": false,
+        "question": "",
+        "tasks": [
+          {
+            "capability": "metadata",
+            "options": {
+              "kind": "columns"
+            }
+          }
+        ]
+      },
+      "reason": null,
+      "run_id": "72ee2c82e5d54bf6997e36d9b314a464",
+      "model_calls": 4,
+      "chart_metadata": [],
+      "verified_metadata_columns": 18,
+      "verdict": "PASS"
+    },
+    {
+      "id": 3,
+      "prompt": "age 의 histogram 그려줘",
+      "status": "exhausted",
+      "goal": {
+        "objective": "histogram",
+        "mode": "execute",
+        "source_reference": "previous_analysis",
+        "sources": [
+          "teleai_default.bank_loan"
+        ],
+        "columns": [
+          "age"
+        ],
+        "conditions": [],
+        "any_conditions": [],
+        "measure_conditions": [],
+        "ratio": null,
+        "current_result_only": false,
+        "fresh_source_required": false,
+        "question": "",
+        "tasks": [
+          {
+            "capability": "chart",
+            "options": {
+              "kind": "histogram",
+              "axes": {
+                "x": "age"
+              },
+              "category": "age",
+              "legend": true,
+              "stacked": false,
+              "palette": "default"
+            }
+          }
+        ]
+      },
+      "reason": "repeated_failed_tool",
+      "run_id": "b1e4512190244f85b4952ca9d791bca4",
+      "model_calls": 7,
+      "chart_metadata": [],
+      "verdict": "FAIL",
+      "error": "repeated_failed_tool"
+    },
+    {
+      "id": 4,
+      "prompt": "education은 어떤 값들로 되어 있지 ?",
+      "status": "blocked",
+      "goal": null,
+      "reason": "goal_unverified",
+      "run_id": "737b3bd1d89f405981cb75865868b13b",
+      "model_calls": 7,
+      "chart_metadata": [],
+      "verdict": "FAIL",
+      "error": "goal_unverified"
+    },
+    {
+      "id": 5,
+      "prompt": "histogram을 그려줘",
+      "status": "exhausted",
+      "goal": {
+        "objective": "requested work",
+        "mode": "execute",
+        "source_reference": "previous_analysis",
+        "sources": [
+          "teleai_default.bank_loan"
+        ],
+        "columns": [
+          "age"
+        ],
+        "conditions": [],
+        "any_conditions": [],
+        "measure_conditions": [],
+        "ratio": null,
+        "current_result_only": false,
+        "fresh_source_required": false,
+        "question": "",
+        "tasks": [
+          {
+            "capability": "chart",
+            "options": {
+              "kind": "histogram",
+              "axes": {
+                "x": "age"
+              },
+              "category": "age",
+              "legend": true,
+              "stacked": false,
+              "palette": "default"
+            }
+          }
+        ]
+      },
+      "reason": "repeated_failed_tool",
+      "run_id": "85d6131bc5774e81949c39eb6fc90c92",
+      "model_calls": 7,
+      "chart_metadata": [],
+      "verdict": "FAIL",
+      "error": "repeated_failed_tool"
+    },
+    {
+      "id": 6,
+      "prompt": "education이 primary 이고 age가 30~40인 사람들을 시각화 해줘",
+      "status": "complete",
+      "goal": {
+        "objective": "visualize",
+        "mode": "execute",
+        "source_reference": "previous_analysis",
+        "sources": [
+          "teleai_default.bank_loan"
+        ],
+        "columns": [
+          "education",
+          "age"
+        ],
+        "conditions": [
+          {
+            "column": "education",
+            "op": "eq",
+            "value": "primary"
+          },
+          {
+            "column": "age",
+            "op": "between",
+            "value": [
+              30,
+              40
+            ]
+          }
+        ],
+        "any_conditions": [],
+        "measure_conditions": [],
+        "ratio": null,
+        "current_result_only": false,
+        "fresh_source_required": false,
+        "question": "",
+        "tasks": [
+          {
+            "capability": "chart",
+            "options": {
+              "kind": "histogram",
+              "axes": {
+                "x": "age"
+              },
+              "category": "education",
+              "legend": true,
+              "stacked": false,
+              "palette": "default"
+            }
+          }
+        ]
+      },
+      "reason": null,
+      "run_id": "8681f02484944e2aa44d92e18f183dc6",
+      "model_calls": 5,
+      "chart_metadata": [
+        {
+          "id": "1f2b5dbf-ebb1-449c-9d7e-99c836b613fc",
+          "dataset_id": "9b55e62b-9dc3-4c69-bd7d-7ca5030b4726",
+          "title": "education별 age 분포",
+          "reason": "공통 bin의 그룹별 COUNT(*)를 서로 다른 색의 막대로 표시하고 범례를 추가했습니다.",
+          "kind": "histogram",
+          "columns": [
+            "age",
+            "education"
+          ],
+          "scope": "빈도 합계 27,439 · complete · 그룹 결측 제외 0 · SELECT `age`, `education`, COUNT(*) AS `__frequency` FROM `teleai_default`.`bank_loan` WHERE `age` IS NOT NULL AND (`education` = 'primary' AND `age` >= 30 AND `age` <= 40) GROUP BY `age`, `education`",
+          "render_spec": {
+            "kind": "histogram",
+            "x": "age",
+            "category": "education",
+            "bins": 8,
+            "legend": true,
+            "stacked": false,
+            "palette": "default",
+            "legend_labels": [
+              "primary"
+            ],
+            "colors": [
+              "#3278b9"
+            ],
+            "bin_edges": [
+              30.0,
+              31.25,
+              32.5,
+              33.75,
+              35.0,
+              36.25,
+              37.5,
+              38.75,
+              40.0
+            ],
+            "series_counts": [
+              [
+                3015,
+                2336,
+                2357,
+                2324,
+                5197,
+                2714,
+                2677,
+                6819
+              ]
+            ],
+            "group_totals": [
+              27439
+            ],
+            "total_count": 27439,
+            "excluded_null_group_count": 0,
+            "null_policy": "exclude"
+          }
+        }
+      ],
+      "verdict": "PASS"
+    },
+    {
+      "id": 7,
+      "prompt": "education이 primary과 secondary 이고 age가 30~40인 사람들을 시각화 해줘 ",
+      "status": "complete",
+      "goal": {
+        "objective": "requested work",
+        "mode": "execute",
+        "source_reference": "previous_analysis",
+        "sources": [
+          "teleai_default.bank_loan"
+        ],
+        "columns": [
+          "education",
+          "age"
+        ],
+        "conditions": [
+          {
+            "column": "education",
+            "op": "in",
+            "value": [
+              "primary",
+              "secondary"
+            ]
+          },
+          {
+            "column": "age",
+            "op": "between",
+            "value": [
+              30,
+              40
+            ]
+          }
+        ],
+        "any_conditions": [],
+        "measure_conditions": [],
+        "ratio": null,
+        "current_result_only": false,
+        "fresh_source_required": false,
+        "question": "",
+        "tasks": [
+          {
+            "capability": "chart",
+            "options": {
+              "kind": "histogram",
+              "axes": {
+                "x": "age"
+              },
+              "category": "education",
+              "legend": true,
+              "stacked": false,
+              "palette": "default"
+            }
+          }
+        ]
+      },
+      "reason": null,
+      "run_id": "da1b977ed6e24188b69eb4617a7ac470",
+      "model_calls": 6,
+      "chart_metadata": [
+        {
+          "id": "23ed42f2-e366-421d-b01c-ea049caad3ec",
+          "dataset_id": "4661eb0d-fb05-4c94-bac3-342ccb42ab7b",
+          "title": "education별 age 분포",
+          "reason": "공통 bin의 그룹별 COUNT(*)를 서로 다른 색의 막대로 표시하고 범례를 추가했습니다.",
+          "kind": "histogram",
+          "columns": [
+            "age",
+            "education"
+          ],
+          "scope": "빈도 합계 208,699 · complete · 그룹 결측 제외 0 · SELECT `age`, `education`, COUNT(*) AS `__frequency` FROM `teleai_default`.`bank_loan` WHERE `age` IS NOT NULL AND (`education` IN ('primary', 'secondary') AND `age` >= 30 AND `age` <= 40) GROUP BY `age`, `education`",
+          "render_spec": {
+            "kind": "histogram",
+            "x": "age",
+            "category": "education",
+            "bins": 8,
+            "legend": true,
+            "stacked": false,
+            "palette": "default",
+            "legend_labels": [
+              "primary",
+              "secondary"
+            ],
+            "colors": [
+              "#3278b9",
+              "#e58632"
+            ],
+            "bin_edges": [
+              30.0,
+              31.25,
+              32.5,
+              33.75,
+              35.0,
+              36.25,
+              37.5,
+              38.75,
+              40.0
+            ],
+            "series_counts": [
+              [
+                3015,
+                2336,
+                2357,
+                2324,
+                5197,
+                2714,
+                2677,
+                6819
+              ],
+              [
+                34015,
+                19889,
+                18085,
+                18462,
+                34644,
+                15689,
+                13982,
+                26494
+              ]
+            ],
+            "group_totals": [
+              27439,
+              181260
+            ],
+            "total_count": 208699,
+            "excluded_null_group_count": 0,
+            "null_policy": "exclude"
+          }
+        }
+      ],
+      "verdict": "PASS"
+    },
+    {
+      "id": 8,
+      "prompt": "같은 조건을 유지해서 histogram을 다시 보여줘",
+      "status": "complete",
+      "goal": {
+        "objective": "requested work",
+        "mode": "execute",
+        "source_reference": "previous_analysis",
+        "sources": [
+          "teleai_default.bank_loan"
+        ],
+        "columns": [
+          "age"
+        ],
+        "conditions": [
+          {
+            "column": "education",
+            "op": "in",
+            "value": [
+              "primary",
+              "secondary"
+            ]
+          },
+          {
+            "column": "age",
+            "op": "ge",
+            "value": 30
+          },
+          {
+            "column": "age",
+            "op": "le",
+            "value": 40
+          }
+        ],
+        "any_conditions": [],
+        "measure_conditions": [],
+        "ratio": null,
+        "current_result_only": true,
+        "fresh_source_required": false,
+        "question": "",
+        "tasks": [
+          {
+            "capability": "chart",
+            "options": {
+              "kind": "histogram",
+              "axes": {
+                "x": "age"
+              },
+              "category": "education",
+              "legend": true,
+              "stacked": false,
+              "palette": "default",
+              "bins": 8
+            }
+          }
+        ]
+      },
+      "reason": null,
+      "run_id": "5343c5f8aad8465b96a1c70ce24b4bb7",
+      "model_calls": 6,
+      "chart_metadata": [
+        {
+          "id": "23ed42f2-e366-421d-b01c-ea049caad3ec",
+          "dataset_id": "4661eb0d-fb05-4c94-bac3-342ccb42ab7b",
+          "title": "education별 age 분포",
+          "reason": "공통 bin의 그룹별 COUNT(*)를 서로 다른 색의 막대로 표시하고 범례를 추가했습니다.",
+          "kind": "histogram",
+          "columns": [
+            "age",
+            "education"
+          ],
+          "scope": "빈도 합계 208,699 · complete · 그룹 결측 제외 0 · SELECT `age`, `education`, COUNT(*) AS `__frequency` FROM `teleai_default`.`bank_loan` WHERE `age` IS NOT NULL AND (`education` IN ('primary', 'secondary') AND `age` >= 30 AND `age` <= 40) GROUP BY `age`, `education`",
+          "render_spec": {
+            "kind": "histogram",
+            "x": "age",
+            "category": "education",
+            "bins": 8,
+            "legend": true,
+            "stacked": false,
+            "palette": "default",
+            "legend_labels": [
+              "primary",
+              "secondary"
+            ],
+            "colors": [
+              "#3278b9",
+              "#e58632"
+            ],
+            "bin_edges": [
+              30.0,
+              31.25,
+              32.5,
+              33.75,
+              35.0,
+              36.25,
+              37.5,
+              38.75,
+              40.0
+            ],
+            "series_counts": [
+              [
+                3015,
+                2336,
+                2357,
+                2324,
+                5197,
+                2714,
+                2677,
+                6819
+              ],
+              [
+                34015,
+                19889,
+                18085,
+                18462,
+                34644,
+                15689,
+                13982,
+                26494
+              ]
+            ],
+            "group_totals": [
+              27439,
+              181260
+            ],
+            "total_count": 208699,
+            "excluded_null_group_count": 0,
+            "null_policy": "exclude"
+          }
+        }
+      ],
+      "verdict": "PASS"
+    },
+    {
+      "id": 9,
+      "prompt": "legend를 넣어서 primary과 secondary 에 따라서 색을 좀 넣어줘, ",
+      "status": "complete",
+      "goal": {
+        "objective": "requested work",
+        "mode": "execute",
+        "source_reference": "previous_analysis",
+        "sources": [
+          "teleai_default.bank_loan"
+        ],
+        "columns": [
+          "education",
+          "age"
+        ],
+        "conditions": [
+          {
+            "column": "education",
+            "op": "in",
+            "value": [
+              "primary",
+              "secondary"
+            ]
+          },
+          {
+            "column": "age",
+            "op": "ge",
+            "value": 30
+          },
+          {
+            "column": "age",
+            "op": "le",
+            "value": 40
+          }
+        ],
+        "any_conditions": [],
+        "measure_conditions": [],
+        "ratio": null,
+        "current_result_only": false,
+        "fresh_source_required": false,
+        "question": "",
+        "tasks": [
+          {
+            "capability": "chart",
+            "options": {
+              "kind": "histogram",
+              "axes": {
+                "x": "age"
+              },
+              "category": "education",
+              "legend": true,
+              "stacked": false,
+              "palette": "default"
+            }
+          }
+        ]
+      },
+      "reason": null,
+      "run_id": "8a429a8a24e5431985746eae5a305390",
+      "model_calls": 6,
+      "chart_metadata": [
+        {
+          "id": "23ed42f2-e366-421d-b01c-ea049caad3ec",
+          "dataset_id": "4661eb0d-fb05-4c94-bac3-342ccb42ab7b",
+          "title": "education별 age 분포",
+          "reason": "공통 bin의 그룹별 COUNT(*)를 서로 다른 색의 막대로 표시하고 범례를 추가했습니다.",
+          "kind": "histogram",
+          "columns": [
+            "age",
+            "education"
+          ],
+          "scope": "빈도 합계 208,699 · complete · 그룹 결측 제외 0 · SELECT `age`, `education`, COUNT(*) AS `__frequency` FROM `teleai_default`.`bank_loan` WHERE `age` IS NOT NULL AND (`education` IN ('primary', 'secondary') AND `age` >= 30 AND `age` <= 40) GROUP BY `age`, `education`",
+          "render_spec": {
+            "kind": "histogram",
+            "x": "age",
+            "category": "education",
+            "bins": 8,
+            "legend": true,
+            "stacked": false,
+            "palette": "default",
+            "legend_labels": [
+              "primary",
+              "secondary"
+            ],
+            "colors": [
+              "#3278b9",
+              "#e58632"
+            ],
+            "bin_edges": [
+              30.0,
+              31.25,
+              32.5,
+              33.75,
+              35.0,
+              36.25,
+              37.5,
+              38.75,
+              40.0
+            ],
+            "series_counts": [
+              [
+                3015,
+                2336,
+                2357,
+                2324,
+                5197,
+                2714,
+                2677,
+                6819
+              ],
+              [
+                34015,
+                19889,
+                18085,
+                18462,
+                34644,
+                15689,
+                13982,
+                26494
+              ]
+            ],
+            "group_totals": [
+              27439,
+              181260
+            ],
+            "total_count": 208699,
+            "excluded_null_group_count": 0,
+            "null_policy": "exclude"
+          }
+        }
+      ],
+      "verdict": "PASS"
+    },
+    {
+      "id": 10,
+      "prompt": "색 구별이 안 되고 있어 ",
+      "status": "complete",
+      "goal": {
+        "objective": "requested work",
+        "mode": "execute",
+        "source_reference": "previous_analysis",
+        "sources": [
+          "teleai_default.bank_loan"
+        ],
+        "columns": [
+          "education",
+          "age"
+        ],
+        "conditions": [
+          {
+            "column": "education",
+            "op": "in",
+            "value": [
+              "primary",
+              "secondary"
+            ]
+          },
+          {
+            "column": "age",
+            "op": "ge",
+            "value": 30
+          },
+          {
+            "column": "age",
+            "op": "le",
+            "value": 40
+          }
+        ],
+        "any_conditions": [],
+        "measure_conditions": [],
+        "ratio": null,
+        "current_result_only": false,
+        "fresh_source_required": false,
+        "question": "",
+        "tasks": [
+          {
+            "capability": "chart",
+            "options": {
+              "kind": "histogram",
+              "axes": {
+                "x": "age"
+              },
+              "category": "education",
+              "legend": true,
+              "stacked": false,
+              "palette": "high_contrast"
+            }
+          }
+        ]
+      },
+      "reason": null,
+      "run_id": "dc9e3f2cd805418bb9670997d04e32a2",
+      "model_calls": 5,
+      "chart_metadata": [
+        {
+          "id": "e8fcbe3a-40d6-480d-8f3c-6a4b1dd0f5ec",
+          "dataset_id": "4661eb0d-fb05-4c94-bac3-342ccb42ab7b",
+          "title": "education별 age 분포",
+          "reason": "공통 bin의 그룹별 COUNT(*)를 서로 다른 색의 막대로 표시하고 범례를 추가했습니다.",
+          "kind": "histogram",
+          "columns": [
+            "age",
+            "education"
+          ],
+          "scope": "빈도 합계 208,699 · complete · 그룹 결측 제외 0 · SELECT `age`, `education`, COUNT(*) AS `__frequency` FROM `teleai_default`.`bank_loan` WHERE `age` IS NOT NULL AND (`education` IN ('primary', 'secondary') AND `age` >= 30 AND `age` <= 40) GROUP BY `age`, `education`",
+          "render_spec": {
+            "kind": "histogram",
+            "x": "age",
+            "category": "education",
+            "bins": 8,
+            "legend": true,
+            "stacked": false,
+            "palette": "high_contrast",
+            "legend_labels": [
+              "primary",
+              "secondary"
+            ],
+            "colors": [
+              "#003f5c",
+              "#ffa600"
+            ],
+            "bin_edges": [
+              30.0,
+              31.25,
+              32.5,
+              33.75,
+              35.0,
+              36.25,
+              37.5,
+              38.75,
+              40.0
+            ],
+            "series_counts": [
+              [
+                3015,
+                2336,
+                2357,
+                2324,
+                5197,
+                2714,
+                2677,
+                6819
+              ],
+              [
+                34015,
+                19889,
+                18085,
+                18462,
+                34644,
+                15689,
+                13982,
+                26494
+              ]
+            ],
+            "group_totals": [
+              27439,
+              181260
+            ],
+            "total_count": 208699,
+            "excluded_null_group_count": 0,
+            "null_policy": "exclude"
+          }
+        }
+      ],
+      "verdict": "PASS"
+    },
+    {
+      "id": 11,
+      "prompt": "education별 색상 구분과 legend를 넣어줘",
+      "status": "complete",
+      "goal": {
+        "objective": "requested work",
+        "mode": "execute",
+        "source_reference": "explicit",
+        "sources": [
+          "teleai_default.bank_loan"
+        ],
+        "columns": [
+          "education",
+          "age"
+        ],
+        "conditions": [
+          {
+            "column": "education",
+            "op": "in",
+            "value": [
+              "primary",
+              "secondary"
+            ]
+          }
+        ],
+        "any_conditions": [],
+        "measure_conditions": [],
+        "ratio": null,
+        "current_result_only": false,
+        "fresh_source_required": false,
+        "question": "",
+        "tasks": [
+          {
+            "capability": "chart",
+            "options": {
+              "kind": "histogram",
+              "axes": {
+                "x": "age"
+              },
+              "category": "education",
+              "legend": true,
+              "stacked": false,
+              "palette": "high_contrast"
+            }
+          }
+        ]
+      },
+      "reason": null,
+      "run_id": "9e6ff4127fa04563a882fd4af16a4429",
+      "model_calls": 7,
+      "chart_metadata": [
+        {
+          "id": "63b4d52c-7067-4e9b-a2ee-b18a75137917",
+          "dataset_id": "56c01916-6f60-4fbf-8d78-fc549575c577",
+          "title": "education별 age 분포",
+          "reason": "공통 bin의 그룹별 COUNT(*)를 서로 다른 색의 막대로 표시하고 범례를 추가했습니다.",
+          "kind": "histogram",
+          "columns": [
+            "age",
+            "education"
+          ],
+          "scope": "빈도 합계 501,193 · complete · 그룹 결측 제외 0 · SELECT `age`, `education`, COUNT(*) AS `__frequency` FROM `teleai_default`.`bank_loan` WHERE `age` IS NOT NULL AND (`education` IN ('primary', 'secondary')) GROUP BY `age`, `education`",
+          "render_spec": {
+            "kind": "histogram",
+            "x": "age",
+            "category": "education",
+            "bins": 8,
+            "legend": true,
+            "stacked": false,
+            "palette": "high_contrast",
+            "legend_labels": [
+              "primary",
+              "secondary"
+            ],
+            "colors": [
+              "#003f5c",
+              "#ffa600"
+            ],
+            "bin_edges": [
+              18.0,
+              27.625,
+              37.25,
+              46.875,
+              56.5,
+              66.125,
+              75.75,
+              85.375,
+              95.0
+            ],
+            "series_counts": [
+              [
+                1990,
+                19779,
+                29794,
+                30851,
+                14189,
+                1809,
+                1016,
+                82
+              ],
+              [
+                27828,
+                160314,
+                106296,
+                79681,
+                24972,
+                1974,
+                583,
+                35
+              ]
+            ],
+            "group_totals": [
+              99510,
+              401683
+            ],
+            "total_count": 501193,
+            "excluded_null_group_count": 0,
+            "null_policy": "exclude"
+          }
+        }
+      ],
+      "verdict": "FAIL",
+      "error": "wrong population total"
+    },
+    {
+      "id": 12,
+      "prompt": "하나의 stack으로 legend를 포함해서 다시 그려줘",
+      "status": "complete",
+      "goal": {
+        "objective": "requested work",
+        "mode": "execute",
+        "source_reference": "previous_analysis",
+        "sources": [
+          "teleai_default.bank_loan"
+        ],
+        "columns": [
+          "age"
+        ],
+        "conditions": [
+          {
+            "column": "education",
+            "op": "in",
+            "value": [
+              "primary",
+              "secondary"
+            ]
+          }
+        ],
+        "any_conditions": [],
+        "measure_conditions": [],
+        "ratio": null,
+        "current_result_only": false,
+        "fresh_source_required": false,
+        "question": "",
+        "tasks": [
+          {
+            "capability": "chart",
+            "options": {
+              "kind": "histogram",
+              "axes": {
+                "x": "age"
+              },
+              "category": "education",
+              "legend": true,
+              "stacked": true,
+              "palette": "high_contrast"
+            }
+          }
+        ]
+      },
+      "reason": null,
+      "run_id": "f3932f97220b474fb51991f90f3e7f6a",
+      "model_calls": 7,
+      "chart_metadata": [
+        {
+          "id": "a3290031-4283-484e-9703-1336218008ea",
+          "dataset_id": "56c01916-6f60-4fbf-8d78-fc549575c577",
+          "title": "education별 age 분포",
+          "reason": "공통 bin의 그룹별 COUNT(*)를 서로 다른 색의 막대로 표시하고 범례를 추가했습니다.",
+          "kind": "histogram",
+          "columns": [
+            "age",
+            "education"
+          ],
+          "scope": "빈도 합계 501,193 · complete · 그룹 결측 제외 0 · SELECT `age`, `education`, COUNT(*) AS `__frequency` FROM `teleai_default`.`bank_loan` WHERE `age` IS NOT NULL AND (`education` IN ('primary', 'secondary')) GROUP BY `age`, `education`",
+          "render_spec": {
+            "kind": "histogram",
+            "x": "age",
+            "category": "education",
+            "bins": 8,
+            "legend": true,
+            "stacked": true,
+            "palette": "high_contrast",
+            "legend_labels": [
+              "primary",
+              "secondary"
+            ],
+            "colors": [
+              "#003f5c",
+              "#ffa600"
+            ],
+            "bin_edges": [
+              18.0,
+              27.625,
+              37.25,
+              46.875,
+              56.5,
+              66.125,
+              75.75,
+              85.375,
+              95.0
+            ],
+            "series_counts": [
+              [
+                1990,
+                19779,
+                29794,
+                30851,
+                14189,
+                1809,
+                1016,
+                82
+              ],
+              [
+                27828,
+                160314,
+                106296,
+                79681,
+                24972,
+                1974,
+                583,
+                35
+              ]
+            ],
+            "group_totals": [
+              99510,
+              401683
+            ],
+            "total_count": 501193,
+            "excluded_null_group_count": 0,
+            "null_policy": "exclude"
+          }
+        }
+      ],
+      "verdict": "FAIL",
+      "error": "wrong population total"
+    },
+    {
+      "id": 13,
+      "prompt": "stackbin으로 다시 그려줘",
+      "status": "complete",
+      "goal": {
+        "objective": "requested work",
+        "mode": "execute",
+        "source_reference": "previous_analysis",
+        "sources": [
+          "teleai_default.bank_loan"
+        ],
+        "columns": [
+          "age",
+          "education"
+        ],
+        "conditions": [
+          {
+            "column": "education",
+            "op": "in",
+            "value": [
+              "primary",
+              "secondary"
+            ]
+          }
+        ],
+        "any_conditions": [],
+        "measure_conditions": [],
+        "ratio": null,
+        "current_result_only": false,
+        "fresh_source_required": false,
+        "question": "",
+        "tasks": [
+          {
+            "capability": "chart",
+            "options": {
+              "kind": "histogram",
+              "axes": {
+                "x": "age"
+              },
+              "category": "education",
+              "legend": true,
+              "stacked": true,
+              "palette": "high_contrast",
+              "bins": 8
+            }
+          }
+        ]
+      },
+      "reason": null,
+      "run_id": "85120a3deb384f649be103c98f9778f8",
+      "model_calls": 6,
+      "chart_metadata": [
+        {
+          "id": "a3290031-4283-484e-9703-1336218008ea",
+          "dataset_id": "56c01916-6f60-4fbf-8d78-fc549575c577",
+          "title": "education별 age 분포",
+          "reason": "공통 bin의 그룹별 COUNT(*)를 서로 다른 색의 막대로 표시하고 범례를 추가했습니다.",
+          "kind": "histogram",
+          "columns": [
+            "age",
+            "education"
+          ],
+          "scope": "빈도 합계 501,193 · complete · 그룹 결측 제외 0 · SELECT `age`, `education`, COUNT(*) AS `__frequency` FROM `teleai_default`.`bank_loan` WHERE `age` IS NOT NULL AND (`education` IN ('primary', 'secondary')) GROUP BY `age`, `education`",
+          "render_spec": {
+            "kind": "histogram",
+            "x": "age",
+            "category": "education",
+            "bins": 8,
+            "legend": true,
+            "stacked": true,
+            "palette": "high_contrast",
+            "legend_labels": [
+              "primary",
+              "secondary"
+            ],
+            "colors": [
+              "#003f5c",
+              "#ffa600"
+            ],
+            "bin_edges": [
+              18.0,
+              27.625,
+              37.25,
+              46.875,
+              56.5,
+              66.125,
+              75.75,
+              85.375,
+              95.0
+            ],
+            "series_counts": [
+              [
+                1990,
+                19779,
+                29794,
+                30851,
+                14189,
+                1809,
+                1016,
+                82
+              ],
+              [
+                27828,
+                160314,
+                106296,
+                79681,
+                24972,
+                1974,
+                583,
+                35
+              ]
+            ],
+            "group_totals": [
+              99510,
+              401683
+            ],
+            "total_count": 501193,
+            "excluded_null_group_count": 0,
+            "null_policy": "exclude"
+          }
+        }
+      ],
+      "verdict": "FAIL",
+      "error": "wrong population total"
+    },
+    {
+      "id": 14,
+      "prompt": "이거 legend를 넣어줘",
+      "status": "complete",
+      "goal": {
+        "objective": "requested work",
+        "mode": "execute",
+        "source_reference": "previous_analysis",
+        "sources": [
+          "teleai_default.bank_loan"
+        ],
+        "columns": [
+          "age",
+          "education"
+        ],
+        "conditions": [
+          {
+            "column": "education",
+            "op": "in",
+            "value": [
+              "primary",
+              "secondary"
+            ]
+          }
+        ],
+        "any_conditions": [],
+        "measure_conditions": [],
+        "ratio": null,
+        "current_result_only": false,
+        "fresh_source_required": false,
+        "question": "",
+        "tasks": [
+          {
+            "capability": "chart",
+            "options": {
+              "kind": "histogram",
+              "axes": {
+                "x": "age"
+              },
+              "category": "education",
+              "legend": true,
+              "stacked": true,
+              "palette": "high_contrast"
+            }
+          }
+        ]
+      },
+      "reason": null,
+      "run_id": "f7c11103a3ab4525a09a7e6d03681126",
+      "model_calls": 7,
+      "chart_metadata": [
+        {
+          "id": "a3290031-4283-484e-9703-1336218008ea",
+          "dataset_id": "56c01916-6f60-4fbf-8d78-fc549575c577",
+          "title": "education별 age 분포",
+          "reason": "공통 bin의 그룹별 COUNT(*)를 서로 다른 색의 막대로 표시하고 범례를 추가했습니다.",
+          "kind": "histogram",
+          "columns": [
+            "age",
+            "education"
+          ],
+          "scope": "빈도 합계 501,193 · complete · 그룹 결측 제외 0 · SELECT `age`, `education`, COUNT(*) AS `__frequency` FROM `teleai_default`.`bank_loan` WHERE `age` IS NOT NULL AND (`education` IN ('primary', 'secondary')) GROUP BY `age`, `education`",
+          "render_spec": {
+            "kind": "histogram",
+            "x": "age",
+            "category": "education",
+            "bins": 8,
+            "legend": true,
+            "stacked": true,
+            "palette": "high_contrast",
+            "legend_labels": [
+              "primary",
+              "secondary"
+            ],
+            "colors": [
+              "#003f5c",
+              "#ffa600"
+            ],
+            "bin_edges": [
+              18.0,
+              27.625,
+              37.25,
+              46.875,
+              56.5,
+              66.125,
+              75.75,
+              85.375,
+              95.0
+            ],
+            "series_counts": [
+              [
+                1990,
+                19779,
+                29794,
+                30851,
+                14189,
+                1809,
+                1016,
+                82
+              ],
+              [
+                27828,
+                160314,
+                106296,
+                79681,
+                24972,
+                1974,
+                583,
+                35
+              ]
+            ],
+            "group_totals": [
+              99510,
+              401683
+            ],
+            "total_count": 501193,
+            "excluded_null_group_count": 0,
+            "null_policy": "exclude"
+          }
+        }
+      ],
+      "verdict": "FAIL",
+      "error": "wrong population total"
+    },
+    {
+      "id": 15,
+      "prompt": "테이블의 column 다시 보여줘",
+      "status": "complete",
+      "goal": {
+        "objective": "requested work",
+        "mode": "execute",
+        "source_reference": "previous_analysis",
+        "sources": [
+          "teleai_default.bank_loan"
+        ],
+        "columns": [],
+        "conditions": [
+          {
+            "column": "education",
+            "op": "in",
+            "value": [
+              "primary",
+              "secondary"
+            ]
+          }
+        ],
+        "any_conditions": [],
+        "measure_conditions": [],
+        "ratio": null,
+        "current_result_only": false,
+        "fresh_source_required": false,
+        "question": "",
+        "tasks": [
+          {
+            "capability": "metadata",
+            "options": {
+              "kind": "columns"
+            }
+          }
+        ]
+      },
+      "reason": null,
+      "run_id": "2e767f487ee24187af373c00cac007d0",
+      "model_calls": 4,
+      "chart_metadata": [],
+      "verified_metadata_columns": 18,
+      "verdict": "PASS"
+    },
+    {
+      "id": 16,
+      "prompt": "데이타 10개 row만 추출해서 table로 보여줘 ",
+      "status": "complete",
+      "goal": {
+        "objective": "requested work",
+        "mode": "execute",
+        "source_reference": "previous_analysis",
+        "sources": [
+          "teleai_default.bank_loan"
+        ],
+        "columns": [],
+        "conditions": [
+          {
+            "column": "education",
+            "op": "in",
+            "value": [
+              "primary",
+              "secondary"
+            ]
+          }
+        ],
+        "any_conditions": [],
+        "measure_conditions": [],
+        "ratio": null,
+        "current_result_only": false,
+        "fresh_source_required": false,
+        "question": "",
+        "tasks": [
+          {
+            "capability": "row_preview",
+            "options": {
+              "limit": 10
+            }
+          }
+        ]
+      },
+      "reason": null,
+      "run_id": "f820bfde7aaf434fbc44e922a362499e",
+      "model_calls": 5,
+      "chart_metadata": [],
+      "verified_preview_shape": [
+        10,
+        18
+      ],
+      "verdict": "FAIL",
+      "error": "preview lost preceding population conditions"
+    },
+    {
+      "id": 17,
+      "prompt": "age를 x축으로 하고 balance를 Y축으로 하는 scatter plot를 그려줘",
+      "status": "blocked",
+      "goal": {
+        "objective": "requested work",
+        "mode": "execute",
+        "source_reference": "previous_analysis",
+        "sources": [
+          "teleai_default.bank_loan"
+        ],
+        "columns": [
+          "age",
+          "balance"
+        ],
+        "conditions": [
+          {
+            "column": "education",
+            "op": "in",
+            "value": [
+              "primary",
+              "secondary"
+            ]
+          }
+        ],
+        "any_conditions": [],
+        "measure_conditions": [],
+        "ratio": null,
+        "current_result_only": false,
+        "fresh_source_required": false,
+        "question": "",
+        "tasks": [
+          {
+            "capability": "chart",
+            "options": {
+              "kind": "scatter",
+              "axes": {
+                "x": "age",
+                "y": "balance"
+              }
+            }
+          }
+        ]
+      },
+      "reason": "whole_scatter_incomplete",
+      "run_id": "705c6ba1862b48dea01f20b4f6637c9f",
+      "model_calls": 6,
+      "chart_metadata": [],
+      "verdict": "FAIL",
+      "error": "whole_scatter_incomplete"
+    },
+    {
+      "id": 18,
+      "verdict": "FAIL",
+      "reason": "ModelAttemptBudgetExceeded",
+      "run_id": "3968116b7e9f44c48c9dbfc29957d53c",
+      "error_id": "d3b739a47a7a"
+    },
+    {
+      "id": 19,
+      "prompt": "전체 데이타에 대해서 age와 balance scatter plot으로 그려줘",
+      "status": "complete",
+      "goal": {
+        "objective": "requested work",
+        "mode": "execute",
+        "source_reference": "previous_analysis",
+        "sources": [
+          "teleai_default.bank_loan"
+        ],
+        "columns": [
+          "age",
+          "balance"
+        ],
+        "conditions": [],
+        "any_conditions": [],
+        "measure_conditions": [],
+        "ratio": null,
+        "current_result_only": false,
+        "fresh_source_required": false,
+        "question": "",
+        "tasks": [
+          {
+            "capability": "chart",
+            "options": {
+              "kind": "scatter",
+              "axes": {
+                "x": "age",
+                "y": "balance"
+              }
+            }
+          }
+        ]
+      },
+      "reason": null,
+      "run_id": "1fc0099f412142f196a9b3ed65a50bc7",
+      "model_calls": 6,
+      "chart_metadata": [
+        {
+          "id": "a85a82f0-bafb-4771-b4d3-c96b7a3b0faf",
+          "dataset_id": "63be50c3-d6df-4a7e-99e4-84952b207d9a",
+          "title": "age와 balance 관계",
+          "reason": "전체 유효 좌표를 표시하고 중복 빈도를 색상으로 표현합니다.",
+          "kind": "scatter",
+          "columns": [
+            "age",
+            "balance"
+          ],
+          "scope": "전체 유효 원본 750,000행 · 고유 좌표 132,613개 · 동일 좌표는 빈도로 압축 · 표본/구간 집계 없음 · 두 축의 NULL 제외 · complete",
+          "render_spec": {
+            "mode": "exact_coordinate_frequency",
+            "source": "teleai_default.bank_loan",
+            "query": "SELECT `age`, `balance`, COUNT(*) AS `__telly_coordinate_frequency` FROM `teleai_default`.`bank_loan` WHERE `age` IS NOT NULL AND `balance` IS NOT NULL GROUP BY `age`, `balance`",
+            "snapshot": "2026-10-09T04:29:29.084787+00:00",
+            "x": "age",
+            "y": "balance",
+            "coordinate_count": 132613,
+            "drawable_rows": 750000,
+            "weight_column": "__telly_coordinate_frequency",
+            "data_sha256": "56a6272329b399a90bd24386eea1f14df29e43c365b7d2f82fb01915d09bdc2c"
+          }
+        }
+      ],
+      "verdict": "PASS"
+    },
+    {
+      "id": 20,
+      "prompt": "age와 balance 의 scatter plot으로 그려줘",
+      "status": "complete",
+      "goal": {
+        "objective": "requested work",
+        "mode": "execute",
+        "source_reference": "previous_analysis",
+        "sources": [
+          "teleai_default.bank_loan"
+        ],
+        "columns": [
+          "age",
+          "balance"
+        ],
+        "conditions": [],
+        "any_conditions": [],
+        "measure_conditions": [],
+        "ratio": null,
+        "current_result_only": false,
+        "fresh_source_required": false,
+        "question": "",
+        "tasks": [
+          {
+            "capability": "chart",
+            "options": {
+              "kind": "scatter",
+              "axes": {
+                "x": "age",
+                "y": "balance"
+              }
+            }
+          }
+        ]
+      },
+      "reason": null,
+      "run_id": "77fe298e4a4d40f290e89d8f1e6ee8f1",
+      "model_calls": 6,
+      "chart_metadata": [
+        {
+          "id": "a85a82f0-bafb-4771-b4d3-c96b7a3b0faf",
+          "dataset_id": "63be50c3-d6df-4a7e-99e4-84952b207d9a",
+          "title": "age와 balance 관계",
+          "reason": "전체 유효 좌표를 표시하고 중복 빈도를 색상으로 표현합니다.",
+          "kind": "scatter",
+          "columns": [
+            "age",
+            "balance"
+          ],
+          "scope": "전체 유효 원본 750,000행 · 고유 좌표 132,613개 · 동일 좌표는 빈도로 압축 · 표본/구간 집계 없음 · 두 축의 NULL 제외 · complete",
+          "render_spec": {
+            "mode": "exact_coordinate_frequency",
+            "source": "teleai_default.bank_loan",
+            "query": "SELECT `age`, `balance`, COUNT(*) AS `__telly_coordinate_frequency` FROM `teleai_default`.`bank_loan` WHERE `age` IS NOT NULL AND `balance` IS NOT NULL GROUP BY `age`, `balance`",
+            "snapshot": "2026-10-09T04:29:29.084787+00:00",
+            "x": "age",
+            "y": "balance",
+            "coordinate_count": 132613,
+            "drawable_rows": 750000,
+            "weight_column": "__telly_coordinate_frequency",
+            "data_sha256": "56a6272329b399a90bd24386eea1f14df29e43c365b7d2f82fb01915d09bdc2c"
+          }
+        }
+      ],
+      "verdict": "PASS"
+    },
+    {
+      "id": 21,
+      "prompt": "bank_loan 데이터를 10개 row로 보여줘",
+      "status": "blocked",
+      "goal": null,
+      "reason": "goal_unverified",
+      "run_id": "d09060753c8c4e89a11c904cbd399899",
+      "model_calls": 3,
+      "chart_metadata": [],
+      "verdict": "FAIL",
+      "error": "goal_unverified"
+    },
+    {
+      "id": 22,
+      "prompt": "방금 보여준 10행 데이터의 age를 x축, balance를 y축으로 scatter plot을 그려줘",
+      "status": "complete",
+      "goal": {
+        "objective": "requested work",
+        "mode": "execute",
+        "source_reference": "previous_analysis",
+        "sources": [
+          "teleai_default.bank_loan"
+        ],
+        "columns": [
+          "age",
+          "balance"
+        ],
+        "conditions": [],
+        "any_conditions": [],
+        "measure_conditions": [],
+        "ratio": null,
+        "current_result_only": true,
+        "fresh_source_required": false,
+        "question": "",
+        "tasks": [
+          {
+            "capability": "chart",
+            "options": {
+              "kind": "scatter",
+              "axes": {
+                "x": "age",
+                "y": "balance"
+              }
+            }
+          }
+        ]
+      },
+      "reason": null,
+      "run_id": "17ce7514a9cc443ba80cd06a65df3176",
+      "model_calls": 6,
+      "chart_metadata": [
+        {
+          "id": "1b7aa35e-4714-4490-87c2-62c13cb7aab3",
+          "dataset_id": "bc386a28-7125-48a6-a299-956df7cc5d1a",
+          "title": "age와 balance의 관계",
+          "reason": "완전한 좌표 10개 중 10개를 표시했습니다. 상관만으로 인과를 판단할 수 없습니다.",
+          "kind": "scatter",
+          "columns": [
+            "age",
+            "balance"
+          ],
+          "scope": "보유 10행 기준 · unknown · raw · 표시 데이터 10개 · 집계 none",
+          "render_spec": {
+            "kind": "scatter",
+            "x": "age",
+            "y": "balance",
+            "category": "",
+            "aggregation": "none",
+            "sort": "none",
+            "cumulative": false,
+            "top_n": 50,
+            "bins": 20,
+            "title": "age와 balance의 관계",
+            "x_label": "age",
+            "y_label": "balance",
+            "orientation": "vertical"
+          }
+        }
+      ],
+      "verdict": "FAIL",
+      "error": "'table_preview_evidence'"
+    },
+    {
+      "id": 23,
+      "prompt": "전체 데이타를 이용해서 age와 balance의 관계를 다시 scatter plot으로 그려줘",
+      "status": "complete",
+      "goal": {
+        "objective": "requested work",
+        "mode": "execute",
+        "source_reference": "previous_analysis",
+        "sources": [
+          "teleai_default.bank_loan"
+        ],
+        "columns": [
+          "age",
+          "balance"
+        ],
+        "conditions": [],
+        "any_conditions": [],
+        "measure_conditions": [],
+        "ratio": null,
+        "current_result_only": false,
+        "fresh_source_required": false,
+        "question": "",
+        "tasks": [
+          {
+            "capability": "chart",
+            "options": {
+              "kind": "scatter",
+              "axes": {
+                "x": "age",
+                "y": "balance"
+              }
+            }
+          }
+        ]
+      },
+      "reason": null,
+      "run_id": "6661e46bf79c40a4bb8039f7c99a009f",
+      "model_calls": 6,
+      "chart_metadata": [
+        {
+          "id": "a85a82f0-bafb-4771-b4d3-c96b7a3b0faf",
+          "dataset_id": "63be50c3-d6df-4a7e-99e4-84952b207d9a",
+          "title": "age와 balance 관계",
+          "reason": "전체 유효 좌표를 표시하고 중복 빈도를 색상으로 표현합니다.",
+          "kind": "scatter",
+          "columns": [
+            "age",
+            "balance"
+          ],
+          "scope": "전체 유효 원본 750,000행 · 고유 좌표 132,613개 · 동일 좌표는 빈도로 압축 · 표본/구간 집계 없음 · 두 축의 NULL 제외 · complete",
+          "render_spec": {
+            "mode": "exact_coordinate_frequency",
+            "source": "teleai_default.bank_loan",
+            "query": "SELECT `age`, `balance`, COUNT(*) AS `__telly_coordinate_frequency` FROM `teleai_default`.`bank_loan` WHERE `age` IS NOT NULL AND `balance` IS NOT NULL GROUP BY `age`, `balance`",
+            "snapshot": "2026-10-09T04:29:29.084787+00:00",
+            "x": "age",
+            "y": "balance",
+            "coordinate_count": 132613,
+            "drawable_rows": 750000,
+            "weight_column": "__telly_coordinate_frequency",
+            "data_sha256": "56a6272329b399a90bd24386eea1f14df29e43c365b7d2f82fb01915d09bdc2c"
+          }
+        }
+      ],
+      "verdict": "PASS"
+    },
+    {
+      "id": 24,
+      "prompt": "내가 볼 수 있는 table 다시 한번 보여줘",
+      "status": "complete",
+      "goal": {
+        "objective": "requested work",
+        "mode": "execute",
+        "source_reference": "explicit",
+        "sources": [],
+        "columns": [],
+        "conditions": [],
+        "any_conditions": [],
+        "measure_conditions": [],
+        "ratio": null,
+        "current_result_only": false,
+        "fresh_source_required": false,
+        "question": "",
+        "tasks": [
+          {
+            "capability": "table_list",
+            "options": {}
+          }
+        ]
+      },
+      "reason": null,
+      "run_id": "9bc0398691ac44f792fc5ea182953879",
+      "model_calls": 4,
+      "chart_metadata": [],
+      "verdict": "PASS"
+    },
+    {
+      "id": 25,
+      "prompt": "_tianchi_ssd_shared300k_import  row 수가 몇개야 ?",
+      "status": "blocked",
+      "goal": null,
+      "reason": "goal_unverified",
+      "run_id": "fd47935a9aa8476ea28dc14d29b90047",
+      "model_calls": 3,
+      "chart_metadata": [],
+      "verdict": "FAIL",
+      "error": "goal_unverified"
+    },
+    {
+      "id": 26,
+      "prompt": "table 다시 한번 보여줘",
+      "status": "complete",
+      "goal": {
+        "objective": "requested work",
+        "mode": "execute",
+        "source_reference": "explicit",
+        "sources": [],
+        "columns": [],
+        "conditions": [],
+        "any_conditions": [],
+        "measure_conditions": [],
+        "ratio": null,
+        "current_result_only": false,
+        "fresh_source_required": false,
+        "question": "",
+        "tasks": [
+          {
+            "capability": "table_list",
+            "options": {}
+          }
+        ]
+      },
+      "reason": null,
+      "run_id": "c2ea328dcd7b4354b5f5e83315c4e111",
+      "model_calls": 4,
+      "chart_metadata": [],
+      "verdict": "PASS"
+    },
+    {
+      "id": 27,
+      "prompt": "tianchi_ssd_shared300k_raw 이 table row 수가 몇개야 ?",
+      "status": "blocked",
+      "goal": null,
+      "reason": "goal_unverified",
+      "run_id": "bdf9f211202d4871a63137a0ad3d5fce",
+      "model_calls": 3,
+      "chart_metadata": [],
+      "verdict": "FAIL",
+      "error": "missing source needs actionable clarification"
+    },
+    {
+      "id": 28,
+      "prompt": "이 테이블의 column들을 보여줘",
+      "status": "complete",
+      "goal": {
+        "objective": "requested work",
+        "mode": "execute",
+        "source_reference": "explicit",
+        "sources": [],
+        "columns": [],
+        "conditions": [],
+        "any_conditions": [],
+        "measure_conditions": [],
+        "ratio": null,
+        "current_result_only": false,
+        "fresh_source_required": false,
+        "question": "",
+        "tasks": [
+          {
+            "capability": "table_list",
+            "options": {}
+          }
+        ]
+      },
+      "reason": null,
+      "run_id": "aee4a1df6c5c4dfe883cd0b728f52f1c",
+      "model_calls": 4,
+      "chart_metadata": [],
+      "verdict": "FAIL",
+      "error": "missing source needs actionable clarification"
+    },
+    {
+      "id": 29,
+      "prompt": "teleai_default.bank_loan 전체 데이타를 이용해서 age와 balance의 관계를 다시 scatter plot으로 그려줘",
+      "status": "complete",
+      "goal": {
+        "objective": "requested work",
+        "mode": "execute",
+        "source_reference": "explicit",
+        "sources": [
+          "teleai_default.bank_loan"
+        ],
+        "columns": [
+          "age",
+          "balance"
+        ],
+        "conditions": [],
+        "any_conditions": [],
+        "measure_conditions": [],
+        "ratio": null,
+        "current_result_only": false,
+        "fresh_source_required": false,
+        "question": "",
+        "tasks": [
+          {
+            "capability": "chart",
+            "options": {
+              "kind": "scatter",
+              "axes": {
+                "x": "age",
+                "y": "balance"
+              }
+            }
+          }
+        ]
+      },
+      "reason": null,
+      "run_id": "96aa6ee848cc4bf88556096dc06c8305",
+      "model_calls": 5,
+      "chart_metadata": [
+        {
+          "id": "a85a82f0-bafb-4771-b4d3-c96b7a3b0faf",
+          "dataset_id": "63be50c3-d6df-4a7e-99e4-84952b207d9a",
+          "title": "age와 balance 관계",
+          "reason": "전체 유효 좌표를 표시하고 중복 빈도를 색상으로 표현합니다.",
+          "kind": "scatter",
+          "columns": [
+            "age",
+            "balance"
+          ],
+          "scope": "전체 유효 원본 750,000행 · 고유 좌표 132,613개 · 동일 좌표는 빈도로 압축 · 표본/구간 집계 없음 · 두 축의 NULL 제외 · complete",
+          "render_spec": {
+            "mode": "exact_coordinate_frequency",
+            "source": "teleai_default.bank_loan",
+            "query": "SELECT `age`, `balance`, COUNT(*) AS `__telly_coordinate_frequency` FROM `teleai_default`.`bank_loan` WHERE `age` IS NOT NULL AND `balance` IS NOT NULL GROUP BY `age`, `balance`",
+            "snapshot": "2026-10-09T04:29:29.084787+00:00",
+            "x": "age",
+            "y": "balance",
+            "coordinate_count": 132613,
+            "drawable_rows": 750000,
+            "weight_column": "__telly_coordinate_frequency",
+            "data_sha256": "56a6272329b399a90bd24386eea1f14df29e43c365b7d2f82fb01915d09bdc2c"
+          }
+        }
+      ],
+      "verdict": "PASS"
+    },
+    {
+      "id": 30,
+      "prompt": "table column를보여줘",
+      "status": "complete",
+      "goal": {
+        "objective": "requested work",
+        "mode": "execute",
+        "source_reference": "explicit",
+        "sources": [
+          "teleai_default.bank_loan"
+        ],
+        "columns": [],
+        "conditions": [],
+        "any_conditions": [],
+        "measure_conditions": [],
+        "ratio": null,
+        "current_result_only": false,
+        "fresh_source_required": false,
+        "question": "",
+        "tasks": [
+          {
+            "capability": "metadata",
+            "options": {
+              "kind": "columns"
+            }
+          }
+        ]
+      },
+      "reason": null,
+      "run_id": "62420a9a815a405b8cd3c040d10126f6",
+      "model_calls": 4,
+      "chart_metadata": [],
+      "verified_metadata_columns": 18,
+      "verdict": "PASS"
+    },
+    {
+      "id": 31,
+      "prompt": "teleai_default.bank_loan 전체 데이터의 age와 balance scatter plot을 다시 그려줘",
+      "status": "complete",
+      "goal": {
+        "objective": "requested work",
+        "mode": "execute",
+        "source_reference": "explicit",
+        "sources": [
+          "teleai_default.bank_loan"
+        ],
+        "columns": [
+          "age",
+          "balance"
+        ],
+        "conditions": [],
+        "any_conditions": [],
+        "measure_conditions": [],
+        "ratio": null,
+        "current_result_only": false,
+        "fresh_source_required": false,
+        "question": "",
+        "tasks": [
+          {
+            "capability": "chart",
+            "options": {
+              "kind": "scatter",
+              "axes": {
+                "x": "age",
+                "y": "balance"
+              }
+            }
+          }
+        ]
+      },
+      "reason": null,
+      "run_id": "07a585ef3b3947f28bda4501e816be06",
+      "model_calls": 5,
+      "chart_metadata": [
+        {
+          "id": "a85a82f0-bafb-4771-b4d3-c96b7a3b0faf",
+          "dataset_id": "63be50c3-d6df-4a7e-99e4-84952b207d9a",
+          "title": "age와 balance 관계",
+          "reason": "전체 유효 좌표를 표시하고 중복 빈도를 색상으로 표현합니다.",
+          "kind": "scatter",
+          "columns": [
+            "age",
+            "balance"
+          ],
+          "scope": "전체 유효 원본 750,000행 · 고유 좌표 132,613개 · 동일 좌표는 빈도로 압축 · 표본/구간 집계 없음 · 두 축의 NULL 제외 · complete",
+          "render_spec": {
+            "mode": "exact_coordinate_frequency",
+            "source": "teleai_default.bank_loan",
+            "query": "SELECT `age`, `balance`, COUNT(*) AS `__telly_coordinate_frequency` FROM `teleai_default`.`bank_loan` WHERE `age` IS NOT NULL AND `balance` IS NOT NULL GROUP BY `age`, `balance`",
+            "snapshot": "2026-10-09T04:29:29.084787+00:00",
+            "x": "age",
+            "y": "balance",
+            "coordinate_count": 132613,
+            "drawable_rows": 750000,
+            "weight_column": "__telly_coordinate_frequency",
+            "data_sha256": "56a6272329b399a90bd24386eea1f14df29e43c365b7d2f82fb01915d09bdc2c"
+          }
+        }
+      ],
+      "verdict": "PASS"
+    }
+  ]
+}

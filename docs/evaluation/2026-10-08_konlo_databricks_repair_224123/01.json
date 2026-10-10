@@ -1,0 +1,615 @@
+{
+  "recent_transcript": [
+    {
+      "type": "ai",
+      "data": {
+        "content": "조회가 완료되었습니다. 출처: workspace.information\\_schema.tables · 저장된 결과 5행.\n\n| table\\_catalog | table\\_schema | table\\_name | table\\_type |\n| --- | --- | --- | --- |\n| workspace | default | bank\\_loan | MANAGED |\n| workspace | default | error\\_test | MANAGED |\n| workspace | default | ncr\\_ride | MANAGED |\n| workspace | default | stormtrooper | MANAGED |\n| workspace | default | titanic | MANAGED |\n\n범위: 전체 범위 미확인. 실행한 SQL의 조건과 행 제한이 적용된 결과입니다.",
+        "additional_kwargs": {
+          "analysis_status": "answered",
+          "analysis_controller_result": true,
+          "analysis_artifact_ids": []
+        },
+        "response_metadata": {},
+        "type": "ai",
+        "name": null,
+        "id": "5c8a616e-d508-4cd9-9a04-912d631168ce",
+        "tool_calls": [],
+        "invalid_tool_calls": [],
+        "usage_metadata": null
+      }
+    },
+    {
+      "type": "tool",
+      "data": {
+        "content": "{\"status\": \"ready\", \"dataset\": {\"id\": \"84b1c7ee-91ef-4b82-8082-2f243eb0e54f\", \"source\": \"workspace.information_schema.tables\", \"columns\": [\"table_catalog\", \"table_schema\", \"table_name\", \"table_type\"], \"rows\": 5, \"coverage\": \"unknown\", \"conditions\": [], \"predicate_known\": false, \"grain\": \"raw\", \"aggregation\": \"\", \"snapshot\": \"2026-10-08T13:48:21.201765+00:00\", \"query\": \"SELECT table_catalog, table_schema, table_name, table_type FROM `workspace`.information_schema.tables WHERE table_schema = 'default' ORDER BY table_catalog, table_schema, table_name LIMIT 100\", \"parent_id\": \"\", \"parent_ids\": [], \"role\": \"root\", \"root_id\": \"84b1c7ee-91ef-4b82-8082-2f243eb0e54f\", \"row_selection\": {}}, \"preview\": [{\"table_catalog\": \"workspace\", \"table_schema\": \"default\", \"table_name\": \"bank_loan\", \"table_type\": \"MANAGED\"}, {\"table_catalog\": \"workspace\", \"table_schema\": \"default\", \"table_name\": \"error_test\", \"table_type\": \"MANAGED\"}, {\"table_catalog\": \"workspace\", \"table_schema\": \"default\", \"table_name\": \"ncr_ride\", \"table_type\": \"MANAGED\"}, {\"table_catalog\": \"workspace\", \"table_schema\": \"default\", \"table_name\": \"stormtrooper\", \"table_type\": \"MANAGED\"}, {\"table_catalog\": \"workspace\", \"table_schema\": \"default\", \"table_name\": \"titanic\", \"table_type\": \"MANAGED\"}], \"evidence_ids\": [\"84b1c7ee-91ef-4b82-8082-2f243eb0e54f\"], \"error_code\": null, \"retryable\": false, \"user_action\": \"\", \"scope\": \"도구가 반환한 구조화 결과 범위입니다.\"}",
+        "additional_kwargs": {},
+        "response_metadata": {},
+        "type": "tool",
+        "name": "query_databricks",
+        "id": "779fbad1-d4f0-49e3-acc4-35de7ca09e86",
+        "tool_call_id": "4fbd1c10-1df0-4891-ab64-2a86060ebbff",
+        "artifact": null,
+        "status": "success"
+      }
+    },
+    {
+      "type": "ai",
+      "data": {
+        "content": "",
+        "additional_kwargs": {},
+        "response_metadata": {},
+        "type": "ai",
+        "name": null,
+        "id": "ae5d1314-ac1a-4a56-87bc-7e47f0e4ede6",
+        "tool_calls": [
+          {
+            "name": "query_databricks",
+            "args": {
+              "source": "workspace.information_schema.tables",
+              "query": "SELECT table_catalog, table_schema, table_name, table_type FROM `workspace`.information_schema.tables WHERE table_schema = 'default' ORDER BY table_catalog, table_schema, table_name LIMIT 100",
+              "reason": "사용 가능한 테이블 목록을 information_schema에서 조회합니다."
+            },
+            "id": "4fbd1c10-1df0-4891-ab64-2a86060ebbff",
+            "type": "tool_call"
+          }
+        ],
+        "invalid_tool_calls": [],
+        "usage_metadata": null
+      }
+    },
+    {
+      "type": "tool",
+      "data": {
+        "content": "{\"status\": \"planned\", \"discovery_plan\": {\"source\": \"workspace.information_schema.tables\", \"query\": \"SELECT table_catalog, table_schema, table_name, table_type FROM `workspace`.information_schema.tables WHERE table_schema = 'default' ORDER BY table_catalog, table_schema, table_name LIMIT 100\", \"reason\": \"사용 가능한 테이블 목록을 information_schema에서 조회합니다.\"}, \"scope\": \"workspace catalog의 테이블 메타데이터를 최대 100건 조회하는 계획입니다. 아직 실행되지 않았습니다.\", \"user_action\": \"이 계획을 query_databricks로 전달하여 현재 원격 실행 정책에 따라 실행하세요.\", \"evidence_ids\": [], \"error_code\": null, \"retryable\": false}",
+        "additional_kwargs": {},
+        "response_metadata": {},
+        "type": "tool",
+        "name": "plan_source_discovery",
+        "id": "c610ca6a-417e-4f45-ae5d-8126bd5ecf54",
+        "tool_call_id": "ace99dd9-c4c0-416f-aad6-938db0fa0c5c",
+        "artifact": null,
+        "status": "success"
+      }
+    },
+    {
+      "type": "ai",
+      "data": {
+        "content": "",
+        "additional_kwargs": {},
+        "response_metadata": {},
+        "type": "ai",
+        "name": null,
+        "id": "e70e9ac7-c7ef-4ff1-8e3f-bef7ed34e0f6",
+        "tool_calls": [
+          {
+            "name": "plan_source_discovery",
+            "args": {
+              "catalog": "workspace",
+              "schema": "default",
+              "limit": 100
+            },
+            "id": "ace99dd9-c4c0-416f-aad6-938db0fa0c5c",
+            "type": "tool_call"
+          }
+        ],
+        "invalid_tool_calls": [],
+        "usage_metadata": null
+      }
+    },
+    {
+      "type": "human",
+      "data": {
+        "content": "지금 볼 수있는 table를 보여줘",
+        "additional_kwargs": {},
+        "response_metadata": {},
+        "type": "human",
+        "name": null,
+        "id": "085d3059d2774f3a9497f50dbda8900a"
+      }
+    }
+  ],
+  "assets": {
+    "84b1c7ee-91ef-4b82-8082-2f243eb0e54f": {
+      "kind": "dataset",
+      "metadata": {
+        "id": "84b1c7ee-91ef-4b82-8082-2f243eb0e54f",
+        "source": "workspace.information_schema.tables",
+        "columns": [
+          "table_catalog",
+          "table_schema",
+          "table_name",
+          "table_type"
+        ],
+        "rows": 5,
+        "coverage": "unknown",
+        "conditions": [],
+        "predicate_known": false,
+        "grain": "raw",
+        "aggregation": "",
+        "snapshot": "2026-10-08T13:48:21.201765+00:00",
+        "query": "SELECT table_catalog, table_schema, table_name, table_type FROM `workspace`.information_schema.tables WHERE table_schema = 'default' ORDER BY table_catalog, table_schema, table_name LIMIT 100",
+        "parent_id": "",
+        "parent_ids": [],
+        "role": "root",
+        "root_id": "84b1c7ee-91ef-4b82-8082-2f243eb0e54f",
+        "row_selection": {}
+      },
+      "metadata_sha256": "be082dfa68af5a80bc9ac8fe8de1147cad000a6ece038eb498a1c4caded99604",
+      "payload_sha256": "19b8b635f939d831d98dd05fe9672ce2084e9f1337b5372d6f9599f33323f296"
+    }
+  },
+  "selection": "",
+  "current": {
+    "request_id": "085d3059d2774f3a9497f50dbda8900a",
+    "request_text": "지금 볼 수있는 table를 보여줘",
+    "status": "complete",
+    "stop_reason": null,
+    "intent_origin": "llm",
+    "goal": {
+      "objective": "available datasets/tables",
+      "mode": "execute",
+      "source_reference": "previous_analysis",
+      "sources": [
+        "workspace.default.bank_loan",
+        "workspace.default.stormtrooper",
+        "workspace.default.titanic",
+        "workspace.default.ncr_ride"
+      ],
+      "columns": [],
+      "conditions": [],
+      "any_conditions": [],
+      "measure_conditions": [],
+      "ratio": null,
+      "current_result_only": false,
+      "fresh_source_required": false,
+      "question": "",
+      "tasks": [
+        {
+          "capability": "table_list",
+          "options": {
+            "catalog": "workspace",
+            "schema": "default"
+          }
+        }
+      ]
+    },
+    "model_calls": 2,
+    "model_seconds": 32.193703084019944,
+    "scope": {
+      "conditions": [],
+      "any_conditions": [],
+      "measure_conditions": [],
+      "ratio": null,
+      "sources": [
+        "workspace.default.bank_loan",
+        "workspace.default.stormtrooper",
+        "workspace.default.titanic",
+        "workspace.default.ncr_ride"
+      ],
+      "columns": [],
+      "unresolved": [],
+      "join_edges": []
+    },
+    "required_sources": [
+      "workspace.information_schema.tables"
+    ],
+    "required_columns": [],
+    "artifact_ids": [],
+    "evidence_ids": [],
+    "kind": null,
+    "failed": {},
+    "confirmed_analysis": {
+      "request_id": "085d3059d2774f3a9497f50dbda8900a",
+      "request_text": "지금 볼 수있는 table를 보여줘",
+      "status": "complete",
+      "intent_origin": "llm",
+      "goal_pending": false,
+      "request_started_at": 1791467252.378397,
+      "required_sources": [
+        "workspace.information_schema.tables"
+      ],
+      "required_columns": [],
+      "explicit_columns": [],
+      "scope": {
+        "conditions": [],
+        "any_conditions": [],
+        "measure_conditions": [],
+        "ratio": null,
+        "sources": [
+          "workspace.default.bank_loan",
+          "workspace.default.stormtrooper",
+          "workspace.default.titanic",
+          "workspace.default.ncr_ride"
+        ],
+        "columns": [],
+        "unresolved": [],
+        "join_edges": []
+      },
+      "previous_scope": {},
+      "chart": false,
+      "kind": null,
+      "calculation": false,
+      "operations": [],
+      "metadata_kind": null,
+      "catalog_discovery_source": "workspace.information_schema.tables",
+      "catalog_discovery_schema": "default",
+      "profile_kind": null,
+      "preview_limit": 0,
+      "data_load": false,
+      "whole_row_count": false,
+      "current_result_only": false,
+      "fresh_source_required": false,
+      "requested_result_rows": null,
+      "requested_join": false,
+      "join": false,
+      "join_how": null,
+      "statistical_kind": null,
+      "latest_per_key_spec": null,
+      "row_preview_spec": null,
+      "chart_spec_requested": false,
+      "value_list_requested": false,
+      "operation_pending": false,
+      "schema_semantic": false,
+      "outlier_spec": null,
+      "outlier_column": null,
+      "time_series_frequency": null,
+      "histogram_bins": null,
+      "chart_cumulative": false,
+      "processed": [
+        "ace99dd9-c4c0-416f-aad6-938db0fa0c5c",
+        "4fbd1c10-1df0-4891-ab64-2a86060ebbff"
+      ],
+      "sent_calls": [
+        "ace99dd9-c4c0-416f-aad6-938db0fa0c5c",
+        "4fbd1c10-1df0-4891-ab64-2a86060ebbff"
+      ],
+      "evidence_ids": [],
+      "artifact_ids": [],
+      "failed": {},
+      "failed_signatures": {},
+      "attempts": 0,
+      "model_calls": 2,
+      "model_seconds": 32.193703084019944,
+      "remote_query_ids": [
+        "4fbd1c10-1df0-4891-ab64-2a86060ebbff"
+      ],
+      "remote_query_evidence": {
+        "4fbd1c10-1df0-4891-ab64-2a86060ebbff": {
+          "dataset_id": "84b1c7ee-91ef-4b82-8082-2f243eb0e54f",
+          "source": "workspace.information_schema.tables",
+          "query": "SELECT table_catalog, table_schema, table_name, table_type FROM `workspace`.information_schema.tables WHERE table_schema = 'default' ORDER BY table_catalog, table_schema, table_name LIMIT 100",
+          "rows": 5,
+          "columns": [
+            "table_catalog",
+            "table_schema",
+            "table_name",
+            "table_type"
+          ],
+          "coverage": "unknown"
+        }
+      },
+      "columns": [],
+      "preview_evidence": null,
+      "outlier_aggregate_evidence": {},
+      "count_rate_evidence": null,
+      "count_rate_layout": null,
+      "count_rate_group_column": null,
+      "winsor_evidence": null,
+      "winsor_spec": null,
+      "winsor_column": null,
+      "pivot_evidence": null,
+      "pivot_requested": false,
+      "pivot_index_columns": [],
+      "pivot_column_columns": [],
+      "pivot_conditions": [],
+      "pivot_margins_name": "전체",
+      "pivot_derived_bins": [],
+      "group_summary_requested": false,
+      "group_summary_columns": [],
+      "group_summary_metrics": [],
+      "group_summary_conditions": [],
+      "group_summary_evidence": null,
+      "remote_result_requested": true,
+      "accounted_model_failures": 0,
+      "accounted_model_failure_seconds": 0.0,
+      "model_retries": 0,
+      "accounted_aux_calls": 2,
+      "accounted_aux_seconds": 32.193703084019944,
+      "_new_model_failure_seconds": 0.0,
+      "requested_subject": {},
+      "goal": {
+        "objective": "available datasets/tables",
+        "mode": "execute",
+        "source_reference": "previous_analysis",
+        "sources": [
+          "workspace.default.bank_loan",
+          "workspace.default.stormtrooper",
+          "workspace.default.titanic",
+          "workspace.default.ncr_ride"
+        ],
+        "columns": [],
+        "conditions": [],
+        "any_conditions": [],
+        "measure_conditions": [],
+        "ratio": null,
+        "current_result_only": false,
+        "fresh_source_required": false,
+        "question": "",
+        "tasks": [
+          {
+            "capability": "table_list",
+            "options": {
+              "catalog": "workspace",
+              "schema": "default"
+            }
+          }
+        ]
+      },
+      "goal_version": 1,
+      "explanation_only": false,
+      "goal_question": "",
+      "discovery_plan": {
+        "source": "workspace.information_schema.tables",
+        "query": "SELECT table_catalog, table_schema, table_name, table_type FROM `workspace`.information_schema.tables WHERE table_schema = 'default' ORDER BY table_catalog, table_schema, table_name LIMIT 100",
+        "reason": "사용 가능한 테이블 목록을 information_schema에서 조회합니다."
+      },
+      "stop_reason": null,
+      "selection_at_confirmation": ""
+    }
+  },
+  "run_id": "472a0f5844e349a5a91db74b78ffc80d",
+  "run": [
+    {
+      "time": "2026-10-08T13:47:32.378036+00:00",
+      "event": "run_started",
+      "run_id": "472a0f5844e349a5a91db74b78ffc80d",
+      "instance_id": "889d62d9b3e7",
+      "pid": 41280,
+      "runtime": {
+        "revision_at_first_runtime": "e29c5bb39818e45d5042bdfa2c3097a05a147502",
+        "packages": {
+          "langchain": "1.4.0",
+          "langchain-core": "1.6.2",
+          "langgraph": "1.2.11",
+          "streamlit": "1.63.0",
+          "sqlglot": "30.18.0"
+        },
+        "python_version": "3.11.13",
+        "identity_captured_at": "2026-10-08T13:45:09.521459+00:00",
+        "route": "langgraph-v1",
+        "model_class": "ChatOllama",
+        "require_remote_approval": false,
+        "loaded_delivery_guard": "45c393f977353fe9",
+        "data_backend": "databricks",
+        "intent_mode": "llm",
+        "goal_version": 1,
+        "goal_model": "qwen3:8b",
+        "planner_model": "qwen3:8b"
+      },
+      "operation": "submit",
+      "process_peak_rss_bytes": 348274688
+    },
+    {
+      "time": "2026-10-08T13:47:32.380892+00:00",
+      "event": "goal_interpretation_started",
+      "run_id": "472a0f5844e349a5a91db74b78ffc80d",
+      "instance_id": "889d62d9b3e7",
+      "pid": 41280,
+      "request_id": "085d3059d2774f3a9497f50dbda8900a",
+      "origin": "llm",
+      "goal_version": 1
+    },
+    {
+      "time": "2026-10-08T13:47:32.383754+00:00",
+      "event": "model_payload_budget",
+      "run_id": "472a0f5844e349a5a91db74b78ffc80d",
+      "instance_id": "889d62d9b3e7",
+      "pid": 41280,
+      "payload_bytes": 9069,
+      "payload_bytes_before_projection": 9069,
+      "template_headroom": 640,
+      "input_budget_units": 14336,
+      "output_reserved": 2048,
+      "context_window": 16384,
+      "tool_count": 0,
+      "message_count": 1,
+      "older_turns_compacted": false,
+      "within_budget": true,
+      "observations_compacted": false,
+      "schema_compacted": false,
+      "system_catalog_compacted": false,
+      "tool_menu_compacted": false,
+      "minimal_discovery_menu": false,
+      "reasoning_compacted": false,
+      "minimal_catalog": false,
+      "builtin_instructions_compacted": false,
+      "components": {
+        "system_bytes": 6661,
+        "message_content_bytes": 1998,
+        "tool_calls_bytes": 0,
+        "reasoning_bytes": 0,
+        "tool_schema_bytes": 0,
+        "tool_names": []
+      },
+      "measurement": "conservative_utf8_bytes_not_actual_token_count"
+    },
+    {
+      "time": "2026-10-08T13:47:55.332793+00:00",
+      "event": "goal_semantic_review_started",
+      "run_id": "472a0f5844e349a5a91db74b78ffc80d",
+      "instance_id": "889d62d9b3e7",
+      "pid": 41280,
+      "request_id": "085d3059d2774f3a9497f50dbda8900a"
+    },
+    {
+      "time": "2026-10-08T13:47:55.333529+00:00",
+      "event": "model_payload_budget",
+      "run_id": "472a0f5844e349a5a91db74b78ffc80d",
+      "instance_id": "889d62d9b3e7",
+      "pid": 41280,
+      "payload_bytes": 9622,
+      "payload_bytes_before_projection": 9622,
+      "template_headroom": 640,
+      "input_budget_units": 14336,
+      "output_reserved": 2048,
+      "context_window": 16384,
+      "tool_count": 0,
+      "message_count": 1,
+      "older_turns_compacted": false,
+      "within_budget": true,
+      "observations_compacted": false,
+      "schema_compacted": false,
+      "system_catalog_compacted": false,
+      "tool_menu_compacted": false,
+      "minimal_discovery_menu": false,
+      "reasoning_compacted": false,
+      "minimal_catalog": false,
+      "builtin_instructions_compacted": false,
+      "components": {
+        "system_bytes": 6661,
+        "message_content_bytes": 2493,
+        "tool_calls_bytes": 0,
+        "reasoning_bytes": 0,
+        "tool_schema_bytes": 0,
+        "tool_names": []
+      },
+      "measurement": "conservative_utf8_bytes_not_actual_token_count"
+    },
+    {
+      "time": "2026-10-08T13:48:04.581587+00:00",
+      "event": "goal_interpretation_completed",
+      "run_id": "472a0f5844e349a5a91db74b78ffc80d",
+      "instance_id": "889d62d9b3e7",
+      "pid": 41280,
+      "request_id": "085d3059d2774f3a9497f50dbda8900a",
+      "origin": "llm",
+      "mode": "execute",
+      "capabilities": [
+        "table_list"
+      ],
+      "attempts": 2,
+      "goal_version": 1
+    },
+    {
+      "time": "2026-10-08T13:48:04.587671+00:00",
+      "event": "recovery_transition",
+      "run_id": "472a0f5844e349a5a91db74b78ffc80d",
+      "instance_id": "889d62d9b3e7",
+      "pid": 41280,
+      "request_id": "085d3059d2774f3a9497f50dbda8900a",
+      "tool": "plan_source_discovery"
+    },
+    {
+      "time": "2026-10-08T13:48:04.595768+00:00",
+      "event": "tool_started",
+      "run_id": "472a0f5844e349a5a91db74b78ffc80d",
+      "instance_id": "889d62d9b3e7",
+      "pid": 41280,
+      "tool": "plan_source_discovery"
+    },
+    {
+      "time": "2026-10-08T13:48:04.600099+00:00",
+      "event": "tool_completed",
+      "run_id": "472a0f5844e349a5a91db74b78ffc80d",
+      "instance_id": "889d62d9b3e7",
+      "pid": 41280,
+      "tool": "plan_source_discovery",
+      "status": "planned",
+      "error_code": null,
+      "elapsed_seconds": 0.004,
+      "applied_corrections": []
+    },
+    {
+      "time": "2026-10-08T13:48:04.605856+00:00",
+      "event": "recovery_transition",
+      "run_id": "472a0f5844e349a5a91db74b78ffc80d",
+      "instance_id": "889d62d9b3e7",
+      "pid": 41280,
+      "request_id": "085d3059d2774f3a9497f50dbda8900a",
+      "tool": "query_databricks"
+    },
+    {
+      "time": "2026-10-08T13:48:04.614621+00:00",
+      "event": "remote_query_authorized",
+      "run_id": "472a0f5844e349a5a91db74b78ffc80d",
+      "instance_id": "889d62d9b3e7",
+      "pid": 41280,
+      "tool_call_id": "4fbd1c10-1df0-4891-ab64-2a86060ebbff",
+      "authorization": "automatic_read_policy"
+    },
+    {
+      "time": "2026-10-08T13:48:04.614901+00:00",
+      "event": "remote_query_started",
+      "run_id": "472a0f5844e349a5a91db74b78ffc80d",
+      "instance_id": "889d62d9b3e7",
+      "pid": 41280,
+      "ledger_status": "auto_authorized",
+      "cached_receipt": false
+    },
+    {
+      "time": "2026-10-08T13:48:21.823551+00:00",
+      "event": "remote_query_finished",
+      "run_id": "472a0f5844e349a5a91db74b78ffc80d",
+      "instance_id": "889d62d9b3e7",
+      "pid": 41280,
+      "ledger_status": "completed",
+      "status": "ready",
+      "cached_receipt": false
+    },
+    {
+      "time": "2026-10-08T13:48:21.830672+00:00",
+      "event": "remote_result_verified",
+      "run_id": "472a0f5844e349a5a91db74b78ffc80d",
+      "instance_id": "889d62d9b3e7",
+      "pid": 41280,
+      "request_id": "085d3059d2774f3a9497f50dbda8900a",
+      "tool_call_id": "4fbd1c10-1df0-4891-ab64-2a86060ebbff",
+      "dataset_id": "84b1c7ee-91ef-4b82-8082-2f243eb0e54f",
+      "rows": 5
+    },
+    {
+      "time": "2026-10-08T13:48:21.835136+00:00",
+      "event": "completion_checked",
+      "run_id": "472a0f5844e349a5a91db74b78ffc80d",
+      "instance_id": "889d62d9b3e7",
+      "pid": 41280,
+      "request_id": "085d3059d2774f3a9497f50dbda8900a",
+      "status": "complete",
+      "reason": null,
+      "attempts": 0,
+      "required_capabilities": [
+        "remote_query"
+      ],
+      "missing_capabilities": [],
+      "model_calls": 2,
+      "tool_calls": 2,
+      "model_seconds": 32.194,
+      "dataset_ids": [],
+      "artifact_ids": []
+    },
+    {
+      "time": "2026-10-08T13:48:21.839426+00:00",
+      "event": "run_completed",
+      "run_id": "472a0f5844e349a5a91db74b78ffc80d",
+      "instance_id": "889d62d9b3e7",
+      "pid": 41280,
+      "status": "answered",
+      "elapsed_seconds": 49.461,
+      "process_peak_rss_bytes": 348536832,
+      "frame_cache_bytes": 0
+    },
+    {
+      "time": "2026-10-08T13:48:21.839496+00:00",
+      "event": "turn_slo",
+      "run_id": "472a0f5844e349a5a91db74b78ffc80d",
+      "instance_id": "889d62d9b3e7",
+      "pid": 41280,
+      "elapsed_seconds": 49.461,
+      "limit": 180.0,
+      "status": "ok"
+    }
+  ],
+  "requested_prompt": "지금 볼 수있는 table를 보여줘",
+  "current_matches_run": true,
+  "request_checkpoint_verified": true
+}

@@ -1,0 +1,41 @@
+{
+  "profile": "local-desktop",
+  "ready": false,
+  "checks": [
+    {
+      "name": "data_backend",
+      "status": "fail",
+      "message": "운영 preflight는 TELLY_DATA_BACKEND=databricks가 필요합니다. MySQL은 별도 로컬 평가 모드입니다."
+    },
+    {
+      "name": "ollama_configuration",
+      "status": "pass",
+      "message": "Ollama 모델과 endpoint가 명시되었습니다."
+    },
+    {
+      "name": "databricks_configuration",
+      "status": "pass",
+      "message": "Databricks 연결 변수 이름이 모두 설정되었습니다. 네트워크 연결이나 SQL은 실행하지 않았습니다."
+    },
+    {
+      "name": "persistent_storage",
+      "status": "warn",
+      "message": "TELLY_V1_STORAGE가 없어 프로젝트 내부 기본 저장소를 사용합니다. 배포에는 영속 볼륨의 절대 경로가 필요합니다."
+    },
+    {
+      "name": "runtime_policy",
+      "status": "pass",
+      "message": "테이블 중립 운영 한도가 유효합니다."
+    },
+    {
+      "name": "runtime_capacity_policy",
+      "status": "pass",
+      "message": "단일 프로세스 메모리와 결정적 분석 p95 용량 기준이 유효합니다."
+    },
+    {
+      "name": "identity_scope",
+      "status": "pass",
+      "message": "loopback의 단일 사용자 범위는 현재 local-owner 저장 구조와 일치합니다."
+    }
+  ]
+}

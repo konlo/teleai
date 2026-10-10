@@ -1,0 +1,42 @@
+{
+  "id": 31,
+  "prompt": "teleai_default.bank_loan 전체 데이터의 age와 balance scatter plot을 다시 그려줘",
+  "status": "complete",
+  "goal": {
+    "objective": "scatter plot",
+    "mode": "execute",
+    "source_reference": "explicit",
+    "sources": [
+      "workspace.default.bank_loan"
+    ],
+    "columns": [
+      "age",
+      "balance"
+    ],
+    "conditions": [],
+    "any_conditions": [],
+    "measure_conditions": [],
+    "ratio": null,
+    "current_result_only": false,
+    "fresh_source_required": false,
+    "question": "",
+    "tasks": [
+      {
+        "capability": "chart",
+        "options": {
+          "kind": "scatter",
+          "axes": {
+            "x": "age",
+            "y": "balance"
+          }
+        }
+      }
+    ]
+  },
+  "reason": null,
+  "run_id": "6c528c98cd1f4468bbf7bbe25c83e5cf",
+  "model_calls": 3,
+  "chart_metadata": [],
+  "verdict": "FAIL",
+  "error": "requested qualified source was silently replaced"
+}

@@ -1,0 +1,70 @@
+{
+  "id": 5,
+  "prompt": "histogram을 그려줘",
+  "status": "complete",
+  "goal": {
+    "objective": "histogram",
+    "mode": "execute",
+    "source_reference": "previous_analysis",
+    "sources": [
+      "teleai_default.bank_loan"
+    ],
+    "columns": [
+      "education"
+    ],
+    "conditions": [],
+    "any_conditions": [],
+    "measure_conditions": [],
+    "ratio": null,
+    "current_result_only": false,
+    "fresh_source_required": false,
+    "question": "",
+    "tasks": [
+      {
+        "capability": "chart",
+        "options": {
+          "kind": "histogram",
+          "axes": {
+            "x": "education"
+          },
+          "categorical": true
+        }
+      }
+    ]
+  },
+  "reason": null,
+  "run_id": "626949c8d19346c7a51b8eafaafbedfd",
+  "model_calls": 5,
+  "chart_metadata": [
+    {
+      "id": "e87ce0ba-d595-4963-a7e9-a267161c2b45",
+      "dataset_id": "c9f346b1-654c-4bc4-8b0a-9870ff581986",
+      "title": "education 분포",
+      "reason": "범주별 실제 COUNT(*) 빈도를 표시합니다. 결측은 제외했습니다.",
+      "kind": "bar",
+      "columns": [
+        "education"
+      ],
+      "scope": "빈도 합계 750,000 · complete · SELECT `education`, COUNT(*) AS `__frequency` FROM `teleai_default`.`bank_loan` WHERE `education` IS NOT NULL GROUP BY `education`",
+      "render_spec": {
+        "aggregation": "count",
+        "labels": [
+          "secondary",
+          "tertiary",
+          "primary",
+          "unknown"
+        ],
+        "counts": [
+          401683,
+          227508,
+          99510,
+          21299
+        ],
+        "total_count": 750000,
+        "has_more_categories": false,
+        "null_policy": "exclude"
+      }
+    }
+  ],
+  "verdict": "PASS"
+}

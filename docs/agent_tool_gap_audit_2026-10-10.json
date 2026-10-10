@@ -1,0 +1,204 @@
+{
+  "reviewed_at": "2026-10-10T08:35:54.006990+09:00",
+  "scope": "Current GraphAnalysisRuntime tool definitions and archived failures; code review only, no new model/DB/browser execution",
+  "verdict": "Basic EDA primitives present; general autonomous analysis not sufficiently supported or verified. Many observed failures were orchestration/contract defects rather than absent compute tools.",
+  "registered": {
+    "local": 35,
+    "connected_database": 1,
+    "excluded_compatibility_definition": "propose_databricks_query"
+  },
+  "existing_safeguards": [
+    "Dataset lineage and protected parent reuse",
+    "Parquet batch storage and bounded MySQL/Databricks fetch",
+    "Full decode memory preflight and quotas",
+    "PNG byte/blank validation and scope binding",
+    "Execution ledger and unknown-submission duplicate prevention",
+    "Current goal and confirmed/pending analysis state",
+    "Error-specific input/scope/presentation repair and finite budgets"
+  ],
+  "historical_failure_mapping": [
+    {
+      "failure": "Wrong table or table list instead of requested rows",
+      "classification": "intent/context and completion binding",
+      "existing_tools": [
+        "inspect_table_context",
+        "prepare_row_preview",
+        "query_databricks"
+      ],
+      "evidence": "docs/evaluation/2026-10-04_distribution_failure/report.md",
+      "action": "Keep explicit source authority across metadata/raw/aggregate; verify current-request source/row-limit receipts; no new table-specific tool"
+    },
+    {
+      "failure": "Invented dataset IDs; sql/query argument mismatch; legend omission classified as population failure",
+      "classification": "tool input contract and recovery ordering",
+      "existing_tools": [
+        "inspect_dataset",
+        "search_analysis_tools",
+        "local_analysis_sql",
+        "prepare_histogram"
+      ],
+      "evidence": "docs/evaluation/2026-10-09_go_expanded/report.md",
+      "action": "Existing repairs need latest-build repeated user journeys; expose exact real registered input/output contracts and structured failure details"
+    },
+    {
+      "failure": "New NULL/BETWEEN conditions during unchanged follow-up",
+      "classification": "reviewer authority and context invariants",
+      "evidence": "docs/evaluation/2026-10-09_go_expanded/autonomous_null_authority_final.json",
+      "action": "Do not add tools to interpret the same scope again; enforce immutable confirmed population unless authorized current-request change"
+    },
+    {
+      "failure": "Chart promised but absent/wrong type/legend/bin",
+      "classification": "delivery and presentation contract; one prior missing bins option",
+      "existing_tools": [
+        "render_chart_spec",
+        "render_histogram",
+        "show_chart"
+      ],
+      "evidence": "docs/evaluation/2026-10-09_go_expanded/report.md",
+      "action": "Validate chart spec, plotted-data scope/digest and UI attachment; valid PNG alone does not establish correct chart or displayed image"
+    },
+    {
+      "failure": "ReadTimeout before any SQL/tool execution",
+      "classification": "model/provider latency",
+      "evidence": "docs/evaluation/2026-10-03_scatter_followup/timeout_location.json",
+      "action": "Model-call budgeting/compaction/availability and phase diagnostics; adding compute tools does not cure inference timeout"
+    },
+    {
+      "failure": "Context preflight exceeded before distribution execution",
+      "classification": "model-view budget and source/catalog selection",
+      "evidence": "docs/evaluation/2026-10-05_input_prevention/original_failure_brief.txt",
+      "action": "Existing model_context projections and goal interpretation need long-dialog regression; no new statistical tool required"
+    },
+    {
+      "failure": "Historical Databricks400 on warehouse start/query and model endpoint",
+      "classification": "external infrastructure",
+      "evidence": "docs/evaluation/2026-09-30_go_continuation/site_api_400_diagnosis.json",
+      "action": "Diagnostics/status tools may classify and guide recovery but cannot claim to repair unavailable provider resource"
+    }
+  ],
+  "prioritized_gaps": [
+    {
+      "priority": "P0",
+      "kind": "extend existing tool discovery and recovery observations",
+      "proposal": "Exact registered contract lookup and richer failure observation",
+      "status": "Partial; lexical search top3 exists, not semantic capability matching",
+      "basis": [
+        "core/analysis_tool_discovery.py",
+        "core/analysis_agent/tool_input_preflight.py",
+        "core/analysis_agent/chart_preflight.py"
+      ],
+      "requirements": [
+        "One source of truth including actual remote StructuredTool contract",
+        "Separate provider/input/scope/render/execution failures",
+        "Scope-preserving repair alternatives with exact valid dataset IDs",
+        "Fallback capability search when literal query has no match"
+      ]
+    },
+    {
+      "priority": "P0",
+      "kind": "new planner-facing capability using existing storage/preflight",
+      "proposal": "plan_analysis_execution",
+      "status": "Not a registered tool; scalar pushdown and memory preflight already partial",
+      "basis": [
+        "core/analysis_agent/source_scalar.py",
+        "core/analysis_agent/policy.py",
+        "core/analysis_agent/assets.py"
+      ],
+      "requirements": [
+        "Preserve population and requested output grain",
+        "Compare local reuse, DB aggregate and projected/batched load",
+        "Backend-aware EXPLAIN estimates where available; mark unknown estimates explicitly",
+        "Check rows, bytes, transfer, workspace budget and snapshot/freshness",
+        "Explain equivalent alternative when result limit exceeded; never label sample or truncated result as full"
+      ]
+    },
+    {
+      "priority": "P0",
+      "kind": "diagnostic/status interface plus executor integration",
+      "proposal": "inspect_execution_status / inspect_backend_health / diagnose_analysis_failure",
+      "status": "Connection SELECT1 probe, diagnostics and ledger exist internally; remote status polling/cancellation not registered",
+      "basis": [
+        "core/analysis_agent/connection_probe.py",
+        "core/analysis_agent/approvals.py",
+        "core/analysis_agent/databricks.py",
+        "core/analysis_agent/mysql.py"
+      ],
+      "requirements": [
+        "Scope-owned operation IDs and persisted submission/fetch/publication states",
+        "Provider-supported remote status reconciliation, with unavailable status explicit",
+        "Cancel at executor boundary and propagate remaining deadline where supported",
+        "Do not equate runtime abandon/approval rejection with DB query cancellation",
+        "Do not resubmit unknown remote query automatically"
+      ]
+    },
+    {
+      "priority": "P0",
+      "kind": "orchestration capability; not solved by adding tools alone",
+      "proposal": "Persistent per-task plan with dependencies/populations",
+      "status": "tasks output obligations and remaining_work exist; generalized DAG incomplete",
+      "basis": [
+        "core/analysis_agent/goal_schema.py",
+        "core/analysis_agent/goal_contract.py",
+        "core/analysis_agent/remaining_work.py"
+      ],
+      "requirements": [
+        "Task-specific source/filter/grain/output contracts",
+        "Independent completed/blocked task receipts and dependencies",
+        "Failure resumes missing work without resetting completed data",
+        "Avoid duplicated capability restriction becoming obstacle to multiple differently-scoped outputs"
+      ]
+    },
+    {
+      "priority": "P1",
+      "kind": "new bounded execution tool and goal/completion integration",
+      "proposal": "execute_analysis_python",
+      "status": "Absent from active runtime; legacy python_repl_ast is not the active tool",
+      "requirements": [
+        "Isolated worker, explicit dataset handles and read-only originals",
+        "Restricted libraries, memory/CPU/time/output caps and no unrestricted network/filesystem",
+        "Publish only validated child datasets/tables/PNG with code hash and lineage",
+        "Return structured exceptions for bounded code repair",
+        "Admit custom-analysis goal and evidence contract; tool registration alone is insufficient"
+      ]
+    },
+    {
+      "priority": "P1",
+      "kind": "extend chart specification and analysis profile",
+      "proposal": "Correlation heatmap, bounded scatter matrix, faceted panels and EDA report",
+      "status": "Current active chart grammar supports histogram/bar/scatter/line/boxplot/recommend; general matrix/panels unsupported",
+      "basis": [
+        "core/analysis_agent/goal_schema.py",
+        "core/analysis_runtime_tools.py"
+      ],
+      "requirements": [
+        "Shared dataset/scope and axes/legend per panel",
+        "Statistics and displayed-data digests",
+        "High-cardinality/large-data plotting policy, disclose any sampling explicitly",
+        "Reuse existing charts and datasets rather than repeated DB loading"
+      ]
+    },
+    {
+      "priority": "P2",
+      "kind": "new export capability",
+      "proposal": "export_analysis_result",
+      "status": "No registered active-runtime export tool; legacy UI CSV download is not equivalent",
+      "requirements": [
+        "Verified dataset/chart only",
+        "CSV/Parquet/PNG plus source/filter/grain/coverage manifest",
+        "Bounded export and scope-owned access"
+      ]
+    }
+  ],
+  "verification_before_claiming_completion": [
+    "Same latest build: original31, AI10, strict autonomy8, held-out paraphrases and long-topic-switch conversations; preserve initial failures",
+    "Fault injection: missing handle/argument, chart mismatch, provider timeout, local OOM and remote unknown state; require equivalent result and parent hashes unchanged",
+    "Compound scalar+chart followed by different-scope tasks, then runtime restart and follow-up; verify each task receipt",
+    "Real large MySQL transfer and final company Windows/Azure/Databricks journeys; record peak memory, scanned/returned data where exposed, calls and latency",
+    "DOM displayed PNG + chart axes/legend/bins + independent plotted-data oracle; image byte validity alone is insufficient",
+    "No operational GO, official benchmark score or Codex/Claude parity inferred from this static audit"
+  ],
+  "notes": [
+    "Older Sep16/Sep18 tool audits describe approval-required defaults and24 definitions; current runtime defaults auto read-only SQL and36 definitions. Do not use historical inventories as current evidence.",
+    "Do not restore legacy REPL/UI state tools wholesale. Reuse implementations only behind current lineage/result/policy contracts."
+  ]
+}

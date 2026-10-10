@@ -1,0 +1,112 @@
+{
+  "reviewed_at": "2026-10-10T09:59:04.294243+09:00",
+  "scope": "Current GraphAnalysisRuntime TAO cycle; static code review, prior browser evidence, new scripted-model fault injection. No production code/config/server changes and no new provider calls.",
+  "verdict": "A real tool/observation loop exists, with structural verification and bounded repair. It is not a sufficiently verified general autonomous analysis loop: custom Python mathematical intent can falsely complete.",
+  "cycle": [
+    {
+      "stage": "Thought / goal and planning",
+      "status": "present_but_bounded",
+      "implementation": [
+        "core/analysis_agent/goal_interpreter.py",
+        "core/analysis_agent/task_selection.py",
+        "core/analysis_agent/remaining_work.py"
+      ],
+      "details": "LLM intent and population/semantic roles, structured tasks, verified/remaining work; controller reuse/fallback may skip another model call"
+    },
+    {
+      "stage": "Action",
+      "status": "present",
+      "implementation": [
+        "core/analysis_agent/runtime.py:271",
+        "core/analysis_agent/recovery.py:4724"
+      ],
+      "details": "LangChain create_agent tool loop, real registered contracts, preflight, goal/scope admission, executor/ledger guards"
+    },
+    {
+      "stage": "Observation",
+      "status": "present",
+      "implementation": [
+        "core/analysis_agent/recovery.py:1344",
+        "core/analysis_agent/extension_evidence.py:30"
+      ],
+      "details": "ToolMessages and receipts update typed evidence, dataset lineage, failed signatures and plan status; preserved transcript/checkpoint"
+    },
+    {
+      "stage": "Verify / Replan",
+      "status": "partial",
+      "implementation": [
+        "core/analysis_agent/completion.py:98",
+        "core/analysis_agent/recovery.py:4184",
+        "core/analysis_agent/recovery.py:4236"
+      ],
+      "details": "Missing evidence/errors feed another model call or bounded grounded local path; semantic postconditions for custom computations are absent"
+    }
+  ],
+  "findings": [
+    {
+      "id": "TAO-01",
+      "priority": "P0",
+      "title": "A successful Python execution can complete the wrong requested calculation",
+      "file": "core/analysis_agent/extension_evidence.py",
+      "line": 39,
+      "verified": "Reproduced using actual GraphAnalysisRuntime and worker with a scripted faulty model",
+      "evidence": "python_semantic_probe.json",
+      "trigger": "User requests a named two-row rolling mean; model emits result=df.copy()",
+      "actual": "answered/complete without rolling_mean column; valid comparison computation also answered and matches independent [1.5,2.5,3.5] oracle",
+      "cause": "Receipt admission validates source/handle/parent/code hash/input digest but no structured task-specific mathematical/output postcondition",
+      "required_fix": "Define per-task input/output grain, ordering, output columns and computation parameters; verify result invariants with independent tool/statistical checks, return semantic_mismatch observation and replan rather than mark completion. LLM review can assist but cannot be sole correctness evidence."
+    },
+    {
+      "id": "TAO-02",
+      "priority": "P1",
+      "title": "Persistent plan is shared-scope output obligations, not a general independent task DAG",
+      "file": "core/analysis_agent/execution_plan.py",
+      "line": 22,
+      "verified": "Static code boundary",
+      "related": "core/analysis_agent/goal_contract.py:124",
+      "cause": "All task scopes copied from current goal; initial dependencies empty; completion by capability; duplicate capabilities rejected",
+      "impact": "Multiple differently filtered outputs of the same capability cannot be represented as separate executable obligations",
+      "required_fix": "Task IDs with task-specific source/scope/options/expected result, explicit dependencies and per-task validated receipts; versioned replan preserves completed tasks"
+    },
+    {
+      "id": "TAO-03",
+      "priority": "P1",
+      "title": "Stalled-discovery repair prompt contradicts automatic SQL policy",
+      "file": "core/analysis_agent/progress_guard.py",
+      "line": 67,
+      "verified": "Unconditional static instruction; no new actual unauthorized SQL/approval UI reproduction",
+      "actual_instruction": "Any remote SQL still needs exact-query approval.",
+      "cause": "Recovery text is fixed even when runtime automatic reads are enabled; runtime.py dynamic policy says no approval waits",
+      "required_fix": "Single policy-derived instruction used by every normal, compact and repair prompt; cross-check automatic/manual policy and stalled recovery tests"
+    },
+    {
+      "id": "TAO-04",
+      "priority": "P2",
+      "title": "Cycle responsibilities remain concentrated in an oversized recovery module",
+      "file": "core/analysis_agent/recovery.py",
+      "line": 172,
+      "verified": "4823 lines; runtime.py 928 lines",
+      "impact": "Intent binding, evidence collection, local planning, action admission, repair and final rendering interact in one mutable recovery structure",
+      "required_fix": "Separate goal/task state, observation/evidence, recovery strategy and completion verification modules; preserve typed transitions and existing regression journeys"
+    }
+  ],
+  "recommended_cycle": [
+    "Interpret request and retain confirmed context",
+    "Create task contract and expected observable postconditions",
+    "Select an action from actual tool contracts and execution/resource policy",
+    "Execute and record tool observation with call/task IDs",
+    "Validate source/scope/values/output semantics",
+    "Complete verified task or diagnose semantic/input/provider/resource failure",
+    "Replan only missing task without changing authorized population or replacing original data"
+  ],
+  "evaluation_requirements": [
+    "False-success injection: df.copy() or wrong window must fail verification despite valid code/lineage",
+    "Valid two-row mean completes and has exact independent values; recover wrong code without source reload",
+    "Different-scope repeated capability tasks retain separate task receipts and survive restart",
+    "Automatic/manual policy plus stalled discovery must never emit contradictory approval instructions",
+    "Failed alternative preserves filters, original digest and verified preceding outputs; repeated identical failures bounded"
+  ],
+  "prior_live_evidence": "../2026-10-10_tool_extensions/report.json (successive-build browser passes, finite repair failures retained)",
+  "hidden_reasoning_note": "Thought quality is assessed by goal/plan/decision and resulting observations. Emitting raw internal chain-of-thought is not required or recommended as a correctness signal.",
+  "release": "New false completion is a blocker for general custom-Python autonomous analysis. Prior 914 contract test passes do not negate this new negative scenario. No official score or overall GO claimed."
+}

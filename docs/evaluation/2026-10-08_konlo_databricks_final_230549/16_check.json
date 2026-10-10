@@ -1,0 +1,42 @@
+{
+  "id": 16,
+  "prompt": "데이타 10개 row만 추출해서 table로 보여줘 ",
+  "status": "complete",
+  "goal": {
+    "objective": "row_preview",
+    "mode": "execute",
+    "source_reference": "previous_analysis",
+    "sources": [
+      "workspace.default.bank_loan"
+    ],
+    "columns": [
+      "education",
+      "age"
+    ],
+    "conditions": [],
+    "any_conditions": [],
+    "measure_conditions": [],
+    "ratio": null,
+    "current_result_only": false,
+    "fresh_source_required": false,
+    "question": "",
+    "tasks": [
+      {
+        "capability": "row_preview",
+        "options": {
+          "limit": 10
+        }
+      }
+    ]
+  },
+  "reason": null,
+  "run_id": "3109c12517b142398374ceac46b4b3a3",
+  "model_calls": 4,
+  "chart_metadata": [],
+  "verified_preview_shape": [
+    10,
+    18
+  ],
+  "verdict": "FAIL",
+  "error": "preview lost preceding population conditions"
+}

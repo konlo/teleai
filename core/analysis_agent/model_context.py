@@ -57,7 +57,7 @@ def prompt_catalog(catalog,current=None):
 def confirmed_context(current):
     """Bound model-view evidence while preserving all scope conditions."""
     previous=(current or {}).get('confirmed_analysis') or {}
-    keys=('required_sources','required_columns','scope','columns','kind','chart_axes',
+    keys=('required_sources','required_columns','scope','columns','kind','chart_axes','chart_group_spec','chart_presentation_spec',
           'evidence_ids','artifact_ids','selection_at_confirmation','request_text','status')
     facts={k:previous[k] for k in keys if k in previous}
     if current.get('schema_subject'):facts['schema_subject']=current['schema_subject']
@@ -69,6 +69,10 @@ def confirmed_context(current):
             facts[key]={k:v for k,v in proof.items() if k in
                 {'dataset_id','source','snapshot','total_rows','rows','limit'}}
             facts[key]['column_count']=len(proof.get('columns',[]))
+    for key in ('custom_analysis_evidence','advanced_eda_evidence','export_evidence'):
+        if previous.get(key):
+            facts[key]={k:v for k,v in previous[key].items() if k in
+                {'input_dataset_id','output_dataset_id','dataset_id','columns','kind','format','filename'}}
     return facts
 
 
@@ -98,8 +102,11 @@ def bounded_observation(message, current):
 
 BASE_TOOLS={'list_analysis_context','inspect_table_context','inspect_dataset',
             'search_analysis_tools','read_analysis_skill','query_databricks',
-            'resolve_analysis_intent','resolve_analysis_operation'}
+            'resolve_analysis_intent','resolve_analysis_operation','get_analysis_tool_contract'}
 GROUPS=(
+    ('custom_analysis_spec',{'execute_analysis_python'}),
+    ('advanced_eda_spec',{'render_advanced_eda'}),
+    ('export_spec',{'export_analysis_result'}),
     ('chart', {'render_chart_spec','prepare_histogram','prepare_source_scatter','recommend_chart_images',
                'prepare_numeric_dataset','project_dataset'}),
     ('calculation', {'aggregate_dataset','local_analysis_sql','use_dataset','prepare_numeric_dataset'}),
@@ -116,7 +123,8 @@ GROUPS=(
 
 
 class ProgressiveToolsMiddleware(AgentMiddleware):
-    def __init__(self, registered, diagnostics=None):
+    def __init__(self, registered, diagnostics=None, *, remote_available=True):
+        self.remote_available=remote_available
         self.registered={t.name:t for t in registered}
         self.diagnostics=diagnostics
 
@@ -129,7 +137,7 @@ class ProgressiveToolsMiddleware(AgentMiddleware):
             if current.get(flag):names.update(group)
         # A remote scalar does not need raw conversion/rendering tools. The
         # current source schema and read-only SQL tool can produce its answer.
-        if (current.get('calculation') and not current.get('chart')
+        if (self.remote_available and current.get('calculation') and not current.get('chart')
                 and not current.get('join') and not current.get('requested_join')
                 and current.get('required_sources')
                 and not current.get('current_result_only')):
@@ -191,8 +199,9 @@ class ModelContextBudgetMiddleware(AgentMiddleware):
         messages=[schema_observation(m) for m in request.messages]
         schema_compacted=any(a is not b for a,b in zip(messages,request.messages))
         system=request.system_message
-        context=getattr(self.model,'num_ctx',None)
-        reserve=getattr(self.model,'num_predict',None)
+        effective_model=getattr(request,'model',None) or self.model
+        context=getattr(effective_model,'num_ctx',None)
+        reserve=getattr(effective_model,'num_predict',None)
         # Models without a declared window retain the existing explicit bound.
         reserve=reserve if isinstance(reserve,int) and reserve>0 else 2048
         limit=context-reserve if isinstance(context,int) and context>0 else self.max_context_chars
@@ -228,6 +237,8 @@ class ModelContextBudgetMiddleware(AgentMiddleware):
         menu_compacted=False
         minimal_menu=False
         reasoning_compacted=False
+        from core.analysis_agent.completion import missing_contracts
+        primary={c.tools[0] for c in missing_contracts(request.state.get('recovery') or {})}
         # Instead of offering every contract on every call, retain discovery
         # and the last discovered capability. Full executors remain registered.
         if size+overhead>limit and any(t.name=='search_analysis_tools' for t in tools):
@@ -236,7 +247,7 @@ class ModelContextBudgetMiddleware(AgentMiddleware):
                 if isinstance(m,ToolMessage) and m.name=='search_analysis_tools':
                     try:discovered={e['name'] for e in json.loads(m.content).get('matches',[])}
                     except (ValueError,TypeError,KeyError):pass
-            keep={'query_databricks','inspect_table_context','search_analysis_tools','read_analysis_skill'}|discovered
+            keep={'query_databricks','inspect_table_context','search_analysis_tools','read_analysis_skill'}|discovered|primary
             omitted=[t.name for t in tools if t.name not in keep]
             if omitted:
                 tools=[t for t in tools if t.name in keep]
@@ -281,7 +292,7 @@ class ModelContextBudgetMiddleware(AgentMiddleware):
                 if isinstance(m,ToolMessage) and m.name=='search_analysis_tools':
                     try:ranked=[e['name'] for e in json.loads(m.content).get('matches',[])]
                     except (ValueError,TypeError,KeyError):pass
-            keep={'search_analysis_tools','read_analysis_skill'}
+            keep={'search_analysis_tools','read_analysis_skill'}|primary
             if ranked:keep.add(ranked[0])
             smaller=[t for t in tools if t.name in keep]
             if len(smaller)<len(tools):
@@ -302,6 +313,14 @@ class ModelContextBudgetMiddleware(AgentMiddleware):
             system=system.model_copy(update={'content':str(system.content).replace(COMPACT_INSTRUCTIONS,MINIMAL_INSTRUCTIONS)})
             builtin_compacted=True
             size=payload_bytes(system,messages,tools)
+        repair_history_compacted=False
+        if size+overhead>limit:
+            from core.analysis_agent.repair_history import compact_failed_calls
+            projected=compact_failed_calls(messages)
+            repair_history_compacted=projected is not messages
+            messages=projected
+            size=payload_bytes(system,messages,tools)
+            overhead=512+128*len(tools)+64*(len(messages)+1)
         if self.diagnostics:
             self.diagnostics.emit('model_payload_budget',payload_bytes=size,
                 payload_bytes_before_projection=before_size,
@@ -314,6 +333,7 @@ class ModelContextBudgetMiddleware(AgentMiddleware):
                 minimal_discovery_menu=minimal_menu,reasoning_compacted=reasoning_compacted,
                 minimal_catalog=minimal_catalog,
                 builtin_instructions_compacted=builtin_compacted,
+                repair_history_compacted=repair_history_compacted,
                 components=payload_components(system,messages,tools),
                 measurement='conservative_utf8_bytes_not_actual_token_count')
         if size+overhead>limit:

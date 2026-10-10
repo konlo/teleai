@@ -1,0 +1,90 @@
+[
+  {
+    "id": 1,
+    "prompt": "현재 볼 수 있는 테이블 목록을 보여줘.",
+    "status": "complete",
+    "run_id": "0e130f50fbbd498d91d4f7b424f3addc",
+    "verdict": "PASS"
+  },
+  {
+    "id": 2,
+    "prompt": "stormtrooper table row 10개 보여줘.",
+    "status": "complete",
+    "run_id": "837c00de0b3e4411aa8f028e85b64d34",
+    "verdict": "PASS"
+  },
+  {
+    "id": 3,
+    "prompt": "이 테이블의 컬럼 이름과 database 데이터 타입을 함께 표로 보여줘. 히스토그램은 만들지 마.",
+    "status": "complete",
+    "run_id": "2dfbd5211c4f4f20bd683f45ea9147f5",
+    "verdict": "FAIL",
+    "reason": "independent output mismatch",
+    "error_type": "AssertionError"
+  },
+  {
+    "id": 4,
+    "prompt": "bank_loan에서 age가 30~40이고 education이 primary인 사람들의 balance 평균은 계산하지 말고 합계만 알려줘.",
+    "status": "complete",
+    "run_id": "a890ffcd03084080a63b01f38253fdf3",
+    "actual": [
+      27601145.0
+    ],
+    "expected": "27601145",
+    "verdict": "PASS"
+  },
+  {
+    "id": 5,
+    "prompt": "같은 조건을 유지하고 이번에는 balance 평균을 알려줘.",
+    "status": "complete",
+    "run_id": "11dc1c8788844035a43c8104c9dd6856",
+    "actual": [
+      1005.9093
+    ],
+    "expected": "1005.9093",
+    "verdict": "PASS"
+  },
+  {
+    "id": 6,
+    "prompt": "age 범위는 유지하고 education에 secondary도 포함해서 balance 평균을 알려줘.",
+    "status": "complete",
+    "run_id": "e6ce7f89a2fa4acabf4c3c495334d915",
+    "actual": [
+      923.0729
+    ],
+    "expected": "923.0729",
+    "verdict": "PASS"
+  },
+  {
+    "id": 7,
+    "prompt": "같은 조건으로 age 히스토그램을 그려줘.",
+    "status": "complete",
+    "run_id": "d3b57b81091244579fb26aeef7dbede5",
+    "verdict": "PASS"
+  },
+  {
+    "id": 8,
+    "prompt": "방금 히스토그램의 구간을 5개로 바꿔줘.",
+    "status": "blocked",
+    "run_id": "71b41f12c08f481c883478a626104505",
+    "verdict": "FAIL",
+    "reason": "independent output mismatch",
+    "error_type": "AssertionError"
+  },
+  {
+    "id": 9,
+    "prompt": "alibaba_ssd 테이블의 컬럼 이름과 database 데이터 타입을 함께 표로 보여줘.",
+    "status": "complete",
+    "run_id": "fa7a6e4ce95c4699b732dd3a7657efa2",
+    "verdict": "FAIL",
+    "reason": "independent output mismatch",
+    "error_type": "AssertionError"
+  },
+  {
+    "id": 10,
+    "prompt": "stormtrooper에서 row 10개를 다시 표로 보여줘.",
+    "status": "complete",
+    "run_id": "e647dde869e847c28bab84d006263593",
+    "verdict": "PASS"
+  }
+]

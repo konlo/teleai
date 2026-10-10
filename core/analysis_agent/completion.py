@@ -48,8 +48,16 @@ def _count_rate_ready(current):
 from core.analysis_agent.latest_selection import render as render_latest_selection
 from core.analysis_agent.value_list import render as render_value_list
 from core.analysis_agent.row_preview import render as render_row_preview
+from core.analysis_agent.extension_evidence import render_python,render_eda,render_export
+from core.analysis_agent.python_result_contract import verified as python_verified
 
 CONTRACTS = (
+    CompletionContract('custom_analysis','custom_analysis_spec','custom_analysis_evidence',('execute_analysis_python',),
+                       render_python,python_verified),
+    CompletionContract('advanced_eda','advanced_eda_spec','advanced_eda_evidence',('render_advanced_eda',),
+                       render_eda),
+    CompletionContract('export','export_spec','export_evidence',('export_analysis_result',),
+                       render_export),
     CompletionContract('row_preview','row_preview_spec','table_preview_evidence',
                        ('prepare_row_preview','query_databricks'),render_row_preview),
     CompletionContract('value_list','value_list_requested','value_list_evidence',

@@ -1,0 +1,57 @@
+{
+  "id": 16,
+  "prompt": "데이타 10개 row만 추출해서 table로 보여줘 ",
+  "status": "complete",
+  "goal": {
+    "objective": "requested work",
+    "mode": "execute",
+    "source_reference": "explicit",
+    "sources": [
+      "teleai_default.bank_loan"
+    ],
+    "columns": [],
+    "conditions": [
+      {
+        "column": "age",
+        "op": "ge",
+        "value": 30
+      },
+      {
+        "column": "age",
+        "op": "le",
+        "value": 40
+      },
+      {
+        "column": "education",
+        "op": "in",
+        "value": [
+          "primary",
+          "secondary"
+        ]
+      }
+    ],
+    "any_conditions": [],
+    "measure_conditions": [],
+    "ratio": null,
+    "current_result_only": false,
+    "fresh_source_required": false,
+    "question": "",
+    "tasks": [
+      {
+        "capability": "row_preview",
+        "options": {
+          "limit": 10
+        }
+      }
+    ]
+  },
+  "reason": null,
+  "run_id": "3cc6fa54f1bd42fc8d65e1a71b1264b2",
+  "model_calls": 6,
+  "chart_metadata": [],
+  "verified_preview_shape": [
+    10,
+    18
+  ],
+  "verdict": "PASS"
+}

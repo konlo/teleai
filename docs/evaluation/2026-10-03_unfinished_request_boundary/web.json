@@ -1,0 +1,152 @@
+{
+  "url": "http://127.0.0.1:8504/Telly?conversation=0728dee0-d555-4aa2-853b-1101679346da",
+  "server_pid": 25839,
+  "data_backend": "mysql",
+  "cancellation": {
+    "time": "2026-10-03T14:56:41.074982+00:00",
+    "event": "analysis_cancelled",
+    "run_id": null,
+    "instance_id": "c141f3c8f711",
+    "pid": 25839,
+    "reason": "user_cancelled",
+    "request_id": "ca3476d0-d5b7-4572-ac37-94059b6fc702",
+    "pending_nodes": [
+      "model"
+    ],
+    "datasets_preserved": 8,
+    "charts_preserved": 9
+  },
+  "asset_count": 17,
+  "assets_and_selection_unchanged": true,
+  "failed_model_attempts_preserved": [
+    3,
+    181.0363053349938,
+    1
+  ],
+  "new_request": "테이블의 column 다시 보여줘",
+  "new_request_id": "2f5e7ede-036e-4d28-9480-bceea839d942",
+  "new_status": "complete",
+  "model_calls": 0,
+  "remote_sql_calls": 0,
+  "elapsed_seconds": 0.279,
+  "metadata_columns": [
+    "id",
+    "age",
+    "job",
+    "marital",
+    "education",
+    "default",
+    "balance",
+    "housing",
+    "loan",
+    "contact",
+    "day",
+    "month",
+    "duration",
+    "campaign",
+    "pdays",
+    "previous",
+    "poutcome",
+    "y"
+  ],
+  "events": [
+    {
+      "time": "2026-10-03T14:57:07.187560+00:00",
+      "event": "run_started",
+      "run_id": "04f99af8b2b64155acc201e16a63508a",
+      "instance_id": "c141f3c8f711",
+      "pid": 25839,
+      "runtime": {
+        "revision_at_first_runtime": "febd34ae5cbbfbcc7023ea8e0412b84572cd7763",
+        "packages": {
+          "langchain": "1.4.0",
+          "langchain-core": "1.6.2",
+          "langgraph": "1.2.11",
+          "streamlit": "1.63.0",
+          "sqlglot": "30.18.0"
+        },
+        "python_version": "3.11.13",
+        "identity_captured_at": "2026-10-03T14:54:44.563169+00:00",
+        "route": "langgraph-v1",
+        "model_class": "ChatOllama",
+        "require_remote_approval": false,
+        "loaded_delivery_guard": "269dcd1387bcd7ef",
+        "data_backend": "mysql"
+      },
+      "operation": "submit",
+      "process_peak_rss_bytes": 347439104
+    },
+    {
+      "time": "2026-10-03T14:57:07.444777+00:00",
+      "event": "recovery_transition",
+      "run_id": "04f99af8b2b64155acc201e16a63508a",
+      "instance_id": "c141f3c8f711",
+      "pid": 25839,
+      "request_id": "2f5e7ede-036e-4d28-9480-bceea839d942",
+      "tool": "inspect_table_context"
+    },
+    {
+      "time": "2026-10-03T14:57:07.446828+00:00",
+      "event": "tool_started",
+      "run_id": "04f99af8b2b64155acc201e16a63508a",
+      "instance_id": "c141f3c8f711",
+      "pid": 25839,
+      "tool": "inspect_table_context"
+    },
+    {
+      "time": "2026-10-03T14:57:07.451262+00:00",
+      "event": "tool_completed",
+      "run_id": "04f99af8b2b64155acc201e16a63508a",
+      "instance_id": "c141f3c8f711",
+      "pid": 25839,
+      "tool": "inspect_table_context",
+      "status": "ready",
+      "error_code": null,
+      "elapsed_seconds": 0.004,
+      "applied_corrections": []
+    },
+    {
+      "time": "2026-10-03T14:57:07.456476+00:00",
+      "event": "completion_checked",
+      "run_id": "04f99af8b2b64155acc201e16a63508a",
+      "instance_id": "c141f3c8f711",
+      "pid": 25839,
+      "request_id": "2f5e7ede-036e-4d28-9480-bceea839d942",
+      "status": "complete",
+      "reason": null,
+      "attempts": 0,
+      "required_capabilities": [
+        "metadata"
+      ],
+      "missing_capabilities": [],
+      "model_calls": 0,
+      "tool_calls": 1,
+      "model_seconds": 0.0,
+      "dataset_ids": [],
+      "artifact_ids": []
+    },
+    {
+      "time": "2026-10-03T14:57:07.458663+00:00",
+      "event": "run_completed",
+      "run_id": "04f99af8b2b64155acc201e16a63508a",
+      "instance_id": "c141f3c8f711",
+      "pid": 25839,
+      "status": "answered",
+      "elapsed_seconds": 0.279,
+      "process_peak_rss_bytes": 347439104,
+      "frame_cache_bytes": 0
+    },
+    {
+      "time": "2026-10-03T14:57:07.458714+00:00",
+      "event": "turn_slo",
+      "run_id": "04f99af8b2b64155acc201e16a63508a",
+      "instance_id": "c141f3c8f711",
+      "pid": 25839,
+      "elapsed_seconds": 0.279,
+      "limit": 180.0,
+      "status": "ok"
+    }
+  ],
+  "handover_note": "Before cancellation, a resume run from old PID23371 held the conversation lock. First cancellation correctly returned busy. That run ended ReadTimeout/runtime shutdown error; after lock release, cancellation succeeded. No cancellation was applied during active inference.",
+  "remaining_limitation": "Entire-source scatter is not completed. This change unblocks new testing; it does not resolve the model latency or large-source scatter planning."
+}

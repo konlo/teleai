@@ -1,0 +1,943 @@
+{
+  "conversation": "cdbea3fa-3f98-4199-8402-f6a6b2704ac8",
+  "stage": "02",
+  "run": {
+    "time": "2026-10-10T05:35:42.634872+00:00",
+    "event": "run_completed",
+    "run_id": "44e42c22652d4773ba18091f0ce5d226",
+    "instance_id": "6e875dac0c45",
+    "pid": 95981,
+    "status": "answered",
+    "elapsed_seconds": 89.921,
+    "process_peak_rss_bytes": 323928064,
+    "frame_cache_bytes": 0
+  },
+  "goal": {
+    "objective": "requested work",
+    "mode": "execute",
+    "source_reference": "previous_analysis",
+    "sources": [
+      "teleai_default.bank_loan"
+    ],
+    "columns": [
+      "balance"
+    ],
+    "conditions": [
+      {
+        "column": "age",
+        "op": "ge",
+        "value": 30
+      },
+      {
+        "column": "age",
+        "op": "le",
+        "value": 40
+      },
+      {
+        "column": "education",
+        "op": "in",
+        "value": [
+          "primary",
+          "secondary"
+        ]
+      }
+    ],
+    "any_conditions": [],
+    "measure_conditions": [],
+    "ratio": null,
+    "current_result_only": true,
+    "fresh_source_required": false,
+    "question": "",
+    "tasks": [
+      {
+        "capability": "calculation",
+        "options": {
+          "operations": [
+            "AVG"
+          ],
+          "group_columns": []
+        }
+      }
+    ]
+  },
+  "scope": {
+    "conditions": [
+      {
+        "column": "age",
+        "op": "ge",
+        "value": 30
+      },
+      {
+        "column": "age",
+        "op": "le",
+        "value": 40
+      },
+      {
+        "column": "education",
+        "op": "in",
+        "value": [
+          "primary",
+          "secondary"
+        ]
+      }
+    ],
+    "any_conditions": [],
+    "measure_conditions": [],
+    "ratio": null,
+    "sources": [
+      "teleai_default.bank_loan"
+    ],
+    "columns": [
+      "age",
+      "education"
+    ],
+    "unresolved": [],
+    "join_edges": []
+  },
+  "model_calls": 8,
+  "sent_calls": [
+    "5a1b4deb-625c-471b-8ab1-ee5de008e76f"
+  ],
+  "decision_support_bound": true,
+  "decision_support": {
+    "status": "supported",
+    "request_sha256": "bc50675caa541fa676cc34e2bf7e3e1e61b92a20ca7843a1494041dc8b117502",
+    "goal_sha256": "b8648a116baba3df55042fde1f381247d5cdb1512185282ab8dae2c46bfe3343",
+    "bindings": [
+      {
+        "path": "/tasks/0",
+        "origin": "request",
+        "quote": "방금 보여준 10개 행만으로 balance 평균을 알려줘. age와 education 조건은 유지하고, DB를 다시 조회하거나 차트를 그리지 마.",
+        "reference": ""
+      },
+      {
+        "path": "/sources/0",
+        "origin": "request",
+        "quote": "방금 보여준 10개 행만으로 balance 평균을 알려줘. age와 education 조건은 유지하고, DB를 다시 조회하거나 차트를 그리지 마.",
+        "reference": ""
+      },
+      {
+        "path": "/columns/0",
+        "origin": "request",
+        "quote": "balance",
+        "reference": ""
+      },
+      {
+        "path": "/conditions/0",
+        "origin": "request",
+        "quote": "방금 보여준 10개 행만으로 balance 평균을 알려줘. age와 education 조건은 유지하고, DB를 다시 조회하거나 차트를 그리지 마.",
+        "reference": ""
+      },
+      {
+        "path": "/conditions/1",
+        "origin": "request",
+        "quote": "방금 보여준 10개 행만으로 balance 평균을 알려줘. age와 education 조건은 유지하고, DB를 다시 조회하거나 차트를 그리지 마.",
+        "reference": ""
+      },
+      {
+        "path": "/conditions/2",
+        "origin": "request",
+        "quote": "방금 보여준 10개 행만으로 balance 평균을 알려줘. age와 education 조건은 유지하고, DB를 다시 조회하거나 차트를 그리지 마.",
+        "reference": ""
+      },
+      {
+        "path": "/current_result_only",
+        "origin": "request",
+        "quote": "방금 보여준 10개 행만으로 balance 평균을 알려줘. age와 education 조건은 유지하고, DB를 다시 조회하거나 차트를 그리지 마.",
+        "reference": ""
+      }
+    ],
+    "linguistic_entailment_proven": false,
+    "executable_goal_sha256": "b8648a116baba3df55042fde1f381247d5cdb1512185282ab8dae2c46bfe3343"
+  },
+  "plan": {
+    "status": "ready",
+    "plan": {
+      "id": "8869818c2f6443f480b51e642ea9aea8",
+      "tasks": [
+        {
+          "id": "e3d9c77a812e90640495",
+          "capability": "calculation",
+          "options": {
+            "operations": [
+              "AVG"
+            ],
+            "group_columns": []
+          },
+          "scope": {
+            "required_sources": [
+              "teleai_default.bank_loan"
+            ],
+            "required_columns": [
+              "balance"
+            ],
+            "scope": {
+              "conditions": [
+                {
+                  "column": "age",
+                  "op": "ge",
+                  "value": 30
+                },
+                {
+                  "column": "age",
+                  "op": "le",
+                  "value": 40
+                },
+                {
+                  "column": "education",
+                  "op": "in",
+                  "value": [
+                    "primary",
+                    "secondary"
+                  ]
+                }
+              ],
+              "any_conditions": [],
+              "measure_conditions": [],
+              "ratio": null,
+              "sources": [
+                "teleai_default.bank_loan"
+              ],
+              "columns": [
+                "age",
+                "education"
+              ],
+              "unresolved": [],
+              "join_edges": []
+            },
+            "current_result_only": true,
+            "fresh_source_required": false
+          },
+          "depends_on": [],
+          "postconditions": null,
+          "verification_receipt": [
+            "0c2541a0-1425-4e9c-87a9-64c1599d361c"
+          ],
+          "status": "verified",
+          "completion_contract": "calculation",
+          "evidence_ids": [
+            "0c2541a0-1425-4e9c-87a9-64c1599d361c"
+          ],
+          "artifact_ids": []
+        }
+      ],
+      "goal": {
+        "objective": "requested work",
+        "mode": "execute",
+        "source_reference": "previous_analysis",
+        "sources": [
+          "teleai_default.bank_loan"
+        ],
+        "columns": [
+          "balance"
+        ],
+        "conditions": [
+          {
+            "column": "age",
+            "op": "ge",
+            "value": 30
+          },
+          {
+            "column": "age",
+            "op": "le",
+            "value": 40
+          },
+          {
+            "column": "education",
+            "op": "in",
+            "value": [
+              "primary",
+              "secondary"
+            ]
+          }
+        ],
+        "any_conditions": [],
+        "measure_conditions": [],
+        "ratio": null,
+        "current_result_only": true,
+        "fresh_source_required": false,
+        "question": "",
+        "tasks": [
+          {
+            "capability": "calculation",
+            "options": {
+              "operations": [
+                "AVG"
+              ],
+              "group_columns": []
+            }
+          }
+        ]
+      },
+      "status": "complete",
+      "scope_mode": "shared_goal_scope",
+      "decision_evidence": {
+        "status": "supported",
+        "request_sha256": "bc50675caa541fa676cc34e2bf7e3e1e61b92a20ca7843a1494041dc8b117502",
+        "goal_sha256": "b8648a116baba3df55042fde1f381247d5cdb1512185282ab8dae2c46bfe3343",
+        "bindings": [
+          {
+            "path": "/tasks/0",
+            "origin": "request",
+            "quote": "방금 보여준 10개 행만으로 balance 평균을 알려줘. age와 education 조건은 유지하고, DB를 다시 조회하거나 차트를 그리지 마.",
+            "reference": ""
+          },
+          {
+            "path": "/sources/0",
+            "origin": "request",
+            "quote": "방금 보여준 10개 행만으로 balance 평균을 알려줘. age와 education 조건은 유지하고, DB를 다시 조회하거나 차트를 그리지 마.",
+            "reference": ""
+          },
+          {
+            "path": "/columns/0",
+            "origin": "request",
+            "quote": "balance",
+            "reference": ""
+          },
+          {
+            "path": "/conditions/0",
+            "origin": "request",
+            "quote": "방금 보여준 10개 행만으로 balance 평균을 알려줘. age와 education 조건은 유지하고, DB를 다시 조회하거나 차트를 그리지 마.",
+            "reference": ""
+          },
+          {
+            "path": "/conditions/1",
+            "origin": "request",
+            "quote": "방금 보여준 10개 행만으로 balance 평균을 알려줘. age와 education 조건은 유지하고, DB를 다시 조회하거나 차트를 그리지 마.",
+            "reference": ""
+          },
+          {
+            "path": "/conditions/2",
+            "origin": "request",
+            "quote": "방금 보여준 10개 행만으로 balance 평균을 알려줘. age와 education 조건은 유지하고, DB를 다시 조회하거나 차트를 그리지 마.",
+            "reference": ""
+          },
+          {
+            "path": "/current_result_only",
+            "origin": "request",
+            "quote": "방금 보여준 10개 행만으로 balance 평균을 알려줘. age와 education 조건은 유지하고, DB를 다시 조회하거나 차트를 그리지 마.",
+            "reference": ""
+          }
+        ],
+        "linguistic_entailment_proven": false,
+        "executable_goal_sha256": "b8648a116baba3df55042fde1f381247d5cdb1512185282ab8dae2c46bfe3343"
+      },
+      "revision": 3
+    },
+    "recent_events": [
+      {
+        "sequence": 8,
+        "kind": "plan_created",
+        "at": "2026-10-10T05:35:42.490106+00:00",
+        "revision": 1
+      },
+      {
+        "sequence": 9,
+        "kind": "task_pending",
+        "at": "2026-10-10T05:35:42.490631+00:00",
+        "task_id": "e3d9c77a812e90640495",
+        "capability": "calculation",
+        "revision": 1
+      },
+      {
+        "sequence": 10,
+        "kind": "plan_status_changed",
+        "at": "2026-10-10T05:35:42.490662+00:00",
+        "status": "working",
+        "stop_reason": null,
+        "revision": 1
+      },
+      {
+        "sequence": 11,
+        "kind": "task_verified",
+        "at": "2026-10-10T05:35:42.621375+00:00",
+        "task_id": "e3d9c77a812e90640495",
+        "capability": "calculation",
+        "revision": 2
+      },
+      {
+        "sequence": 12,
+        "kind": "tool_dispatched",
+        "at": "2026-10-10T05:35:42.627493+00:00",
+        "call_id": "5a1b4deb-625c-471b-8ab1-ee5de008e76f",
+        "tool": "local_analysis_sql",
+        "arguments_sha256": "f8368d69106241309a197d86663f82fa0808fe6514003f1016560341692d8bff",
+        "revision": 2
+      },
+      {
+        "sequence": 13,
+        "kind": "plan_status_changed",
+        "at": "2026-10-10T05:35:42.630074+00:00",
+        "status": "complete",
+        "stop_reason": null,
+        "revision": 3
+      }
+    ]
+  },
+  "datasets": [
+    {
+      "id": "e43da5cf-32c2-4082-9349-acc957a7f6b5",
+      "source": "teleai_default.bank_loan",
+      "rows": 10,
+      "columns": [
+        "age",
+        "balance",
+        "education"
+      ],
+      "parent_id": "",
+      "digest": "41c286759e756f3757bc8380c5174d32b3ccf2c679e87e3749a01f51ad7fb411"
+    },
+    {
+      "id": "0c2541a0-1425-4e9c-87a9-64c1599d361c",
+      "source": "teleai_default.bank_loan",
+      "rows": 1,
+      "columns": [
+        "average"
+      ],
+      "parent_id": "e43da5cf-32c2-4082-9349-acc957a7f6b5",
+      "digest": "465dd3e4c206bf4740592344d94281f98560e9a458c7ec98fa15a38b037bcc75"
+    }
+  ],
+  "selected_dataset": "",
+  "additional_queries_this_run": 0,
+  "total_queries": 1,
+  "tool_calls": 1,
+  "diagnostics": [
+    {
+      "time": "2026-10-10T05:34:12.715384+00:00",
+      "event": "run_started",
+      "run_id": "44e42c22652d4773ba18091f0ce5d226",
+      "instance_id": "6e875dac0c45",
+      "pid": 95981,
+      "runtime": {
+        "revision_at_first_runtime": "3a7206654b3d2fab7cd145893fd52970e397dd07",
+        "packages": {
+          "langchain": "1.4.0",
+          "langchain-core": "1.6.2",
+          "langgraph": "1.2.11",
+          "streamlit": "1.63.0",
+          "sqlglot": "30.18.0"
+        },
+        "python_version": "3.11.13",
+        "identity_captured_at": "2026-10-10T05:32:18.407080+00:00",
+        "route": "langgraph-v1",
+        "model_class": "ChatOllama",
+        "require_remote_approval": false,
+        "loaded_delivery_guard": "fe636ce820546fac",
+        "data_backend": "mysql",
+        "intent_mode": "llm",
+        "goal_version": 1,
+        "goal_model": "gemma4:e4b",
+        "planner_model": "gemma4:e4b"
+      },
+      "operation": "submit",
+      "process_peak_rss_bytes": 323928064
+    },
+    {
+      "time": "2026-10-10T05:34:12.719341+00:00",
+      "event": "goal_interpretation_started",
+      "run_id": "44e42c22652d4773ba18091f0ce5d226",
+      "instance_id": "6e875dac0c45",
+      "pid": 95981,
+      "request_id": "8869818c2f6443f480b51e642ea9aea8",
+      "origin": "llm",
+      "goal_version": 1
+    },
+    {
+      "time": "2026-10-10T05:34:12.720591+00:00",
+      "event": "model_payload_budget",
+      "run_id": "44e42c22652d4773ba18091f0ce5d226",
+      "instance_id": "6e875dac0c45",
+      "pid": 95981,
+      "payload_bytes": 2071,
+      "payload_bytes_before_projection": 2071,
+      "template_headroom": 640,
+      "input_budget_units": 14336,
+      "output_reserved": 2048,
+      "context_window": 16384,
+      "tool_count": 0,
+      "message_count": 1,
+      "older_turns_compacted": false,
+      "within_budget": true,
+      "observations_compacted": false,
+      "schema_compacted": false,
+      "system_catalog_compacted": false,
+      "tool_menu_compacted": false,
+      "minimal_discovery_menu": false,
+      "reasoning_compacted": false,
+      "minimal_catalog": false,
+      "builtin_instructions_compacted": false,
+      "repair_history_compacted": false,
+      "components": {
+        "system_bytes": 1332,
+        "message_content_bytes": 602,
+        "tool_calls_bytes": 0,
+        "reasoning_bytes": 0,
+        "tool_schema_bytes": 0,
+        "tool_names": []
+      },
+      "measurement": "conservative_utf8_bytes_not_actual_token_count"
+    },
+    {
+      "time": "2026-10-10T05:34:15.503160+00:00",
+      "event": "goal_literal_subjects_read",
+      "run_id": "44e42c22652d4773ba18091f0ce5d226",
+      "instance_id": "6e875dac0c45",
+      "pid": 95981,
+      "request_id": "8869818c2f6443f480b51e642ea9aea8",
+      "candidate_count": 4,
+      "table_count": 0
+    },
+    {
+      "time": "2026-10-10T05:34:15.504744+00:00",
+      "event": "model_payload_budget",
+      "run_id": "44e42c22652d4773ba18091f0ce5d226",
+      "instance_id": "6e875dac0c45",
+      "pid": 95981,
+      "payload_bytes": 8715,
+      "payload_bytes_before_projection": 8715,
+      "template_headroom": 640,
+      "input_budget_units": 14336,
+      "output_reserved": 2048,
+      "context_window": 16384,
+      "tool_count": 0,
+      "message_count": 1,
+      "older_turns_compacted": false,
+      "within_budget": true,
+      "observations_compacted": false,
+      "schema_compacted": false,
+      "system_catalog_compacted": false,
+      "tool_menu_compacted": false,
+      "minimal_discovery_menu": false,
+      "reasoning_compacted": false,
+      "minimal_catalog": false,
+      "builtin_instructions_compacted": false,
+      "repair_history_compacted": false,
+      "components": {
+        "system_bytes": 6126,
+        "message_content_bytes": 2171,
+        "tool_calls_bytes": 0,
+        "reasoning_bytes": 0,
+        "tool_schema_bytes": 0,
+        "tool_names": []
+      },
+      "measurement": "conservative_utf8_bytes_not_actual_token_count"
+    },
+    {
+      "time": "2026-10-10T05:34:22.589576+00:00",
+      "event": "model_payload_budget",
+      "run_id": "44e42c22652d4773ba18091f0ce5d226",
+      "instance_id": "6e875dac0c45",
+      "pid": 95981,
+      "payload_bytes": 3788,
+      "payload_bytes_before_projection": 3788,
+      "template_headroom": 640,
+      "input_budget_units": 14336,
+      "output_reserved": 2048,
+      "context_window": 16384,
+      "tool_count": 0,
+      "message_count": 1,
+      "older_turns_compacted": false,
+      "within_budget": true,
+      "observations_compacted": false,
+      "schema_compacted": false,
+      "system_catalog_compacted": false,
+      "tool_menu_compacted": false,
+      "minimal_discovery_menu": false,
+      "reasoning_compacted": false,
+      "minimal_catalog": false,
+      "builtin_instructions_compacted": false,
+      "repair_history_compacted": false,
+      "components": {
+        "system_bytes": 2304,
+        "message_content_bytes": 1237,
+        "tool_calls_bytes": 0,
+        "reasoning_bytes": 0,
+        "tool_schema_bytes": 0,
+        "tool_names": []
+      },
+      "measurement": "conservative_utf8_bytes_not_actual_token_count"
+    },
+    {
+      "time": "2026-10-10T05:34:24.212727+00:00",
+      "event": "goal_measure_obligation_reviewed",
+      "run_id": "44e42c22652d4773ba18091f0ce5d226",
+      "instance_id": "6e875dac0c45",
+      "pid": 95981,
+      "request_id": "8869818c2f6443f480b51e642ea9aea8",
+      "original_capability": "calculation",
+      "capability": "calculation",
+      "operations": [
+        "AVG"
+      ],
+      "changed": true
+    },
+    {
+      "time": "2026-10-10T05:34:24.214822+00:00",
+      "event": "model_payload_budget",
+      "run_id": "44e42c22652d4773ba18091f0ce5d226",
+      "instance_id": "6e875dac0c45",
+      "pid": 95981,
+      "payload_bytes": 4799,
+      "payload_bytes_before_projection": 4799,
+      "template_headroom": 640,
+      "input_budget_units": 14336,
+      "output_reserved": 2048,
+      "context_window": 16384,
+      "tool_count": 0,
+      "message_count": 1,
+      "older_turns_compacted": false,
+      "within_budget": true,
+      "observations_compacted": false,
+      "schema_compacted": false,
+      "system_catalog_compacted": false,
+      "tool_menu_compacted": false,
+      "minimal_discovery_menu": false,
+      "reasoning_compacted": false,
+      "minimal_catalog": false,
+      "builtin_instructions_compacted": false,
+      "repair_history_compacted": false,
+      "components": {
+        "system_bytes": 3487,
+        "message_content_bytes": 1048,
+        "tool_calls_bytes": 0,
+        "reasoning_bytes": 0,
+        "tool_schema_bytes": 0,
+        "tool_names": []
+      },
+      "measurement": "conservative_utf8_bytes_not_actual_token_count"
+    },
+    {
+      "time": "2026-10-10T05:34:29.496764+00:00",
+      "event": "goal_population_basis_rejected",
+      "run_id": "44e42c22652d4773ba18091f0ce5d226",
+      "instance_id": "6e875dac0c45",
+      "pid": 95981,
+      "request_id": "8869818c2f6443f480b51e642ea9aea8",
+      "attempt": 1,
+      "error_type": "ValueError",
+      "detail": "Population reference needs a CURRENT request restriction quote",
+      "basis": "displayed_result",
+      "quote_is_current": false,
+      "changes_filters": false
+    },
+    {
+      "time": "2026-10-10T05:34:29.497329+00:00",
+      "event": "model_payload_budget",
+      "run_id": "44e42c22652d4773ba18091f0ce5d226",
+      "instance_id": "6e875dac0c45",
+      "pid": 95981,
+      "payload_bytes": 5178,
+      "payload_bytes_before_projection": 5178,
+      "template_headroom": 704,
+      "input_budget_units": 14336,
+      "output_reserved": 2048,
+      "context_window": 16384,
+      "tool_count": 0,
+      "message_count": 2,
+      "older_turns_compacted": false,
+      "within_budget": true,
+      "observations_compacted": false,
+      "schema_compacted": false,
+      "system_catalog_compacted": false,
+      "tool_menu_compacted": false,
+      "minimal_discovery_menu": false,
+      "reasoning_compacted": false,
+      "minimal_catalog": false,
+      "builtin_instructions_compacted": false,
+      "repair_history_compacted": false,
+      "components": {
+        "system_bytes": 3487,
+        "message_content_bytes": 1393,
+        "tool_calls_bytes": 0,
+        "reasoning_bytes": 0,
+        "tool_schema_bytes": 0,
+        "tool_names": []
+      },
+      "measurement": "conservative_utf8_bytes_not_actual_token_count"
+    },
+    {
+      "time": "2026-10-10T05:34:33.019859+00:00",
+      "event": "goal_population_basis_read",
+      "run_id": "44e42c22652d4773ba18091f0ce5d226",
+      "instance_id": "6e875dac0c45",
+      "pid": 95981,
+      "request_id": "8869818c2f6443f480b51e642ea9aea8",
+      "basis": "displayed_result",
+      "has_current_quote": true,
+      "changes_filters": false,
+      "filter_change_quote_verified": false
+    },
+    {
+      "time": "2026-10-10T05:34:33.020266+00:00",
+      "event": "goal_tasks_selected",
+      "run_id": "44e42c22652d4773ba18091f0ce5d226",
+      "instance_id": "6e875dac0c45",
+      "pid": 95981,
+      "request_id": "8869818c2f6443f480b51e642ea9aea8",
+      "mode": "execute",
+      "capabilities": [
+        "calculation"
+      ],
+      "chart_kind": "",
+      "metadata_kind": "",
+      "source_reference": "previous_analysis",
+      "current_result_only": true
+    },
+    {
+      "time": "2026-10-10T05:34:33.022704+00:00",
+      "event": "model_payload_budget",
+      "run_id": "44e42c22652d4773ba18091f0ce5d226",
+      "instance_id": "6e875dac0c45",
+      "pid": 95981,
+      "payload_bytes": 11855,
+      "payload_bytes_before_projection": 11855,
+      "template_headroom": 640,
+      "input_budget_units": 14336,
+      "output_reserved": 2048,
+      "context_window": 16384,
+      "tool_count": 0,
+      "message_count": 1,
+      "older_turns_compacted": false,
+      "within_budget": true,
+      "observations_compacted": false,
+      "schema_compacted": false,
+      "system_catalog_compacted": false,
+      "tool_menu_compacted": false,
+      "minimal_discovery_menu": false,
+      "reasoning_compacted": false,
+      "minimal_catalog": false,
+      "builtin_instructions_compacted": false,
+      "repair_history_compacted": false,
+      "components": {
+        "system_bytes": 7618,
+        "message_content_bytes": 3575,
+        "tool_calls_bytes": 0,
+        "reasoning_bytes": 0,
+        "tool_schema_bytes": 0,
+        "tool_names": []
+      },
+      "measurement": "conservative_utf8_bytes_not_actual_token_count"
+    },
+    {
+      "time": "2026-10-10T05:34:50.075896+00:00",
+      "event": "goal_semantic_review_started",
+      "run_id": "44e42c22652d4773ba18091f0ce5d226",
+      "instance_id": "6e875dac0c45",
+      "pid": 95981,
+      "request_id": "8869818c2f6443f480b51e642ea9aea8"
+    },
+    {
+      "time": "2026-10-10T05:34:50.076741+00:00",
+      "event": "model_payload_budget",
+      "run_id": "44e42c22652d4773ba18091f0ce5d226",
+      "instance_id": "6e875dac0c45",
+      "pid": 95981,
+      "payload_bytes": 13668,
+      "payload_bytes_before_projection": 13668,
+      "template_headroom": 640,
+      "input_budget_units": 14336,
+      "output_reserved": 2048,
+      "context_window": 16384,
+      "tool_count": 0,
+      "message_count": 1,
+      "older_turns_compacted": false,
+      "within_budget": true,
+      "observations_compacted": false,
+      "schema_compacted": false,
+      "system_catalog_compacted": false,
+      "tool_menu_compacted": false,
+      "minimal_discovery_menu": false,
+      "reasoning_compacted": false,
+      "minimal_catalog": false,
+      "builtin_instructions_compacted": false,
+      "repair_history_compacted": false,
+      "components": {
+        "system_bytes": 8786,
+        "message_content_bytes": 4114,
+        "tool_calls_bytes": 0,
+        "reasoning_bytes": 0,
+        "tool_schema_bytes": 0,
+        "tool_names": []
+      },
+      "measurement": "conservative_utf8_bytes_not_actual_token_count"
+    },
+    {
+      "time": "2026-10-10T05:35:30.267451+00:00",
+      "event": "model_payload_budget",
+      "run_id": "44e42c22652d4773ba18091f0ce5d226",
+      "instance_id": "6e875dac0c45",
+      "pid": 95981,
+      "payload_bytes": 2601,
+      "payload_bytes_before_projection": 2601,
+      "template_headroom": 640,
+      "input_budget_units": 14336,
+      "output_reserved": 2048,
+      "context_window": 16384,
+      "tool_count": 0,
+      "message_count": 1,
+      "older_turns_compacted": false,
+      "within_budget": true,
+      "observations_compacted": false,
+      "schema_compacted": false,
+      "system_catalog_compacted": false,
+      "tool_menu_compacted": false,
+      "minimal_discovery_menu": false,
+      "reasoning_compacted": false,
+      "minimal_catalog": false,
+      "builtin_instructions_compacted": false,
+      "repair_history_compacted": false,
+      "components": {
+        "system_bytes": 1494,
+        "message_content_bytes": 904,
+        "tool_calls_bytes": 0,
+        "reasoning_bytes": 0,
+        "tool_schema_bytes": 0,
+        "tool_names": []
+      },
+      "measurement": "conservative_utf8_bytes_not_actual_token_count"
+    },
+    {
+      "time": "2026-10-10T05:35:42.479551+00:00",
+      "event": "goal_population_audited",
+      "run_id": "44e42c22652d4773ba18091f0ce5d226",
+      "instance_id": "6e875dac0c45",
+      "pid": 95981,
+      "request_id": "8869818c2f6443f480b51e642ea9aea8",
+      "changed": false,
+      "condition_count": 3,
+      "alternative_count": 0
+    },
+    {
+      "time": "2026-10-10T05:35:42.487587+00:00",
+      "event": "goal_decision_support_verified",
+      "run_id": "44e42c22652d4773ba18091f0ce5d226",
+      "instance_id": "6e875dac0c45",
+      "pid": 95981,
+      "request_id": "8869818c2f6443f480b51e642ea9aea8",
+      "decision_count": 7,
+      "request_sha256": "bc50675caa541fa676cc34e2bf7e3e1e61b92a20ca7843a1494041dc8b117502",
+      "goal_sha256": "b8648a116baba3df55042fde1f381247d5cdb1512185282ab8dae2c46bfe3343",
+      "linguistic_entailment_proven": false
+    },
+    {
+      "time": "2026-10-10T05:35:42.487847+00:00",
+      "event": "goal_interpretation_completed",
+      "run_id": "44e42c22652d4773ba18091f0ce5d226",
+      "instance_id": "6e875dac0c45",
+      "pid": 95981,
+      "request_id": "8869818c2f6443f480b51e642ea9aea8",
+      "origin": "llm",
+      "mode": "execute",
+      "capabilities": [
+        "calculation"
+      ],
+      "attempts": 2,
+      "goal_version": 1
+    },
+    {
+      "time": "2026-10-10T05:35:42.495047+00:00",
+      "event": "recovery_transition",
+      "run_id": "44e42c22652d4773ba18091f0ce5d226",
+      "instance_id": "6e875dac0c45",
+      "pid": 95981,
+      "request_id": "8869818c2f6443f480b51e642ea9aea8",
+      "tool": "local_analysis_sql"
+    },
+    {
+      "time": "2026-10-10T05:35:42.499381+00:00",
+      "event": "tool_started",
+      "run_id": "44e42c22652d4773ba18091f0ce5d226",
+      "instance_id": "6e875dac0c45",
+      "pid": 95981,
+      "tool": "local_analysis_sql"
+    },
+    {
+      "time": "2026-10-10T05:35:42.614039+00:00",
+      "event": "tool_completed",
+      "run_id": "44e42c22652d4773ba18091f0ce5d226",
+      "instance_id": "6e875dac0c45",
+      "pid": 95981,
+      "tool": "local_analysis_sql",
+      "status": "ready",
+      "error_code": null,
+      "elapsed_seconds": 0.115,
+      "applied_corrections": []
+    },
+    {
+      "time": "2026-10-10T05:35:42.619974+00:00",
+      "event": "calculation_evidence",
+      "run_id": "44e42c22652d4773ba18091f0ce5d226",
+      "instance_id": "6e875dac0c45",
+      "pid": 95981,
+      "request_id": "8869818c2f6443f480b51e642ea9aea8",
+      "dataset_id": "0c2541a0-1425-4e9c-87a9-64c1599d361c",
+      "source": "teleai_default.bank_loan",
+      "coverage": "unknown",
+      "grain": "aggregate"
+    },
+    {
+      "time": "2026-10-10T05:35:42.631114+00:00",
+      "event": "completion_checked",
+      "run_id": "44e42c22652d4773ba18091f0ce5d226",
+      "instance_id": "6e875dac0c45",
+      "pid": 95981,
+      "request_id": "8869818c2f6443f480b51e642ea9aea8",
+      "status": "complete",
+      "reason": null,
+      "attempts": 0,
+      "required_capabilities": [
+        "calculation"
+      ],
+      "missing_capabilities": [],
+      "model_calls": 8,
+      "tool_calls": 1,
+      "model_seconds": 89.735,
+      "dataset_ids": [
+        "0c2541a0-1425-4e9c-87a9-64c1599d361c"
+      ],
+      "artifact_ids": []
+    },
+    {
+      "time": "2026-10-10T05:35:42.634872+00:00",
+      "event": "run_completed",
+      "run_id": "44e42c22652d4773ba18091f0ce5d226",
+      "instance_id": "6e875dac0c45",
+      "pid": 95981,
+      "status": "answered",
+      "elapsed_seconds": 89.921,
+      "process_peak_rss_bytes": 323928064,
+      "frame_cache_bytes": 0
+    },
+    {
+      "time": "2026-10-10T05:35:42.634953+00:00",
+      "event": "turn_slo",
+      "run_id": "44e42c22652d4773ba18091f0ce5d226",
+      "instance_id": "6e875dac0c45",
+      "pid": 95981,
+      "elapsed_seconds": 89.921,
+      "limit": 180.0,
+      "status": "ok"
+    }
+  ],
+  "originals_preserved": true,
+  "oracle": {
+    "raw_rows": 10,
+    "raw_columns": [
+      "age",
+      "balance",
+      "education"
+    ],
+    "row_scope_matches": true,
+    "expected_balance_mean": 1732.9,
+    "expected_education_frequencies": {
+      "secondary": 9,
+      "primary": 1
+    },
+    "observed_scalar_values": [
+      1732.9
+    ],
+    "passed": true
+  },
+  "passed": true
+}

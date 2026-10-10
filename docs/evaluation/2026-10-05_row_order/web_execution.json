@@ -1,0 +1,230 @@
+{
+  "request": "stormtrooper table row 10개 보여줘",
+  "metadata": {
+    "id": "68dbb79c-60be-41ae-b962-6fa3c7971264",
+    "source": "teleai_default.stormtrooper",
+    "columns": [
+      "flight_id",
+      "date_str",
+      "latitude",
+      "longitude",
+      "pressure_altitude",
+      "cdo",
+      "cth",
+      "glm_event_density",
+      "glm_optical_flux",
+      "cdo025",
+      "cth025",
+      "cth025_diff_feet",
+      "cdo_dist_km"
+    ],
+    "rows": 10,
+    "coverage": "unknown",
+    "conditions": [],
+    "predicate_known": false,
+    "grain": "raw",
+    "aggregation": "",
+    "snapshot": "2026-10-05T10:13:18.929204+00:00",
+    "query": "SELECT * FROM `teleai_default`.`stormtrooper` LIMIT 10",
+    "parent_id": "",
+    "parent_ids": [],
+    "role": "root",
+    "root_id": "68dbb79c-60be-41ae-b962-6fa3c7971264",
+    "row_selection": {}
+  },
+  "events": [
+    {
+      "time": "2026-10-05T10:13:18.742613+00:00",
+      "event": "run_started",
+      "run_id": "9d624b37563e43afb8d37136145dd8a7",
+      "instance_id": "0be3ab6aaef4",
+      "pid": 12631,
+      "runtime": {
+        "revision_at_first_runtime": "febd34ae5cbbfbcc7023ea8e0412b84572cd7763",
+        "packages": {
+          "langchain": "1.4.0",
+          "langchain-core": "1.6.2",
+          "langgraph": "1.2.11",
+          "streamlit": "1.63.0",
+          "sqlglot": "30.18.0"
+        },
+        "python_version": "3.11.13",
+        "identity_captured_at": "2026-10-05T10:13:16.677132+00:00",
+        "route": "langgraph-v1",
+        "model_class": "ChatOllama",
+        "require_remote_approval": false,
+        "loaded_delivery_guard": "60d52efc0ea418af",
+        "data_backend": "mysql"
+      },
+      "operation": "submit",
+      "process_peak_rss_bytes": 394346496
+    },
+    {
+      "time": "2026-10-05T10:13:18.888204+00:00",
+      "event": "recovery_transition",
+      "run_id": "9d624b37563e43afb8d37136145dd8a7",
+      "instance_id": "0be3ab6aaef4",
+      "pid": 12631,
+      "request_id": "60ef7092-cbac-4334-89f5-2e874b3439bb",
+      "tool": "prepare_row_preview"
+    },
+    {
+      "time": "2026-10-05T10:13:18.892959+00:00",
+      "event": "tool_started",
+      "run_id": "9d624b37563e43afb8d37136145dd8a7",
+      "instance_id": "0be3ab6aaef4",
+      "pid": 12631,
+      "tool": "prepare_row_preview"
+    },
+    {
+      "time": "2026-10-05T10:13:18.897602+00:00",
+      "event": "tool_completed",
+      "run_id": "9d624b37563e43afb8d37136145dd8a7",
+      "instance_id": "0be3ab6aaef4",
+      "pid": 12631,
+      "tool": "prepare_row_preview",
+      "status": "planned",
+      "error_code": null,
+      "elapsed_seconds": 0.005,
+      "applied_corrections": []
+    },
+    {
+      "time": "2026-10-05T10:13:18.903016+00:00",
+      "event": "recovery_transition",
+      "run_id": "9d624b37563e43afb8d37136145dd8a7",
+      "instance_id": "0be3ab6aaef4",
+      "pid": 12631,
+      "request_id": "60ef7092-cbac-4334-89f5-2e874b3439bb",
+      "tool": "query_databricks"
+    },
+    {
+      "time": "2026-10-05T10:13:18.945656+00:00",
+      "event": "remote_result_verified",
+      "run_id": "9d624b37563e43afb8d37136145dd8a7",
+      "instance_id": "0be3ab6aaef4",
+      "pid": 12631,
+      "request_id": "60ef7092-cbac-4334-89f5-2e874b3439bb",
+      "tool_call_id": "4927d3c3-d0c2-4f4a-be27-697eba9b4f93",
+      "dataset_id": "68dbb79c-60be-41ae-b962-6fa3c7971264",
+      "rows": 10
+    },
+    {
+      "time": "2026-10-05T10:13:18.951709+00:00",
+      "event": "completion_checked",
+      "run_id": "9d624b37563e43afb8d37136145dd8a7",
+      "instance_id": "0be3ab6aaef4",
+      "pid": 12631,
+      "request_id": "60ef7092-cbac-4334-89f5-2e874b3439bb",
+      "status": "complete",
+      "reason": null,
+      "attempts": 0,
+      "required_capabilities": [
+        "row_preview",
+        "remote_query"
+      ],
+      "missing_capabilities": [],
+      "model_calls": 0,
+      "tool_calls": 2,
+      "model_seconds": 0.0,
+      "dataset_ids": [],
+      "artifact_ids": []
+    },
+    {
+      "time": "2026-10-05T10:13:18.960509+00:00",
+      "event": "run_completed",
+      "run_id": "9d624b37563e43afb8d37136145dd8a7",
+      "instance_id": "0be3ab6aaef4",
+      "pid": 12631,
+      "status": "answered",
+      "elapsed_seconds": 0.23,
+      "process_peak_rss_bytes": 396394496,
+      "frame_cache_bytes": 0
+    },
+    {
+      "time": "2026-10-05T10:16:15.199742+00:00",
+      "event": "run_started",
+      "run_id": "0e760093bd1b47bdbacfece76fcc755f",
+      "instance_id": "0be3ab6aaef4",
+      "pid": 12631,
+      "runtime": {
+        "revision_at_first_runtime": "febd34ae5cbbfbcc7023ea8e0412b84572cd7763",
+        "packages": {
+          "langchain": "1.4.0",
+          "langchain-core": "1.6.2",
+          "langgraph": "1.2.11",
+          "streamlit": "1.63.0",
+          "sqlglot": "30.18.0"
+        },
+        "python_version": "3.11.13",
+        "identity_captured_at": "2026-10-05T10:13:16.677132+00:00",
+        "route": "langgraph-v1",
+        "model_class": "ChatOllama",
+        "require_remote_approval": false,
+        "loaded_delivery_guard": "60d52efc0ea418af",
+        "data_backend": "mysql"
+      },
+      "operation": "submit",
+      "process_peak_rss_bytes": 407764992
+    },
+    {
+      "time": "2026-10-05T10:16:15.408539+00:00",
+      "event": "recovery_transition",
+      "run_id": "0e760093bd1b47bdbacfece76fcc755f",
+      "instance_id": "0be3ab6aaef4",
+      "pid": 12631,
+      "request_id": "febe9bab-75a5-4c91-8820-466add206880",
+      "tool": "prepare_row_preview"
+    },
+    {
+      "time": "2026-10-05T10:16:15.412224+00:00",
+      "event": "tool_started",
+      "run_id": "0e760093bd1b47bdbacfece76fcc755f",
+      "instance_id": "0be3ab6aaef4",
+      "pid": 12631,
+      "tool": "prepare_row_preview"
+    },
+    {
+      "time": "2026-10-05T10:16:15.421049+00:00",
+      "event": "tool_completed",
+      "run_id": "0e760093bd1b47bdbacfece76fcc755f",
+      "instance_id": "0be3ab6aaef4",
+      "pid": 12631,
+      "tool": "prepare_row_preview",
+      "status": "ready",
+      "error_code": null,
+      "elapsed_seconds": 0.009,
+      "applied_corrections": []
+    },
+    {
+      "time": "2026-10-05T10:16:15.430703+00:00",
+      "event": "completion_checked",
+      "run_id": "0e760093bd1b47bdbacfece76fcc755f",
+      "instance_id": "0be3ab6aaef4",
+      "pid": 12631,
+      "request_id": "febe9bab-75a5-4c91-8820-466add206880",
+      "status": "complete",
+      "reason": null,
+      "attempts": 0,
+      "required_capabilities": [
+        "row_preview"
+      ],
+      "missing_capabilities": [],
+      "model_calls": 0,
+      "tool_calls": 1,
+      "model_seconds": 0.0,
+      "dataset_ids": [],
+      "artifact_ids": []
+    },
+    {
+      "time": "2026-10-05T10:16:15.437520+00:00",
+      "event": "run_completed",
+      "run_id": "0e760093bd1b47bdbacfece76fcc755f",
+      "instance_id": "0be3ab6aaef4",
+      "pid": 12631,
+      "status": "answered",
+      "elapsed_seconds": 0.248,
+      "process_peak_rss_bytes": 408158208,
+      "frame_cache_bytes": 0
+    }
+  ]
+}

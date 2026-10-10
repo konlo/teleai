@@ -223,7 +223,7 @@ class GraphApprovalTests(unittest.TestCase):
 class RolloutPageTests(unittest.TestCase):
     def test_new_page_example_propose_cancel_and_reopen(self):
         from streamlit.testing.v1 import AppTest
-        with tempfile.TemporaryDirectory() as root,patch.dict(os.environ,{'TELLY_V1_STORAGE':root,'TELLY_REQUIRE_REMOTE_APPROVAL':'true'}),\
+        with tempfile.TemporaryDirectory() as root,patch.dict(os.environ,{'TELLY_V1_STORAGE':root,'TELLY_REQUIRE_REMOTE_APPROVAL':'true','TELLY_DATA_BACKEND':'databricks'}),\
              patch('core.analysis_agent.model_provider.build_analysis_chat_model',return_value=QuietModel()),\
              patch('databricks.sql.connect') as connect:
             app=AppTest.from_file(str(Path('main.py').resolve()),default_timeout=20).run()

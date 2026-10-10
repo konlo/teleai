@@ -1,0 +1,71 @@
+{
+  "scope": "local single-user MySQL + Ollama Gemma; not Azure/Databricks production",
+  "cases": 31,
+  "PASS": 17,
+  "FAIL": 14,
+  "source_changes_during_replay": [],
+  "gate": "NO-GO",
+  "failed_cases": [
+    {
+      "id": 7,
+      "reason": "ModelContextBudgetExceeded"
+    },
+    {
+      "id": 8,
+      "reason": "wrong population total"
+    },
+    {
+      "id": 9,
+      "reason": "repeated_failed_tool"
+    },
+    {
+      "id": 10,
+      "reason": "goal_unverified"
+    },
+    {
+      "id": 11,
+      "reason": "goal_unverified"
+    },
+    {
+      "id": 12,
+      "reason": "wrong population total"
+    },
+    {
+      "id": 13,
+      "reason": "wrong population total"
+    },
+    {
+      "id": 14,
+      "reason": "wrong population total"
+    },
+    {
+      "id": 17,
+      "reason": "'drawable_rows'"
+    },
+    {
+      "id": 18,
+      "reason": "'drawable_rows'"
+    },
+    {
+      "id": 19,
+      "reason": "'drawable_rows'"
+    },
+    {
+      "id": 20,
+      "reason": "'drawable_rows'"
+    },
+    {
+      "id": 23,
+      "reason": "'drawable_rows'"
+    },
+    {
+      "id": 28,
+      "reason": "missing source needs actionable clarification"
+    }
+  ],
+  "failure_clusters": [
+    "existing-result constraint confused with reuse preference",
+    "uncompleted interpreted population replaced by older completed population",
+    "task selection prevents semantic review from correcting output obligation"
+  ]
+}

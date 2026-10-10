@@ -1,0 +1,460 @@
+{
+  "conversation": "b1d98c2e-598e-4fd6-99b3-9b6efcdbe2e2",
+  "diagnostics": [
+    {
+      "time": "2026-10-10T05:03:43.817356+00:00",
+      "event": "run_started",
+      "run_id": "089036eee720449a8e922574c4474451",
+      "instance_id": "74287fca357d",
+      "pid": 94714,
+      "runtime": {
+        "revision_at_first_runtime": "3a7206654b3d2fab7cd145893fd52970e397dd07",
+        "packages": {
+          "langchain": "1.4.0",
+          "langchain-core": "1.6.2",
+          "langgraph": "1.2.11",
+          "streamlit": "1.63.0",
+          "sqlglot": "30.18.0"
+        },
+        "python_version": "3.11.13",
+        "identity_captured_at": "2026-10-10T05:02:46.781326+00:00",
+        "route": "langgraph-v1",
+        "model_class": "ChatOllama",
+        "require_remote_approval": false,
+        "loaded_delivery_guard": "892057222e9ed9b4",
+        "data_backend": "mysql",
+        "intent_mode": "llm",
+        "goal_version": 1,
+        "goal_model": "gemma4:e4b",
+        "planner_model": "gemma4:e4b"
+      },
+      "operation": "submit",
+      "process_peak_rss_bytes": 318685184
+    },
+    {
+      "time": "2026-10-10T05:03:43.822797+00:00",
+      "event": "goal_interpretation_started",
+      "run_id": "089036eee720449a8e922574c4474451",
+      "instance_id": "74287fca357d",
+      "pid": 94714,
+      "request_id": "ef116c83263d4635869d3a0686ab5569",
+      "origin": "llm",
+      "goal_version": 1
+    },
+    {
+      "time": "2026-10-10T05:03:43.825811+00:00",
+      "event": "model_payload_budget",
+      "run_id": "089036eee720449a8e922574c4474451",
+      "instance_id": "74287fca357d",
+      "pid": 94714,
+      "payload_bytes": 2230,
+      "payload_bytes_before_projection": 2230,
+      "template_headroom": 640,
+      "input_budget_units": 14336,
+      "output_reserved": 2048,
+      "context_window": 16384,
+      "tool_count": 0,
+      "message_count": 1,
+      "older_turns_compacted": false,
+      "within_budget": true,
+      "observations_compacted": false,
+      "schema_compacted": false,
+      "system_catalog_compacted": false,
+      "tool_menu_compacted": false,
+      "minimal_discovery_menu": false,
+      "reasoning_compacted": false,
+      "minimal_catalog": false,
+      "builtin_instructions_compacted": false,
+      "repair_history_compacted": false,
+      "components": {
+        "system_bytes": 1332,
+        "message_content_bytes": 739,
+        "tool_calls_bytes": 0,
+        "reasoning_bytes": 0,
+        "tool_schema_bytes": 0,
+        "tool_names": []
+      },
+      "measurement": "conservative_utf8_bytes_not_actual_token_count"
+    },
+    {
+      "time": "2026-10-10T05:03:45.714113+00:00",
+      "event": "goal_literal_subjects_read",
+      "run_id": "089036eee720449a8e922574c4474451",
+      "instance_id": "74287fca357d",
+      "pid": 94714,
+      "request_id": "ef116c83263d4635869d3a0686ab5569",
+      "candidate_count": 6,
+      "table_count": 1
+    },
+    {
+      "time": "2026-10-10T05:03:45.715935+00:00",
+      "event": "model_payload_budget",
+      "run_id": "089036eee720449a8e922574c4474451",
+      "instance_id": "74287fca357d",
+      "pid": 94714,
+      "payload_bytes": 7621,
+      "payload_bytes_before_projection": 7621,
+      "template_headroom": 640,
+      "input_budget_units": 14336,
+      "output_reserved": 2048,
+      "context_window": 16384,
+      "tool_count": 0,
+      "message_count": 1,
+      "older_turns_compacted": false,
+      "within_budget": true,
+      "observations_compacted": false,
+      "schema_compacted": false,
+      "system_catalog_compacted": false,
+      "tool_menu_compacted": false,
+      "minimal_discovery_menu": false,
+      "reasoning_compacted": false,
+      "minimal_catalog": false,
+      "builtin_instructions_compacted": false,
+      "repair_history_compacted": false,
+      "components": {
+        "system_bytes": 6126,
+        "message_content_bytes": 1185,
+        "tool_calls_bytes": 0,
+        "reasoning_bytes": 0,
+        "tool_schema_bytes": 0,
+        "tool_names": []
+      },
+      "measurement": "conservative_utf8_bytes_not_actual_token_count"
+    },
+    {
+      "time": "2026-10-10T05:03:50.644096+00:00",
+      "event": "goal_tasks_selected",
+      "run_id": "089036eee720449a8e922574c4474451",
+      "instance_id": "74287fca357d",
+      "pid": 94714,
+      "request_id": "ef116c83263d4635869d3a0686ab5569",
+      "mode": "execute",
+      "capabilities": [
+        "row_preview"
+      ],
+      "chart_kind": "",
+      "metadata_kind": "",
+      "source_reference": "explicit",
+      "current_result_only": false
+    },
+    {
+      "time": "2026-10-10T05:03:50.645023+00:00",
+      "event": "model_payload_budget",
+      "run_id": "089036eee720449a8e922574c4474451",
+      "instance_id": "74287fca357d",
+      "pid": 94714,
+      "payload_bytes": 10118,
+      "payload_bytes_before_projection": 10118,
+      "template_headroom": 640,
+      "input_budget_units": 14336,
+      "output_reserved": 2048,
+      "context_window": 16384,
+      "tool_count": 0,
+      "message_count": 1,
+      "older_turns_compacted": false,
+      "within_budget": true,
+      "observations_compacted": false,
+      "schema_compacted": false,
+      "system_catalog_compacted": false,
+      "tool_menu_compacted": false,
+      "minimal_discovery_menu": false,
+      "reasoning_compacted": false,
+      "minimal_catalog": false,
+      "builtin_instructions_compacted": false,
+      "repair_history_compacted": false,
+      "components": {
+        "system_bytes": 7618,
+        "message_content_bytes": 2026,
+        "tool_calls_bytes": 0,
+        "reasoning_bytes": 0,
+        "tool_schema_bytes": 0,
+        "tool_names": []
+      },
+      "measurement": "conservative_utf8_bytes_not_actual_token_count"
+    },
+    {
+      "time": "2026-10-10T05:04:02.465336+00:00",
+      "event": "goal_semantic_review_started",
+      "run_id": "089036eee720449a8e922574c4474451",
+      "instance_id": "74287fca357d",
+      "pid": 94714,
+      "request_id": "ef116c83263d4635869d3a0686ab5569"
+    },
+    {
+      "time": "2026-10-10T05:04:02.466312+00:00",
+      "event": "model_payload_budget",
+      "run_id": "089036eee720449a8e922574c4474451",
+      "instance_id": "74287fca357d",
+      "pid": 94714,
+      "payload_bytes": 11765,
+      "payload_bytes_before_projection": 11765,
+      "template_headroom": 640,
+      "input_budget_units": 14336,
+      "output_reserved": 2048,
+      "context_window": 16384,
+      "tool_count": 0,
+      "message_count": 1,
+      "older_turns_compacted": false,
+      "within_budget": true,
+      "observations_compacted": false,
+      "schema_compacted": false,
+      "system_catalog_compacted": false,
+      "tool_menu_compacted": false,
+      "minimal_discovery_menu": false,
+      "reasoning_compacted": false,
+      "minimal_catalog": false,
+      "builtin_instructions_compacted": false,
+      "repair_history_compacted": false,
+      "components": {
+        "system_bytes": 8679,
+        "message_content_bytes": 2518,
+        "tool_calls_bytes": 0,
+        "reasoning_bytes": 0,
+        "tool_schema_bytes": 0,
+        "tool_names": []
+      },
+      "measurement": "conservative_utf8_bytes_not_actual_token_count"
+    },
+    {
+      "time": "2026-10-10T05:04:22.621878+00:00",
+      "event": "goal_structure_rejected",
+      "run_id": "089036eee720449a8e922574c4474451",
+      "instance_id": "74287fca357d",
+      "pid": 94714,
+      "request_id": "ef116c83263d4635869d3a0686ab5569",
+      "attempt": 2,
+      "error_type": "ValueError"
+    },
+    {
+      "time": "2026-10-10T05:04:22.622124+00:00",
+      "event": "goal_contract_error",
+      "run_id": "089036eee720449a8e922574c4474451",
+      "instance_id": "74287fca357d",
+      "pid": 94714,
+      "request_id": "ef116c83263d4635869d3a0686ab5569",
+      "error_code": "goal_schema_invalid",
+      "detail": "Decision quote must occur verbatim in CURRENT request: /sources/0",
+      "output_columns": [
+        "age",
+        "balance",
+        "education"
+      ],
+      "selected_output_columns": [
+        "age",
+        "balance",
+        "education"
+      ],
+      "predicate_shapes": [
+        {
+          "column": "age",
+          "op": "between",
+          "value_type": "list",
+          "item_types": [
+            "int",
+            "int"
+          ]
+        },
+        {
+          "column": "education",
+          "op": "in",
+          "value_type": "list",
+          "item_types": [
+            "str",
+            "str"
+          ]
+        }
+      ]
+    },
+    {
+      "time": "2026-10-10T05:04:22.622693+00:00",
+      "event": "model_payload_budget",
+      "run_id": "089036eee720449a8e922574c4474451",
+      "instance_id": "74287fca357d",
+      "pid": 94714,
+      "payload_bytes": 11919,
+      "payload_bytes_before_projection": 11919,
+      "template_headroom": 640,
+      "input_budget_units": 14336,
+      "output_reserved": 2048,
+      "context_window": 16384,
+      "tool_count": 0,
+      "message_count": 1,
+      "older_turns_compacted": false,
+      "within_budget": true,
+      "observations_compacted": false,
+      "schema_compacted": false,
+      "system_catalog_compacted": false,
+      "tool_menu_compacted": false,
+      "minimal_discovery_menu": false,
+      "reasoning_compacted": false,
+      "minimal_catalog": false,
+      "builtin_instructions_compacted": false,
+      "repair_history_compacted": false,
+      "components": {
+        "system_bytes": 8679,
+        "message_content_bytes": 2671,
+        "tool_calls_bytes": 0,
+        "reasoning_bytes": 0,
+        "tool_schema_bytes": 0,
+        "tool_names": []
+      },
+      "measurement": "conservative_utf8_bytes_not_actual_token_count"
+    },
+    {
+      "time": "2026-10-10T05:04:36.172674+00:00",
+      "event": "goal_structure_rejected",
+      "run_id": "089036eee720449a8e922574c4474451",
+      "instance_id": "74287fca357d",
+      "pid": 94714,
+      "request_id": "ef116c83263d4635869d3a0686ab5569",
+      "attempt": 3,
+      "error_type": "ValueError"
+    },
+    {
+      "time": "2026-10-10T05:04:36.172963+00:00",
+      "event": "goal_contract_error",
+      "run_id": "089036eee720449a8e922574c4474451",
+      "instance_id": "74287fca357d",
+      "pid": 94714,
+      "request_id": "ef116c83263d4635869d3a0686ab5569",
+      "error_code": "goal_schema_invalid",
+      "detail": "Unexpected or repeated decision evidence path",
+      "output_columns": [
+        "age",
+        "balance",
+        "education"
+      ],
+      "selected_output_columns": [
+        "age",
+        "balance",
+        "education"
+      ],
+      "predicate_shapes": [
+        {
+          "column": "age",
+          "op": "between",
+          "value_type": "list",
+          "item_types": [
+            "int",
+            "int"
+          ]
+        },
+        {
+          "column": "education",
+          "op": "in",
+          "value_type": "list",
+          "item_types": [
+            "str",
+            "str"
+          ]
+        }
+      ]
+    },
+    {
+      "time": "2026-10-10T05:04:36.173350+00:00",
+      "event": "model_payload_budget",
+      "run_id": "089036eee720449a8e922574c4474451",
+      "instance_id": "74287fca357d",
+      "pid": 94714,
+      "payload_bytes": 11899,
+      "payload_bytes_before_projection": 11899,
+      "template_headroom": 640,
+      "input_budget_units": 14336,
+      "output_reserved": 2048,
+      "context_window": 16384,
+      "tool_count": 0,
+      "message_count": 1,
+      "older_turns_compacted": false,
+      "within_budget": true,
+      "observations_compacted": false,
+      "schema_compacted": false,
+      "system_catalog_compacted": false,
+      "tool_menu_compacted": false,
+      "minimal_discovery_menu": false,
+      "reasoning_compacted": false,
+      "minimal_catalog": false,
+      "builtin_instructions_compacted": false,
+      "repair_history_compacted": false,
+      "components": {
+        "system_bytes": 8679,
+        "message_content_bytes": 2651,
+        "tool_calls_bytes": 0,
+        "reasoning_bytes": 0,
+        "tool_schema_bytes": 0,
+        "tool_names": []
+      },
+      "measurement": "conservative_utf8_bytes_not_actual_token_count"
+    },
+    {
+      "time": "2026-10-10T05:04:50.959973+00:00",
+      "event": "goal_structure_rejected",
+      "run_id": "089036eee720449a8e922574c4474451",
+      "instance_id": "74287fca357d",
+      "pid": 94714,
+      "request_id": "ef116c83263d4635869d3a0686ab5569",
+      "attempt": 4,
+      "error_type": "ValueError"
+    },
+    {
+      "time": "2026-10-10T05:04:50.960071+00:00",
+      "event": "goal_contract_error",
+      "run_id": "089036eee720449a8e922574c4474451",
+      "instance_id": "74287fca357d",
+      "pid": 94714,
+      "request_id": "ef116c83263d4635869d3a0686ab5569",
+      "error_code": "goal_schema_invalid",
+      "detail": "Unexpected or repeated decision evidence path",
+      "output_columns": [
+        "age",
+        "balance",
+        "education"
+      ],
+      "selected_output_columns": [
+        "age",
+        "balance",
+        "education"
+      ],
+      "predicate_shapes": [
+        {
+          "column": "age",
+          "op": "between",
+          "value_type": "list",
+          "item_types": [
+            "int",
+            "int"
+          ]
+        },
+        {
+          "column": "education",
+          "op": "in",
+          "value_type": "list",
+          "item_types": [
+            "str",
+            "str"
+          ]
+        }
+      ]
+    },
+    {
+      "time": "2026-10-10T05:04:50.964072+00:00",
+      "event": "run_completed",
+      "run_id": "089036eee720449a8e922574c4474451",
+      "instance_id": "74287fca357d",
+      "pid": 94714,
+      "status": "blocked",
+      "elapsed_seconds": 67.148,
+      "process_peak_rss_bytes": 318685184,
+      "frame_cache_bytes": 0
+    },
+    {
+      "time": "2026-10-10T05:04:50.964131+00:00",
+      "event": "turn_slo",
+      "run_id": "089036eee720449a8e922574c4474451",
+      "instance_id": "74287fca357d",
+      "pid": 94714,
+      "elapsed_seconds": 67.148,
+      "limit": 180.0,
+      "status": "ok"
+    }
+  ]
+}

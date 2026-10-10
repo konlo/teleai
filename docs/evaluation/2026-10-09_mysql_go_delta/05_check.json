@@ -1,0 +1,87 @@
+{
+  "id": 5,
+  "prompt": "histogram을 그려줘",
+  "status": "complete",
+  "goal": {
+    "objective": "histogram",
+    "mode": "execute",
+    "source_reference": "previous_analysis",
+    "sources": [
+      "teleai_default.bank_loan"
+    ],
+    "columns": [
+      "education"
+    ],
+    "conditions": [],
+    "any_conditions": [],
+    "measure_conditions": [],
+    "ratio": null,
+    "current_result_only": false,
+    "fresh_source_required": false,
+    "question": "",
+    "tasks": [
+      {
+        "capability": "chart",
+        "options": {
+          "kind": "histogram",
+          "axes": {
+            "x": "education"
+          },
+          "legend": true,
+          "stacked": false,
+          "palette": "default"
+        }
+      }
+    ]
+  },
+  "reason": null,
+  "run_id": "99c95b8936e44a33b460de8db097ab8a",
+  "model_calls": 5,
+  "chart_metadata": [
+    {
+      "id": "9cfba3dc-f652-4ebd-9e57-9f8e81eae481",
+      "dataset_id": "888f37e9-03e6-4bc7-b171-b5dc2637fbfc",
+      "title": "education 분포",
+      "reason": "범주별 실제 COUNT(*) 빈도를 표시합니다. 결측은 제외했습니다.",
+      "kind": "bar",
+      "columns": [
+        "education"
+      ],
+      "scope": "빈도 합계 750,000 · complete · SELECT `education`, COUNT(*) AS `__frequency` FROM `teleai_default`.`bank_loan` WHERE `education` IS NOT NULL GROUP BY `education`",
+      "render_spec": {
+        "aggregation": "count",
+        "labels": [
+          "secondary",
+          "tertiary",
+          "primary",
+          "unknown"
+        ],
+        "counts": [
+          401683,
+          227508,
+          99510,
+          21299
+        ],
+        "total_count": 750000,
+        "has_more_categories": false,
+        "null_policy": "exclude",
+        "legend": true,
+        "legend_labels": [
+          "secondary",
+          "tertiary",
+          "primary",
+          "unknown"
+        ],
+        "stacked": false,
+        "palette": "default",
+        "colors": [
+          "#1f77b4",
+          "#ff7f0e",
+          "#2ca02c",
+          "#d62728"
+        ]
+      }
+    }
+  ],
+  "verdict": "PASS"
+}

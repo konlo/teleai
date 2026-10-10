@@ -9,24 +9,30 @@ GOAL_KEYS={'objective','mode','sources','columns','conditions','any_conditions',
 OPERATIONS={'AVG','SUM','MIN','MAX','MEDIAN','COUNT','CORR','RATIO'}
 
 
-def response_schema():
+def response_schema(capabilities=None, mode=None, chart_kind=None, numeric_columns=None):
     """Provider JSON grammar; the same strict contract is checked after inference."""
     strings={'type':'array','items':{'type':'string'}}
-    condition={'type':'object','additionalProperties':False,'required':['column','op','value'],
-        'properties':{'column':{'type':'string'},'op':{'type':'string','enum':
-            ['eq','ne','gt','ge','lt','le','between','in','not_in','is_null','not_null']},
-            'value':{'type':['string','number','boolean','null','array'],'items':{'type':['string','number','boolean','null']}}}}
-    alternative=deepcopy(condition)
-    alternative['properties']['op']['enum'].remove('between')
+    from core.analysis_agent.predicate_schema import condition_schema
+    condition=condition_schema()
+    alternative=condition_schema(allow_between=False)
+    tasks=task_schema(capabilities or None,chart_kind,numeric_columns)
+    task_array={'type':'array','minItems':1 if mode=='execute' else 0,
+                'maxItems':0 if mode in {'explain','clarify'} else 8,'items':tasks}
+    if mode=='execute' and capabilities and len(set(capabilities))>1:
+        # One slot per independently selected obligation. The provider cannot
+        # silently omit one output or fill every slot with the same task.
+        branches={b['properties']['capability']['const']:b for b in tasks['anyOf']}
+        task_array.update(minItems=len(branches),maxItems=len(branches),
+            prefixItems=[{'anyOf':[branches[c]]} for c in dict.fromkeys(capabilities)])
     return {'type':'object','additionalProperties':False,'required':sorted(GOAL_KEYS|{'source_reference'}),
-        'properties':{'objective':{'type':'string'},'mode':{'type':'string','enum':['execute','explain','clarify']},
+        'properties':{'objective':{'type':'string'},'mode':{'const':mode} if mode else {'type':'string','enum':['execute','explain','clarify']},
             'source_reference':{'type':'string','enum':['explicit','previous_analysis','selected_dataset']},
             'sources':strings,'columns':strings,
             **{k:{'type':'array','items':alternative if k=='any_conditions' else condition}
                for k in ('conditions','any_conditions','measure_conditions')},
             'ratio':{'type':['object','null']},'current_result_only':{'type':'boolean'},
-            'fresh_source_required':{'type':'boolean'},'question':{'type':'string'},
-            'tasks':{'type':'array','maxItems':8,'items':task_schema()}}}
+            'fresh_source_required':{'type':'boolean'},'question':{'const':''} if mode in {'execute','explain'} else {'type':'string'},
+            'tasks':task_array}}
 
 
 def string_list(value, name, limit=32):
@@ -47,10 +53,18 @@ def predicates(value):
         if len(values)>100 or any(v is not None and not isinstance(v,(str,int,float,bool)) for v in values):
             raise ValueError('condition values must be bounded literals')
         if item['op'] in {'in','not_in'} and not isinstance(literal,list):raise ValueError('IN needs a list')
+        if item['op'] in {'eq','ne','gt','ge','lt','le'} and isinstance(literal,list):
+            raise ValueError('comparison needs a scalar; membership uses IN/NOT IN')
+        if item['op'] in {'is_null','not_null'} and literal is not None:
+            raise ValueError('null predicates need a null literal')
+        if item['op'] in {'gt','ge','lt','le'} and literal is None:
+            raise ValueError('ordered comparisons need a non-null literal')
         if item['op']=='between':
+            same_type=(len(values)==2 and (type(values[0]) is type(values[1]) or
+                all(type(v) in (int,float) for v in values)))
             if (not isinstance(literal,list) or len(literal)!=2 or
                     any(type(v) not in (int,float,str) for v in literal) or
-                    type(literal[0]) is not type(literal[1]) or literal[0]>literal[1]):
+                    not same_type or literal[0]>literal[1]):
                 raise ValueError('between needs ordered [lower, upper] boundaries')
     return deepcopy(value)
 
@@ -75,6 +89,8 @@ def validate_goal(value):
         if type(value[key]) is not bool:raise ValueError(key+' must be boolean')
     if value['current_result_only'] and value['fresh_source_required']:raise ValueError('current result cannot be refreshed')
     if not isinstance(value['question'],str):raise ValueError('question must be a string')
+    if value['mode'] in {'execute','explain'} and value['question'].strip():
+        raise ValueError('execute/explain must have an empty question; clarification has mode clarify')
     if value['ratio'] is not None and not isinstance(value['ratio'],dict):raise ValueError('ratio must be an object or null')
     if value['measure_conditions'] and value['ratio'] is None:
         raise ValueError('measure_conditions are only for an explicit ratio; do not invent NULL filters for SUM/AVG')
@@ -116,9 +132,12 @@ def validate_goal(value):
             if not ops or set(ops)-OPERATIONS:raise ValueError('invalid operations')
             if not value['columns']:raise ValueError('calculation needs explicit measures; whole table COUNT uses row_count')
         if cap=='metadata' and options.get('kind') not in {'columns','dtypes','numeric_columns','categorical_columns'}:raise ValueError('invalid metadata kind')
+        if cap=='value_list' and len(value['columns'])!=1:raise ValueError('value_list requires exactly one explicit subject column; do not send an empty target to the execution planner')
         if cap=='profile' and options.get('kind') not in {'missing','distinct','summary'}:raise ValueError('invalid profile kind')
         if cap=='chart':
             if options.get('kind') not in {'histogram','bar','scatter','line','boxplot','recommend'}:raise ValueError('invalid chart kind')
+            if options['kind'] not in {'histogram','bar','recommend'} and set(options)&{'legend','stacked','palette','bins'}:
+                raise ValueError('Only histogram/recommend accepts grouped presentation or bin options; omit irrelevant options for '+options['kind'])
             if options.get('category') and options['kind'] not in {'histogram','recommend'}:
                 raise ValueError('category groups a numeric histogram only; frequency bar uses one x column and implicit count Y. Filter columns do not define chart groups.')
             if 'bins' in options and options['kind']=='bar':raise ValueError('frequency bar has categorical labels, not numeric bins')
@@ -158,9 +177,15 @@ def pending_state(human, previous, context):
         'outlier_spec':None,'outlier_column':None,'time_series_frequency':None,
         'histogram_bins':None,'chart_cumulative':False,
         'processed':[],'sent_calls':[],'evidence_ids':[],'artifact_ids':[],
-        'failed':{},'failed_signatures':{},'attempts':0,'model_calls':0,'model_seconds':0.,
+        'failed':{},'failed_signatures':{},'attempts':0,
+        'scope_repair_attempts':0,'preflight_repair_attempts':0,'planner_repair_attempts':0,'model_calls':0,'model_seconds':0.,
         'remote_query_ids':[],'remote_query_evidence':{},'columns':[],
     }
+    from core.analysis_agent.output_memory import remember
+    current['output_references']=remember(previous)
+    from core.analysis_agent.intent_memory import unfinished
+    requested=unfinished(previous)
+    if requested:current['requested_analysis']=requested
     subject=prior_subject(previous,[],context)
     if subject:current['schema_subject']=subject
     if previous.get('status')!='complete' and previous.get('requested_subject'):
@@ -169,6 +194,8 @@ def pending_state(human, previous, context):
         # Reinterpreting an in-flight legacy checkpoint cannot reset budgets.
         for key in ('request_started_at','model_calls','model_seconds','attempts','sent_calls'):
             if key in previous:current[key]=deepcopy(previous[key])
+        for key in ('scope_repair_attempts','preflight_repair_attempts','planner_repair_attempts'):
+            current[key]=previous.get(key,previous.get('attempts',0))
     return current
 
 
@@ -194,15 +221,16 @@ def compile_goal(current, goal, context, remote_available=False):
     inventory=any(t['capability']=='table_list' for t in goal['tasks'])
     if goal['mode']=='execute' and reference!='explicit' and not inventory:
         if reference=='previous_analysis':
-            prior=current.get('confirmed_analysis') or {}
+            from core.analysis_agent.intent_memory import prior_intent
+            prior=prior_intent(current,goal['current_result_only'])
             requested=current.get('requested_subject') or {}
             if requested.get('sources'):
                 bound=canonical_sources(requested['sources'],context)
                 known={t['table'] for t in context.reference_context if t.get('table')}
                 if any(s not in known for s in bound):raise ValueError('requested subject needs observed catalog identity')
-                if goal['current_result_only']:raise ValueError('a requested but unfinished subject is not a stored result; inspect/query the source')
+                if goal['current_result_only'] and bound!=prior.get('required_sources'):raise ValueError('a requested but unfinished subject is not a stored result; inspect/query the source')
             else:
-                if prior.get('status')!='complete':raise ValueError('previous_analysis needs a verified completed subject')
+                if prior.get('status') not in {'complete','interpreted_not_completed'}:raise ValueError('previous_analysis needs an observed subject or interpreted pending intent')
                 bound=prior.get('required_sources') or []
         else:
             info=context.datasets.metadata.get(context.selected_dataset_id)
@@ -210,13 +238,36 @@ def compile_goal(current, goal, context, remote_available=False):
         if not bound:raise ValueError(reference+' has no verified source')
         if sources and sources!=bound:raise ValueError(reference+' source mismatch; verified subject is '+repr(bound))
         sources=deepcopy(bound)
+    # Every later comparison/audit uses the same observed physical identity.
+    # Keep aliases only in the user transcript, not in the executable goal.
+    goal={**goal,'sources':deepcopy(sources)}
+    from core.analysis_agent.chart_edits import resolve
+    expanded=resolve(goal,current,context)
+    if expanded!=goal:
+        if 'bins' in goal['tasks'][0]['options']:
+            current['rebin_chart_id']=(current.get('confirmed_analysis') or {})['artifact_ids'][-1]
+        return compile_goal(current,expanded,context,remote_available)
     columns=[] if goal['columns']==['*'] and any(t['capability']=='row_preview' for t in goal['tasks']) else goal['columns']
     scope={k:deepcopy(goal[k]) for k in ('conditions','any_conditions','measure_conditions','ratio')}
+    from core.analysis_agent.intent_memory import prior_intent
+    prior=prior_intent(current,goal['current_result_only'])
+    # Inspecting fields/values is not a command to reset the analysis population.
+    # The source may change, in which case no prior conditions are inherited.
+    if (sources==prior.get('required_sources') and goal['mode']=='execute'
+            and goal['tasks'] and all(t['capability']=='metadata' for t in goal['tasks'])):
+        scope={k:deepcopy((prior.get('scope') or {}).get(k,[] if k!='ratio' else None))
+               for k in ('conditions','any_conditions','measure_conditions','ratio')}
+        goal={**goal,**scope}
     for key in ('conditions','measure_conditions'):
         scope[key]=[expanded for c in scope[key] for expanded in
                     ([{'column':c['column'],'op':'ge','value':c['value'][0]},
                       {'column':c['column'],'op':'le','value':c['value'][1]}]
                      if c['op']=='between' else [c])]
+    # Canonical null predicates match persisted provenance and local tool
+    # conditions. This is typed equivalence, never natural-language routing.
+    for key in ('conditions','any_conditions','measure_conditions'):
+        scope[key]=[{**c,'op':'eq' if c['op']=='is_null' else 'ne','value':None}
+                    if c['op'] in {'is_null','not_null'} else c for c in scope[key]]
     scope.update(sources=sources,columns=list(dict.fromkeys(c['column'] for k in
         ('conditions','any_conditions','measure_conditions') for c in scope[k])),unresolved=[],join_edges=[])
     current.update(goal=goal,goal_pending=False,goal_version=1,
@@ -225,7 +276,13 @@ def compile_goal(current, goal, context, remote_available=False):
         explanation_only=goal['mode']=='explain',goal_question=goal['question'] if goal['mode']=='clarify' else '')
     for task in goal['tasks']:
         cap=task['capability'];o=task['options']
-        if cap=='row_preview':current['row_preview_spec']={'limit':o['limit'],'question':''}
+        if cap=='custom_analysis':
+            from core.analysis_agent.python_result_contract import validate_intent
+            validate_intent(o['result_contract'],current['request_text'])
+            current['custom_analysis_spec']=deepcopy(o)
+        elif cap=='advanced_eda':current['advanced_eda_spec']=deepcopy(o)
+        elif cap=='export':current['export_spec']=deepcopy(o)
+        elif cap=='row_preview':current['row_preview_spec']={'limit':o['limit'],'question':''}
         elif cap=='metadata':current['metadata_kind']=o['kind']
         elif cap=='table_list':
             catalog=o.get('catalog') or getattr(context,'source_namespace','')
@@ -240,11 +297,19 @@ def compile_goal(current, goal, context, remote_available=False):
         elif cap=='profile':current['profile_kind']=o['kind']
         elif cap=='value_list':current['value_list_requested']=True
         elif cap=='chart':
+            previous_group=prior.get('chart_group_spec') or {}
+            if (sources==prior.get('required_sources') and o['kind'] in {'histogram','recommend'}
+                    and 'category' not in o and previous_group
+                    and (o.get('axes',{}).get('x') or (columns[0] if columns else None))==previous_group.get('value_column')):
+                o={**{k:previous_group[k] for k in ('category','bins','legend','stacked','palette') if k in previous_group},**o}
             plotted=[o.get('axes',{}).get(k) for k in ('x','y') if o.get('axes',{}).get(k)] or columns
             if len(goal['tasks'])==1:current['required_columns']=plotted
             kind=o['kind'];current.update(chart=True,kind=None if kind=='recommend' else kind,
                 chart_axes={k:v for k,v in o.get('axes',{}).items() if v},histogram_bins=o.get('bins'),
                 chart_spec_requested=kind in {'bar','scatter','line','boxplot'},categorical_distribution=o.get('categorical',kind=='bar'))
+            if kind in {'histogram','bar'}:
+                current['chart_presentation_spec']={k:o.get(k,default) for k,default in
+                    (('legend',False),('stacked',False),('palette','default'))}
             if len(sources)==len(plotted)==1 and kind in {'histogram','recommend'} and not o.get('category'):
                 from core.analysis_catalog import resolve_table_context
                 from core.analysis_agent.dtypes import family
@@ -257,6 +322,8 @@ def compile_goal(current, goal, context, remote_available=False):
                         current.update(kind='histogram' if dtype=='numeric' else 'bar',
                                        categorical_distribution=dtype=='categorical',chart_spec_requested=False)
             if o.get('category'):
+                if o['category'] in plotted:
+                    raise ValueError('A grouped histogram needs DISTINCT value and category columns. For a single variable distribution omit category; do not group a measure by itself.')
                 if len(sources)!=1 or not columns:raise ValueError('grouped chart needs a source and measure')
                 from core.analysis_catalog import resolve_table_context
                 from core.analysis_agent.dtypes import family
@@ -265,11 +332,13 @@ def compile_goal(current, goal, context, remote_available=False):
                        observed.get('table_context',{}).get('columns',[]) if c.get('name')==plotted[0]]
                 if observed.get('status')=='ready' and len(types)==1 and family(types[0])!='numeric':
                     raise ValueError('Grouped histogram requires a numeric x measure; observed '+plotted[0]+' is '+str(types[0])+'. Use a frequency bar for a categorical subject; do not turn filter columns into chart groups.')
-                current.update(chart_group_spec={'source':sources[0],'value_column':plotted[0],'category':o['category'],'bins':o.get('bins',8)},chart_spec_requested=True,histogram_bins=None)
+                current.update(chart_group_spec={'source':sources[0],'value_column':plotted[0],'category':o['category'],
+                    'bins':o.get('bins',8),'legend':o.get('legend',True),'stacked':o.get('stacked',False),'palette':o.get('palette','default')},
+                    chart_spec_requested=True,histogram_bins=None,categorical_distribution=False,kind='histogram')
             elif kind=='bar' and len(sources)==len(plotted)==1 and not o.get('axes',{}).get('y'):
                 current.update(chart_spec_requested=False,categorical_distribution=True)
             if current['current_result_only']:
-                prior=current['confirmed_analysis'];proof=prior.get('table_preview_evidence') or prior.get('chart_display_evidence')
+                prior=current['confirmed_analysis'];proof=(current.get('requested_output_reference') or {}).get('display_evidence') or prior.get('table_preview_evidence') or prior.get('chart_display_evidence')
                 if proof and set(columns).issubset(proof.get('columns',[])) and proof.get('source') in sources:
                     current.update(display_dataset_id=proof['dataset_id'],chart_display_evidence=deepcopy(proof),requested_result_rows=proof['rows'])
         elif cap=='chart_adjust':

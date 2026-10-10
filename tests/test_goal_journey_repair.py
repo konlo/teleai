@@ -74,7 +74,8 @@ class JourneyRepairTests(unittest.TestCase):
                         self.payload=payload
                         return AIMessage(content=json.dumps({'conditions':[
                             {'column':'reading','op':'between','value':[12,19]},
-                            {'column':'segment','op':'in','value':['X','Y']}],'any_conditions':[]}))
+                            {'column':'segment','op':'in','value':['X','Y']}],'any_conditions':[],
+                            'change':'modify','evidence_quote':'include Y too'}))
                 reader=PopulationModel();i=r.recovery.goal_interpreter;i.population_model=reader
                 i.model_recovery=None
                 current={'request_id':'new','request_text':'Keep range; include Y too',
@@ -83,7 +84,7 @@ class JourneyRepairTests(unittest.TestCase):
                 result=audit(i,current,{'tables':catalog()},plan)
                 self.assertEqual(result['conditions'][1]['value'],['X','Y'])
                 self.assertNotIn('proposed_goal',reader.payload)
-                self.assertEqual(reader.payload['previous_verified_population']['conditions'],plan['conditions'])
+                self.assertEqual(reader.payload['previous_requested_population']['conditions'],plan['conditions'])
             finally:r.close()
 
     def test_preview_output_limit_is_not_an_inherited_population(self):
@@ -103,7 +104,8 @@ class JourneyRepairTests(unittest.TestCase):
                 sql_dialect='mysql',reference_context_loader=catalog)
             try:
                 reader=SimpleNamespace(invoke=lambda messages:AIMessage(content=json.dumps({
-                    'conditions':[{'column':'other_value','op':'eq','value':'10'}],'any_conditions':[]})))
+                    'conditions':[{'column':'other_value','op':'eq','value':'10'}],'any_conditions':[],
+                    'change':'new_source','evidence_quote':''})))
                 i=r.recovery.goal_interpreter;i.population_model=reader;i.model_recovery=None
                 current={'request_id':'new','request_text':'other row 10개만 표로 보여줘'}
                 with self.assertRaisesRegex(ValueError,'ungrounded filter column'):

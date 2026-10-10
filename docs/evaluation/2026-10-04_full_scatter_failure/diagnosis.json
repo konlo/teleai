@@ -1,0 +1,336 @@
+{
+  "error_id": "11c321334f37",
+  "run_id": "ea527c0b5ccf40bab265ffcb6732fa5b",
+  "request": "전체 데이타를 이용해서 age와 balance의 관계를 다시 scatter plot으로 그려줘",
+  "checkpoint": {
+    "request_id": "8e8f6771-f440-4bdf-a69e-19109648a55d",
+    "request_text": "전체 데이타를 이용해서 age와 balance의 관계를 다시 scatter plot으로 그려줘",
+    "status": "working",
+    "kind": "scatter",
+    "required_sources": [
+      "teleai_default.bank_loan"
+    ],
+    "required_columns": [
+      "age",
+      "balance"
+    ],
+    "scope": {
+      "conditions": [],
+      "any_conditions": [],
+      "sources": [
+        "teleai_default.bank_loan"
+      ],
+      "join_edges": [],
+      "measure_conditions": [],
+      "ratio": null,
+      "unresolved": [],
+      "columns": [
+        "age",
+        "balance"
+      ]
+    },
+    "current_result_only": false,
+    "display_dataset_id": null,
+    "plan": null,
+    "loaded_dataset": null,
+    "artifact_ids": [],
+    "sent_calls": [],
+    "model_calls": 2,
+    "model_seconds": 78.77980375289917
+  },
+  "events": [
+    {
+      "time": "2026-10-04T09:19:53.772013+00:00",
+      "event": "run_started",
+      "run_id": "ea527c0b5ccf40bab265ffcb6732fa5b",
+      "instance_id": "3f2272bbf0b2",
+      "pid": 2466,
+      "runtime": {
+        "revision_at_first_runtime": "febd34ae5cbbfbcc7023ea8e0412b84572cd7763",
+        "packages": {
+          "langchain": "1.4.0",
+          "langchain-core": "1.6.2",
+          "langgraph": "1.2.11",
+          "streamlit": "1.63.0",
+          "sqlglot": "30.18.0"
+        },
+        "python_version": "3.11.13",
+        "identity_captured_at": "2026-10-04T07:01:18.829700+00:00",
+        "route": "langgraph-v1",
+        "model_class": "ChatOllama",
+        "require_remote_approval": false,
+        "loaded_delivery_guard": "d95b3cf173c342e8",
+        "data_backend": "mysql"
+      },
+      "operation": "submit",
+      "process_peak_rss_bytes": 384958464
+    },
+    {
+      "time": "2026-10-04T09:19:54.041446+00:00",
+      "event": "summarization_started",
+      "run_id": "ea527c0b5ccf40bab265ffcb6732fa5b",
+      "instance_id": "3f2272bbf0b2",
+      "pid": 2466,
+      "span_id": "52fbba9f83cb",
+      "message_count": 15
+    },
+    {
+      "time": "2026-10-04T09:19:54.041688+00:00",
+      "event": "summarization_finished",
+      "run_id": "ea527c0b5ccf40bab265ffcb6732fa5b",
+      "instance_id": "3f2272bbf0b2",
+      "pid": 2466,
+      "span_id": "52fbba9f83cb",
+      "status": "ok",
+      "elapsed_seconds": 0.0,
+      "message_count": 15,
+      "summarized": false
+    },
+    {
+      "time": "2026-10-04T09:19:54.042112+00:00",
+      "event": "model_call_started",
+      "run_id": "ea527c0b5ccf40bab265ffcb6732fa5b",
+      "instance_id": "3f2272bbf0b2",
+      "pid": 2466,
+      "span_id": "986ec4fe5165",
+      "message_count": 15
+    },
+    {
+      "time": "2026-10-04T09:19:54.049048+00:00",
+      "event": "context_budget",
+      "run_id": "ea527c0b5ccf40bab265ffcb6732fa5b",
+      "instance_id": "3f2272bbf0b2",
+      "pid": 2466,
+      "characters": 20568,
+      "limit": 32000
+    },
+    {
+      "time": "2026-10-04T09:20:54.065537+00:00",
+      "event": "model_inference_failed",
+      "run_id": "ea527c0b5ccf40bab265ffcb6732fa5b",
+      "instance_id": "3f2272bbf0b2",
+      "pid": 2466,
+      "request_id": "8e8f6771-f440-4bdf-a69e-19109648a55d",
+      "error_type": "ReadTimeout",
+      "http_status": null,
+      "error_category": null,
+      "retry_scheduled": true,
+      "retry_delay_seconds": 1.0
+    },
+    {
+      "time": "2026-10-04T09:21:12.808532+00:00",
+      "event": "model_call_finished",
+      "run_id": "ea527c0b5ccf40bab265ffcb6732fa5b",
+      "instance_id": "3f2272bbf0b2",
+      "pid": 2466,
+      "span_id": "986ec4fe5165",
+      "status": "ok",
+      "elapsed_seconds": 78.766,
+      "message_count": 15,
+      "tool_call_count": 0
+    },
+    {
+      "time": "2026-10-04T09:21:12.820039+00:00",
+      "event": "recovery_replan",
+      "run_id": "ea527c0b5ccf40bab265ffcb6732fa5b",
+      "instance_id": "3f2272bbf0b2",
+      "pid": 2466,
+      "request_id": "8e8f6771-f440-4bdf-a69e-19109648a55d",
+      "attempts": 1,
+      "missing_capabilities": [
+        "chart"
+      ]
+    },
+    {
+      "time": "2026-10-04T09:21:12.826710+00:00",
+      "event": "summarization_started",
+      "run_id": "ea527c0b5ccf40bab265ffcb6732fa5b",
+      "instance_id": "3f2272bbf0b2",
+      "pid": 2466,
+      "span_id": "7cc890024724",
+      "message_count": 16
+    },
+    {
+      "time": "2026-10-04T09:21:12.827381+00:00",
+      "event": "summarization_finished",
+      "run_id": "ea527c0b5ccf40bab265ffcb6732fa5b",
+      "instance_id": "3f2272bbf0b2",
+      "pid": 2466,
+      "span_id": "7cc890024724",
+      "status": "ok",
+      "elapsed_seconds": 0.001,
+      "message_count": 16,
+      "summarized": false
+    },
+    {
+      "time": "2026-10-04T09:21:12.828193+00:00",
+      "event": "model_call_started",
+      "run_id": "ea527c0b5ccf40bab265ffcb6732fa5b",
+      "instance_id": "3f2272bbf0b2",
+      "pid": 2466,
+      "span_id": "c2598f473ced",
+      "message_count": 16
+    },
+    {
+      "time": "2026-10-04T09:21:12.886191+00:00",
+      "event": "context_budget",
+      "run_id": "ea527c0b5ccf40bab265ffcb6732fa5b",
+      "instance_id": "3f2272bbf0b2",
+      "pid": 2466,
+      "characters": 21121,
+      "limit": 32000
+    },
+    {
+      "time": "2026-10-04T09:22:12.893513+00:00",
+      "event": "model_inference_failed",
+      "run_id": "ea527c0b5ccf40bab265ffcb6732fa5b",
+      "instance_id": "3f2272bbf0b2",
+      "pid": 2466,
+      "request_id": "8e8f6771-f440-4bdf-a69e-19109648a55d",
+      "error_type": "ReadTimeout",
+      "http_status": null,
+      "error_category": null,
+      "retry_scheduled": false,
+      "retry_delay_seconds": null
+    },
+    {
+      "time": "2026-10-04T09:22:12.894663+00:00",
+      "event": "model_call_finished",
+      "run_id": "ea527c0b5ccf40bab265ffcb6732fa5b",
+      "instance_id": "3f2272bbf0b2",
+      "pid": 2466,
+      "span_id": "c2598f473ced",
+      "status": "error",
+      "error_type": "ReadTimeout",
+      "elapsed_seconds": 60.067,
+      "message_count": 16
+    },
+    {
+      "time": "2026-10-04T09:22:12.909790+00:00",
+      "event": "error",
+      "run_id": "ea527c0b5ccf40bab265ffcb6732fa5b",
+      "instance_id": "3f2272bbf0b2",
+      "pid": 2466,
+      "error_category": null,
+      "error_id": "11c321334f37",
+      "stage": "agent_stream",
+      "error_type": "ReadTimeout",
+      "http_status": null,
+      "frames": [
+        {
+          "file": "chat_models.py",
+          "line": 1224,
+          "function": "_iterate_over_stream"
+        },
+        {
+          "file": "chat_models.py",
+          "line": 1122,
+          "function": "_create_chat_stream"
+        },
+        {
+          "file": "_client.py",
+          "line": 184,
+          "function": "inner"
+        },
+        {
+          "file": "contextlib.py",
+          "line": 137,
+          "function": "__enter__"
+        },
+        {
+          "file": "_client.py",
+          "line": 868,
+          "function": "stream"
+        },
+        {
+          "file": "_client.py",
+          "line": 914,
+          "function": "send"
+        },
+        {
+          "file": "_client.py",
+          "line": 942,
+          "function": "_send_handling_auth"
+        },
+        {
+          "file": "_client.py",
+          "line": 979,
+          "function": "_send_handling_redirects"
+        },
+        {
+          "file": "_client.py",
+          "line": 1014,
+          "function": "_send_single_request"
+        },
+        {
+          "file": "default.py",
+          "line": 249,
+          "function": "handle_request"
+        },
+        {
+          "file": "contextlib.py",
+          "line": 158,
+          "function": "__exit__"
+        },
+        {
+          "file": "default.py",
+          "line": 118,
+          "function": "map_httpcore_exceptions"
+        }
+      ]
+    },
+    {
+      "time": "2026-10-04T09:22:12.909895+00:00",
+      "event": "run_completed",
+      "run_id": "ea527c0b5ccf40bab265ffcb6732fa5b",
+      "instance_id": "3f2272bbf0b2",
+      "pid": 2466,
+      "status": "incomplete",
+      "elapsed_seconds": 139.144,
+      "error_id": "11c321334f37"
+    },
+    {
+      "time": "2026-10-04T09:22:12.910188+00:00",
+      "event": "turn_slo",
+      "run_id": "ea527c0b5ccf40bab265ffcb6732fa5b",
+      "instance_id": "3f2272bbf0b2",
+      "pid": 2466,
+      "elapsed_seconds": 139.144,
+      "limit": 180.0,
+      "status": "error",
+      "process_peak_rss_bytes": 384958464,
+      "frame_cache_bytes": 0
+    }
+  ],
+  "raw_datasets": [
+    {
+      "id": "7a1427a1-1a61-4a46-8c8a-a4b443809bd7",
+      "source": "teleai_default.bank_loan",
+      "rows": 4,
+      "grain": "raw",
+      "coverage": "complete",
+      "predicate_known": false,
+      "query": "SELECT DISTINCT education FROM teleai_default.bank_loan"
+    },
+    {
+      "id": "d86b859b-9aa0-40fc-9124-6b6beb6e467f",
+      "source": "teleai_default.bank_loan",
+      "rows": 10,
+      "grain": "raw",
+      "coverage": "unknown",
+      "predicate_known": false,
+      "query": "SELECT * FROM `teleai_default`.`bank_loan` LIMIT 10"
+    }
+  ],
+  "preserved_counts": {
+    "chart": 11,
+    "dataset": 8
+  },
+  "selected_dataset_id": "cac7c3b3-165f-4c3f-9965-9278fad98bf5",
+  "analysis_sql_submissions": 0,
+  "tool_executions": 0,
+  "status": "incomplete",
+  "elapsed_seconds": 139.144,
+  "interpretation": "Whole-source scope resolved; no retained complete raw dataset eligible; no load plan/SQL/tool execution; first inference timed out then retried with no tool calls; replan ended ReadTimeout. Model latency and missing executable whole-source recovery path both remain. Not a SQL submission/backend result failure.",
+  "action": "Read-only diagnosis. Failed request was not resumed/cancelled; no product changes or DB queries performed."
+}

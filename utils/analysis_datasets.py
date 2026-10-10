@@ -19,9 +19,12 @@ class Condition:
     value: Any
 
     def __post_init__(self):
-        if self.op not in {"eq", "ne", "gt", "ge", "lt", "le", "in"}:
+        if self.op in {'is_null','not_null'}:
+            object.__setattr__(self,'op','eq' if self.op=='is_null' else 'ne')
+            object.__setattr__(self,'value',None)
+        if self.op not in {"eq", "ne", "gt", "ge", "lt", "le", "in", "not_in"}:
             raise ValueError("지원하지 않는 조건 연산자입니다.")
-        if self.op == "in":
+        if self.op in {"in","not_in"}:
             if not isinstance(self.value, (list, tuple)):
                 raise ValueError("in 조건에는 값 목록이 필요합니다.")
             object.__setattr__(self, "value", tuple(self.value))
@@ -32,6 +35,8 @@ def _implies(requested: Condition, stored: Condition) -> bool:
         return False
     if requested == stored:
         return True
+    if requested.op=='eq' and requested.value is None:
+        return False
     try:
         if requested.op == "eq":
             checks = {"eq": lambda: requested.value == stored.value,
@@ -53,7 +58,7 @@ def _implies(requested: Condition, stored: Condition) -> bool:
             return (requested.value < stored.value or
                     (requested.value == stored.value and
                      (requested.op == "lt" or stored.op == "le")))
-    except (TypeError, ValueError):
+    except (TypeError, ValueError, KeyError):
         return False
     return False
 
@@ -275,13 +280,17 @@ def filter_frame(frame: pd.DataFrame, conditions: tuple[Condition, ...]) -> pd.D
         series = frame[condition.column]
         value = condition.value
         observed = series.head(256).dropna().tolist()
-        requested = list(value) if condition.op == 'in' else [value]
-        if observed and all(isinstance(item, str) for item in observed) and any(not isinstance(item, str) for item in requested):
+        if value is None and condition.op in {'eq','ne'}:
+            mask &= series.isna() if condition.op=='eq' else series.notna()
+            continue
+        requested = list(value) if condition.op in {'in','not_in'} else [value]
+        if observed and all(isinstance(item, str) for item in observed) and any(item is not None and not isinstance(item, str) for item in requested):
             examples = list(dict.fromkeys(item for item in observed if len(item) <= 128))[:10]
             raise InvalidConditionValue(condition.column, series.dtype, examples)
         ops = {"eq": series.eq, "ne": series.ne, "gt": series.gt,
                "ge": series.ge, "lt": series.lt, "le": series.le,
-               "in": series.isin}
+               "in": series.isin,
+               "not_in": lambda values: (~series.isin(values) if None not in values else pd.Series(False,index=series.index))}
         # SQL-style comparisons never include nulls, including !=.
         mask &= ops[condition.op](value).fillna(False) & series.notna()
     return frame.loc[mask].copy()

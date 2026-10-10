@@ -1,0 +1,57 @@
+{
+  "id": 8,
+  "prompt": "같은 조건을 유지해서 histogram을 다시 보여줘",
+  "status": "exhausted",
+  "goal": {
+    "objective": "chart",
+    "mode": "execute",
+    "source_reference": "previous_analysis",
+    "sources": [
+      "teleai_default.bank_loan"
+    ],
+    "columns": [
+      "age"
+    ],
+    "conditions": [
+      {
+        "column": "education",
+        "op": "in",
+        "value": [
+          "primary",
+          "secondary"
+        ]
+      },
+      {
+        "column": "age",
+        "op": "between",
+        "value": [
+          30,
+          40
+        ]
+      }
+    ],
+    "any_conditions": [],
+    "measure_conditions": [],
+    "ratio": null,
+    "current_result_only": true,
+    "fresh_source_required": false,
+    "question": "",
+    "tasks": [
+      {
+        "capability": "chart",
+        "options": {
+          "kind": "histogram",
+          "axes": {
+            "x": "age"
+          }
+        }
+      }
+    ]
+  },
+  "reason": "model_time_budget",
+  "run_id": "9f3443b59b7a4b53a03be643aac303b6",
+  "model_calls": 6,
+  "chart_metadata": [],
+  "verdict": "FAIL",
+  "error": "model_time_budget"
+}

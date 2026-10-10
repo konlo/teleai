@@ -1,0 +1,282 @@
+{
+  "recent_transcript": [
+    {
+      "type": "ai",
+      "data": {
+        "content": "요청의 분석 목표를 확인하지 못해 실행하지 않았습니다. 기존 데이터와 결과는 보존했습니다.",
+        "additional_kwargs": {
+          "analysis_status": "blocked",
+          "analysis_complete": false
+        },
+        "response_metadata": {},
+        "type": "ai",
+        "name": null,
+        "id": "7975f441-0e67-4038-ac81-7fcc6a11e759",
+        "tool_calls": [],
+        "invalid_tool_calls": [],
+        "usage_metadata": null
+      }
+    },
+    {
+      "type": "human",
+      "data": {
+        "content": "어떤 데이타를 볼 수 있지 ?",
+        "additional_kwargs": {},
+        "response_metadata": {},
+        "type": "human",
+        "name": null,
+        "id": "7fb11a4c3fc5465a96bfa92c10a560d5"
+      }
+    }
+  ],
+  "assets": {},
+  "selection": "",
+  "current": {
+    "request_id": "7fb11a4c3fc5465a96bfa92c10a560d5",
+    "request_text": "어떤 데이타를 볼 수 있지 ?",
+    "status": "blocked",
+    "stop_reason": "goal_unverified",
+    "intent_origin": "llm",
+    "model_calls": 3,
+    "model_seconds": 41.481434706947766,
+    "scope": {
+      "sources": [],
+      "columns": [],
+      "conditions": [],
+      "any_conditions": [],
+      "measure_conditions": [],
+      "ratio": null,
+      "join_edges": [],
+      "unresolved": []
+    },
+    "required_sources": [],
+    "required_columns": [],
+    "artifact_ids": [],
+    "evidence_ids": [],
+    "kind": null,
+    "failed": {},
+    "goal_contract_error": "selected_dataset has no verified source",
+    "confirmed_analysis": {}
+  },
+  "run_id": "f2b91c8a369e49af9761cef5cc4b77ae",
+  "run": [
+    {
+      "time": "2026-10-09T01:14:49.865774+00:00",
+      "event": "run_started",
+      "run_id": "f2b91c8a369e49af9761cef5cc4b77ae",
+      "instance_id": "e762ceb723d4",
+      "pid": 52977,
+      "runtime": {
+        "revision_at_first_runtime": "3a7206654b3d2fab7cd145893fd52970e397dd07",
+        "packages": {
+          "langchain": "1.4.0",
+          "langchain-core": "1.6.2",
+          "langgraph": "1.2.11",
+          "streamlit": "1.63.0",
+          "sqlglot": "30.18.0"
+        },
+        "python_version": "3.11.13",
+        "identity_captured_at": "2026-10-09T01:13:38.188800+00:00",
+        "route": "langgraph-v1",
+        "model_class": "ChatOllama",
+        "require_remote_approval": false,
+        "loaded_delivery_guard": "892057222e9ed9b4",
+        "data_backend": "mysql",
+        "intent_mode": "llm",
+        "goal_version": 1,
+        "goal_model": "qwen3:8b",
+        "planner_model": "qwen3:8b"
+      },
+      "operation": "submit",
+      "process_peak_rss_bytes": 382418944
+    },
+    {
+      "time": "2026-10-09T01:14:49.868704+00:00",
+      "event": "goal_interpretation_started",
+      "run_id": "f2b91c8a369e49af9761cef5cc4b77ae",
+      "instance_id": "e762ceb723d4",
+      "pid": 52977,
+      "request_id": "7fb11a4c3fc5465a96bfa92c10a560d5",
+      "origin": "llm",
+      "goal_version": 1
+    },
+    {
+      "time": "2026-10-09T01:14:49.870802+00:00",
+      "event": "model_payload_budget",
+      "run_id": "f2b91c8a369e49af9761cef5cc4b77ae",
+      "instance_id": "e762ceb723d4",
+      "pid": 52977,
+      "payload_bytes": 2739,
+      "payload_bytes_before_projection": 2739,
+      "template_headroom": 640,
+      "input_budget_units": 14336,
+      "output_reserved": 2048,
+      "context_window": 16384,
+      "tool_count": 0,
+      "message_count": 1,
+      "older_turns_compacted": false,
+      "within_budget": true,
+      "observations_compacted": false,
+      "schema_compacted": false,
+      "system_catalog_compacted": false,
+      "tool_menu_compacted": false,
+      "minimal_discovery_menu": false,
+      "reasoning_compacted": false,
+      "minimal_catalog": false,
+      "builtin_instructions_compacted": false,
+      "components": {
+        "system_bytes": 2179,
+        "message_content_bytes": 430,
+        "tool_calls_bytes": 0,
+        "reasoning_bytes": 0,
+        "tool_schema_bytes": 0,
+        "tool_names": []
+      },
+      "measurement": "conservative_utf8_bytes_not_actual_token_count"
+    },
+    {
+      "time": "2026-10-09T01:14:58.399815+00:00",
+      "event": "goal_tasks_selected",
+      "run_id": "f2b91c8a369e49af9761cef5cc4b77ae",
+      "instance_id": "e762ceb723d4",
+      "pid": 52977,
+      "request_id": "7fb11a4c3fc5465a96bfa92c10a560d5",
+      "mode": "execute",
+      "capabilities": [
+        "data_load"
+      ],
+      "chart_kind": "",
+      "source_reference": "selected_dataset",
+      "current_result_only": true
+    },
+    {
+      "time": "2026-10-09T01:14:58.400518+00:00",
+      "event": "model_payload_budget",
+      "run_id": "f2b91c8a369e49af9761cef5cc4b77ae",
+      "instance_id": "e762ceb723d4",
+      "pid": 52977,
+      "payload_bytes": 10806,
+      "payload_bytes_before_projection": 10806,
+      "template_headroom": 640,
+      "input_budget_units": 14336,
+      "output_reserved": 2048,
+      "context_window": 16384,
+      "tool_count": 0,
+      "message_count": 1,
+      "older_turns_compacted": false,
+      "within_budget": true,
+      "observations_compacted": false,
+      "schema_compacted": false,
+      "system_catalog_compacted": false,
+      "tool_menu_compacted": false,
+      "minimal_discovery_menu": false,
+      "reasoning_compacted": false,
+      "minimal_catalog": false,
+      "builtin_instructions_compacted": false,
+      "components": {
+        "system_bytes": 8009,
+        "message_content_bytes": 2344,
+        "tool_calls_bytes": 0,
+        "reasoning_bytes": 0,
+        "tool_schema_bytes": 0,
+        "tool_names": []
+      },
+      "measurement": "conservative_utf8_bytes_not_actual_token_count"
+    },
+    {
+      "time": "2026-10-09T01:15:20.503903+00:00",
+      "event": "goal_structure_rejected",
+      "run_id": "f2b91c8a369e49af9761cef5cc4b77ae",
+      "instance_id": "e762ceb723d4",
+      "pid": 52977,
+      "request_id": "7fb11a4c3fc5465a96bfa92c10a560d5",
+      "attempt": 1,
+      "error_type": "ValueError"
+    },
+    {
+      "time": "2026-10-09T01:15:20.504046+00:00",
+      "event": "goal_contract_error",
+      "run_id": "f2b91c8a369e49af9761cef5cc4b77ae",
+      "instance_id": "e762ceb723d4",
+      "pid": 52977,
+      "request_id": "7fb11a4c3fc5465a96bfa92c10a560d5",
+      "error_code": "goal_schema_invalid",
+      "detail": "selected_dataset has no verified source"
+    },
+    {
+      "time": "2026-10-09T01:15:20.504486+00:00",
+      "event": "model_payload_budget",
+      "run_id": "f2b91c8a369e49af9761cef5cc4b77ae",
+      "instance_id": "e762ceb723d4",
+      "pid": 52977,
+      "payload_bytes": 11534,
+      "payload_bytes_before_projection": 11534,
+      "template_headroom": 640,
+      "input_budget_units": 14336,
+      "output_reserved": 2048,
+      "context_window": 16384,
+      "tool_count": 0,
+      "message_count": 1,
+      "older_turns_compacted": false,
+      "within_budget": true,
+      "observations_compacted": false,
+      "schema_compacted": false,
+      "system_catalog_compacted": false,
+      "tool_menu_compacted": false,
+      "minimal_discovery_menu": false,
+      "reasoning_compacted": false,
+      "minimal_catalog": false,
+      "builtin_instructions_compacted": false,
+      "components": {
+        "system_bytes": 8009,
+        "message_content_bytes": 3015,
+        "tool_calls_bytes": 0,
+        "reasoning_bytes": 0,
+        "tool_schema_bytes": 0,
+        "tool_names": []
+      },
+      "measurement": "conservative_utf8_bytes_not_actual_token_count"
+    },
+    {
+      "time": "2026-10-09T01:15:31.359422+00:00",
+      "event": "goal_structure_rejected",
+      "run_id": "f2b91c8a369e49af9761cef5cc4b77ae",
+      "instance_id": "e762ceb723d4",
+      "pid": 52977,
+      "request_id": "7fb11a4c3fc5465a96bfa92c10a560d5",
+      "attempt": 2,
+      "error_type": "ValueError"
+    },
+    {
+      "time": "2026-10-09T01:15:31.359704+00:00",
+      "event": "goal_contract_error",
+      "run_id": "f2b91c8a369e49af9761cef5cc4b77ae",
+      "instance_id": "e762ceb723d4",
+      "pid": 52977,
+      "request_id": "7fb11a4c3fc5465a96bfa92c10a560d5",
+      "error_code": "goal_schema_invalid",
+      "detail": "selected_dataset has no verified source"
+    },
+    {
+      "time": "2026-10-09T01:15:31.364770+00:00",
+      "event": "run_completed",
+      "run_id": "f2b91c8a369e49af9761cef5cc4b77ae",
+      "instance_id": "e762ceb723d4",
+      "pid": 52977,
+      "status": "blocked",
+      "elapsed_seconds": 41.499,
+      "process_peak_rss_bytes": 382631936,
+      "frame_cache_bytes": 0
+    },
+    {
+      "time": "2026-10-09T01:15:31.364924+00:00",
+      "event": "turn_slo",
+      "run_id": "f2b91c8a369e49af9761cef5cc4b77ae",
+      "instance_id": "e762ceb723d4",
+      "pid": 52977,
+      "elapsed_seconds": 41.499,
+      "limit": 180.0,
+      "status": "ok"
+    }
+  ]
+}

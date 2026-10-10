@@ -1,0 +1,169 @@
+{
+  "model": "gemma4:e4b",
+  "mode": "actual Ollama, isolated synthetic raw data, no remote database",
+  "cases": [
+    {
+      "id": "preview",
+      "prompt": "observations에서 열 개 행을 보여줘",
+      "status": "answered",
+      "text": "lab.observations의 데이터 10행, 3열을 표로 표시했습니다. 원본과 기존 분석 기준은 보존했습니다. 이 미리보기는 전체 분포 통계가 아닙니다.",
+      "seconds": 9.239,
+      "goal": {
+        "objective": "observations에서 열 개 행을 보여줘",
+        "mode": "execute",
+        "sources": [
+          "lab.observations"
+        ],
+        "columns": [],
+        "conditions": [],
+        "any_conditions": [],
+        "measure_conditions": [],
+        "ratio": null,
+        "current_result_only": true,
+        "fresh_source_required": false,
+        "question": "",
+        "tasks": [
+          {
+            "capability": "row_preview",
+            "options": {
+              "limit": 10
+            }
+          }
+        ]
+      },
+      "model_calls": 1,
+      "goal_error": null,
+      "result": null,
+      "pass": true
+    },
+    {
+      "id": "negated_chart",
+      "prompt": "observations의 reading 히스토그램은 그리지 말고 컬럼 목록만 보여줘",
+      "status": "answered",
+      "text": "확인된 스키마 스냅샷 기준으로 lab.observations에는 컬럼이 3개 있습니다.\nreading, cohort, event_time",
+      "seconds": 9.613,
+      "goal": {
+        "objective": "observations의 reading 컬럼 목록만 보여줘",
+        "mode": "execute",
+        "sources": [
+          "lab.observations"
+        ],
+        "columns": [],
+        "conditions": [],
+        "any_conditions": [],
+        "measure_conditions": [],
+        "ratio": null,
+        "current_result_only": false,
+        "fresh_source_required": false,
+        "question": "",
+        "tasks": [
+          {
+            "capability": "metadata",
+            "options": {
+              "kind": "columns"
+            }
+          }
+        ]
+      },
+      "model_calls": 1,
+      "goal_error": null,
+      "result": null,
+      "pass": true
+    },
+    {
+      "id": "negated_avg",
+      "prompt": "observations의 reading 평균은 계산하지 말고 합계만 알려줘",
+      "status": "answered",
+      "text": "보유 데이터로 계산한 결과입니다. 출처: lab.observations\n분석 범위: 요청 조건에 포함된 보유 데이터 전체\n\n합계: 190.0",
+      "seconds": 10.037,
+      "goal": {
+        "objective": "observations의 reading 합계만 알려줘",
+        "mode": "execute",
+        "sources": [
+          "lab.observations"
+        ],
+        "columns": [
+          "reading"
+        ],
+        "conditions": [],
+        "any_conditions": [],
+        "measure_conditions": [],
+        "ratio": null,
+        "current_result_only": false,
+        "fresh_source_required": false,
+        "question": "",
+        "tasks": [
+          {
+            "capability": "calculation",
+            "options": {
+              "operations": [
+                "SUM"
+              ]
+            }
+          }
+        ]
+      },
+      "model_calls": 1,
+      "goal_error": null,
+      "result": [
+        {
+          "sum": 190.0
+        }
+      ],
+      "pass": true
+    },
+    {
+      "id": "filtered_sum",
+      "prompt": "observations에서 reading이 3~8인 것만 합계를 알려줘",
+      "status": "answered",
+      "text": "보유 데이터로 계산한 결과입니다. 출처: lab.observations\n분석 범위: 요청 조건에 포함된 보유 데이터 전체\n\n적용 조건: reading ≥ 3 AND reading ≤ 8\n\n합계: 33.0",
+      "seconds": 11.721,
+      "goal": {
+        "objective": "observations에서 reading이 3~8인 것만 합계를 알려줘",
+        "mode": "execute",
+        "sources": [
+          "lab.observations"
+        ],
+        "columns": [
+          "reading"
+        ],
+        "conditions": [
+          {
+            "column": "reading",
+            "op": "ge",
+            "value": 3
+          },
+          {
+            "column": "reading",
+            "op": "le",
+            "value": 8
+          }
+        ],
+        "any_conditions": [],
+        "measure_conditions": [],
+        "ratio": null,
+        "current_result_only": false,
+        "fresh_source_required": false,
+        "question": "",
+        "tasks": [
+          {
+            "capability": "calculation",
+            "options": {
+              "operations": [
+                "SUM"
+              ]
+            }
+          }
+        ]
+      },
+      "model_calls": 1,
+      "goal_error": null,
+      "result": [
+        {
+          "sum": 33.0
+        }
+      ],
+      "pass": true
+    }
+  ]
+}

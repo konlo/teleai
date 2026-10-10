@@ -1,0 +1,87 @@
+{
+  "id": 3,
+  "prompt": "age 의 histogram 그려줘",
+  "status": "complete",
+  "goal": {
+    "objective": "histogram",
+    "mode": "execute",
+    "source_reference": "previous_analysis",
+    "sources": [
+      "teleai_default.bank_loan"
+    ],
+    "columns": [
+      "age"
+    ],
+    "conditions": [],
+    "any_conditions": [],
+    "measure_conditions": [],
+    "ratio": null,
+    "current_result_only": false,
+    "fresh_source_required": false,
+    "question": "",
+    "tasks": [
+      {
+        "capability": "chart",
+        "options": {
+          "kind": "histogram",
+          "axes": {
+            "x": "age"
+          },
+          "legend": true,
+          "stacked": false,
+          "palette": "default"
+        }
+      }
+    ]
+  },
+  "reason": null,
+  "run_id": "a67ab3ce257c400fb9689c47999155ba",
+  "model_calls": 5,
+  "chart_metadata": [
+    {
+      "id": "089e169e-cc24-4f08-8d1a-6e17b7c30ce6",
+      "dataset_id": "13a34cd1-776d-4ff3-ba77-9321f173d2a2",
+      "title": "age 분포",
+      "reason": "값별 빈도를 가중치로 사용했습니다. 원본 행을 펼치거나 표본을 만들지 않았습니다.",
+      "kind": "histogram",
+      "columns": [
+        "age"
+      ],
+      "scope": "빈도 합계 750,000 · complete · SELECT `age`, COUNT(*) AS `__frequency` FROM `teleai_default`.`bank_loan` WHERE `age` IS NOT NULL GROUP BY `age`",
+      "render_spec": {
+        "aggregation": "count",
+        "bins": 8,
+        "bin_counts": [
+          41846.0,
+          294174.0,
+          194626.0,
+          156552.0,
+          55423.0,
+          5273.0,
+          1968.0,
+          138.0
+        ],
+        "bin_edges": [
+          18.0,
+          27.625,
+          37.25,
+          46.875,
+          56.5,
+          66.125,
+          75.75,
+          85.375,
+          95.0
+        ],
+        "total_count": 750000,
+        "null_policy": "exclude",
+        "legend": true,
+        "legend_labels": [
+          "age"
+        ],
+        "stacked": false,
+        "palette": "default"
+      }
+    }
+  ],
+  "verdict": "PASS"
+}

@@ -1,0 +1,33 @@
+{
+  "backend": "databricks",
+  "scope": "live_adapter_and_agent_deterministic_range_chart_not_free_form_model",
+  "status": "PASS",
+  "conditions": [
+    {
+      "column": "age",
+      "op": "ge",
+      "value": 30
+    },
+    {
+      "column": "age",
+      "op": "le",
+      "value": 40
+    },
+    {
+      "column": "education",
+      "op": "eq",
+      "value": "primary"
+    }
+  ],
+  "sql_executions": 2,
+  "model_calls": 0,
+  "frequency_rows": 11,
+  "tool_calls": [
+    "d25f7396-f48c-445d-aba4-38dfa459a60d",
+    "73493887-88b8-4ffd-bf1f-1765fb774a2e",
+    "faff27d5-3444-4838-a3f8-c16a2ab9f564"
+  ],
+  "frequency_sum": 27439,
+  "png_bytes": 11076,
+  "query": "SELECT `age`, COUNT(*) AS `__frequency` FROM `workspace`.`default`.`bank_loan` WHERE `age` IS NOT NULL AND (`age` >= 30 AND `age` <= 40 AND `education` = 'primary') GROUP BY `age`"
+}

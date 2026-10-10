@@ -1,0 +1,92 @@
+{
+  "id": 8,
+  "prompt": "같은 조건을 유지해서 histogram을 다시 보여줘",
+  "status": "complete",
+  "goal": {
+    "objective": "requested work",
+    "mode": "execute",
+    "source_reference": "previous_analysis",
+    "sources": [
+      "teleai_default.bank_loan"
+    ],
+    "columns": [
+      "education"
+    ],
+    "conditions": [
+      {
+        "column": "education",
+        "op": "eq",
+        "value": "primary"
+      },
+      {
+        "column": "age",
+        "op": "ge",
+        "value": 30
+      },
+      {
+        "column": "age",
+        "op": "le",
+        "value": 40
+      }
+    ],
+    "any_conditions": [],
+    "measure_conditions": [],
+    "ratio": null,
+    "current_result_only": false,
+    "fresh_source_required": false,
+    "question": "",
+    "tasks": [
+      {
+        "capability": "chart",
+        "options": {
+          "kind": "histogram",
+          "axes": {
+            "x": "education"
+          },
+          "legend": true,
+          "stacked": false,
+          "palette": "default"
+        }
+      }
+    ]
+  },
+  "reason": null,
+  "run_id": "a037448503254655b6732bacf944a13b",
+  "model_calls": 6,
+  "chart_metadata": [
+    {
+      "id": "6c35c914-a4ac-4435-aa4e-2d97b1a18362",
+      "dataset_id": "18d15010-5098-4aeb-82a5-72d36dd02caf",
+      "title": "education 분포",
+      "reason": "범주별 실제 COUNT(*) 빈도를 표시합니다. 결측은 제외했습니다.",
+      "kind": "bar",
+      "columns": [
+        "education"
+      ],
+      "scope": "빈도 합계 27,439 · complete · SELECT `education`, COUNT(*) AS `__frequency` FROM `teleai_default`.`bank_loan` WHERE `education` IS NOT NULL AND (`education` = 'primary' AND `age` >= 30 AND `age` <= 40) GROUP BY `education`",
+      "render_spec": {
+        "aggregation": "count",
+        "labels": [
+          "primary"
+        ],
+        "counts": [
+          27439
+        ],
+        "total_count": 27439,
+        "has_more_categories": false,
+        "null_policy": "exclude",
+        "legend": true,
+        "legend_labels": [
+          "primary"
+        ],
+        "stacked": false,
+        "palette": "default",
+        "colors": [
+          "#1f77b4"
+        ]
+      }
+    }
+  ],
+  "verdict": "FAIL",
+  "error": "wrong categorical population frequencies"
+}

@@ -1,0 +1,1 @@
+10번 최초 checker FAIL은 run_completed 직후 도구 checkpoint의 제한 transcript에 최종 답변이 아직 없어서 발생했다. 실제 browser_messages.json의 요청/답변 및 native table DOM과 독립 DB oracle을 대조하여 최종 PASS. 최초 checker 파일을 보존한다. 제품 수정이나 요청 재시도 없음. 이전 Boolean build의 실제 names-only 실패와 구분한다.

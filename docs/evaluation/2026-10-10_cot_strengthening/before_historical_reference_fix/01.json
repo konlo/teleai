@@ -1,0 +1,750 @@
+{
+  "conversation": "25c61453-a01a-4ab4-8fd6-b1833680b1ec",
+  "stage": "01",
+  "run": {
+    "time": "2026-10-10T05:13:05.712137+00:00",
+    "event": "run_completed",
+    "run_id": "af34c2720ad74de68f600db0aa47791e",
+    "instance_id": "e12b695ee298",
+    "pid": 95036,
+    "status": "answered",
+    "elapsed_seconds": 41.749,
+    "process_peak_rss_bytes": 317112320,
+    "frame_cache_bytes": 0
+  },
+  "goal": {
+    "objective": "requested work",
+    "mode": "execute",
+    "source_reference": "explicit",
+    "sources": [
+      "teleai_default.bank_loan"
+    ],
+    "columns": [
+      "age",
+      "balance",
+      "education"
+    ],
+    "conditions": [
+      {
+        "column": "age",
+        "op": "between",
+        "value": [
+          30,
+          40
+        ]
+      },
+      {
+        "column": "education",
+        "op": "in",
+        "value": [
+          "primary",
+          "secondary"
+        ]
+      }
+    ],
+    "any_conditions": [],
+    "measure_conditions": [],
+    "ratio": null,
+    "current_result_only": false,
+    "fresh_source_required": false,
+    "question": "",
+    "tasks": [
+      {
+        "capability": "row_preview",
+        "options": {
+          "limit": 10
+        }
+      }
+    ]
+  },
+  "model_calls": 4,
+  "sent_calls": [
+    "ac133dd9-bda3-4bc0-9674-ec961fc7d65b",
+    "2ec1b49e-17b4-40bf-8e88-d7696cbc808e"
+  ],
+  "decision_support_bound": true,
+  "decision_support": {
+    "status": "supported",
+    "request_sha256": "d3a6d05e5397fd3a104a9162e55d20aa9c958cc71e381520a9eac360e96addcb",
+    "goal_sha256": "94df14d9767826b153ca4e606c8367f65113105571b8f43f264c67ec9788ef5a",
+    "bindings": [
+      {
+        "path": "/tasks/0",
+        "origin": "request",
+        "quote": "bank_loan에서 age가 30~40이고 education이 primary 또는 secondary인 행을 age, balance, education 컬럼만 10개 보여줘. 차트는 그리지 마.",
+        "reference": ""
+      },
+      {
+        "path": "/sources/0",
+        "origin": "request",
+        "quote": "bank_loan에서 age가 30~40이고 education이 primary 또는 secondary인 행을 age, balance, education 컬럼만 10개 보여줘. 차트는 그리지 마.",
+        "reference": ""
+      },
+      {
+        "path": "/columns/0",
+        "origin": "request",
+        "quote": "age",
+        "reference": ""
+      },
+      {
+        "path": "/columns/1",
+        "origin": "request",
+        "quote": "balance",
+        "reference": ""
+      },
+      {
+        "path": "/columns/2",
+        "origin": "request",
+        "quote": "education",
+        "reference": ""
+      },
+      {
+        "path": "/conditions/0",
+        "origin": "request",
+        "quote": "bank_loan에서 age가 30~40이고 education이 primary 또는 secondary인 행을 age, balance, education 컬럼만 10개 보여줘. 차트는 그리지 마.",
+        "reference": ""
+      },
+      {
+        "path": "/conditions/1",
+        "origin": "request",
+        "quote": "bank_loan에서 age가 30~40이고 education이 primary 또는 secondary인 행을 age, balance, education 컬럼만 10개 보여줘. 차트는 그리지 마.",
+        "reference": ""
+      }
+    ],
+    "linguistic_entailment_proven": false,
+    "executable_goal_sha256": "94df14d9767826b153ca4e606c8367f65113105571b8f43f264c67ec9788ef5a"
+  },
+  "plan": {
+    "status": "ready",
+    "plan": {
+      "id": "42e5dd7fb7914234b98f5d1b193cb308",
+      "tasks": [
+        {
+          "id": "32990816a8ee4dc8bce7",
+          "capability": "row_preview",
+          "options": {
+            "limit": 10
+          },
+          "scope": {
+            "required_sources": [
+              "teleai_default.bank_loan"
+            ],
+            "required_columns": [
+              "age",
+              "balance",
+              "education"
+            ],
+            "scope": {
+              "conditions": [
+                {
+                  "column": "age",
+                  "op": "ge",
+                  "value": 30
+                },
+                {
+                  "column": "age",
+                  "op": "le",
+                  "value": 40
+                },
+                {
+                  "column": "education",
+                  "op": "in",
+                  "value": [
+                    "primary",
+                    "secondary"
+                  ]
+                }
+              ],
+              "any_conditions": [],
+              "measure_conditions": [],
+              "ratio": null,
+              "sources": [
+                "teleai_default.bank_loan"
+              ],
+              "columns": [
+                "age",
+                "education"
+              ],
+              "unresolved": [],
+              "join_edges": []
+            },
+            "current_result_only": false,
+            "fresh_source_required": false
+          },
+          "depends_on": [],
+          "postconditions": null,
+          "verification_receipt": {
+            "dataset_id": "8468a0a0-ab02-46e2-b359-3950faeaf6aa",
+            "source": "teleai_default.bank_loan",
+            "snapshot": "2026-10-10T05:13:05.683802+00:00",
+            "columns": [
+              "age",
+              "balance",
+              "education"
+            ],
+            "total_rows": 10,
+            "rows": 10,
+            "limit": 10
+          },
+          "status": "verified",
+          "completion_contract": "row_preview",
+          "evidence_ids": [],
+          "artifact_ids": []
+        }
+      ],
+      "goal": {
+        "objective": "requested work",
+        "mode": "execute",
+        "source_reference": "explicit",
+        "sources": [
+          "teleai_default.bank_loan"
+        ],
+        "columns": [
+          "age",
+          "balance",
+          "education"
+        ],
+        "conditions": [
+          {
+            "column": "age",
+            "op": "between",
+            "value": [
+              30,
+              40
+            ]
+          },
+          {
+            "column": "education",
+            "op": "in",
+            "value": [
+              "primary",
+              "secondary"
+            ]
+          }
+        ],
+        "any_conditions": [],
+        "measure_conditions": [],
+        "ratio": null,
+        "current_result_only": false,
+        "fresh_source_required": false,
+        "question": "",
+        "tasks": [
+          {
+            "capability": "row_preview",
+            "options": {
+              "limit": 10
+            }
+          }
+        ]
+      },
+      "status": "complete",
+      "scope_mode": "shared_goal_scope",
+      "decision_evidence": {
+        "status": "supported",
+        "request_sha256": "d3a6d05e5397fd3a104a9162e55d20aa9c958cc71e381520a9eac360e96addcb",
+        "goal_sha256": "94df14d9767826b153ca4e606c8367f65113105571b8f43f264c67ec9788ef5a",
+        "bindings": [
+          {
+            "path": "/tasks/0",
+            "origin": "request",
+            "quote": "bank_loan에서 age가 30~40이고 education이 primary 또는 secondary인 행을 age, balance, education 컬럼만 10개 보여줘. 차트는 그리지 마.",
+            "reference": ""
+          },
+          {
+            "path": "/sources/0",
+            "origin": "request",
+            "quote": "bank_loan에서 age가 30~40이고 education이 primary 또는 secondary인 행을 age, balance, education 컬럼만 10개 보여줘. 차트는 그리지 마.",
+            "reference": ""
+          },
+          {
+            "path": "/columns/0",
+            "origin": "request",
+            "quote": "age",
+            "reference": ""
+          },
+          {
+            "path": "/columns/1",
+            "origin": "request",
+            "quote": "balance",
+            "reference": ""
+          },
+          {
+            "path": "/columns/2",
+            "origin": "request",
+            "quote": "education",
+            "reference": ""
+          },
+          {
+            "path": "/conditions/0",
+            "origin": "request",
+            "quote": "bank_loan에서 age가 30~40이고 education이 primary 또는 secondary인 행을 age, balance, education 컬럼만 10개 보여줘. 차트는 그리지 마.",
+            "reference": ""
+          },
+          {
+            "path": "/conditions/1",
+            "origin": "request",
+            "quote": "bank_loan에서 age가 30~40이고 education이 primary 또는 secondary인 행을 age, balance, education 컬럼만 10개 보여줘. 차트는 그리지 마.",
+            "reference": ""
+          }
+        ],
+        "linguistic_entailment_proven": false,
+        "executable_goal_sha256": "94df14d9767826b153ca4e606c8367f65113105571b8f43f264c67ec9788ef5a"
+      },
+      "revision": 3
+    },
+    "recent_events": [
+      {
+        "sequence": 1,
+        "kind": "plan_created",
+        "at": "2026-10-10T05:13:05.640489+00:00",
+        "revision": 1
+      },
+      {
+        "sequence": 2,
+        "kind": "task_pending",
+        "at": "2026-10-10T05:13:05.640856+00:00",
+        "task_id": "32990816a8ee4dc8bce7",
+        "capability": "row_preview",
+        "revision": 1
+      },
+      {
+        "sequence": 3,
+        "kind": "plan_status_changed",
+        "at": "2026-10-10T05:13:05.641478+00:00",
+        "status": "working",
+        "stop_reason": null,
+        "revision": 1
+      },
+      {
+        "sequence": 4,
+        "kind": "tool_dispatched",
+        "at": "2026-10-10T05:13:05.671715+00:00",
+        "call_id": "ac133dd9-bda3-4bc0-9674-ec961fc7d65b",
+        "tool": "prepare_row_preview",
+        "arguments_sha256": "757c08012d24bcb63b0aa288240db4ea749aae91aa2842e7467dda21da16c5d9",
+        "revision": 1
+      },
+      {
+        "sequence": 5,
+        "kind": "task_verified",
+        "at": "2026-10-10T05:13:05.707054+00:00",
+        "task_id": "32990816a8ee4dc8bce7",
+        "capability": "row_preview",
+        "revision": 2
+      },
+      {
+        "sequence": 6,
+        "kind": "tool_dispatched",
+        "at": "2026-10-10T05:13:05.707297+00:00",
+        "call_id": "2ec1b49e-17b4-40bf-8e88-d7696cbc808e",
+        "tool": "query_databricks",
+        "arguments_sha256": "624441491d83d18e2a509c2cde46b2a1d6722c07a74b664e8b768fee9388766e",
+        "revision": 2
+      },
+      {
+        "sequence": 7,
+        "kind": "plan_status_changed",
+        "at": "2026-10-10T05:13:05.709537+00:00",
+        "status": "complete",
+        "stop_reason": null,
+        "revision": 3
+      }
+    ]
+  },
+  "datasets": [
+    {
+      "id": "8468a0a0-ab02-46e2-b359-3950faeaf6aa",
+      "source": "teleai_default.bank_loan",
+      "rows": 10,
+      "columns": [
+        "age",
+        "balance",
+        "education"
+      ],
+      "parent_id": "",
+      "digest": "41c286759e756f3757bc8380c5174d32b3ccf2c679e87e3749a01f51ad7fb411"
+    }
+  ],
+  "selected_dataset": "",
+  "additional_queries_this_run": 1,
+  "total_queries": 1,
+  "tool_calls": 1,
+  "diagnostics": [
+    {
+      "time": "2026-10-10T05:12:23.963803+00:00",
+      "event": "run_started",
+      "run_id": "af34c2720ad74de68f600db0aa47791e",
+      "instance_id": "e12b695ee298",
+      "pid": 95036,
+      "runtime": {
+        "revision_at_first_runtime": "3a7206654b3d2fab7cd145893fd52970e397dd07",
+        "packages": {
+          "langchain": "1.4.0",
+          "langchain-core": "1.6.2",
+          "langgraph": "1.2.11",
+          "streamlit": "1.63.0",
+          "sqlglot": "30.18.0"
+        },
+        "python_version": "3.11.13",
+        "identity_captured_at": "2026-10-10T05:11:16.736267+00:00",
+        "route": "langgraph-v1",
+        "model_class": "ChatOllama",
+        "require_remote_approval": false,
+        "loaded_delivery_guard": "892057222e9ed9b4",
+        "data_backend": "mysql",
+        "intent_mode": "llm",
+        "goal_version": 1,
+        "goal_model": "gemma4:e4b",
+        "planner_model": "gemma4:e4b"
+      },
+      "operation": "submit",
+      "process_peak_rss_bytes": 317112320
+    },
+    {
+      "time": "2026-10-10T05:12:23.969244+00:00",
+      "event": "goal_interpretation_started",
+      "run_id": "af34c2720ad74de68f600db0aa47791e",
+      "instance_id": "e12b695ee298",
+      "pid": 95036,
+      "request_id": "42e5dd7fb7914234b98f5d1b193cb308",
+      "origin": "llm",
+      "goal_version": 1
+    },
+    {
+      "time": "2026-10-10T05:12:23.972182+00:00",
+      "event": "model_payload_budget",
+      "run_id": "af34c2720ad74de68f600db0aa47791e",
+      "instance_id": "e12b695ee298",
+      "pid": 95036,
+      "payload_bytes": 2230,
+      "payload_bytes_before_projection": 2230,
+      "template_headroom": 640,
+      "input_budget_units": 14336,
+      "output_reserved": 2048,
+      "context_window": 16384,
+      "tool_count": 0,
+      "message_count": 1,
+      "older_turns_compacted": false,
+      "within_budget": true,
+      "observations_compacted": false,
+      "schema_compacted": false,
+      "system_catalog_compacted": false,
+      "tool_menu_compacted": false,
+      "minimal_discovery_menu": false,
+      "reasoning_compacted": false,
+      "minimal_catalog": false,
+      "builtin_instructions_compacted": false,
+      "repair_history_compacted": false,
+      "components": {
+        "system_bytes": 1332,
+        "message_content_bytes": 739,
+        "tool_calls_bytes": 0,
+        "reasoning_bytes": 0,
+        "tool_schema_bytes": 0,
+        "tool_names": []
+      },
+      "measurement": "conservative_utf8_bytes_not_actual_token_count"
+    },
+    {
+      "time": "2026-10-10T05:12:25.829038+00:00",
+      "event": "goal_literal_subjects_read",
+      "run_id": "af34c2720ad74de68f600db0aa47791e",
+      "instance_id": "e12b695ee298",
+      "pid": 95036,
+      "request_id": "42e5dd7fb7914234b98f5d1b193cb308",
+      "candidate_count": 6,
+      "table_count": 1
+    },
+    {
+      "time": "2026-10-10T05:12:25.830735+00:00",
+      "event": "model_payload_budget",
+      "run_id": "af34c2720ad74de68f600db0aa47791e",
+      "instance_id": "e12b695ee298",
+      "pid": 95036,
+      "payload_bytes": 7621,
+      "payload_bytes_before_projection": 7621,
+      "template_headroom": 640,
+      "input_budget_units": 14336,
+      "output_reserved": 2048,
+      "context_window": 16384,
+      "tool_count": 0,
+      "message_count": 1,
+      "older_turns_compacted": false,
+      "within_budget": true,
+      "observations_compacted": false,
+      "schema_compacted": false,
+      "system_catalog_compacted": false,
+      "tool_menu_compacted": false,
+      "minimal_discovery_menu": false,
+      "reasoning_compacted": false,
+      "minimal_catalog": false,
+      "builtin_instructions_compacted": false,
+      "repair_history_compacted": false,
+      "components": {
+        "system_bytes": 6126,
+        "message_content_bytes": 1185,
+        "tool_calls_bytes": 0,
+        "reasoning_bytes": 0,
+        "tool_schema_bytes": 0,
+        "tool_names": []
+      },
+      "measurement": "conservative_utf8_bytes_not_actual_token_count"
+    },
+    {
+      "time": "2026-10-10T05:12:29.741629+00:00",
+      "event": "goal_tasks_selected",
+      "run_id": "af34c2720ad74de68f600db0aa47791e",
+      "instance_id": "e12b695ee298",
+      "pid": 95036,
+      "request_id": "42e5dd7fb7914234b98f5d1b193cb308",
+      "mode": "execute",
+      "capabilities": [
+        "row_preview"
+      ],
+      "chart_kind": "",
+      "metadata_kind": "",
+      "source_reference": "explicit",
+      "current_result_only": false
+    },
+    {
+      "time": "2026-10-10T05:12:29.744274+00:00",
+      "event": "model_payload_budget",
+      "run_id": "af34c2720ad74de68f600db0aa47791e",
+      "instance_id": "e12b695ee298",
+      "pid": 95036,
+      "payload_bytes": 10118,
+      "payload_bytes_before_projection": 10118,
+      "template_headroom": 640,
+      "input_budget_units": 14336,
+      "output_reserved": 2048,
+      "context_window": 16384,
+      "tool_count": 0,
+      "message_count": 1,
+      "older_turns_compacted": false,
+      "within_budget": true,
+      "observations_compacted": false,
+      "schema_compacted": false,
+      "system_catalog_compacted": false,
+      "tool_menu_compacted": false,
+      "minimal_discovery_menu": false,
+      "reasoning_compacted": false,
+      "minimal_catalog": false,
+      "builtin_instructions_compacted": false,
+      "repair_history_compacted": false,
+      "components": {
+        "system_bytes": 7618,
+        "message_content_bytes": 2026,
+        "tool_calls_bytes": 0,
+        "reasoning_bytes": 0,
+        "tool_schema_bytes": 0,
+        "tool_names": []
+      },
+      "measurement": "conservative_utf8_bytes_not_actual_token_count"
+    },
+    {
+      "time": "2026-10-10T05:12:41.684929+00:00",
+      "event": "goal_semantic_review_started",
+      "run_id": "af34c2720ad74de68f600db0aa47791e",
+      "instance_id": "e12b695ee298",
+      "pid": 95036,
+      "request_id": "42e5dd7fb7914234b98f5d1b193cb308"
+    },
+    {
+      "time": "2026-10-10T05:12:41.685435+00:00",
+      "event": "model_payload_budget",
+      "run_id": "af34c2720ad74de68f600db0aa47791e",
+      "instance_id": "e12b695ee298",
+      "pid": 95036,
+      "payload_bytes": 11874,
+      "payload_bytes_before_projection": 11874,
+      "template_headroom": 640,
+      "input_budget_units": 14336,
+      "output_reserved": 2048,
+      "context_window": 16384,
+      "tool_count": 0,
+      "message_count": 1,
+      "older_turns_compacted": false,
+      "within_budget": true,
+      "observations_compacted": false,
+      "schema_compacted": false,
+      "system_catalog_compacted": false,
+      "tool_menu_compacted": false,
+      "minimal_discovery_menu": false,
+      "reasoning_compacted": false,
+      "minimal_catalog": false,
+      "builtin_instructions_compacted": false,
+      "repair_history_compacted": false,
+      "components": {
+        "system_bytes": 8786,
+        "message_content_bytes": 2518,
+        "tool_calls_bytes": 0,
+        "reasoning_bytes": 0,
+        "tool_schema_bytes": 0,
+        "tool_names": []
+      },
+      "measurement": "conservative_utf8_bytes_not_actual_token_count"
+    },
+    {
+      "time": "2026-10-10T05:13:05.638625+00:00",
+      "event": "goal_decision_support_verified",
+      "run_id": "af34c2720ad74de68f600db0aa47791e",
+      "instance_id": "e12b695ee298",
+      "pid": 95036,
+      "request_id": "42e5dd7fb7914234b98f5d1b193cb308",
+      "decision_count": 7,
+      "request_sha256": "d3a6d05e5397fd3a104a9162e55d20aa9c958cc71e381520a9eac360e96addcb",
+      "goal_sha256": "94df14d9767826b153ca4e606c8367f65113105571b8f43f264c67ec9788ef5a",
+      "linguistic_entailment_proven": false
+    },
+    {
+      "time": "2026-10-10T05:13:05.638945+00:00",
+      "event": "goal_interpretation_completed",
+      "run_id": "af34c2720ad74de68f600db0aa47791e",
+      "instance_id": "e12b695ee298",
+      "pid": 95036,
+      "request_id": "42e5dd7fb7914234b98f5d1b193cb308",
+      "origin": "llm",
+      "mode": "execute",
+      "capabilities": [
+        "row_preview"
+      ],
+      "attempts": 2,
+      "goal_version": 1
+    },
+    {
+      "time": "2026-10-10T05:13:05.648103+00:00",
+      "event": "recovery_transition",
+      "run_id": "af34c2720ad74de68f600db0aa47791e",
+      "instance_id": "e12b695ee298",
+      "pid": 95036,
+      "request_id": "42e5dd7fb7914234b98f5d1b193cb308",
+      "tool": "prepare_row_preview"
+    },
+    {
+      "time": "2026-10-10T05:13:05.654840+00:00",
+      "event": "tool_started",
+      "run_id": "af34c2720ad74de68f600db0aa47791e",
+      "instance_id": "e12b695ee298",
+      "pid": 95036,
+      "tool": "prepare_row_preview"
+    },
+    {
+      "time": "2026-10-10T05:13:05.667287+00:00",
+      "event": "tool_completed",
+      "run_id": "af34c2720ad74de68f600db0aa47791e",
+      "instance_id": "e12b695ee298",
+      "pid": 95036,
+      "tool": "prepare_row_preview",
+      "status": "planned",
+      "error_code": null,
+      "elapsed_seconds": 0.012,
+      "applied_corrections": []
+    },
+    {
+      "time": "2026-10-10T05:13:05.672127+00:00",
+      "event": "recovery_transition",
+      "run_id": "af34c2720ad74de68f600db0aa47791e",
+      "instance_id": "e12b695ee298",
+      "pid": 95036,
+      "request_id": "42e5dd7fb7914234b98f5d1b193cb308",
+      "tool": "query_databricks"
+    },
+    {
+      "time": "2026-10-10T05:13:05.677964+00:00",
+      "event": "remote_query_authorized",
+      "run_id": "af34c2720ad74de68f600db0aa47791e",
+      "instance_id": "e12b695ee298",
+      "pid": 95036,
+      "tool_call_id": "2ec1b49e-17b4-40bf-8e88-d7696cbc808e",
+      "authorization": "automatic_read_policy"
+    },
+    {
+      "time": "2026-10-10T05:13:05.678207+00:00",
+      "event": "remote_query_started",
+      "run_id": "af34c2720ad74de68f600db0aa47791e",
+      "instance_id": "e12b695ee298",
+      "pid": 95036,
+      "ledger_status": "auto_authorized",
+      "cached_receipt": false
+    },
+    {
+      "time": "2026-10-10T05:13:05.697604+00:00",
+      "event": "remote_query_finished",
+      "run_id": "af34c2720ad74de68f600db0aa47791e",
+      "instance_id": "e12b695ee298",
+      "pid": 95036,
+      "ledger_status": "completed",
+      "status": "ready",
+      "cached_receipt": false
+    },
+    {
+      "time": "2026-10-10T05:13:05.702809+00:00",
+      "event": "remote_result_verified",
+      "run_id": "af34c2720ad74de68f600db0aa47791e",
+      "instance_id": "e12b695ee298",
+      "pid": 95036,
+      "request_id": "42e5dd7fb7914234b98f5d1b193cb308",
+      "tool_call_id": "2ec1b49e-17b4-40bf-8e88-d7696cbc808e",
+      "dataset_id": "8468a0a0-ab02-46e2-b359-3950faeaf6aa",
+      "rows": 10
+    },
+    {
+      "time": "2026-10-10T05:13:05.710301+00:00",
+      "event": "completion_checked",
+      "run_id": "af34c2720ad74de68f600db0aa47791e",
+      "instance_id": "e12b695ee298",
+      "pid": 95036,
+      "request_id": "42e5dd7fb7914234b98f5d1b193cb308",
+      "status": "complete",
+      "reason": null,
+      "attempts": 0,
+      "required_capabilities": [
+        "row_preview",
+        "remote_query"
+      ],
+      "missing_capabilities": [],
+      "model_calls": 4,
+      "tool_calls": 2,
+      "model_seconds": 41.654,
+      "dataset_ids": [],
+      "artifact_ids": []
+    },
+    {
+      "time": "2026-10-10T05:13:05.712137+00:00",
+      "event": "run_completed",
+      "run_id": "af34c2720ad74de68f600db0aa47791e",
+      "instance_id": "e12b695ee298",
+      "pid": 95036,
+      "status": "answered",
+      "elapsed_seconds": 41.749,
+      "process_peak_rss_bytes": 317112320,
+      "frame_cache_bytes": 0
+    },
+    {
+      "time": "2026-10-10T05:13:05.712186+00:00",
+      "event": "turn_slo",
+      "run_id": "af34c2720ad74de68f600db0aa47791e",
+      "instance_id": "e12b695ee298",
+      "pid": 95036,
+      "elapsed_seconds": 41.749,
+      "limit": 180.0,
+      "status": "ok"
+    }
+  ],
+  "oracle": {
+    "raw_rows": 10,
+    "raw_columns": [
+      "age",
+      "balance",
+      "education"
+    ],
+    "row_scope_matches": true,
+    "expected_balance_mean": 1732.9,
+    "expected_education_frequencies": {
+      "secondary": 9,
+      "primary": 1
+    },
+    "passed": true
+  },
+  "passed": true
+}

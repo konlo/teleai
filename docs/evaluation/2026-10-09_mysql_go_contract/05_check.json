@@ -1,0 +1,44 @@
+{
+  "id": 5,
+  "prompt": "histogram을 그려줘",
+  "status": "exhausted",
+  "goal": {
+    "objective": "requested work",
+    "mode": "execute",
+    "source_reference": "previous_analysis",
+    "sources": [
+      "teleai_default.bank_loan"
+    ],
+    "columns": [
+      "age"
+    ],
+    "conditions": [],
+    "any_conditions": [],
+    "measure_conditions": [],
+    "ratio": null,
+    "current_result_only": false,
+    "fresh_source_required": false,
+    "question": "",
+    "tasks": [
+      {
+        "capability": "chart",
+        "options": {
+          "kind": "histogram",
+          "axes": {
+            "x": "age"
+          },
+          "category": "age",
+          "legend": true,
+          "stacked": false,
+          "palette": "default"
+        }
+      }
+    ]
+  },
+  "reason": "repeated_failed_tool",
+  "run_id": "85d6131bc5774e81949c39eb6fc90c92",
+  "model_calls": 7,
+  "chart_metadata": [],
+  "verdict": "FAIL",
+  "error": "repeated_failed_tool"
+}

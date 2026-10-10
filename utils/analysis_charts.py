@@ -189,9 +189,14 @@ def validate_frequency_dataset(store, dataset_id, value_column, weight_column):
     return info
 
 
-def histogram_from_counts(store, dataset_id, value_column, weight_column, *, categorical=False, y_max=None, bins=None):
+def histogram_from_counts(store, dataset_id, value_column, weight_column, *, categorical=False, y_max=None, bins=None,
+                          legend=False, stacked=False, palette='default'):
     """Render complete value-frequency results without expanding source rows."""
     import numpy as np
+    if type(legend) is not bool or type(stacked) is not bool or palette not in {'default','high_contrast'}:
+        raise ValueError('Invalid chart presentation')
+    if stacked and not categorical:
+        raise ValueError('Numeric stacked bins require an observed category column')
     if y_max is not None and (isinstance(y_max,bool) or not np.isfinite(y_max) or y_max<=0):
         raise ValueError('y_max는 양의 유한 숫자여야 합니다.')
     info = validate_frequency_dataset(store, dataset_id, value_column, weight_column)
@@ -214,17 +219,19 @@ def histogram_from_counts(store, dataset_id, value_column, weight_column, *, cat
         indices=counts.sort_values(ascending=False,kind='stable').index[:50]
         labels=[str(value)[:120] for value in values.loc[indices]]
         plotted=counts.loc[indices].astype(int).tolist()
-        ax.bar(range(len(labels)),plotted,color='#3278b9',edgecolor='white')
-        ax.set_xticks(range(len(labels)),labels,rotation=45,ha='right')
+        from utils.analysis_frequency_presentation import draw_categories
+        presentation=draw_categories(ax,labels,plotted,legend=legend,stacked=stacked,palette=palette)
         spec={'aggregation':'count','labels':labels,'counts':plotted,'total_count':int(counts.sum()),
-              'has_more_categories':len(values)>50,'null_policy':'exclude'}
+              'has_more_categories':len(values)>50,'null_policy':'exclude',**presentation}
     else:
         count_bins=min(60,max(8,int(len(values)**0.5))) if bins is None else bins
         if type(count_bins) is not int or not 2<=count_bins<=100:raise ValueError('bins는 2~100 정수여야 합니다.')
         heights,edges,_=ax.hist(values, weights=counts, histtype="bar", bins=count_bins,
-                              color='#3278b9', edgecolor='white')
+                              color='#0072B2' if palette=='high_contrast' else '#3278b9', edgecolor='white',label=value_column)
+        if legend:ax.legend()
         spec={'aggregation':'count','bins':count_bins,'bin_counts':heights.tolist(),
-              'bin_edges':edges.tolist(),'total_count':int(counts.sum()),'null_policy':'exclude'}
+              'bin_edges':edges.tolist(),'total_count':int(counts.sum()),'null_policy':'exclude',
+              'legend':legend,'legend_labels':[value_column] if legend else [],'stacked':False,'palette':palette}
     ax.set(xlabel=value_column, ylabel='Count')
     if y_max is not None:
         ax.set_ylim(0,float(y_max))

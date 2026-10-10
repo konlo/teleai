@@ -1,0 +1,1469 @@
+{
+  "recent_transcript": [
+    {
+      "type": "ai",
+      "data": {
+        "content": "현재 DB 메타데이터 기준으로 teleai_default.stormtrooper의 컬럼별 데이터 타입입니다.\n| 컬럼 이름 | DB 데이터 타입 |\n| --- | --- |\n| flight_id | longtext |\n| date_str | datetime |\n| latitude | double |\n| longitude | double |\n| pressure_altitude | double |\n| cdo | double |\n| cth | double |\n| glm_event_density | double |\n| glm_optical_flux | double |\n| cdo025 | double |\n| cth025 | double |\n| cth025_diff_feet | double |\n| cdo_dist_km | double |",
+        "additional_kwargs": {
+          "analysis_status": "answered",
+          "analysis_controller_result": true,
+          "analysis_artifact_ids": []
+        },
+        "response_metadata": {},
+        "type": "ai",
+        "name": null,
+        "id": "ae970742-6181-4dbf-96c7-888e95222cf4",
+        "tool_calls": [],
+        "invalid_tool_calls": [],
+        "usage_metadata": null
+      }
+    },
+    {
+      "type": "tool",
+      "data": {
+        "content": "{\"status\": \"ready\", \"table_context\": {\"table\": \"teleai_default.stormtrooper\", \"columns\": [{\"name\": \"flight_id\", \"dtype\": \"object\", \"database_dtype\": \"longtext\"}, {\"name\": \"date_str\", \"dtype\": \"datetime64[ns]\", \"database_dtype\": \"datetime\"}, {\"name\": \"latitude\", \"dtype\": \"float64\", \"database_dtype\": \"double\"}, {\"name\": \"longitude\", \"dtype\": \"float64\", \"database_dtype\": \"double\"}, {\"name\": \"pressure_altitude\", \"dtype\": \"float64\", \"database_dtype\": \"double\"}, {\"name\": \"cdo\", \"dtype\": \"object\", \"database_dtype\": \"double\"}, {\"name\": \"cth\", \"dtype\": \"object\", \"database_dtype\": \"double\"}, {\"name\": \"glm_event_density\", \"dtype\": \"float64\", \"database_dtype\": \"double\"}, {\"name\": \"glm_optical_flux\", \"dtype\": \"float64\", \"database_dtype\": \"double\"}, {\"name\": \"cdo025\", \"dtype\": \"object\", \"database_dtype\": \"double\"}, {\"name\": \"cth025\", \"dtype\": \"object\", \"database_dtype\": \"double\"}, {\"name\": \"cth025_diff_feet\", \"dtype\": \"float64\", \"database_dtype\": \"double\"}, {\"name\": \"cdo_dist_km\", \"dtype\": \"object\", \"database_dtype\": \"double\"}], \"training_status\": \"runtime_schema\", \"observed_at\": \"2026-10-09T09:31:26.672938+00:00\", \"freshness\": \"current_loaded_schema\", \"schema_fingerprint\": \"e8921994cbd4cb00c5898c9c1a1e58d4af8185bceb89411dbb64d18c5948d489\", \"dataset_id\": \"fca90c0d-9c49-4579-a9f4-0f1d3bc0aadb\"}, \"schema_changed\": false, \"authority\": \"approved_select_star_result\", \"database_type_authority\": \"current_database_metadata\", \"scope\": \"로딩된 SELECT * 결과의 실제 컬럼입니다. 해당 결과의 생성 시점 스키마를 나타냅니다.\", \"evidence_ids\": [], \"error_code\": null, \"retryable\": false, \"user_action\": \"\"}",
+        "additional_kwargs": {},
+        "response_metadata": {},
+        "type": "tool",
+        "name": "inspect_table_context",
+        "id": "e3161af4-0b47-4bc7-b331-619440c4a249",
+        "tool_call_id": "a7a7492c-90d0-461a-b1c3-0514307dea81",
+        "artifact": null,
+        "status": "success"
+      }
+    },
+    {
+      "type": "ai",
+      "data": {
+        "content": "",
+        "additional_kwargs": {},
+        "response_metadata": {},
+        "type": "ai",
+        "name": null,
+        "id": "fa6b6114-fb96-4862-9af2-44db06394366",
+        "tool_calls": [
+          {
+            "name": "inspect_table_context",
+            "args": {
+              "table": "teleai_default.stormtrooper"
+            },
+            "id": "a7a7492c-90d0-461a-b1c3-0514307dea81",
+            "type": "tool_call"
+          }
+        ],
+        "invalid_tool_calls": [],
+        "usage_metadata": null
+      }
+    },
+    {
+      "type": "human",
+      "data": {
+        "content": "그 테이블의 컬럼 이름과 DB 데이터 타입을 모두 다시 알려줘. 차트는 만들지 말아줘.",
+        "additional_kwargs": {},
+        "response_metadata": {},
+        "type": "human",
+        "name": null,
+        "id": "985e1a7cf3be4ab79e6372ad78a6858a"
+      }
+    },
+    {
+      "type": "ai",
+      "data": {
+        "content": "teleai_default.stormtrooper의 데이터 10행, 13열을 표로 표시했습니다. 원본과 기존 분석 기준은 보존했습니다. 이 미리보기는 전체 분포 통계가 아닙니다.\n\n원격 조회가 완료되어 결과 10행을 저장했습니다.",
+        "additional_kwargs": {
+          "analysis_status": "answered",
+          "analysis_controller_result": true,
+          "analysis_artifact_ids": [],
+          "analysis_table_preview": {
+            "dataset_id": "fca90c0d-9c49-4579-a9f4-0f1d3bc0aadb",
+            "source": "teleai_default.stormtrooper",
+            "snapshot": "2026-10-09T09:31:26.672938+00:00",
+            "columns": [
+              "flight_id",
+              "date_str",
+              "latitude",
+              "longitude",
+              "pressure_altitude",
+              "cdo",
+              "cth",
+              "glm_event_density",
+              "glm_optical_flux",
+              "cdo025",
+              "cth025",
+              "cth025_diff_feet",
+              "cdo_dist_km"
+            ],
+            "total_rows": 10,
+            "rows": 10,
+            "limit": 10
+          }
+        },
+        "response_metadata": {},
+        "type": "ai",
+        "name": null,
+        "id": "c4511e6b-f15e-4c9d-804b-23866900e1c7",
+        "tool_calls": [],
+        "invalid_tool_calls": [],
+        "usage_metadata": null
+      }
+    },
+    {
+      "type": "tool",
+      "data": {
+        "content": "{\"status\": \"ready\", \"dataset\": {\"id\": \"fca90c0d-9c49-4579-a9f4-0f1d3bc0aadb\", \"source\": \"teleai_default.stormtrooper\", \"columns\": [\"flight_id\", \"date_str\", \"latitude\", \"longitude\", \"pressure_altitude\", \"cdo\", \"cth\", \"glm_event_density\", \"glm_optical_flux\", \"cdo025\", \"cth025\", \"cth025_diff_feet\", \"cdo_dist_km\"], \"rows\": 10, \"coverage\": \"unknown\", \"conditions\": [], \"predicate_known\": false, \"grain\": \"raw\", \"aggregation\": \"\", \"snapshot\": \"2026-10-09T09:31:26.672938+00:00\", \"query\": \"SELECT * FROM `teleai_default`.`stormtrooper` LIMIT 10\", \"parent_id\": \"\", \"parent_ids\": [], \"role\": \"root\", \"root_id\": \"fca90c0d-9c49-4579-a9f4-0f1d3bc0aadb\", \"row_selection\": {}}, \"preview\": [{\"flight_id\": \"P-717\", \"date_str\": \"2019-06-14T00:07:30\", \"latitude\": 18.056498, \"longitude\": -65.63496, \"pressure_altitude\": 8498.07, \"cdo\": null, \"cth\": null, \"glm_event_density\": 0.0, \"glm_optical_flux\": 0.0, \"cdo025\": null, \"cth025\": null, \"cth025_diff_feet\": 56475.094, \"cdo_dist_km\": null}, {\"flight_id\": \"P-717\", \"date_str\": \"2019-06-14T00:12:30\", \"latitude\": 18.056498, \"longitude\": -65.63496, \"pressure_altitude\": 8498.07, \"cdo\": null, \"cth\": null, \"glm_event_density\": 0.0, \"glm_optical_flux\": 0.0, \"cdo025\": null, \"cth025\": null, \"cth025_diff_feet\": 56475.094, \"cdo_dist_km\": null}, {\"flight_id\": \"P-717\", \"date_str\": \"2019-06-14T00:17:30\", \"latitude\": 18.078312, \"longitude\": -65.625015, \"pressure_altitude\": 8353.09, \"cdo\": null, \"cth\": null, \"glm_event_density\": 0.0, \"glm_optical_flux\": 0.0, \"cdo025\": null, \"cth025\": null, \"cth025_diff_feet\": 56830.54, \"cdo_dist_km\": null}, {\"flight_id\": \"P-717\", \"date_str\": \"2019-06-14T00:22:30\", \"latitude\": 18.085272, \"longitude\": -65.62243, \"pressure_altitude\": 8364.67, \"cdo\": null, \"cth\": null, \"glm_event_density\": 0.0, \"glm_optical_flux\": 0.0, \"cdo025\": null, \"cth025\": null, \"cth025_diff_feet\": 56802.15, \"cdo_dist_km\": null}, {\"flight_id\": \"P-717\", \"date_str\": \"2019-06-14T00:27:30\", \"latitude\": 18.096273, \"longitude\": -65.61806, \"pressure_altitude\": 8323.06, \"cdo\": null, \"cth\": null, \"glm_event_density\": 0.0, \"glm_optical_flux\": 0.0, \"cdo025\": null, \"cth025\": null, \"cth025_diff_feet\": 56904.164, \"cdo_dist_km\": null}, {\"flight_id\": \"P-717\", \"date_str\": \"2019-06-14T00:32:30\", \"latitude\": 18.108644, \"longitude\": -65.612595, \"pressure_altitude\": 8282.59, \"cdo\": null, \"cth\": null, \"glm_event_density\": 0.0, \"glm_optical_flux\": 0.0, \"cdo025\": null, \"cth025\": null, \"cth025_diff_feet\": 57003.55, \"cdo_dist_km\": null}, {\"flight_id\": \"P-717\", \"date_str\": \"2019-06-14T00:37:30\", \"latitude\": 18.11618, \"longitude\": -65.608376, \"pressure_altitude\": 8266.01, \"cdo\": null, \"cth\": null, \"glm_event_density\": 0.0, \"glm_optical_flux\": 0.0, \"cdo025\": null, \"cth025\": null, \"cth025_diff_feet\": 57046.203, \"cdo_dist_km\": null}, {\"flight_id\": \"P-717\", \"date_str\": \"2019-06-14T00:42:30\", \"latitude\": 18.123743, \"longitude\": -65.604095, \"pressure_altitude\": 8277.71, \"cdo\": null, \"cth\": null, \"glm_event_density\": 0.0, \"glm_optical_flux\": 0.0, \"cdo025\": null, \"cth025\": null, \"cth025_diff_feet\": 57016.105, \"cdo_dist_km\": null}, {\"flight_id\": \"P-717\", \"date_str\": \"2019-06-14T00:47:30\", \"latitude\": 18.133896, \"longitude\": -65.59766, \"pressure_altitude\": 8299.71, \"cdo\": null, \"cth\": null, \"glm_event_density\": 0.0, \"glm_optical_flux\": 0.0, \"cdo025\": null, \"cth025\": null, \"cth025_diff_feet\": 56961.414, \"cdo_dist_km\": null}, {\"flight_id\": \"P-717\", \"date_str\": \"2019-06-14T00:52:30\", \"latitude\": 18.140944, \"longitude\": -65.59242, \"pressure_altitude\": 8286.37, \"cdo\": null, \"cth\": null, \"glm_event_density\": 0.0, \"glm_optical_flux\": 0.0, \"cdo025\": null, \"cth025\": null, \"cth025_diff_feet\": 56994.117, \"cdo_dist_km\": null}], \"evidence_ids\": [\"fca90c0d-9c49-4579-a9f4-0f1d3bc0aadb\"], \"error_code\": null, \"retryable\": false, \"user_action\": \"\", \"scope\": \"도구가 반환한 구조화 결과 범위입니다.\"}",
+        "additional_kwargs": {},
+        "response_metadata": {},
+        "type": "tool",
+        "name": "query_databricks",
+        "id": "a6533b24-d4b6-45e7-9d3f-2cb22fd18a59",
+        "tool_call_id": "385a6e57-8d05-4193-b944-299d289d172c",
+        "artifact": null,
+        "status": "success"
+      }
+    }
+  ],
+  "assets": {
+    "1252a04d-3a46-4a33-9e80-a910df772c58": {
+      "kind": "dataset",
+      "metadata": {
+        "id": "1252a04d-3a46-4a33-9e80-a910df772c58",
+        "source": "information_schema.tables",
+        "columns": [
+          "TABLE_SCHEMA",
+          "TABLE_NAME",
+          "TABLE_TYPE"
+        ],
+        "rows": 7,
+        "coverage": "unknown",
+        "conditions": [],
+        "predicate_known": false,
+        "grain": "raw",
+        "aggregation": "",
+        "snapshot": "2026-10-09T09:25:03.153310+00:00",
+        "query": "SELECT table_schema, table_name, table_type FROM information_schema.tables WHERE table_schema = 'teleai_default' ORDER BY table_name LIMIT 100",
+        "parent_id": "",
+        "parent_ids": [],
+        "role": "root",
+        "root_id": "1252a04d-3a46-4a33-9e80-a910df772c58",
+        "row_selection": {}
+      },
+      "metadata_sha256": "7606b0708d65446ed151cb2ef07f40f9b74f5ffd24cc4bfb4156dc0b8fcca9ba",
+      "payload_sha256": "372844c886cd58f8ef309861fc6bb1a9265e5de25cd71d7493b1199d66a13318"
+    },
+    "eb1c5ec7-da4b-48ea-ae48-d51d93c5462e": {
+      "kind": "dataset",
+      "metadata": {
+        "id": "eb1c5ec7-da4b-48ea-ae48-d51d93c5462e",
+        "source": "teleai_default.bank_loan",
+        "columns": [
+          "education"
+        ],
+        "rows": 4,
+        "coverage": "unknown",
+        "conditions": [],
+        "predicate_known": false,
+        "grain": "raw",
+        "aggregation": "",
+        "snapshot": "2026-10-09T09:25:56.323525+00:00",
+        "query": "SELECT DISTINCT `education` FROM `teleai_default`.`bank_loan` ORDER BY `education` LIMIT 101",
+        "parent_id": "",
+        "parent_ids": [],
+        "role": "root",
+        "root_id": "eb1c5ec7-da4b-48ea-ae48-d51d93c5462e",
+        "row_selection": {}
+      },
+      "metadata_sha256": "dc834c7b49d7db56bddc4dff9095c17d5050c2b7e87f457b9135e4c246253697",
+      "payload_sha256": "74b3461b7a2df5b4b027d189c92a816d5b09e235b4762c70275fde641051d181"
+    },
+    "e5193b5e-4601-4b8c-997e-4e59f62308f7": {
+      "kind": "dataset",
+      "metadata": {
+        "id": "e5193b5e-4601-4b8c-997e-4e59f62308f7",
+        "source": "teleai_default.bank_loan",
+        "columns": [
+          "education",
+          "__frequency"
+        ],
+        "rows": 4,
+        "coverage": "complete",
+        "conditions": [],
+        "predicate_known": false,
+        "grain": "aggregate",
+        "aggregation": "SELECT `education`, COUNT(*) AS `__frequency` FROM `teleai_default`.`bank_loan` WHERE NOT `education` IS NULL GROUP BY `education`",
+        "snapshot": "2026-10-09T09:26:39.743768+00:00",
+        "query": "SELECT `education`, COUNT(*) AS `__frequency` FROM `teleai_default`.`bank_loan` WHERE `education` IS NOT NULL GROUP BY `education`",
+        "parent_id": "",
+        "parent_ids": [],
+        "role": "aggregate",
+        "root_id": "",
+        "row_selection": {}
+      },
+      "metadata_sha256": "2b24c7936ae94ff0f4c795e705e0cc57c43be13650aa8cffc69459556231ece5",
+      "payload_sha256": "a42ab5c2a6e9aff30b82f7c6b804692a34aea7a3e74f435ce51eb577ee370121"
+    },
+    "da7d3ed0-e74f-438f-bc87-a86149008658": {
+      "kind": "chart",
+      "metadata": {
+        "id": "da7d3ed0-e74f-438f-bc87-a86149008658",
+        "dataset_id": "e5193b5e-4601-4b8c-997e-4e59f62308f7",
+        "title": "education 분포",
+        "reason": "범주별 실제 COUNT(*) 빈도를 표시합니다. 결측은 제외했습니다.",
+        "kind": "bar",
+        "columns": [
+          "education"
+        ],
+        "scope": "빈도 합계 750,000 · complete · SELECT `education`, COUNT(*) AS `__frequency` FROM `teleai_default`.`bank_loan` WHERE `education` IS NOT NULL GROUP BY `education`",
+        "render_spec": {
+          "aggregation": "count",
+          "labels": [
+            "secondary",
+            "tertiary",
+            "primary",
+            "unknown"
+          ],
+          "counts": [
+            401683,
+            227508,
+            99510,
+            21299
+          ],
+          "total_count": 750000,
+          "has_more_categories": false,
+          "null_policy": "exclude",
+          "legend": true,
+          "legend_labels": [
+            "secondary",
+            "tertiary",
+            "primary",
+            "unknown"
+          ],
+          "stacked": false,
+          "palette": "default",
+          "colors": [
+            "#1f77b4",
+            "#ff7f0e",
+            "#2ca02c",
+            "#d62728"
+          ]
+        }
+      },
+      "metadata_sha256": "e70aba2b8692c1590b122b7cac564cec9735c27f4e470f554dfe4d8e9416421a",
+      "payload_sha256": "25215c7e84762b72d52f6a140e599a05ac2e169c63f56513ea27168a5b801cc0"
+    },
+    "9abe223e-e78b-4498-865a-2564d1445055": {
+      "kind": "dataset",
+      "metadata": {
+        "id": "9abe223e-e78b-4498-865a-2564d1445055",
+        "source": "teleai_default.bank_loan",
+        "columns": [
+          "age",
+          "education",
+          "__frequency"
+        ],
+        "rows": 11,
+        "coverage": "complete",
+        "conditions": [],
+        "predicate_known": false,
+        "grain": "aggregate",
+        "aggregation": "SELECT `age`, `education`, COUNT(*) AS `__frequency` FROM `teleai_default`.`bank_loan` WHERE NOT `age` IS NULL AND ((`education` = 'primary' AND `age` >= 30 AND `age` <= 40)) GROUP BY `age`, `education`",
+        "snapshot": "2026-10-09T09:27:50.259780+00:00",
+        "query": "SELECT `age`, `education`, COUNT(*) AS `__frequency` FROM `teleai_default`.`bank_loan` WHERE `age` IS NOT NULL AND ((`education` = 'primary' AND `age` >= 30 AND `age` <= 40)) GROUP BY `age`, `education`",
+        "parent_id": "",
+        "parent_ids": [],
+        "role": "aggregate",
+        "root_id": "",
+        "row_selection": {}
+      },
+      "metadata_sha256": "c65b02577073b01221efc2cb3a353069c096a8c99313270eb7f2813cfcccb120",
+      "payload_sha256": "4fcc52fe167f22f7267bf260516dc9853d77f5f2c71c21b5e6782556f6710120"
+    },
+    "5b6c20f8-3a67-4635-80e5-1be602599b73": {
+      "kind": "chart",
+      "metadata": {
+        "id": "5b6c20f8-3a67-4635-80e5-1be602599b73",
+        "dataset_id": "9abe223e-e78b-4498-865a-2564d1445055",
+        "title": "education별 age 분포",
+        "reason": "공통 bin의 그룹별 COUNT(*)를 서로 다른 색의 막대로 표시하고 범례를 추가했습니다.",
+        "kind": "histogram",
+        "columns": [
+          "age",
+          "education"
+        ],
+        "scope": "빈도 합계 27,439 · complete · 그룹 결측 제외 0 · SELECT `age`, `education`, COUNT(*) AS `__frequency` FROM `teleai_default`.`bank_loan` WHERE `age` IS NOT NULL AND ((`education` = 'primary' AND `age` >= 30 AND `age` <= 40)) GROUP BY `age`, `education`",
+        "render_spec": {
+          "kind": "histogram",
+          "x": "age",
+          "category": "education",
+          "bins": 8,
+          "legend": true,
+          "stacked": false,
+          "palette": "default",
+          "legend_labels": [
+            "primary"
+          ],
+          "colors": [
+            "#3278b9"
+          ],
+          "bin_edges": [
+            30.0,
+            31.25,
+            32.5,
+            33.75,
+            35.0,
+            36.25,
+            37.5,
+            38.75,
+            40.0
+          ],
+          "series_counts": [
+            [
+              3015,
+              2336,
+              2357,
+              2324,
+              5197,
+              2714,
+              2677,
+              6819
+            ]
+          ],
+          "group_totals": [
+            27439
+          ],
+          "total_count": 27439,
+          "excluded_null_group_count": 0,
+          "null_policy": "exclude"
+        }
+      },
+      "metadata_sha256": "92b9acc8a341db522c3445e7d7c85714b53429524fed0c68b0c74e93f6b547be",
+      "payload_sha256": "4173b5e9ccb1336343f10b325f2e2881eb2b8eb8b17b45a069658ef17b30231a"
+    },
+    "300d01c5-b24b-4f81-a014-da2f115e8e64": {
+      "kind": "dataset",
+      "metadata": {
+        "id": "300d01c5-b24b-4f81-a014-da2f115e8e64",
+        "source": "teleai_default.bank_loan",
+        "columns": [
+          "age",
+          "education",
+          "__frequency"
+        ],
+        "rows": 22,
+        "coverage": "complete",
+        "conditions": [],
+        "predicate_known": false,
+        "grain": "aggregate",
+        "aggregation": "SELECT `age`, `education`, COUNT(*) AS `__frequency` FROM `teleai_default`.`bank_loan` WHERE NOT `age` IS NULL AND ((`age` >= 30 AND `age` <= 40 AND `education` IN ('primary', 'secondary'))) GROUP BY `age`, `education`",
+        "snapshot": "2026-10-09T09:28:50.232534+00:00",
+        "query": "SELECT `age`, `education`, COUNT(*) AS `__frequency` FROM `teleai_default`.`bank_loan` WHERE `age` IS NOT NULL AND ((`age` >= 30 AND `age` <= 40 AND `education` IN ('primary', 'secondary'))) GROUP BY `age`, `education`",
+        "parent_id": "",
+        "parent_ids": [],
+        "role": "aggregate",
+        "root_id": "",
+        "row_selection": {}
+      },
+      "metadata_sha256": "e0defbc52c1a7ad06c9318c9cae2326d2cf89d4f2de4e943189852c23cdc5f42",
+      "payload_sha256": "4f9e248f92555005f9f966819b6425dae8c495bc650a668f918f5f57a012c207"
+    },
+    "9f42a435-d161-4353-a154-8794ec1ba608": {
+      "kind": "chart",
+      "metadata": {
+        "id": "9f42a435-d161-4353-a154-8794ec1ba608",
+        "dataset_id": "300d01c5-b24b-4f81-a014-da2f115e8e64",
+        "title": "education별 age 분포",
+        "reason": "공통 bin의 그룹별 COUNT(*)를 서로 다른 색의 막대로 표시하고 범례를 추가했습니다.",
+        "kind": "histogram",
+        "columns": [
+          "age",
+          "education"
+        ],
+        "scope": "빈도 합계 208,699 · complete · 그룹 결측 제외 0 · SELECT `age`, `education`, COUNT(*) AS `__frequency` FROM `teleai_default`.`bank_loan` WHERE `age` IS NOT NULL AND ((`age` >= 30 AND `age` <= 40 AND `education` IN ('primary', 'secondary'))) GROUP BY `age`, `education`",
+        "render_spec": {
+          "kind": "histogram",
+          "x": "age",
+          "category": "education",
+          "bins": 8,
+          "legend": true,
+          "stacked": false,
+          "palette": "default",
+          "legend_labels": [
+            "primary",
+            "secondary"
+          ],
+          "colors": [
+            "#3278b9",
+            "#e58632"
+          ],
+          "bin_edges": [
+            30.0,
+            31.25,
+            32.5,
+            33.75,
+            35.0,
+            36.25,
+            37.5,
+            38.75,
+            40.0
+          ],
+          "series_counts": [
+            [
+              3015,
+              2336,
+              2357,
+              2324,
+              5197,
+              2714,
+              2677,
+              6819
+            ],
+            [
+              34015,
+              19889,
+              18085,
+              18462,
+              34644,
+              15689,
+              13982,
+              26494
+            ]
+          ],
+          "group_totals": [
+            27439,
+            181260
+          ],
+          "total_count": 208699,
+          "excluded_null_group_count": 0,
+          "null_policy": "exclude"
+        }
+      },
+      "metadata_sha256": "a6f4d7b29e3035a0a82c9ac2b79ac6c9374c8ea7b9106519c52280f2537739b5",
+      "payload_sha256": "3efbcb98550848877a64b167d62bf381b4cc08c19096bd2aee9b13d11f3f4e27"
+    },
+    "d3a9c8bd-5e1c-4f9b-9533-e4fd5a1870ee": {
+      "kind": "chart",
+      "metadata": {
+        "id": "d3a9c8bd-5e1c-4f9b-9533-e4fd5a1870ee",
+        "dataset_id": "300d01c5-b24b-4f81-a014-da2f115e8e64",
+        "title": "education별 age 분포",
+        "reason": "공통 bin의 그룹별 COUNT(*)를 서로 다른 색의 막대로 표시하고 범례를 추가했습니다.",
+        "kind": "histogram",
+        "columns": [
+          "age",
+          "education"
+        ],
+        "scope": "빈도 합계 208,699 · complete · 그룹 결측 제외 0 · SELECT `age`, `education`, COUNT(*) AS `__frequency` FROM `teleai_default`.`bank_loan` WHERE `age` IS NOT NULL AND ((`age` >= 30 AND `age` <= 40 AND `education` IN ('primary', 'secondary'))) GROUP BY `age`, `education`",
+        "render_spec": {
+          "kind": "histogram",
+          "x": "age",
+          "category": "education",
+          "bins": 5,
+          "legend": true,
+          "stacked": false,
+          "palette": "default",
+          "legend_labels": [
+            "primary",
+            "secondary"
+          ],
+          "colors": [
+            "#3278b9",
+            "#e58632"
+          ],
+          "bin_edges": [
+            30.0,
+            32.0,
+            34.0,
+            36.0,
+            38.0,
+            40.0
+          ],
+          "series_counts": [
+            [
+              3015,
+              4693,
+              4977,
+              5258,
+              9496
+            ],
+            [
+              34015,
+              37974,
+              36389,
+              32406,
+              40476
+            ]
+          ],
+          "group_totals": [
+            27439,
+            181260
+          ],
+          "total_count": 208699,
+          "excluded_null_group_count": 0,
+          "null_policy": "exclude"
+        }
+      },
+      "metadata_sha256": "83516201e612e6cb447339f1bb5f73af74674b8d877f0d6545ec424ea4ec2c33",
+      "payload_sha256": "d1e1462b3a30acb429be593138e6f43fb169ca62f5089cfba74a477b98fd4755"
+    },
+    "5a6a44c3-04c4-402f-a8c7-330bc281ffd7": {
+      "kind": "dataset",
+      "metadata": {
+        "id": "5a6a44c3-04c4-402f-a8c7-330bc281ffd7",
+        "source": "teleai_default.bank_loan",
+        "columns": [
+          "age",
+          "balance",
+          "__telly_coordinate_frequency"
+        ],
+        "rows": 132613,
+        "coverage": "complete",
+        "conditions": [],
+        "predicate_known": false,
+        "grain": "aggregate",
+        "aggregation": "SELECT `age`, `balance`, COUNT(*) AS `__telly_coordinate_frequency` FROM `teleai_default`.`bank_loan` WHERE NOT `age` IS NULL AND NOT `balance` IS NULL GROUP BY `age`, `balance`",
+        "snapshot": "2026-10-09T09:30:30.391231+00:00",
+        "query": "SELECT `age`, `balance`, COUNT(*) AS `__telly_coordinate_frequency` FROM `teleai_default`.`bank_loan` WHERE `age` IS NOT NULL AND `balance` IS NOT NULL GROUP BY `age`, `balance`",
+        "parent_id": "",
+        "parent_ids": [],
+        "role": "aggregate",
+        "root_id": "",
+        "row_selection": {}
+      },
+      "metadata_sha256": "de2e3382c42c532b0c582d6c1c2889d301ebd10a250706d3bdd6707107ebfa3d",
+      "payload_sha256": "f0b5cc601f0e5630187037e5d0d8c98fdd1a2eeadea9e7017f0925049b066c2c"
+    },
+    "d888ce29-551a-4a09-b98d-2f8b8b964bc7": {
+      "kind": "chart",
+      "metadata": {
+        "id": "d888ce29-551a-4a09-b98d-2f8b8b964bc7",
+        "dataset_id": "5a6a44c3-04c4-402f-a8c7-330bc281ffd7",
+        "title": "age와 balance 관계",
+        "reason": "전체 유효 좌표를 표시하고 중복 빈도를 색상으로 표현합니다.",
+        "kind": "scatter",
+        "columns": [
+          "age",
+          "balance"
+        ],
+        "scope": "전체 유효 원본 750,000행 · 고유 좌표 132,613개 · 동일 좌표는 빈도로 압축 · 표본/구간 집계 없음 · 두 축의 NULL 제외 · complete",
+        "render_spec": {
+          "mode": "exact_coordinate_frequency",
+          "source": "teleai_default.bank_loan",
+          "query": "SELECT `age`, `balance`, COUNT(*) AS `__telly_coordinate_frequency` FROM `teleai_default`.`bank_loan` WHERE `age` IS NOT NULL AND `balance` IS NOT NULL GROUP BY `age`, `balance`",
+          "snapshot": "2026-10-09T09:30:30.391231+00:00",
+          "x": "age",
+          "y": "balance",
+          "coordinate_count": 132613,
+          "drawable_rows": 750000,
+          "weight_column": "__telly_coordinate_frequency",
+          "data_sha256": "56a6272329b399a90bd24386eea1f14df29e43c365b7d2f82fb01915d09bdc2c"
+        }
+      },
+      "metadata_sha256": "0caae654f92ee798278f875ee44c9388fbc5c9c2552a9cacd3f08532003601b2",
+      "payload_sha256": "f87b0ce1c2325cd6c0fe853a2aabc2577de5ae0365fb437fd2ab63cc15beb6af"
+    },
+    "fca90c0d-9c49-4579-a9f4-0f1d3bc0aadb": {
+      "kind": "dataset",
+      "metadata": {
+        "id": "fca90c0d-9c49-4579-a9f4-0f1d3bc0aadb",
+        "source": "teleai_default.stormtrooper",
+        "columns": [
+          "flight_id",
+          "date_str",
+          "latitude",
+          "longitude",
+          "pressure_altitude",
+          "cdo",
+          "cth",
+          "glm_event_density",
+          "glm_optical_flux",
+          "cdo025",
+          "cth025",
+          "cth025_diff_feet",
+          "cdo_dist_km"
+        ],
+        "rows": 10,
+        "coverage": "unknown",
+        "conditions": [],
+        "predicate_known": false,
+        "grain": "raw",
+        "aggregation": "",
+        "snapshot": "2026-10-09T09:31:26.672938+00:00",
+        "query": "SELECT * FROM `teleai_default`.`stormtrooper` LIMIT 10",
+        "parent_id": "",
+        "parent_ids": [],
+        "role": "root",
+        "root_id": "fca90c0d-9c49-4579-a9f4-0f1d3bc0aadb",
+        "row_selection": {}
+      },
+      "metadata_sha256": "a7dd01de1ce2258a4e7197d1e78dbfc4f86276b082c0973d47f6a1b3db804f82",
+      "payload_sha256": "fc2cf2d269c83473cf957663f54d833efa43d6280d6d58904d940a4b6c7c6980"
+    }
+  },
+  "selection": "",
+  "current": {
+    "request_id": "985e1a7cf3be4ab79e6372ad78a6858a",
+    "request_text": "그 테이블의 컬럼 이름과 DB 데이터 타입을 모두 다시 알려줘. 차트는 만들지 말아줘.",
+    "status": "complete",
+    "intent_origin": "llm",
+    "goal_pending": false,
+    "request_started_at": 1791538287.348175,
+    "required_sources": [
+      "teleai_default.stormtrooper"
+    ],
+    "required_columns": [],
+    "explicit_columns": [],
+    "scope": {
+      "conditions": [],
+      "any_conditions": [],
+      "measure_conditions": [],
+      "ratio": null,
+      "sources": [
+        "teleai_default.stormtrooper"
+      ],
+      "columns": [],
+      "unresolved": [],
+      "join_edges": []
+    },
+    "previous_scope": {
+      "conditions": [],
+      "any_conditions": [],
+      "measure_conditions": [],
+      "ratio": null,
+      "sources": [
+        "teleai_default.stormtrooper"
+      ],
+      "columns": [],
+      "unresolved": [],
+      "join_edges": []
+    },
+    "confirmed_analysis": {
+      "request_id": "985e1a7cf3be4ab79e6372ad78a6858a",
+      "request_text": "그 테이블의 컬럼 이름과 DB 데이터 타입을 모두 다시 알려줘. 차트는 만들지 말아줘.",
+      "status": "complete",
+      "intent_origin": "llm",
+      "goal_pending": false,
+      "request_started_at": 1791538287.348175,
+      "required_sources": [
+        "teleai_default.stormtrooper"
+      ],
+      "required_columns": [],
+      "explicit_columns": [],
+      "scope": {
+        "conditions": [],
+        "any_conditions": [],
+        "measure_conditions": [],
+        "ratio": null,
+        "sources": [
+          "teleai_default.stormtrooper"
+        ],
+        "columns": [],
+        "unresolved": [],
+        "join_edges": []
+      },
+      "previous_scope": {
+        "conditions": [],
+        "any_conditions": [],
+        "measure_conditions": [],
+        "ratio": null,
+        "sources": [
+          "teleai_default.stormtrooper"
+        ],
+        "columns": [],
+        "unresolved": [],
+        "join_edges": []
+      },
+      "chart": false,
+      "kind": null,
+      "calculation": false,
+      "operations": [],
+      "metadata_kind": "dtypes",
+      "catalog_discovery_source": "",
+      "catalog_discovery_schema": "",
+      "profile_kind": null,
+      "preview_limit": 0,
+      "data_load": false,
+      "whole_row_count": false,
+      "current_result_only": false,
+      "fresh_source_required": false,
+      "requested_result_rows": null,
+      "requested_join": false,
+      "join": false,
+      "join_how": null,
+      "statistical_kind": null,
+      "latest_per_key_spec": null,
+      "row_preview_spec": null,
+      "chart_spec_requested": false,
+      "value_list_requested": false,
+      "operation_pending": false,
+      "schema_semantic": false,
+      "outlier_spec": null,
+      "outlier_column": null,
+      "time_series_frequency": null,
+      "histogram_bins": null,
+      "chart_cumulative": false,
+      "processed": [
+        "a7a7492c-90d0-461a-b1c3-0514307dea81"
+      ],
+      "sent_calls": [
+        "a7a7492c-90d0-461a-b1c3-0514307dea81"
+      ],
+      "evidence_ids": [],
+      "artifact_ids": [],
+      "failed": {},
+      "failed_signatures": {},
+      "attempts": 0,
+      "model_calls": 4,
+      "model_seconds": 36.21161545798532,
+      "remote_query_ids": [],
+      "remote_query_evidence": {},
+      "columns": [],
+      "output_references": [
+        {
+          "capability": "table_list",
+          "request_text": "지금 연결된 DB에서 분석 가능한 테이블 이름들을 알려줄래?",
+          "required_sources": [
+            "information_schema.tables"
+          ],
+          "required_columns": []
+        },
+        {
+          "capability": "metadata",
+          "request_text": "은행 대출 데이터 bank_loan에는 어떤 컬럼이 들어 있어?",
+          "required_sources": [
+            "teleai_default.bank_loan"
+          ],
+          "required_columns": []
+        },
+        {
+          "capability": "value_list",
+          "request_text": "여기 education에 들어있는 값 종류를 전부 알려줘.",
+          "required_sources": [
+            "teleai_default.bank_loan"
+          ],
+          "required_columns": [
+            "education"
+          ]
+        },
+        {
+          "capability": "chart",
+          "request_text": "이제 조건을 전부 없애고 bank_loan 전체의 age를 가로축, balance를 세로축으로 산점도를 그려줘.",
+          "required_sources": [
+            "teleai_default.bank_loan"
+          ],
+          "required_columns": [
+            "age",
+            "balance"
+          ]
+        },
+        {
+          "capability": "row_preview",
+          "request_text": "이번에는 stormtrooper에서 row 10개만 표로 보고 싶어.",
+          "required_sources": [
+            "teleai_default.stormtrooper"
+          ],
+          "required_columns": []
+        }
+      ],
+      "preview_evidence": null,
+      "outlier_aggregate_evidence": {},
+      "count_rate_evidence": null,
+      "count_rate_layout": null,
+      "count_rate_group_column": null,
+      "winsor_evidence": null,
+      "winsor_spec": null,
+      "winsor_column": null,
+      "pivot_evidence": null,
+      "pivot_requested": false,
+      "pivot_index_columns": [],
+      "pivot_column_columns": [],
+      "pivot_conditions": [],
+      "pivot_margins_name": "전체",
+      "pivot_derived_bins": [],
+      "group_summary_requested": false,
+      "group_summary_columns": [],
+      "group_summary_metrics": [],
+      "group_summary_conditions": [],
+      "group_summary_evidence": null,
+      "remote_result_requested": false,
+      "accounted_model_failures": 0,
+      "accounted_model_failure_seconds": 0.0,
+      "model_retries": 0,
+      "accounted_aux_calls": 4,
+      "accounted_aux_seconds": 36.21161545798532,
+      "_new_model_failure_seconds": 0.0,
+      "requested_subject": {},
+      "goal": {
+        "objective": "metadata",
+        "mode": "execute",
+        "source_reference": "previous_analysis",
+        "sources": [
+          "teleai_default.stormtrooper"
+        ],
+        "columns": [],
+        "conditions": [],
+        "any_conditions": [],
+        "measure_conditions": [],
+        "ratio": null,
+        "current_result_only": false,
+        "fresh_source_required": false,
+        "question": "",
+        "tasks": [
+          {
+            "capability": "metadata",
+            "options": {
+              "kind": "dtypes"
+            }
+          }
+        ]
+      },
+      "goal_version": 1,
+      "explanation_only": false,
+      "goal_question": "",
+      "discovery_progress": {
+        "4ed01d8e261f1394d6998dd077c4e2275568d1f1f8d0902f8aba9b4aa5c0420c": {
+          "tool": "inspect_table_context",
+          "version": "8bc2e1990cf7c7848605b5f1d7a555d0a46f1d263de51f2762700676e95e5be2",
+          "observation": "5461c51cad36d41cbba358608c2a00827c521fd044a88a50e040394c88fccf73",
+          "count": 1
+        }
+      },
+      "schema_subject": {
+        "table": "teleai_default.stormtrooper",
+        "authority": "approved_select_star_result",
+        "schema_fingerprint": "e8921994cbd4cb00c5898c9c1a1e58d4af8185bceb89411dbb64d18c5948d489",
+        "selection_at_observation": ""
+      },
+      "metadata_evidence": {
+        "table": "teleai_default.stormtrooper",
+        "kind": "dtypes",
+        "columns": [
+          "flight_id",
+          "date_str",
+          "latitude",
+          "longitude",
+          "pressure_altitude",
+          "cdo",
+          "cth",
+          "glm_event_density",
+          "glm_optical_flux",
+          "cdo025",
+          "cth025",
+          "cth025_diff_feet",
+          "cdo_dist_km"
+        ],
+        "schema": [
+          {
+            "name": "flight_id",
+            "dtype": "longtext"
+          },
+          {
+            "name": "date_str",
+            "dtype": "datetime"
+          },
+          {
+            "name": "latitude",
+            "dtype": "double"
+          },
+          {
+            "name": "longitude",
+            "dtype": "double"
+          },
+          {
+            "name": "pressure_altitude",
+            "dtype": "double"
+          },
+          {
+            "name": "cdo",
+            "dtype": "double"
+          },
+          {
+            "name": "cth",
+            "dtype": "double"
+          },
+          {
+            "name": "glm_event_density",
+            "dtype": "double"
+          },
+          {
+            "name": "glm_optical_flux",
+            "dtype": "double"
+          },
+          {
+            "name": "cdo025",
+            "dtype": "double"
+          },
+          {
+            "name": "cth025",
+            "dtype": "double"
+          },
+          {
+            "name": "cth025_diff_feet",
+            "dtype": "double"
+          },
+          {
+            "name": "cdo_dist_km",
+            "dtype": "double"
+          }
+        ],
+        "selected_columns": [],
+        "authority": "approved_select_star_result",
+        "type_authority": "current_database_metadata",
+        "scope": "로딩된 SELECT * 결과의 실제 컬럼입니다. 해당 결과의 생성 시점 스키마를 나타냅니다.",
+        "schema_changed": false
+      },
+      "stop_reason": null,
+      "selection_at_confirmation": ""
+    },
+    "chart": false,
+    "kind": null,
+    "calculation": false,
+    "operations": [],
+    "metadata_kind": "dtypes",
+    "catalog_discovery_source": "",
+    "catalog_discovery_schema": "",
+    "profile_kind": null,
+    "preview_limit": 0,
+    "data_load": false,
+    "whole_row_count": false,
+    "current_result_only": false,
+    "fresh_source_required": false,
+    "requested_result_rows": null,
+    "requested_join": false,
+    "join": false,
+    "join_how": null,
+    "statistical_kind": null,
+    "latest_per_key_spec": null,
+    "row_preview_spec": null,
+    "chart_spec_requested": false,
+    "value_list_requested": false,
+    "operation_pending": false,
+    "schema_semantic": false,
+    "outlier_spec": null,
+    "outlier_column": null,
+    "time_series_frequency": null,
+    "histogram_bins": null,
+    "chart_cumulative": false,
+    "processed": [
+      "a7a7492c-90d0-461a-b1c3-0514307dea81"
+    ],
+    "sent_calls": [
+      "a7a7492c-90d0-461a-b1c3-0514307dea81"
+    ],
+    "evidence_ids": [],
+    "artifact_ids": [],
+    "failed": {},
+    "failed_signatures": {},
+    "attempts": 0,
+    "model_calls": 4,
+    "model_seconds": 36.21161545798532,
+    "remote_query_ids": [],
+    "remote_query_evidence": {},
+    "columns": [],
+    "output_references": [
+      {
+        "capability": "table_list",
+        "request_text": "지금 연결된 DB에서 분석 가능한 테이블 이름들을 알려줄래?",
+        "required_sources": [
+          "information_schema.tables"
+        ],
+        "required_columns": []
+      },
+      {
+        "capability": "metadata",
+        "request_text": "은행 대출 데이터 bank_loan에는 어떤 컬럼이 들어 있어?",
+        "required_sources": [
+          "teleai_default.bank_loan"
+        ],
+        "required_columns": []
+      },
+      {
+        "capability": "value_list",
+        "request_text": "여기 education에 들어있는 값 종류를 전부 알려줘.",
+        "required_sources": [
+          "teleai_default.bank_loan"
+        ],
+        "required_columns": [
+          "education"
+        ]
+      },
+      {
+        "capability": "chart",
+        "request_text": "이제 조건을 전부 없애고 bank_loan 전체의 age를 가로축, balance를 세로축으로 산점도를 그려줘.",
+        "required_sources": [
+          "teleai_default.bank_loan"
+        ],
+        "required_columns": [
+          "age",
+          "balance"
+        ]
+      },
+      {
+        "capability": "row_preview",
+        "request_text": "이번에는 stormtrooper에서 row 10개만 표로 보고 싶어.",
+        "required_sources": [
+          "teleai_default.stormtrooper"
+        ],
+        "required_columns": []
+      }
+    ],
+    "preview_evidence": null,
+    "outlier_aggregate_evidence": {},
+    "count_rate_evidence": null,
+    "count_rate_layout": null,
+    "count_rate_group_column": null,
+    "winsor_evidence": null,
+    "winsor_spec": null,
+    "winsor_column": null,
+    "pivot_evidence": null,
+    "pivot_requested": false,
+    "pivot_index_columns": [],
+    "pivot_column_columns": [],
+    "pivot_conditions": [],
+    "pivot_margins_name": "전체",
+    "pivot_derived_bins": [],
+    "group_summary_requested": false,
+    "group_summary_columns": [],
+    "group_summary_metrics": [],
+    "group_summary_conditions": [],
+    "group_summary_evidence": null,
+    "remote_result_requested": false,
+    "accounted_model_failures": 0,
+    "accounted_model_failure_seconds": 0.0,
+    "model_retries": 0,
+    "accounted_aux_calls": 4,
+    "accounted_aux_seconds": 36.21161545798532,
+    "_new_model_failure_seconds": 0.0,
+    "requested_subject": {},
+    "goal": {
+      "objective": "metadata",
+      "mode": "execute",
+      "source_reference": "previous_analysis",
+      "sources": [
+        "teleai_default.stormtrooper"
+      ],
+      "columns": [],
+      "conditions": [],
+      "any_conditions": [],
+      "measure_conditions": [],
+      "ratio": null,
+      "current_result_only": false,
+      "fresh_source_required": false,
+      "question": "",
+      "tasks": [
+        {
+          "capability": "metadata",
+          "options": {
+            "kind": "dtypes"
+          }
+        }
+      ]
+    },
+    "goal_version": 1,
+    "explanation_only": false,
+    "goal_question": "",
+    "discovery_progress": {
+      "4ed01d8e261f1394d6998dd077c4e2275568d1f1f8d0902f8aba9b4aa5c0420c": {
+        "tool": "inspect_table_context",
+        "version": "8bc2e1990cf7c7848605b5f1d7a555d0a46f1d263de51f2762700676e95e5be2",
+        "observation": "5461c51cad36d41cbba358608c2a00827c521fd044a88a50e040394c88fccf73",
+        "count": 1
+      }
+    },
+    "schema_subject": {
+      "table": "teleai_default.stormtrooper",
+      "authority": "approved_select_star_result",
+      "schema_fingerprint": "e8921994cbd4cb00c5898c9c1a1e58d4af8185bceb89411dbb64d18c5948d489",
+      "selection_at_observation": ""
+    },
+    "metadata_evidence": {
+      "table": "teleai_default.stormtrooper",
+      "kind": "dtypes",
+      "columns": [
+        "flight_id",
+        "date_str",
+        "latitude",
+        "longitude",
+        "pressure_altitude",
+        "cdo",
+        "cth",
+        "glm_event_density",
+        "glm_optical_flux",
+        "cdo025",
+        "cth025",
+        "cth025_diff_feet",
+        "cdo_dist_km"
+      ],
+      "schema": [
+        {
+          "name": "flight_id",
+          "dtype": "longtext"
+        },
+        {
+          "name": "date_str",
+          "dtype": "datetime"
+        },
+        {
+          "name": "latitude",
+          "dtype": "double"
+        },
+        {
+          "name": "longitude",
+          "dtype": "double"
+        },
+        {
+          "name": "pressure_altitude",
+          "dtype": "double"
+        },
+        {
+          "name": "cdo",
+          "dtype": "double"
+        },
+        {
+          "name": "cth",
+          "dtype": "double"
+        },
+        {
+          "name": "glm_event_density",
+          "dtype": "double"
+        },
+        {
+          "name": "glm_optical_flux",
+          "dtype": "double"
+        },
+        {
+          "name": "cdo025",
+          "dtype": "double"
+        },
+        {
+          "name": "cth025",
+          "dtype": "double"
+        },
+        {
+          "name": "cth025_diff_feet",
+          "dtype": "double"
+        },
+        {
+          "name": "cdo_dist_km",
+          "dtype": "double"
+        }
+      ],
+      "selected_columns": [],
+      "authority": "approved_select_star_result",
+      "type_authority": "current_database_metadata",
+      "scope": "로딩된 SELECT * 결과의 실제 컬럼입니다. 해당 결과의 생성 시점 스키마를 나타냅니다.",
+      "schema_changed": false
+    },
+    "stop_reason": null,
+    "selection_at_confirmation": ""
+  },
+  "run_id": "19499d7a79c24b5899784ac1928a67c1",
+  "run": [
+    {
+      "time": "2026-10-09T09:31:27.346807+00:00",
+      "event": "run_started",
+      "run_id": "19499d7a79c24b5899784ac1928a67c1",
+      "instance_id": "8dd9842099da",
+      "pid": 68712,
+      "runtime": {
+        "revision_at_first_runtime": "3a7206654b3d2fab7cd145893fd52970e397dd07",
+        "packages": {
+          "langchain": "1.4.0",
+          "langchain-core": "1.6.2",
+          "langgraph": "1.2.11",
+          "streamlit": "1.63.0",
+          "sqlglot": "30.18.0"
+        },
+        "python_version": "3.11.13",
+        "identity_captured_at": "2026-10-09T09:23:30.162284+00:00",
+        "route": "langgraph-v1",
+        "model_class": "ChatOllama",
+        "require_remote_approval": false,
+        "loaded_delivery_guard": "892057222e9ed9b4",
+        "data_backend": "mysql",
+        "intent_mode": "llm",
+        "goal_version": 1,
+        "goal_model": "gemma4:e4b",
+        "planner_model": "gemma4:e4b"
+      },
+      "operation": "submit",
+      "process_peak_rss_bytes": 376160256
+    },
+    {
+      "time": "2026-10-09T09:31:27.354170+00:00",
+      "event": "goal_interpretation_started",
+      "run_id": "19499d7a79c24b5899784ac1928a67c1",
+      "instance_id": "8dd9842099da",
+      "pid": 68712,
+      "request_id": "985e1a7cf3be4ab79e6372ad78a6858a",
+      "origin": "llm",
+      "goal_version": 1
+    },
+    {
+      "time": "2026-10-09T09:31:27.355123+00:00",
+      "event": "model_payload_budget",
+      "run_id": "19499d7a79c24b5899784ac1928a67c1",
+      "instance_id": "8dd9842099da",
+      "pid": 68712,
+      "payload_bytes": 1910,
+      "payload_bytes_before_projection": 1910,
+      "template_headroom": 640,
+      "input_budget_units": 14336,
+      "output_reserved": 2048,
+      "context_window": 16384,
+      "tool_count": 0,
+      "message_count": 1,
+      "older_turns_compacted": false,
+      "within_budget": true,
+      "observations_compacted": false,
+      "schema_compacted": false,
+      "system_catalog_compacted": false,
+      "tool_menu_compacted": false,
+      "minimal_discovery_menu": false,
+      "reasoning_compacted": false,
+      "minimal_catalog": false,
+      "builtin_instructions_compacted": false,
+      "components": {
+        "system_bytes": 1332,
+        "message_content_bytes": 465,
+        "tool_calls_bytes": 0,
+        "reasoning_bytes": 0,
+        "tool_schema_bytes": 0,
+        "tool_names": []
+      },
+      "measurement": "conservative_utf8_bytes_not_actual_token_count"
+    },
+    {
+      "time": "2026-10-09T09:31:30.596344+00:00",
+      "event": "goal_literal_subjects_read",
+      "run_id": "19499d7a79c24b5899784ac1928a67c1",
+      "instance_id": "8dd9842099da",
+      "pid": 68712,
+      "request_id": "985e1a7cf3be4ab79e6372ad78a6858a",
+      "candidate_count": 1,
+      "table_count": 0
+    },
+    {
+      "time": "2026-10-09T09:31:30.598194+00:00",
+      "event": "model_payload_budget",
+      "run_id": "19499d7a79c24b5899784ac1928a67c1",
+      "instance_id": "8dd9842099da",
+      "pid": 68712,
+      "payload_bytes": 6106,
+      "payload_bytes_before_projection": 6106,
+      "template_headroom": 640,
+      "input_budget_units": 14336,
+      "output_reserved": 2048,
+      "context_window": 16384,
+      "tool_count": 0,
+      "message_count": 1,
+      "older_turns_compacted": false,
+      "within_budget": true,
+      "observations_compacted": false,
+      "schema_compacted": false,
+      "system_catalog_compacted": false,
+      "tool_menu_compacted": false,
+      "minimal_discovery_menu": false,
+      "reasoning_compacted": false,
+      "minimal_catalog": false,
+      "builtin_instructions_compacted": false,
+      "components": {
+        "system_bytes": 4236,
+        "message_content_bytes": 1570,
+        "tool_calls_bytes": 0,
+        "reasoning_bytes": 0,
+        "tool_schema_bytes": 0,
+        "tool_names": []
+      },
+      "measurement": "conservative_utf8_bytes_not_actual_token_count"
+    },
+    {
+      "time": "2026-10-09T09:31:37.428264+00:00",
+      "event": "goal_tasks_selected",
+      "run_id": "19499d7a79c24b5899784ac1928a67c1",
+      "instance_id": "8dd9842099da",
+      "pid": 68712,
+      "request_id": "985e1a7cf3be4ab79e6372ad78a6858a",
+      "mode": "execute",
+      "capabilities": [
+        "metadata"
+      ],
+      "chart_kind": "",
+      "metadata_kind": "dtypes",
+      "source_reference": "previous_analysis",
+      "current_result_only": false
+    },
+    {
+      "time": "2026-10-09T09:31:37.429234+00:00",
+      "event": "model_payload_budget",
+      "run_id": "19499d7a79c24b5899784ac1928a67c1",
+      "instance_id": "8dd9842099da",
+      "pid": 68712,
+      "payload_bytes": 10554,
+      "payload_bytes_before_projection": 10554,
+      "template_headroom": 640,
+      "input_budget_units": 14336,
+      "output_reserved": 2048,
+      "context_window": 16384,
+      "tool_count": 0,
+      "message_count": 1,
+      "older_turns_compacted": false,
+      "within_budget": true,
+      "observations_compacted": false,
+      "schema_compacted": false,
+      "system_catalog_compacted": false,
+      "tool_menu_compacted": false,
+      "minimal_discovery_menu": false,
+      "reasoning_compacted": false,
+      "minimal_catalog": false,
+      "builtin_instructions_compacted": false,
+      "components": {
+        "system_bytes": 6101,
+        "message_content_bytes": 3889,
+        "tool_calls_bytes": 0,
+        "reasoning_bytes": 0,
+        "tool_schema_bytes": 0,
+        "tool_names": []
+      },
+      "measurement": "conservative_utf8_bytes_not_actual_token_count"
+    },
+    {
+      "time": "2026-10-09T09:31:57.930327+00:00",
+      "event": "goal_semantic_review_started",
+      "run_id": "19499d7a79c24b5899784ac1928a67c1",
+      "instance_id": "8dd9842099da",
+      "pid": 68712,
+      "request_id": "985e1a7cf3be4ab79e6372ad78a6858a"
+    },
+    {
+      "time": "2026-10-09T09:31:57.934068+00:00",
+      "event": "model_payload_budget",
+      "run_id": "19499d7a79c24b5899784ac1928a67c1",
+      "instance_id": "8dd9842099da",
+      "pid": 68712,
+      "payload_bytes": 10963,
+      "payload_bytes_before_projection": 10963,
+      "template_headroom": 640,
+      "input_budget_units": 14336,
+      "output_reserved": 2048,
+      "context_window": 16384,
+      "tool_count": 0,
+      "message_count": 1,
+      "older_turns_compacted": false,
+      "within_budget": true,
+      "observations_compacted": false,
+      "schema_compacted": false,
+      "system_catalog_compacted": false,
+      "tool_menu_compacted": false,
+      "minimal_discovery_menu": false,
+      "reasoning_compacted": false,
+      "minimal_catalog": false,
+      "builtin_instructions_compacted": false,
+      "components": {
+        "system_bytes": 6101,
+        "message_content_bytes": 4250,
+        "tool_calls_bytes": 0,
+        "reasoning_bytes": 0,
+        "tool_schema_bytes": 0,
+        "tool_names": []
+      },
+      "measurement": "conservative_utf8_bytes_not_actual_token_count"
+    },
+    {
+      "time": "2026-10-09T09:32:03.581675+00:00",
+      "event": "goal_interpretation_completed",
+      "run_id": "19499d7a79c24b5899784ac1928a67c1",
+      "instance_id": "8dd9842099da",
+      "pid": 68712,
+      "request_id": "985e1a7cf3be4ab79e6372ad78a6858a",
+      "origin": "llm",
+      "mode": "execute",
+      "capabilities": [
+        "metadata"
+      ],
+      "attempts": 2,
+      "goal_version": 1
+    },
+    {
+      "time": "2026-10-09T09:32:03.593809+00:00",
+      "event": "recovery_transition",
+      "run_id": "19499d7a79c24b5899784ac1928a67c1",
+      "instance_id": "8dd9842099da",
+      "pid": 68712,
+      "request_id": "985e1a7cf3be4ab79e6372ad78a6858a",
+      "tool": "inspect_table_context"
+    },
+    {
+      "time": "2026-10-09T09:32:03.598729+00:00",
+      "event": "tool_started",
+      "run_id": "19499d7a79c24b5899784ac1928a67c1",
+      "instance_id": "8dd9842099da",
+      "pid": 68712,
+      "tool": "inspect_table_context"
+    },
+    {
+      "time": "2026-10-09T09:32:03.603820+00:00",
+      "event": "tool_completed",
+      "run_id": "19499d7a79c24b5899784ac1928a67c1",
+      "instance_id": "8dd9842099da",
+      "pid": 68712,
+      "tool": "inspect_table_context",
+      "status": "ready",
+      "error_code": null,
+      "elapsed_seconds": 0.005,
+      "applied_corrections": []
+    },
+    {
+      "time": "2026-10-09T09:32:03.610121+00:00",
+      "event": "schema_subject_confirmed",
+      "run_id": "19499d7a79c24b5899784ac1928a67c1",
+      "instance_id": "8dd9842099da",
+      "pid": 68712,
+      "request_id": "985e1a7cf3be4ab79e6372ad78a6858a",
+      "table": "teleai_default.stormtrooper",
+      "authority": "approved_select_star_result"
+    },
+    {
+      "time": "2026-10-09T09:32:03.610878+00:00",
+      "event": "completion_checked",
+      "run_id": "19499d7a79c24b5899784ac1928a67c1",
+      "instance_id": "8dd9842099da",
+      "pid": 68712,
+      "request_id": "985e1a7cf3be4ab79e6372ad78a6858a",
+      "status": "complete",
+      "reason": null,
+      "attempts": 0,
+      "required_capabilities": [
+        "metadata"
+      ],
+      "missing_capabilities": [],
+      "model_calls": 4,
+      "tool_calls": 1,
+      "model_seconds": 36.212,
+      "dataset_ids": [],
+      "artifact_ids": []
+    },
+    {
+      "time": "2026-10-09T09:32:03.616055+00:00",
+      "event": "run_completed",
+      "run_id": "19499d7a79c24b5899784ac1928a67c1",
+      "instance_id": "8dd9842099da",
+      "pid": 68712,
+      "status": "answered",
+      "elapsed_seconds": 36.273,
+      "process_peak_rss_bytes": 376160256,
+      "frame_cache_bytes": 0
+    },
+    {
+      "time": "2026-10-09T09:32:03.616248+00:00",
+      "event": "turn_slo",
+      "run_id": "19499d7a79c24b5899784ac1928a67c1",
+      "instance_id": "8dd9842099da",
+      "pid": 68712,
+      "elapsed_seconds": 36.273,
+      "limit": 180.0,
+      "status": "ok"
+    }
+  ],
+  "requested_prompt": "그 테이블의 컬럼 이름과 DB 데이터 타입을 모두 다시 알려줘. 차트는 만들지 말아줘.",
+  "current_matches_run": true,
+  "request_checkpoint_verified": true
+}

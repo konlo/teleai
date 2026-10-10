@@ -1,0 +1,41 @@
+{
+  "recorded_at": "2026-10-03T14:35:53.200661+00:00",
+  "error_id": "65a8460de89e",
+  "runtime_stage": "model inference, before tool execution",
+  "call_chain": [
+    "Recovery model handler",
+    "ChatOllama._create_chat_stream",
+    "ollama.Client.chat",
+    "httpx.Client.stream -> send",
+    "HTTPTransport.handle_request"
+  ],
+  "timeout_location": "HTTP response wait before Client.stream yields its response; not SQL/tool/image rendering",
+  "configured_endpoint": "http://127.0.0.1:11434/api/chat",
+  "configured_model": "gemma4:e4b",
+  "timeout_seconds": 60,
+  "retry_delay_seconds": 1,
+  "elapsed_seconds": 121.417,
+  "client_attempts_kst": [
+    "2026-10-03 23:18:12 -> 23:19:12",
+    "2026-10-03 23:19:13 -> 23:20:13"
+  ],
+  "ollama_server_log": [
+    {
+      "time_kst": "2026-10-03 23:19:12",
+      "path": "/api/chat",
+      "status": 500,
+      "duration": "1m0s"
+    },
+    {
+      "time_kst": "2026-10-03 23:20:13",
+      "path": "/api/chat",
+      "status": 500,
+      "duration": "1m0s"
+    }
+  ],
+  "server_loading_evidence": "23:18:12 waiting for llama server / model loading; loaded runners at23:18:16",
+  "limitations": "The server500 coincides with client timeout; no proof whether internal500 preceded the timeout or followed cancellation. Loading alone (~4s) does not explain the whole60s. Queue/prefill/inference cause not conclusively established.",
+  "tools_started": 0,
+  "database_requests_started": 0,
+  "code_changed": false
+}

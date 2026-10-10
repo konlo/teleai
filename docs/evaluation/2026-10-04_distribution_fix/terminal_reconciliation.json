@@ -1,0 +1,17 @@
+{
+  "tool_call_id": "d3bdcf18-8387-4fbe-8562-70d5ae7fd853",
+  "before_status": "unknown",
+  "after_status": "failed",
+  "basis": "Operator verified previously observed MySQL connection 246 is closed after caught DatabaseError, runtime connection closed in finally, no result published. Error errno was not retained; not inferred as 3024.",
+  "query": "SELECT `n_1`, COUNT(*) AS `__frequency` FROM `teleai_default`.`alibaba_ssd` WHERE `n_1` IS NOT NULL GROUP BY `n_1`",
+  "active_connections": [
+    {
+      "Id": 250,
+      "Command": "Query",
+      "State": "init",
+      "Time": 0,
+      "Info": "SHOW PROCESSLIST"
+    }
+  ],
+  "duplicate_query_executed": false
+}

@@ -1,0 +1,33 @@
+{
+  "id": 27,
+  "prompt": "tianchi_ssd_shared300k_raw 이 table row 수가 몇개야 ?",
+  "status": "exhausted",
+  "goal": {
+    "objective": "row count",
+    "mode": "execute",
+    "source_reference": "previous_analysis",
+    "sources": [
+      "information_schema.tables"
+    ],
+    "columns": [],
+    "conditions": [],
+    "any_conditions": [],
+    "measure_conditions": [],
+    "ratio": null,
+    "current_result_only": false,
+    "fresh_source_required": false,
+    "question": "",
+    "tasks": [
+      {
+        "capability": "row_count",
+        "options": {}
+      }
+    ]
+  },
+  "reason": "sql_repair_budget",
+  "run_id": "19e35504f81147f0a5ff40e4b514b936",
+  "model_calls": 7,
+  "chart_metadata": [],
+  "verdict": "FAIL",
+  "error": "missing source needs actionable clarification"
+}

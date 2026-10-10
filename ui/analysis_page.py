@@ -107,11 +107,24 @@ def action(fn):
 with st.sidebar:
     st.subheader('대화')
     ids=[r[0] for r in conversations];titles=dict(conversations)
-    chosen=st.selectbox('저장된 대화',ids,index=ids.index(cid),format_func=lambda x:titles[x])
-    if chosen!=cid:
-        st.session_state.v1_conversation=chosen;st.rerun()
-    if st.button('새 대화'):
-        st.session_state.v1_conversation=str(uuid4());st.rerun()
+    def choose_conversation():
+        chosen=st.session_state.v1_conversation_selector
+        if chosen:
+            st.session_state.v1_conversation=chosen
+            st.session_state.v1_selector_conversation=chosen
+    def new_conversation():
+        new_id=str(uuid4())
+        st.session_state.v1_conversation=new_id
+        st.session_state.v1_conversation_selector=new_id
+        st.session_state.v1_selector_conversation=new_id
+    if st.session_state.get('v1_selector_conversation')!=cid or 'v1_conversation_selector' not in st.session_state:
+        # A changed default index does not reset a retained widget value.
+        # Synchronize before constructing the widget on this rerun.
+        st.session_state.v1_conversation_selector=cid
+        st.session_state.v1_selector_conversation=cid
+    st.selectbox('저장된 대화',ids,index=None,format_func=lambda x:titles[x],
+        key='v1_conversation_selector',on_change=choose_conversation)
+    st.button('새 대화',on_click=new_conversation)
     st.subheader('분석할 자료')
     table=st.text_input('MySQL 테이블' if data_backend=='mysql' else 'Databricks 테이블',
         placeholder='database.table' if data_backend=='mysql' else 'catalog.schema.table')
@@ -150,6 +163,7 @@ with st.sidebar:
         policy=runtime.inspect()['operational_policy']
         st.write('지원: 보유 데이터 재사용, 기본 집계, 명시적 필터, histogram/bar/line/scatter/단일 수치 boxplot')
         st.write('검증 중: 조인, 가설 검정, 고급 복합 시각화')
+        st.caption('새 분석 도구: 수치 2~6컬럼 상관 히트맵·산점도 행렬·분포 패널, 제한된 pandas/numpy 계산, CSV/Parquet/PNG와 출처 manifest 내보내기. Python은 표현식 전용이며 임의 코드 실행을 지원하지 않습니다.')
         st.caption(f"원격 결과 최대 {policy['max_remote_rows']:,}행 · 최대 {policy['max_dataset_columns']:,}열 · 대화별 저장공간 {policy['scope_disk_quota_bytes'] / 1024**3:.1f} GiB · 정리 후보 기준 {policy['retention_days']}일")
         st.caption(f"전체 산점도 전용: 정확한 고유 좌표 최대 {policy['max_scatter_coordinates']:,}개. 중복 빈도로 압축하며 표본으로 바꾸지 않습니다. 메모리·저장공간 한도도 적용합니다.")
 
@@ -188,7 +202,7 @@ for message in messages:
                     st.error(f'차트 이미지를 표시하지 못했습니다 (오류 ID: {error_id}). 생성된 차트의 저장 상태를 확인해야 합니다. 기존 데이터는 보존되어 있습니다.')
                     continue
                 shown_chart_ids.add(card_id)
-                st.caption(card.reason+' · '+card.scope)
+                st.caption((card.reason+' · '+card.scope).replace('*',r'\*'))
                 if st.button('이 차트 선택',key=f'chart-{message.id}-{card.id}'):
                     action(lambda:runtime.select_chart(card.id))
                     st.session_state.v1_selected=card.id;st.rerun()
@@ -256,6 +270,8 @@ if state['state']=='incomplete' and not state.get('uncertain_executions'):
     st.caption('다른 요청을 입력하면 중단된 요청을 종료하고 이어서 처리합니다. 기존 데이터와 결과는 유지됩니다.')
 if st.session_state.get('v1_notice'):st.info(display_analysis_text(st.session_state.v1_notice,runtime.datasets.metadata))
 from ui.analysis_diagnostics import render_diagnostics
+from ui.analysis_exports import render_exports
+render_exports(runtime)
 render_diagnostics(runtime)
 # A root-level chat_input enables Streamlit's whole-page bottom-following
 # scroll hook. During progress updates it can pull readers away from history.

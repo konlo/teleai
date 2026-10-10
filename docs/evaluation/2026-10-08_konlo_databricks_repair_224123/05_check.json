@@ -1,0 +1,40 @@
+{
+  "id": 5,
+  "prompt": "histogram을 그려줘",
+  "status": "exhausted",
+  "goal": {
+    "objective": "histogram",
+    "mode": "execute",
+    "source_reference": "previous_analysis",
+    "sources": [
+      "workspace.default.bank_loan"
+    ],
+    "columns": [
+      "education"
+    ],
+    "conditions": [],
+    "any_conditions": [],
+    "measure_conditions": [],
+    "ratio": null,
+    "current_result_only": false,
+    "fresh_source_required": false,
+    "question": "",
+    "tasks": [
+      {
+        "capability": "chart",
+        "options": {
+          "kind": "histogram",
+          "axes": {
+            "x": "education"
+          }
+        }
+      }
+    ]
+  },
+  "reason": "model_time_budget",
+  "run_id": "64b9b167703644419a4daf6e9b30661a",
+  "model_calls": 5,
+  "chart_metadata": [],
+  "verdict": "FAIL",
+  "error": "model_time_budget"
+}

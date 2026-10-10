@@ -490,6 +490,11 @@ def scope_matches(executed, requested, *, histogram_column=None, dialect='databr
     those remain separate runtime checks. Unsupported SQL predicates fail closed.
     """
     if requested.get('unresolved'): return False
+    implicit_chart_null=bool(histogram_column) and not any(
+        c.get('column')==histogram_column and (
+            c.get('op') in {'is_null','not_null'} or
+            (c.get('op') in {'eq','ne'} and c.get('value') is None))
+        for c in requested.get('conditions',[])+requested.get('any_conditions',[]))
     import sqlglot
     from sqlglot import exp
     from utils.analysis_provenance import single_table
@@ -497,6 +502,7 @@ def scope_matches(executed, requested, *, histogram_column=None, dialect='databr
     def literal(node):
         if isinstance(node, exp.Neg): return -literal(node.this)
         if isinstance(node, exp.Boolean): return node.this
+        if isinstance(node, exp.Null): return None
         if not isinstance(node, exp.Literal): raise ValueError('unsupported literal')
         if node.is_string: return node.this
         return float(node.this) if any(c in node.this.lower() for c in ('.','e')) else int(node.this)
@@ -516,8 +522,18 @@ def scope_matches(executed, requested, *, histogram_column=None, dialect='databr
             left,right=formula(node.this, joined),formula(node.expression, joined)
             if len(left)*len(right)>16: raise ValueError('boolean formula too large')
             return [a+b for a in left for b in right]
+        if isinstance(node,exp.Is) and isinstance(node.this,exp.Column) and isinstance(node.expression,exp.Null):
+            return [[Condition(column_name(node.this,joined),'eq',None)]]
+        if isinstance(node,exp.Not):
+            inner=node.this
+            if isinstance(inner,exp.Paren):inner=inner.this
+            if isinstance(inner,exp.Is) and isinstance(inner.this,exp.Column) and isinstance(inner.expression,exp.Null):
+                return [[Condition(column_name(inner.this,joined),'ne',None)]]
+            if isinstance(inner,exp.In) and isinstance(inner.this,exp.Column) and not inner.args.get('query'):
+                return [[Condition(column_name(inner.this,joined),'not_in',[literal(item) for item in inner.expressions])]]
         ops={exp.EQ:'eq',exp.NEQ:'ne',exp.GT:'gt',exp.GTE:'ge',exp.LT:'lt',exp.LTE:'le'}
         if type(node) in ops and isinstance(node.this,exp.Column):
+            if isinstance(node.expression,exp.Null):raise ValueError('NULL comparisons require IS NULL')
             return [[Condition(column_name(node.this, joined),ops[type(node)],literal(node.expression))]]
         if isinstance(node,exp.In) and isinstance(node.this,exp.Column) and not node.args.get('query'):
             return [[Condition(column_name(node.this, joined),'in',
@@ -595,7 +611,7 @@ def scope_matches(executed, requested, *, histogram_column=None, dialect='databr
             raise ValueError('unsupported query scope')
         joined = single_table(tree) is None
         edges, aliases = join_sources(tree) if joined else ([], set())
-        if histogram_column and tree.args.get('where'):
+        if implicit_chart_null and tree.args.get('where'):
             # Only a top-level AND leaf on the charted value may be omitted.
             # Never simplify OR, nested queries, or another column's null filter.
             def without_chart_null(node):
@@ -626,6 +642,8 @@ def scope_matches(executed, requested, *, histogram_column=None, dialect='databr
             condition_sets, join_edges=sql_conditions(executed, dialect)
         elif hasattr(executed, 'conditions'):
             stored=list(executed.conditions)
+            if implicit_chart_null:
+                stored=[c for c in stored if not (c.column==histogram_column and c.op=='ne' and c.value is None)]
             if executed.query:
                 parsed, join_edges=sql_conditions(
                     executed.query, 'duckdb' if executed.parent_id else 'databricks')
@@ -652,7 +670,7 @@ def scope_matches(executed, requested, *, histogram_column=None, dialect='databr
                 item = asdict(item) if isinstance(item, Condition) else dict(item)
                 condition = Condition(**item)
                 value = condition.value
-                if condition.op == 'in': value = sorted(value, key=repr)
+                if condition.op in {'in','not_in'}: value = sorted(value, key=repr)
                 result.add(json.dumps([condition.column, condition.op, value], sort_keys=True, ensure_ascii=False))
             return result
         common=list(requested.get('conditions', []))

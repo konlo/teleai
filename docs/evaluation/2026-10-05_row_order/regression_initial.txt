@@ -1,0 +1,158 @@
+.F.............................                             [100%]
+=================================== FAILURES ===================================
+_ RowPreviewTests.test_aggregate_is_not_raw_preview_remote_query_is_bounded_and_reused (dialect='mysql') _
+
+self = <test_row_preview.RowPreviewTests testMethod=test_aggregate_is_not_raw_preview_remote_query_is_bounded_and_reused>
+
+    def test_aggregate_is_not_raw_preview_remote_query_is_bounded_and_reused(self):
+        for dialect in ['mysql','databricks']:
+            with self.subTest(dialect=dialect),tempfile.TemporaryDirectory() as root:
+                source='lab.observations' if dialect=='mysql' else 'catalog.lab.observations'
+                calls=[]
+                def factory(store):
+                    def execute(envelope):
+                        calls.append(envelope['query'])
+                        expected='SELECT * FROM '+'.'.join('`'+p+'`' for p in source.split('.'))+' LIMIT 10'
+                        self.assertEqual(envelope['query'],expected)
+                        info=store.register(DATA.head(10),source=source,query=envelope['query'],
+                            coverage='sampled',predicate_known=False)
+                        return {'status':'ready','dataset':asdict(info)}
+                    return execute
+                r=GraphAnalysisRuntime(root,'owner','remote',NoInference(),sql_dialect=dialect,
+                    reference_context_loader=lambda:schema(source),connection_identity='fixture',remote_factory=factory)
+                try:
+                    agg=r.datasets.register(pd.DataFrame({'reading':[1],'__frequency':[20]}),source=source,
+                        grain='aggregate',coverage='complete',query=f'SELECT reading,COUNT(*) AS __frequency FROM {source} GROUP BY reading')
+                    r.select_dataset(agg.id)
+                    result=r.submit('데이타 10개 row만 추출해서 table로 보여줘')
+                    self.assertEqual(result['status'],'answered',result)
+                    proof=r.events()[-1].additional_kwargs['analysis_table_preview']
+                    self.assertEqual(proof['columns'],list(DATA.columns))
+                    self.assertEqual(proof['rows'],10)
+                    self.assertNotEqual(proof['dataset_id'],agg.id)
+                    self.assertEqual(len(calls),1)
+                    self.assertEqual(r.context.selected_dataset_id,agg.id)
+>                   self.assertEqual(r.submit('데이터 10행을 표로 보여줘')['status'],'answered')
+E                   AssertionError: 'incomplete' != 'answered'
+E                   - incomplete
+E                   + answered
+
+tests/test_row_preview.py:105: AssertionError
+_ RowPreviewTests.test_aggregate_is_not_raw_preview_remote_query_is_bounded_and_reused (dialect='databricks') _
+
+self = <test_row_preview.RowPreviewTests testMethod=test_aggregate_is_not_raw_preview_remote_query_is_bounded_and_reused>
+
+    def test_aggregate_is_not_raw_preview_remote_query_is_bounded_and_reused(self):
+        for dialect in ['mysql','databricks']:
+            with self.subTest(dialect=dialect),tempfile.TemporaryDirectory() as root:
+                source='lab.observations' if dialect=='mysql' else 'catalog.lab.observations'
+                calls=[]
+                def factory(store):
+                    def execute(envelope):
+                        calls.append(envelope['query'])
+                        expected='SELECT * FROM '+'.'.join('`'+p+'`' for p in source.split('.'))+' LIMIT 10'
+                        self.assertEqual(envelope['query'],expected)
+                        info=store.register(DATA.head(10),source=source,query=envelope['query'],
+                            coverage='sampled',predicate_known=False)
+                        return {'status':'ready','dataset':asdict(info)}
+                    return execute
+                r=GraphAnalysisRuntime(root,'owner','remote',NoInference(),sql_dialect=dialect,
+                    reference_context_loader=lambda:schema(source),connection_identity='fixture',remote_factory=factory)
+                try:
+                    agg=r.datasets.register(pd.DataFrame({'reading':[1],'__frequency':[20]}),source=source,
+                        grain='aggregate',coverage='complete',query=f'SELECT reading,COUNT(*) AS __frequency FROM {source} GROUP BY reading')
+                    r.select_dataset(agg.id)
+                    result=r.submit('데이타 10개 row만 추출해서 table로 보여줘')
+                    self.assertEqual(result['status'],'answered',result)
+                    proof=r.events()[-1].additional_kwargs['analysis_table_preview']
+                    self.assertEqual(proof['columns'],list(DATA.columns))
+                    self.assertEqual(proof['rows'],10)
+                    self.assertNotEqual(proof['dataset_id'],agg.id)
+                    self.assertEqual(len(calls),1)
+                    self.assertEqual(r.context.selected_dataset_id,agg.id)
+>                   self.assertEqual(r.submit('데이터 10행을 표로 보여줘')['status'],'answered')
+E                   AssertionError: 'incomplete' != 'answered'
+E                   - incomplete
+E                   + answered
+
+tests/test_row_preview.py:105: AssertionError
+______ RowPreviewTests.test_count_word_orders_and_inventory_are_distinct _______
+
+self = <test_row_preview.RowPreviewTests testMethod=test_count_word_orders_and_inventory_are_distinct>
+
+    def test_count_word_orders_and_inventory_are_distinct(self):
+        from core.analysis_agent.remote_completion import table_list_requested
+        for prompt in ['observations table row 10개 보여줘','observations table row10개 보여줘',
+                       'observations 테이블 행 10개 보여줘','observations records 10 show',
+                       'show 10 rows from observations','observations row를 10개만 보여줘',
+                       'observations table에서 레코드 10건 보여줘']:
+            with self.subTest(prompt=prompt):
+                self.assertEqual(requested(prompt),{'limit':10,'question':''})
+                self.assertFalse(table_list_requested(prompt))
+        for prompt in ['tables 목록 보여줘','테이블 10개 보여줘','어떤 table이 있어?']:
+            self.assertIsNone(requested(prompt))
+>           self.assertTrue(table_list_requested(prompt))
+E           AssertionError: False is not true
+
+tests/test_row_preview.py:40: AssertionError
+----------------------------- Captured stdout call -----------------------------
+uuuuuuu
+_ RowPreviewTests.test_local_bounded_prefix_preserves_data_selection_and_restarts (dialect='mysql') _
+
+self = <test_row_preview.RowPreviewTests testMethod=test_local_bounded_prefix_preserves_data_selection_and_restarts>
+
+    def test_local_bounded_prefix_preserves_data_selection_and_restarts(self):
+        for dialect in ['mysql','databricks']:
+            with self.subTest(dialect=dialect),tempfile.TemporaryDirectory() as root:
+                source='lab.observations' if dialect=='mysql' else 'catalog.lab.observations'
+                r=GraphAnalysisRuntime(root,'owner','local',NoInference(),sql_dialect=dialect,
+                    reference_context_loader=lambda:schema(source),summary_trigger_tokens=1)
+                try:
+                    raw=r.datasets.register(DATA,source=source,coverage='complete',predicate_known=True)
+                    agg=r.datasets.register(pd.DataFrame({'reading':[1],'__frequency':[20]}),source=source,
+                        grain='aggregate',coverage='complete',query=f'SELECT reading,COUNT(*) AS __frequency FROM {source} GROUP BY reading')
+                    r.select_dataset(agg.id)
+                    digest=stored_dataset_digest(r.datasets,raw.id)
+                    for prompt in ['데이타 10개 row만 추출해서 table로 보여줘','데이터 10행을 표로 보여줘','show 10 rows as a table',
+                                   'observations table row 10개 보여줘','observations table rows 10 보여줘']:
+                        result=r.submit(prompt)
+>                       self.assertEqual(result['status'],'answered',result)
+E                       AssertionError: 'incomplete' != 'answered'
+E                       - incomplete
+E                       + answered
+E                        : {'error_id': '501e16ee51fd', 'status': 'incomplete', 'error_type': 'AssertionError', 'error_category': None, 'text': '분석 중 오류가 발생했습니다 (AssertionError, 오류 ID: 501e16ee51fd). 기존 결과는 보존했습니다. 미완료 분석 재개로 다시 시도할 수 있습니다.', 'elapsed_seconds': 0.008}
+
+tests/test_row_preview.py:64: AssertionError
+_ RowPreviewTests.test_local_bounded_prefix_preserves_data_selection_and_restarts (dialect='databricks') _
+
+self = <test_row_preview.RowPreviewTests testMethod=test_local_bounded_prefix_preserves_data_selection_and_restarts>
+
+    def test_local_bounded_prefix_preserves_data_selection_and_restarts(self):
+        for dialect in ['mysql','databricks']:
+            with self.subTest(dialect=dialect),tempfile.TemporaryDirectory() as root:
+                source='lab.observations' if dialect=='mysql' else 'catalog.lab.observations'
+                r=GraphAnalysisRuntime(root,'owner','local',NoInference(),sql_dialect=dialect,
+                    reference_context_loader=lambda:schema(source),summary_trigger_tokens=1)
+                try:
+                    raw=r.datasets.register(DATA,source=source,coverage='complete',predicate_known=True)
+                    agg=r.datasets.register(pd.DataFrame({'reading':[1],'__frequency':[20]}),source=source,
+                        grain='aggregate',coverage='complete',query=f'SELECT reading,COUNT(*) AS __frequency FROM {source} GROUP BY reading')
+                    r.select_dataset(agg.id)
+                    digest=stored_dataset_digest(r.datasets,raw.id)
+                    for prompt in ['데이타 10개 row만 추출해서 table로 보여줘','데이터 10행을 표로 보여줘','show 10 rows as a table',
+                                   'observations table row 10개 보여줘','observations table rows 10 보여줘']:
+                        result=r.submit(prompt)
+>                       self.assertEqual(result['status'],'answered',result)
+E                       AssertionError: 'incomplete' != 'answered'
+E                       - incomplete
+E                       + answered
+E                        : {'error_id': '13ee3cbaa71f', 'status': 'incomplete', 'error_type': 'AssertionError', 'error_category': None, 'text': '분석 중 오류가 발생했습니다 (AssertionError, 오류 ID: 13ee3cbaa71f). 기존 결과는 보존했습니다. 미완료 분석 재개로 다시 시도할 수 있습니다.', 'elapsed_seconds': 0.008}
+
+tests/test_row_preview.py:64: AssertionError
+=========================== short test summary info ============================
+SUBFAILED(dialect='mysql') tests/test_row_preview.py::RowPreviewTests::test_aggregate_is_not_raw_preview_remote_query_is_bounded_and_reused
+SUBFAILED(dialect='databricks') tests/test_row_preview.py::RowPreviewTests::test_aggregate_is_not_raw_preview_remote_query_is_bounded_and_reused
+FAILED tests/test_row_preview.py::RowPreviewTests::test_count_word_orders_and_inventory_are_distinct
+SUBFAILED(dialect='mysql') tests/test_row_preview.py::RowPreviewTests::test_local_bounded_prefix_preserves_data_selection_and_restarts
+SUBFAILED(dialect='databricks') tests/test_row_preview.py::RowPreviewTests::test_local_bounded_prefix_preserves_data_selection_and_restarts
+5 failed, 30 passed, 9 subtests passed in 4.14s

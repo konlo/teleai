@@ -1,0 +1,38 @@
+[
+  {
+    "supplied_code": "result = df.copy()",
+    "model_type": "scripted fault injection, not real LLM",
+    "runtime_status": "answered",
+    "completion_status": "complete",
+    "output_columns": [
+      "reading"
+    ],
+    "rows": 4,
+    "independent_expected_rolling_means": [
+      1.5,
+      2.5,
+      3.5
+    ],
+    "requested_result_correct": false,
+    "original_preserved": true,
+    "false_completion": true
+  },
+  {
+    "supplied_code": "result = pd.DataFrame({'rolling_mean': df['reading'].rolling(2).mean()})",
+    "model_type": "scripted fault injection, not real LLM",
+    "runtime_status": "answered",
+    "completion_status": "complete",
+    "output_columns": [
+      "rolling_mean"
+    ],
+    "rows": 4,
+    "independent_expected_rolling_means": [
+      1.5,
+      2.5,
+      3.5
+    ],
+    "requested_result_correct": true,
+    "original_preserved": true,
+    "false_completion": false
+  }
+]

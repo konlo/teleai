@@ -1,0 +1,78 @@
+{
+  "id": 3,
+  "prompt": "age 의 histogram 그려줘",
+  "status": "complete",
+  "goal": {
+    "objective": "age 의 histogram 그려줘",
+    "mode": "execute",
+    "source_reference": "explicit",
+    "sources": [
+      "teleai_default.bank_loan"
+    ],
+    "columns": [
+      "age"
+    ],
+    "conditions": [],
+    "any_conditions": [],
+    "measure_conditions": [],
+    "ratio": null,
+    "current_result_only": false,
+    "fresh_source_required": false,
+    "question": "",
+    "tasks": [
+      {
+        "capability": "chart",
+        "options": {
+          "kind": "histogram",
+          "axes": {
+            "x": "age"
+          }
+        }
+      }
+    ]
+  },
+  "reason": null,
+  "run_id": "9499e3991d974c9d94341877a4bd05db",
+  "model_calls": 3,
+  "chart_metadata": [
+    {
+      "id": "0fe4b004-895c-47c7-bd1d-673a4dd6a8e6",
+      "dataset_id": "e8ace4a0-2920-4444-b7fd-a4eb745b5a81",
+      "title": "age 분포",
+      "reason": "값별 빈도를 가중치로 사용했습니다. 원본 행을 펼치거나 표본을 만들지 않았습니다.",
+      "kind": "histogram",
+      "columns": [
+        "age"
+      ],
+      "scope": "빈도 합계 750,000 · complete · SELECT `age`, COUNT(*) AS `__frequency` FROM `teleai_default`.`bank_loan` WHERE `age` IS NOT NULL GROUP BY `age`",
+      "render_spec": {
+        "aggregation": "count",
+        "bins": 8,
+        "bin_counts": [
+          41846.0,
+          294174.0,
+          194626.0,
+          156552.0,
+          55423.0,
+          5273.0,
+          1968.0,
+          138.0
+        ],
+        "bin_edges": [
+          18.0,
+          27.625,
+          37.25,
+          46.875,
+          56.5,
+          66.125,
+          75.75,
+          85.375,
+          95.0
+        ],
+        "total_count": 750000,
+        "null_policy": "exclude"
+      }
+    }
+  ],
+  "verdict": "PASS"
+}

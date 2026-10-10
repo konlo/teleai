@@ -1,0 +1,405 @@
+{
+  "generated_at": "2026-10-09T14:15:15.384076+00:00",
+  "provider": "ollama",
+  "mode": "real-model synthetic journeys; deterministic rescue disabled",
+  "limitations": [
+    "Some cases inject a first faulty call; subsequent decisions use the live model.",
+    "No real remote SQL executor is connected; this does not validate loading.",
+    "Initial harness transport timeout 45s differs from product 60s; overlapping regression load also present. Failures remain recorded, next six cases not graded in this run."
+  ],
+  "results": [
+    {
+      "id": "repeated_discovery",
+      "status": "FAIL",
+      "intent_mode": "llm",
+      "fault_phase": "execution_planner_only",
+      "injected_first_call": true,
+      "live_calls": 1,
+      "turns": [
+        {
+          "prompt": "reading 평균을 알려줘.",
+          "status": "FAIL",
+          "agent_status": "incomplete",
+          "final_output": "분석 중 오류가 발생했습니다 (ReadTimeout, 오류 ID: bec1e3a70823). 기존 결과는 보존했습니다. 미완료 분석 재개로 다시 시도할 수 있습니다.",
+          "expected": 9.0,
+          "actual": null,
+          "model_calls": 9,
+          "search_used": false,
+          "tools": [
+            "list_analysis_context",
+            "list_analysis_context"
+          ],
+          "chart_count": 0,
+          "raw_unchanged": true,
+          "approval_requests": 0,
+          "remote_executions": 0,
+          "stop_reason": null,
+          "elapsed_seconds": 97.186,
+          "repair_events": [
+            {
+              "time": "2026-10-09T14:11:35.734719+00:00",
+              "event": "tool_progress_stalled",
+              "run_id": "0cf6ed746da348a9bf7be3127b3fadb8",
+              "instance_id": "b843c6ffbd5e",
+              "pid": 73204,
+              "request_id": "b1694173dfe04656a6c421b8ec4527ff",
+              "observation_ids": [
+                "8c0797c61f3a31ab8d75a8e34a37cb7d5dcfd5561aae8bc1bb98eab56ced524b"
+              ],
+              "missing": [
+                "statistics"
+              ]
+            },
+            {
+              "time": "2026-10-09T14:11:35.742013+00:00",
+              "event": "tool_progress_duplicate_blocked",
+              "run_id": "0cf6ed746da348a9bf7be3127b3fadb8",
+              "instance_id": "b843c6ffbd5e",
+              "pid": 73204,
+              "request_id": "b1694173dfe04656a6c421b8ec4527ff",
+              "observation_ids": [
+                "8c0797c61f3a31ab8d75a8e34a37cb7d5dcfd5561aae8bc1bb98eab56ced524b"
+              ],
+              "missing": [
+                "statistics"
+              ]
+            }
+          ],
+          "goal": {
+            "objective": "requested work",
+            "mode": "execute",
+            "source_reference": "selected_dataset",
+            "sources": [
+              "unfamiliar.observations"
+            ],
+            "columns": [
+              "reading"
+            ],
+            "conditions": [],
+            "any_conditions": [],
+            "measure_conditions": [],
+            "ratio": null,
+            "current_result_only": false,
+            "fresh_source_required": false,
+            "question": "",
+            "tasks": [
+              {
+                "capability": "statistics",
+                "options": {
+                  "test": "mean_ci"
+                }
+              }
+            ]
+          },
+          "intent_events": [
+            {
+              "time": "2026-10-09T14:10:43.618292+00:00",
+              "event": "goal_interpretation_started",
+              "run_id": "0cf6ed746da348a9bf7be3127b3fadb8",
+              "instance_id": "b843c6ffbd5e",
+              "pid": 73204,
+              "request_id": "b1694173dfe04656a6c421b8ec4527ff",
+              "origin": "llm",
+              "goal_version": 1
+            },
+            {
+              "time": "2026-10-09T14:10:46.032632+00:00",
+              "event": "goal_literal_subjects_read",
+              "run_id": "0cf6ed746da348a9bf7be3127b3fadb8",
+              "instance_id": "b843c6ffbd5e",
+              "pid": 73204,
+              "request_id": "b1694173dfe04656a6c421b8ec4527ff",
+              "candidate_count": 1,
+              "table_count": 0
+            },
+            {
+              "time": "2026-10-09T14:10:54.181931+00:00",
+              "event": "goal_tasks_selected",
+              "run_id": "0cf6ed746da348a9bf7be3127b3fadb8",
+              "instance_id": "b843c6ffbd5e",
+              "pid": 73204,
+              "request_id": "b1694173dfe04656a6c421b8ec4527ff",
+              "mode": "explain",
+              "capabilities": [],
+              "chart_kind": "",
+              "metadata_kind": "",
+              "source_reference": "selected_dataset",
+              "current_result_only": false
+            },
+            {
+              "time": "2026-10-09T14:11:13.376864+00:00",
+              "event": "goal_obligations_coalesced",
+              "run_id": "0cf6ed746da348a9bf7be3127b3fadb8",
+              "instance_id": "b843c6ffbd5e",
+              "pid": 73204,
+              "request_id": "b1694173dfe04656a6c421b8ec4527ff",
+              "contract": "declared_output_fields"
+            },
+            {
+              "time": "2026-10-09T14:11:13.377537+00:00",
+              "event": "goal_structure_rejected",
+              "run_id": "0cf6ed746da348a9bf7be3127b3fadb8",
+              "instance_id": "b843c6ffbd5e",
+              "pid": 73204,
+              "request_id": "b1694173dfe04656a6c421b8ec4527ff",
+              "attempt": 1,
+              "error_type": "ValueError"
+            },
+            {
+              "time": "2026-10-09T14:11:13.377576+00:00",
+              "event": "goal_contract_error",
+              "run_id": "0cf6ed746da348a9bf7be3127b3fadb8",
+              "instance_id": "b843c6ffbd5e",
+              "pid": 73204,
+              "request_id": "b1694173dfe04656a6c421b8ec4527ff",
+              "error_code": "goal_schema_invalid",
+              "detail": "statistical columns required"
+            },
+            {
+              "time": "2026-10-09T14:11:21.040972+00:00",
+              "event": "goal_semantic_review_started",
+              "run_id": "0cf6ed746da348a9bf7be3127b3fadb8",
+              "instance_id": "b843c6ffbd5e",
+              "pid": 73204,
+              "request_id": "b1694173dfe04656a6c421b8ec4527ff"
+            },
+            {
+              "time": "2026-10-09T14:11:28.921636+00:00",
+              "event": "goal_obligations_coalesced",
+              "run_id": "0cf6ed746da348a9bf7be3127b3fadb8",
+              "instance_id": "b843c6ffbd5e",
+              "pid": 73204,
+              "request_id": "b1694173dfe04656a6c421b8ec4527ff",
+              "contract": "declared_output_fields"
+            },
+            {
+              "time": "2026-10-09T14:11:35.693789+00:00",
+              "event": "goal_population_audited",
+              "run_id": "0cf6ed746da348a9bf7be3127b3fadb8",
+              "instance_id": "b843c6ffbd5e",
+              "pid": 73204,
+              "request_id": "b1694173dfe04656a6c421b8ec4527ff",
+              "changed": false,
+              "condition_count": 0,
+              "alternative_count": 0
+            },
+            {
+              "time": "2026-10-09T14:11:35.694757+00:00",
+              "event": "goal_interpretation_completed",
+              "run_id": "0cf6ed746da348a9bf7be3127b3fadb8",
+              "instance_id": "b843c6ffbd5e",
+              "pid": 73204,
+              "request_id": "b1694173dfe04656a6c421b8ec4527ff",
+              "origin": "llm",
+              "mode": "execute",
+              "capabilities": [
+                "statistics"
+              ],
+              "attempts": 3,
+              "goal_version": 1
+            }
+          ],
+          "injected_calls": 3,
+          "phase_order": [
+            "goal_interpretation_completed",
+            "tool_started",
+            "tool_started"
+          ],
+          "executed_tools": [
+            "list_analysis_context",
+            "list_analysis_context"
+          ],
+          "model_recovery": {
+            "failures": 1,
+            "failed_seconds": 45.0043957499729,
+            "retries": 0,
+            "next_allowed_at": 1791555140.753181,
+            "aux_calls": 6,
+            "aux_seconds": 52.05364399999962
+          },
+          "model_failure_events": [
+            {
+              "time": "2026-10-09T14:12:20.754070+00:00",
+              "event": "model_inference_failed",
+              "run_id": "0cf6ed746da348a9bf7be3127b3fadb8",
+              "instance_id": "b843c6ffbd5e",
+              "pid": 73204,
+              "request_id": "b1694173dfe04656a6c421b8ec4527ff",
+              "error_type": "ReadTimeout",
+              "http_status": null,
+              "error_category": null,
+              "retry_scheduled": false,
+              "retry_delay_seconds": null
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "discover_mean",
+      "status": "FAIL",
+      "intent_mode": "llm",
+      "fault_phase": "execution_planner_only",
+      "injected_first_call": false,
+      "live_calls": 3,
+      "turns": [
+        {
+          "prompt": "로컬 평균 집계 도구의 입력 규칙을 검색해서 확인한 뒤 reading 평균을 계산해줘.",
+          "status": "FAIL",
+          "agent_status": "incomplete",
+          "final_output": "분석 중 오류가 발생했습니다 (ReadTimeout, 오류 ID: 2fbaa3a20c99). 기존 결과는 보존했습니다. 미완료 분석 재개로 다시 시도할 수 있습니다.",
+          "expected": 9.0,
+          "actual": null,
+          "model_calls": 6,
+          "search_used": true,
+          "tools": [
+            "search_analysis_tools",
+            "aggregate_dataset"
+          ],
+          "chart_count": 0,
+          "raw_unchanged": true,
+          "approval_requests": 0,
+          "remote_executions": 0,
+          "stop_reason": null,
+          "elapsed_seconds": 174.536,
+          "repair_events": [],
+          "goal": {
+            "objective": "requested work",
+            "mode": "execute",
+            "source_reference": "selected_dataset",
+            "sources": [
+              "unfamiliar.observations"
+            ],
+            "columns": [],
+            "conditions": [],
+            "any_conditions": [],
+            "measure_conditions": [],
+            "ratio": null,
+            "current_result_only": false,
+            "fresh_source_required": false,
+            "question": "",
+            "tasks": [
+              {
+                "capability": "metadata",
+                "options": {
+                  "kind": "columns"
+                }
+              }
+            ]
+          },
+          "intent_events": [
+            {
+              "time": "2026-10-09T14:12:20.847044+00:00",
+              "event": "goal_interpretation_started",
+              "run_id": "3ce099bdd1df474baf832893d3f14b34",
+              "instance_id": "adfc98072945",
+              "pid": 73204,
+              "request_id": "8cc712eb798b42d99bb7f914e71a54dd",
+              "origin": "llm",
+              "goal_version": 1
+            },
+            {
+              "time": "2026-10-09T14:12:26.959595+00:00",
+              "event": "goal_literal_subjects_read",
+              "run_id": "3ce099bdd1df474baf832893d3f14b34",
+              "instance_id": "adfc98072945",
+              "pid": 73204,
+              "request_id": "8cc712eb798b42d99bb7f914e71a54dd",
+              "candidate_count": 1,
+              "table_count": 0
+            },
+            {
+              "time": "2026-10-09T14:12:36.923152+00:00",
+              "event": "goal_tasks_selected",
+              "run_id": "3ce099bdd1df474baf832893d3f14b34",
+              "instance_id": "adfc98072945",
+              "pid": 73204,
+              "request_id": "8cc712eb798b42d99bb7f914e71a54dd",
+              "mode": "explain",
+              "capabilities": [],
+              "chart_kind": "",
+              "metadata_kind": "",
+              "source_reference": "selected_dataset",
+              "current_result_only": false
+            },
+            {
+              "time": "2026-10-09T14:13:02.106341+00:00",
+              "event": "goal_obligations_coalesced",
+              "run_id": "3ce099bdd1df474baf832893d3f14b34",
+              "instance_id": "adfc98072945",
+              "pid": 73204,
+              "request_id": "8cc712eb798b42d99bb7f914e71a54dd",
+              "contract": "declared_output_fields"
+            },
+            {
+              "time": "2026-10-09T14:13:02.109292+00:00",
+              "event": "goal_semantic_review_started",
+              "run_id": "3ce099bdd1df474baf832893d3f14b34",
+              "instance_id": "adfc98072945",
+              "pid": 73204,
+              "request_id": "8cc712eb798b42d99bb7f914e71a54dd"
+            },
+            {
+              "time": "2026-10-09T14:13:10.733513+00:00",
+              "event": "goal_obligations_coalesced",
+              "run_id": "3ce099bdd1df474baf832893d3f14b34",
+              "instance_id": "adfc98072945",
+              "pid": 73204,
+              "request_id": "8cc712eb798b42d99bb7f914e71a54dd",
+              "contract": "declared_output_fields"
+            },
+            {
+              "time": "2026-10-09T14:13:10.735211+00:00",
+              "event": "goal_interpretation_completed",
+              "run_id": "3ce099bdd1df474baf832893d3f14b34",
+              "instance_id": "adfc98072945",
+              "pid": 73204,
+              "request_id": "8cc712eb798b42d99bb7f914e71a54dd",
+              "origin": "llm",
+              "mode": "execute",
+              "capabilities": [
+                "metadata"
+              ],
+              "attempts": 2,
+              "goal_version": 1
+            }
+          ],
+          "injected_calls": 0,
+          "phase_order": [
+            "goal_interpretation_completed",
+            "tool_started",
+            "tool_started"
+          ],
+          "executed_tools": [
+            "search_analysis_tools",
+            "aggregate_dataset"
+          ],
+          "model_recovery": {
+            "failures": 1,
+            "failed_seconds": 45.00630758301122,
+            "retries": 0,
+            "next_allowed_at": 1791555315.350933,
+            "aux_calls": 4,
+            "aux_seconds": 49.85194812598638
+          },
+          "model_failure_events": [
+            {
+              "time": "2026-10-09T14:15:15.353035+00:00",
+              "event": "model_inference_failed",
+              "run_id": "3ce099bdd1df474baf832893d3f14b34",
+              "instance_id": "adfc98072945",
+              "pid": 73204,
+              "request_id": "8cc712eb798b42d99bb7f914e71a54dd",
+              "error_type": "ReadTimeout",
+              "http_status": null,
+              "error_category": null,
+              "retry_scheduled": false,
+              "retry_delay_seconds": null
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "run_status": "STOPPED_AFTER_TWO_COMPLETED_FAILURES"
+}

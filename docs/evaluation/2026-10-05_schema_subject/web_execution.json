@@ -1,0 +1,293 @@
+{
+  "runs": [
+    {
+      "time": "2026-10-05T09:57:34.173056+00:00",
+      "event": "run_started",
+      "run_id": "681ad54707bf4044875379975b451d11",
+      "instance_id": "f1e2a6ce2278",
+      "pid": 11976,
+      "runtime": {
+        "revision_at_first_runtime": "febd34ae5cbbfbcc7023ea8e0412b84572cd7763",
+        "packages": {
+          "langchain": "1.4.0",
+          "langchain-core": "1.6.2",
+          "langgraph": "1.2.11",
+          "streamlit": "1.63.0",
+          "sqlglot": "30.18.0"
+        },
+        "python_version": "3.11.13",
+        "identity_captured_at": "2026-10-05T09:57:22.025569+00:00",
+        "route": "langgraph-v1",
+        "model_class": "ChatOllama",
+        "require_remote_approval": false,
+        "loaded_delivery_guard": "0b31d473d77d2dc4",
+        "data_backend": "mysql"
+      },
+      "operation": "submit",
+      "process_peak_rss_bytes": 399851520
+    },
+    {
+      "time": "2026-10-05T09:57:34.665532+00:00",
+      "event": "tool_started",
+      "run_id": "681ad54707bf4044875379975b451d11",
+      "instance_id": "f1e2a6ce2278",
+      "pid": 11976,
+      "tool": "inspect_table_context"
+    },
+    {
+      "time": "2026-10-05T09:57:34.673328+00:00",
+      "event": "tool_completed",
+      "run_id": "681ad54707bf4044875379975b451d11",
+      "instance_id": "f1e2a6ce2278",
+      "pid": 11976,
+      "tool": "inspect_table_context",
+      "status": "ready",
+      "error_code": null,
+      "elapsed_seconds": 0.008,
+      "applied_corrections": []
+    },
+    {
+      "time": "2026-10-05T09:57:34.681339+00:00",
+      "event": "schema_subject_confirmed",
+      "run_id": "681ad54707bf4044875379975b451d11",
+      "instance_id": "f1e2a6ce2278",
+      "pid": 11976,
+      "request_id": "6c65aefa-cf36-47e4-9139-a759cd0efd8d",
+      "table": "teleai_default.alibaba_ssd",
+      "authority": "approved_select_star_result"
+    },
+    {
+      "time": "2026-10-05T09:57:34.682111+00:00",
+      "event": "completion_checked",
+      "run_id": "681ad54707bf4044875379975b451d11",
+      "instance_id": "f1e2a6ce2278",
+      "pid": 11976,
+      "request_id": "6c65aefa-cf36-47e4-9139-a759cd0efd8d",
+      "status": "complete",
+      "reason": null,
+      "attempts": 0,
+      "required_capabilities": [
+        "metadata"
+      ],
+      "missing_capabilities": [],
+      "model_calls": 0,
+      "tool_calls": 1,
+      "model_seconds": 0.0,
+      "dataset_ids": [],
+      "artifact_ids": []
+    },
+    {
+      "time": "2026-10-05T09:57:34.685075+00:00",
+      "event": "run_completed",
+      "run_id": "681ad54707bf4044875379975b451d11",
+      "instance_id": "f1e2a6ce2278",
+      "pid": 11976,
+      "status": "answered",
+      "elapsed_seconds": 0.522,
+      "process_peak_rss_bytes": 401752064,
+      "frame_cache_bytes": 0
+    },
+    {
+      "time": "2026-10-05T09:58:16.892180+00:00",
+      "event": "run_started",
+      "run_id": "4eb6d9e287894365b106f3ec93727a96",
+      "instance_id": "f1e2a6ce2278",
+      "pid": 11976,
+      "runtime": {
+        "revision_at_first_runtime": "febd34ae5cbbfbcc7023ea8e0412b84572cd7763",
+        "packages": {
+          "langchain": "1.4.0",
+          "langchain-core": "1.6.2",
+          "langgraph": "1.2.11",
+          "streamlit": "1.63.0",
+          "sqlglot": "30.18.0"
+        },
+        "python_version": "3.11.13",
+        "identity_captured_at": "2026-10-05T09:57:22.025569+00:00",
+        "route": "langgraph-v1",
+        "model_class": "ChatOllama",
+        "require_remote_approval": false,
+        "loaded_delivery_guard": "0b31d473d77d2dc4",
+        "data_backend": "mysql"
+      },
+      "operation": "submit",
+      "process_peak_rss_bytes": 406388736
+    },
+    {
+      "time": "2026-10-05T09:58:17.401862+00:00",
+      "event": "tool_started",
+      "run_id": "4eb6d9e287894365b106f3ec93727a96",
+      "instance_id": "f1e2a6ce2278",
+      "pid": 11976,
+      "tool": "inspect_table_context"
+    },
+    {
+      "time": "2026-10-05T09:58:17.410184+00:00",
+      "event": "tool_completed",
+      "run_id": "4eb6d9e287894365b106f3ec93727a96",
+      "instance_id": "f1e2a6ce2278",
+      "pid": 11976,
+      "tool": "inspect_table_context",
+      "status": "ready",
+      "error_code": null,
+      "elapsed_seconds": 0.008,
+      "applied_corrections": []
+    },
+    {
+      "time": "2026-10-05T09:58:17.417766+00:00",
+      "event": "schema_subject_confirmed",
+      "run_id": "4eb6d9e287894365b106f3ec93727a96",
+      "instance_id": "f1e2a6ce2278",
+      "pid": 11976,
+      "request_id": "69dc5278-a7ca-4026-a81f-90957ed14d04",
+      "table": "teleai_default.alibaba_ssd",
+      "authority": "approved_select_star_result"
+    },
+    {
+      "time": "2026-10-05T09:58:17.418605+00:00",
+      "event": "completion_checked",
+      "run_id": "4eb6d9e287894365b106f3ec93727a96",
+      "instance_id": "f1e2a6ce2278",
+      "pid": 11976,
+      "request_id": "69dc5278-a7ca-4026-a81f-90957ed14d04",
+      "status": "complete",
+      "reason": null,
+      "attempts": 0,
+      "required_capabilities": [
+        "metadata"
+      ],
+      "missing_capabilities": [],
+      "model_calls": 0,
+      "tool_calls": 1,
+      "model_seconds": 0.0,
+      "dataset_ids": [],
+      "artifact_ids": []
+    },
+    {
+      "time": "2026-10-05T09:58:17.421564+00:00",
+      "event": "run_completed",
+      "run_id": "4eb6d9e287894365b106f3ec93727a96",
+      "instance_id": "f1e2a6ce2278",
+      "pid": 11976,
+      "status": "answered",
+      "elapsed_seconds": 0.538,
+      "process_peak_rss_bytes": 406716416,
+      "frame_cache_bytes": 0
+    },
+    {
+      "time": "2026-10-05T10:00:19.421434+00:00",
+      "event": "run_started",
+      "run_id": "9999bc1c5a7b4ff7946dd0e62891571d",
+      "instance_id": "886bc6907bb0",
+      "pid": 12094,
+      "runtime": {
+        "revision_at_first_runtime": "febd34ae5cbbfbcc7023ea8e0412b84572cd7763",
+        "packages": {
+          "langchain": "1.4.0",
+          "langchain-core": "1.6.2",
+          "langgraph": "1.2.11",
+          "streamlit": "1.63.0",
+          "sqlglot": "30.18.0"
+        },
+        "python_version": "3.11.13",
+        "identity_captured_at": "2026-10-05T10:00:18.274154+00:00",
+        "route": "langgraph-v1",
+        "model_class": "ChatOllama",
+        "require_remote_approval": false,
+        "loaded_delivery_guard": "0b31d473d77d2dc4",
+        "data_backend": "mysql"
+      },
+      "operation": "submit",
+      "process_peak_rss_bytes": 387710976
+    },
+    {
+      "time": "2026-10-05T10:00:19.908858+00:00",
+      "event": "tool_started",
+      "run_id": "9999bc1c5a7b4ff7946dd0e62891571d",
+      "instance_id": "886bc6907bb0",
+      "pid": 12094,
+      "tool": "inspect_table_context"
+    },
+    {
+      "time": "2026-10-05T10:00:19.915710+00:00",
+      "event": "tool_completed",
+      "run_id": "9999bc1c5a7b4ff7946dd0e62891571d",
+      "instance_id": "886bc6907bb0",
+      "pid": 12094,
+      "tool": "inspect_table_context",
+      "status": "ready",
+      "error_code": null,
+      "elapsed_seconds": 0.007,
+      "applied_corrections": []
+    },
+    {
+      "time": "2026-10-05T10:00:19.922385+00:00",
+      "event": "schema_subject_confirmed",
+      "run_id": "9999bc1c5a7b4ff7946dd0e62891571d",
+      "instance_id": "886bc6907bb0",
+      "pid": 12094,
+      "request_id": "cb3ecca3-b83b-4f31-801f-dddad6c8428b",
+      "table": "teleai_default.alibaba_ssd",
+      "authority": "approved_select_star_result"
+    },
+    {
+      "time": "2026-10-05T10:00:19.923362+00:00",
+      "event": "completion_checked",
+      "run_id": "9999bc1c5a7b4ff7946dd0e62891571d",
+      "instance_id": "886bc6907bb0",
+      "pid": 12094,
+      "request_id": "cb3ecca3-b83b-4f31-801f-dddad6c8428b",
+      "status": "complete",
+      "reason": null,
+      "attempts": 0,
+      "required_capabilities": [
+        "metadata"
+      ],
+      "missing_capabilities": [],
+      "model_calls": 0,
+      "tool_calls": 1,
+      "model_seconds": 0.0,
+      "dataset_ids": [],
+      "artifact_ids": []
+    },
+    {
+      "time": "2026-10-05T10:00:19.926520+00:00",
+      "event": "run_completed",
+      "run_id": "9999bc1c5a7b4ff7946dd0e62891571d",
+      "instance_id": "886bc6907bb0",
+      "pid": 12094,
+      "status": "answered",
+      "elapsed_seconds": 0.512,
+      "process_peak_rss_bytes": 389709824,
+      "frame_cache_bytes": 0
+    }
+  ],
+  "final_state": {
+    "status": "complete",
+    "required_sources": [
+      "teleai_default.alibaba_ssd"
+    ],
+    "scope": {
+      "conditions": [],
+      "any_conditions": [],
+      "sources": [
+        "teleai_default.alibaba_ssd"
+      ],
+      "join_edges": [],
+      "measure_conditions": [],
+      "ratio": null,
+      "unresolved": [],
+      "columns": []
+    },
+    "metadata_kind": "dtypes",
+    "schema_subject": {
+      "table": "teleai_default.alibaba_ssd",
+      "authority": "approved_select_star_result",
+      "schema_fingerprint": "ea09886ebfbce6f94ba19b9489248388c3a8fb5c05c669652173307c0d7f2e53",
+      "selection_at_observation": "cac7c3b3-165f-4c3f-9965-9278fad98bf5"
+    },
+    "model_calls": 0
+  },
+  "type_authority": "current_database_metadata",
+  "schema_columns": 107
+}

@@ -99,12 +99,13 @@ class CompletionTests(unittest.TestCase):
             model = ScriptModel(calls=[{'name': 'inspect_dataset', 'args': {'dataset_id': 'missing'}}], repeat=True)
             r = GraphAnalysisRuntime(root, 'owner', 'bad-loop', model,intent_mode='contract_fixture')
             result = r.submit('histogram')
-            self.assertEqual(result['status'], 'exhausted', result)
-            self.assertEqual(r.inspect()['recovery']['stop_reason'], 'repeated_failed_tool')
-            # One failure executes; the duplicate is blocked and receives one
-            # bounded opportunity to choose a different plan before stopping.
-            self.assertEqual(model.position, 3)
-            self.assertEqual(sum(m.name=='inspect_dataset' for m in r.events() if isinstance(m,ToolMessage)),1)
+            self.assertEqual(result['status'], 'blocked', result)
+            self.assertEqual(r.inspect()['recovery']['stop_reason'], 'proposal_validation_failed')
+            self.assertEqual(r.inspect()['recovery']['proposal_error'], 'unknown_dataset_id')
+            # Invalid handles are rejected before execution. The duplicate
+            # proposal stops after one bounded repair opportunity.
+            self.assertEqual(model.position, 2)
+            self.assertEqual(sum(m.name=='inspect_dataset' for m in r.events() if isinstance(m,ToolMessage)),0)
             self.assertEqual(r.inspect()['state'], 'idle')
             r.close()
 
@@ -324,7 +325,7 @@ class CompletionTests(unittest.TestCase):
             ]}]
             cases = [
                 (f'{SOURCE} 테이블의 각 컬럼별 데이터 타입(dtype)을 표로 보여줘',
-                 ['metric_alpha: int64', 'metric_beta: float64', 'label_gamma: object', 'flag_delta: bool']),
+                 ['| metric_alpha | int64 |', '| metric_beta | float64 |', '| label_gamma | object |', '| flag_delta | bool |']),
                 (f'{SOURCE} 테이블에서 수치형(numeric) 컬럼 목록을 보여줘',
                  ['metric_alpha', 'metric_beta']),
                 (f'{SOURCE} 테이블에서 문자열/범주형(categorical) 컬럼 목록을 보여줘',

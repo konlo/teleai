@@ -1,0 +1,692 @@
+{
+  "generated_at": "2026-10-09T15:17:29.927898+00:00",
+  "provider": "ollama",
+  "policy": {
+    "require_remote_approval": false,
+    "max_remote_rows": 100000,
+    "max_scatter_coordinates": 250000,
+    "max_dataset_columns": 256,
+    "max_dataset_bytes": 536870912,
+    "max_full_read_bytes": 134217728,
+    "max_join_rows": 100000,
+    "max_join_expansion_ratio": 5.0,
+    "frame_cache_bytes": 67108864,
+    "scope_disk_quota_bytes": 2147483648,
+    "retention_days": 30,
+    "model_timeout_seconds": 60.0,
+    "turn_slo_seconds": 180.0
+  },
+  "mode": "real-model synthetic journeys; deterministic rescue disabled",
+  "limitations": [
+    "Some cases inject a first faulty call; subsequent decisions use the live model.",
+    "No real remote SQL executor is connected; this does not validate loading."
+  ],
+  "results": [
+    {
+      "id": "compound",
+      "status": "FAIL",
+      "intent_mode": "llm",
+      "fault_phase": "execution_planner_only",
+      "injected_first_call": false,
+      "live_calls": 0,
+      "turns": [
+        {
+          "prompt": "reading 평균을 계산하고 reading 히스토그램도 보여줘.",
+          "status": "FAIL",
+          "agent_status": "blocked",
+          "final_output": "요청의 분석 목표를 확인하지 못해 실행하지 않았습니다. 기존 데이터와 결과는 보존했습니다.",
+          "expected": 9.0,
+          "actual": null,
+          "model_calls": 8,
+          "scalar_outputs": [],
+          "chart_proof_valid": false,
+          "search_used": false,
+          "tools": [],
+          "chart_count": 0,
+          "raw_unchanged": true,
+          "approval_requests": 0,
+          "remote_executions": 0,
+          "stop_reason": "goal_unverified",
+          "elapsed_seconds": 35.866,
+          "repair_events": [],
+          "goal": null,
+          "intent_events": [
+            {
+              "time": "2026-10-09T15:14:36.966110+00:00",
+              "event": "goal_interpretation_started",
+              "run_id": "9e2fa75307494ca0910e7e4fb78223db",
+              "instance_id": "7425740f24f9",
+              "pid": 75614,
+              "request_id": "ac5fa4c0ff604309b0e7de42e5ad6a64",
+              "origin": "llm",
+              "goal_version": 1
+            },
+            {
+              "time": "2026-10-09T15:14:42.764244+00:00",
+              "event": "goal_literal_subjects_read",
+              "run_id": "9e2fa75307494ca0910e7e4fb78223db",
+              "instance_id": "7425740f24f9",
+              "pid": 75614,
+              "request_id": "ac5fa4c0ff604309b0e7de42e5ad6a64",
+              "candidate_count": 1,
+              "table_count": 0
+            },
+            {
+              "time": "2026-10-09T15:14:51.999928+00:00",
+              "event": "goal_population_basis_read",
+              "run_id": "9e2fa75307494ca0910e7e4fb78223db",
+              "instance_id": "7425740f24f9",
+              "pid": 75614,
+              "request_id": "ac5fa4c0ff604309b0e7de42e5ad6a64",
+              "basis": "source_population",
+              "has_current_quote": false
+            },
+            {
+              "time": "2026-10-09T15:14:52.000185+00:00",
+              "event": "goal_tasks_selected",
+              "run_id": "9e2fa75307494ca0910e7e4fb78223db",
+              "instance_id": "7425740f24f9",
+              "pid": 75614,
+              "request_id": "ac5fa4c0ff604309b0e7de42e5ad6a64",
+              "mode": "execute",
+              "capabilities": [
+                "calculation",
+                "chart"
+              ],
+              "chart_kind": "histogram",
+              "metadata_kind": "",
+              "source_reference": "selected_dataset",
+              "current_result_only": false
+            },
+            {
+              "time": "2026-10-09T15:15:02.546267+00:00",
+              "event": "goal_structure_rejected",
+              "run_id": "9e2fa75307494ca0910e7e4fb78223db",
+              "instance_id": "7425740f24f9",
+              "pid": 75614,
+              "request_id": "ac5fa4c0ff604309b0e7de42e5ad6a64",
+              "attempt": 1,
+              "error_type": "ValueError"
+            },
+            {
+              "time": "2026-10-09T15:15:02.546663+00:00",
+              "event": "goal_contract_error",
+              "run_id": "9e2fa75307494ca0910e7e4fb78223db",
+              "instance_id": "7425740f24f9",
+              "pid": 75614,
+              "request_id": "ac5fa4c0ff604309b0e7de42e5ad6a64",
+              "error_code": "goal_schema_invalid",
+              "detail": "Detailed goal must preserve independently selected mode, obligations, source reference and result scope",
+              "output_columns": [
+                "reading"
+              ],
+              "selected_output_columns": [
+                "reading"
+              ],
+              "predicate_shapes": []
+            },
+            {
+              "time": "2026-10-09T15:15:06.601797+00:00",
+              "event": "goal_structure_rejected",
+              "run_id": "9e2fa75307494ca0910e7e4fb78223db",
+              "instance_id": "7425740f24f9",
+              "pid": 75614,
+              "request_id": "ac5fa4c0ff604309b0e7de42e5ad6a64",
+              "attempt": 2,
+              "error_type": "ValueError"
+            },
+            {
+              "time": "2026-10-09T15:15:06.601948+00:00",
+              "event": "goal_contract_error",
+              "run_id": "9e2fa75307494ca0910e7e4fb78223db",
+              "instance_id": "7425740f24f9",
+              "pid": 75614,
+              "request_id": "ac5fa4c0ff604309b0e7de42e5ad6a64",
+              "error_code": "goal_schema_invalid",
+              "detail": "Detailed goal must preserve independently selected mode, obligations, source reference and result scope",
+              "output_columns": [
+                "reading"
+              ],
+              "selected_output_columns": [
+                "reading"
+              ],
+              "predicate_shapes": []
+            },
+            {
+              "time": "2026-10-09T15:15:07.181305+00:00",
+              "event": "goal_literal_subjects_read",
+              "run_id": "9e2fa75307494ca0910e7e4fb78223db",
+              "instance_id": "7425740f24f9",
+              "pid": 75614,
+              "request_id": "ac5fa4c0ff604309b0e7de42e5ad6a64",
+              "candidate_count": 1,
+              "table_count": 0
+            },
+            {
+              "time": "2026-10-09T15:15:12.799305+00:00",
+              "event": "goal_population_basis_read",
+              "run_id": "9e2fa75307494ca0910e7e4fb78223db",
+              "instance_id": "7425740f24f9",
+              "pid": 75614,
+              "request_id": "ac5fa4c0ff604309b0e7de42e5ad6a64",
+              "basis": "source_population",
+              "has_current_quote": false
+            },
+            {
+              "time": "2026-10-09T15:15:12.799632+00:00",
+              "event": "goal_tasks_selected",
+              "run_id": "9e2fa75307494ca0910e7e4fb78223db",
+              "instance_id": "7425740f24f9",
+              "pid": 75614,
+              "request_id": "ac5fa4c0ff604309b0e7de42e5ad6a64",
+              "mode": "execute",
+              "capabilities": [
+                "calculation",
+                "chart"
+              ],
+              "chart_kind": "histogram",
+              "metadata_kind": "",
+              "source_reference": "selected_dataset",
+              "current_result_only": false
+            },
+            {
+              "time": "2026-10-09T15:15:12.799880+00:00",
+              "event": "goal_task_selection_repaired",
+              "run_id": "9e2fa75307494ca0910e7e4fb78223db",
+              "instance_id": "7425740f24f9",
+              "pid": 75614,
+              "request_id": "ac5fa4c0ff604309b0e7de42e5ad6a64",
+              "changed": false,
+              "attempt": 2
+            }
+          ],
+          "injected_calls": 0,
+          "phase_order": [],
+          "executed_tools": [],
+          "proposed_calls": [],
+          "failure_observations": [],
+          "scope_and_preflight_events": [],
+          "model_recovery": {
+            "failures": 0,
+            "failed_seconds": 0.0,
+            "retries": 0,
+            "next_allowed_at": 0.0,
+            "aux_calls": 8,
+            "aux_seconds": 35.8114196670067
+          },
+          "model_failure_events": [],
+          "error_type": null,
+          "error_category": null
+        }
+      ]
+    },
+    {
+      "id": "followup",
+      "status": "FAIL",
+      "intent_mode": "llm",
+      "fault_phase": "execution_planner_only",
+      "injected_first_call": false,
+      "live_calls": 0,
+      "turns": [
+        {
+          "prompt": "reading >= 10인 행의 건수를 알려줘.",
+          "status": "FAIL",
+          "agent_status": "incomplete",
+          "final_output": "분석 중 오류가 발생했습니다 (ModelAttemptBudgetExceeded, 오류 ID: 0faa6c0619fa). 기존 결과는 보존했습니다. 미완료 분석 재개로 다시 시도할 수 있습니다.",
+          "expected": 2.0,
+          "actual": null,
+          "model_calls": 0,
+          "scalar_outputs": [],
+          "chart_proof_valid": true,
+          "search_used": false,
+          "tools": [],
+          "chart_count": 0,
+          "raw_unchanged": true,
+          "approval_requests": 0,
+          "remote_executions": 0,
+          "stop_reason": null,
+          "elapsed_seconds": 39.964,
+          "repair_events": [],
+          "goal": null,
+          "intent_events": [
+            {
+              "time": "2026-10-09T15:15:12.860864+00:00",
+              "event": "goal_interpretation_started",
+              "run_id": "848193b0fd82410baa231d3ef6b79243",
+              "instance_id": "35f6d3c420fb",
+              "pid": 75614,
+              "request_id": "82996d7854f84be9b786ca97efe53bb6",
+              "origin": "llm",
+              "goal_version": 1
+            },
+            {
+              "time": "2026-10-09T15:15:14.740717+00:00",
+              "event": "goal_literal_subjects_read",
+              "run_id": "848193b0fd82410baa231d3ef6b79243",
+              "instance_id": "35f6d3c420fb",
+              "pid": 75614,
+              "request_id": "82996d7854f84be9b786ca97efe53bb6",
+              "candidate_count": 1,
+              "table_count": 0
+            },
+            {
+              "time": "2026-10-09T15:15:21.152451+00:00",
+              "event": "goal_population_basis_read",
+              "run_id": "848193b0fd82410baa231d3ef6b79243",
+              "instance_id": "35f6d3c420fb",
+              "pid": 75614,
+              "request_id": "82996d7854f84be9b786ca97efe53bb6",
+              "basis": "source_population",
+              "has_current_quote": false
+            },
+            {
+              "time": "2026-10-09T15:15:21.152808+00:00",
+              "event": "goal_tasks_selected",
+              "run_id": "848193b0fd82410baa231d3ef6b79243",
+              "instance_id": "35f6d3c420fb",
+              "pid": 75614,
+              "request_id": "82996d7854f84be9b786ca97efe53bb6",
+              "mode": "execute",
+              "capabilities": [
+                "row_count"
+              ],
+              "chart_kind": "",
+              "metadata_kind": "",
+              "source_reference": "selected_dataset",
+              "current_result_only": false
+            },
+            {
+              "time": "2026-10-09T15:15:32.234426+00:00",
+              "event": "goal_semantic_review_started",
+              "run_id": "848193b0fd82410baa231d3ef6b79243",
+              "instance_id": "35f6d3c420fb",
+              "pid": 75614,
+              "request_id": "82996d7854f84be9b786ca97efe53bb6"
+            },
+            {
+              "time": "2026-10-09T15:15:41.157042+00:00",
+              "event": "goal_population_delta_rejected",
+              "run_id": "848193b0fd82410baa231d3ef6b79243",
+              "instance_id": "35f6d3c420fb",
+              "pid": 75614,
+              "request_id": "82996d7854f84be9b786ca97efe53bb6",
+              "attempt": 1,
+              "detail": "between needs ordered [lower, upper] boundaries",
+              "change": "modify",
+              "has_current_quote": true
+            },
+            {
+              "time": "2026-10-09T15:15:44.683268+00:00",
+              "event": "goal_population_delta_rejected",
+              "run_id": "848193b0fd82410baa231d3ef6b79243",
+              "instance_id": "35f6d3c420fb",
+              "pid": 75614,
+              "request_id": "82996d7854f84be9b786ca97efe53bb6",
+              "attempt": 2,
+              "detail": "between needs ordered [lower, upper] boundaries",
+              "change": "modify",
+              "has_current_quote": true
+            },
+            {
+              "time": "2026-10-09T15:15:44.683886+00:00",
+              "event": "goal_structure_rejected",
+              "run_id": "848193b0fd82410baa231d3ef6b79243",
+              "instance_id": "35f6d3c420fb",
+              "pid": 75614,
+              "request_id": "82996d7854f84be9b786ca97efe53bb6",
+              "attempt": 2,
+              "error_type": "ValueError"
+            },
+            {
+              "time": "2026-10-09T15:15:44.683930+00:00",
+              "event": "goal_contract_error",
+              "run_id": "848193b0fd82410baa231d3ef6b79243",
+              "instance_id": "35f6d3c420fb",
+              "pid": 75614,
+              "request_id": "82996d7854f84be9b786ca97efe53bb6",
+              "error_code": "goal_schema_invalid",
+              "detail": "between needs ordered [lower, upper] boundaries",
+              "output_columns": [],
+              "selected_output_columns": [],
+              "predicate_shapes": [
+                {
+                  "column": "reading",
+                  "op": "ge",
+                  "value_type": "int",
+                  "item_types": []
+                }
+              ]
+            },
+            {
+              "time": "2026-10-09T15:15:52.796296+00:00",
+              "event": "goal_population_delta_rejected",
+              "run_id": "848193b0fd82410baa231d3ef6b79243",
+              "instance_id": "35f6d3c420fb",
+              "pid": 75614,
+              "request_id": "82996d7854f84be9b786ca97efe53bb6",
+              "attempt": 1,
+              "detail": "between needs ordered [lower, upper] boundaries",
+              "change": "modify",
+              "has_current_quote": true
+            }
+          ],
+          "injected_calls": 0,
+          "phase_order": [],
+          "executed_tools": [],
+          "proposed_calls": [],
+          "failure_observations": [],
+          "scope_and_preflight_events": [],
+          "model_recovery": {
+            "failures": 0,
+            "failed_seconds": 0.0,
+            "retries": 0,
+            "next_allowed_at": 0.0,
+            "aux_calls": 9,
+            "aux_seconds": 39.913780041999416
+          },
+          "model_failure_events": [],
+          "error_type": "ModelAttemptBudgetExceeded",
+          "error_category": null
+        },
+        {
+          "prompt": "그중 reading 평균을 알려줘.",
+          "status": "FAIL",
+          "agent_status": "incomplete",
+          "final_output": "분석 중 오류가 발생했습니다 (ModelAttemptBudgetExceeded, 오류 ID: 1367cc1644ab). 기존 결과는 보존했습니다. 미완료 분석 재개로 다시 시도할 수 있습니다.",
+          "expected": 15.0,
+          "actual": null,
+          "model_calls": 0,
+          "scalar_outputs": [],
+          "chart_proof_valid": true,
+          "search_used": false,
+          "tools": [],
+          "chart_count": 0,
+          "raw_unchanged": true,
+          "approval_requests": 0,
+          "remote_executions": 0,
+          "stop_reason": null,
+          "elapsed_seconds": 97.081,
+          "repair_events": [],
+          "goal": null,
+          "intent_events": [
+            {
+              "time": "2026-10-09T15:15:12.860864+00:00",
+              "event": "goal_interpretation_started",
+              "run_id": "848193b0fd82410baa231d3ef6b79243",
+              "instance_id": "35f6d3c420fb",
+              "pid": 75614,
+              "request_id": "82996d7854f84be9b786ca97efe53bb6",
+              "origin": "llm",
+              "goal_version": 1
+            },
+            {
+              "time": "2026-10-09T15:15:14.740717+00:00",
+              "event": "goal_literal_subjects_read",
+              "run_id": "848193b0fd82410baa231d3ef6b79243",
+              "instance_id": "35f6d3c420fb",
+              "pid": 75614,
+              "request_id": "82996d7854f84be9b786ca97efe53bb6",
+              "candidate_count": 1,
+              "table_count": 0
+            },
+            {
+              "time": "2026-10-09T15:15:21.152451+00:00",
+              "event": "goal_population_basis_read",
+              "run_id": "848193b0fd82410baa231d3ef6b79243",
+              "instance_id": "35f6d3c420fb",
+              "pid": 75614,
+              "request_id": "82996d7854f84be9b786ca97efe53bb6",
+              "basis": "source_population",
+              "has_current_quote": false
+            },
+            {
+              "time": "2026-10-09T15:15:21.152808+00:00",
+              "event": "goal_tasks_selected",
+              "run_id": "848193b0fd82410baa231d3ef6b79243",
+              "instance_id": "35f6d3c420fb",
+              "pid": 75614,
+              "request_id": "82996d7854f84be9b786ca97efe53bb6",
+              "mode": "execute",
+              "capabilities": [
+                "row_count"
+              ],
+              "chart_kind": "",
+              "metadata_kind": "",
+              "source_reference": "selected_dataset",
+              "current_result_only": false
+            },
+            {
+              "time": "2026-10-09T15:15:32.234426+00:00",
+              "event": "goal_semantic_review_started",
+              "run_id": "848193b0fd82410baa231d3ef6b79243",
+              "instance_id": "35f6d3c420fb",
+              "pid": 75614,
+              "request_id": "82996d7854f84be9b786ca97efe53bb6"
+            },
+            {
+              "time": "2026-10-09T15:15:41.157042+00:00",
+              "event": "goal_population_delta_rejected",
+              "run_id": "848193b0fd82410baa231d3ef6b79243",
+              "instance_id": "35f6d3c420fb",
+              "pid": 75614,
+              "request_id": "82996d7854f84be9b786ca97efe53bb6",
+              "attempt": 1,
+              "detail": "between needs ordered [lower, upper] boundaries",
+              "change": "modify",
+              "has_current_quote": true
+            },
+            {
+              "time": "2026-10-09T15:15:44.683268+00:00",
+              "event": "goal_population_delta_rejected",
+              "run_id": "848193b0fd82410baa231d3ef6b79243",
+              "instance_id": "35f6d3c420fb",
+              "pid": 75614,
+              "request_id": "82996d7854f84be9b786ca97efe53bb6",
+              "attempt": 2,
+              "detail": "between needs ordered [lower, upper] boundaries",
+              "change": "modify",
+              "has_current_quote": true
+            },
+            {
+              "time": "2026-10-09T15:15:44.683886+00:00",
+              "event": "goal_structure_rejected",
+              "run_id": "848193b0fd82410baa231d3ef6b79243",
+              "instance_id": "35f6d3c420fb",
+              "pid": 75614,
+              "request_id": "82996d7854f84be9b786ca97efe53bb6",
+              "attempt": 2,
+              "error_type": "ValueError"
+            },
+            {
+              "time": "2026-10-09T15:15:44.683930+00:00",
+              "event": "goal_contract_error",
+              "run_id": "848193b0fd82410baa231d3ef6b79243",
+              "instance_id": "35f6d3c420fb",
+              "pid": 75614,
+              "request_id": "82996d7854f84be9b786ca97efe53bb6",
+              "error_code": "goal_schema_invalid",
+              "detail": "between needs ordered [lower, upper] boundaries",
+              "output_columns": [],
+              "selected_output_columns": [],
+              "predicate_shapes": [
+                {
+                  "column": "reading",
+                  "op": "ge",
+                  "value_type": "int",
+                  "item_types": []
+                }
+              ]
+            },
+            {
+              "time": "2026-10-09T15:15:52.796296+00:00",
+              "event": "goal_population_delta_rejected",
+              "run_id": "848193b0fd82410baa231d3ef6b79243",
+              "instance_id": "35f6d3c420fb",
+              "pid": 75614,
+              "request_id": "82996d7854f84be9b786ca97efe53bb6",
+              "attempt": 1,
+              "detail": "between needs ordered [lower, upper] boundaries",
+              "change": "modify",
+              "has_current_quote": true
+            },
+            {
+              "time": "2026-10-09T15:15:52.847789+00:00",
+              "event": "goal_interpretation_started",
+              "run_id": "7751ee701f3c4a409f1ee30f3f37cc62",
+              "instance_id": "fb8d725c4eb7",
+              "pid": 75614,
+              "request_id": "95d2fb101fc545bcb7efa0f14d08da5a",
+              "origin": "llm",
+              "goal_version": 1
+            },
+            {
+              "time": "2026-10-09T15:15:55.693458+00:00",
+              "event": "goal_literal_subjects_read",
+              "run_id": "7751ee701f3c4a409f1ee30f3f37cc62",
+              "instance_id": "fb8d725c4eb7",
+              "pid": 75614,
+              "request_id": "95d2fb101fc545bcb7efa0f14d08da5a",
+              "candidate_count": 1,
+              "table_count": 0
+            },
+            {
+              "time": "2026-10-09T15:16:15.974608+00:00",
+              "event": "goal_measure_obligation_reviewed",
+              "run_id": "7751ee701f3c4a409f1ee30f3f37cc62",
+              "instance_id": "fb8d725c4eb7",
+              "pid": 75614,
+              "request_id": "95d2fb101fc545bcb7efa0f14d08da5a",
+              "original_capability": "calculation",
+              "capability": "calculation",
+              "operations": [
+                "AVG"
+              ],
+              "changed": true
+            },
+            {
+              "time": "2026-10-09T15:16:22.359541+00:00",
+              "event": "goal_population_basis_read",
+              "run_id": "7751ee701f3c4a409f1ee30f3f37cc62",
+              "instance_id": "fb8d725c4eb7",
+              "pid": 75614,
+              "request_id": "95d2fb101fc545bcb7efa0f14d08da5a",
+              "basis": "source_population",
+              "has_current_quote": false
+            },
+            {
+              "time": "2026-10-09T15:16:22.359779+00:00",
+              "event": "goal_tasks_selected",
+              "run_id": "7751ee701f3c4a409f1ee30f3f37cc62",
+              "instance_id": "fb8d725c4eb7",
+              "pid": 75614,
+              "request_id": "95d2fb101fc545bcb7efa0f14d08da5a",
+              "mode": "execute",
+              "capabilities": [
+                "calculation"
+              ],
+              "chart_kind": "",
+              "metadata_kind": "",
+              "source_reference": "selected_dataset",
+              "current_result_only": false
+            },
+            {
+              "time": "2026-10-09T15:16:56.707553+00:00",
+              "event": "goal_structure_rejected",
+              "run_id": "7751ee701f3c4a409f1ee30f3f37cc62",
+              "instance_id": "fb8d725c4eb7",
+              "pid": 75614,
+              "request_id": "95d2fb101fc545bcb7efa0f14d08da5a",
+              "attempt": 1,
+              "error_type": "ValueError"
+            },
+            {
+              "time": "2026-10-09T15:16:56.707919+00:00",
+              "event": "goal_contract_error",
+              "run_id": "7751ee701f3c4a409f1ee30f3f37cc62",
+              "instance_id": "fb8d725c4eb7",
+              "pid": 75614,
+              "request_id": "95d2fb101fc545bcb7efa0f14d08da5a",
+              "error_code": "goal_schema_invalid",
+              "detail": "Calculation must preserve independently selected measure columns",
+              "output_columns": [
+                "reading"
+              ],
+              "selected_output_columns": [
+                "readingian_average_of_reading_column_from_previous_output_context_if_available_else_reading_column_from_observed_columns_if_context_is_unclear_or_if_it_is_the_only_measure_column_available_else_reading_column_from_observed_columns_if_no_other_measure_is_specified"
+              ],
+              "predicate_shapes": []
+            },
+            {
+              "time": "2026-10-09T15:17:05.933060+00:00",
+              "event": "goal_structure_rejected",
+              "run_id": "7751ee701f3c4a409f1ee30f3f37cc62",
+              "instance_id": "fb8d725c4eb7",
+              "pid": 75614,
+              "request_id": "95d2fb101fc545bcb7efa0f14d08da5a",
+              "attempt": 2,
+              "error_type": "ValueError"
+            },
+            {
+              "time": "2026-10-09T15:17:05.933223+00:00",
+              "event": "goal_contract_error",
+              "run_id": "7751ee701f3c4a409f1ee30f3f37cc62",
+              "instance_id": "fb8d725c4eb7",
+              "pid": 75614,
+              "request_id": "95d2fb101fc545bcb7efa0f14d08da5a",
+              "error_code": "goal_schema_invalid",
+              "detail": "Calculation must preserve independently selected measure columns",
+              "output_columns": [
+                "reading"
+              ],
+              "selected_output_columns": [
+                "readingian_average_of_reading_column_from_previous_output_context_if_available_else_reading_column_from_observed_columns_if_context_is_unclear_or_if_it_is_the_only_measure_column_available_else_reading_column_from_observed_columns_if_no_other_measure_is_specified"
+              ],
+              "predicate_shapes": []
+            },
+            {
+              "time": "2026-10-09T15:17:07.637656+00:00",
+              "event": "goal_literal_subjects_read",
+              "run_id": "7751ee701f3c4a409f1ee30f3f37cc62",
+              "instance_id": "fb8d725c4eb7",
+              "pid": 75614,
+              "request_id": "95d2fb101fc545bcb7efa0f14d08da5a",
+              "candidate_count": 1,
+              "table_count": 0
+            },
+            {
+              "time": "2026-10-09T15:17:29.895503+00:00",
+              "event": "goal_measure_obligation_reviewed",
+              "run_id": "7751ee701f3c4a409f1ee30f3f37cc62",
+              "instance_id": "fb8d725c4eb7",
+              "pid": 75614,
+              "request_id": "95d2fb101fc545bcb7efa0f14d08da5a",
+              "original_capability": "calculation",
+              "capability": "calculation",
+              "operations": [
+                "AVG"
+              ],
+              "changed": true
+            }
+          ],
+          "injected_calls": 0,
+          "phase_order": [],
+          "executed_tools": [],
+          "proposed_calls": [],
+          "failure_observations": [],
+          "scope_and_preflight_events": [],
+          "model_recovery": {
+            "failures": 0,
+            "failed_seconds": 0.0,
+            "retries": 0,
+            "next_allowed_at": 0.0,
+            "aux_calls": 9,
+            "aux_seconds": 97.01875795907108
+          },
+          "model_failure_events": [],
+          "error_type": "ModelAttemptBudgetExceeded",
+          "error_category": null
+        }
+      ]
+    }
+  ]
+}

@@ -14,6 +14,9 @@ from unittest.mock import patch
 ROOT=Path(__file__).resolve().parents[1]
 sys.path.insert(0,str(ROOT))
 import pandas as pd
+import numpy as np
+from io import BytesIO
+from PIL import Image, ImageStat
 from langchain_core.language_models.chat_models import BaseChatModel
 from langchain_core.messages import AIMessage, ToolMessage
 from langchain_core.outputs import ChatGeneration, ChatResult
@@ -63,7 +66,28 @@ CASES=[
 ]
 
 
-def evaluate_case(spec,delegate):
+def output_proof(runtime,state,expected,chart_required=False):
+    # A compound turn may finish with a chart dataset after its scalar dataset.
+    # Grade both independent obligations, never just the last evidence ID.
+    scalars=[]
+    for ident in state.get('evidence_ids',[]):
+        result=runtime.datasets.frames[ident]
+        if result.shape==(1,1):scalars.append(float(result.iloc[0,0]))
+    actual=expected if expected in scalars else (scalars[-1] if scalars else None)
+    cards=[runtime.artifacts[c] for c in state.get('artifact_ids',[])]
+    valid=True
+    for card in cards:
+        image=Image.open(BytesIO(card.image));image.load()
+        valid=valid and image.format=='PNG' and min(image.size)>100 and max(ImageStat.Stat(image.convert('RGB')).stddev)>5
+        if chart_required:
+            spec=card.render_spec
+            wanted=np.histogram([2.,4.,10.,20.],bins=spec.get('bin_edges',[]))[0]
+            valid=valid and card.kind=='histogram' and np.array_equal(wanted,spec.get('bin_counts'))
+    return actual,scalars,bool(valid and (cards or not chart_required))
+
+
+def evaluate_case(spec,delegate,policy=None):
+    policy=policy or RuntimePolicy()
     remote=[]
     def remote_factory(_):
         def forbidden(envelope):
@@ -72,7 +96,16 @@ def evaluate_case(spec,delegate):
         return forbidden
     with tempfile.TemporaryDirectory(prefix='teleai-autonomy-') as root:
         model=FaultThenLiveModel(delegate=delegate,first_call=spec.get('first_call'),inject_count=spec.get('inject_count',1))
-        r=GraphAnalysisRuntime(root,'evaluation',spec['id'],model)
+        def make_runtime():
+            runtime=GraphAnalysisRuntime(root,'evaluation',spec['id'],model,policy=policy)
+            # Faults belong to execution planning, never the JSON intent role.
+            # Production provider roles still interpret the original prompt.
+            from core.analysis_agent.goal_interpreter import GoalInterpreter
+            runtime.recovery.goal_interpreter=GoalInterpreter(delegate,runtime.context,runtime.diagnostics,runtime.max_context_chars)
+            runtime.recovery.goal_interpreter.model_recovery=runtime.model_recovery
+            runtime.diagnostic_identity['goal_model']=getattr(runtime.recovery.goal_interpreter.model,'model',type(delegate).__name__)
+            return runtime
+        r=make_runtime()
         frame=pd.DataFrame({'reading':[2.,4.,10.,20.], 'cohort':['red','red','blue','blue']})
         raw=r.datasets.register(frame,source='unfamiliar.observations',coverage='complete',predicate_known=True,snapshot='synthetic-v1')
         r.context.reference_context[:]=[fixture_reference_context(raw.source,frame)]
@@ -96,13 +129,8 @@ def evaluate_case(spec,delegate):
                                                   side_effect=TimeoutError('synthetic local worker timeout')))
                     outcome=r.submit(turn['prompt'])
                 state=r.inspect()['recovery']
-                evidence=state.get('evidence_ids',[])
-                actual=None
-                if evidence:
-                    result=r.datasets.frames[evidence[-1]]
-                    if result.shape==(1,1):actual=float(result.iloc[0,0])
+                actual,scalar_outputs,chart_valid=output_proof(r,state,turn['expected'],bool(turn.get('chart')))
                 charts=state.get('artifact_ids',[])
-                chart_valid=all(r.artifacts[c].image.startswith(b'\x89PNG') for c in charts)
                 requests=r.inspect()['requests']
                 valid=(outcome['status']=='answered' and actual==turn['expected'] and
                        digest==stored_dataset_digest(r.datasets,raw.id) and not requests and not remote and
@@ -116,21 +144,34 @@ def evaluate_case(spec,delegate):
                 turns.append({'prompt':turn['prompt'],'status':'PASS' if valid else 'FAIL',
                     'agent_status':outcome['status'],'final_output':outcome.get('text',''),
                     'expected':turn['expected'],'actual':actual,'model_calls':state['model_calls'],
+                    'scalar_outputs':scalar_outputs,'chart_proof_valid':chart_valid,
                     'search_used':search_used,'tools':called,'chart_count':len(charts),
                     'raw_unchanged':digest==stored_dataset_digest(r.datasets,raw.id),
                     'approval_requests':len(requests),'remote_executions':len(remote),
                     'stop_reason':state.get('stop_reason'),'elapsed_seconds':round(time.monotonic()-start,3)})
                 turns[-1]['repair_events']=repair_events
+                turns[-1]['goal']=state.get('goal')
+                turns[-1]['intent_events']=[e for e in log if e['event'].startswith('goal_')]
+                turns[-1]['injected_calls']=model.tracker.get('injected',0)
+                turns[-1]['phase_order']=[e['event'] for e in log if e['event'] in
+                    {'goal_interpretation_completed','tool_started'}]
                 turns[-1]['executed_tools']=[e['tool'] for e in log if e['event']=='tool_started']
+                turns[-1]['proposed_calls']=[call for m in messages if isinstance(m,AIMessage) for call in m.tool_calls]
+                turns[-1]['failure_observations']=[{'tool':m.name,'result':json.loads(m.content)}
+                    for m in messages if isinstance(m,ToolMessage) and m.content.startswith('{')
+                    and json.loads(m.content).get('status') in {'error','needs_context','unavailable','needs_data'}]
+                turns[-1]['scope_and_preflight_events']=[e for e in log if e['event'].startswith(('request_scope_','tool_proposal_','proposal_preflight_'))]
                 turns[-1]['model_recovery']=r.inspect()['model_recovery']
                 turns[-1]['model_failure_events']=[e for e in log if e['event']=='model_inference_failed']
+                turns[-1]['error_type']=outcome.get('error_type')
+                turns[-1]['error_category']=outcome.get('error_category')
                 if spec.get('followup') and len(turns)==1:
                     # Restart actual runtime; all scope must come from checkpoint.
                     r.close()
-                    r=GraphAnalysisRuntime(root,'evaluation',spec['id'],model)
+                    r=make_runtime()
                     r.context.reference_context[:]=[fixture_reference_context(raw.source,frame)]
             return {'id':spec['id'],'status':'PASS' if all(x['status']=='PASS' for x in turns) else 'FAIL',
-                    'injected_first_call':bool(spec.get('first_call')),'live_calls':model.tracker.get('live_calls',0),'turns':turns}
+                    'intent_mode':'llm','fault_phase':'execution_planner_only','injected_first_call':bool(spec.get('first_call')),'live_calls':model.tracker.get('live_calls',0),'turns':turns}
         finally:r.close()
 
 
@@ -142,14 +183,15 @@ def main():
     a=p.parse_args()
     from dotenv import load_dotenv
     load_dotenv(ROOT/'.env');os.environ['LANGSMITH_TRACING']='false';os.environ['LANGCHAIN_TRACING_V2']='false'
-    model=build_analysis_chat_model(RuntimePolicy(model_timeout_seconds=45),provider=a.provider)
+    policy=RuntimePolicy.from_env()
+    model=build_analysis_chat_model(policy,provider=a.provider)
     results=[]
     for spec in CASES:
         if a.id and spec['id'] not in a.id:continue
-        try:record=evaluate_case(spec,model)
+        try:record=evaluate_case(spec,model,policy)
         except Exception as exc:record={'id':spec['id'],'status':'FAIL','error_type':type(exc).__name__}
         results.append(record)
-        report={'generated_at':datetime.now(timezone.utc).isoformat(),'provider':a.provider,
+        report={'generated_at':datetime.now(timezone.utc).isoformat(),'provider':a.provider,'policy':policy.public(),
                 'mode':'real-model synthetic journeys; deterministic rescue disabled',
                 'limitations':['Some cases inject a first faulty call; subsequent decisions use the live model.',
                                'No real remote SQL executor is connected; this does not validate loading.'],

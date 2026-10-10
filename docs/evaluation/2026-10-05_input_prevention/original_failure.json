@@ -1,0 +1,120 @@
+{
+  "report_version": 1,
+  "found": true,
+  "run_id": "8ed04892d4174efa93d4a87feed6326a",
+  "log_integrity": {
+    "malformed_lines": 0,
+    "bounded_read": false,
+    "unreadable_files": 0
+  },
+  "time_utc": "2026-10-05T09:13:47.836285+00:00",
+  "instance_id": "9541fa0b910f",
+  "pid": 9829,
+  "runtime": {
+    "route": "langgraph-v1",
+    "model_class": "ChatOllama",
+    "data_backend": "mysql",
+    "revision_at_first_runtime": "febd34ae5cbbfbcc7023ea8e0412b84572cd7763",
+    "loaded_delivery_guard": "8bd5c1e1c3b08e13",
+    "require_remote_approval": false,
+    "python_version": "3.11.13",
+    "packages": {
+      "langchain": "1.4.0",
+      "langchain-core": "1.6.2",
+      "langgraph": "1.2.11",
+      "streamlit": "1.63.0",
+      "sqlglot": "30.18.0"
+    }
+  },
+  "status": "incomplete",
+  "elapsed_seconds": 44.956,
+  "last_event": "turn_slo",
+  "flags": [
+    "AGENT_NOT_COMPLETED",
+    "ERROR_OBSERVED"
+  ],
+  "model_calls": 2,
+  "input_budget": {
+    "payload_bytes": 17314,
+    "payload_bytes_before_projection": null,
+    "template_headroom": 1344,
+    "input_budget_units": 12288,
+    "output_reserved": 4096,
+    "context_window": 16384,
+    "tool_count": 4,
+    "message_count": 4,
+    "within_budget": false,
+    "older_turns_compacted": true,
+    "schema_compacted": null,
+    "system_catalog_compacted": null,
+    "tool_menu_compacted": true,
+    "minimal_discovery_menu": null,
+    "reasoning_compacted": null,
+    "observations_compacted": false,
+    "measurement": "conservative_utf8_bytes_not_actual_token_count"
+  },
+  "proposed_tool_calls": 1,
+  "local_tools_started": {
+    "inspect_table_context": 1
+  },
+  "local_tools_rejected": {},
+  "last_tool_events": [
+    {
+      "event": "tool_started",
+      "tool": "inspect_table_context",
+      "status": null,
+      "error_code": null,
+      "ledger_status": null
+    },
+    {
+      "event": "tool_completed",
+      "tool": "inspect_table_context",
+      "status": "ready",
+      "error_code": null,
+      "ledger_status": null
+    }
+  ],
+  "remote": {
+    "started": 0,
+    "finished": 0,
+    "states": {},
+    "cached_receipts": 0
+  },
+  "completion": {
+    "status": null,
+    "reason": null,
+    "required_capabilities": [],
+    "missing_capabilities": [],
+    "attempts": null
+  },
+  "recovery_replans": 0,
+  "deferred_reply_blocks": 0,
+  "error_count": 1,
+  "errors": [
+    {
+      "error_id": "0a3f64804e0f",
+      "stage": "agent_stream",
+      "error_type": "ModelContextBudgetExceeded",
+      "http_status": null,
+      "error_category": null,
+      "database_errno": null,
+      "frames": [
+        {
+          "file": "factory.py",
+          "line": 329,
+          "function": "inner_handler"
+        },
+        {
+          "file": "factory.py",
+          "line": 339,
+          "function": "composed"
+        },
+        {
+          "file": "model_context.py",
+          "line": 252,
+          "function": "wrap_model_call"
+        }
+      ]
+    }
+  ]
+}

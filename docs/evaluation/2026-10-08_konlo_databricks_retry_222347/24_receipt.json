@@ -1,0 +1,250 @@
+{
+  "id": 24,
+  "prompt": "내가 볼 수 있는 table 다시 한번 보여줘",
+  "submitted_prompt": "내가 볼 수 있는 table 다시 한번 보여줘",
+  "run_id": "14bb42672ae3434ead5ed5a805fab895",
+  "request_id": "e96dc5df-8a50-4f64-8c74-3826fe30f81c",
+  "terminal_status": "incomplete",
+  "elapsed_seconds": 0.03,
+  "error_type": "ModelContextBudgetExceeded",
+  "error_id": "4a5c95420137",
+  "error_stage": "agent_stream",
+  "verdict": "FAIL",
+  "remote_queries_finished": 0,
+  "model_input_budget": [
+    {
+      "time": "2026-10-08T13:30:36.167948+00:00",
+      "event": "model_payload_budget",
+      "run_id": "14bb42672ae3434ead5ed5a805fab895",
+      "instance_id": "634cdb5e18e3",
+      "pid": 40477,
+      "payload_bytes": 15282,
+      "payload_bytes_before_projection": 15282,
+      "template_headroom": 640,
+      "input_budget_units": 14336,
+      "output_reserved": 2048,
+      "context_window": 16384,
+      "tool_count": 0,
+      "message_count": 1,
+      "older_turns_compacted": false,
+      "within_budget": false,
+      "observations_compacted": false,
+      "schema_compacted": false,
+      "system_catalog_compacted": false,
+      "tool_menu_compacted": false,
+      "minimal_discovery_menu": false,
+      "reasoning_compacted": false,
+      "minimal_catalog": false,
+      "builtin_instructions_compacted": false,
+      "components": {
+        "system_bytes": 6661,
+        "message_content_bytes": 7675,
+        "tool_calls_bytes": 0,
+        "reasoning_bytes": 0,
+        "tool_schema_bytes": 0,
+        "tool_names": []
+      },
+      "measurement": "conservative_utf8_bytes_not_actual_token_count"
+    }
+  ],
+  "events": [
+    {
+      "time": "2026-10-08T13:30:36.140824+00:00",
+      "event": "run_started",
+      "run_id": "14bb42672ae3434ead5ed5a805fab895",
+      "instance_id": "634cdb5e18e3",
+      "pid": 40477,
+      "runtime": {
+        "revision_at_first_runtime": "e29c5bb39818e45d5042bdfa2c3097a05a147502",
+        "packages": {
+          "langchain": "1.4.0",
+          "langchain-core": "1.6.2",
+          "langgraph": "1.2.11",
+          "streamlit": "1.63.0",
+          "sqlglot": "30.18.0"
+        },
+        "python_version": "3.11.13",
+        "identity_captured_at": "2026-10-08T13:23:48.735038+00:00",
+        "route": "langgraph-v1",
+        "model_class": "ChatOllama",
+        "require_remote_approval": false,
+        "loaded_delivery_guard": "fb1f0cb9b5e4a3a1",
+        "data_backend": "databricks",
+        "intent_mode": "llm",
+        "goal_version": 1,
+        "goal_model": "qwen3:8b",
+        "planner_model": "qwen3:8b"
+      },
+      "operation": "submit",
+      "process_peak_rss_bytes": 335724544
+    },
+    {
+      "time": "2026-10-08T13:30:36.144534+00:00",
+      "event": "goal_interpretation_started",
+      "run_id": "14bb42672ae3434ead5ed5a805fab895",
+      "instance_id": "634cdb5e18e3",
+      "pid": 40477,
+      "request_id": "e96dc5df-8a50-4f64-8c74-3826fe30f81c",
+      "origin": "llm",
+      "goal_version": 1
+    },
+    {
+      "time": "2026-10-08T13:30:36.167948+00:00",
+      "event": "model_payload_budget",
+      "run_id": "14bb42672ae3434ead5ed5a805fab895",
+      "instance_id": "634cdb5e18e3",
+      "pid": 40477,
+      "payload_bytes": 15282,
+      "payload_bytes_before_projection": 15282,
+      "template_headroom": 640,
+      "input_budget_units": 14336,
+      "output_reserved": 2048,
+      "context_window": 16384,
+      "tool_count": 0,
+      "message_count": 1,
+      "older_turns_compacted": false,
+      "within_budget": false,
+      "observations_compacted": false,
+      "schema_compacted": false,
+      "system_catalog_compacted": false,
+      "tool_menu_compacted": false,
+      "minimal_discovery_menu": false,
+      "reasoning_compacted": false,
+      "minimal_catalog": false,
+      "builtin_instructions_compacted": false,
+      "components": {
+        "system_bytes": 6661,
+        "message_content_bytes": 7675,
+        "tool_calls_bytes": 0,
+        "reasoning_bytes": 0,
+        "tool_schema_bytes": 0,
+        "tool_names": []
+      },
+      "measurement": "conservative_utf8_bytes_not_actual_token_count"
+    },
+    {
+      "time": "2026-10-08T13:30:36.168493+00:00",
+      "event": "model_inference_failed",
+      "run_id": "14bb42672ae3434ead5ed5a805fab895",
+      "instance_id": "634cdb5e18e3",
+      "pid": 40477,
+      "request_id": "e96dc5df-8a50-4f64-8c74-3826fe30f81c",
+      "error_type": "ModelContextBudgetExceeded",
+      "http_status": null,
+      "error_category": null,
+      "retry_scheduled": false,
+      "retry_delay_seconds": null
+    },
+    {
+      "time": "2026-10-08T13:30:36.169705+00:00",
+      "event": "error",
+      "run_id": "14bb42672ae3434ead5ed5a805fab895",
+      "instance_id": "634cdb5e18e3",
+      "pid": 40477,
+      "error_category": null,
+      "error_id": "4a5c95420137",
+      "stage": "agent_stream",
+      "error_type": "ModelContextBudgetExceeded",
+      "database_errno": null,
+      "http_status": null,
+      "frames": [
+        {
+          "file": "main.py",
+          "line": 2967,
+          "function": "stream"
+        },
+        {
+          "file": "_runner.py",
+          "line": 207,
+          "function": "tick"
+        },
+        {
+          "file": "_retry.py",
+          "line": 617,
+          "function": "run_with_retry"
+        },
+        {
+          "file": "_runnable.py",
+          "line": 707,
+          "function": "invoke"
+        },
+        {
+          "file": "_runnable.py",
+          "line": 447,
+          "function": "invoke"
+        },
+        {
+          "file": "recovery.py",
+          "line": 169,
+          "function": "before_model"
+        },
+        {
+          "file": "recovery.py",
+          "line": 4067,
+          "function": "before_step"
+        },
+        {
+          "file": "goal_interpreter.py",
+          "line": 182,
+          "function": "interpret"
+        },
+        {
+          "file": "model_recovery.py",
+          "line": 134,
+          "function": "auxiliary_call"
+        },
+        {
+          "file": "model_recovery.py",
+          "line": 159,
+          "function": "invoke"
+        },
+        {
+          "file": "goal_interpreter.py",
+          "line": 180,
+          "function": "invoke"
+        },
+        {
+          "file": "model_context.py",
+          "line": 320,
+          "function": "wrap_model_call"
+        }
+      ]
+    },
+    {
+      "time": "2026-10-08T13:30:36.169752+00:00",
+      "event": "run_completed",
+      "run_id": "14bb42672ae3434ead5ed5a805fab895",
+      "instance_id": "634cdb5e18e3",
+      "pid": 40477,
+      "status": "incomplete",
+      "elapsed_seconds": 0.03,
+      "error_id": "4a5c95420137"
+    },
+    {
+      "time": "2026-10-08T13:30:36.169783+00:00",
+      "event": "turn_slo",
+      "run_id": "14bb42672ae3434ead5ed5a805fab895",
+      "instance_id": "634cdb5e18e3",
+      "pid": 40477,
+      "elapsed_seconds": 0.03,
+      "limit": 180.0,
+      "status": "error",
+      "process_peak_rss_bytes": 335724544,
+      "frame_cache_bytes": 0
+    },
+    {
+      "time": "2026-10-08T13:30:36.636685+00:00",
+      "event": "analysis_cancelled",
+      "run_id": "14bb42672ae3434ead5ed5a805fab895",
+      "instance_id": "634cdb5e18e3",
+      "pid": 40477,
+      "reason": "replaced_by_user",
+      "request_id": "874e1856-4344-4ccb-9e2e-82b5a372cb74",
+      "pending_nodes": [
+        "RecoveryPlanningMiddleware.before_model"
+      ],
+      "datasets_preserved": 1,
+      "charts_preserved": 0
+    }
+  ]
+}

@@ -71,7 +71,15 @@ class MySQLBackendLiveTests(unittest.TestCase):
             self.assertFalse(app.exception)
             runtime = app.session_state['v1_runtime']
             self.assertEqual(runtime.inspect()['recovery']['status'], 'complete')
-            self.assertEqual(runtime.inspect()['recovery']['metadata_kind'], 'columns')
+            proof=runtime.inspect()['recovery']['metadata_evidence']
+            self.assertIn(proof['kind'], {'columns','dtypes'})
+            wanted=next(item for item in reference_context(self.config) if item['table'].rsplit('.',1)[-1]==expected[0])
+            self.assertEqual(proof['table'],wanted['table'])
+            self.assertEqual(proof['columns'],[column['name'] for column in wanted['columns']])
+            answers='\n'.join(item.value for item in app.markdown)
+            for column in proof['columns']:
+                self.assertIn(column,answers.replace('\\_','_'))
+            self.assertFalse(runtime.inspect()['recovery']['artifact_ids'])
             self.assertGreaterEqual(runtime.inspect()['recovery']['model_calls'], 1)
 
     def test_live_mysql_column_definition_tool_executes_and_reuses_metadata(self):

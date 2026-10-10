@@ -1,0 +1,53 @@
+{
+  "generated_at": "2026-10-03T18:56:52+09:00",
+  "original_failure": {
+    "run_id": "2434d04d2ff54f12a9da1530460bf6f5",
+    "ui_error_id": "13e79131eba1",
+    "model_error_id": "501f729f50b7",
+    "seconds": 183.132,
+    "classification": "controller selection misinterpreted as new analysis; model timeout afterwards",
+    "sql_submitted": false
+  },
+  "final_regression": {
+    "command": ".telly_runtime/v1-venv/bin/python -m pytest tests migration -q --tb=short --disable-warnings",
+    "exit_code": 0,
+    "passed": 675,
+    "failed": 0,
+    "skipped": 4,
+    "subtests_passed": 473,
+    "seconds": 93.59,
+    "skip_reason": "4 opt-in MySQL live checks; earlier same-day separate live suite 4 PASS"
+  },
+  "related_regression": {
+    "passed": 31,
+    "subtests_passed": 7,
+    "seconds": 14.2,
+    "exit_code": 0
+  },
+  "logging_support_regression": {
+    "passed": 10,
+    "subtests_passed": 2,
+    "seconds": 10.76,
+    "exit_code": 0
+  },
+  "actual_web": {
+    "run_id": "b51ef9f10db84bb4ac572cd88cc8a8d9",
+    "status": "answered",
+    "seconds": 0.01,
+    "additional_model_calls": 0,
+    "additional_summarizations": 0,
+    "additional_sql_calls": 0,
+    "card_id": "85d9a578-5876-4112-b18d-11d6de695805",
+    "dataset_count_after": 6,
+    "frequency_sum": 208699,
+    "screen": "fixed_web.png",
+    "resume_button_visible": false,
+    "ui_error_visible": false,
+    "server_pid": 14578,
+    "backend": "mysql"
+  },
+  "compileall": "PASS",
+  "diff_check": "PASS",
+  "limitation": "Saved-asset controller operation verified. Not unrestricted actual-model analytics GO.",
+  "git": "No commit/push; prior changes preserved."
+}

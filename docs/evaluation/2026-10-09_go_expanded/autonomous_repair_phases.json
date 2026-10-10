@@ -1,0 +1,865 @@
+{
+  "generated_at": "2026-10-09T16:57:51.405968+00:00",
+  "provider": "ollama",
+  "policy": {
+    "require_remote_approval": false,
+    "max_remote_rows": 100000,
+    "max_scatter_coordinates": 250000,
+    "max_dataset_columns": 256,
+    "max_dataset_bytes": 536870912,
+    "max_full_read_bytes": 134217728,
+    "max_join_rows": 100000,
+    "max_join_expansion_ratio": 5.0,
+    "frame_cache_bytes": 67108864,
+    "scope_disk_quota_bytes": 2147483648,
+    "retention_days": 30,
+    "model_timeout_seconds": 60.0,
+    "turn_slo_seconds": 180.0
+  },
+  "mode": "real-model synthetic journeys; deterministic rescue disabled",
+  "limitations": [
+    "Some cases inject a first faulty call; subsequent decisions use the live model.",
+    "No real remote SQL executor is connected; this does not validate loading."
+  ],
+  "results": [
+    {
+      "id": "compound",
+      "status": "PASS",
+      "intent_mode": "llm",
+      "fault_phase": "execution_planner_only",
+      "injected_first_call": false,
+      "live_calls": 4,
+      "turns": [
+        {
+          "prompt": "reading 평균을 계산하고 reading 히스토그램도 보여줘.",
+          "status": "PASS",
+          "agent_status": "answered",
+          "final_output": "reading 분포 이미지를 생성했습니다.\n분석 범위: 빈도 합계 4 · complete · SELECT \"reading\", COUNT(*) AS \"__frequency\" FROM data WHERE NOT \"reading\" IS NULL GROUP BY \"reading\"\n\n보유 데이터로 계산한 결과입니다. 출처: unfamiliar.observations\n분석 범위: 요청 조건에 포함된 보유 데이터 전체\n\n평균: 9.0",
+          "expected": 9.0,
+          "actual": 9.0,
+          "model_calls": 9,
+          "scalar_outputs": [
+            9.0
+          ],
+          "chart_proof_valid": true,
+          "search_used": false,
+          "tools": [
+            "aggregate_dataset",
+            "prepare_histogram",
+            "prepare_histogram",
+            "prepare_histogram"
+          ],
+          "chart_count": 1,
+          "raw_unchanged": true,
+          "approval_requests": 0,
+          "remote_executions": 0,
+          "stop_reason": null,
+          "elapsed_seconds": 165.921,
+          "repair_events": [],
+          "goal": {
+            "objective": "reading 평균 계산 및 히스토그램 시각화",
+            "mode": "execute",
+            "source_reference": "selected_dataset",
+            "sources": [
+              "unfamiliar.observations"
+            ],
+            "columns": [
+              "reading"
+            ],
+            "conditions": [],
+            "any_conditions": [],
+            "measure_conditions": [],
+            "ratio": null,
+            "current_result_only": false,
+            "fresh_source_required": false,
+            "question": "",
+            "tasks": [
+              {
+                "capability": "calculation",
+                "options": {
+                  "operations": [
+                    "AVG"
+                  ],
+                  "group_columns": []
+                }
+              },
+              {
+                "capability": "chart",
+                "options": {
+                  "kind": "histogram",
+                  "axes": {
+                    "x": "reading"
+                  },
+                  "legend": true,
+                  "stacked": false,
+                  "palette": "default"
+                }
+              }
+            ]
+          },
+          "intent_events": [
+            {
+              "time": "2026-10-09T16:49:53.021009+00:00",
+              "event": "goal_interpretation_started",
+              "run_id": "7c5f6673a1164e1fa5130e164aacf0e0",
+              "instance_id": "37cbd0053301",
+              "pid": 79114,
+              "request_id": "ab3a3f1816e649d98a37e1c13faddd01",
+              "origin": "llm",
+              "goal_version": 1
+            },
+            {
+              "time": "2026-10-09T16:49:54.660509+00:00",
+              "event": "goal_literal_subjects_read",
+              "run_id": "7c5f6673a1164e1fa5130e164aacf0e0",
+              "instance_id": "37cbd0053301",
+              "pid": 79114,
+              "request_id": "ab3a3f1816e649d98a37e1c13faddd01",
+              "candidate_count": 1,
+              "table_count": 0
+            },
+            {
+              "time": "2026-10-09T16:50:00.548847+00:00",
+              "event": "goal_population_basis_read",
+              "run_id": "7c5f6673a1164e1fa5130e164aacf0e0",
+              "instance_id": "37cbd0053301",
+              "pid": 79114,
+              "request_id": "ab3a3f1816e649d98a37e1c13faddd01",
+              "basis": "source_population",
+              "has_current_quote": false
+            },
+            {
+              "time": "2026-10-09T16:50:00.549221+00:00",
+              "event": "goal_tasks_selected",
+              "run_id": "7c5f6673a1164e1fa5130e164aacf0e0",
+              "instance_id": "37cbd0053301",
+              "pid": 79114,
+              "request_id": "ab3a3f1816e649d98a37e1c13faddd01",
+              "mode": "execute",
+              "capabilities": [
+                "calculation",
+                "chart"
+              ],
+              "chart_kind": "histogram",
+              "metadata_kind": "",
+              "source_reference": "selected_dataset",
+              "current_result_only": false
+            },
+            {
+              "time": "2026-10-09T16:50:11.719312+00:00",
+              "event": "goal_semantic_review_started",
+              "run_id": "7c5f6673a1164e1fa5130e164aacf0e0",
+              "instance_id": "37cbd0053301",
+              "pid": 79114,
+              "request_id": "ab3a3f1816e649d98a37e1c13faddd01"
+            },
+            {
+              "time": "2026-10-09T16:50:16.727503+00:00",
+              "event": "goal_interpretation_completed",
+              "run_id": "7c5f6673a1164e1fa5130e164aacf0e0",
+              "instance_id": "37cbd0053301",
+              "pid": 79114,
+              "request_id": "ab3a3f1816e649d98a37e1c13faddd01",
+              "origin": "llm",
+              "mode": "execute",
+              "capabilities": [
+                "calculation",
+                "chart"
+              ],
+              "attempts": 2,
+              "goal_version": 1
+            }
+          ],
+          "injected_calls": 0,
+          "phase_order": [
+            "goal_interpretation_completed",
+            "tool_started",
+            "tool_started"
+          ],
+          "executed_tools": [
+            "aggregate_dataset",
+            "prepare_histogram"
+          ],
+          "proposed_calls": [
+            {
+              "name": "aggregate_dataset",
+              "args": {
+                "aggregation": "mean",
+                "dataset_id": "52dab725-9fa3-4dc8-8b90-db1fc5f6e166",
+                "value_column": "reading"
+              },
+              "id": "5a001e36-fc1b-45f9-a574-68b80d267241",
+              "type": "tool_call"
+            },
+            {
+              "name": "prepare_histogram",
+              "args": {
+                "bins": 10,
+                "column": "reading",
+                "dataset_id": "52dab725-9fa3-4dc8-8b90-db1fc5f6e166",
+                "source": "unfamiliar.observations"
+              },
+              "id": "39e72f3f-439a-4ed1-8a93-68a97ab748bf",
+              "type": "tool_call"
+            },
+            {
+              "name": "prepare_histogram",
+              "args": {
+                "bins": 10,
+                "column": "reading",
+                "dataset_id": "52dab725-9fa3-4dc8-8b90-db1fc5f6e166",
+                "legend": false,
+                "source": "unfamiliar.observations"
+              },
+              "id": "73120ab1-6336-4678-840e-192737ce51fe",
+              "type": "tool_call"
+            },
+            {
+              "name": "prepare_histogram",
+              "args": {
+                "bins": 10,
+                "column": "reading",
+                "dataset_id": "52dab725-9fa3-4dc8-8b90-db1fc5f6e166",
+                "legend": true,
+                "source": "unfamiliar.observations"
+              },
+              "id": "f199f8a6-db86-4fc7-afc1-25843a438b0f",
+              "type": "tool_call"
+            }
+          ],
+          "failure_observations": [],
+          "scope_and_preflight_events": [
+            {
+              "time": "2026-10-09T16:51:24.705132+00:00",
+              "event": "proposal_preflight_rejected",
+              "run_id": "7c5f6673a1164e1fa5130e164aacf0e0",
+              "instance_id": "37cbd0053301",
+              "pid": 79114,
+              "request_id": "ab3a3f1816e649d98a37e1c13faddd01",
+              "error_code": "chart_presentation_mismatch",
+              "signature": "f79c9f78b376"
+            },
+            {
+              "time": "2026-10-09T16:51:57.718892+00:00",
+              "event": "proposal_preflight_rejected",
+              "run_id": "7c5f6673a1164e1fa5130e164aacf0e0",
+              "instance_id": "37cbd0053301",
+              "pid": 79114,
+              "request_id": "ab3a3f1816e649d98a37e1c13faddd01",
+              "error_code": "chart_presentation_mismatch",
+              "signature": "b77432e95bef"
+            }
+          ],
+          "model_recovery": {
+            "failures": 0,
+            "failed_seconds": 0.0,
+            "retries": 0,
+            "next_allowed_at": 0.0,
+            "aux_calls": 5,
+            "aux_seconds": 23.680150915955892
+          },
+          "model_failure_events": [],
+          "error_type": null,
+          "error_category": null
+        }
+      ]
+    },
+    {
+      "id": "followup",
+      "status": "FAIL",
+      "intent_mode": "llm",
+      "fault_phase": "execution_planner_only",
+      "injected_first_call": false,
+      "live_calls": 7,
+      "turns": [
+        {
+          "prompt": "reading >= 10인 행의 건수를 알려줘.",
+          "status": "FAIL",
+          "agent_status": "exhausted",
+          "final_output": "생성된 분석의 기간·필터가 요청 조건과 일치하지 않아 결과를 채택하지 않았습니다. 조건을 유지한 복구가 실행 한도 안에 완료되지 않았습니다. 기존 데이터는 보존했습니다.",
+          "expected": 2.0,
+          "actual": null,
+          "model_calls": 9,
+          "scalar_outputs": [],
+          "chart_proof_valid": true,
+          "search_used": false,
+          "tools": [
+            "local_analysis_sql",
+            "inspect_table_context",
+            "local_analysis_sql"
+          ],
+          "chart_count": 0,
+          "raw_unchanged": true,
+          "approval_requests": 0,
+          "remote_executions": 0,
+          "stop_reason": "request_scope_mismatch",
+          "elapsed_seconds": 114.828,
+          "repair_events": [],
+          "goal": {
+            "objective": "row_count",
+            "mode": "execute",
+            "source_reference": "selected_dataset",
+            "sources": [
+              "unfamiliar.observations"
+            ],
+            "columns": [],
+            "conditions": [
+              {
+                "column": "reading",
+                "op": "ge",
+                "value": 10
+              }
+            ],
+            "any_conditions": [],
+            "measure_conditions": [],
+            "ratio": null,
+            "current_result_only": false,
+            "fresh_source_required": false,
+            "question": "",
+            "tasks": [
+              {
+                "capability": "row_count",
+                "options": {}
+              }
+            ]
+          },
+          "intent_events": [
+            {
+              "time": "2026-10-09T16:52:39.012825+00:00",
+              "event": "goal_interpretation_started",
+              "run_id": "86d6eac472c44581a779b86820fa0bc9",
+              "instance_id": "dc36317441a5",
+              "pid": 79114,
+              "request_id": "2bab877d8c75499b8a3da34cd4ade682",
+              "origin": "llm",
+              "goal_version": 1
+            },
+            {
+              "time": "2026-10-09T16:52:41.505138+00:00",
+              "event": "goal_literal_subjects_read",
+              "run_id": "86d6eac472c44581a779b86820fa0bc9",
+              "instance_id": "dc36317441a5",
+              "pid": 79114,
+              "request_id": "2bab877d8c75499b8a3da34cd4ade682",
+              "candidate_count": 1,
+              "table_count": 0
+            },
+            {
+              "time": "2026-10-09T16:52:52.275999+00:00",
+              "event": "goal_population_basis_read",
+              "run_id": "86d6eac472c44581a779b86820fa0bc9",
+              "instance_id": "dc36317441a5",
+              "pid": 79114,
+              "request_id": "2bab877d8c75499b8a3da34cd4ade682",
+              "basis": "source_population",
+              "has_current_quote": false
+            },
+            {
+              "time": "2026-10-09T16:52:52.276324+00:00",
+              "event": "goal_tasks_selected",
+              "run_id": "86d6eac472c44581a779b86820fa0bc9",
+              "instance_id": "dc36317441a5",
+              "pid": 79114,
+              "request_id": "2bab877d8c75499b8a3da34cd4ade682",
+              "mode": "execute",
+              "capabilities": [
+                "row_count"
+              ],
+              "chart_kind": "",
+              "metadata_kind": "",
+              "source_reference": "selected_dataset",
+              "current_result_only": false
+            },
+            {
+              "time": "2026-10-09T16:53:09.025386+00:00",
+              "event": "goal_semantic_review_started",
+              "run_id": "86d6eac472c44581a779b86820fa0bc9",
+              "instance_id": "dc36317441a5",
+              "pid": 79114,
+              "request_id": "2bab877d8c75499b8a3da34cd4ade682"
+            },
+            {
+              "time": "2026-10-09T16:53:14.940552+00:00",
+              "event": "goal_interpretation_completed",
+              "run_id": "86d6eac472c44581a779b86820fa0bc9",
+              "instance_id": "dc36317441a5",
+              "pid": 79114,
+              "request_id": "2bab877d8c75499b8a3da34cd4ade682",
+              "origin": "llm",
+              "mode": "execute",
+              "capabilities": [
+                "row_count"
+              ],
+              "attempts": 2,
+              "goal_version": 1
+            }
+          ],
+          "injected_calls": 0,
+          "phase_order": [
+            "goal_interpretation_completed",
+            "tool_started"
+          ],
+          "executed_tools": [
+            "inspect_table_context"
+          ],
+          "proposed_calls": [
+            {
+              "name": "local_analysis_sql",
+              "args": {
+                "sql": "SELECT COUNT(*) FROM data WHERE reading >= 10"
+              },
+              "id": "ef8f11e3-ac9e-4cbf-9ded-05d94529cac2",
+              "type": "tool_call"
+            },
+            {
+              "name": "inspect_table_context",
+              "args": {
+                "table": "unfamiliar.observations"
+              },
+              "id": "92d3c0e3-a5eb-43ef-8633-5291fdb81182",
+              "type": "tool_call"
+            },
+            {
+              "name": "local_analysis_sql",
+              "args": {
+                "dataset_id": "32c495fa-a750-4a87-9281-5a2e841c3aa3",
+                "sql": "SELECT COUNT(*) FROM unfamiliar.observations WHERE reading >= 10"
+              },
+              "id": "b06d4c12-db6e-4ca1-9d50-df1536f480ac",
+              "type": "tool_call"
+            }
+          ],
+          "failure_observations": [],
+          "scope_and_preflight_events": [
+            {
+              "time": "2026-10-09T16:53:43.512203+00:00",
+              "event": "request_scope_rejected",
+              "run_id": "86d6eac472c44581a779b86820fa0bc9",
+              "instance_id": "dc36317441a5",
+              "pid": 79114,
+              "request_id": "2bab877d8c75499b8a3da34cd4ade682",
+              "reason": "request_scope_mismatch",
+              "columns": [
+                "reading"
+              ],
+              "unresolved": []
+            },
+            {
+              "time": "2026-10-09T16:54:15.972597+00:00",
+              "event": "request_scope_rejected",
+              "run_id": "86d6eac472c44581a779b86820fa0bc9",
+              "instance_id": "dc36317441a5",
+              "pid": 79114,
+              "request_id": "2bab877d8c75499b8a3da34cd4ade682",
+              "reason": "request_scope_mismatch",
+              "columns": [
+                "reading"
+              ],
+              "unresolved": []
+            },
+            {
+              "time": "2026-10-09T16:54:33.827113+00:00",
+              "event": "request_scope_rejected",
+              "run_id": "86d6eac472c44581a779b86820fa0bc9",
+              "instance_id": "dc36317441a5",
+              "pid": 79114,
+              "request_id": "2bab877d8c75499b8a3da34cd4ade682",
+              "reason": "request_scope_mismatch",
+              "columns": [
+                "reading"
+              ],
+              "unresolved": []
+            }
+          ],
+          "model_recovery": {
+            "failures": 0,
+            "failed_seconds": 0.0,
+            "retries": 0,
+            "next_allowed_at": 0.0,
+            "aux_calls": 5,
+            "aux_seconds": 35.911324501998024
+          },
+          "model_failure_events": [],
+          "error_type": null,
+          "error_category": null
+        },
+        {
+          "prompt": "그중 reading 평균을 알려줘.",
+          "status": "FAIL",
+          "agent_status": "exhausted",
+          "final_output": "생성된 분석의 기간·필터가 요청 조건과 일치하지 않아 결과를 채택하지 않았습니다. 조건을 유지한 복구가 실행 한도 안에 완료되지 않았습니다. 기존 데이터는 보존했습니다.",
+          "expected": 15.0,
+          "actual": null,
+          "model_calls": 10,
+          "scalar_outputs": [],
+          "chart_proof_valid": true,
+          "search_used": false,
+          "tools": [
+            "local_analysis_sql",
+            "inspect_table_context",
+            "local_analysis_sql",
+            "local_analysis_sql",
+            "local_analysis_sql"
+          ],
+          "chart_count": 0,
+          "raw_unchanged": true,
+          "approval_requests": 0,
+          "remote_executions": 0,
+          "stop_reason": "request_scope_mismatch",
+          "elapsed_seconds": 197.536,
+          "repair_events": [],
+          "goal": {
+            "objective": "requested work",
+            "mode": "execute",
+            "source_reference": "previous_analysis",
+            "sources": [
+              "unfamiliar.observations"
+            ],
+            "columns": [
+              "reading"
+            ],
+            "conditions": [
+              {
+                "column": "reading",
+                "op": "ge",
+                "value": 10
+              },
+              {
+                "column": "reading",
+                "op": "is_null",
+                "value": null
+              }
+            ],
+            "any_conditions": [],
+            "measure_conditions": [],
+            "ratio": null,
+            "current_result_only": false,
+            "fresh_source_required": false,
+            "question": "",
+            "tasks": [
+              {
+                "capability": "calculation",
+                "options": {
+                  "operations": [
+                    "AVG"
+                  ]
+                }
+              }
+            ]
+          },
+          "intent_events": [
+            {
+              "time": "2026-10-09T16:52:39.012825+00:00",
+              "event": "goal_interpretation_started",
+              "run_id": "86d6eac472c44581a779b86820fa0bc9",
+              "instance_id": "dc36317441a5",
+              "pid": 79114,
+              "request_id": "2bab877d8c75499b8a3da34cd4ade682",
+              "origin": "llm",
+              "goal_version": 1
+            },
+            {
+              "time": "2026-10-09T16:52:41.505138+00:00",
+              "event": "goal_literal_subjects_read",
+              "run_id": "86d6eac472c44581a779b86820fa0bc9",
+              "instance_id": "dc36317441a5",
+              "pid": 79114,
+              "request_id": "2bab877d8c75499b8a3da34cd4ade682",
+              "candidate_count": 1,
+              "table_count": 0
+            },
+            {
+              "time": "2026-10-09T16:52:52.275999+00:00",
+              "event": "goal_population_basis_read",
+              "run_id": "86d6eac472c44581a779b86820fa0bc9",
+              "instance_id": "dc36317441a5",
+              "pid": 79114,
+              "request_id": "2bab877d8c75499b8a3da34cd4ade682",
+              "basis": "source_population",
+              "has_current_quote": false
+            },
+            {
+              "time": "2026-10-09T16:52:52.276324+00:00",
+              "event": "goal_tasks_selected",
+              "run_id": "86d6eac472c44581a779b86820fa0bc9",
+              "instance_id": "dc36317441a5",
+              "pid": 79114,
+              "request_id": "2bab877d8c75499b8a3da34cd4ade682",
+              "mode": "execute",
+              "capabilities": [
+                "row_count"
+              ],
+              "chart_kind": "",
+              "metadata_kind": "",
+              "source_reference": "selected_dataset",
+              "current_result_only": false
+            },
+            {
+              "time": "2026-10-09T16:53:09.025386+00:00",
+              "event": "goal_semantic_review_started",
+              "run_id": "86d6eac472c44581a779b86820fa0bc9",
+              "instance_id": "dc36317441a5",
+              "pid": 79114,
+              "request_id": "2bab877d8c75499b8a3da34cd4ade682"
+            },
+            {
+              "time": "2026-10-09T16:53:14.940552+00:00",
+              "event": "goal_interpretation_completed",
+              "run_id": "86d6eac472c44581a779b86820fa0bc9",
+              "instance_id": "dc36317441a5",
+              "pid": 79114,
+              "request_id": "2bab877d8c75499b8a3da34cd4ade682",
+              "origin": "llm",
+              "mode": "execute",
+              "capabilities": [
+                "row_count"
+              ],
+              "attempts": 2,
+              "goal_version": 1
+            },
+            {
+              "time": "2026-10-09T16:54:33.861207+00:00",
+              "event": "goal_interpretation_started",
+              "run_id": "b294cabc9b31448194c5b0520f392d8c",
+              "instance_id": "90b055c7b80f",
+              "pid": 79114,
+              "request_id": "f3c7fc8480cd4deb91381d412a0e0e50",
+              "origin": "llm",
+              "goal_version": 1
+            },
+            {
+              "time": "2026-10-09T16:54:36.766412+00:00",
+              "event": "goal_literal_subjects_read",
+              "run_id": "b294cabc9b31448194c5b0520f392d8c",
+              "instance_id": "90b055c7b80f",
+              "pid": 79114,
+              "request_id": "f3c7fc8480cd4deb91381d412a0e0e50",
+              "candidate_count": 1,
+              "table_count": 0
+            },
+            {
+              "time": "2026-10-09T16:54:46.557732+00:00",
+              "event": "goal_measure_obligation_reviewed",
+              "run_id": "b294cabc9b31448194c5b0520f392d8c",
+              "instance_id": "90b055c7b80f",
+              "pid": 79114,
+              "request_id": "f3c7fc8480cd4deb91381d412a0e0e50",
+              "original_capability": "calculation",
+              "capability": "calculation",
+              "operations": [
+                "AVG"
+              ],
+              "changed": true
+            },
+            {
+              "time": "2026-10-09T16:54:50.646391+00:00",
+              "event": "goal_population_basis_read",
+              "run_id": "b294cabc9b31448194c5b0520f392d8c",
+              "instance_id": "90b055c7b80f",
+              "pid": 79114,
+              "request_id": "f3c7fc8480cd4deb91381d412a0e0e50",
+              "basis": "source_population",
+              "has_current_quote": false
+            },
+            {
+              "time": "2026-10-09T16:54:50.646591+00:00",
+              "event": "goal_tasks_selected",
+              "run_id": "b294cabc9b31448194c5b0520f392d8c",
+              "instance_id": "90b055c7b80f",
+              "pid": 79114,
+              "request_id": "f3c7fc8480cd4deb91381d412a0e0e50",
+              "mode": "execute",
+              "capabilities": [
+                "calculation"
+              ],
+              "chart_kind": "",
+              "metadata_kind": "",
+              "source_reference": "previous_analysis",
+              "current_result_only": false
+            },
+            {
+              "time": "2026-10-09T16:55:08.759686+00:00",
+              "event": "goal_semantic_review_started",
+              "run_id": "b294cabc9b31448194c5b0520f392d8c",
+              "instance_id": "90b055c7b80f",
+              "pid": 79114,
+              "request_id": "f3c7fc8480cd4deb91381d412a0e0e50"
+            },
+            {
+              "time": "2026-10-09T16:55:19.588691+00:00",
+              "event": "goal_population_audited",
+              "run_id": "b294cabc9b31448194c5b0520f392d8c",
+              "instance_id": "90b055c7b80f",
+              "pid": 79114,
+              "request_id": "f3c7fc8480cd4deb91381d412a0e0e50",
+              "changed": true,
+              "condition_count": 2,
+              "alternative_count": 0
+            },
+            {
+              "time": "2026-10-09T16:55:19.589688+00:00",
+              "event": "goal_interpretation_completed",
+              "run_id": "b294cabc9b31448194c5b0520f392d8c",
+              "instance_id": "90b055c7b80f",
+              "pid": 79114,
+              "request_id": "f3c7fc8480cd4deb91381d412a0e0e50",
+              "origin": "llm",
+              "mode": "execute",
+              "capabilities": [
+                "calculation"
+              ],
+              "attempts": 2,
+              "goal_version": 1
+            }
+          ],
+          "injected_calls": 0,
+          "phase_order": [
+            "goal_interpretation_completed",
+            "tool_started",
+            "goal_interpretation_completed"
+          ],
+          "executed_tools": [
+            "inspect_table_context"
+          ],
+          "proposed_calls": [
+            {
+              "name": "local_analysis_sql",
+              "args": {
+                "sql": "SELECT COUNT(*) FROM data WHERE reading >= 10"
+              },
+              "id": "ef8f11e3-ac9e-4cbf-9ded-05d94529cac2",
+              "type": "tool_call"
+            },
+            {
+              "name": "inspect_table_context",
+              "args": {
+                "table": "unfamiliar.observations"
+              },
+              "id": "92d3c0e3-a5eb-43ef-8633-5291fdb81182",
+              "type": "tool_call"
+            },
+            {
+              "name": "local_analysis_sql",
+              "args": {
+                "dataset_id": "32c495fa-a750-4a87-9281-5a2e841c3aa3",
+                "sql": "SELECT COUNT(*) FROM unfamiliar.observations WHERE reading >= 10"
+              },
+              "id": "b06d4c12-db6e-4ca1-9d50-df1536f480ac",
+              "type": "tool_call"
+            },
+            {
+              "name": "local_analysis_sql",
+              "args": {
+                "dataset_id": "32c495fa-a750-4a87-9281-5a2e841c3aa3",
+                "sql": "SELECT AVG(reading) FROM data WHERE reading >= 10"
+              },
+              "id": "cfc947ad-9a94-4794-b7d8-b089049b6f4f",
+              "type": "tool_call"
+            },
+            {
+              "name": "local_analysis_sql",
+              "args": {
+                "dataset_id": "32c495fa-a750-4a87-9281-5a2e841c3aa3",
+                "query": "SELECT AVG(reading) FROM data WHERE reading >= 10"
+              },
+              "id": "184ade7a-eeed-4443-bcb5-5d388a8a84ca",
+              "type": "tool_call"
+            }
+          ],
+          "failure_observations": [],
+          "scope_and_preflight_events": [
+            {
+              "time": "2026-10-09T16:53:43.512203+00:00",
+              "event": "request_scope_rejected",
+              "run_id": "86d6eac472c44581a779b86820fa0bc9",
+              "instance_id": "dc36317441a5",
+              "pid": 79114,
+              "request_id": "2bab877d8c75499b8a3da34cd4ade682",
+              "reason": "request_scope_mismatch",
+              "columns": [
+                "reading"
+              ],
+              "unresolved": []
+            },
+            {
+              "time": "2026-10-09T16:54:15.972597+00:00",
+              "event": "request_scope_rejected",
+              "run_id": "86d6eac472c44581a779b86820fa0bc9",
+              "instance_id": "dc36317441a5",
+              "pid": 79114,
+              "request_id": "2bab877d8c75499b8a3da34cd4ade682",
+              "reason": "request_scope_mismatch",
+              "columns": [
+                "reading"
+              ],
+              "unresolved": []
+            },
+            {
+              "time": "2026-10-09T16:54:33.827113+00:00",
+              "event": "request_scope_rejected",
+              "run_id": "86d6eac472c44581a779b86820fa0bc9",
+              "instance_id": "dc36317441a5",
+              "pid": 79114,
+              "request_id": "2bab877d8c75499b8a3da34cd4ade682",
+              "reason": "request_scope_mismatch",
+              "columns": [
+                "reading"
+              ],
+              "unresolved": []
+            },
+            {
+              "time": "2026-10-09T16:56:28.437796+00:00",
+              "event": "request_scope_rejected",
+              "run_id": "b294cabc9b31448194c5b0520f392d8c",
+              "instance_id": "90b055c7b80f",
+              "pid": 79114,
+              "request_id": "f3c7fc8480cd4deb91381d412a0e0e50",
+              "reason": "request_scope_mismatch",
+              "columns": [
+                "reading"
+              ],
+              "unresolved": []
+            },
+            {
+              "time": "2026-10-09T16:57:09.064184+00:00",
+              "event": "request_scope_rejected",
+              "run_id": "b294cabc9b31448194c5b0520f392d8c",
+              "instance_id": "90b055c7b80f",
+              "pid": 79114,
+              "request_id": "f3c7fc8480cd4deb91381d412a0e0e50",
+              "reason": "request_scope_mismatch",
+              "columns": [
+                "reading"
+              ],
+              "unresolved": []
+            },
+            {
+              "time": "2026-10-09T16:57:51.382492+00:00",
+              "event": "request_scope_rejected",
+              "run_id": "b294cabc9b31448194c5b0520f392d8c",
+              "instance_id": "90b055c7b80f",
+              "pid": 79114,
+              "request_id": "f3c7fc8480cd4deb91381d412a0e0e50",
+              "reason": "request_scope_mismatch",
+              "columns": [
+                "reading"
+              ],
+              "unresolved": []
+            }
+          ],
+          "model_recovery": {
+            "failures": 0,
+            "failed_seconds": 0.0,
+            "retries": 0,
+            "next_allowed_at": 0.0,
+            "aux_calls": 7,
+            "aux_seconds": 45.70662029105006
+          },
+          "model_failure_events": [],
+          "error_type": null,
+          "error_category": null
+        }
+      ]
+    }
+  ]
+}

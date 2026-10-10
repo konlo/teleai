@@ -1,0 +1,16 @@
+F..................................................
+======================================================================
+FAIL: test_axis_adjustment_cannot_create_a_new_population (tests.test_agent_failure_batch.FailureBatchTests.test_axis_adjustment_cannot_create_a_new_population)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/najongseong/git_repository/teleai/tests/test_agent_failure_batch.py", line 89, in test_axis_adjustment_cannot_create_a_new_population
+    self.assertEqual(result['status'],'answered',result)
+AssertionError: 'blocked' != 'answered'
+- blocked
++ answered
+ : {'status': 'blocked', 'text': '요청의 분석 목표를 확인하지 못해 실행하지 않았습니다. 기존 데이터와 결과는 보존했습니다.', 'elapsed_seconds': 0.005}
+
+----------------------------------------------------------------------
+Ran 51 tests in 10.022s
+
+FAILED (failures=1)

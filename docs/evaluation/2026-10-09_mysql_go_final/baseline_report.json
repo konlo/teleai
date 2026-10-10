@@ -1,0 +1,210 @@
+{
+  "environment": "local MySQL + Ollama qwen3:8b",
+  "scope": "actual browser 31-turn baseline, before second batch fixes",
+  "completed": 31,
+  "passed": 16,
+  "failed": 15,
+  "verdict": "NO-GO",
+  "results": [
+    {
+      "id": 1,
+      "reason": null,
+      "model_calls": 2,
+      "verdict": "PASS"
+    },
+    {
+      "id": 2,
+      "reason": null,
+      "model_calls": 3,
+      "verdict": "PASS"
+    },
+    {
+      "id": 3,
+      "reason": null,
+      "model_calls": 3,
+      "verdict": "PASS"
+    },
+    {
+      "id": 4,
+      "reason": "goal_unverified",
+      "model_calls": 2,
+      "verdict": "FAIL",
+      "error": "goal_unverified"
+    },
+    {
+      "id": 5,
+      "reason": null,
+      "model_calls": 3,
+      "verdict": "FAIL",
+      "error": "contract mismatch"
+    },
+    {
+      "id": 6,
+      "reason": null,
+      "model_calls": 3,
+      "verdict": "PASS"
+    },
+    {
+      "id": 7,
+      "reason": null,
+      "model_calls": 3,
+      "verdict": "PASS"
+    },
+    {
+      "id": 8,
+      "reason": "goal_unverified",
+      "model_calls": 5,
+      "verdict": "FAIL",
+      "error": "goal_unverified"
+    },
+    {
+      "id": 9,
+      "reason": null,
+      "model_calls": 3,
+      "verdict": "PASS"
+    },
+    {
+      "id": 10,
+      "reason": null,
+      "model_calls": 3,
+      "verdict": "PASS"
+    },
+    {
+      "id": 11,
+      "reason": null,
+      "model_calls": 3,
+      "verdict": "PASS"
+    },
+    {
+      "id": 12,
+      "reason": null,
+      "model_calls": 3,
+      "verdict": "PASS"
+    },
+    {
+      "id": 13,
+      "reason": null,
+      "model_calls": 3,
+      "verdict": "PASS"
+    },
+    {
+      "id": 14,
+      "reason": null,
+      "model_calls": 3,
+      "verdict": "PASS"
+    },
+    {
+      "id": 15,
+      "reason": null,
+      "model_calls": 2,
+      "verdict": "PASS"
+    },
+    {
+      "id": 16,
+      "reason": "goal_unverified",
+      "model_calls": 2,
+      "verdict": "FAIL",
+      "error": "goal_unverified"
+    },
+    {
+      "id": 17,
+      "reason": null,
+      "model_calls": 3,
+      "verdict": "PASS"
+    },
+    {
+      "id": 18,
+      "reason": "goal_unverified",
+      "model_calls": 2,
+      "verdict": "FAIL",
+      "error": "goal_unverified"
+    },
+    {
+      "id": 19,
+      "reason": "goal_unverified",
+      "model_calls": 2,
+      "verdict": "FAIL",
+      "error": "goal_unverified"
+    },
+    {
+      "id": 20,
+      "reason": "goal_unverified",
+      "model_calls": 2,
+      "verdict": "FAIL",
+      "error": "goal_unverified"
+    },
+    {
+      "id": 21,
+      "reason": null,
+      "model_calls": 3,
+      "verdict": "PASS"
+    },
+    {
+      "id": 22,
+      "reason": "goal_unverified",
+      "model_calls": 2,
+      "verdict": "FAIL",
+      "error": "goal_unverified"
+    },
+    {
+      "id": 23,
+      "reason": "goal_unverified",
+      "model_calls": 2,
+      "verdict": "FAIL",
+      "error": "goal_unverified"
+    },
+    {
+      "id": 24,
+      "reason": null,
+      "model_calls": 2,
+      "verdict": "PASS"
+    },
+    {
+      "id": 25,
+      "verdict": "FAIL",
+      "reason": "ModelAttemptBudgetExceeded"
+    },
+    {
+      "id": 26,
+      "reason": null,
+      "model_calls": 2,
+      "verdict": "PASS"
+    },
+    {
+      "id": 27,
+      "reason": null,
+      "model_calls": 5,
+      "verdict": "FAIL",
+      "error": "missing source needs actionable clarification"
+    },
+    {
+      "id": 28,
+      "reason": null,
+      "model_calls": 2,
+      "verdict": "FAIL",
+      "error": "missing source needs actionable clarification"
+    },
+    {
+      "id": 29,
+      "reason": "goal_unverified",
+      "model_calls": 3,
+      "verdict": "FAIL",
+      "error": "requested qualified source was silently replaced"
+    },
+    {
+      "id": 30,
+      "reason": "goal_unverified",
+      "model_calls": 2,
+      "verdict": "FAIL",
+      "error": "requested qualified source was silently replaced"
+    },
+    {
+      "id": 31,
+      "reason": "goal_unverified",
+      "model_calls": 3,
+      "verdict": "FAIL",
+      "error": "requested qualified source was silently replaced"
+    }
+  ],
+  "caveat": "Turn26 was additionally submitted once by the UI harness after cancellation. Per-request checkpoint and runtime IDs grade outputs; browser assistant-count alone is not used. Colors case10 will be strengthened to require changed palette/image."
+}

@@ -1,0 +1,72 @@
+{
+  "model": "gemma4:e4b",
+  "mode": "actual Ollama, isolated synthetic raw data, no remote database",
+  "cases": [
+    {
+      "id": "preview",
+      "prompt": "observations에서 열 개 행을 보여줘",
+      "status": "answered",
+      "text": "lab.observations의 데이터 10행, 3열을 표로 표시했습니다. 원본과 기존 분석 기준은 보존했습니다. 이 미리보기는 전체 분포 통계가 아닙니다.",
+      "seconds": 42.972,
+      "goal": {
+        "objective": "observations 테이블의 상위 10개 행을 보여주기",
+        "mode": "execute",
+        "sources": [
+          "lab.observations"
+        ],
+        "columns": [],
+        "conditions": [],
+        "any_conditions": [],
+        "measure_conditions": [],
+        "ratio": null,
+        "current_result_only": false,
+        "fresh_source_required": false,
+        "question": "observations 테이블의 상위 10개 행을 보여드리겠습니다.",
+        "tasks": [
+          {
+            "capability": "row_preview",
+            "options": {
+              "limit": 10
+            }
+          }
+        ]
+      },
+      "model_calls": 1,
+      "result": null,
+      "pass": true
+    },
+    {
+      "id": "negated_chart",
+      "prompt": "observations의 reading 히스토그램은 그리지 말고 컬럼 목록만 보여줘",
+      "status": "blocked",
+      "text": "요청의 분석 목표를 확인하지 못해 실행하지 않았습니다. 기존 데이터와 결과는 보존했습니다.",
+      "seconds": 131.098,
+      "goal": null,
+      "model_calls": 2,
+      "result": null,
+      "pass": false
+    },
+    {
+      "id": "negated_avg",
+      "prompt": "observations의 reading 평균은 계산하지 말고 합계만 알려줘",
+      "status": "blocked",
+      "text": "요청의 분석 목표를 확인하지 못해 실행하지 않았습니다. 기존 데이터와 결과는 보존했습니다.",
+      "seconds": 93.25,
+      "goal": null,
+      "model_calls": 2,
+      "result": null,
+      "pass": false
+    },
+    {
+      "id": "filtered_sum",
+      "prompt": "observations에서 reading이 3~8인 것만 합계를 알려줘",
+      "status": "blocked",
+      "text": "요청의 분석 목표를 확인하지 못해 실행하지 않았습니다. 기존 데이터와 결과는 보존했습니다.",
+      "seconds": 66.689,
+      "goal": null,
+      "model_calls": 2,
+      "result": null,
+      "pass": false
+    }
+  ]
+}

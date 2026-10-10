@@ -1,0 +1,56 @@
+{
+  "id": 15,
+  "prompt": "테이블의 column 다시 보여줘",
+  "status": "complete",
+  "goal": {
+    "objective": "테이블의 column 다시 보여줘",
+    "mode": "execute",
+    "source_reference": "previous_analysis",
+    "sources": [
+      "teleai_default.bank_loan"
+    ],
+    "columns": [
+      "age"
+    ],
+    "conditions": [
+      {
+        "column": "education",
+        "op": "in",
+        "value": [
+          "primary",
+          "secondary"
+        ]
+      },
+      {
+        "column": "age",
+        "op": "ge",
+        "value": 30
+      },
+      {
+        "column": "age",
+        "op": "le",
+        "value": 40
+      }
+    ],
+    "any_conditions": [],
+    "measure_conditions": [],
+    "ratio": null,
+    "current_result_only": false,
+    "fresh_source_required": false,
+    "question": "",
+    "tasks": [
+      {
+        "capability": "metadata",
+        "options": {
+          "kind": "columns"
+        }
+      }
+    ]
+  },
+  "reason": null,
+  "run_id": "b381684d0b4b4e5eb1899a1cbf235536",
+  "model_calls": 2,
+  "chart_metadata": [],
+  "verified_metadata_columns": 18,
+  "verdict": "PASS"
+}
