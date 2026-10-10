@@ -2,8 +2,8 @@
 
 ## Current Status
 
-- **Last Updated**: 2026-10-10T14:50:53.201913+09:00
-- **Status**: C01/C02 지정 구현과 검증 완료. 과거 표시 결과 참조/범위 고정과 입력 중복/지침 선택을 보강했다. 로컬 MySQL/Ollama 사용시험 근거이며 범용·회사 Windows/Azure/Databricks 운영 GO는 미충족/미검증.
+- **Last Updated**: 2026-10-10T19:29:01.355086+09:00
+- **Status**: Windows batch 저장 fsync 호환 수정 및 sidebar 테이블 목록 구현 완료. 전달된 model_recovery.invoke 기존156행은 문맥 크기가 아닌 모델 호출/시간 예산 소진 경로로 확인. 오류 ID별 예산 snapshot·진단/안내 보강과 관련69검사 통과; 회사 Windows/Azure 재검증·운영 GO는 미확인.
 - **Evidence**: [추론·계획 보강 보고서](docs/evaluation/2026-10-10_cot_strengthening/report.json). 최종제품7b8156a1aa6691aed3fd7e3c74b73b3c24f441b534104cac4240a7e5021169df: 전체966PASS/4SKIP·665subtests(124.54초), compileall/diffcheck PASS.
 - **Actual UI**: 조건부10행→평균1732.9는 앞build에서 확인했다. 수정/서버재시작/소진된 이전요청 종료 후 최종build에서 같은 차트 원문55.383초/6모델/1도구로 secondary9·primary1 막대 PNG 일치. 이들을 최종build 전체3턴/반복 안정성 점수로 합산하지 않는다.
 - **Preservation**: 기존 asset digest 변경0·원본선택 유지·평균/최종차트 추가DB조회0. 최초 잘못된208699행 완료·예산 초과·인용 실패·누적예산 재개 중단을 별도 보존했다.
@@ -15,7 +15,7 @@
 - [x] **C01 판단 근거**: goal 출력·조건·출처를 CURRENT 인용 또는 정확히 일치하는 이전/관측 맥락에 연결한다. 지정 구현/검증 완료; 의미 entailment 일반 증명과 구분.
 - [x] **C02 관찰 기반 계획 이력**: 도구 실패·인자 수정·의존성 수정·검증 완료를 영속 저장하고 다음 planner에 연결. 지정 구현/검증 완료.
 - [ ] **C03 작업별 범위**: 독립 모집단·동일 capability 반복·범용 의존 계획. 공유 scope의 부분 보강으로 완료 처리하지 않는다.
-- [ ] **C04 추론 효율**: 참조 중복 제거/작업별 지침 선택은 구현. 단순/복합 호출 profile·엄격한 요청 deadline·지연/조건 보존·소진예산 재개 안내는 남음.
+- [ ] **C04 추론 효율**: 참조 중복 제거/작업별 지침 선택은 구현. 소진예산 원인·사용량 snapshot/재개 안내는 보강. 단순/복합 호출 profile·엄격한 요청 deadline·지연/조건 보존·회사 실제 예산 소진 원인 확인은 남음.
 - [ ] **C05 운영/추론 평가**: 동일 모델 검토의 오류 상관·새 표현/스키마·장기 대화·Azure/Databricks 반복 종단 평가.
 - [x] **P0 지원 수치 TAO 검증**: 실행 성공과 계산 충족을 구분하는 결과 계약·독립 검증·semantic_mismatch 재계획 및 지정 실제웹 여정 확인. 임의 수학의 일반 증명/완료로 확대하지 않는다. [보강 근거](docs/evaluation/2026-10-10_tao_strengthening/report.json).
 - [x] **P1 TAO 조회 정책**: stalled 복구 지침을 실제 자동/수동 SQL 정책과 연결하고 두 모드 검사.
@@ -3366,3 +3366,26 @@ Task definitions and acceptance conditions: docs/agent_remaining_tasks_2026-09-1
 ## [2026-10-10 18:50:33] [Agent: /root] User Request: push해줘
 - **Action**: 현재 branch와 origin HEAD를 대조하여 Windows 파일 동기화 수정의 원격 반영 여부를 확인하고 요청 기록도 push한다.
 - **Outcome**: 요청 시점에 기능 수정은 이미 원격 9cce38f까지 반영되어 있으며 로컬 HEAD 일치 확인. 추가 제품 변경 없음; 이 확인 기록을 커밋·push한다.
+
+## [2026-10-10 19:05:12] [Agent: /root] User Request: 최근 오류 agent_stream / ModelContextBudgetExceeded / HTTP None
+- **Action**: 모델 문맥 예산의 provider 선택·기본 한도·입력 축소·실패 진단을 확인한다. 회사 서버 설정이나 실제 토큰량은 추측하지 않고 안전한 budget 숫자로 원인을 좁힌다.
+- **Finding**: ModelContextBudgetMiddleware에서 시스템+메시지+도구 JSON의 보수적 UTF-8 bytes와 template headroom을 합산하고 여러 projection 후 한도 초과 시 모델 호출 전 예외. 해당 턴에 앞선 DB 실행이 있었는지는 별도 확인 필요. Azure는 num_ctx 없으면 명시 max_context_chars 기본 32000 fallback, Ollama 기본 num_ctx16384/num_predict4096. 실제 provider와 마지막 input_budget 숫자 미제공이므로 설정·실제 모델 문맥 크기·입력 증가 원인을 단정하지 않음.
+- **Outcome**: 안전한 진단 요약의 입력 추정(bytes), 표시 모델, JSON input_budget.components 숫자를 요청한다. 토큰 숫자로 오인하거나 문맥검사를 우회하는 변경은 하지 않음.
+
+## [2026-10-10 19:12:34] [Agent: /root] User Request: 입력 추정 4197+640/32000 의미 설명
+- **Action**: 산식(4837 < 32000)과 오류 run의 budget 이벤트 선택/모델 복구 경로를 확인하여 진단 숫자를 실패 호출로 오인하지 않도록 한다.
+- **Finding**: 4197(payload bytes)+640(template headroom)=4837로 32000(input budget)의 약 15.1%, 이 값은 초과 예외 조건을 만족하지 않는다. support_report는 같은 run의 마지막 model_payload_budget을 선택하며 실패 exception과 직접 묶인 snapshot이 아니다. 다른 호출/오류 ID 선택이나 이후 예산 이벤트와의 관계는 서버 로그로 확인해야 하며 이 숫자로 한도 증가를 권하지 않는다.
+- **Outcome**: 각 항목의 의미와 bytes/token 차이, 숫자·초과 메시지의 불일치를 명시하고 같은 진단의 오류 ID·오류 위치·within_budget 정보를 최소 추가 증거로 안내. 제품 변경 없음.
+
+## [2026-10-10 19:22:39] [Agent: /root] User Request: subject_identity.read line73, auxiliary_call line134, invoke line156 / within_budget true
+- **Action**: subject JSON 역할 호출의 중복 budget 검사·Azure schema 포함 여부·effective model 선택·진단 예산 매칭을 조사하여 실제 모순 원인을 재현한다.
+
+### [2026-10-10 19:29:01] Model attempt budget diagnosis and observability
+- **Finding**: 제공된 read73 → auxiliary_call134 → invoke156은 현재 수정 전 코드의 ModelAttemptBudgetExceeded raise와 일치. ModelContextBudgetExceeded가 아니며 입력4197+640/32000·within_budget=true와 모순 없음. 앞선 문맥 크기 진단은 사용자가 전달한 유형을 기준으로 했으며 새 위치 증거로 정정. 회사 소스 버전·정확한 예외 유형·호출/시간 소진 중 어느 것인지는 직접 확인하지 못함.
+- **Artifact Update**: model_recovery.py에서 calls/time/both, 주/보조 역할, 실패 당시 횟수·시간 한도/사용량, 예약 호출·보조 호출·실패·재시도 snapshot을 예외 및 metadata event로 기록. Diagnostics가 error ID에 snapshot 보존. support_report는 안전한 숫자·enum만 출력하며 ID 지정 시 동일 run의 다른 오류로 대체하지 않음. runtime은 호출·시간 소진 안내와 동일 요청 재개로 예산이 초기화되지 않음을 표시. 서버 진단 안내 문서에 두 예산 차이와 전달 항목 추가.
+- **Validation**: 신규 tests/test_inference_budget_diagnosis.py에서 입력정상/보조9회소진, 시간소진, retry wait deadline, 양쪽소진, 정상진입, error ID 정합성, 공개정보 필터, runtime 안내를 검사. 관련 9개 test files: 69 passed / 19 subtests passed (11.14초), git diff --check PASS. 실제 회사 Azure/Windows 재현이나 원격 SQL 검증으로 계산하지 않음.
+- **Decision/Limit**: 제한 증대·비활성화 및 원격조회 장부 초기화 없음. 이번 변경은 관측/안내 보강으로, 과도한 의미 판별 호출 또는 공급자 지연의 해결 완료를 주장하지 않음. 제품 변경은 로컬 working tree에 있으며 이번 요청에서 commit/push 및 서버 재시작은 수행하지 않음.
+
+## [2026-10-10 19:34:19] [Agent: /root] User Request: push 해줘
+- **Action**: 모델 호출/시간 소진 진단 snapshot, 오류 ID 선택 정합성, 안내 및 회귀 검사, 문서를 현재 branch에 커밋·push하고 원격 HEAD와 대조한다.
+- **Validation**: 앞선 수정 검증 69 passed / 19 subtests passed, 이번 push 전 git diff --check PASS. .env·자격증명 포함 없음. 회사 서비스 배포/재시작과 운영 검증은 이 push에 포함되지 않음.

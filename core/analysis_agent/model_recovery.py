@@ -18,7 +18,9 @@ class ModelCoolingDown(RuntimeError):
 
 
 class ModelAttemptBudgetExceeded(RuntimeError):
-    pass
+    def __init__(self, message, *, budget=None):
+        super().__init__(message)
+        self.attempt_budget = budget or {}
 
 
 def transient_model_error(error):
@@ -145,15 +147,31 @@ class ModelRecoveryMiddleware(AgentMiddleware):
         if observed['next_allowed_at'] > time.time():
             raise ModelCoolingDown('Model provider cooldown has not elapsed')
         baseline_failures = current.get('accounted_model_failures', 0)
-        deadline = time.monotonic() + max(0., self.policy.turn_slo_seconds
-            - current.get('model_seconds', 0.)
-            - max(0., time.time() - current.get('model_started_at', time.time())))
+        budget_started = time.monotonic()
+        seconds_used_at_start = current.get('model_seconds', 0.) + max(
+            0., time.time() - current.get('model_started_at', time.time()))
+        deadline = budget_started + max(0., self.policy.turn_slo_seconds - seconds_used_at_start)
         while True:
             observed = self.ledger.get(request_id)
             calls = (current.get('model_calls', 0) + observed['failures'] - baseline_failures
                      + observed['aux_calls'] - current.get('accounted_aux_calls', 0))
-            if calls >= max_calls or time.monotonic() >= deadline:
-                raise ModelAttemptBudgetExceeded('Request inference budget exhausted')
+            now = time.monotonic()
+            calls_exhausted, time_exhausted = calls >= max_calls, now >= deadline
+            if calls_exhausted or time_exhausted:
+                budget = {
+                    'reason': 'calls_and_time' if calls_exhausted and time_exhausted else
+                              'calls' if calls_exhausted else 'time',
+                    'call_kind': 'auxiliary' if reserve_calls else 'agent',
+                    'calls_used': calls, 'call_limit': max_calls,
+                    'total_call_limit': self.max_calls, 'reserved_calls': reserve_calls,
+                    'seconds_used': round(seconds_used_at_start + max(0., now - budget_started), 3),
+                    'seconds_limit': self.policy.turn_slo_seconds,
+                    'seconds_remaining': round(max(0., deadline - now), 3),
+                    'provider_failures': observed['failures'],
+                    'auxiliary_calls': observed['aux_calls'], 'retries': observed['retries'],
+                }
+                self.diagnostics.emit('model_attempt_budget_exhausted', **budget)
+                raise ModelAttemptBudgetExceeded('Request inference budget exhausted', budget=budget)
             started = time.monotonic()
             try:
                 return handler()

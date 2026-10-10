@@ -590,6 +590,15 @@ class GraphAnalysisRuntime:
                 message=(f'모델 입력과 도구 정의가 응답 공간을 포함한 한도를 넘었습니다 (오류 ID: {error_id}). '
                     '현재 요청·조건·기존 결과를 보존하고 호출 전에 중단했습니다. '
                     '같은 입력을 재시도하기보다 분석 단계를 나누거나 모델 문맥 설정을 점검해야 합니다.')
+            from core.analysis_agent.model_recovery import ModelAttemptBudgetExceeded
+            if isinstance(exc,ModelAttemptBudgetExceeded):
+                reason=exc.attempt_budget.get('reason')
+                label={'calls':'모델 호출 횟수','time':'모델 실행 시간',
+                       'calls_and_time':'모델 호출 횟수와 실행 시간'}.get(reason,'모델 실행')
+                message=(f'요청의 {label} 한도에 도달해 분석을 중단했습니다 (오류 ID: {error_id}). '
+                    '현재 요청·조건·기존 결과를 보존했습니다. '
+                    '진단 요약의 모델 실행 제한에서 사용량과 한도를 확인할 수 있습니다. '
+                    '같은 요청의 재개만으로 실행 예산이 초기화되지는 않습니다.')
             return {'error_id':error_id, 'status':'incomplete','error_type':type(exc).__name__,
                     'error_category':category, 'text':message,
                     'elapsed_seconds':elapsed}
