@@ -1,0 +1,168 @@
+{
+  "evaluation": "real configured Ollama and Databricks; not Azure",
+  "prompt": "table list를 보여줘",
+  "status": "answered",
+  "elapsed_seconds": 17.633,
+  "error_type": null,
+  "goal_contract_error": null,
+  "failure_stage": null,
+  "goal": {
+    "objective": "table list",
+    "mode": "execute",
+    "source_reference": "explicit",
+    "sources": [],
+    "columns": [],
+    "conditions": [],
+    "any_conditions": [],
+    "measure_conditions": [],
+    "ratio": null,
+    "current_result_only": false,
+    "fresh_source_required": false,
+    "question": "",
+    "tasks": [
+      {
+        "capability": "table_list",
+        "options": {
+          "catalog": "",
+          "schema": ""
+        }
+      }
+    ]
+  },
+  "discovery_schema": "",
+  "capabilities": [
+    "table_list"
+  ],
+  "model_calls": 4,
+  "tool_calls": null,
+  "dataset_rows": [
+    37
+  ],
+  "diagnostic": {
+    "report_version": 1,
+    "found": true,
+    "run_id": "6176f00b3c864b8d81765ab3d5bca131",
+    "log_integrity": {
+      "malformed_lines": 0,
+      "bounded_read": false,
+      "unreadable_files": 0
+    },
+    "time_utc": "2026-10-10T08:01:42.223815+00:00",
+    "instance_id": "758dd267eda2",
+    "pid": 99825,
+    "runtime": {
+      "route": "langgraph-v1",
+      "model_class": "ChatOllama",
+      "goal_model": "gemma4:e4b",
+      "planner_model": "gemma4:e4b",
+      "data_backend": "databricks",
+      "revision_at_first_runtime": "30feab4176a52b7ad81ece4d12750c04637c1947",
+      "loaded_delivery_guard": "fe636ce820546fac",
+      "require_remote_approval": false,
+      "python_version": "3.11.13",
+      "packages": {
+        "langchain": "1.4.0",
+        "langchain-core": "1.6.2",
+        "langgraph": "1.2.11",
+        "streamlit": "1.63.0",
+        "sqlglot": "30.18.0"
+      }
+    },
+    "status": "answered",
+    "elapsed_seconds": 17.633,
+    "last_event": "turn_slo",
+    "flags": [],
+    "model_calls": 0,
+    "input_budget": {
+      "payload_bytes": 8246,
+      "payload_bytes_before_projection": 8246,
+      "template_headroom": 640,
+      "input_budget_units": 14336,
+      "output_reserved": 2048,
+      "context_window": 16384,
+      "tool_count": 0,
+      "message_count": 1,
+      "within_budget": true,
+      "older_turns_compacted": false,
+      "schema_compacted": false,
+      "system_catalog_compacted": false,
+      "tool_menu_compacted": false,
+      "minimal_discovery_menu": false,
+      "reasoning_compacted": false,
+      "observations_compacted": false,
+      "minimal_catalog": false,
+      "builtin_instructions_compacted": false,
+      "components": {
+        "system_bytes": 6498,
+        "message_content_bytes": 1365,
+        "tool_calls_bytes": 0,
+        "reasoning_bytes": 0,
+        "tool_schema_bytes": 0,
+        "tool_names": []
+      },
+      "measurement": "conservative_utf8_bytes_not_actual_token_count"
+    },
+    "proposed_tool_calls": 0,
+    "local_tools_started": {
+      "plan_source_discovery": 1
+    },
+    "local_tools_rejected": {},
+    "last_tool_events": [
+      {
+        "event": "tool_started",
+        "tool": "plan_source_discovery",
+        "status": null,
+        "error_code": null,
+        "ledger_status": null
+      },
+      {
+        "event": "tool_completed",
+        "tool": "plan_source_discovery",
+        "status": null,
+        "error_code": null,
+        "ledger_status": null
+      },
+      {
+        "event": "remote_query_started",
+        "tool": null,
+        "status": null,
+        "error_code": null,
+        "ledger_status": "auto_authorized"
+      },
+      {
+        "event": "remote_query_finished",
+        "tool": null,
+        "status": "ready",
+        "error_code": null,
+        "ledger_status": "completed"
+      }
+    ],
+    "remote": {
+      "started": 1,
+      "finished": 1,
+      "states": {
+        "completed": 1
+      },
+      "cached_receipts": 0
+    },
+    "completion": {
+      "status": null,
+      "reason": null,
+      "required_capabilities": [
+        "remote_query"
+      ],
+      "missing_capabilities": [],
+      "attempts": 0
+    },
+    "recovery_replans": 0,
+    "deferred_reply_blocks": 0,
+    "error_count": 0,
+    "errors": []
+  },
+  "product_sha256": "cfa33294ba2c5fa1e919cd9cd4df0c99004c57132654dc192db1c52d31141cdf",
+  "independent_inventory_count": 37,
+  "independent_oracle_queries": 0,
+  "independent_oracle_reference": "intermediate_live_databricks.json: one COUNT query earlier in this session",
+  "scope_verified": true,
+  "passed": true
+}

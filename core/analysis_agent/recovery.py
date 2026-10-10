@@ -4087,7 +4087,8 @@ class RecoveryMiddleware(AgentMiddleware):
             current=self.goal_interpreter.interpret(current,state.get('messages',[]),self.remote_available)
             current,calls=self._state({**state,'recovery':current})
         if current.get('goal_interpretation_error'):
-            return {'recovery':current,'messages':[AIMessage(content='요청의 분석 목표를 확인하지 못해 실행하지 않았습니다. 기존 데이터와 결과는 보존했습니다.',additional_kwargs={'analysis_status':'blocked','analysis_complete':False})],'jump_to':'end'}
+            reference=f" (오류 ID: {current['goal_error_id']})" if current.get('goal_error_id') else ''
+            return {'recovery':current,'messages':[AIMessage(content='요청을 해석한 모델 응답이 실행 계약을 충족하지 못해 분석 도구 실행 전에 중단했습니다.'+reference+' 기존 데이터와 결과는 보존했습니다.',additional_kwargs={'analysis_status':'blocked','analysis_complete':False})],'jump_to':'end'}
         if current.get('goal_question'):
             current.update(status='needs_context',stop_reason='goal_clarification')
             return {'recovery':current,'messages':[AIMessage(content=current['goal_question'],additional_kwargs={'analysis_status':'needs_context','analysis_complete':False})],'jump_to':'end'}

@@ -2,6 +2,7 @@
 import json
 from types import SimpleNamespace
 from langchain_core.messages import HumanMessage, SystemMessage
+from core.analysis_agent.json_contract import invoke_role
 from core.analysis_agent.goal_contract import response_schema, predicates
 
 CAPABILITIES={'chart','row_preview','value_list','profile','calculation','row_count',
@@ -180,8 +181,7 @@ Do not invent NULL predicates or restrictions. Keep explicitly requested or prev
     def override(**changes):
         revised=SimpleNamespace(**{**vars(req),**changes});revised.override=override;return revised
     req.override=override
-    def invoke():return interpreter.budget.wrap_model_call(req,lambda r:
-        population_model.invoke([r.system_message,*r.messages]))
+    def invoke():return invoke_role(population_model,req,interpreter.budget)
     for attempt in range(2):
         response=(interpreter.model_recovery.auxiliary_call(current,invoke)
                   if interpreter.model_recovery else invoke())

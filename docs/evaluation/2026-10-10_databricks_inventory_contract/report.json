@@ -1,0 +1,55 @@
+{
+  "request": "Databricks table list goal-unverified failure",
+  "company_incident_root_cause_confirmed": false,
+  "company_incident_boundary": "Reported text is emitted when goal interpretation/validation is refused, before task SQL execution. No company log or real Azure credentials supplied.",
+  "confirmed_defects": [
+    "Azure JSON-object roles did not deliver dynamic output schema, required fields, scoped constants or evidence-pointer keys to the model.",
+    "Actual Ollama/Databricks run invented unrequested schema=catalog, returning an incorrectly narrowed empty inventory.",
+    "Subject response shape errors had no bounded repair, and goal refusal lacked a searchable error ID."
+  ],
+  "fixes": [
+    "Budget the Azure system-output contract using the same schema as Ollama grammar; compact repeated schema structures without discarding constraints; retain JSON-object API compatibility and local admission guards.",
+    "LLM classifies named catalog/schema literals; bind detailed inventory options to that scope. Omitted namespace uses configured catalog with no invented schema filter.",
+    "One subject-shape correction and bounded task correction, then diagnostic failure stage/error ID without private response/prompt logs."
+  ],
+  "product_sha256": "cfa33294ba2c5fa1e919cd9cd4df0c99004c57132654dc192db1c52d31141cdf",
+  "actual_validation": {
+    "provider": "configured local Ollama",
+    "database": "real Databricks",
+    "prompt": "table list를 보여줘",
+    "status": "answered",
+    "elapsed_seconds": 17.633,
+    "inventory_rows": 37,
+    "independent_count": 37,
+    "agent_queries": 1,
+    "oracle_queries_across_session": 1,
+    "scope_verified": true,
+    "passed": true
+  },
+  "scripted_azure_tests": "Actual Azure SDK HTTP request shape with MockTransport and scripted JSON/DB receipts. Shape/selection repairs and synchronous result tested; not a real Azure language-quality score.",
+  "validation_status": "complete for this bounded fix",
+  "release_boundary": "This fix does not establish general/company operating GO or verify the inaccessible company Azure deployment.",
+  "environment_changed": false,
+  "evidence": [
+    "before_inventory_scope_fix.json",
+    "intermediate_live_databricks.json",
+    "live_databricks.json",
+    "build.json"
+  ],
+  "regression": {
+    "passed": 973,
+    "skipped": 4,
+    "subtests_passed": 683,
+    "seconds": 135.14
+  },
+  "real_mysql": {
+    "passed": 4,
+    "seconds": 63.54
+  },
+  "focused_final": {
+    "passed": 7,
+    "subtests_passed": 18
+  },
+  "compileall": "PASS",
+  "diff_check": "PASS"
+}

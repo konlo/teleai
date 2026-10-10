@@ -55,6 +55,7 @@ with st.sidebar:
     st.caption('데이터 소스: '+backend.label)
     from ui.analysis_connections import render_database_connection_check
     render_database_connection_check(backend, root)
+    inventory_slot = st.container()
     try:
         provider = render_provider_selector(root, cid)
     except ValueError as exc:
@@ -83,6 +84,9 @@ if st.session_state.get('v1_runtime_id')!=runtime_id:
     st.session_state.v1_runtime=runtime
     st.session_state.v1_runtime_id=runtime_id
 runtime=st.session_state.v1_runtime
+from ui.analysis_inventory import render_table_inventory
+with inventory_slot:
+    render_table_inventory(backend, runtime.diagnostics)
 BUSY_NOTICE='현재 분석이 이미 실행 중입니다. 완료될 때까지 잠시 기다려주세요.'
 
 

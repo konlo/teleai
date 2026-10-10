@@ -3315,3 +3315,31 @@ Task definitions and acceptance conditions: docs/agent_remaining_tasks_2026-09-1
 - **Validation** [2026-10-10T15:55:06.780474+09:00]: 제품 hash7b8156a1aa6691aed3fd7e3c74b73b3c24f441b534104cac4240a7e5021169df로 이전 최종 회귀966PASS/4SKIP 이후 코드 변경 없음 확인. diff check PASS; 누적 코드·시험·공개/합성 데이터 평가 기록2098파일42.87MiB 검토. 토큰/키 패턴 없음(키 관련2위치는 fixture-azure-key 대역). origin fetch 완료·현재브랜치원격과충돌없음. 환경/런타임 파일은 ignore 유지; 운영GO 판정은 변경하지 않는다.
 - **Action**: staged check에서 신규 과거 시험 로그의 원문 공백 및 Python6파일의 행 끝 공백을 발견했다. Python 공백만 정리하고 원문 실패 로그는 재현 근거로 보존한다. 제품 hash는 변경 없음; 코드/문서 검사와 원문 log/txt 검사를 구분한다.
 - **Outcome** [2026-10-10T15:55:36.747874+09:00]: origin/codex/agentic-analysis-rc-2026-09-14에 b72d6bb6129c9ad4a366424405fe4a8abac4a660 push 성공; ls-remote와 로컬 HEAD 일치 확인. 코드·시험·누적평가근거를 포함했고 .env/런타임 제외. 코드/Markdown/JSON diffcheck PASS, 과거 원문 로그 공백 보존. 본 성공 기록도 후속 docs커밋으로 동일브랜치에 반영한다.
+
+## [2026-10-10 16:42:47] [Agent: /root] User Request: Databricks 설정에서 table list 요청이 분석 목표 미확인으로 실행되지 않음
+- **Action**: 필수 관리/로그·출시 기준·Streamlit 스킬 확인. 모델 의도 해석/검증·metadata tools·진단 증거를 조사하고 근본 경로 수정 및 backend 분리 회귀 검증을 진행한다. .env와 기존 데이터는 보존한다.
+- **Diagnosis** [2026-10-10T16:59:17.291178+09:00]: Azure JSON-object 경로가 동적 JSON 스키마를 전달하지 않음을 확인했다. 모델 응답 shape/필수 field/decision evidence 계약을 실제 budgeted system input으로 전달하도록 공통 보강; Ollama grammar 경로는 유지. 회사 로그/실제 Azure 자격증명이 없어 이번 회사 실패의 단일 원인으로 확정하지 않는다.
+- **Actual failure found**: 실Ollama+Databricks table list 요청은 연결/SQL이 성공했지만 모델이 무근거 schema=catalog를 만들어0행을 완료했다. 최초증거 before_inventory_scope_fix.json 보존. namespace 의미역할을 독립적으로 읽고 상세 goal 옵션을 해당 literal scope에 고정하여 임의필터를 차단했다(키워드 task분기 추가 없음).
+- **Verification**: 관련38PASS·40subtests. 실Ollama+Databricks 동일요청22.611초·agent 원격조회1회·37행 목록·schema필터없음; 독립 COUNT 비교 및 전체회귀 진행 중. 모델 응답 계약 거절도 오류ID·goal_task_selection/goal_validation 단계·도구 미실행 기록으로 남긴다. .env 변경 없음.
+- **Outcome** [2026-10-10T17:06:02.163407+09:00]: 최종제품hash cfa33294ba2c5fa1e919cd9cd4df0c99004c57132654dc192db1c52d31141cdf의전체회귀973PASS/4SKIP·683subtests(135.14초), opt-in실제MySQL4PASS(63.54초), 최종복구/namespace7PASS·18subtests, compileall/diffcheck PASS. 최종실Ollama+Databricks동일요청17.633초·원격조회1·37행·미요청schema필터0; 앞선독립COUNT37과일치. Azure는SDK대역HTTP 계약·잘못된subject/selection수정·실패ID를검증했으며회사실제Azure배포/운영GO는미검증. 최초잘못된0행과중간성공을보존하고report.json에빌드경계를명시. .env변경없음; 같은브랜치에수정커밋/push진행.
+- **Push Outcome** [2026-10-10T17:06:41.310835+09:00]: 8e3cbf5a15fa88dc0b4a27b247578472748c5e2b를 origin/codex/agentic-analysis-rc-2026-09-14에 push 완료; ls-remote 일치 확인. 회사서버 적용에는 같은브랜치 업데이트와 기존Streamlit프로세스재시작이 필요하다. 성공기록을후속docs커밋으로동일원격에저장한다.
+
+## [2026-10-10 17:40:21] [Agent: /root] User Request: 오류 ID 56750b1e23ee 확인
+- **Action**: 기존 관리/로깅 스킬 적용. 로컬 실행 진단에서 해당 오류ID만 검색해 실제 실패 단계와 원격조회 여부를 확인한다. 회사 로그가 로컬에 없으면 ID만으로 원인을 추측하지 않고 안전한 진단 요약 항목을 안내한다.
+
+### [2026-10-10 17:42:36 KST] 오류 ID 56750b1e23ee 확인 결과
+- 로컬 .telly_runtime, .telly_table_context, docs/evaluation 검색 완료: 일치 기록 없음(rg 종료 코드 1).
+- ui/analysis_diagnostics.py의 오류 ID 조회 UI와 안전한 진단 요약 공유 절차 확인. 해당 서버의 실패 대화에서 요약이 필요하며, ID만으로 LLM/agent/Databricks 원인을 단정하지 않는다.
+- 제품 코드 및 환경 설정 변경 없음.
+
+## [2026-10-10 17:43:03] [Agent: /root] User Request: 왼쪽 DB 연결 테스트 아래 테이블 목록 조회 추가
+- **Action**: 기존 backend 메타데이터 경로를 재사용하는 버튼·결과·실패 진단을 구현하고 분석 데이터 보존과 UI 동작을 검증한다.
+
+### [2026-10-10 17:49:10] Sidebar table inventory 완료
+- **Artifact Update**: ui/analysis_inventory.py, core/analysis_agent/table_inventory.py 추가; ui/analysis_page.py에서 DB 연결 검사 바로 아래 슬롯에 표시. 모델 없이 설정된 backend metadata 최대 200건 조회(201번째로 부분 목록 여부 확인), 범위·시각·행수 표시.
+- **Action**: parameter binding, 읽기 전용 검증, cursor/connection 종료, 오류 ID·실패 단계 기록, 연결 identity별 세션 저장, fragment로 분석 재개와 분리. 원본/선택/대화/분석 결과 보존.
+- **Outcome**: 관련 pytest 19 passed / 21 subtests passed; 최종 컬럼 순서 수정 후 신규 검사 4 passed. 실제 MySQL 7건(0.014초), Databricks 설정 schema 5건(14.811초) 성공. 브라우저 8504 클릭·목록 표시 확인, 최종 캡처 .telly_runtime/sidebar_inventory.png. 로컬 서버 재시작, .env 변경 없음. 회사 서버 미검증, 운영 GO 판정 변경 없음.
+
+## [2026-10-10 17:57:30] [Agent: /root] User Request: push 해줘
+- **Action**: 테이블 목록 sidebar 기능 및 검증 코드, 요청·결과 기록을 커밋하고 현재 branch를 origin으로 push한 뒤 원격 commit 일치를 확인한다.
+- **Outcome**: 기능 commit 1bd4e9f를 origin/codex/agentic-analysis-rc-2026-09-14로 push 성공. git ls-remote에서 전체 commit ID와 로컬 HEAD 일치 확인; 기능 push 후 작업 트리 clean.

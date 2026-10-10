@@ -2,6 +2,7 @@
 import json
 from types import SimpleNamespace
 from langchain_core.messages import HumanMessage,SystemMessage
+from core.analysis_agent.json_contract import invoke_role
 from core.analysis_agent.model_roles import json_role
 
 CAPABILITIES={'calculation','group_summary','statistics','profile'}
@@ -71,7 +72,7 @@ def review(interpreter,current,data,selection):
     def override(**changes):
         revised=SimpleNamespace(**{**vars(req),**changes});revised.override=override;return revised
     req.override=override
-    def invoke():return interpreter.budget.wrap_model_call(req,lambda r:model.invoke([r.system_message,*r.messages]))
+    def invoke():return invoke_role(model,req,interpreter.budget)
     response=interpreter.model_recovery.auxiliary_call(current,invoke) if interpreter.model_recovery else invoke()
     value=json.loads(response.content)
     if (not isinstance(value,dict) or set(value)!=set(SCHEMA['required'])
