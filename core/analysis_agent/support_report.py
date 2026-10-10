@@ -197,6 +197,10 @@ def summarize(path, *, run_id=None, error_id=None):
             'model_calls':counts['model_call_started'],
             'inference_roles':tally('role','model_inference_admitted'),
             'subject_decisions_reused':counts['goal_literal_subjects_reused'],
+            'population_audit':{'rejections':counts['goal_population_delta_rejected'],
+                'error_codes':tally('error_code','goal_population_delta_rejected'),
+                'conflicts':tally('resolution','goal_population_audit_conflict'),
+                'completed':counts['goal_population_audited']},
             'input_budget':public_input_budget(budget) if budget else {},
             'proposed_tool_calls':sum(number(e.get('tool_call_count')) or 0 for e in selected if e.get('event')=='model_call_finished'),
             'local_tools_started':tally('tool','tool_started'),
@@ -250,5 +254,7 @@ def brief(report):
         *([attempt_text] if attempt_text else []),
         *([f"모델 역할별 진입: {report['inference_roles']} / 대상 판별 재사용: {report.get('subject_decisions_reused',0)}"]
           if report.get('inference_roles') else []),
+        *([f"범위 검토: {report['population_audit']}"]
+          if (report.get('population_audit') or {}).get('rejections') else []),
         f"로그 완전성: {report['log_integrity']}",
     ])

@@ -9,6 +9,24 @@ from core.analysis_agent.support_report import summarize
 
 
 class AgentSupportReportTests(unittest.TestCase):
+    def test_population_repair_summary_excludes_private_predicates(self):
+        from core.analysis_agent.support_report import brief
+        with tempfile.TemporaryDirectory() as folder:
+            diagnostics=Diagnostics(folder);diagnostics.run_id='a'*32
+            diagnostics.emit('run_started')
+            diagnostics.emit('goal_population_delta_rejected',error_code='ungrounded_filter_column',
+                detail='PRIVATE filter text',column='PRIVATE_COLUMN',evidence_quote='PRIVATE prompt')
+            diagnostics.emit('goal_population_audit_conflict',resolution='ungrounded_new_filter_column',
+                column='PRIVATE_COLUMN')
+            diagnostics.emit('goal_population_audited')
+            diagnostics.emit('run_completed',status='answered')
+            report=summarize(diagnostics.path)
+            self.assertEqual(report['population_audit'],{'rejections':1,
+                'error_codes':{'ungrounded_filter_column':1},
+                'conflicts':{'ungrounded_new_filter_column':1},'completed':1})
+            self.assertIn('범위 검토:',brief(report))
+            self.assertNotIn('PRIVATE',json.dumps(report)+brief(report))
+
     def test_exception_id_selects_only_its_run_without_private_error_text(self):
         with tempfile.TemporaryDirectory() as folder:
             diagnostics=Diagnostics(folder)
