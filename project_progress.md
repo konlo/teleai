@@ -2,7 +2,7 @@
 
 ## Current Status
 
-- **Last Updated**: 2026-10-10T20:31:43.204461+09:00
+- **Last Updated**: 2026-10-10T20:41:01.420861+09:00
 - **Status**: Windows batch 저장 fsync 호환 수정 및 sidebar 테이블 목록 구현 완료. 전달된 model_recovery.invoke 기존156행은 문맥 크기가 아닌 모델 호출/시간 예산 소진 경로로 확인. 오류 ID별 예산 snapshot·진단/안내 보강과 관련69검사 통과; 회사 Windows/Azure 재검증·운영 GO는 미확인.
 - **Evidence**: [추론·계획 보강 보고서](docs/evaluation/2026-10-10_cot_strengthening/report.json). 최종제품7b8156a1aa6691aed3fd7e3c74b73b3c24f441b534104cac4240a7e5021169df: 전체966PASS/4SKIP·665subtests(124.54초), compileall/diffcheck PASS.
 - **Actual UI**: 조건부10행→평균1732.9는 앞build에서 확인했다. 수정/서버재시작/소진된 이전요청 종료 후 최종build에서 같은 차트 원문55.383초/6모델/1도구로 secondary9·primary1 막대 PNG 일치. 이들을 최종build 전체3턴/반복 안정성 점수로 합산하지 않는다.
@@ -3429,3 +3429,4 @@ Task definitions and acceptance conditions: docs/agent_remaining_tasks_2026-09-1
 ## [2026-10-10 20:39:08] [Agent: /root] User Request: 코드 반영해서 push해줘
 - **Action**: Azure 요청별 전체50/보조49의 한도, 동일 대상 판별 재사용 및 역할 계측, 문서/기록/검사를 확인하고 현재 branch로 commit·push한다. 같은 사용자 후속 prompt가 독립 예산을 받는 회귀도 확인한다.
 - **Validation**: 최종 관련12개 test files 79 passed / 46 subtests passed (11.15초), git diff --check PASS. 새 회귀는 같은 사용자/같은 대화에서 첫요청49회 후 두번째 모델호출0 시작과 독립 장부, 이전 confirmed source 유지, 동일 미완료 ID 재개 사용량49 유지/보조호출 차단 확인. 회사 실제Azure 서비스 검증으로 합산하지 않음.
+- **Push Outcome**: 기능 commit c8b3044를 origin/codex/agentic-analysis-rc-2026-09-14로 push 성공. git ls-remote 전체 commit ID가 로컬 HEAD와 일치, 작업 트리 clean 확인. Azure 호출50/다음 프롬프트 독립 예산, subject 판별 재사용, 역할 계측 및 관련 tests/docs 모두 포함. 회사 서버 git pull·완전 재시작 및 실제Azure 검증은 미수행. 이 완료 기록을 별도 commit으로 push한다.
