@@ -51,7 +51,9 @@ class Diagnostics:
         from core.analysis_agent.model_errors import model_error_category
         self.emit('error', error_category=model_error_category(exc), run_id=run_id or self.run_id, error_id=error_id, stage=stage,
             error_type=type(exc).__name__,
-            database_errno=getattr(exc,'errno',None),
+            database_errno=getattr(exc,'errno',None) if not isinstance(exc,OSError) else None,
+            os_errno=getattr(exc,'errno',None) if isinstance(exc,OSError) else None,
+            winerror=getattr(exc,'winerror',None) if isinstance(exc,OSError) else None,
             http_status=getattr(exc,'http_status',getattr(exc,'status_code',None)) or
                         getattr(getattr(exc,'response',None),'status_code',None), frames=frames[-12:])
         return error_id
