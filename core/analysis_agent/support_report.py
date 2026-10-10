@@ -133,6 +133,7 @@ def public_attempt_budget(value):
         'seconds_limit','seconds_remaining','provider_failures','auxiliary_calls','retries')}
     result['reason']=value.get('reason') if value.get('reason') in {'calls','time','calls_and_time'} else None
     result['call_kind']=value.get('call_kind') if value.get('call_kind') in {'agent','auxiliary'} else None
+    result['role']=token(value.get('role'))
     return result
 
 
@@ -194,6 +195,8 @@ def summarize(path, *, run_id=None, error_id=None):
             'elapsed_seconds':number(finish.get('elapsed_seconds')),
             'last_event':token(selected[-1].get('event')),'flags':flags,
             'model_calls':counts['model_call_started'],
+            'inference_roles':tally('role','model_inference_admitted'),
+            'subject_decisions_reused':counts['goal_literal_subjects_reused'],
             'input_budget':public_input_budget(budget) if budget else {},
             'proposed_tool_calls':sum(number(e.get('tool_call_count')) or 0 for e in selected if e.get('event')=='model_call_finished'),
             'local_tools_started':tally('tool','tool_started'),
@@ -228,6 +231,7 @@ def brief(report):
         f" (전체 한도={attempt.get('total_call_limit')}, 예약={attempt.get('reserved_calls')})"
         f" / 시간={attempt.get('seconds_used')}/{attempt.get('seconds_limit')}초"
         f" / 역할={attempt.get('call_kind')} / 보조 호출={attempt.get('auxiliary_calls')}"
+        f" / 중단 역할={attempt.get('role')}"
         f" / 공급자 실패={attempt.get('provider_failures')} / 재시도={attempt.get('retries')}" if attempt else '')
     return '\n'.join([
         f"시각(UTC): {report['time_utc']}",
@@ -244,5 +248,7 @@ def brief(report):
            if last.get('os_errno') is not None or last.get('winerror') is not None else ''),
         f"오류 위치: {last.get('frames',[])}",
         *([attempt_text] if attempt_text else []),
+        *([f"모델 역할별 진입: {report['inference_roles']} / 대상 판별 재사용: {report.get('subject_decisions_reused',0)}"]
+          if report.get('inference_roles') else []),
         f"로그 완전성: {report['log_integrity']}",
     ])

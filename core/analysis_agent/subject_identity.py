@@ -5,6 +5,8 @@ Only the LLM decides which candidates identify tables in the current request.
 """
 import json
 import re
+from copy import deepcopy
+from hashlib import sha256
 from types import SimpleNamespace
 from langchain_core.messages import HumanMessage,SystemMessage
 from core.analysis_agent.json_contract import invoke_role
@@ -63,6 +65,17 @@ def read(interpreter,current,data):
             or ([data['selected_dataset']['source']] if data.get('selected_dataset') else [])),
         'OBSERVED_COLUMNS':[{'table':t.get('table'),'columns':[c['name'] for c in t.get('columns',[])]}
                             for t in data.get('tables',[])]}
+    # A task-selection repair changes output obligations, not these subject
+    # inputs. Reuse only a validated decision from the identical request and
+    # model instance; namespace/schema/source changes require a new reading.
+    decision_key=(current['request_id'],id(interpreter.selection_model),sha256(json.dumps(
+        {'payload':payload,'prompt':prompt.content,'schema':schema},ensure_ascii=False,
+        sort_keys=True,separators=(',',':')).encode()).hexdigest())
+    cached=getattr(interpreter,'_subject_identity_cache',None)
+    if cached is not None and cached[0]==decision_key:
+        data['literal_inventory_scope']=deepcopy(cached[2])
+        interpreter.diagnostics.emit('goal_literal_subjects_reused',request_id=current['request_id'])
+        return deepcopy(cached[1])
     req=SimpleNamespace(state={'recovery':current},system_message=prompt,
         messages=[HumanMessage(content=json.dumps(payload,ensure_ascii=False))],tools=[])
     def override(**changes):
@@ -135,6 +148,9 @@ def read(interpreter,current,data):
             or any(type(i) is not int or not 0<=i<len(tokens) for i in indexes)):
         raise ValueError('table identity indexes must reference CURRENT request literals')
     result=[{'name':tokens[i]['source'],'quote':tokens[i]['quote']} for i in indexes]
+    # One entry per interpreter, never persisted as data context or reused
+    # across requests. Failed/partially repaired outputs are never cached.
+    interpreter._subject_identity_cache=(decision_key,deepcopy(result),deepcopy(data['literal_inventory_scope']))
     interpreter.diagnostics.emit('goal_literal_subjects_read',request_id=current['request_id'],
         candidate_count=len(tokens),table_count=len(result))
     return result
