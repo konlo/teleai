@@ -3323,3 +3323,22 @@ Task definitions and acceptance conditions: docs/agent_remaining_tasks_2026-09-1
 - **Verification**: 관련38PASS·40subtests. 실Ollama+Databricks 동일요청22.611초·agent 원격조회1회·37행 목록·schema필터없음; 독립 COUNT 비교 및 전체회귀 진행 중. 모델 응답 계약 거절도 오류ID·goal_task_selection/goal_validation 단계·도구 미실행 기록으로 남긴다. .env 변경 없음.
 - **Outcome** [2026-10-10T17:06:02.163407+09:00]: 최종제품hash cfa33294ba2c5fa1e919cd9cd4df0c99004c57132654dc192db1c52d31141cdf의전체회귀973PASS/4SKIP·683subtests(135.14초), opt-in실제MySQL4PASS(63.54초), 최종복구/namespace7PASS·18subtests, compileall/diffcheck PASS. 최종실Ollama+Databricks동일요청17.633초·원격조회1·37행·미요청schema필터0; 앞선독립COUNT37과일치. Azure는SDK대역HTTP 계약·잘못된subject/selection수정·실패ID를검증했으며회사실제Azure배포/운영GO는미검증. 최초잘못된0행과중간성공을보존하고report.json에빌드경계를명시. .env변경없음; 같은브랜치에수정커밋/push진행.
 - **Push Outcome** [2026-10-10T17:06:41.310835+09:00]: 8e3cbf5a15fa88dc0b4a27b247578472748c5e2b를 origin/codex/agentic-analysis-rc-2026-09-14에 push 완료; ls-remote 일치 확인. 회사서버 적용에는 같은브랜치 업데이트와 기존Streamlit프로세스재시작이 필요하다. 성공기록을후속docs커밋으로동일원격에저장한다.
+
+## [2026-10-10 17:40:21] [Agent: /root] User Request: 오류 ID 56750b1e23ee 확인
+- **Action**: 기존 관리/로깅 스킬 적용. 로컬 실행 진단에서 해당 오류ID만 검색해 실제 실패 단계와 원격조회 여부를 확인한다. 회사 로그가 로컬에 없으면 ID만으로 원인을 추측하지 않고 안전한 진단 요약 항목을 안내한다.
+
+### [2026-10-10 17:42:36 KST] 오류 ID 56750b1e23ee 확인 결과
+- 로컬 .telly_runtime, .telly_table_context, docs/evaluation 검색 완료: 일치 기록 없음(rg 종료 코드 1).
+- ui/analysis_diagnostics.py의 오류 ID 조회 UI와 안전한 진단 요약 공유 절차 확인. 해당 서버의 실패 대화에서 요약이 필요하며, ID만으로 LLM/agent/Databricks 원인을 단정하지 않는다.
+- 제품 코드 및 환경 설정 변경 없음.
+
+## [2026-10-10 17:43:03] [Agent: /root] User Request: 왼쪽 DB 연결 테스트 아래 테이블 목록 조회 추가
+- **Action**: 기존 backend 메타데이터 경로를 재사용하는 버튼·결과·실패 진단을 구현하고 분석 데이터 보존과 UI 동작을 검증한다.
+
+### [2026-10-10 17:49:10] Sidebar table inventory 완료
+- **Artifact Update**: ui/analysis_inventory.py, core/analysis_agent/table_inventory.py 추가; ui/analysis_page.py에서 DB 연결 검사 바로 아래 슬롯에 표시. 모델 없이 설정된 backend metadata 최대 200건 조회(201번째로 부분 목록 여부 확인), 범위·시각·행수 표시.
+- **Action**: parameter binding, 읽기 전용 검증, cursor/connection 종료, 오류 ID·실패 단계 기록, 연결 identity별 세션 저장, fragment로 분석 재개와 분리. 원본/선택/대화/분석 결과 보존.
+- **Outcome**: 관련 pytest 19 passed / 21 subtests passed; 최종 컬럼 순서 수정 후 신규 검사 4 passed. 실제 MySQL 7건(0.014초), Databricks 설정 schema 5건(14.811초) 성공. 브라우저 8504 클릭·목록 표시 확인, 최종 캡처 .telly_runtime/sidebar_inventory.png. 로컬 서버 재시작, .env 변경 없음. 회사 서버 미검증, 운영 GO 판정 변경 없음.
+
+## [2026-10-10 17:57:30] [Agent: /root] User Request: push 해줘
+- **Action**: 테이블 목록 sidebar 기능 및 검증 코드, 요청·결과 기록을 커밋하고 현재 branch를 origin으로 push한 뒤 원격 commit 일치를 확인한다.
