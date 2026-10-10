@@ -76,6 +76,11 @@ class DatabricksChatModel(ChatOpenAI):
         return super().bind_tools(compatible, **kwargs)
 
 
+def inference_call_limit(model):
+    """Per-request call budget for the resolved provider, not the DB backend."""
+    return 50 if isinstance(model, AzureChatOpenAI) else 10
+
+
 def build_analysis_chat_model(policy, *, provider=None, environ=None):
     """Construct one graph-compatible tool-calling model without a network call."""
     config = os.environ if environ is None else environ

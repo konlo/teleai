@@ -2,7 +2,7 @@
 
 ## Current Status
 
-- **Last Updated**: 2026-10-10T19:29:01.355086+09:00
+- **Last Updated**: 2026-10-10T20:41:01.420861+09:00
 - **Status**: Windows batch 저장 fsync 호환 수정 및 sidebar 테이블 목록 구현 완료. 전달된 model_recovery.invoke 기존156행은 문맥 크기가 아닌 모델 호출/시간 예산 소진 경로로 확인. 오류 ID별 예산 snapshot·진단/안내 보강과 관련69검사 통과; 회사 Windows/Azure 재검증·운영 GO는 미확인.
 - **Evidence**: [추론·계획 보강 보고서](docs/evaluation/2026-10-10_cot_strengthening/report.json). 최종제품7b8156a1aa6691aed3fd7e3c74b73b3c24f441b534104cac4240a7e5021169df: 전체966PASS/4SKIP·665subtests(124.54초), compileall/diffcheck PASS.
 - **Actual UI**: 조건부10행→평균1732.9는 앞build에서 확인했다. 수정/서버재시작/소진된 이전요청 종료 후 최종build에서 같은 차트 원문55.383초/6모델/1도구로 secondary9·primary1 막대 PNG 일치. 이들을 최종build 전체3턴/반복 안정성 점수로 합산하지 않는다.
@@ -3390,3 +3390,43 @@ Task definitions and acceptance conditions: docs/agent_remaining_tasks_2026-09-1
 - **Action**: 모델 호출/시간 소진 진단 snapshot, 오류 ID 선택 정합성, 안내 및 회귀 검사, 문서를 현재 branch에 커밋·push하고 원격 HEAD와 대조한다.
 - **Validation**: 앞선 수정 검증 69 passed / 19 subtests passed, 이번 push 전 git diff --check PASS. .env·자격증명 포함 없음. 회사 서비스 배포/재시작과 운영 검증은 이 push에 포함되지 않음.
 - **Outcome**: 수정 commit 2a090c6를 origin/codex/agentic-analysis-rc-2026-09-14로 push 성공. git ls-remote의 전체 commit ID가 로컬 HEAD와 일치하고 작업 트리 clean 확인. 이 완료 기록도 별도 commit으로 push한다.
+
+## [2026-10-10 20:14:56] [Agent: /root] User Request: ModelAttemptBudgetExceeded subject_identity.read73 / auxiliary136 / invoke174 / 호출9/9 전체10 예약1
+- **Action**: 회사 기록에서 호출 한도 소진이 확인됨. 의미 판별·대상 확인의 중복/재계획 호출 경로를 조사하고 실행 제한을 늘리지 않고 줄일 수 있는 구조 결함을 확인한다.
+
+### [2026-10-10 20:19:36] Subject inference deduplication and role accounting
+- **Finding**: 새 회사 증거는 ModelAttemptBudgetExceeded의 호출9/9(전체10 예약1) 소진을 확정. 이9는 주/보조 및 실패를 포함한 공유 예산이며 보조 성공9회를 단정하지 않음. 회사 최초 요청/재개 여부 및 auxiliary_calls·provider_failures·retries 상세값은 아직 미제공. 현재 task_selection.select는 goal 검증 재선택에서 불변 subject_identity 입력도 다시 해석하여 불필요한 추가 inference를 사용하는 공통 경로 확인.
+- **Action**: 사용자에게 실패 요청과 보조 호출·실패·재시도 수, 새 요청/재개 여부를 비동기 질의하며 독립 개선 진행. subject_identity에 동일 request ID·model instance·prompt/schema/실제 입력 SHA256의 검증된 판별 1건만 재사용. namespace/출처/판별 컬럼 이름/요청 변화 시 무효화; 반환 결과와 scope deepcopy, 실패 응답 미보관. 실행 제한·누적 장부를 초기화하거나 늘리지 않음.
+- **Artifact Update**: model_recovery에서 admitted/succeeded/failed role·지연 metadata 및 소진 role을 기록, support_report 역할별 진입 횟수와 대상 재사용 표시. 진입 계수는 handler 진입이며 실제 네트워크 API 요청 수와 구분. docs/server_failure_diagnostics.md 설명 추가.
+- **Validation**: 신규 tests/test_subject_decision_reuse.py는 planning feedback 동일 판별1회, namespace 빈결과/반환복사, 새 요청/출처/컬럼 변화 재판별, 잘못된 응답·공급자 실패 미캐시, 모델 교체, 소진 장부 미초기화 검사. 초기 namespace cache key shadowing 실패1건 발견 후 변수 수정; 최종 관련9 files 68 passed / 35 subtests passed (10.53초), git diff --check PASS. Azure SDK MockTransport 계약 포함, 회사 실제 Azure/Databricks 결과 아님.
+- **Limit**: 동일 입력 대상 판별의 재호출 제거를 보강했으나 회사 이번9회 구성·최초 모델 계약 실패는 미확인. 이후 selector/goal의 수정 호출까지 제거하거나 이번 요청의 완료를 보증하지 않음. 현재 제품 변경은 로컬이며 이 요청에서 push/회사 배포 미수행.
+
+## [2026-10-10 20:23:28] [Agent: /root] User Request: 모델 실행 제한이 왜 9야?
+- **Finding**: Recovery 기본 max_model_calls=10을 runtime이 ModelRecoveryMiddleware에 전달. auxiliary_call은 reserve_calls=1로 invoke하므로 보조 추론 진입 한도는10-1=9. 주/보조/실패 공유 요청 예산이며 모델 공급자 제한이나9회 subject 호출을 뜻하지 않음. 마지막 주 모델 호출 예산을 남기려는 경계이며 분석 완료를 보장하지 않음.
+- **Outcome**: 기본 제한의 목적(무한 추론/지연 제한)과 현재 다단계 의미 판별·수정이 단순 요청에도 예산을 사용하는 구조상의 비용을 구분해 설명. 제품 변경·한도 증가·push 없음.
+
+## [2026-10-10 20:25:30] [Agent: /root] User Request: 실행 한도는1회 prompt 기준인지 전체입력 누적인지
+- **Action**: 새 request ID의 model_calls 초기화와 동일 미완료 요청·승인 대기 후속 입력의 예산 공유 경계를 코드로 확인하여 설명한다.
+- **Outcome**: 일반 새 사용자 요청은 새 HumanMessage ID로 model_calls=0 초기화. 동일 미완료 요청 재개는 request ID와 장부 유지. 승인 대기 상태 확인 등은 원래 request ID로 보조 추론 비용 합산. 전체 conversation 입력 총량 제한과 구분; 제품 수정 없음.
+
+## [2026-10-10 20:29:09] [Agent: /root] User Request: llm_provider=azure일 때 모델 호출 한도50 설정
+- **Action**: Azure provider 선택 시 전체 요청 모델 호출50, 보조 호출 예약1 유지로49를 적용한다. 다른 provider 기본10과 재시도/시간/원격 실행 안전 경계를 유지하고 관련 회귀를 확인한다.
+
+### [2026-10-10 20:31:43] Azure per-request inference limit50
+- **Artifact Update**: model_provider.inference_call_limit uses resolved AzureChatOpenAI (including AzureAnalysisChatModel) for total50; non-Azure10. runtime passes the limit to RecoveryMiddleware and shared ModelRecoveryMiddleware. memory_middleware takes the same recovery limit, avoiding an old fixed9 summary admission boundary under Azure. docs/server_failure_diagnostics.md records whole50/aux49 and provider-vs-DB independence.
+- **Validation**: tests/test_azure_inference_call_limit.py verifies actual Azure factory selection, Ollama/Databricks model limits against both DB dialects, auxiliary49/main1 boundary and rejection of51st, summary admission after10 vs reservation at49, and unchanged180-second deadline. Final related10 files: 64 passed / 37 subtests passed (4.19초); git diff --check PASS. SDK MockTransport contracts included; company actual Azure runtime/API testing not performed.
+- **Outcome**: 사용자 승인에 따라 Azure 요청별 호출 한도50 적용. 공급자 실패 재시도2회, 시간 한도, SQL/원본/중복 실행 정책, 로컬 .env 변경 없음. 이전 subject 재사용·역할계수 변경도 working tree에 유지. 이번 요청에서 commit/push/회사 배포 및 서버 재시작 미수행.
+
+## [2026-10-10 20:32:15] [Agent: /root] User Request: user prompt 한번에 대한 max50 확인
+- **Outcome**: Azure의 새 사용자 요청1건 내부 주/보조/실패 추론 공유 호출 한도50임을 확인. 전체 conversation 누적이 아니며 동일 미완료 요청 재개는 사용량 유지, 보조 진입49/예약1 및 별도 시간 제한 적용. 제품 변경 없음.
+
+## [2026-10-10 20:33:52] [Agent: /root] User Request: 사용자 다시 입력 시 다시50인지 확인
+- **Outcome**: 새 HumanMessage/request ID로 접수되면 Azure 호출 예산50을 새로 부여하되 대화/데이터/확정 맥락 유지. 미완료 요청과 동일 text 재입력은 submit의 unfinished_request 분기로 새 요청을 만들지 않고 재개/종료 안내; resume도 기존 request ID 예산 유지. 따라서 모든 재입력이 무조건 초기화되는 것은 아니라고 설명. 제품 변경 없음.
+
+## [2026-10-10 20:37:26] [Agent: /root] User Request: 같은 사용자 첫 결과 후 두번째 프롬프트는 누적인지50 리셋인지
+- **Outcome**: 같은 사용자/같은 대화에서 완료된 첫 요청 후 두번째 분석 프롬프트는 새 request ID로 모델 호출0부터 시작하며 Azure 최대50. 첫 요청 사용량을 합산하지 않지만 데이터/대화 맥락은 유지. 새 사용자라는 표현이 아니라 새로운 요청 단위임을 명확히 설명; 동일 미완료 요청 resume만 누적 유지. 제품 변경 없음.
+
+## [2026-10-10 20:39:08] [Agent: /root] User Request: 코드 반영해서 push해줘
+- **Action**: Azure 요청별 전체50/보조49의 한도, 동일 대상 판별 재사용 및 역할 계측, 문서/기록/검사를 확인하고 현재 branch로 commit·push한다. 같은 사용자 후속 prompt가 독립 예산을 받는 회귀도 확인한다.
+- **Validation**: 최종 관련12개 test files 79 passed / 46 subtests passed (11.15초), git diff --check PASS. 새 회귀는 같은 사용자/같은 대화에서 첫요청49회 후 두번째 모델호출0 시작과 독립 장부, 이전 confirmed source 유지, 동일 미완료 ID 재개 사용량49 유지/보조호출 차단 확인. 회사 실제Azure 서비스 검증으로 합산하지 않음.
+- **Push Outcome**: 기능 commit c8b3044를 origin/codex/agentic-analysis-rc-2026-09-14로 push 성공. git ls-remote 전체 commit ID가 로컬 HEAD와 일치, 작업 트리 clean 확인. Azure 호출50/다음 프롬프트 독립 예산, subject 판별 재사용, 역할 계측 및 관련 tests/docs 모두 포함. 회사 서버 git pull·완전 재시작 및 실제Azure 검증은 미수행. 이 완료 기록을 별도 commit으로 push한다.

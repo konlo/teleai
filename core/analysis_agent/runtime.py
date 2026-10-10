@@ -158,7 +158,9 @@ class GraphAnalysisRuntime:
         registered=local_tools(self.context, self.diagnostics)
         if tool_allowlist is not None:
             registered=[entry for entry in registered if entry.name in tool_allowlist]
+        from core.analysis_agent.model_provider import inference_call_limit
         recovery=RecoveryMiddleware(self.artifacts,self.diagnostics,context=self.context,
+            max_model_calls=inference_call_limit(model),
             transcript=self.transcript,max_model_seconds=self.policy.turn_slo_seconds,
             remote_available=self.remote_execute is not None, sql_dialect=self.sql_dialect,
             proposal_validator=proposal_validator, approval_ledger=self.ledger)

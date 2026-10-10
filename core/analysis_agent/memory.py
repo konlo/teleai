@@ -153,6 +153,7 @@ def memory_middleware(model,trigger_tokens=6000,keep_messages=8,diagnostics=None
         keep=('messages',keep_messages),
         token_counter=lambda messages:count_tokens_approximately(messages,chars_per_token=2),
         summary_prompt=SUMMARY_PROMPT,trim_tokens_to_summarize=None,diagnostics=diagnostics,
+        max_model_calls=model_recovery.max_calls if model_recovery is not None else 10,
         model_recovery=model_recovery)
 
 

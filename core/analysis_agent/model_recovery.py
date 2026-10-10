@@ -143,6 +143,8 @@ class ModelRecoveryMiddleware(AgentMiddleware):
         if not request_id:
             return handler()
         max_calls = self.max_calls - reserve_calls
+        role=getattr(handler,'__module__','').rsplit('.',1)[-1] if reserve_calls else 'agent'
+        role=role if role.isidentifier() and len(role)<=64 else 'auxiliary'
         observed = self.ledger.get(request_id)
         if observed['next_allowed_at'] > time.time():
             raise ModelCoolingDown('Model provider cooldown has not elapsed')
@@ -162,6 +164,7 @@ class ModelRecoveryMiddleware(AgentMiddleware):
                     'reason': 'calls_and_time' if calls_exhausted and time_exhausted else
                               'calls' if calls_exhausted else 'time',
                     'call_kind': 'auxiliary' if reserve_calls else 'agent',
+                    'role': role,
                     'calls_used': calls, 'call_limit': max_calls,
                     'total_call_limit': self.max_calls, 'reserved_calls': reserve_calls,
                     'seconds_used': round(seconds_used_at_start + max(0., now - budget_started), 3),
@@ -173,8 +176,14 @@ class ModelRecoveryMiddleware(AgentMiddleware):
                 self.diagnostics.emit('model_attempt_budget_exhausted', **budget)
                 raise ModelAttemptBudgetExceeded('Request inference budget exhausted', budget=budget)
             started = time.monotonic()
+            self.diagnostics.emit('model_inference_admitted',role=role,
+                call_kind='auxiliary' if reserve_calls else 'agent',
+                calls_used=calls,call_limit=max_calls)
             try:
-                return handler()
+                result=handler()
+                self.diagnostics.emit('model_inference_succeeded',role=role,
+                    elapsed_seconds=round(time.monotonic()-started,3))
+                return result
             except GraphBubbleUp:
                 raise
             except Exception as error:
@@ -191,6 +200,7 @@ class ModelRecoveryMiddleware(AgentMiddleware):
                     and time.monotonic()+delay+self.policy.model_timeout_seconds < deadline
                     and self.ledger.reserve_retry(request_id, delay, self.max_retries))
                 self.diagnostics.emit('model_inference_failed', request_id=request_id,
+                    role=role,
                     error_type=type(error).__name__, http_status=getattr(error,'status_code',None),
                     error_category=model_error_category(error),
                     retry_scheduled=can_retry, retry_delay_seconds=delay if can_retry else None)
