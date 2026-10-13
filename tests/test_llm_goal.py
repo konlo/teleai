@@ -24,12 +24,26 @@ def goal(capability, options=None, *, sources=None, columns=None, conditions=Non
 class GoalModel(EvaluationModel):
     goals: list = []
     goal_calls: int = 0
+    advisory_after_calls: bool = False
 
     def _generate(self, messages, **kwargs):
         if any('goal_schema_v1' in str(m.content) for m in messages):
             self.goal_calls += 1
             value = self.goals[min(self.goal_calls-1,len(self.goals)-1)]
             return ChatResult(generations=[ChatGeneration(message=AIMessage(content=json.dumps(value)))])
+        # Explicit fixture choice, not a natural-language acceptance score.
+        # Fault tests supply their own calls and must remain independent of
+        # advisory candidates so an incorrect proposal is really exercised.
+        if not self.calls or (self.advisory_after_calls and self.position>=len(self.calls)):
+            for message in reversed(messages):
+                if message.additional_kwargs.get('lc_source')=='action_cycle':
+                    view=json.loads('{'+str(message.content).split('\n{',1)[1])
+                    candidate=view.get('advisory_call')
+                    if candidate:
+                        from uuid import uuid4
+                        return ChatResult(generations=[ChatGeneration(message=AIMessage(content='',
+                            tool_calls=[{**candidate,'id':str(uuid4())}]))])
+                    break
         return super()._generate(messages, **kwargs)
 
 

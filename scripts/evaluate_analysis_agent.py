@@ -675,7 +675,8 @@ def grade_evidence(runtime, outcome, spec, grading, oracle, fixture_id, capture)
     if grading["kind"] in {"metadata_columns", "metadata_dtypes", "metadata_column_subset"}:
         matches = []
         for message in runtime.events():
-            if not isinstance(message, ToolMessage) or message.name != "inspect_table_context":
+            if (not isinstance(message, ToolMessage) or message.name not in
+                    {"inspect_table_context", "inspect_live_schema"}):
                 continue
             try:
                 observation = json.loads(message.content)
@@ -683,7 +684,8 @@ def grade_evidence(runtime, outcome, spec, grading, oracle, fixture_id, capture)
                 schema = [{"name": column["name"], "dtype": str(column.get("dtype") or "")}
                           for column in context["columns"]]
                 columns = [column["name"] for column in schema]
-                same_table = str(context["table"]).casefold().split(".")[-1] == spec["target_table"].casefold()
+                # Fixture targets are physical sources, not reusable basenames.
+                same_table = str(context["table"]).casefold() == spec["target_table"].casefold()
                 if observation.get("status") != "ready" or not same_table:
                     continue
                 if grading["kind"] == "metadata_columns":

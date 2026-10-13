@@ -1,0 +1,46 @@
+..F.F                                                                    [100%]
+=================================== FAILURES ===================================
+_ IntentRecoveryBatchTests.test_model_selected_replan_preserves_original_and_shared_request_budget _
+
+self = <test_intent_recovery_batch.IntentRecoveryBatchTests testMethod=test_model_selected_replan_preserves_original_and_shared_request_budget>
+
+    def test_model_selected_replan_preserves_original_and_shared_request_budget(self):
+        with tempfile.TemporaryDirectory() as root,patch.dict('os.environ',{'TELLY_INTENT_PROTOCOL':'v2'}):
+            model=ReplanningModel(calls=[{'name':'review_analysis_intent','args':{'reason':'The original user asked values, not a distinct count profile'}},
+                {'name':'inspect_value_list','args':{'source':FIXTURE['source'],'column':'reading'}}])
+            r,raw=self.runtime(root,model)
+            try:
+                model.evaluation_dataset_id=raw.id;before=stored_dataset_digest(r.datasets,raw.id)
+                outcome=r.submit('reading 값들을 보여줘')
+>               self.assertEqual(outcome['status'],'answered',outcome)
+E               AssertionError: 'incomplete' != 'answered'
+E               - incomplete
+E               + answered
+E                : {'error_id': 'f3b9007562f8', 'status': 'incomplete', 'error_type': 'IndexError', 'error_category': None, 'text': '분석 중 오류가 발생했습니다 (IndexError, 오류 ID: f3b9007562f8). 기존 결과는 보존했습니다. 미완료 분석 재개로 다시 시도할 수 있습니다.', 'elapsed_seconds': 0.004}
+
+tests/test_intent_recovery_batch.py:96: AssertionError
+_ IntentRecoveryBatchTests.test_same_condition_cannot_fall_back_to_older_unfiltered_success _
+ValueError: intent plan schema: anyOf
+
+During handling of the above exception, another exception occurred:
+
+self = <test_intent_recovery_batch.IntentRecoveryBatchTests testMethod=test_same_condition_cannot_fall_back_to_older_unfiltered_success>
+
+    def test_same_condition_cannot_fall_back_to_older_unfiltered_success(self):
+        with tempfile.TemporaryDirectory() as root:
+            r,raw=self.runtime(root)
+            try:
+                q='같은 조건의 reading histogram 다시 보여줘'
+                current=pending_state(HumanMessage(content=q,id='new'),{},r.context)
+                current['confirmed_analysis']={'required_sources':[raw.source],'scope':{'conditions':[],'any_conditions':[]}}
+                data=r.recovery.goal_interpreter.payload(current,[])
+                data['unparsed_user_intent']=[{'request_id':'failed','request_text':'reading 3~8만 보여줘','truncated':False}]
+                p=plan([step('s1','chart',{'kind':'histogram','axes':{'x':'reading'}},'reading',quote=q)])
+>               with self.assertRaisesRegex(ValueError,'Latest human intent'):validate(p,current,data,r.context)
+E               AssertionError: "Latest human intent" does not match "intent plan schema: anyOf"
+
+tests/test_intent_recovery_batch.py:68: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_intent_recovery_batch.py::IntentRecoveryBatchTests::test_model_selected_replan_preserves_original_and_shared_request_budget
+FAILED tests/test_intent_recovery_batch.py::IntentRecoveryBatchTests::test_same_condition_cannot_fall_back_to_older_unfiltered_success
+2 failed, 3 passed in 1.75s

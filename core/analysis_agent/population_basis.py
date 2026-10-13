@@ -106,6 +106,15 @@ def read(interpreter,current,data):
         response=(interpreter.model_recovery.auxiliary_call(current,invoke) if interpreter.model_recovery else invoke())
         value=json.loads(response.content)
         try:
+            if (isinstance(value,dict) and value.get('basis')=='source_population'
+                    and isinstance(value.get('quote'),str) and value['quote']
+                    and value['quote'] in current['request_text']):
+                # This basis never consumes a quote as authority. Remove an
+                # extraneous CURRENT citation without changing the model's
+                # basis or its independently checked filter-change decision.
+                value={**value,'quote':''}
+                interpreter.diagnostics.emit('goal_population_quote_normalized',
+                    request_id=current['request_id'],basis='source_population')
             checked=validate(value,current['request_text'],schema['properties']['basis']['enum'])
             reference_id=value.get('output_reference_id','')
             if value['basis']=='displayed_result' and references:
@@ -113,7 +122,12 @@ def read(interpreter,current,data):
                 if reference is None:raise ValueError('Displayed population needs an eligible output_reference_id')
                 checked['output_reference']=reference
             elif reference_id:
-                raise ValueError('Only displayed_result may select an output_reference_id')
+                # A stray reference ID is a structural defect, not authority
+                # to regenerate a correct filter-change decision. The basis
+                # already declares that no displayed output is being used.
+                value['output_reference_id']=''
+                interpreter.diagnostics.emit('goal_population_reference_normalized',
+                    request_id=current['request_id'],basis=value['basis'])
             elif value['basis']=='displayed_result' and not available:
                 raise ValueError('Requested displayed result unavailable; use unavailable_result, never the source')
             break

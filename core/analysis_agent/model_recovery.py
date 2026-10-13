@@ -60,7 +60,7 @@ class ModelAttemptLedger:
                 'failed_seconds REAL NOT NULL DEFAULT 0, retries INTEGER NOT NULL DEFAULT 0, '
                 'next_allowed_at REAL NOT NULL DEFAULT 0)')
             columns = {row[1] for row in db.conn.execute('PRAGMA table_info(model_recovery)')}
-            for name, definition in (('aux_calls', 'INTEGER'), ('aux_seconds', 'REAL')):
+            for name, definition in (('aux_calls', 'INTEGER'), ('aux_seconds', 'REAL'), ('execution_seconds','REAL')):
                 if name not in columns:
                     db.conn.execute(f'ALTER TABLE model_recovery ADD COLUMN {name} {definition} NOT NULL DEFAULT 0')
             db.conn.execute('CREATE TABLE IF NOT EXISTS model_classifications '
@@ -68,10 +68,17 @@ class ModelAttemptLedger:
 
     def get(self, request_id):
         with self.db.lock:
-            row = self.db.conn.execute('SELECT failures, failed_seconds, retries, next_allowed_at, aux_calls, aux_seconds '
+            row = self.db.conn.execute('SELECT failures, failed_seconds, retries, next_allowed_at, aux_calls, aux_seconds, execution_seconds '
                 'FROM model_recovery WHERE request_id=?', (request_id,)).fetchone()
-        return dict(zip(('failures', 'failed_seconds', 'retries', 'next_allowed_at', 'aux_calls', 'aux_seconds'),
-                        row or (0, 0., 0, 0., 0, 0.)))
+        return dict(zip(('failures', 'failed_seconds', 'retries', 'next_allowed_at', 'aux_calls', 'aux_seconds', 'execution_seconds'),
+                        row or (0, 0., 0, 0., 0, 0., 0.)))
+
+    def charge_execution(self,request_id,elapsed):
+        if not request_id:return
+        with self.db.lock,self.db.conn:
+            self.db.conn.execute('INSERT OR IGNORE INTO model_recovery(request_id) VALUES (?)',(request_id,))
+            self.db.conn.execute('UPDATE model_recovery SET execution_seconds=execution_seconds+? WHERE request_id=?',
+                                 (max(0.,elapsed),request_id))
 
     def auxiliary_success(self, request_id, elapsed):
         with self.db.lock, self.db.conn:
@@ -123,6 +130,16 @@ class ModelRecoveryMiddleware(AgentMiddleware):
         self.max_calls, self.max_retries, self.max_wait = max_calls, max_retries, max_wait
         self.sleep, self.on_progress = sleep or time.sleep, on_progress
 
+    def begin_active_run(self,request_id,seconds_before=0.):
+        # Charge executed intervals (including tools), never user pause time.
+        self.active_clock=(request_id,max(0.,seconds_before),time.monotonic())
+
+    def active_seconds(self,request_id):
+        clock=getattr(self,'active_clock',None)
+        if clock and (clock[0] is None or clock[0]==request_id):
+            return clock[1]+max(0.,time.monotonic()-clock[2])
+        return 0.
+
     def wrap_model_call(self, request, handler):
         current = request.state.get('recovery') or {}
         return self.invoke(current, lambda: handler(request))
@@ -152,7 +169,8 @@ class ModelRecoveryMiddleware(AgentMiddleware):
         budget_started = time.monotonic()
         seconds_used_at_start = current.get('model_seconds', 0.) + max(
             0., time.time() - current.get('model_started_at', time.time()))
-        deadline = budget_started + max(0., self.policy.turn_slo_seconds - seconds_used_at_start)
+        elapsed_turn=self.active_seconds(request_id)
+        deadline = budget_started + max(0., self.policy.turn_slo_seconds - max(seconds_used_at_start,elapsed_turn))
         while True:
             observed = self.ledger.get(request_id)
             calls = (current.get('model_calls', 0) + observed['failures'] - baseline_failures
@@ -183,7 +201,6 @@ class ModelRecoveryMiddleware(AgentMiddleware):
                 result=handler()
                 self.diagnostics.emit('model_inference_succeeded',role=role,
                     elapsed_seconds=round(time.monotonic()-started,3))
-                return result
             except GraphBubbleUp:
                 raise
             except Exception as error:
@@ -209,3 +226,20 @@ class ModelRecoveryMiddleware(AgentMiddleware):
                 if self.on_progress:
                     self.on_progress('모델 응답이 일시적으로 지연되어 요청을 보존한 채 다시 시도하고 있습니다.')
                 self.sleep(delay)
+                continue
+            if time.monotonic()>=deadline:
+                # The provider did answer, but its tool choices must not dispatch
+                # after the request deadline. Persist this completed/discarded
+                # call before raising, so resume cannot refund its budget.
+                elapsed=max(0.,time.monotonic()-started)
+                self.ledger.auxiliary_success(request_id,elapsed)
+                budget={'reason':'time','call_kind':'auxiliary' if reserve_calls else 'agent',
+                    'role':role,'calls_used':calls+1,'call_limit':max_calls,
+                    'total_call_limit':self.max_calls,'reserved_calls':reserve_calls,
+                    'seconds_used':round(max(seconds_used_at_start+time.monotonic()-budget_started,
+                        self.active_seconds(request_id)),3),
+                    'seconds_limit':self.policy.turn_slo_seconds,'seconds_remaining':0.,
+                    'provider_failures':observed['failures'],'response_discarded':True}
+                self.diagnostics.emit('model_response_discarded_after_deadline',**budget)
+                raise ModelAttemptBudgetExceeded('Completed inference exceeded request budget',budget=budget)
+            return result

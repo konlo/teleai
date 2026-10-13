@@ -1,0 +1,978 @@
+{
+  "provider": "ollama",
+  "model": "gemma4:e4b",
+  "model_timeout_seconds": 60.0,
+  "results": [
+    {
+      "id": "local002",
+      "db": "E_commerce",
+      "benchmark": "Spider2-Lite SQLite",
+      "mode": "Interactive production graph with bounded read-only public SQLite execution; no gold access",
+      "remote_executions": 0,
+      "local_sql_executions": [],
+      "local_sql_probes": [],
+      "agent_status": "incomplete",
+      "final_output": "분석 중 오류가 발생했습니다 (ReadTimeout, 오류 ID: a3a79ad4b48e). 기존 결과는 보존했습니다. 미완료 분석 재개로 다시 시도할 수 있습니다.",
+      "model_calls": 3,
+      "model_retries": 1,
+      "recovery_status": "working",
+      "scope_error": null,
+      "stop_reason": null,
+      "error_type": "ReadTimeout",
+      "request_contract": {
+        "required_sources": [],
+        "required_columns": [],
+        "operations": [],
+        "scope": {
+          "sources": [],
+          "columns": [],
+          "conditions": [],
+          "any_conditions": [],
+          "measure_conditions": [],
+          "ratio": null,
+          "join_edges": [],
+          "unresolved": []
+        },
+        "operation_pending": false,
+        "scalar_grouping": null,
+        "profile_kind": null,
+        "whole_row_count": false,
+        "calculation": false
+      },
+      "error_category": null,
+      "diagnostics": [
+        {
+          "time": "2026-10-12T19:38:29.458842+00:00",
+          "event": "run_started",
+          "run_id": "83d7b1d029cd4de98d1fe6084433efd9",
+          "instance_id": "e349e6ada28a",
+          "pid": 58253,
+          "runtime": {
+            "revision_at_first_runtime": "e947a03f923faf2de2eb6be9774e8766547b0924",
+            "packages": {
+              "langchain": "1.4.0",
+              "langchain-core": "1.6.2",
+              "langgraph": "1.2.11",
+              "streamlit": "1.63.0",
+              "sqlglot": "30.18.0"
+            },
+            "python_version": "3.11.13",
+            "identity_captured_at": "2026-10-12T19:38:29.413790+00:00",
+            "route": "langgraph-v1",
+            "model_class": "ChatOllama",
+            "require_remote_approval": false,
+            "loaded_delivery_guard": "d7ad371a60b6e59b",
+            "data_backend": "sqlite",
+            "intent_mode": "llm",
+            "goal_version": 1,
+            "goal_model": "gemma4:e4b",
+            "planner_model": "gemma4:e4b"
+          },
+          "operation": "submit",
+          "process_peak_rss_bytes": 292683776
+        },
+        {
+          "time": "2026-10-12T19:38:29.465822+00:00",
+          "event": "model_inference_admitted",
+          "run_id": "83d7b1d029cd4de98d1fe6084433efd9",
+          "instance_id": "e349e6ada28a",
+          "pid": 58253,
+          "role": "intent_plan",
+          "call_kind": "auxiliary",
+          "calls_used": 0,
+          "call_limit": 9
+        },
+        {
+          "time": "2026-10-12T19:38:29.466337+00:00",
+          "event": "model_payload_budget",
+          "run_id": "83d7b1d029cd4de98d1fe6084433efd9",
+          "instance_id": "e349e6ada28a",
+          "pid": 58253,
+          "payload_bytes": 5393,
+          "input_tokens_estimate": null,
+          "input_tokens_upper_bound": 5393,
+          "payload_bytes_before_projection": 5393,
+          "template_headroom": 640,
+          "input_budget_units": 130048,
+          "output_reserved": 1024,
+          "context_window": 131072,
+          "tool_count": 0,
+          "message_count": 1,
+          "older_turns_compacted": false,
+          "within_budget": true,
+          "observations_compacted": false,
+          "schema_compacted": false,
+          "system_catalog_compacted": false,
+          "tool_menu_compacted": false,
+          "minimal_discovery_menu": false,
+          "reasoning_compacted": false,
+          "minimal_catalog": false,
+          "builtin_instructions_compacted": false,
+          "repair_history_compacted": false,
+          "components": {
+            "system_bytes": 2593,
+            "message_content_bytes": 2544,
+            "tool_calls_bytes": 0,
+            "reasoning_bytes": 0,
+            "tool_schema_bytes": 0,
+            "tool_names": []
+          },
+          "measurement": "conservative_utf8_token_upper_bound"
+        },
+        {
+          "time": "2026-10-12T19:39:08.807431+00:00",
+          "event": "model_inference_succeeded",
+          "run_id": "83d7b1d029cd4de98d1fe6084433efd9",
+          "instance_id": "e349e6ada28a",
+          "pid": 58253,
+          "role": "intent_plan",
+          "elapsed_seconds": 39.341
+        },
+        {
+          "time": "2026-10-12T19:39:08.809000+00:00",
+          "event": "intent_outline_observed",
+          "run_id": "83d7b1d029cd4de98d1fe6084433efd9",
+          "instance_id": "e349e6ada28a",
+          "pid": 58253,
+          "request_id": "e825b1eff3524b6abffe31af32befb7d",
+          "mode": "explain",
+          "step_shapes": []
+        },
+        {
+          "time": "2026-10-12T19:39:08.809562+00:00",
+          "event": "intent_outline_selected",
+          "run_id": "83d7b1d029cd4de98d1fe6084433efd9",
+          "instance_id": "e349e6ada28a",
+          "pid": 58253,
+          "request_id": "e825b1eff3524b6abffe31af32befb7d",
+          "mode": "explain",
+          "capabilities": []
+        },
+        {
+          "time": "2026-10-12T19:39:08.811664+00:00",
+          "event": "model_inference_admitted",
+          "run_id": "83d7b1d029cd4de98d1fe6084433efd9",
+          "instance_id": "e349e6ada28a",
+          "pid": 58253,
+          "role": "intent_plan",
+          "call_kind": "auxiliary",
+          "calls_used": 1,
+          "call_limit": 9
+        },
+        {
+          "time": "2026-10-12T19:39:08.812032+00:00",
+          "event": "model_payload_budget",
+          "run_id": "83d7b1d029cd4de98d1fe6084433efd9",
+          "instance_id": "e349e6ada28a",
+          "pid": 58253,
+          "payload_bytes": 7678,
+          "input_tokens_estimate": null,
+          "input_tokens_upper_bound": 7678,
+          "payload_bytes_before_projection": 7678,
+          "template_headroom": 640,
+          "input_budget_units": 126976,
+          "output_reserved": 4096,
+          "context_window": 131072,
+          "tool_count": 0,
+          "message_count": 1,
+          "older_turns_compacted": false,
+          "within_budget": true,
+          "observations_compacted": false,
+          "schema_compacted": false,
+          "system_catalog_compacted": false,
+          "tool_menu_compacted": false,
+          "minimal_discovery_menu": false,
+          "reasoning_compacted": false,
+          "minimal_catalog": false,
+          "builtin_instructions_compacted": false,
+          "repair_history_compacted": false,
+          "components": {
+            "system_bytes": 6312,
+            "message_content_bytes": 1141,
+            "tool_calls_bytes": 0,
+            "reasoning_bytes": 0,
+            "tool_schema_bytes": 0,
+            "tool_names": []
+          },
+          "measurement": "conservative_utf8_token_upper_bound"
+        },
+        {
+          "time": "2026-10-12T19:40:08.827566+00:00",
+          "event": "model_inference_failed",
+          "run_id": "83d7b1d029cd4de98d1fe6084433efd9",
+          "instance_id": "e349e6ada28a",
+          "pid": 58253,
+          "request_id": "e825b1eff3524b6abffe31af32befb7d",
+          "role": "intent_plan",
+          "error_type": "ReadTimeout",
+          "http_status": null,
+          "error_category": null,
+          "retry_scheduled": true,
+          "retry_delay_seconds": 1.0
+        },
+        {
+          "time": "2026-10-12T19:40:09.829887+00:00",
+          "event": "model_inference_admitted",
+          "run_id": "83d7b1d029cd4de98d1fe6084433efd9",
+          "instance_id": "e349e6ada28a",
+          "pid": 58253,
+          "role": "intent_plan",
+          "call_kind": "auxiliary",
+          "calls_used": 2,
+          "call_limit": 9
+        },
+        {
+          "time": "2026-10-12T19:40:09.830581+00:00",
+          "event": "model_payload_budget",
+          "run_id": "83d7b1d029cd4de98d1fe6084433efd9",
+          "instance_id": "e349e6ada28a",
+          "pid": 58253,
+          "payload_bytes": 7678,
+          "input_tokens_estimate": null,
+          "input_tokens_upper_bound": 7678,
+          "payload_bytes_before_projection": 7678,
+          "template_headroom": 640,
+          "input_budget_units": 126976,
+          "output_reserved": 4096,
+          "context_window": 131072,
+          "tool_count": 0,
+          "message_count": 1,
+          "older_turns_compacted": false,
+          "within_budget": true,
+          "observations_compacted": false,
+          "schema_compacted": false,
+          "system_catalog_compacted": false,
+          "tool_menu_compacted": false,
+          "minimal_discovery_menu": false,
+          "reasoning_compacted": false,
+          "minimal_catalog": false,
+          "builtin_instructions_compacted": false,
+          "repair_history_compacted": false,
+          "components": {
+            "system_bytes": 6312,
+            "message_content_bytes": 1141,
+            "tool_calls_bytes": 0,
+            "reasoning_bytes": 0,
+            "tool_schema_bytes": 0,
+            "tool_names": []
+          },
+          "measurement": "conservative_utf8_token_upper_bound"
+        },
+        {
+          "time": "2026-10-12T19:41:09.840577+00:00",
+          "event": "model_inference_failed",
+          "run_id": "83d7b1d029cd4de98d1fe6084433efd9",
+          "instance_id": "e349e6ada28a",
+          "pid": 58253,
+          "request_id": "e825b1eff3524b6abffe31af32befb7d",
+          "role": "intent_plan",
+          "error_type": "ReadTimeout",
+          "http_status": null,
+          "error_category": null,
+          "retry_scheduled": false,
+          "retry_delay_seconds": null
+        },
+        {
+          "time": "2026-10-12T19:41:09.867760+00:00",
+          "event": "error",
+          "run_id": "83d7b1d029cd4de98d1fe6084433efd9",
+          "instance_id": "e349e6ada28a",
+          "pid": 58253,
+          "error_category": null,
+          "error_id": "a3a79ad4b48e",
+          "stage": "agent_stream",
+          "error_type": "ReadTimeout",
+          "attempt_budget": null,
+          "database_errno": null,
+          "os_errno": null,
+          "winerror": null,
+          "http_status": null,
+          "frames": [
+            {
+              "file": "chat_models.py",
+              "line": 1124,
+              "function": "_create_chat_stream"
+            },
+            {
+              "file": "_client.py",
+              "line": 387,
+              "function": "chat"
+            },
+            {
+              "file": "_client.py",
+              "line": 199,
+              "function": "_request"
+            },
+            {
+              "file": "_client.py",
+              "line": 139,
+              "function": "_request_raw"
+            },
+            {
+              "file": "_client.py",
+              "line": 825,
+              "function": "request"
+            },
+            {
+              "file": "_client.py",
+              "line": 914,
+              "function": "send"
+            },
+            {
+              "file": "_client.py",
+              "line": 942,
+              "function": "_send_handling_auth"
+            },
+            {
+              "file": "_client.py",
+              "line": 979,
+              "function": "_send_handling_redirects"
+            },
+            {
+              "file": "_client.py",
+              "line": 1014,
+              "function": "_send_single_request"
+            },
+            {
+              "file": "default.py",
+              "line": 249,
+              "function": "handle_request"
+            },
+            {
+              "file": "contextlib.py",
+              "line": 158,
+              "function": "__exit__"
+            },
+            {
+              "file": "default.py",
+              "line": 118,
+              "function": "map_httpcore_exceptions"
+            }
+          ]
+        },
+        {
+          "time": "2026-10-12T19:41:09.867876+00:00",
+          "event": "run_completed",
+          "run_id": "83d7b1d029cd4de98d1fe6084433efd9",
+          "instance_id": "e349e6ada28a",
+          "pid": 58253,
+          "status": "incomplete",
+          "elapsed_seconds": 160.395,
+          "error_id": "a3a79ad4b48e"
+        },
+        {
+          "time": "2026-10-12T19:41:09.867971+00:00",
+          "event": "turn_slo",
+          "run_id": "83d7b1d029cd4de98d1fe6084433efd9",
+          "instance_id": "e349e6ada28a",
+          "pid": 58253,
+          "elapsed_seconds": 160.395,
+          "limit": 180.0,
+          "status": "error",
+          "process_peak_rss_bytes": 293240832,
+          "frame_cache_bytes": 0
+        }
+      ],
+      "sql_drafts": [],
+      "observations": [],
+      "status": "NO_VERIFIED_FINAL_SQL",
+      "elapsed_seconds": 160.478
+    },
+    {
+      "id": "local003",
+      "db": "E_commerce",
+      "benchmark": "Spider2-Lite SQLite",
+      "mode": "Interactive production graph with bounded read-only public SQLite execution; no gold access",
+      "remote_executions": 0,
+      "local_sql_executions": [],
+      "local_sql_probes": [],
+      "agent_status": "incomplete",
+      "final_output": "분석 중 오류가 발생했습니다 (ReadTimeout, 오류 ID: d7437185571f). 기존 결과는 보존했습니다. 미완료 분석 재개로 다시 시도할 수 있습니다.",
+      "model_calls": 2,
+      "model_retries": 1,
+      "recovery_status": "working",
+      "scope_error": null,
+      "stop_reason": null,
+      "error_type": "ReadTimeout",
+      "request_contract": {
+        "required_sources": [],
+        "required_columns": [],
+        "operations": [],
+        "scope": {
+          "sources": [],
+          "columns": [],
+          "conditions": [],
+          "any_conditions": [],
+          "measure_conditions": [],
+          "ratio": null,
+          "join_edges": [],
+          "unresolved": []
+        },
+        "operation_pending": false,
+        "scalar_grouping": null,
+        "profile_kind": null,
+        "whole_row_count": false,
+        "calculation": false
+      },
+      "error_category": null,
+      "diagnostics": [
+        {
+          "time": "2026-10-12T19:41:09.916530+00:00",
+          "event": "run_started",
+          "run_id": "b1fc270761cd488e821b30ea4b8201eb",
+          "instance_id": "cdf908dd889c",
+          "pid": 58253,
+          "runtime": {
+            "revision_at_first_runtime": "e947a03f923faf2de2eb6be9774e8766547b0924",
+            "packages": {
+              "langchain": "1.4.0",
+              "langchain-core": "1.6.2",
+              "langgraph": "1.2.11",
+              "streamlit": "1.63.0",
+              "sqlglot": "30.18.0"
+            },
+            "python_version": "3.11.13",
+            "identity_captured_at": "2026-10-12T19:38:29.413790+00:00",
+            "route": "langgraph-v1",
+            "model_class": "ChatOllama",
+            "require_remote_approval": false,
+            "loaded_delivery_guard": "d7ad371a60b6e59b",
+            "data_backend": "sqlite",
+            "intent_mode": "llm",
+            "goal_version": 1,
+            "goal_model": "gemma4:e4b",
+            "planner_model": "gemma4:e4b"
+          },
+          "operation": "submit",
+          "process_peak_rss_bytes": 293240832
+        },
+        {
+          "time": "2026-10-12T19:41:09.919355+00:00",
+          "event": "model_inference_admitted",
+          "run_id": "b1fc270761cd488e821b30ea4b8201eb",
+          "instance_id": "cdf908dd889c",
+          "pid": 58253,
+          "role": "intent_plan",
+          "call_kind": "auxiliary",
+          "calls_used": 0,
+          "call_limit": 9
+        },
+        {
+          "time": "2026-10-12T19:41:09.919579+00:00",
+          "event": "model_payload_budget",
+          "run_id": "b1fc270761cd488e821b30ea4b8201eb",
+          "instance_id": "cdf908dd889c",
+          "pid": 58253,
+          "payload_bytes": 5638,
+          "input_tokens_estimate": null,
+          "input_tokens_upper_bound": 5638,
+          "payload_bytes_before_projection": 5638,
+          "template_headroom": 640,
+          "input_budget_units": 130048,
+          "output_reserved": 1024,
+          "context_window": 131072,
+          "tool_count": 0,
+          "message_count": 1,
+          "older_turns_compacted": false,
+          "within_budget": true,
+          "observations_compacted": false,
+          "schema_compacted": false,
+          "system_catalog_compacted": false,
+          "tool_menu_compacted": false,
+          "minimal_discovery_menu": false,
+          "reasoning_compacted": false,
+          "minimal_catalog": false,
+          "builtin_instructions_compacted": false,
+          "repair_history_compacted": false,
+          "components": {
+            "system_bytes": 2593,
+            "message_content_bytes": 2789,
+            "tool_calls_bytes": 0,
+            "reasoning_bytes": 0,
+            "tool_schema_bytes": 0,
+            "tool_names": []
+          },
+          "measurement": "conservative_utf8_token_upper_bound"
+        },
+        {
+          "time": "2026-10-12T19:42:09.928667+00:00",
+          "event": "model_inference_failed",
+          "run_id": "b1fc270761cd488e821b30ea4b8201eb",
+          "instance_id": "cdf908dd889c",
+          "pid": 58253,
+          "request_id": "ecf5b284a9fd4ff19017db6d88d79406",
+          "role": "intent_plan",
+          "error_type": "ReadTimeout",
+          "http_status": null,
+          "error_category": null,
+          "retry_scheduled": true,
+          "retry_delay_seconds": 1.0
+        },
+        {
+          "time": "2026-10-12T19:42:10.935494+00:00",
+          "event": "model_inference_admitted",
+          "run_id": "b1fc270761cd488e821b30ea4b8201eb",
+          "instance_id": "cdf908dd889c",
+          "pid": 58253,
+          "role": "intent_plan",
+          "call_kind": "auxiliary",
+          "calls_used": 1,
+          "call_limit": 9
+        },
+        {
+          "time": "2026-10-12T19:42:10.937280+00:00",
+          "event": "model_payload_budget",
+          "run_id": "b1fc270761cd488e821b30ea4b8201eb",
+          "instance_id": "cdf908dd889c",
+          "pid": 58253,
+          "payload_bytes": 5638,
+          "input_tokens_estimate": null,
+          "input_tokens_upper_bound": 5638,
+          "payload_bytes_before_projection": 5638,
+          "template_headroom": 640,
+          "input_budget_units": 130048,
+          "output_reserved": 1024,
+          "context_window": 131072,
+          "tool_count": 0,
+          "message_count": 1,
+          "older_turns_compacted": false,
+          "within_budget": true,
+          "observations_compacted": false,
+          "schema_compacted": false,
+          "system_catalog_compacted": false,
+          "tool_menu_compacted": false,
+          "minimal_discovery_menu": false,
+          "reasoning_compacted": false,
+          "minimal_catalog": false,
+          "builtin_instructions_compacted": false,
+          "repair_history_compacted": false,
+          "components": {
+            "system_bytes": 2593,
+            "message_content_bytes": 2789,
+            "tool_calls_bytes": 0,
+            "reasoning_bytes": 0,
+            "tool_schema_bytes": 0,
+            "tool_names": []
+          },
+          "measurement": "conservative_utf8_token_upper_bound"
+        },
+        {
+          "time": "2026-10-12T19:43:10.953524+00:00",
+          "event": "model_inference_failed",
+          "run_id": "b1fc270761cd488e821b30ea4b8201eb",
+          "instance_id": "cdf908dd889c",
+          "pid": 58253,
+          "request_id": "ecf5b284a9fd4ff19017db6d88d79406",
+          "role": "intent_plan",
+          "error_type": "ReadTimeout",
+          "http_status": null,
+          "error_category": null,
+          "retry_scheduled": false,
+          "retry_delay_seconds": null
+        },
+        {
+          "time": "2026-10-12T19:43:10.968478+00:00",
+          "event": "error",
+          "run_id": "b1fc270761cd488e821b30ea4b8201eb",
+          "instance_id": "cdf908dd889c",
+          "pid": 58253,
+          "error_category": null,
+          "error_id": "d7437185571f",
+          "stage": "agent_stream",
+          "error_type": "ReadTimeout",
+          "attempt_budget": null,
+          "database_errno": null,
+          "os_errno": null,
+          "winerror": null,
+          "http_status": null,
+          "frames": [
+            {
+              "file": "chat_models.py",
+              "line": 1124,
+              "function": "_create_chat_stream"
+            },
+            {
+              "file": "_client.py",
+              "line": 387,
+              "function": "chat"
+            },
+            {
+              "file": "_client.py",
+              "line": 199,
+              "function": "_request"
+            },
+            {
+              "file": "_client.py",
+              "line": 139,
+              "function": "_request_raw"
+            },
+            {
+              "file": "_client.py",
+              "line": 825,
+              "function": "request"
+            },
+            {
+              "file": "_client.py",
+              "line": 914,
+              "function": "send"
+            },
+            {
+              "file": "_client.py",
+              "line": 942,
+              "function": "_send_handling_auth"
+            },
+            {
+              "file": "_client.py",
+              "line": 979,
+              "function": "_send_handling_redirects"
+            },
+            {
+              "file": "_client.py",
+              "line": 1014,
+              "function": "_send_single_request"
+            },
+            {
+              "file": "default.py",
+              "line": 249,
+              "function": "handle_request"
+            },
+            {
+              "file": "contextlib.py",
+              "line": 158,
+              "function": "__exit__"
+            },
+            {
+              "file": "default.py",
+              "line": 118,
+              "function": "map_httpcore_exceptions"
+            }
+          ]
+        },
+        {
+          "time": "2026-10-12T19:43:10.968666+00:00",
+          "event": "run_completed",
+          "run_id": "b1fc270761cd488e821b30ea4b8201eb",
+          "instance_id": "cdf908dd889c",
+          "pid": 58253,
+          "status": "incomplete",
+          "elapsed_seconds": 121.048,
+          "error_id": "d7437185571f"
+        },
+        {
+          "time": "2026-10-12T19:43:10.968777+00:00",
+          "event": "turn_slo",
+          "run_id": "b1fc270761cd488e821b30ea4b8201eb",
+          "instance_id": "cdf908dd889c",
+          "pid": 58253,
+          "elapsed_seconds": 121.048,
+          "limit": 180.0,
+          "status": "error",
+          "process_peak_rss_bytes": 293240832,
+          "frame_cache_bytes": 0
+        }
+      ],
+      "sql_drafts": [],
+      "observations": [],
+      "status": "NO_VERIFIED_FINAL_SQL",
+      "elapsed_seconds": 121.099
+    },
+    {
+      "id": "local004",
+      "db": "E_commerce",
+      "benchmark": "Spider2-Lite SQLite",
+      "mode": "Interactive production graph with bounded read-only public SQLite execution; no gold access",
+      "remote_executions": 0,
+      "local_sql_executions": [],
+      "local_sql_probes": [],
+      "agent_status": "incomplete",
+      "final_output": "분석 중 오류가 발생했습니다 (ReadTimeout, 오류 ID: 265b048d5904). 기존 결과는 보존했습니다. 미완료 분석 재개로 다시 시도할 수 있습니다.",
+      "model_calls": 2,
+      "model_retries": 1,
+      "recovery_status": "working",
+      "scope_error": null,
+      "stop_reason": null,
+      "error_type": "ReadTimeout",
+      "request_contract": {
+        "required_sources": [],
+        "required_columns": [],
+        "operations": [],
+        "scope": {
+          "sources": [],
+          "columns": [],
+          "conditions": [],
+          "any_conditions": [],
+          "measure_conditions": [],
+          "ratio": null,
+          "join_edges": [],
+          "unresolved": []
+        },
+        "operation_pending": false,
+        "scalar_grouping": null,
+        "profile_kind": null,
+        "whole_row_count": false,
+        "calculation": false
+      },
+      "error_category": null,
+      "diagnostics": [
+        {
+          "time": "2026-10-12T19:43:11.003765+00:00",
+          "event": "run_started",
+          "run_id": "bfb07b3727c44027a0c97837ad63916a",
+          "instance_id": "4f6b0cd8c73d",
+          "pid": 58253,
+          "runtime": {
+            "revision_at_first_runtime": "e947a03f923faf2de2eb6be9774e8766547b0924",
+            "packages": {
+              "langchain": "1.4.0",
+              "langchain-core": "1.6.2",
+              "langgraph": "1.2.11",
+              "streamlit": "1.63.0",
+              "sqlglot": "30.18.0"
+            },
+            "python_version": "3.11.13",
+            "identity_captured_at": "2026-10-12T19:38:29.413790+00:00",
+            "route": "langgraph-v1",
+            "model_class": "ChatOllama",
+            "require_remote_approval": false,
+            "loaded_delivery_guard": "d7ad371a60b6e59b",
+            "data_backend": "sqlite",
+            "intent_mode": "llm",
+            "goal_version": 1,
+            "goal_model": "gemma4:e4b",
+            "planner_model": "gemma4:e4b"
+          },
+          "operation": "submit",
+          "process_peak_rss_bytes": 293240832
+        },
+        {
+          "time": "2026-10-12T19:43:11.006194+00:00",
+          "event": "model_inference_admitted",
+          "run_id": "bfb07b3727c44027a0c97837ad63916a",
+          "instance_id": "4f6b0cd8c73d",
+          "pid": 58253,
+          "role": "intent_plan",
+          "call_kind": "auxiliary",
+          "calls_used": 0,
+          "call_limit": 9
+        },
+        {
+          "time": "2026-10-12T19:43:11.006381+00:00",
+          "event": "model_payload_budget",
+          "run_id": "bfb07b3727c44027a0c97837ad63916a",
+          "instance_id": "4f6b0cd8c73d",
+          "pid": 58253,
+          "payload_bytes": 6297,
+          "input_tokens_estimate": null,
+          "input_tokens_upper_bound": 6297,
+          "payload_bytes_before_projection": 6297,
+          "template_headroom": 640,
+          "input_budget_units": 130048,
+          "output_reserved": 1024,
+          "context_window": 131072,
+          "tool_count": 0,
+          "message_count": 1,
+          "older_turns_compacted": false,
+          "within_budget": true,
+          "observations_compacted": false,
+          "schema_compacted": false,
+          "system_catalog_compacted": false,
+          "tool_menu_compacted": false,
+          "minimal_discovery_menu": false,
+          "reasoning_compacted": false,
+          "minimal_catalog": false,
+          "builtin_instructions_compacted": false,
+          "repair_history_compacted": false,
+          "components": {
+            "system_bytes": 2593,
+            "message_content_bytes": 3350,
+            "tool_calls_bytes": 0,
+            "reasoning_bytes": 0,
+            "tool_schema_bytes": 0,
+            "tool_names": []
+          },
+          "measurement": "conservative_utf8_token_upper_bound"
+        },
+        {
+          "time": "2026-10-12T19:44:11.017006+00:00",
+          "event": "model_inference_failed",
+          "run_id": "bfb07b3727c44027a0c97837ad63916a",
+          "instance_id": "4f6b0cd8c73d",
+          "pid": 58253,
+          "request_id": "a03345f7ee7c49e8b15802023571d935",
+          "role": "intent_plan",
+          "error_type": "ReadTimeout",
+          "http_status": null,
+          "error_category": null,
+          "retry_scheduled": true,
+          "retry_delay_seconds": 1.0
+        },
+        {
+          "time": "2026-10-12T19:44:12.019891+00:00",
+          "event": "model_inference_admitted",
+          "run_id": "bfb07b3727c44027a0c97837ad63916a",
+          "instance_id": "4f6b0cd8c73d",
+          "pid": 58253,
+          "role": "intent_plan",
+          "call_kind": "auxiliary",
+          "calls_used": 1,
+          "call_limit": 9
+        },
+        {
+          "time": "2026-10-12T19:44:12.021664+00:00",
+          "event": "model_payload_budget",
+          "run_id": "bfb07b3727c44027a0c97837ad63916a",
+          "instance_id": "4f6b0cd8c73d",
+          "pid": 58253,
+          "payload_bytes": 6297,
+          "input_tokens_estimate": null,
+          "input_tokens_upper_bound": 6297,
+          "payload_bytes_before_projection": 6297,
+          "template_headroom": 640,
+          "input_budget_units": 130048,
+          "output_reserved": 1024,
+          "context_window": 131072,
+          "tool_count": 0,
+          "message_count": 1,
+          "older_turns_compacted": false,
+          "within_budget": true,
+          "observations_compacted": false,
+          "schema_compacted": false,
+          "system_catalog_compacted": false,
+          "tool_menu_compacted": false,
+          "minimal_discovery_menu": false,
+          "reasoning_compacted": false,
+          "minimal_catalog": false,
+          "builtin_instructions_compacted": false,
+          "repair_history_compacted": false,
+          "components": {
+            "system_bytes": 2593,
+            "message_content_bytes": 3350,
+            "tool_calls_bytes": 0,
+            "reasoning_bytes": 0,
+            "tool_schema_bytes": 0,
+            "tool_names": []
+          },
+          "measurement": "conservative_utf8_token_upper_bound"
+        },
+        {
+          "time": "2026-10-12T19:45:12.036577+00:00",
+          "event": "model_inference_failed",
+          "run_id": "bfb07b3727c44027a0c97837ad63916a",
+          "instance_id": "4f6b0cd8c73d",
+          "pid": 58253,
+          "request_id": "a03345f7ee7c49e8b15802023571d935",
+          "role": "intent_plan",
+          "error_type": "ReadTimeout",
+          "http_status": null,
+          "error_category": null,
+          "retry_scheduled": false,
+          "retry_delay_seconds": null
+        },
+        {
+          "time": "2026-10-12T19:45:12.048713+00:00",
+          "event": "error",
+          "run_id": "bfb07b3727c44027a0c97837ad63916a",
+          "instance_id": "4f6b0cd8c73d",
+          "pid": 58253,
+          "error_category": null,
+          "error_id": "265b048d5904",
+          "stage": "agent_stream",
+          "error_type": "ReadTimeout",
+          "attempt_budget": null,
+          "database_errno": null,
+          "os_errno": null,
+          "winerror": null,
+          "http_status": null,
+          "frames": [
+            {
+              "file": "chat_models.py",
+              "line": 1124,
+              "function": "_create_chat_stream"
+            },
+            {
+              "file": "_client.py",
+              "line": 387,
+              "function": "chat"
+            },
+            {
+              "file": "_client.py",
+              "line": 199,
+              "function": "_request"
+            },
+            {
+              "file": "_client.py",
+              "line": 139,
+              "function": "_request_raw"
+            },
+            {
+              "file": "_client.py",
+              "line": 825,
+              "function": "request"
+            },
+            {
+              "file": "_client.py",
+              "line": 914,
+              "function": "send"
+            },
+            {
+              "file": "_client.py",
+              "line": 942,
+              "function": "_send_handling_auth"
+            },
+            {
+              "file": "_client.py",
+              "line": 979,
+              "function": "_send_handling_redirects"
+            },
+            {
+              "file": "_client.py",
+              "line": 1014,
+              "function": "_send_single_request"
+            },
+            {
+              "file": "default.py",
+              "line": 249,
+              "function": "handle_request"
+            },
+            {
+              "file": "contextlib.py",
+              "line": 158,
+              "function": "__exit__"
+            },
+            {
+              "file": "default.py",
+              "line": 118,
+              "function": "map_httpcore_exceptions"
+            }
+          ]
+        },
+        {
+          "time": "2026-10-12T19:45:12.048959+00:00",
+          "event": "run_completed",
+          "run_id": "bfb07b3727c44027a0c97837ad63916a",
+          "instance_id": "4f6b0cd8c73d",
+          "pid": 58253,
+          "status": "incomplete",
+          "elapsed_seconds": 121.039,
+          "error_id": "265b048d5904"
+        },
+        {
+          "time": "2026-10-12T19:45:12.049158+00:00",
+          "event": "turn_slo",
+          "run_id": "bfb07b3727c44027a0c97837ad63916a",
+          "instance_id": "4f6b0cd8c73d",
+          "pid": 58253,
+          "elapsed_seconds": 121.039,
+          "limit": 180.0,
+          "status": "error",
+          "process_peak_rss_bytes": 293240832,
+          "frame_cache_bytes": 0
+        }
+      ],
+      "sql_drafts": [],
+      "observations": [],
+      "status": "NO_VERIFIED_FINAL_SQL",
+      "elapsed_seconds": 121.081
+    }
+  ]
+}

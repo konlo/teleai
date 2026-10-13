@@ -14,7 +14,7 @@ import sys
 ROOT = Path(__file__).resolve().parents[2]
 TOKEN = re.compile(r'[A-Za-z_][A-Za-z0-9_.-]{0,95}\Z')
 HEX = re.compile(r'[a-f0-9]{12,64}\Z')
-STATUSES = {'answered','blocked','exhausted','needs_data','incomplete','awaiting_approval',
+STATUSES = {'answered','blocked','exhausted','needs_data','needs_context','incomplete','awaiting_approval',
             'ready','ok','error','unavailable','proposed','approved','auto_authorized',
             'submitting','unknown','failed','completed','rejected','invalidated'}
 
@@ -29,6 +29,19 @@ def number(value):
 
 def identifier(value):
     return value if isinstance(value,str) and HEX.fullmatch(value) else None
+
+
+def public_population_review(event):
+    def shapes(key, fields):
+        rows=event.get(key,[])
+        return [{k:([token(x) for x in row.get(k,[])[:8] if token(x)]
+                    if k=='columns' and isinstance(row.get(k),list) else token(row.get(k)))
+                 for k in fields} for row in rows[:16] if isinstance(row,dict)] if isinstance(rows,list) else []
+    return {'attempt':number(event.get('attempt')),'change':token(event.get('change')),
+        'predicates':shapes('predicate_shapes',('column','op')),
+        'alternatives':shapes('alternative_shapes',('column','op')),
+        'restrictions':shapes('restriction_shapes',('kind','status','columns')),
+        'has_question':event.get('has_question') is True}
 
 
 @lru_cache(maxsize=1)
@@ -110,7 +123,8 @@ def public_runtime(value):
 def public_input_budget(value):
     if not isinstance(value,dict):return {}
     result={k:number(value.get(k)) for k in ('payload_bytes','payload_bytes_before_projection',
-        'template_headroom','input_budget_units','output_reserved','context_window','tool_count','message_count')}
+        'template_headroom','input_budget_units','output_reserved','context_window','tool_count','message_count',
+        'input_tokens_estimate','input_tokens_upper_bound')}
     result.update({k:value.get(k) if type(value.get(k)) is bool else None for k in
         ('within_budget','older_turns_compacted','schema_compacted','system_catalog_compacted',
          'tool_menu_compacted','minimal_discovery_menu','reasoning_compacted','observations_compacted')})
@@ -122,7 +136,8 @@ def public_input_budget(value):
             ('system_bytes','message_content_bytes','tool_calls_bytes','reasoning_bytes','tool_schema_bytes')}
         names=components.get('tool_names',[])
         result['components']['tool_names']=[token(n) for n in names[:32] if token(n)] if isinstance(names,list) else []
-    result['measurement']='conservative_utf8_bytes_not_actual_token_count'
+    method=value.get('measurement')
+    result['measurement']=method if method in {'tiktoken_estimate','conservative_utf8_token_upper_bound'} else 'conservative_utf8_bytes_not_actual_token_count'
     return result
 
 
@@ -180,7 +195,8 @@ def summarize(path, *, run_id=None, error_id=None):
     if not finish:flags.append('NO_TERMINAL_EVENT')
     if counts['unsupported_deferred_reply_rejected'] or counts['delivery_guard_blocked']:flags.append('DEFERRED_REPLY_BLOCKED')
     if status in {'blocked','exhausted','needs_data','incomplete'}:flags.append('AGENT_NOT_COMPLETED')
-    if counts['tool_started']==0 and counts['remote_query_started']==0:flags.append('NO_TOOL_EXECUTION_OBSERVED')
+    if (counts['tool_started']==0 and counts['remote_query_started']==0
+            and counts['remote_result_verified']==0):flags.append('NO_TOOL_EXECUTION_OBSERVED')
     if any(e.get('ledger_status') in {'unknown','submitting'} for e in remote):flags.append('REMOTE_SUBMISSION_UNCERTAIN')
     if errors:flags.append('ERROR_OBSERVED')
     if any(e.get('stage') in {'chart_display','selected_chart_display'} for e in errors):flags.append('CHART_DISPLAY_FAILED')
@@ -200,7 +216,19 @@ def summarize(path, *, run_id=None, error_id=None):
             'population_audit':{'rejections':counts['goal_population_delta_rejected'],
                 'error_codes':tally('error_code','goal_population_delta_rejected'),
                 'conflicts':tally('resolution','goal_population_audit_conflict'),
-                'completed':counts['goal_population_audited']},
+                'completed':counts['goal_population_audited'],
+                'scope_deltas_compiled':counts['goal_population_scope_delta_compiled'],
+                'review_shapes':[public_population_review(e) for e in selected
+                    if e.get('event')=='goal_population_review_observed'][-2:]},
+            'restriction_review':{'clarifications':counts['goal_restrictions_need_clarification'],
+                'reference_repairs':counts['goal_population_reference_normalized']+counts['goal_population_quote_normalized'],
+                'answer_bindings':counts['goal_clarification_answer_bound'],
+                'period_resolutions':counts['goal_relative_period_resolved'],
+                'date_placeholder_repairs':counts['goal_relative_placeholders_discarded']},
+            'action_cycle':{'observations':counts['model_action_observation'],
+                'choices':counts['model_action_selected'],
+                'after_failure':sum(bool(e.get('observed_failure_count')) for e in selected
+                                    if e.get('event')=='model_action_selected')},
             'input_budget':public_input_budget(budget) if budget else {},
             'proposed_tool_calls':sum(number(e.get('tool_call_count')) or 0 for e in selected if e.get('event')=='model_call_finished'),
             'local_tools_started':tally('tool','tool_started'),
@@ -212,7 +240,9 @@ def summarize(path, *, run_id=None, error_id=None):
                                for e in tools[-6:]],
             'remote':{'started':counts['remote_query_started'],'finished':len(remote),
                       'states':dict(Counter(e.get('ledger_status') if e.get('ledger_status') in STATUSES else 'other' for e in remote)),
-                      'cached_receipts':sum(e.get('cached_receipt') is True for e in remote)},
+                      'cached_receipts':sum(e.get('cached_receipt') is True for e in remote)
+                          +sum(e.get('cached_receipt') is True for e in selected
+                               if e.get('event')=='remote_result_verified')},
             'completion':{'status':completion.get('status') if completion.get('status') in STATUSES else None,
                           'reason':token(completion.get('reason')),
                           'required_capabilities':[token(x) for x in completion.get('required_capabilities',[]) if token(x)] if isinstance(completion.get('required_capabilities',[]),list) else [],
@@ -230,6 +260,15 @@ def brief(report):
     last=report['errors'][-1] if report['errors'] else {}
     budget=report.get('input_budget') or {}
     budget_text=(f" / 입력 추정(bytes): {budget.get('payload_bytes')}+{budget.get('template_headroom')}/{budget.get('input_budget_units')}" if budget else '')
+    if budget.get('context_window') and (budget.get('input_tokens_estimate') is not None
+                                       or budget.get('input_tokens_upper_bound') is not None):
+        estimate=budget.get('input_tokens_estimate')
+        bound=budget.get('input_tokens_upper_bound')
+        label='입력 추정(tokens)' if estimate is not None else '입력 상한(tokens, 보수적 UTF-8 추정)'
+        budget_text=(f" / {label}: {estimate if estimate is not None else bound}"
+            f"+{budget.get('template_headroom')}/{budget.get('input_budget_units')}"
+            f" / 문맥={budget.get('context_window')} / 응답 예약={budget.get('output_reserved')}"
+            f" / 본문={budget.get('payload_bytes')} bytes")
     attempt=last.get('attempt_budget') or {}
     attempt_text=(f"모델 실행 제한: 원인={attempt.get('reason')} / 호출={attempt.get('calls_used')}/{attempt.get('call_limit')}"
         f" (전체 한도={attempt.get('total_call_limit')}, 예약={attempt.get('reserved_calls')})"
@@ -255,6 +294,11 @@ def brief(report):
         *([f"모델 역할별 진입: {report['inference_roles']} / 대상 판별 재사용: {report.get('subject_decisions_reused',0)}"]
           if report.get('inference_roles') else []),
         *([f"범위 검토: {report['population_audit']}"]
-          if (report.get('population_audit') or {}).get('rejections') else []),
+          if (report.get('population_audit') or {}).get('rejections') or
+             (report.get('population_audit') or {}).get('review_shapes') else []),
+        *([f"원문 조건 검토: {report['restriction_review']}"]
+          if any((report.get('restriction_review') or {}).values()) else []),
+        *([f"관찰·행동 루프: {report['action_cycle']}"]
+          if any((report.get('action_cycle') or {}).values()) else []),
         f"로그 완전성: {report['log_integrity']}",
     ])

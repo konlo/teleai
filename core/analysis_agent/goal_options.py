@@ -5,7 +5,7 @@ RESULT_TOOLS={
     'custom_analysis_spec':{'execute_analysis_python'},
     'advanced_eda_spec':{'render_advanced_eda'},
     'export_spec':{'export_analysis_result'},
-    'chart':{'render_chart_spec','render_histogram','recommend_chart_images','prepare_histogram','show_chart','prepare_source_scatter','render_count_rate_chart'},
+    'chart':{'analyze_source_histogram','render_chart_spec','render_histogram','recommend_chart_images','prepare_histogram','show_chart','prepare_source_scatter','render_count_rate_chart'},
     'statistical_kind':{'statistical_test'},'winsor_spec':{'winsorize_numeric'},
     'outlier_spec':{'detect_outliers','select_outlier_rows'},'time_series_frequency':{'prepare_time_series'},
     'pivot_requested':{'pivot_dataset'},'group_summary_requested':{'summarize_groups'},
@@ -54,6 +54,10 @@ def validate_options(cap, options, goal):
         raise ValueError('group_columns must be a list')
     if cap in {'chart','chart_adjust'} and 'palette' in options:
         enum('palette',{'default','high_contrast'})
+    if cap=='chart' and options.get('category'):
+        plotted=[v for v in options.get('axes',{}).values() if v] or goal['columns']
+        if options['category'] in plotted:
+            raise ValueError('A grouped chart needs distinct measure and category columns; omit category for a single variable distribution')
     if cap=='chart_adjust':
         if not options:raise ValueError('chart adjustment needs a requested display property')
         if 'bins' in options and (type(options['bins']) is not int or not 2<=options['bins']<=100):

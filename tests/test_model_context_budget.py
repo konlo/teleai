@@ -20,6 +20,49 @@ class Request:
 
 
 class ContextBudgetTests(unittest.TestCase):
+    def test_verified_action_compacts_only_owned_instructions_before_overflow(self):
+        from core.analysis_agent.model_context import COMPACT_INSTRUCTIONS,MINIMAL_INSTRUCTIONS
+        system=SystemMessage(content=COMPACT_INSTRUCTIONS+'\ncustom policy',
+            additional_kwargs={'telly_builtin_instructions':COMPACT_INSTRUCTIONS})
+        cycle=SystemMessage(content='verified goal',additional_kwargs={'lc_source':'action_cycle'})
+        messages=[HumanMessage(content='distribution'),cycle]
+        current={'intent_origin':'llm','goal':{'tasks':[]}}
+        request=Request(messages,[],{'recovery':current},system)
+        view=ModelContextBudgetMiddleware(SimpleNamespace(num_ctx=131072,num_predict=4096)).wrap_model_call(request,lambda r:r)
+        self.assertIn(MINIMAL_INSTRUCTIONS,view.system_message.content)
+        self.assertIn('custom policy',view.system_message.content)
+        self.assertEqual(view.messages,messages)
+        self.assertIn(COMPACT_INSTRUCTIONS,request.system_message.content)
+        unowned=Request(messages,[],{'recovery':current},SystemMessage(content=COMPACT_INSTRUCTIONS))
+        self.assertEqual(ModelContextBudgetMiddleware(SimpleNamespace(num_ctx=131072,num_predict=4096)).wrap_model_call(unowned,lambda r:r).system_message,unowned.system_message)
+
+    def test_action_view_projects_completed_history_even_with_large_window(self):
+        cycle=SystemMessage(id='analysis_action_cycle',content='confirmed action goal',
+            additional_kwargs={'lc_source':'action_cycle'})
+        old=HumanMessage(content='old large request '+('z'*5000))
+        current_user=HumanMessage(content='같은 조건의 값을 보여줘')
+        call=AIMessage(content='',additional_kwargs={'reasoning_content':'private completed thinking'},
+            tool_calls=[{'id':'exact','name':'inspect_dataset','args':{'dataset_id':'retained'}}])
+        receipt=ToolMessage(tool_call_id='exact',name='inspect_dataset',
+            content='{"status":"ready","dataset_id":"retained"}')
+        current={'intent_origin':'llm','goal':{'tasks':[]},'request_text':current_user.content,
+            'required_sources':['lab.observed'],'required_columns':['reading'],
+            'scope':{'conditions':[{'column':'reading','op':'ge','value':3}]},
+            'confirmed_analysis':{'required_sources':['lab.observed'],'evidence_ids':['retained']}}
+        messages=[old,cycle,current_user,call,receipt]
+        request=Request(messages,[],{'recovery':current},SystemMessage(content='policy'))
+        view=ModelContextBudgetMiddleware(SimpleNamespace(num_ctx=131072,num_predict=4096)).wrap_model_call(request,lambda r:r)
+        self.assertNotIn(old,view.messages)
+        self.assertIn(cycle,view.messages)  # stable-ID note may precede the new user
+        self.assertIn(current_user,view.messages)
+        self.assertEqual(view.messages[-1],receipt)
+        self.assertEqual(view.messages[-2].tool_calls,call.tool_calls)
+        self.assertNotIn('reasoning_content',view.messages[-2].additional_kwargs)
+        self.assertIn('"value": 3',view.messages[0].content)
+        self.assertIn('retained',view.messages[0].content)
+        self.assertEqual(request.messages,messages)
+        self.assertIn('reasoning_content',call.additional_kwargs)
+
     def test_builtin_emergency_projection_preserves_current_request_and_receipt(self):
         from core.analysis_agent.model_context import COMPACT_INSTRUCTIONS,MINIMAL_INSTRUCTIONS
         system=SystemMessage(content=COMPACT_INSTRUCTIONS+'\n'+'x'*7000,
@@ -218,6 +261,14 @@ class ContextBudgetTests(unittest.TestCase):
         self.assertIn('pivot_dataset',{t.name for t in second.tools})
         self.assertNotIn('invented_tool',{t.name for t in second.tools})
         self.assertEqual({t.name for t in tools},names)
+        exact=ToolMessage(name='get_analysis_tool_contract',tool_call_id='contract',
+            content=json.dumps({'status':'ready','contract':{'name':'pivot_dataset'}}))
+        exact_request=replace(request,messages=request.messages+[exact])
+        self.assertIn('pivot_dataset',{t.name for t in middleware.wrap_model_call(exact_request,lambda r:r).tools})
+        unknown=ToolMessage(name='get_analysis_tool_contract',tool_call_id='unknown',
+            content=json.dumps({'status':'ready','contract':{'name':'invented_tool'}}))
+        self.assertNotIn('invented_tool',{t.name for t in middleware.wrap_model_call(
+            replace(request,messages=request.messages+[unknown]),lambda r:r).tools})
         next_request=replace(next_request,messages=next_request.messages+[HumanMessage(content='다른 요청')])
         self.assertNotIn('pivot_dataset',{t.name for t in middleware.wrap_model_call(next_request,lambda r:r).tools})
 

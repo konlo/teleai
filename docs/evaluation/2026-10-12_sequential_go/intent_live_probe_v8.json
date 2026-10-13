@@ -1,0 +1,583 @@
+{
+  "model": "gemma4:e4b",
+  "goal_model": "gemma4:e4b",
+  "mode": "actual Ollama, isolated synthetic raw data, no remote database",
+  "passed": 0,
+  "total": 2,
+  "cases": [
+    {
+      "id": "preview",
+      "prompt": "observations에서 열 개 행을 보여줘",
+      "status": "incomplete",
+      "text": "분석 중 오류가 발생했습니다 (ResponseError, 오류 ID: 353f1303e8e1). 기존 결과는 보존했습니다. 미완료 분석 재개로 다시 시도할 수 있습니다.",
+      "seconds": 10.327,
+      "goal": null,
+      "model_calls": 0,
+      "goal_error": null,
+      "result": null,
+      "pass": false,
+      "diagnostics": [
+        {
+          "time": "2026-10-12T15:16:46.095630+00:00",
+          "event": "dataset_selected",
+          "run_id": null,
+          "instance_id": "e38ee99a831d",
+          "pid": 50065,
+          "dataset_id": "39ed1757-4ce0-4177-8fdd-f1ae1055a680",
+          "root_id": "39ed1757-4ce0-4177-8fdd-f1ae1055a680",
+          "role": "root",
+          "source": "lab.observations"
+        },
+        {
+          "time": "2026-10-12T15:16:46.096268+00:00",
+          "event": "run_started",
+          "run_id": "e7f96e16cf61471282ba5c95fb8faddc",
+          "instance_id": "e38ee99a831d",
+          "pid": 50065,
+          "runtime": {
+            "revision_at_first_runtime": "e947a03f923faf2de2eb6be9774e8766547b0924",
+            "packages": {
+              "langchain": "1.4.0",
+              "langchain-core": "1.6.2",
+              "langgraph": "1.2.11",
+              "streamlit": "1.63.0",
+              "sqlglot": "30.18.0"
+            },
+            "python_version": "3.11.13",
+            "identity_captured_at": "2026-10-12T15:16:46.000549+00:00",
+            "route": "langgraph-v1",
+            "model_class": "ChatOllama",
+            "require_remote_approval": false,
+            "loaded_delivery_guard": "d7ad371a60b6e59b",
+            "data_backend": "mysql",
+            "intent_mode": "llm",
+            "goal_version": 1,
+            "goal_model": "gemma4:e4b",
+            "planner_model": "gemma4:e4b"
+          },
+          "operation": "submit",
+          "process_peak_rss_bytes": 306561024
+        },
+        {
+          "time": "2026-10-12T15:16:46.101556+00:00",
+          "event": "model_inference_admitted",
+          "run_id": "e7f96e16cf61471282ba5c95fb8faddc",
+          "instance_id": "e38ee99a831d",
+          "pid": 50065,
+          "role": "intent_plan",
+          "call_kind": "auxiliary",
+          "calls_used": 0,
+          "call_limit": 9
+        },
+        {
+          "time": "2026-10-12T15:16:46.102102+00:00",
+          "event": "model_payload_budget",
+          "run_id": "e7f96e16cf61471282ba5c95fb8faddc",
+          "instance_id": "e38ee99a831d",
+          "pid": 50065,
+          "payload_bytes": 4550,
+          "input_tokens_estimate": null,
+          "input_tokens_upper_bound": 4550,
+          "payload_bytes_before_projection": 4550,
+          "template_headroom": 640,
+          "input_budget_units": 130048,
+          "output_reserved": 1024,
+          "context_window": 131072,
+          "tool_count": 0,
+          "message_count": 1,
+          "older_turns_compacted": false,
+          "within_budget": true,
+          "observations_compacted": false,
+          "schema_compacted": false,
+          "system_catalog_compacted": false,
+          "tool_menu_compacted": false,
+          "minimal_discovery_menu": false,
+          "reasoning_compacted": false,
+          "minimal_catalog": false,
+          "builtin_instructions_compacted": false,
+          "repair_history_compacted": false,
+          "components": {
+            "system_bytes": 1613,
+            "message_content_bytes": 2641,
+            "tool_calls_bytes": 0,
+            "reasoning_bytes": 0,
+            "tool_schema_bytes": 0,
+            "tool_names": []
+          },
+          "measurement": "conservative_utf8_token_upper_bound"
+        },
+        {
+          "time": "2026-10-12T15:16:56.379055+00:00",
+          "event": "model_inference_succeeded",
+          "run_id": "e7f96e16cf61471282ba5c95fb8faddc",
+          "instance_id": "e38ee99a831d",
+          "pid": 50065,
+          "role": "intent_plan",
+          "elapsed_seconds": 10.277
+        },
+        {
+          "time": "2026-10-12T15:16:56.383864+00:00",
+          "event": "intent_outline_selected",
+          "run_id": "e7f96e16cf61471282ba5c95fb8faddc",
+          "instance_id": "e38ee99a831d",
+          "pid": 50065,
+          "request_id": "b2ac904351dd45758f889a5f26ad1074",
+          "mode": "execute",
+          "capabilities": [
+            "row_preview"
+          ]
+        },
+        {
+          "time": "2026-10-12T15:16:56.387058+00:00",
+          "event": "model_inference_admitted",
+          "run_id": "e7f96e16cf61471282ba5c95fb8faddc",
+          "instance_id": "e38ee99a831d",
+          "pid": 50065,
+          "role": "intent_plan",
+          "call_kind": "auxiliary",
+          "calls_used": 1,
+          "call_limit": 9
+        },
+        {
+          "time": "2026-10-12T15:16:56.387484+00:00",
+          "event": "model_payload_budget",
+          "run_id": "e7f96e16cf61471282ba5c95fb8faddc",
+          "instance_id": "e38ee99a831d",
+          "pid": 50065,
+          "payload_bytes": 6604,
+          "input_tokens_estimate": null,
+          "input_tokens_upper_bound": 6604,
+          "payload_bytes_before_projection": 6604,
+          "template_headroom": 640,
+          "input_budget_units": 126976,
+          "output_reserved": 4096,
+          "context_window": 131072,
+          "tool_count": 0,
+          "message_count": 1,
+          "older_turns_compacted": false,
+          "within_budget": true,
+          "observations_compacted": false,
+          "schema_compacted": false,
+          "system_catalog_compacted": false,
+          "tool_menu_compacted": false,
+          "minimal_discovery_menu": false,
+          "reasoning_compacted": false,
+          "minimal_catalog": false,
+          "builtin_instructions_compacted": false,
+          "repair_history_compacted": false,
+          "components": {
+            "system_bytes": 4998,
+            "message_content_bytes": 1327,
+            "tool_calls_bytes": 0,
+            "reasoning_bytes": 0,
+            "tool_schema_bytes": 0,
+            "tool_names": []
+          },
+          "measurement": "conservative_utf8_token_upper_bound"
+        },
+        {
+          "time": "2026-10-12T15:16:56.409314+00:00",
+          "event": "model_inference_failed",
+          "run_id": "e7f96e16cf61471282ba5c95fb8faddc",
+          "instance_id": "e38ee99a831d",
+          "pid": 50065,
+          "request_id": "b2ac904351dd45758f889a5f26ad1074",
+          "role": "intent_plan",
+          "error_type": "ResponseError",
+          "http_status": 400,
+          "error_category": null,
+          "retry_scheduled": false,
+          "retry_delay_seconds": null
+        },
+        {
+          "time": "2026-10-12T15:16:56.420005+00:00",
+          "event": "error",
+          "run_id": "e7f96e16cf61471282ba5c95fb8faddc",
+          "instance_id": "e38ee99a831d",
+          "pid": 50065,
+          "error_category": null,
+          "error_id": "353f1303e8e1",
+          "stage": "agent_stream",
+          "error_type": "ResponseError",
+          "attempt_budget": null,
+          "database_errno": null,
+          "os_errno": null,
+          "winerror": null,
+          "http_status": 400,
+          "frames": [
+            {
+              "file": "json_contract.py",
+              "line": 94,
+              "function": "<lambda>"
+            },
+            {
+              "file": "chat_models.py",
+              "line": 488,
+              "function": "invoke"
+            },
+            {
+              "file": "chat_models.py",
+              "line": 1877,
+              "function": "generate_prompt"
+            },
+            {
+              "file": "chat_models.py",
+              "line": 1684,
+              "function": "generate"
+            },
+            {
+              "file": "chat_models.py",
+              "line": 2022,
+              "function": "_generate_with_cache"
+            },
+            {
+              "file": "chat_models.py",
+              "line": 1200,
+              "function": "_generate"
+            },
+            {
+              "file": "chat_models.py",
+              "line": 1135,
+              "function": "_chat_stream_with_aggregation"
+            },
+            {
+              "file": "chat_models.py",
+              "line": 1224,
+              "function": "_iterate_over_stream"
+            },
+            {
+              "file": "chat_models.py",
+              "line": 1124,
+              "function": "_create_chat_stream"
+            },
+            {
+              "file": "_client.py",
+              "line": 387,
+              "function": "chat"
+            },
+            {
+              "file": "_client.py",
+              "line": 199,
+              "function": "_request"
+            },
+            {
+              "file": "_client.py",
+              "line": 143,
+              "function": "_request_raw"
+            }
+          ]
+        },
+        {
+          "time": "2026-10-12T15:16:56.420062+00:00",
+          "event": "run_completed",
+          "run_id": "e7f96e16cf61471282ba5c95fb8faddc",
+          "instance_id": "e38ee99a831d",
+          "pid": 50065,
+          "status": "incomplete",
+          "elapsed_seconds": 10.317,
+          "error_id": "353f1303e8e1"
+        },
+        {
+          "time": "2026-10-12T15:16:56.420277+00:00",
+          "event": "turn_slo",
+          "run_id": "e7f96e16cf61471282ba5c95fb8faddc",
+          "instance_id": "e38ee99a831d",
+          "pid": 50065,
+          "elapsed_seconds": 10.317,
+          "limit": 180.0,
+          "status": "error",
+          "process_peak_rss_bytes": 307134464,
+          "frame_cache_bytes": 0
+        }
+      ],
+      "stop_reason": null
+    },
+    {
+      "id": "filtered_sum",
+      "prompt": "observations에서 reading이 3~8인 것만 합계를 알려줘",
+      "status": "incomplete",
+      "text": "분석 중 오류가 발생했습니다 (ResponseError, 오류 ID: 4d48d5c33d42). 기존 결과는 보존했습니다. 미완료 분석 재개로 다시 시도할 수 있습니다.",
+      "seconds": 6.618,
+      "goal": null,
+      "model_calls": 0,
+      "goal_error": null,
+      "result": null,
+      "pass": false,
+      "diagnostics": [
+        {
+          "time": "2026-10-12T15:16:56.483413+00:00",
+          "event": "dataset_selected",
+          "run_id": null,
+          "instance_id": "8290503dd11e",
+          "pid": 50065,
+          "dataset_id": "5894bc1d-c6b3-4f6b-b89a-1fed4d74ada5",
+          "root_id": "5894bc1d-c6b3-4f6b-b89a-1fed4d74ada5",
+          "role": "root",
+          "source": "lab.observations"
+        },
+        {
+          "time": "2026-10-12T15:16:56.483931+00:00",
+          "event": "run_started",
+          "run_id": "480470f9f7a142c29e4461d02cf7b0c2",
+          "instance_id": "8290503dd11e",
+          "pid": 50065,
+          "runtime": {
+            "revision_at_first_runtime": "e947a03f923faf2de2eb6be9774e8766547b0924",
+            "packages": {
+              "langchain": "1.4.0",
+              "langchain-core": "1.6.2",
+              "langgraph": "1.2.11",
+              "streamlit": "1.63.0",
+              "sqlglot": "30.18.0"
+            },
+            "python_version": "3.11.13",
+            "identity_captured_at": "2026-10-12T15:16:46.000549+00:00",
+            "route": "langgraph-v1",
+            "model_class": "ChatOllama",
+            "require_remote_approval": false,
+            "loaded_delivery_guard": "d7ad371a60b6e59b",
+            "data_backend": "mysql",
+            "intent_mode": "llm",
+            "goal_version": 1,
+            "goal_model": "gemma4:e4b",
+            "planner_model": "gemma4:e4b"
+          },
+          "operation": "submit",
+          "process_peak_rss_bytes": 307134464
+        },
+        {
+          "time": "2026-10-12T15:16:56.485948+00:00",
+          "event": "model_inference_admitted",
+          "run_id": "480470f9f7a142c29e4461d02cf7b0c2",
+          "instance_id": "8290503dd11e",
+          "pid": 50065,
+          "role": "intent_plan",
+          "call_kind": "auxiliary",
+          "calls_used": 0,
+          "call_limit": 9
+        },
+        {
+          "time": "2026-10-12T15:16:56.486068+00:00",
+          "event": "model_payload_budget",
+          "run_id": "480470f9f7a142c29e4461d02cf7b0c2",
+          "instance_id": "8290503dd11e",
+          "pid": 50065,
+          "payload_bytes": 4570,
+          "input_tokens_estimate": null,
+          "input_tokens_upper_bound": 4570,
+          "payload_bytes_before_projection": 4570,
+          "template_headroom": 640,
+          "input_budget_units": 130048,
+          "output_reserved": 1024,
+          "context_window": 131072,
+          "tool_count": 0,
+          "message_count": 1,
+          "older_turns_compacted": false,
+          "within_budget": true,
+          "observations_compacted": false,
+          "schema_compacted": false,
+          "system_catalog_compacted": false,
+          "tool_menu_compacted": false,
+          "minimal_discovery_menu": false,
+          "reasoning_compacted": false,
+          "minimal_catalog": false,
+          "builtin_instructions_compacted": false,
+          "repair_history_compacted": false,
+          "components": {
+            "system_bytes": 1613,
+            "message_content_bytes": 2661,
+            "tool_calls_bytes": 0,
+            "reasoning_bytes": 0,
+            "tool_schema_bytes": 0,
+            "tool_names": []
+          },
+          "measurement": "conservative_utf8_token_upper_bound"
+        },
+        {
+          "time": "2026-10-12T15:17:03.041593+00:00",
+          "event": "model_inference_succeeded",
+          "run_id": "480470f9f7a142c29e4461d02cf7b0c2",
+          "instance_id": "8290503dd11e",
+          "pid": 50065,
+          "role": "intent_plan",
+          "elapsed_seconds": 6.555
+        },
+        {
+          "time": "2026-10-12T15:17:03.045042+00:00",
+          "event": "intent_outline_selected",
+          "run_id": "480470f9f7a142c29e4461d02cf7b0c2",
+          "instance_id": "8290503dd11e",
+          "pid": 50065,
+          "request_id": "5fdf1fbdb79c40e28204dec583a29870",
+          "mode": "execute",
+          "capabilities": [
+            "calculation"
+          ]
+        },
+        {
+          "time": "2026-10-12T15:17:03.051396+00:00",
+          "event": "model_inference_admitted",
+          "run_id": "480470f9f7a142c29e4461d02cf7b0c2",
+          "instance_id": "8290503dd11e",
+          "pid": 50065,
+          "role": "intent_plan",
+          "call_kind": "auxiliary",
+          "calls_used": 1,
+          "call_limit": 9
+        },
+        {
+          "time": "2026-10-12T15:17:03.051908+00:00",
+          "event": "model_payload_budget",
+          "run_id": "480470f9f7a142c29e4461d02cf7b0c2",
+          "instance_id": "8290503dd11e",
+          "pid": 50065,
+          "payload_bytes": 6665,
+          "input_tokens_estimate": null,
+          "input_tokens_upper_bound": 6665,
+          "payload_bytes_before_projection": 6665,
+          "template_headroom": 640,
+          "input_budget_units": 126976,
+          "output_reserved": 4096,
+          "context_window": 131072,
+          "tool_count": 0,
+          "message_count": 1,
+          "older_turns_compacted": false,
+          "within_budget": true,
+          "observations_compacted": false,
+          "schema_compacted": false,
+          "system_catalog_compacted": false,
+          "tool_menu_compacted": false,
+          "minimal_discovery_menu": false,
+          "reasoning_compacted": false,
+          "minimal_catalog": false,
+          "builtin_instructions_compacted": false,
+          "repair_history_compacted": false,
+          "components": {
+            "system_bytes": 4998,
+            "message_content_bytes": 1388,
+            "tool_calls_bytes": 0,
+            "reasoning_bytes": 0,
+            "tool_schema_bytes": 0,
+            "tool_names": []
+          },
+          "measurement": "conservative_utf8_token_upper_bound"
+        },
+        {
+          "time": "2026-10-12T15:17:03.087864+00:00",
+          "event": "model_inference_failed",
+          "run_id": "480470f9f7a142c29e4461d02cf7b0c2",
+          "instance_id": "8290503dd11e",
+          "pid": 50065,
+          "request_id": "5fdf1fbdb79c40e28204dec583a29870",
+          "role": "intent_plan",
+          "error_type": "ResponseError",
+          "http_status": 400,
+          "error_category": null,
+          "retry_scheduled": false,
+          "retry_delay_seconds": null
+        },
+        {
+          "time": "2026-10-12T15:17:03.093222+00:00",
+          "event": "error",
+          "run_id": "480470f9f7a142c29e4461d02cf7b0c2",
+          "instance_id": "8290503dd11e",
+          "pid": 50065,
+          "error_category": null,
+          "error_id": "4d48d5c33d42",
+          "stage": "agent_stream",
+          "error_type": "ResponseError",
+          "attempt_budget": null,
+          "database_errno": null,
+          "os_errno": null,
+          "winerror": null,
+          "http_status": 400,
+          "frames": [
+            {
+              "file": "json_contract.py",
+              "line": 94,
+              "function": "<lambda>"
+            },
+            {
+              "file": "chat_models.py",
+              "line": 488,
+              "function": "invoke"
+            },
+            {
+              "file": "chat_models.py",
+              "line": 1877,
+              "function": "generate_prompt"
+            },
+            {
+              "file": "chat_models.py",
+              "line": 1684,
+              "function": "generate"
+            },
+            {
+              "file": "chat_models.py",
+              "line": 2022,
+              "function": "_generate_with_cache"
+            },
+            {
+              "file": "chat_models.py",
+              "line": 1200,
+              "function": "_generate"
+            },
+            {
+              "file": "chat_models.py",
+              "line": 1135,
+              "function": "_chat_stream_with_aggregation"
+            },
+            {
+              "file": "chat_models.py",
+              "line": 1224,
+              "function": "_iterate_over_stream"
+            },
+            {
+              "file": "chat_models.py",
+              "line": 1124,
+              "function": "_create_chat_stream"
+            },
+            {
+              "file": "_client.py",
+              "line": 387,
+              "function": "chat"
+            },
+            {
+              "file": "_client.py",
+              "line": 199,
+              "function": "_request"
+            },
+            {
+              "file": "_client.py",
+              "line": 143,
+              "function": "_request_raw"
+            }
+          ]
+        },
+        {
+          "time": "2026-10-12T15:17:03.093367+00:00",
+          "event": "run_completed",
+          "run_id": "480470f9f7a142c29e4461d02cf7b0c2",
+          "instance_id": "8290503dd11e",
+          "pid": 50065,
+          "status": "incomplete",
+          "elapsed_seconds": 6.607,
+          "error_id": "4d48d5c33d42"
+        },
+        {
+          "time": "2026-10-12T15:17:03.093493+00:00",
+          "event": "turn_slo",
+          "run_id": "480470f9f7a142c29e4461d02cf7b0c2",
+          "instance_id": "8290503dd11e",
+          "pid": 50065,
+          "elapsed_seconds": 6.607,
+          "limit": 180.0,
+          "status": "error",
+          "process_peak_rss_bytes": 307134464,
+          "frame_cache_bytes": 0
+        }
+      ],
+      "stop_reason": null
+    }
+  ]
+}

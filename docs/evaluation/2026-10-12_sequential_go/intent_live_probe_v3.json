@@ -1,0 +1,384 @@
+{
+  "model": "gemma4:e4b",
+  "goal_model": "gemma4:e4b",
+  "mode": "actual Ollama, isolated synthetic raw data, no remote database",
+  "passed": 0,
+  "total": 2,
+  "cases": [
+    {
+      "id": "preview",
+      "prompt": "observations에서 열 개 행을 보여줘",
+      "status": "blocked",
+      "text": "요청을 해석한 모델 응답이 실행 계약을 충족하지 못해 분석 도구 실행 전에 중단했습니다. (오류 ID: ead0611ef7d9) 기존 데이터와 결과는 보존했습니다.",
+      "seconds": 142.293,
+      "goal": null,
+      "model_calls": 3,
+      "goal_error": "non-displayed population cannot bind a display receipt",
+      "result": null,
+      "pass": false,
+      "diagnostics": [
+        {
+          "time": "2026-10-12T14:56:04.911318+00:00",
+          "event": "dataset_selected",
+          "run_id": null,
+          "instance_id": "9926910a692f",
+          "pid": 49299,
+          "dataset_id": "775396ad-0c9b-415b-81ed-d358e1b2a022",
+          "root_id": "775396ad-0c9b-415b-81ed-d358e1b2a022",
+          "role": "root",
+          "source": "lab.observations"
+        },
+        {
+          "time": "2026-10-12T14:56:04.913766+00:00",
+          "event": "run_started",
+          "run_id": "d31cb582c5a940079355f99053d72367",
+          "instance_id": "9926910a692f",
+          "pid": 49299,
+          "runtime": {
+            "revision_at_first_runtime": "e947a03f923faf2de2eb6be9774e8766547b0924",
+            "packages": {
+              "langchain": "1.4.0",
+              "langchain-core": "1.6.2",
+              "langgraph": "1.2.11",
+              "streamlit": "1.63.0",
+              "sqlglot": "30.18.0"
+            },
+            "python_version": "3.11.13",
+            "identity_captured_at": "2026-10-12T14:56:04.509663+00:00",
+            "route": "langgraph-v1",
+            "model_class": "ChatOllama",
+            "require_remote_approval": false,
+            "loaded_delivery_guard": "d7ad371a60b6e59b",
+            "data_backend": "mysql",
+            "intent_mode": "llm",
+            "goal_version": 1,
+            "goal_model": "gemma4:e4b",
+            "planner_model": "gemma4:e4b"
+          },
+          "operation": "submit",
+          "process_peak_rss_bytes": 284721152
+        },
+        {
+          "time": "2026-10-12T14:56:04.935319+00:00",
+          "event": "model_inference_admitted",
+          "run_id": "d31cb582c5a940079355f99053d72367",
+          "instance_id": "9926910a692f",
+          "pid": 49299,
+          "role": "intent_plan",
+          "call_kind": "auxiliary",
+          "calls_used": 0,
+          "call_limit": 9
+        },
+        {
+          "time": "2026-10-12T14:56:04.937377+00:00",
+          "event": "model_payload_budget",
+          "run_id": "d31cb582c5a940079355f99053d72367",
+          "instance_id": "9926910a692f",
+          "pid": 49299,
+          "payload_bytes": 7541,
+          "input_tokens_estimate": null,
+          "input_tokens_upper_bound": 7541,
+          "payload_bytes_before_projection": 7541,
+          "template_headroom": 640,
+          "input_budget_units": 126976,
+          "output_reserved": 4096,
+          "context_window": 131072,
+          "tool_count": 0,
+          "message_count": 1,
+          "older_turns_compacted": false,
+          "within_budget": true,
+          "observations_compacted": false,
+          "schema_compacted": false,
+          "system_catalog_compacted": false,
+          "tool_menu_compacted": false,
+          "minimal_discovery_menu": false,
+          "reasoning_compacted": false,
+          "minimal_catalog": false,
+          "builtin_instructions_compacted": false,
+          "repair_history_compacted": false,
+          "components": {
+            "system_bytes": 4669,
+            "message_content_bytes": 2547,
+            "tool_calls_bytes": 0,
+            "reasoning_bytes": 0,
+            "tool_schema_bytes": 0,
+            "tool_names": []
+          },
+          "measurement": "conservative_utf8_token_upper_bound"
+        },
+        {
+          "time": "2026-10-12T14:56:43.746241+00:00",
+          "event": "model_inference_succeeded",
+          "run_id": "d31cb582c5a940079355f99053d72367",
+          "instance_id": "9926910a692f",
+          "pid": 49299,
+          "role": "intent_plan",
+          "elapsed_seconds": 38.81
+        },
+        {
+          "time": "2026-10-12T14:56:43.749037+00:00",
+          "event": "intent_plan_observed",
+          "run_id": "d31cb582c5a940079355f99053d72367",
+          "instance_id": "9926910a692f",
+          "pid": 49299,
+          "request_id": "0c7f2f4a54d94f7e8361af0e78b0761d",
+          "phase": "DRAFT",
+          "mode": "execute",
+          "population_shapes": [
+            {
+              "basis": "source_population",
+              "changes_filters": false
+            }
+          ],
+          "step_count": 1,
+          "question_chars": 0
+        },
+        {
+          "time": "2026-10-12T14:56:43.759756+00:00",
+          "event": "intent_plan_rejected",
+          "run_id": "d31cb582c5a940079355f99053d72367",
+          "instance_id": "9926910a692f",
+          "pid": 49299,
+          "request_id": "0c7f2f4a54d94f7e8361af0e78b0761d",
+          "phase": "DRAFT",
+          "attempt": 1,
+          "detail": "non-displayed population cannot bind a display receipt"
+        },
+        {
+          "time": "2026-10-12T14:56:43.760847+00:00",
+          "event": "model_inference_admitted",
+          "run_id": "d31cb582c5a940079355f99053d72367",
+          "instance_id": "9926910a692f",
+          "pid": 49299,
+          "role": "intent_plan",
+          "call_kind": "auxiliary",
+          "calls_used": 1,
+          "call_limit": 9
+        },
+        {
+          "time": "2026-10-12T14:56:43.761885+00:00",
+          "event": "model_payload_budget",
+          "run_id": "d31cb582c5a940079355f99053d72367",
+          "instance_id": "9926910a692f",
+          "pid": 49299,
+          "payload_bytes": 8788,
+          "input_tokens_estimate": null,
+          "input_tokens_upper_bound": 8788,
+          "payload_bytes_before_projection": 8788,
+          "template_headroom": 640,
+          "input_budget_units": 126976,
+          "output_reserved": 4096,
+          "context_window": 131072,
+          "tool_count": 0,
+          "message_count": 1,
+          "older_turns_compacted": false,
+          "within_budget": true,
+          "observations_compacted": false,
+          "schema_compacted": false,
+          "system_catalog_compacted": false,
+          "tool_menu_compacted": false,
+          "minimal_discovery_menu": false,
+          "reasoning_compacted": false,
+          "minimal_catalog": false,
+          "builtin_instructions_compacted": false,
+          "repair_history_compacted": false,
+          "components": {
+            "system_bytes": 4669,
+            "message_content_bytes": 3672,
+            "tool_calls_bytes": 0,
+            "reasoning_bytes": 0,
+            "tool_schema_bytes": 0,
+            "tool_names": []
+          },
+          "measurement": "conservative_utf8_token_upper_bound"
+        },
+        {
+          "time": "2026-10-12T14:57:45.222920+00:00",
+          "event": "model_inference_succeeded",
+          "run_id": "d31cb582c5a940079355f99053d72367",
+          "instance_id": "9926910a692f",
+          "pid": 49299,
+          "role": "intent_plan",
+          "elapsed_seconds": 61.46
+        },
+        {
+          "time": "2026-10-12T14:57:45.225296+00:00",
+          "event": "intent_plan_observed",
+          "run_id": "d31cb582c5a940079355f99053d72367",
+          "instance_id": "9926910a692f",
+          "pid": 49299,
+          "request_id": "0c7f2f4a54d94f7e8361af0e78b0761d",
+          "phase": "REVIEW",
+          "mode": "execute",
+          "population_shapes": [
+            {
+              "basis": "source_population",
+              "changes_filters": false
+            }
+          ],
+          "step_count": 1,
+          "question_chars": 0
+        },
+        {
+          "time": "2026-10-12T14:57:45.229186+00:00",
+          "event": "intent_plan_rejected",
+          "run_id": "d31cb582c5a940079355f99053d72367",
+          "instance_id": "9926910a692f",
+          "pid": 49299,
+          "request_id": "0c7f2f4a54d94f7e8361af0e78b0761d",
+          "phase": "REVIEW",
+          "attempt": 2,
+          "detail": "non-displayed population cannot bind a display receipt"
+        },
+        {
+          "time": "2026-10-12T14:57:45.229567+00:00",
+          "event": "model_inference_admitted",
+          "run_id": "d31cb582c5a940079355f99053d72367",
+          "instance_id": "9926910a692f",
+          "pid": 49299,
+          "role": "intent_plan",
+          "call_kind": "auxiliary",
+          "calls_used": 2,
+          "call_limit": 9
+        },
+        {
+          "time": "2026-10-12T14:57:45.230085+00:00",
+          "event": "model_payload_budget",
+          "run_id": "d31cb582c5a940079355f99053d72367",
+          "instance_id": "9926910a692f",
+          "pid": 49299,
+          "payload_bytes": 8788,
+          "input_tokens_estimate": null,
+          "input_tokens_upper_bound": 8788,
+          "payload_bytes_before_projection": 8788,
+          "template_headroom": 640,
+          "input_budget_units": 126976,
+          "output_reserved": 4096,
+          "context_window": 131072,
+          "tool_count": 0,
+          "message_count": 1,
+          "older_turns_compacted": false,
+          "within_budget": true,
+          "observations_compacted": false,
+          "schema_compacted": false,
+          "system_catalog_compacted": false,
+          "tool_menu_compacted": false,
+          "minimal_discovery_menu": false,
+          "reasoning_compacted": false,
+          "minimal_catalog": false,
+          "builtin_instructions_compacted": false,
+          "repair_history_compacted": false,
+          "components": {
+            "system_bytes": 4669,
+            "message_content_bytes": 3672,
+            "tool_calls_bytes": 0,
+            "reasoning_bytes": 0,
+            "tool_schema_bytes": 0,
+            "tool_names": []
+          },
+          "measurement": "conservative_utf8_token_upper_bound"
+        },
+        {
+          "time": "2026-10-12T14:58:27.174802+00:00",
+          "event": "model_inference_succeeded",
+          "run_id": "d31cb582c5a940079355f99053d72367",
+          "instance_id": "9926910a692f",
+          "pid": 49299,
+          "role": "intent_plan",
+          "elapsed_seconds": 41.944
+        },
+        {
+          "time": "2026-10-12T14:58:27.178405+00:00",
+          "event": "intent_plan_observed",
+          "run_id": "d31cb582c5a940079355f99053d72367",
+          "instance_id": "9926910a692f",
+          "pid": 49299,
+          "request_id": "0c7f2f4a54d94f7e8361af0e78b0761d",
+          "phase": "REVIEW",
+          "mode": "execute",
+          "population_shapes": [
+            {
+              "basis": "source_population",
+              "changes_filters": false
+            }
+          ],
+          "step_count": 1,
+          "question_chars": 0
+        },
+        {
+          "time": "2026-10-12T14:58:27.183790+00:00",
+          "event": "intent_plan_rejected",
+          "run_id": "d31cb582c5a940079355f99053d72367",
+          "instance_id": "9926910a692f",
+          "pid": 49299,
+          "request_id": "0c7f2f4a54d94f7e8361af0e78b0761d",
+          "phase": "REVIEW",
+          "attempt": 3,
+          "detail": "non-displayed population cannot bind a display receipt"
+        },
+        {
+          "time": "2026-10-12T14:58:27.185453+00:00",
+          "event": "error",
+          "run_id": "d31cb582c5a940079355f99053d72367",
+          "instance_id": "9926910a692f",
+          "pid": 49299,
+          "error_category": null,
+          "error_id": "ead0611ef7d9",
+          "stage": "intent_plan_validation",
+          "error_type": "ValueError",
+          "attempt_budget": null,
+          "database_errno": null,
+          "os_errno": null,
+          "winerror": null,
+          "http_status": null,
+          "frames": [
+            {
+              "file": "intent_plan.py",
+              "line": 207,
+              "function": "interpret"
+            },
+            {
+              "file": "intent_plan.py",
+              "line": 143,
+              "function": "validate"
+            }
+          ]
+        },
+        {
+          "time": "2026-10-12T14:58:27.185600+00:00",
+          "event": "goal_interpretation_failed",
+          "run_id": "d31cb582c5a940079355f99053d72367",
+          "instance_id": "9926910a692f",
+          "pid": 49299,
+          "request_id": "0c7f2f4a54d94f7e8361af0e78b0761d",
+          "error_id": "ead0611ef7d9",
+          "stage": "intent_plan_validation",
+          "reason": "output_contract_unverified",
+          "database_tool_dispatched": false
+        },
+        {
+          "time": "2026-10-12T14:58:27.198934+00:00",
+          "event": "run_completed",
+          "run_id": "d31cb582c5a940079355f99053d72367",
+          "instance_id": "9926910a692f",
+          "pid": 49299,
+          "status": "blocked",
+          "elapsed_seconds": 142.281,
+          "process_peak_rss_bytes": 286932992,
+          "frame_cache_bytes": 0
+        },
+        {
+          "time": "2026-10-12T14:58:27.199050+00:00",
+          "event": "turn_slo",
+          "run_id": "d31cb582c5a940079355f99053d72367",
+          "instance_id": "9926910a692f",
+          "pid": 49299,
+          "elapsed_seconds": 142.281,
+          "limit": 180.0,
+          "status": "ok"
+        }
+      ],
+      "stop_reason": "goal_unverified"
+    }
+  ]
+}

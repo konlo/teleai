@@ -23,7 +23,8 @@ class PopulationPresentationTests(unittest.TestCase):
         preview['source_reference']='explicit'
         self.assertTrue(applies(preview,{'confirmed_analysis':prior}))
         preview['sources']=['lab.other_events']
-        self.assertFalse(applies(preview,{'confirmed_analysis':prior}))
+        # A new table can have restrictions omitted by the first interpreter.
+        self.assertTrue(applies(preview,{'confirmed_analysis':prior}))
 
     def test_catalog_subject_recheck_preserves_positive_and_excluded_literals(self):
         import json

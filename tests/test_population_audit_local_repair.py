@@ -24,7 +24,8 @@ FIXTURE=json.loads((Path(__file__).parent/'fixtures/population_histogram_followu
 def delta(column=None, quote=None):
     return {'change':'modify' if column else 'keep','evidence_quote':quote or '',
             'conditions':[{'column':column,'op':'le','value':10}] if column else [],
-            'any_conditions':[],'removed_columns':[],'included_values':[]}
+            'any_conditions':[],'removed_columns':[],'included_values':[],
+            'restriction_review':{'clauses':[],'question':''}}
 
 
 class PopulationAuditLocalRepairTests(unittest.TestCase):

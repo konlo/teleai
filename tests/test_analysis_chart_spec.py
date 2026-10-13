@@ -96,6 +96,31 @@ class ChartSpecTests(unittest.TestCase):
                 result = self.tools["render_chart_spec"](self.info.id, kind, **arguments)
                 self.assert_png(result, kind)
 
+    def test_raw_histogram_presentation_renders_legend_and_preserves_counts(self):
+        from unittest.mock import patch
+        from matplotlib.axes import Axes
+        import numpy as np
+        from utils.analysis_datasets import stored_dataset_digest
+        original=Axes.legend; drawn=[]
+        def observe(ax,*args,**kwargs):
+            result=original(ax,*args,**kwargs)
+            drawn.append([t.get_text() for t in result.get_texts()])
+            return result
+        before=stored_dataset_digest(self.store,self.info.id)
+        with patch.object(Axes,'legend',observe):
+            result=self.tools['render_chart_spec'](self.info.id,'histogram',x='value',bins=4,
+                legend=True,palette='high_contrast',stacked=False)
+        card=self.assert_png(result,'histogram')
+        self.assertEqual(drawn,[['value']])
+        self.assertEqual(card.render_spec['legend_labels'],['value'])
+        self.assertEqual(card.render_spec['palette'],'high_contrast')
+        np.testing.assert_array_equal(card.render_spec['counts'],
+            np.histogram(frame()['value'],bins=card.render_spec['edges'])[0])
+        self.assertEqual(sum(card.render_spec['counts']),len(frame()))
+        self.assertEqual(stored_dataset_digest(self.store,self.info.id),before)
+        with self.assertRaises(ValueError):
+            self.tools['render_chart_spec'](self.info.id,'histogram',x='value',stacked=True)
+
     def test_small_valid_boxplot_renders_with_sample_caution(self):
         short = self.store.register(pd.DataFrame({"measurement": [1., 2., 3., 4.]}),
             source="arbitrary.small_result", coverage="complete", predicate_known=True)

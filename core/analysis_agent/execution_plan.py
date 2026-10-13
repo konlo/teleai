@@ -22,23 +22,26 @@ class ExecutionPlans:
             return None
         from core.analysis_agent.completion import CONTRACTS
         contracts={c.name:c for c in CONTRACTS}
-        tasks=[]
-        scope={k:deepcopy(current.get(k)) for k in ('required_sources','required_columns','scope','current_result_only','fresh_source_required')}
-        for index, task in enumerate(goal.get('tasks', [])):
-            contract=CONTRACT_ALIASES.get(task['capability'],task['capability'])
-            satisfied=contract in contracts and contracts[contract].satisfied(current)
-            key=sha256(json.dumps([current['request_id'],index,task,scope],sort_keys=True,default=str).encode()).hexdigest()[:20]
-            tasks.append({'id':key, 'capability':task['capability'], 'options':task['options'],
-                          'scope':scope, 'depends_on':[],
-                          'postconditions':deepcopy(task['options'].get('result_contract')),
-                          'verification_receipt':deepcopy(current.get(contracts[contract].evidence_key)) if satisfied else None,
-                          'status':'verified' if satisfied else 'pending',
-                          'completion_contract':contract,
-                          'evidence_ids':current.get('evidence_ids',[]) if satisfied else [],
-                          'artifact_ids':current.get('artifact_ids',[]) if satisfied else []})
-        plan={'id':current['request_id'],'tasks':tasks,'goal':goal,
-              'status':current.get('status','working'),'scope_mode':'shared_goal_scope',
-              'decision_evidence':deepcopy(current.get('goal_decision_evidence'))}
+        if current.get('intent_plan'):
+            tasks,plan=self._independent_plan(current,contracts)
+        else:
+            tasks=[]
+            scope={k:deepcopy(current.get(k)) for k in ('required_sources','required_columns','scope','current_result_only','fresh_source_required')}
+            for index, task in enumerate(goal.get('tasks', [])):
+                contract=CONTRACT_ALIASES.get(task['capability'],task['capability'])
+                satisfied=contract in contracts and contracts[contract].satisfied(current)
+                key=sha256(json.dumps([current['request_id'],index,task,scope],sort_keys=True,default=str).encode()).hexdigest()[:20]
+                tasks.append({'id':key, 'capability':task['capability'], 'options':task['options'],
+                              'scope':scope, 'depends_on':[],
+                              'postconditions':deepcopy(task['options'].get('result_contract')),
+                              'verification_receipt':deepcopy(current.get(contracts[contract].evidence_key)) if satisfied else None,
+                              'status':'verified' if satisfied else 'pending',
+                              'completion_contract':contract,
+                              'evidence_ids':current.get('evidence_ids',[]) if satisfied else [],
+                              'artifact_ids':current.get('artifact_ids',[]) if satisfied else []})
+            plan={'id':current['request_id'],'tasks':tasks,'goal':goal,
+                  'status':current.get('status','working'),'scope_mode':'shared_goal_scope',
+                  'decision_evidence':deepcopy(current.get('goal_decision_evidence'))}
         if plan['decision_evidence']:
             from core.analysis_agent.goal_grounding import bound_to_current
             if not bound_to_current(current):plan['decision_evidence']['status']='stale'
@@ -56,6 +59,34 @@ class ExecutionPlans:
         return plan
 
     @staticmethod
+    def _independent_plan(current,contracts):
+        saved=current['intent_plan'];completed={s['id']:s for s in saved['completed']}
+        tasks=[]
+        for step in saved['spec']['steps']:
+            goal=step['goal'];task=goal['tasks'][0];record=completed.get(step['id'])
+            contract=CONTRACT_ALIASES.get(task['capability'],task['capability'])
+            scope={'required_sources':deepcopy(goal['sources']),
+                'required_columns':deepcopy(goal['columns']),
+                'scope':{k:deepcopy(goal[k]) for k in ('conditions','any_conditions','measure_conditions','ratio')},
+                'current_result_only':goal['current_result_only'],
+                'fresh_source_required':goal['fresh_source_required']}
+            if record:scope['scope']=deepcopy(record['scope'])
+            elif step['id']==saved['active_step_id']:
+                scope={k:deepcopy(current.get(k)) for k in scope}
+            tasks.append({'id':saved['request_id']+':'+step['id'],
+                'capability':task['capability'],'options':deepcopy(task['options']),
+                'scope':scope,'depends_on':[saved['request_id']+':'+k for k in step['depends_on']],
+                'status':'verified' if record else 'pending',
+                'completion_contract':contract,'postconditions':deepcopy(task['options'].get('result_contract')),
+                'verification_receipt':deepcopy(record['receipts']) if record else None,
+                'evidence_ids':deepcopy(record['evidence_ids']) if record else [],
+                'artifact_ids':deepcopy(record['artifact_ids']) if record else []})
+        return tasks,{'id':current['request_id'],'tasks':tasks,'goal':deepcopy(saved['spec']),
+            'status':current.get('status','working'),'scope_mode':'per_task',
+            'active_task_id':current['request_id']+':'+saved['active_step_id'],
+            'decision_evidence':None,'intent_plan_sha256':saved['sha256']}
+
+    @staticmethod
     def _content(plan):
         return json.dumps({k:v for k,v in plan.items() if k!='revision'},sort_keys=True,default=str)
 
@@ -69,6 +100,12 @@ class ExecutionPlans:
         request_id=plan['id'];revision=plan['revision']
         if not previous:self._event(request_id,'created','plan_created',revision=revision)
         old={t['id']:t for t in previous.get('tasks',[])}
+        for decision in current.get('action_cycle_history',[]):
+            key=sha256(str(decision['decision_id']).encode()).hexdigest()
+            self._event(request_id,'model-action:'+key,'model_action_selected',
+                observation_id=decision['observation_id'],choices=decision['choices'],
+                outstanding=decision['outstanding'],observed_call_ids=decision['observed_call_ids'],
+                revision=revision)
         for task in plan['tasks']:
             if task.get('status')!=old.get(task['id'],{}).get('status'):
                 self._event(request_id,f'task:{revision}:{task["id"]}',
@@ -126,6 +163,9 @@ class ExecutionPlans:
                 raise ValueError('Unknown task ID')
             if tasks[edge['task_id']]['status']=='verified':raise ValueError('Verified task cannot be replanned')
             if any(k not in tasks or k==edge['task_id'] for k in edge['depends_on']):raise ValueError('Invalid dependency')
+            if (plan.get('active_task_id')==edge['task_id']
+                    and any(tasks[k]['status']!='verified' for k in edge['depends_on'])):
+                raise ValueError('An active task cannot acquire unverified dependencies')
             graph[edge['task_id']]=list(dict.fromkeys(edge['depends_on']))
         def visit(key, path):
             if key in path:raise ValueError('Dependency cycle')
@@ -143,6 +183,10 @@ class ExecutionPlans:
         return {'status':'ready','plan':plan}
 
     def admission(self,current,tool_name):
+        if current.get('intent_plan'):
+            from core.analysis_agent.intent_plan import digest
+            if digest(current.get('goal'))!=current.get('active_task_goal_sha256'):
+                return {'error_code':'task_goal_changed','message':'Active task goal changed after admission.'}
         if current.get('goal_decision_evidence'):
             from core.analysis_agent.goal_grounding import bound_to_current
             if not bound_to_current(current):return {
@@ -154,6 +198,7 @@ class ExecutionPlans:
         capabilities={c.name for c in CONTRACTS if tool_name in c.tools}
         tasks={t['id']:t for t in result['plan']['tasks']}
         for task in tasks.values():
+            if result['plan'].get('active_task_id') and task['id']!=result['plan']['active_task_id']:continue
             if task['completion_contract'] in capabilities and task['status']!='verified':
                 waiting=[key for key in task['depends_on'] if tasks[key]['status']!='verified']
                 if waiting:return {'error_code':'task_dependency_pending','waiting_task_ids':waiting,

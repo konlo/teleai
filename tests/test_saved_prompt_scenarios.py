@@ -59,6 +59,8 @@ class SavedPromptScenarioTests(unittest.TestCase):
 
         class Runtime:
             diagnostics = SimpleNamespace(run_id='run', last_error_id=None)
+            datasets = SimpleNamespace(metadata={})
+            artifacts = {}
 
             def submit(self, text):
                 seen.append(text)

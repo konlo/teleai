@@ -2,26 +2,46 @@
 
 ## Current Status
 
-- **Last Updated**: 2026-10-10T21:18:08+09:00
-- **Status**: Windows 저장 호환·Azure 요청별 호출50·대상 판별 재사용은 push 완료. 목록→컬럼→10행→histogram의 population_audit 기존222행 오류는 근거 없는 새 필터 검증으로 확인했고 동일 역할 안에서 유한 수정하도록 로컬 보강. 관련94검사/43subtests 통과; 회사 Windows/Azure/Databricks 실제 재검증·운영 GO는 미확인.
-- **Evidence**: [추론·계획 보강 보고서](docs/evaluation/2026-10-10_cot_strengthening/report.json). 최종제품7b8156a1aa6691aed3fd7e3c74b73b3c24f441b534104cac4240a7e5021169df: 전체966PASS/4SKIP·665subtests(124.54초), compileall/diffcheck PASS.
-- **Actual UI**: 조건부10행→평균1732.9는 앞build에서 확인했다. 수정/서버재시작/소진된 이전요청 종료 후 최종build에서 같은 차트 원문55.383초/6모델/1도구로 secondary9·primary1 막대 PNG 일치. 이들을 최종build 전체3턴/반복 안정성 점수로 합산하지 않는다.
-- **Preservation**: 기존 asset digest 변경0·원본선택 유지·평균/최종차트 추가DB조회0. 최초 잘못된208699행 완료·예산 초과·인용 실패·누적예산 재개 중단을 별도 보존했다.
-- **Runtime**: 앱8504 PID96365, mysql/ollama/gemma4:e4b. 대화cdbea3fa-3f98-4199-8402-f6a6b2704ac8의 최종 차트 화면 유지. .env/commit/push 변경 없음.
-- **Boundaries**: 인용/관측값 일치는 자연어 의미의 일반 증명이 아니다. 독립 task 모집단/DAG·호출 지연/deadline·소진예산 재개 안내·운영/장기대화/공식평가가 남아 있다.
+- **Last Updated**: 2026-10-13T05:04:30.328197+09:00
+- **Status**: 순차1–4 구현·현재 환경 평가 완료 / **NO_GO**. LLM outline→작업별 검토, scope/DAG/receipt, 한 번의 의미 재계획 구현. 실사용 기능 수용 기준은 미충족.
+- **실제 평가**: 원문31 독립4PASS/27FAIL, AI10 1PASS/9FAIL, 별도8여정3PASS/5FAIL(10prompt 중4PASS). 서로 다른 평가 분모를 합산하지 않음. 실제 원문·출처·조건·수치·PNG로 판정.
+- **공식 평가**: DeepEval4.2.3 GEval 1.0/0.2/0.2/0.2(보조 평균0.40), 독립판정1PASS/2FAIL/1NOT_COMPLETE. metadata 평가 경로 수정은 별도재실행으로 표시. Spider선정3 최종SQL0/3; 공식 evaluator 제출SQL없음, 전체benchmark 점수 주장안함.
+- **회귀/대규모**: 전체952PASS/4SKIP/736subtests/121.43초. 실제Databricks100k전송31.114초/peak약206.5MiB/상한·truncation·원본·재열기 보존PASS. nativejudge transport 계약3PASS 별도.
+- **최신 웹**:8504최신 frozen서버 재시작. 기존 stormtrooper 전체longitude histogram137.01초/모델3/신규SQL0,9,524,806개20bin 독립oracle일치/PNG/기존8asset·3Parquet보존PASS. 단일cache재사용성공이며범용GO아님.
+- **남은 공통 수정**: 새출처/미완료조건의영속맥락; 외부사용자의도와실행일치; schema/raw자료역할·복합source도구/부분재계획; 모델/DB시간예약·unknown조회의operation별격리.
+- **경계**:회사Windows/Azure 실제호스트NOT_RUN. 별도서버사용자제외. Databricks/Ollama gemma4:e4b; .env·비밀값·call/time한도변경없음; 작업코드 c1220c0 원격push/SHA일치확인. 
+- **근거/화면**: docs/evaluation/2026-10-12_sequential_go/report.md · remaining_batch_findings.md. 읽기전용진행 http://127.0.0.1:8768/ ;실사용 http://127.0.0.1:8504/Telly . Agent SHA6bebe05e…f79720d고정.
 
 ## Next Action Items — 현재 남은 운영 범위
+
+**현재 release blockers (동일한 frozen 평가가 끝난 뒤 공통 batch로 수정·재검증)**
+
+- [ ] P0 새 요청의 미관측 table도 LLM 의미추출·관측출처에 바인딩; 기존 bank로 대체 금지.
+- [ ] P0 미완료 조건/요청출처의 lifecycle을 task/subject별 영속 관리; metadata 완료가 다른 분석을 지우지 않게.
+- [ ] P1 inventory 승인된catalog/schema와 tool인자 일치, DB-native type근거와 storage dtype 분리.
+- [ ] P1 schema-probe 자산에 분석도구 적용 제한, 큰출처 profile/값목록·scatter 복합 실행 도구 경로와 재계획 보강.
+- [ ] P1 SQL 실행시간 예약·단계별 timeout, unknown중복차단 보존하면서 무관 요청 전역잠금 해소; 실제 provider종료 근거로만 장부조정.
+
+
+- [x] LLM 행동 선택·관측·재계획 이력 구현 및 실패→대체 도구/설명뿐인 완료 차단 계약 검증. 계획 SQL의 설명·서식과 실제 실행 제약 분리.
+- [x] 지정 실제 Databricks10행 조회→동일10행만 histogram·범례·독립 bin 수치·PNG·원본 보존 검증. 최초 실패/재제출과 지연 기록, 확대 평가와 구분.
+
+- [ ] 최신 LLM 행동 루프의 실제 모델 확대 평가: 완료된 이력/추론을 반복 입력하지 않는 관측 뷰, 목록→스키마 갱신→10행→차트·복구 여정과 지연을 검증. 선택 이력은 구현했으며 독립 scope/DAG 완료와 구분.
+- [ ] Databricks DB 고유 타입 실제 조회를 후속 검증. 결과 DataFrame 타입을 DB 고유 타입으로 표시하지 않도록 라벨을 분리했으며 native 타입 조회 완료를 주장하지 않는다.
+- [x] 마지막 날짜 기준 확인 답변을 원래 요청에 연결하고 관측schema의 DB 최신 날짜로 기간 해소. 실제 Databricks 기간 조건 확인; 전체차트 완료와 구분.
+- [x] 연속형 고유값100000행 제한의 DB bin 집계·원래 전체 원본 histogram 실제 웹 완료·독립 구간별빈도 및 재사용/재시작 검증.
+- [ ] 마지막 날짜 기간+전체 히스토그램 종단 검증. today 기준/시간대·혼합 문자열 날짜 지원 및 새로운 표현/장기대화 검증.
 
 - [ ] 회사 histogram 오류 수정 배포 후 같은 목록→컬럼→10행→분포 여정 재검증. 새 범위 검토 요약의 오류 코드/거절·완료 횟수와 원본 보존·차트/범위 일치 확인. 실제 추가된 필터 컬럼은 미확인.
 
 - [x] **C01 판단 근거**: goal 출력·조건·출처를 CURRENT 인용 또는 정확히 일치하는 이전/관측 맥락에 연결한다. 지정 구현/검증 완료; 의미 entailment 일반 증명과 구분.
 - [x] **C02 관찰 기반 계획 이력**: 도구 실패·인자 수정·의존성 수정·검증 완료를 영속 저장하고 다음 planner에 연결. 지정 구현/검증 완료.
-- [ ] **C03 작업별 범위**: 독립 모집단·동일 capability 반복·범용 의존 계획. 공유 scope의 부분 보강으로 완료 처리하지 않는다.
+- [x] **C03 지정 구현·계약**: 작업별 독립 모집단/DAG·동일capability 반복·영속 receipt와 부분완료 보존 구현. 실제 모델 복합 여정 및 범용품질은 아래 별도 평가·blocker로 유지.
 - [ ] **C04 추론 효율**: 참조 중복 제거/작업별 지침 선택은 구현. 소진예산 원인·사용량 snapshot/재개 안내는 보강. 단순/복합 호출 profile·엄격한 요청 deadline·지연/조건 보존·회사 실제 예산 소진 원인 확인은 남음.
 - [ ] **C05 운영/추론 평가**: 동일 모델 검토의 오류 상관·새 표현/스키마·장기 대화·Azure/Databricks 반복 종단 평가.
 - [x] **P0 지원 수치 TAO 검증**: 실행 성공과 계산 충족을 구분하는 결과 계약·독립 검증·semantic_mismatch 재계획 및 지정 실제웹 여정 확인. 임의 수학의 일반 증명/완료로 확대하지 않는다. [보강 근거](docs/evaluation/2026-10-10_tao_strengthening/report.json).
 - [x] **P1 TAO 조회 정책**: stalled 복구 지침을 실제 자동/수동 SQL 정책과 연결하고 두 모드 검사.
-- [ ] **P1 TAO 계획**: 작업별 독립 범위·중복capability 의존성과 범용 DAG를 구현한다. 현재 계획은 공유 목표 범위이며 검증 receipt/postconditions 저장을 보강했다.
+- [x] **P1 TAO 지정 계획 구현**: 작업별 독립 scope/의존성/DAG/receipt 연결. 실제 실패를 스스로 해결하는 완성도나 모든복합요청 성공을 의미하지 않는다.
 - [x] 현재 코드 전체 점검, 실제 모델/웹 확대 평가와 공통 오류 수정, DB·PNG·DOM·원본 보존 재검증.
 - [x] SQL/도구 인자/차트 옵션 오류 피드백과 단계별 유한 복구, NULL·조건 변경 검토 권한 분리.
 - [x] 실제DB 타입13/107개 출력, bins 재사용, scalar SQL pushdown, 복합AVG+histogram 및 오류 경계TypeError 수정.
@@ -3448,3 +3468,239 @@ Task definitions and acceptance conditions: docs/agent_remaining_tasks_2026-09-1
 - **Action**: 범위 검토 오류의 동일 역할 복구, 원문 없는 진단 계수, 외부 histogram fixture/관련 회귀와 문서를 현재 codex/agentic-analysis-rc-2026-09-14 branch로 commit·push하고 원격 commit 일치를 확인한다.
 - **Validation**: 이전 수정 검증94PASS/43subtests 및 최종 신규6PASS/3subtests 유지. 새로운 제품 변경 없음, git diff --check PASS. 회사 배포·실제 Azure/Databricks 검증과 Git push를 구분한다.
 - **Outcome**: 기능 commit 05c9a0c58587ea23f2dfa219e40f4532dd809d31 push 성공. origin branch의 git ls-remote 전체 hash가 로컬 HEAD와 일치 확인. 이 완료 기록도 별도 문서 commit으로 push한다. 회사 서버 pull·전체 프로세스 재시작과 동일 여정 실제 검증은 미수행.
+
+## [2026-10-10 22:28:14] [Agent: /root] User Request: 지금 Databricks로 하고 있는지 확인
+- **Action**: 로컬8504 실행 프로세스·현재 .env의 DB/모델 선택 항목 및 현재 대화의 runtime 실행 정보를 비밀값 출력 없이 확인한다. 연결 설정을 변경하거나 DB 조회를 수행하지 않는다.
+- **Finding**: .env TELLY_DATA_BACKEND=mysql, LLM_PROVIDER=ollama. .env_azure_example은 Databricks이나 실행 .env와 별개다. 8504는 PID1324의 기존 Streamlit 프로세스다. 회사 서버의 현재 상태는 직접 확인할 수 없다.
+- **Outcome**: 현재 화면 대화의 최근 run_started(22:26:26 KST)에서도 data_backend=mysql/model_class=ChatOllama 확인. 로컬 실행은 MySQL+Ollama라고 안내; 설정 변경/서버 재시작/DB 조회 없음.
+
+## [2026-10-10 22:34:56] [Agent: /root] User Request: TELLY_DATA_BACKEND만 databricks로 수정해서 다시 실행
+- **Action**: 실제 .env의 해당 항목만 변경하고 8504의 확인된 Streamlit 프로세스를 종료한 뒤 공식 launcher로 재시작한다. LLM과 자격증명 및 기존 backend별 대화/자산은 보존하고 화면에 Databricks 적용 여부를 확인한다.
+- **Outcome**: .env 해당 항목1개만 mysql→databricks 변경, 나머지 bytes 동일 검증. 기존 PID1324 정상 종료 후 scripts/run_telly.py --port8504로 PID15152 재시작, health200/ok. 실제 기존 브라우저 tab 새로고침 후 데이터 소스 Databricks 및 분석 모델 로컬 Ollama 확인. backend별 저장소 분리에 따라 Databricks 새 대화0acf04ef로 표시되며 MySQL 대화/자산은 삭제하지 않음. 화면 증거 .telly_runtime/databricks_8504_restart.png. Databricks SQL/연결 probe는 이번 요청에서 실행하지 않았고 설정·화면 실행 정상과 접속 성공을 구분한다. .env Git 추가/자격증명/LLM 설정 변경 없음.
+
+## [2026-10-10 22:51:13] [Agent: /root] User Request: 입력 추정(bytes)14048+1536/12288 확인
+- **Action**: 현재 Databricks 대화의 실행 ID별 크기 구성과 선행 오류·원격 결과 상태를 확인한다. 프롬프트 원문/자격증명 출력 없이 범위와 최초 실패·복구 실패를 구분한다.
+- **Finding**: run f79db2e87ab74fd6bb1287ea0c8af409의 최종 오류 f2a9869762d9는 agent_stream/ModelContextBudgetExceeded, HTTP없음. Ollama num_ctx16384-num_predict4096=12288의 보수적 입력 예산, payload14048+template1536=15584로3296초과. 구성 system5166/messagecontent4690/toolcalls953/tools2051bytes 등; 이전49651bytes를14048로 줄여도 초과. 주 모델1/보조 역할6회 진입 기록이며 호출횟수 초과와 다름. 단위는 실제 토큰이 아닌 보수적인 UTF-8 bytes.
+- **Root sequence**: 선행96345ccb35c9는 render_histogram/ValueError, analysis_charts.validate_frequency_dataset175의 complete coverage 요구. Databricks remote ready/completed 이후 longitude별 빈도 자산100000행/aggregate/truncated라 전체 분포 차트 발행 차단. 이후 대안 모델 호출 입력 압축으로도 예산 미충족하여 공급자 호출 전 중단. 로그 상태를 기준으로 이번 Databricks 조회 완료와 차트 실패·agent 복구 실패를 구분해 안내한다.
+- **Outcome/Next**: 고유값이 많은 연속형 데이터는 값별 GROUP BY 전체 반입 대신 DB에서 histogram bins 집계를 수행하도록 비용/범위 계획·도구 복구를 보강해야 한다. 후속 복구 입력은 원문/중복 계약을 최소 관측으로 전달하면서 현재 목표/조건/실행 장부를 보존해야 함. 이번 요청은 진단이며 제품·모델 한도/.env/저장 결과 수정·새 DB 조회·push 없음; 최종 PNG 생성 없음과 운영 GO 미확인 유지.
+
+## [2026-10-10 22:53:04] [Agent: /root] User Request: 입력 한도가12288만인 것이 맞는지 확인
+- **Finding/Outcome**: 현재 Ollama num_ctx16384/num_predict4096로 nominal 입력 예산12288을 계산하나 model_context는 UTF-8 bytes 추정량+형식 headroom과 비교한다. 실제 tokenizer 토큰 한도와 bytes 한도는 동일하지 않으며 과도한 사전 차단 가능. 현재 설정/모델/제품 변경 없이 토큰 기반 예산과 bytes 안전 추정의 차이를 명확히 설명한다.
+
+## [2026-10-10 22:53:54] [Agent: /root] User Request: 지금 사용하는 LLM 확인
+- **Action/Outcome**: .env의 비밀값 제외 선택 항목 및 현재 대화의 최근 실행 metadata 확인. LLM_PROVIDER=ollama, OLLAMA_MODEL=gemma4:e4b, TELLY_GOAL_MODEL=gemma4:e4b이며 실제 runtime ChatOllama/goal_model=gemma4:e4b/planner_model=gemma4:e4b/data_backend=databricks. DB와 LLM 선택을 구분해 안내; 설정·실행·DB 조회 변경 없음.
+
+## [2026-10-10 22:57:51] [Agent: /root] User Request: gemma4:e4b 최대 input text 확인
+- **Action**: Google 공식 Gemma4 model card/Ollama 공식 model tags 및 로컬 Ollama /api/show 메타데이터를 대조한다. 모델 추론·DB 조회·설정 변경 없이 조회한다.
+- **Finding/Outcome**: Google E4B context128K tokens 및 Ollama e4b128K 명시. 로컬 설치 GGUF/Q4_K_M gemma4.context_length=131072 확인. 모델 최대 문맥131072와 현재 app num_ctx16384/응답예약4096에 따른 nominal입력12288을 구분해 안내. 토큰은 글자/bytes와 동일하지 않으며 system/history/tools/current input/응답을 위한 전체 문맥이다. 현재 byte기반 guard는 별도 과도한 사전차단 가능; 설정/모델 변경 없음.
+
+## [2026-10-10 23:00:10] [Agent: /root] User Request: 최대 문맥 모델별 적용 및 Azure GPT5.6 한도 설정 지원
+- **Action**: Gemma E4B131072 적용과 provider별 문맥/응답 설정·검증을 구현한다. 공식 OpenAI 자료로 요청된 GPT5.6 지원 한도 확인 후 Azure 배포 모델 identity와 한도를 별도로 지정하도록 구성한다. 이전 실제 credentials 재사용/회사 inaccessible 경계를 지키며 원격 Azure 호출 없이 계약 테스트를 우선한다.
+- **Artifact Update**: model_context_limits.json 외부 프로필 Gemma E4B131072/GPT5.6(Sol alias)1050000 및 출력 최대128000 추가. context_settings가 OLLAMA_CONTEXT_TOKENS/OLLAMA_MAX_OUTPUT_TOKENS, TELLY_GOAL_CONTEXT_TOKENS, AZURE_OPENAI_MODEL/TELLY_AZURE_CONTEXT_TOKENS/TELLY_AZURE_MAX_OUTPUT_TOKENS 해석·검증. 다른 목표 모델은 context도 재판정. opaque 기존 Azure deployment는 GPT라고 추정하지 않고 구형 bound 유지. Azure JSON role도 문맥 보존/실제 role max_tokens 출력 예약 적용. model_context의 byte크기 측정과 입력 token 추정/상한을 분리, 알려진 GPT tiktoken o200k_base 추정 및 Gemma/실패시 안전한 UTF-8 상한을 진단에 명시. support_report, .env.example/.env_azure_example, docs/model_context_configuration.md·server_failure_diagnostics 갱신.
+- **Validation**: 관련11 test files 70PASS/33subtests (11.64초), diffcheck PASS. 모델별 최대/명시 override/잘못된 값·최대 초과·예약 overflow/unknown 모델 제한 유지/role 문맥·예약 독립성/한국어 bytes>12288의 GPT token 추정 통과/과대입력 handler 이전 거절/tokenizer 실패 안전 fallback/원문 없는 진단 확인. 기존 Azure SDK MockTransport·역할 계약 포함. 실제 로컬 Gemma max-context 짧은 probe 6.72초 성공(input13/output2); /api/ps context_length131072 확인. 전체128K 길이 입력·Azure 실제API·Databricks EDA 새 평가로 합산하지 않음.
+- **Runtime Outcome [23:10:27]**: 실제 .env는 OLLAMA_CONTEXT_TOKENS131072 항목만 추가(기존 다른 값 동일 확인), Ollama/Databricks 및 credentials 보존. 8504 PID15152 종료 후 공식launcher로 PID16459 재시작. health200/ok와 실제 브라우저 데이터소스Databricks/모델Ollama/입력화면 정상확인, .telly_runtime/model_context_restart.png 저장. Azure 회사 deployment/실제 모델명·허용 한도 미검증; 예제는 gpt5.6 explicit identity 및1050000/max_completion_tokens로 준비. 실제 provider 전환/secret변경/새SQL 없음. 이전 히스토그램100000행 truncated 실패는 문맥설정과 별개로 남음. 이번 코드 commit/push 미수행, 운영 GO 갱신 없음.
+
+## [2026-10-10 23:15:03] [Agent: /root] User Request: 수정된 내용으로 다시 agent 실행
+- **Action**: 8504 실제 실행 상태와 현재 대화의 마지막 미완료 분석을 확인하고 수정된 문맥 설정으로 재실행·화면 결과를 검증한다. 이전 완료된 조회/원본/요청 조건을 보존한다.
+- **Actual UI Evaluation [23:23:02]**: PID16459/8504 기존 서버 및 Databricks/Ollama 화면 확인. 마지막 실제 prompt(마지막 1년 longitude histogram)를 사용자처럼 재입력, run8546d8a749a54b5399582a1c045421d2 실행. 현재 문맥131072 적용·입력60029+4992/126976 통과; 이전 입력한도 초과는 재현되지 않음. 원격조회1 completed 후 집계100000행/truncated로 render_histogram ValueError(c260a87c9742), 안전한 전체분포 발행 차단. 복구 모델2회 진입·응답지연 뒤 model_time_budget/exhausted로 chart 미완료. UI재개 버튼 실행은 already_running 상태만 확인, 동일 실행 quota/time 초기화·중복 조회 없이 종료 기다림. 상태영역 클릭 뒤 UI rerun으로 임시 미완료 표시되었지만 백그라운드 ledger terminal 확인 후 reload해 최종 실패 표시/입력화면 확인.
+- **Outcome**: 수정 설정의 agent 실행/접속 완료, 실제 히스토그램 성공 아님. 기존 자산과 대화 보존, 최종 스크린샷 .telly_runtime/agent_rerun_20261010.png. 신규 제품코드/설정 변경 및 push 없음. 다음 보강은 고유값 많은 연속형의 DB bin 집계와 작고 근거 있는 복구 입력; GO 미갱신.
+
+## [2026-10-10 23:33:51] [Agent: /root] User Request: 마지막 1년 longitude histogram SQL 생성 위치 확인
+- **Action**: 실제 prepare_histogram 경로와 최근 실행 증거를 확인해 LLM의 목표 해석·SQL 생성 코드·DB 실행을 구분한다. 새 SQL 실행 없이 코드와 안전한 로그 필드만 조회한다.
+- **Finding/Outcome**: 이 실제 실행은 goal_interpreter의 LLM 목표/조건 해석 이후 recovery의 histogram 도구 선택, analysis_runtime_tools.prepare_histogram571/SQL조합653~655에서 값별 COUNT GROUP BY SQL을 생성한다. query_databricks→analysis_agent/databricks→analysis_databricks.execute_approved가 제출/반입. 저장된 최신 aggregate query는 longitude IS NOT NULL만 있으며 마지막1년 날짜 조건 없음(3개 aggregate 모두동일); 범위 누락을 새로 확인, 100000행 truncation과 별도의 오류. SQL 생성 위치 설명에 누락을 숨기지 않음. 이번 요청은 확인으로 코드변경/DB재실행/push없음.
+
+## [2026-10-10 23:42:11] [Agent: /root] User Request: 자연어 SQL 반복 실패 원인 및 자연어 대비 SQL 검증 존재 확인
+- **Action**: 최근 실행의 목표/범위 관측과 SQL 문법·범위·완료 검증 코드를 대조한다. 비밀값/데이터행 없이 안전한 진단만 확인, 원격 재조회 없음.
+- **Finding**: run8546d8의 population_basis 최초응답 changes_filters=true였지만 displayed_result가 아닌 output_reference_id가 포함되어 구조 거절. 재생성 응답 changes_filters=false 승인. 이후 goal_population_contract_applied unchanged_filters/same_source=True/changed=False, goal decision evidence linguistic_entailment_proven=False. population_audit166~174는 이 false 판단에 의존해 원문 독립검토를 생략하고 기존범위 반환; recovery._scope_valid2153은 구조화범위가 비면 True. 기간조건 없는 실제SQL이 이를 통과한 원인을 확인. 추적 필드만으로 기간 해석의 최초 내부 생각/실제 후보전체를 단정하지 않음.
+- **Outcome/Recommendation**: 문법/read-only validate_query, goal schema/근거검토, scope_matches AST조건비교, 최종coverage/image 검증은 존재하나 원문 요구사항 누락의 독립 완전성 검증이 약함. 원문에서 요구사항/기간·anchor·timezone·모호성 계약을 별도로 남기고 plan/SQL/receipt와 추적, 구조재수정시 의미보존, 누락·unsupported조건은 재계획/명확화로 차단하도록 보강 필요. 높은 cardinality DB bins 및 작은 복구관측도별도필요. 코드확인·로그대조만 수행, 새DB/LLM/test/push없음.
+
+## [2026-10-10 23:59:34] [Agent: /root] User Request: 自然어 조건누락 SQL 검증 근본수정
+- **Action**: 원문 요구조건 독립보존·수정중 의미보존·기간 모호성 실행차단 및 회귀검증을 구현한다. 특정테이블/컬럼 하드코딩 없이 이전 결과/원본 보존.
+- **Artifact Update**: population_basis는 불필요한 non-display reference ID만 제거하고 changes_filters=true 보존. population_audit는 selector의 unchanged/unfiltered/첫요청·preview 이유로 원문 검토를 생략하지 않음. population_requirements는 원문 인용·실제schema 컬럼·조건 매핑·날짜 양쪽 literal 경계/미확정 기간 검증 및 실행가능 확인질문을 담당. 독립 조건은 동일 해석수정 루프에 보존·재사용하며 누락된 decision_evidence는 새 목표로 재검증. 요구조건 미확정 시 도구/SQL 제출 전 clarify. 검토 JSON누락·날짜발명/조건누락은 fail closed. 원본 보호·readonly/실행 장부·요청별 기존quota 보존. support_report의 needs_context/조건 명확화·참조수정 계수와 서버진단 문서 갱신.
+- **Validation**: 최종 관련17 files 128PASS/71subtests(12.98초), 날짜경계 음성사례와 근거 재생성시 독립조건/1회검토 재사용 추가 확인 9PASS/5subtests(8.71초). fixture에 명시날짜조건 초기누락→복원→2행빈도합/PNG·원본digest 보존, 기간 미확정 실제runtime 원격0, 범위누락SQL 거절/양쪽날짜SQL 수용, 모델질문echo 대체, safe진단 원문 미노출 포함. Azure SDK MockTransport 검사이며 회사실제API 아닌 것을 구분. diffcheckPASS.
+- **Actual evaluation**: 수정 전 run28bb6bbf0e4f433cb5e154824b583b06은 ReadTimeout/100000행 truncated로 미완료. UI에서 오래된 미완료를 종료(데이터보존)하고 코드변경 뒤 새 평가 요청; 동일checkpoint의 시간/호출 quota 초기화하지 않음. 첫 수정후 ee2bede7162342dc8c3ecf9a3b35e209에서 필터변경true 보존·조건검토1·SQL0이나 질문echo 출력 발견; typed 미확정 정보로 질문표시 보강. 최종 PID18250/run90990936677e48a784d38a169d194fc8 실제 원문 동일prompt 22.572초/6보조역할/원격0/local0/오류0/needs_context·참조수정1·명확화1. 최종 실제화면 확인 및 스크린샷 저장, 제품세팅/자격증명/새SQL 변경 없음. 상대기간 자동anchor/DBbin/새표현장기대화/회사Azure실제평가는 남음.
+
+## Daily Wrap-ups — 2026-10-11 원문 조건 검증 보강
+
+- **Key Accomplishments**: 참조ID 형식 오류를 의미 재생성 없이 수정, 원문 조건 독립 검토 강제·기간 모호성 확인 질문·절대 날짜 양쪽경계 검증, 같은 해석수정 안의 조건 검토 재사용. 관련128검사 통과 및 실제웹 동일prompt 22.572초/SQL0/오류0로 기간 확인 질문 확인.
+- **Issues/Boundaries**: 최초 실제검증에서 모델의 확인질문echo가 발견되어 typed 질문으로 보강. 현재 상대기간의 DB최신날짜 자동탐색과 고유값100000행 제한의 DB bin 집계는 미완료. 회사 Azure/Windows 실제평가 및 범용GO와 구분.
+- **Next**: 기준일 탐색 도구·범위 계약과 큰 연속형 bin 집계, 날짜명시 후 실제 DB/차트 종단평가, 변경코드 리뷰·요청시 commit/push. 현 수정과 기존 문맥 설정 변경은 작업폴더에 보존.
+
+## [2026-10-11 08:57:22] [Agent: /root] User Request: 마지막 날짜 기준이라고 답했는데 기간 확인 질문 반복
+- **Action**: 실제 대화와 미확정 기간 계약·후속 답변 결합을 확인하고, source_max 기준/날짜컬럼 확인과 읽기 전용 기준일 탐색을 연결해 반복 명확화를 수정한다. 원본/출처/기간 보존.
+
+- **Finding**: 이전 확인 질문의 후속 답변을 원래 기간/출처/차트 목표에 결합하지 못했고 상대 기간을 절대 날짜 양쪽 literal 계약으로 처리해 이미 답한 기준까지 다시 질문했다. 기존 checkpoint는 마지막4개 실제 사용자 턴에서 원래 요청을 모델로 식별하고, 신규 pending_clarification은 원래 요청/확인 답변/출처를 별도 보존하도록 변경.
+- **Artifact Update**: clarification_memory·typed relative_period/source_period_probe 추가. LLM은 anchor/duration/schema 날짜 컬럼을 선언하고 DB MAX/품질1행 receipt가 달력 기준 ge/le 경계를 계산한다. 미확정 모델 날짜 placeholder는 해당 검증 컬럼에만 제거, DB 관측 경계만 근거로 인정; 다른 조건의 승인 근거는 약화하지 않는다. 관측 query IDs는 요청결과 completion 의무와 분리하고 execution_status에는 양쪽 장부를 표시한다. 현재결과만 요청 시 source MAX 원격 확대 금지, 출처/SQL/grain/coverage receipt 검증·혼합/잘못된 날짜 거절·unknown 제출 재실행 금지. 진단 answer_bindings/period_resolutions/date_placeholder_repairs와 문서 갱신.
+- **Actual Trials**: 최초 c99748ed9f0a4078a36cb2b10677f6cb은 잘못된 between placeholder/모델9회소진으로 실패·SQL0. 기간 계약 보강 뒤 run32cfb5b9aaa0408e8e4a0049e6825103에서 원래 요청 복구 및 실제 Databricks MAX(date_str)1행 수신, 상기1년 조건을 포함한 longitude 빈도 SQL 완료. 동일 기준 재질문 없음. 이후100000행 잘림으로 차트 검증 거절, 복구 모델 ReadTimeout c883c477945c로 미완료. DB 날짜 해소 성공과 차트 실패를 별도 기록.
+- **Validation**: 마지막 관측 장부를 분석 결과 의무에 넣었을 때 대역 PNG 여정이 exhausted가 되는 회귀를 발견해 observation_query_ids로 책임 분리. 최종18 files 143PASS/73subtests(13.42초), diffcheckPASS. 출처 mismatch receipt 거절/현재결과만 scope 확대 방지/모델 날짜발명·새 필터 근거없음 거절/unknown 동일·새턴 중복제출 방지/캘린더 leapday/원본 digest와 유효 PNG 확인. 대역 모델·DB 및 Azure MockTransport 회귀로 실제 회사/공식점수와 구분.
+- **Runtime Outcome**: 기존 PID24025 종료 후 공식 launcher PID24612로 최신코드 적용. health ok/Databricks+Ollama 화면/기존 원본과 대화 복원 확인. .env 변경·commit/push 없음. 마지막100000행 truncated 차트 실패는 남아 있고 GO 갱신 없음.
+
+## Daily Wrap-ups — 2026-10-11 확인 답변·DB 마지막 날짜 보강
+
+- **Key Accomplishments**: 상대기간 기준 확인 답변을 원래 분석 목표에 연결, schema 기반 source MAX 관측과 달력기간 경계 계산·SQL 근거 연결, 기준일 관측/분석 결과 장부 분리 및 원문 없는 진단 계수 추가. 관련143PASS/73subtests, 실제 Databricks1년 날짜 조건 확인·최신서버 재시작.
+- **Major Issues Encountered**: 최초 날짜 placeholder·보조호출 소진을 계약 보강으로 해결. 최신 장부 계측의 completion 충돌은 종단회귀에서 발견해 수정. 실제 차트의100000행 집계 잘림 및 복구 ReadTimeout은 남음; 기간해소를 전체차트/범용GO로 표시하지 않음.
+- **Next**: 연속형 DB bin 집계와 간결한 복구입력으로 전체히스토그램 완료, 다른 날짜스키마/장기대화·회사Azure/Windows 검증. 코드 미커밋·미push 상태 보존.
+
+- **UI Evidence**: 최신서버의 기존 대화 진단 패널에서 실제 실행 answer_bindings1/period_resolutions1/clarifications0 및 원격2 completed·ReadTimeout 표시 확인. 화면 .telly_runtime/period_anchor_resolved_20261011.png 저장. 이전 질문들은 역사 메시지로 남아 있으며 실제DB 검증 후 새 기준 질문은 발생하지 않았음.
+
+## [2026-10-11 09:21:49] [Agent: /root] User Request: 기본적인 기간·맥락 판단을 LLM이 하는 구조인지 확인
+- **Action/Outcome**: clarification_answer_v1과 population_requirements의 typed relative_period 및 source_period_probe 경로 확인. 후속 답변/새 요청·원래 요청 참조/기간 anchor·duration·schema 컬럼은 LLM 의미 판정, DB MAX 관측·달력 경계 계산·SQL/출처/완료 검증은 결정적 실행 계층. 이전 실패를 단순 모델 성능이 아닌 판단 전달/보존 계약의 agent 결함으로 구분. 신규 제품 변경·DB/모델 실행·push 없음.
+
+## [2026-10-11 09:22:12] [Agent: /root] User Request: 모든 자연어 케이스를 코드로 대체하지 않고 LLM이 판단하도록 구성됐는지 확인
+- **Action/Outcome**: 최신 recovery의 LLM intent 경로와 결정적 도구 dispatch/완료·복구 분기 확인. 사용자 의도·확인 답변·기간/출처/범위 해석은 LLM 계약이며 표현별 코드 분기를 목표 구조로 삼지 않음. 다만 전체 다음 행동/복구가 전부 LLM 자율 선택인 것은 아니며 검증된 chart/scatter·local continuation 등 코드 실행 경로 존재. 의미 해석과 계산/자원/SQL 검증 책임을 구분해 설명; 제품 변경·DB/LLM 호출·push 없음.
+
+## [2026-10-11 10:05:36] [Agent: /root] User Request: LLM 판단→도구 실행→관찰→재계획 구조 보강
+- **Action**: LLM 목표 이후 코드 선행 dispatch를 조사하고 관측 기반 도구 선택·유한 재계획을 보강한다. 원본·scope·SQL receipt 및 완료 검증을 유지하고 실제 모델/브라우저 평가와 대역 회귀를 구분한다.
+
+- **Action [2026-10-11T10:26:27.800733+09:00]**: action_cycle 모듈로 LLM 경로의 선행 dispatch·계획 후 query 덮어쓰기·예산 소진 자동 새 행동을 제거. 후보/실패/검증 결과를 모델에 전달하고 tool 선택 이력을 영속 저장. 스키마 needs_refresh 재관찰 차단과 미선택 후보의 scope_error 오염 수정. get_analysis_tool_contract 메뉴 노출·조회/렌더 도구 및 축소 메뉴의 발견 계약 보존 보강.
+- **Verification**: 전체 906PASS/4SKIP/703subtests(148.99초), 후속 관련35PASS/19subtests 및 metadata/context/action delta20PASS. 후속 제품변경까지 포함한 최신 전체 검사 진행 중. 대역 선택은 자연어/실제 Azure 점수가 아님.
+- **Actual UI**: 별도447563e5 대화의 최초스키마 c0e8f41f 실패(exhausted, 스키마 갱신 필요를 실패 시그니처로 막음)와 재실행17b6aac1 완료(101.205초) 분리. 기존 Databricks 0행 receipt 재사용 후 모델 inspect_table_context 선택 확인. DB 고유 타입과 결과 타입 라벨 혼동 발견·표시 분리 회귀 추가. 10행 후속 요청 실제검증 진행.
+
+- **Outcome [2026-10-11T11:00:24+09:00]**: 계획 SQL의 reason 문구/서식으로 정상10행 조회를 거절하던 agent 검증 결함을 source+정규화SQL 비교로 수정. raw chart의 범례 옵션 계약/렌더 구현 불일치와 확정 표현 옵션 전달을 보강. 입력/범위 preflight 거절은 실제 미실행 관찰로 모델과 선택 이력에 연결. 예산·원격 SQL 경계를 우회하지 않음.
+- **Final Verification**: 전체908PASS(최종SQL/표현 수정 전), SQL경계35PASS/34subtests, 최종관련78PASS/25subtests(26.26초), 마지막관찰복사/입력거절8PASS(9.42초), diffcheckPASS. 겹치는 결과를 합산 품질점수로 표시하지 않음. 실제10행170.457초·chart123.013초 완료와 전체7회(4미완료/3완료)를 report.json에 분리. 완료schema도DB타입독립미검증.
+
+## Daily Wrap-ups — 2026-10-11 LLM 행동 루프 보강
+
+- **Key Accomplishments**: LLM의 도구 선택 권한·실행 관찰·유한 재계획 구조, 계약 탐색 메뉴·스키마 재관찰·이유/SQL 경계·원본histogram 표현·실행 전 거절 관찰 이력을 보강. 실제 Databricks10행→현재10행 chart·범례·원본hash/빈도/PNG 검증.
+- **Issues / Limits**: 처음 스키마 갱신 차단,10행 SQL설명 오판,chart 범례 계약 불일치 및 추론 시간 소진을 재현·수정. 같은원문 재제출을 자동복구 성공으로 합산하지 않음. 모델 지연·대규모 DB bins·독립scope/DAG·장기/회사 환경 평가가 남아 범용NO-GO 유지.
+- **Next Action Items**: 고유값100000행 집계 대신 DB bins, 모델 호출/관측 효율·장기맥락, 회사Azure/Windows/Databricks 지정여정과 공식프로토콜 검증. 이번 .env/자격증명 변경·commit/push 없음.
+
+- **Final UI Preservation**: 최종PID27611 재시작 뒤 같은 검증 대화·10행 표·PNG/범례 복원 확인. .telly_runtime/action_cycle_restored_20261011.png 저장 및 브라우저 검증 화면 유지. 재시작은 신규 모델 성공률에 합산하지 않음.
+
+## [2026-10-11 12:29:58] [Agent: /root] User Request: agent 다시 실행해줘
+- **Action**: 기존8504 Telly 프로세스를 확인하고 공식 launcher로 최신코드 재시작한다. .env/기존 대화·원본·차트 보존, 임의SQL/모델 평가 재실행 없음.
+
+### [2026-10-11T12:31:57+09:00] [Agent: /root] Restart Outcome
+- 공식 launcher로 기존 PID27611을 종료하고 PID28702로 재시작. 8504 health=ok.
+- 기존447563e5 대화·10행 표·longitude PNG 복원 및 질문 입력창 포커스 확인. Databricks/Ollama 설정 보존, 새로운 SQL/LLM 호출 없음.
+- 화면 증거: `.telly_runtime/agent_restart_20261011.png`. 재시작을 신규 분석 평가 또는 GO 판정으로 합산하지 않음.
+
+## [2026-10-11T12:37:36+09:00] [Agent: /root] User Request: 모델 실행 제한 calls 9/9의 9개 호출 모두 확인
+- **Action**: 현재447563e5 대화의 요청별 모델 ledger와 진단 이벤트를 읽고 호출 역할·결과를 확인한다. SQL/LLM 재실행 없음.
+
+- **Outcome** [2026-10-11T12:38:36+09:00]: 실행19f8ef3e/요청5b2430c1의 auxiliary9회 모두 응답 수신, provider실패/재시도0. population_audit 2회 restriction_review_incomplete→goal수정→다음audit 호출전9/9차단. SQL/행동모델/차트 진입 없음. 역할·시간 전체목록 docs/evaluation/2026-10-11_model_calls_9/report.md 저장. 제품/설정 변경 없음.
+
+## [2026-10-11T12:42:08+09:00] [Agent: /root] User Request: 9번째 호출의 계약 거절 이유 확인
+- **Action**: 모델 응답 수신/조건 계약 거절/호출 한도 차단을 구분하고 population_requirements 검증 조건을 확인한다. 재실행 없음.
+
+- **Outcome**: Call 9 returned successfully; the next audit was blocked before inference. Calls 7 and 8 rejected resolved restriction clauses lacking matching predicates/removal/clear evidence (population_requirements.py:116). Exact audit quote/column is not retained. Report updated; no product changes.
+
+## [2026-10-12T06:18:49+09:00] [Agent: /root] User Request: 직접 테스트해 전체 데이터 histogram 계약 실패 원인 확인·수정
+- **Action**: 기존 실패 보존, 모델 응답의 안전한 구조 진단 후 재현·공통 수정·회귀 및 실제 웹 검증. 기존 자산/설정 보존.
+
+### [2026-10-12T06:51:56+09:00] [Agent: /root] Reproduction / Fix Outcome
+- 실제 population_audit baseline: longitude를 predicate로 선언했으나 조건 없음, 2호출20.048초로 거절 재현. 과거 JSON 원문이 아니라 이번 동일 조건 재실행의 관찰이다.
+- 수정 후 같은 역할: source_scope/unfiltered_source, clear, no predicates, 1호출10.236초 통과. 실제 웹 scope 검토도1회통과. 구조 진단은 관측 컬럼/종류/status/인용 해시만 기록, 원문·값·비공개CoT 제외.
+- 실제 웹098b326c/41f797c0/b4e303d1/75fe63c9 미완료와 중간 추가 오류를 분리 기록. 각SQL/새차트0; 반복실패를 성공으로 합산하지 않음.
+- 0행schema handle과 테이블명dataset_id 오류를 공통 도구 경계에서 수정. 임의 ID/current_result_only는 계속 거절. 실제75fe63c9 실패 인자를 영속원본에 replay하여 올바른COUNT빈도계획 확인, 원격0.
+- 관련 최종161PASS/64subtests14.54초, diff check 통과. 원본3자산/2파일/선택 불변. 최종PID38917/health ok.
+- 문서: docs/evaluation/2026-10-12_unfiltered_histogram/report.md, docs/server_failure_diagnostics.md. 사용자 승인 없이 call/time 한도 확대·설정 변경·push 없음.
+
+## Daily Wrap-ups — 2026-10-12
+- **완료**: 실제 모델 범위 오분류 재현, source_scope/출력 축/필터 계약 분리, bounded진단, typed 정규화, 0행 스키마·source alias 도구 경계 및 행동 입력 간결화.
+- **검증**: 역할 단독1회통과, 실제웹4회 실패의 원인 관찰, 마지막 실패도구 replay planned, 관련161PASS/64subtests, 원본 보존, 독립전체행수 확인.
+- **남은 일**: 신규 자연어 전체 요청의 종단 완료/모델 지연 개선, 고유값100000행 한도용 DB bin 집계/독립빈도 검증, 회사Azure 실제환경. 전체 GO 아님.
+
+- **최종 화면 확인** [2026-10-12T06:53:11+09:00]: 재시작 후447563e5 대화 복원·안전한 진단 UI에서 source_scope 검토 completed1/rejections0, 미충족remote_query/chart 및 model_time_budget 확인. `.telly_runtime/unfiltered_final_20261012.png` 저장, 브라우저 유지. 이전 이미지가 이번 전체 분석 결과라는 주장을 하지 않음.
+
+## [2026-10-12T22:12:04+09:00] [Agent: /root] User Request: 계속해줘 — 전체 원본 histogram 종단 완료 이어서 개선
+- **Action**: 기존 실패/자산 보존. 대규모 DB bin 집계와 모델 행동 효율을 공통 기능으로 보강하고 실제 브라우저·독립 빈도 검증을 이어간다. 기존 변경과 설정 보존.
+
+- **Action** [2026-10-12T22:34:00+09:00]: 공통 source_histogram 도구 연결. LLM 도구 선택 유지, guarded query_databricks 실행 경계·완료 receipt 재사용·bounded DB bins·PNG/합계 검증. MySQL 결과 렌더러의 dialect 누락과 복합 조회 실패의 재조회 차단 보강. 원본/설정 변경 없음. 실제 DB 독립 CASE oracle 9,524,806개/20bin 일치, 직접 probe는 agent 종단 평가와 구분.
+
+### [2026-10-12T22:52:15+09:00] [Agent: /root] Continuation Outcome / Daily Wrap-up Update
+- **완료**: schema-neutral numeric DB bins 복합 도구, 기존 조회 장부/범위/이미지 검증, MySQL 렌더 dialect, 실패 차단, 실제 receipt ID 재사용, 재사용 안내 및 음수 축 폰트 보강.
+- **실제 검증**: 최초 전체9,524,806개/20bin 1조회·165.749초 완료. 후속2회 신규조회0·109.750/98.546초 완료, 마지막은 재시작 후 최신빌드. 독립 CASE oracle 모든bin 일치. 원본3자산/2파일/선택 불변.
+- **최종 회귀**: 관련164PASS/25.351초 및 diff check/health. 이전 겹치는 실행 횟수는 합산하지 않음. 재사용 문구·장부 ID 보강 후 실제 화면 확인.
+- **Artifacts**: docs/evaluation/2026-10-12_unfiltered_histogram/source_bins.md, source_bins_verification.json, source_bins_tests.txt, source_bins_web_final.png. 브라우저 최신결과 유지. commit/push 요청 없음.
+- **남은 일**: 로컬 LLM 지연과 반복안정성, 기간/장기대화/복합EDA, 회사Azure/Windows, 공식평가. 지정 여정 PASS이며 범용 GO 아님.
+
+- **Final diagnostics** [2026-10-12T22:55:20+09:00]: cached receipt 검증 시 NO_TOOL_EXECUTION_OBSERVED 오탐 제거, 실제 마지막 요약 answered/원격0/cache1/flags없음. focused8PASS2.762초(164와합산않음), 진단모듈 적용 마지막8504재시작.
+
+## [2026-10-12T23:44:14+09:00] [Agent: /root] User Request: 1번부터 순차적으로 4번까지 해줘
+- **Action**: 추론 효율 → 작업별 범위/의존 계획 → 최신 실대화 평가 → 운영/대규모 검증 순서로 수행. 기존 미커밋 변경 보존, 각 단계의 실제 근거와 외부 환경 미검증 구분.
+
+### [2026-10-13T00:20:53.087810+09:00] [Agent: /root] Sequential 1–2 implementation / evidence
+- **Action**: v2 outline→selected-capability plan으로 중복 subject/population/audit 역할을 통합. 작업별 모집단·의존성·검증 receipt를 영속 계획으로 분리하며 전환마다 같은 사용자 요청의 call/time 예산 유지. 완료된 표/이미지만 결합 표시. v1 구조 rollback 환경 옵션 보존.
+- **Outcome**: 초기 실제 Gemma 계획 실험의 실패를 v1~v8 보고서로 보존. v8 HTTP400은 Ollama JSON grammar가 items=false를 거절한 것으로 직접 schema-only 호출로 확인·수정. v9 행10개 완료 40.665초/3모델호출; 조건부 합계는 무관 relative_period 필드 때문에 거절됨. predicate grammar에서 그 필드를 제거하고 네 개 실제 요청 재검증 중. 아직 전체 GO 아님.
+- **Validation**: 관련78계약 테스트13.700초 PASS. 백만행 transport oracle/중단/quota/원본재시작 보존 PASS (synthetic cursor), Windows flush 계약4 PASS (macOS 에뮬레이션). 실제 회사 Windows/Azure는 NOT_RUN. .env·자격증명·모델 한도 변경/push 없음.
+
+### [2026-10-13T01:17:00+09:00] [Agent: /root] Sequential progress
+- **Fixes**: selected original의 존재/관측된 물리 출처 확인, 올바른 기존 출처의 provenance label 정규화(다른 namespace 대체 계속 차단), 전체 범위 원문 quote grammar, 모델이 확정한 비그룹 차트에 category 발명 차단. 사용자 요청·조건을 테이블별 정규식으로 라우팅하지 않음.
+- **Actual UI**: 4회 실패를 browser_failures.json에 보존. 최신4681b412 histogram PASS: 3모델호출/83.517초, 신규원격0/완료집계재사용, 독립CASE의20bin과일치/PNG/DOM/3원본metadata 및3Parquet/선택불변. 기존7호출98.546초와비교.
+- **Regression**: final_contracts_v4.txt 119PASS12.836초. 이후전용grammar9PASS7.655초(중복 합산안함). v2 실행초기 오류/문법 실패도 로그삭제안함.
+- **Evaluation**: original31 실제 순차 진행 중; 첫 inventory는 namespace population 혼동으로blocked. 빌드고정, 실패삭제/성공선별없이추가턴진행. databricks_independent_oracles.json에현재750000행/primary범위27439/combined208699/education4빈도/18및13DBnative타입확인.
+
+### [2026-10-13T01:53:16.926425+09:00] [Agent: /root] Full journey evaluation and recovery tooling
+- **Implementation**: model-selected inspect_live_schema refreshes exact confirmed schema via guarded LIMIT0/receipt; neutral inventory grammar prevents inventory from inheriting a data-table population. Manual approval remains protected.
+- **Regression**: 138 focused contracts PASS; full suite 939PASS/10FAIL/4SKIP. Test mocks now accept stream=False, registered remote tools checked via actual runtime, and cached-image wording assertions truthful. These fixes 53PASS/40subtests. Second full run deliberately interrupted to avoid model/CPU memory overlap; no false full PASS.
+- **Actual31**: currently through8/31, initial three independently PASS against actual37-table inventory/18columns/750000-row bin matrix. Turn4 profile misselection stalls;5 outline rejects;6 ReadTimeout;7 model budget;8 answered with wrong retained population FAIL. Failed request’s pending constraints are not safely carried into the followup. No GO.
+- **Qualification**: initial eight turns overlapped CPU/memory unit tests; observed latency is not isolated-provider benchmark. Functional failures retained. Continued suites run one model workload at a time.
+- **Artifacts**: konlo31_live_v2.json, databricks_matrix_oracle.json, konlo31_partial_grade.json, evaluation_conditions.json; sequential queue prepared AI10→heldout8→DeepEval4→Spider3. Oracle/gold never passed to agent.
+
+### [2026-10-13T02:23:54.377724+09:00] [Agent: /root] Critical-failure batch repair
+- Original31v2 safely stopped after13 recorded turns; ledger4completed/unknown0. No outstanding DB submission was interrupted. Queue stopped before any model jobs. Both reports retained as interrupted/ungraded, not full31 evidence.
+- Root fixes: unparsed HUMAN requests survive semantic/provider failure; recent human history is available even with an older confirmed table. Model reconstructs pending predicates with exact preserved HUMAN quotes, source identity and existing condition guards; missing reconstruction blocks older-population substitution.
+- Reviewer may request a corrected semantic outline; action model can select review_analysis_intent once to replan the same original human request. No SQL dispatch, call/time refund, unconfirmed-query revival or partial verified-output loss.
+- Qualified catalog/schema identity now matched by full suffix rather than table basename. Completed model outputs crossing execution deadline are discarded before tools and durably charged as completed calls (not provider failures).
+- New failure/replan contracts5PASS (scripted, not real LLM score); additional reviewer test + broad final contracts running. Real31/10/heldout will restart only after final checks; old failures are not erased.
+- Read-only progress UI127.0.0.1:8768 created and browser verified. No .env, model cap, credentials, commit or push changes.
+
+### [2026-10-13T02:31:22.473271+09:00] [Agent: /root] Latest-build complete replay started
+- Final root-batch contracts:100PASS/48subtests14.66s, diff check clean. Original31v3 runs frozen build, one local-model workload at a time. AI10→heldout8(10prompts)→DeepEval4→Spider3official→actual100ktransport→fullpytest queued.
+- First3 responded; independent strict grading currently PASS2/FAIL1. Inventory answered default-only5 rather than the full37-table oracle; implicit scope narrowing remains under review, not marked PASS from answered text. Current population histogram750000/20bins matches independent matrix.
+- Read-only progress browser is live at127.0.0.1:8768; screenshot progress_latest.jpg. No settings/budget/credentials/push changes.
+
+### [2026-10-13T03:07:56.313653+09:00] [Agent: /root] Exact replay reveals remaining context failure
+- Original31v3 through16. Metadata15 independently PASS; preview16 contains10 real bank rows but does not retain earlier primary/secondary +age30..40 filters, independently FAIL. Guard8 blocked the previous wrong-whole-population completion, but this later path still loses desired scope. Frozen evaluation continues to completion, no failed prompts removed.
+- Confirmed memory gap: unparsed requests have a four-request window and are cleared by any complete request, including independent metadata. An unrelated successful output does not necessarily resolve a pending analysis population. Must address this lifecycle in a common batch, not by natural-language keyword exceptions.
+- Harness corrections (not agent build): native schema dtype authority uses the actual metadata contract; NumPy booleans normalized for JSON/strict checks; removed prior assets now fail preservation; last-ten scatter permits additional raw columns while independently checking axes, preview values/lineage and no remote submission. Targets are unchanged.
+
+### [2026-10-13T03:50:10.355623+09:00] [Agent: /root] Frozen original31 completed / actual failure provenance
+- Latest31v3 completed4340.351s: answered8/incomplete14/blocked5/exception4. Independent matrix/schema/PNG/asset grading PASS4/FAIL27; answered strings are not success. Absent MySQL-only tables remain part of the predeclared journey; wrong bank count in25 is an established source substitution failure, not a safe refusal.
+- Confirmed24: model inference164.458s, SQL starts18:29:18UTC, QueryResultDiscarded18:29:35UTC at180.925s. Request deadline/cancel blocks publication, provider termination unconfirmed; ledgerunknown persists. Global uncertainty check in abandoned27 blocks28–31 beforemodel/SQL. No ledger deletion, unconfirmed retry or claim of authentication failure.
+- Artifacts: konlo31_grade_v3.json, all31 bounded execution diagnostics, remaining_batch_findings.md common repair contracts. Agent build frozen; AI10 then heldout/official/durable transfer/full suite continue sequentially.
+
+### [2026-10-13T04:21:38.663369+09:00] [Agent: /root] AI10 complete / heldout causal trace
+- AI10 strictPASS1/FAIL9 (2answered): case10 describesbank_loan rather than requestedstormtrooper, and exposesstorage int64/string under approved_select_star_result instead of native DB-type proof. No silent safe-refusal credit.
+- Heldoutmean15.2/median10/English blue mean15 PASS, eachoriginalpreserved. ExclusionFAIL before calculation. Followup firstblue AVG hasoutline scope_change=filter, butreview choosesclear with nonemptyconditions three times; ValueError clear population must have empty conditions. SubsequentMAX ReadTimeout.
+- Read-onlycollector retains boundedobservations from active synthetic runtimes withoutmodel/SQL calls orcore changes. Earlier temporary-case logs had alreadybeen cleaned; no invented exact exclusion rejection reason. Existingfrozen31 diagnoses retained; commoncoherent-outline/review grammar contract added.
+
+### [2026-10-13T04:30:41.651273+09:00] [Agent: /root] Step3 full exact/heldout replay complete
+- Latest fixedsource all31+AI10+heldout8 run once sequentially. Strict31:4PASS/27FAIL; AI10:1PASS/9FAIL; heldout8journeys:3PASS/5FAIL,10prompts:4PASS/6FAIL. Heldout1409.759s, originals preserved10/10. No universal combined score.
+- scoped_compound firstreview rejects unfiltered scope without clear; subsequentReadTimeout. chart_compound failsbeforecalculation withReadTimeout. These real-model failures remain distinct from scriptedDAG contractPASS.
+- Readonly bounded diagnostics110events captured from active temporary synthetic runtime, with prior missing traces qualified. Step4DeepEval4agent running; officialjudge/Spider3/100kactualtransport/fullpytest follow in sequence. Noagentcorechange/settings/push.
+
+### [2026-10-13T04:47:57.980497+09:00] [Agent: /root] Step4 actual transfer / official harness fixes
+- Actual Databricks100000row boundary PASS31.114s/peak216580096bytes, truncatedcoverage/completedledger/selectedoriginal/hash/restart preserved. Agent/9.5mrawload score와구분. SQLonce, existing100kcap unchanged.
+- Spider3publicSQLite tasks eachNO_VERIFIED_FINAL_SQL/ReadTimeout;0/3 verifiedfinalSQL. No global547/135 score claimed. Fullpytest nowrunning alone.
+- DeepEvalmetadata oracle inspected onlyoldtoolname; newlive_schema has identicalreadytable_context proof contract. Addedsupportedpath while strengtheningexactphysicalsource match; 1test/8subcasesPASS. Firstfalsegrade preserved and separateL1_001rerun queued. Otherfailures includebalanceAVG→metadata, blockedremote, budget.
+- Officialvenv executable .resolve() accidentally followedsymlink tosystemPython; confirmedcorrectvenv hasdeepeval4.2.3/numpy/pandas. Changedqueue to.absolute(); currentqueuefirst importerrors retained. Postqueue sequentialrecheck+officialvenv scorings prepared. Noagentcorechange orcredential/environmentmutation.
+
+### [2026-10-13T05:04:30.328197+09:00] [Agent: /root] Sequential1–4 final qualification
+
+- 최신 모델평가·전체pytest·Databricks실제전송·공식평가queue종료. 제품952PASS/4SKIP/736subtests, actual100k상한/truncation/receipt/original/restart검증PASS. 실패카운트와단위테스트를합산하지않음.
+- 공식심사기OpenAI-compatible45s timeout보고서보존. nativeOllama judge만thinkfalse/8192ctx/1024output으로수정, officialGEval기준유지.4실제답변점수1.0/0.2/0.2/0.2;새transportsync/async/budget/JSON계약3PASS. Agent설정변경없음.
+- Spider공식venv로재실행:최종SQL없어서채점대상없음.3시도0완료를표시하고fullSpider2점수를만들지않음.
+- 8504공식launcher최신빌드재시작;실제browserprompt1회 c50c93aead094d739414a144ea314e05 완료137.01s/3calls/newSQL0.20bins/총9524806과기존독립실DBoracle일치,PNG실제확인·8asset/3Parquet/빈selectiontable동일보존. browser_latest.json/jpg/png보존.
+- 진행8768최신평가집계로갱신·사용자화면보존. report.md재작성으로과거대기/미실행문구를현재실제결과와구분. frozen실행파일SHA동일확인.
+
+## Daily Wrap-ups — 2026-10-13 순차1–4
+
+**오늘 한 일**: 의미호출통합·작업별범위/DAG/receipt·의미재계획/미완료intent보호·live-schema근거를보강하고최신빌드를고정했다. 원문31/AI10/heldout8을선별없이실제모델로평가했고독립정답·로그·원본·이미지를검증했다. 평가harness경로/venv/nativejudge오류를수정하여제품실패와평가실패를분리했다. 실제10만행Databricks전송및최신브라우저캐시차트검증은통과했다.
+
+**결론**: NO_GO. 원문31은4/31,AI10은1/10,heldout여정은3/8통과. 전체회귀952개통과가실사용agent완성도를대신하지못한다. 출처/미완료조건맥락·외부의도검증·자료역할별도구·단계별시간/불확실조회격리가다음공통수정묶음이다. 회사Windows/Azure실검증NOT_RUN.
+
+**Next Action Items**:
+- [ ] pending/resolved/superseded/cancelled를task/subject별영속관리하고미관측출처를LLM선택discovery로확인;oldsource대체금지.
+- [ ] outline/reviewscope모순및사용자목표와잘못된metadata완료를검증;inherited조건과CURRENT변경근거분리.
+- [ ] schema/raw/aggregate역할을명시하고큰출처profile/value-list/composite-scatter및verifiedpartial이후재계획도구경로구현.
+- [ ] 모델/SQL시간예약·불확실operation별중복차단을구현,provider종료증거없이unknown지우기/자동재제출금지.
+- [ ] 공통수정후같은정확한31/10/heldout및새heldout과실제브라우저재평가;회사Windows/Azure는회사호스트근거로별도확인.
+
+## [2026-10-13 18:24:16 KST] [Agent: /root] User Request: 지금까지 한거 일단 push 해줘
+- **Action**: 현재 변경·대상 파일·비밀값/실행로그 제외 여부 확인 후 현재 codex 브랜치에 커밋/push, 원격 SHA 일치 검증. NO_GO 판정과 실패 평가 근거 유지.
+- **Validation**: 최신 agent frozen SHA 동일; 전체 계약952PASS/4SKIP과 별도native judge 계약3PASS 증거 유지. git diff --check/스크립트 compile 통과. 대상199파일에서 구성비밀값4개 및 토큰패턴 검사0건. .env/.telly_runtime/log.txt/원시 .log는 미포함.
+- **Artifact Update**: 구조 보강 코드·테스트·설정 예시·정제 평가 보고서/화면·남은 batch 목록을 함께 커밋. 실제 release 판정 NO_GO 유지.
+
+- **Outcome** [2026-10-13 18:26:23 KST]: 구현·테스트·평가199파일 commit c1220c043e0ac17e5583ec53f8c97c4428351481를 origin/codex/agentic-analysis-rc-2026-09-14에 push 완료. git ls-remote SHA가 로컬 HEAD와 일치. 이 push는 배포/GO 승인이 아니며 NO_GO 유지. .env·런타임·원시로그는 제외하여 로컬보존. 확인기록을 후속docs commit으로 포함.

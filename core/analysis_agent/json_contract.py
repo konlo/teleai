@@ -91,4 +91,4 @@ def invoke_role(model, request, budget):
         request = request.override(system_message=system, model=model)
     else:
         request = request.override(model=model)
-    return budget.wrap_model_call(request, lambda r: model.invoke([r.system_message, *r.messages]))
+    return budget.wrap_model_call(request, lambda r: model.invoke([r.system_message, *r.messages],stream=False))

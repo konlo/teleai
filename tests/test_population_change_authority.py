@@ -66,5 +66,5 @@ class PopulationChangeAuthorityTests(unittest.TestCase):
                     self.assertEqual(stored_dataset_digest(r.datasets,raw.id),before)
                     if expected==2.:r.close();r=GraphAnalysisRuntime(root,'owner','change-audit',model)
                 events=[json.loads(line) for line in r.diagnostics.path.read_text().splitlines()]
-                self.assertTrue(any(e['event']=='goal_population_contract_applied' and e.get('basis')=='unchanged_filters' for e in events))
+                self.assertTrue(any(e['event']=='goal_population_audit_conflict' and e.get('resolution')=='retain_unchanged_reviewed_population' for e in events))
             finally:r.close()

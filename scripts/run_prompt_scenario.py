@@ -35,17 +35,23 @@ def replay(scenario, runtime, output, *, backend, provider):
     output = Path(output)
     if output.exists():
         raise FileExistsError('Use a new output path; previous results are preserved')
-    report = {'scenario': scenario['name'], 'prompts_sha256': scenario['prompts_sha256'],
+    from scripts.evaluation_provenance import snapshot
+    report = {'build':snapshot(), 'scenario': scenario['name'], 'prompts_sha256': scenario['prompts_sha256'],
               'requested_turns': scenario['prompt_count'],
               'started_at': datetime.now(timezone.utc).isoformat(),
               'backend': backend, 'provider': provider, 'scope': 'production_agent_cli_not_browser',
+              'asset_root':str(runtime.db.directory.resolve()) if getattr(getattr(runtime,'db',None),'directory',None) else None,
               'status': 'RUNNING', 'grading': 'NOT_GRADED',
               'limitations': ['answered is not PASS; independently verify source, scope, counts and PNG/UI',
                               'reference expectations describe an earlier database snapshot'],
               'turns': []}
+    from utils.analysis_datasets import stored_dataset_digest
     write_report(output, report)
     try:
         for turn in scenario['turns']:
+            report['active_turn']={'id':turn['id'],'status':'RUNNING'}
+            write_report(output,report)
+            print(json.dumps({'id':turn['id'],'status':'RUNNING'},ensure_ascii=False),flush=True)
             start = time.monotonic()
             entry = {'id': turn['id'], 'prompt': turn['prompt'], 'grading': 'NOT_GRADED'}
             try:
@@ -62,6 +68,16 @@ def replay(scenario, runtime, output, *, backend, provider):
                                  'required_sources', 'scope', 'model_calls', 'model_seconds',
                                  'artifact_ids', 'evidence_ids', 'metadata_evidence',
                                  'table_preview_evidence', 'value_list_evidence')})
+                entry['verified_tasks']=(recovery.get('intent_plan') or {}).get('completed',[])
+                entry['model_accounting']=state.get('model_recovery')
+                entry['datasets']={key:{'source':info.source,'query':info.query,
+                    'columns':list(info.columns),'coverage':info.coverage,
+                    'role':info.role,'parent_id':info.parent_id,
+                    'digest':stored_dataset_digest(runtime.datasets,key)}
+                    for key,info in runtime.datasets.metadata.items()}
+                entry['charts']={key:{'kind':card.kind,'columns':list(card.columns),
+                    'dataset_id':card.dataset_id,'png_bytes':len(card.image)}
+                    for key,card in runtime.artifacts.items() if key in recovery.get('artifact_ids',[])}
             except Exception as error:
                 # No raw exception/credentials/rows in a shareable report.
                 entry.update(agent_status='exception', error_type=type(error).__name__,
@@ -73,6 +89,7 @@ def replay(scenario, runtime, output, *, backend, provider):
             print(json.dumps({key: entry.get(key) for key in (
                 'id', 'agent_status', 'error_type', 'elapsed_seconds', 'grading')},
                              ensure_ascii=False), flush=True)
+        report.pop('active_turn',None)
         report['status'] = ('RECORDED_UNGRADED' if all(
             t['agent_status'] == 'answered' for t in report['turns']) else 'INCOMPLETE_UNGRADED')
         report['recorded_turns'] = len(report['turns'])
@@ -94,7 +111,7 @@ def open_runtime(backend_name, provider, run_id):
     load_dotenv(ROOT / '.env')
     backend = load_data_backend(ROOT, name=backend_name)
     backend.preflight()
-    policy = RuntimePolicy()
+    policy = RuntimePolicy.from_env()
     model = build_analysis_chat_model(policy, provider=provider)
     # Isolated from app conversations and from other backend runs.
     root = backend.storage_root(ROOT / '.telly_runtime/prompt_scenario_runs' / run_id)
@@ -116,7 +133,7 @@ def main(argv=None):
     action.add_argument('--export', type=Path, help='Export complete reusable JSON; no model/DB calls')
     action.add_argument('--run', action='store_true', help='Replay with the live configured agent/DB')
     parser.add_argument('--backend', choices=('mysql', 'databricks'))
-    parser.add_argument('--provider', choices=('ollama', 'databricks'))
+    parser.add_argument('--provider', choices=('ollama', 'azure', 'databricks'))
     parser.add_argument('--output', type=Path, help='New report file; defaults to ignored local runtime dir')
     args = parser.parse_args(argv)
     if args.list:

@@ -1,0 +1,123 @@
+2026-10-13 01:30:37.218 WARNING streamlit.runtime.scriptrunner_utils.script_run_context: Thread 'MainThread': missing ScriptRunContext! This warning can be ignored when running in bare mode.
+2026-10-13 01:30:37.782 Thread 'MainThread': missing ScriptRunContext! This warning can be ignored when running in bare mode.
+2026-10-13 01:30:41.600 Thread 'MainThread': missing ScriptRunContext! This warning can be ignored when running in bare mode.
+2026-10-13 01:30:42.477 Thread 'MainThread': missing ScriptRunContext! This warning can be ignored when running in bare mode.
+2026-10-13 01:30:42.554 Thread 'MainThread': missing ScriptRunContext! This warning can be ignored when running in bare mode.
+======================================================================
+ERROR: test_independent_population_read_replaces_anchored_equality (tests.test_goal_journey_repair.JourneyRepairTests.test_independent_population_read_replaces_anchored_equality)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/najongseong/git_repository/teleai/tests/test_goal_journey_repair.py", line 88, in test_independent_population_read_replaces_anchored_equality
+    result=audit(i,current,data,plan)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/najongseong/git_repository/teleai/core/analysis_agent/population_audit.py", line 199, in audit
+    if interpreter.model_recovery else invoke())
+                                       ^^^^^^^^
+  File "/Users/najongseong/git_repository/teleai/core/analysis_agent/population_audit.py", line 196, in invoke
+    def invoke():return invoke_role(population_model,req,interpreter.budget)
+                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/najongseong/git_repository/teleai/core/analysis_agent/json_contract.py", line 94, in invoke_role
+    return budget.wrap_model_call(request, lambda r: model.invoke([r.system_message, *r.messages],stream=False))
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/najongseong/git_repository/teleai/core/analysis_agent/model_context.py", line 402, in wrap_model_call
+    return handler(request.override(messages=messages,tools=tools,system_message=system))
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/najongseong/git_repository/teleai/core/analysis_agent/json_contract.py", line 94, in <lambda>
+    return budget.wrap_model_call(request, lambda r: model.invoke([r.system_message, *r.messages],stream=False))
+                                                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+TypeError: JourneyRepairTests.test_independent_population_read_replaces_anchored_equality.<locals>.PopulationModel.invoke() got an unexpected keyword argument 'stream'
+
+======================================================================
+ERROR: test_population_audit_cannot_turn_row_count_into_an_unmentioned_id_filter (tests.test_goal_journey_repair.JourneyRepairTests.test_population_audit_cannot_turn_row_count_into_an_unmentioned_id_filter)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/najongseong/git_repository/teleai/tests/test_goal_journey_repair.py", line 119, in test_population_audit_cannot_turn_row_count_into_an_unmentioned_id_filter
+    audit(i,current,{'tables':catalog()},plan)
+  File "/Users/najongseong/git_repository/teleai/core/analysis_agent/population_audit.py", line 199, in audit
+    if interpreter.model_recovery else invoke())
+                                       ^^^^^^^^
+  File "/Users/najongseong/git_repository/teleai/core/analysis_agent/population_audit.py", line 196, in invoke
+    def invoke():return invoke_role(population_model,req,interpreter.budget)
+                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/najongseong/git_repository/teleai/core/analysis_agent/json_contract.py", line 94, in invoke_role
+    return budget.wrap_model_call(request, lambda r: model.invoke([r.system_message, *r.messages],stream=False))
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/najongseong/git_repository/teleai/core/analysis_agent/model_context.py", line 402, in wrap_model_call
+    return handler(request.override(messages=messages,tools=tools,system_message=system))
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/najongseong/git_repository/teleai/core/analysis_agent/json_contract.py", line 94, in <lambda>
+    return budget.wrap_model_call(request, lambda r: model.invoke([r.system_message, *r.messages],stream=False))
+                                                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+TypeError: JourneyRepairTests.test_population_audit_cannot_turn_row_count_into_an_unmentioned_id_filter.<locals>.<lambda>() got an unexpected keyword argument 'stream'
+
+======================================================================
+FAIL: test_two_readings_then_model_chosen_execution_with_independent_scope (tests.test_intent_task_scopes.TaskScopeTests.test_two_readings_then_model_chosen_execution_with_independent_scope)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/najongseong/git_repository/teleai/tests/test_intent_task_scopes.py", line 84, in test_two_readings_then_model_chosen_execution_with_independent_scope
+    self.assertEqual(out['status'],'answered',out)
+AssertionError: 'incomplete' != 'answered'
+- incomplete
++ answered
+ : {'error_id': 'eff780bc385e', 'status': 'incomplete', 'error_type': 'UnboundLocalError', 'error_category': None, 'text': '분석 중 오류가 발생했습니다 (UnboundLocalError, 오류 ID: eff780bc385e). 기존 결과는 보존했습니다. 미완료 분석 재개로 다시 시도할 수 있습니다.', 'elapsed_seconds': 0.069}
+
+======================================================================
+FAIL: test_semantic_interpretation_shares_retry_ledger_and_counts_each_attempt_once (tests.test_model_recovery.ModelRecoveryTests.test_semantic_interpretation_shares_retry_ledger_and_counts_each_attempt_once)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/najongseong/git_repository/teleai/tests/test_model_recovery.py", line 135, in test_semantic_interpretation_shares_retry_ledger_and_counts_each_attempt_once
+    self.assertEqual(result['status'],'answered',result)
+AssertionError: 'incomplete' != 'answered'
+- incomplete
++ answered
+ : {'error_id': '206205463011', 'status': 'incomplete', 'error_type': 'UnboundLocalError', 'error_category': None, 'text': '분석 중 오류가 발생했습니다 (UnboundLocalError, 오류 ID: 206205463011). 기존 결과는 보존했습니다. 미완료 분석 재개로 다시 시도할 수 있습니다.', 'elapsed_seconds': 0.01}
+
+======================================================================
+FAIL: test_filtered_measure_comes_from_goal_not_word_matching (tests.test_llm_goal.LLMGoalTests.test_filtered_measure_comes_from_goal_not_word_matching)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/najongseong/git_repository/teleai/tests/test_llm_goal.py", line 120, in test_filtered_measure_comes_from_goal_not_word_matching
+    self.assertEqual(out['status'],'answered',out)
+AssertionError: 'incomplete' != 'answered'
+- incomplete
++ answered
+ : {'error_id': 'b046af7e3876', 'status': 'incomplete', 'error_type': 'UnboundLocalError', 'error_category': None, 'text': '분석 중 오류가 발생했습니다 (UnboundLocalError, 오류 ID: b046af7e3876). 기존 결과는 보존했습니다. 미완료 분석 재개로 다시 시도할 수 있습니다.', 'elapsed_seconds': 0.008}
+
+======================================================================
+FAIL: test_followup_gets_previous_confirmed_goal_and_restart_keeps_evidence (tests.test_llm_goal.LLMGoalTests.test_followup_gets_previous_confirmed_goal_and_restart_keeps_evidence)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/najongseong/git_repository/teleai/tests/test_llm_goal.py", line 200, in test_followup_gets_previous_confirmed_goal_and_restart_keeps_evidence
+    self.assertEqual(r.submit('그 테이블 reading 합계만')['status'],'answered')
+AssertionError: 'incomplete' != 'answered'
+- incomplete
++ answered
+
+
+======================================================================
+FAIL: test_negated_chart_and_average_follow_model_goal (tests.test_llm_goal.LLMGoalTests.test_negated_chart_and_average_follow_model_goal) (prompt='reading 평균은 계산하지 말고 합계만 알려줘')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/najongseong/git_repository/teleai/tests/test_llm_goal.py", line 84, in test_negated_chart_and_average_follow_model_goal
+    result=r.submit(prompt);self.assertEqual(result['status'],'answered',result)
+                            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 'incomplete' != 'answered'
+- incomplete
++ answered
+ : {'error_id': 'd01aa5af8e1e', 'status': 'incomplete', 'error_type': 'UnboundLocalError', 'error_category': None, 'text': '분석 중 오류가 발생했습니다 (UnboundLocalError, 오류 ID: d01aa5af8e1e). 기존 결과는 보존했습니다. 미완료 분석 재개로 다시 시도할 수 있습니다.', 'elapsed_seconds': 0.005}
+
+======================================================================
+FAIL: test_failed_sql_returns_to_model_and_alternative_preserves_original (tests.test_model_action_cycle.ModelActionCycleTests.test_failed_sql_returns_to_model_and_alternative_preserves_original)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/najongseong/git_repository/teleai/tests/test_model_action_cycle.py", line 112, in test_failed_sql_returns_to_model_and_alternative_preserves_original
+    self.assertEqual(out['status'],'answered',out)
+AssertionError: 'incomplete' != 'answered'
+- incomplete
++ answered
+ : {'error_id': '5d930e58a1cd', 'status': 'incomplete', 'error_type': 'UnboundLocalError', 'error_category': None, 'text': '분석 중 오류가 발생했습니다 (UnboundLocalError, 오류 ID: 5d930e58a1cd). 기존 결과는 보존했습니다. 미완료 분석 재개로 다시 시도할 수 있습니다.', 'elapsed_seconds': 0.005}
+
+----------------------------------------------------------------------
+Ran 138 tests in 12.975s
+
+FAILED (failures=6, errors=2)

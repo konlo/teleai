@@ -250,7 +250,8 @@ def render_chart_spec(store: DatasetStore, dataset_id: str, *, kind: str, x: str
                       y: str = "", category: str = "", aggregation: str = "none",
                       sort: str = "none", top_n: int = 50, bins: int = 20,
                       title: str = "", x_label: str = "", y_label: str = "",
-                      orientation: str = "vertical", cumulative: bool = False):
+                      orientation: str = "vertical", cumulative: bool = False,
+                      legend: bool = False, stacked: bool = False, palette: str = 'default'):
     """Render one bounded, declarative chart from a loaded dataset.
 
     No expression strings, Python code, file paths, URLs, or arbitrary style
@@ -261,6 +262,10 @@ def render_chart_spec(store: DatasetStore, dataset_id: str, *, kind: str, x: str
     aggregations = {"none", "count", "sum", "mean", "median", "min", "max"}
     if kind not in kinds or aggregation not in aggregations:
         raise ValueError("지원하는 차트 종류와 집계 방식을 사용해주세요.")
+    if type(legend) is not bool or type(stacked) is not bool or palette not in {'default','high_contrast'}:
+        raise ValueError('차트 범례·누적·색상 옵션을 확인해주세요.')
+    if stacked or (kind != 'histogram' and (legend or palette != 'default')):
+        raise ValueError('이 표현 옵션은 원본 수치 histogram에서 지원합니다. 그룹 표현은 전용 도구를 사용해주세요.')
     if sort not in {"none", "ascending", "descending", "calendar_month"}:
         raise ValueError("sort는 none, ascending, descending, calendar_month 중 하나여야 합니다.")
     if orientation not in {"vertical", "horizontal"}:
@@ -317,7 +322,9 @@ def render_chart_spec(store: DatasetStore, dataset_id: str, *, kind: str, x: str
         if len(values) < 1:
             raise ValueError("히스토그램에는 유효한 수치가 1개 이상 필요합니다.")
         plotted = values.to_frame(name=x)
-        hist_counts, hist_edges, _ = ax.hist(values, histtype="bar", bins=int(bins), color="#3278b9", edgecolor="white")
+        hist_counts, hist_edges, _ = ax.hist(values, histtype="bar", bins=int(bins),
+            color='#0072B2' if palette=='high_contrast' else '#3278b9', edgecolor="white",label=x)
+        if legend:ax.legend()
         ax.set(xlabel=x_label or x, ylabel=y_label or "Count")
         default_title = f"{x} 분포"
         reason = f"유효값 {len(values):,}개를 {int(bins)}개 bin으로 표시했습니다."
@@ -539,7 +546,8 @@ def render_chart_spec(store: DatasetStore, dataset_id: str, *, kind: str, x: str
     if kind == 'histogram':
         # Store what was actually rendered so follow-up validation can compare
         # bin counts and boundaries instead of trusting a chart label.
-        spec.update(counts=hist_counts.astype(int).tolist(), edges=hist_edges.tolist())
+        spec.update(counts=hist_counts.astype(int).tolist(), edges=hist_edges.tolist(),
+            legend=legend,legend_labels=[x] if legend else [],stacked=False,palette=palette)
     card = replace(card, render_spec=spec)
     return card, summary, spec
 

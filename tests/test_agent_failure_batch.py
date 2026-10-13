@@ -103,7 +103,7 @@ class FailureBatchTests(unittest.TestCase):
                 self.assertEqual(len(r.datasets.metadata),0)
             finally:r.close()
         for kind in ('bar','scatter'):
-            with self.subTest(kind=kind),self.assertRaisesRegex(ValueError,'category groups a numeric histogram only'):
+            with self.subTest(kind=kind),self.assertRaisesRegex(ValueError,'distinct measure and category'):
                 validate_goal(goal('chart',{'kind':kind,'category':'cohort'},columns=['reading','cohort']))
 
     def test_filter_column_is_not_an_implicit_numeric_bar_axis(self):

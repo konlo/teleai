@@ -1,0 +1,221 @@
+{
+  "scope": "independent actual Databricks read-only oracle; not an agent run",
+  "results": {
+    "bank_loan_counts": {
+      "sql": "SELECT COUNT(*) AS total, SUM(CASE WHEN age BETWEEN 30 AND 40 AND education = 'primary' THEN 1 ELSE 0 END) AS primary_range, SUM(CASE WHEN age BETWEEN 30 AND 40 AND education IN ('primary','secondary') THEN 1 ELSE 0 END) AS combined_range FROM workspace.default.bank_loan",
+      "columns": [
+        "total",
+        "primary_range",
+        "combined_range"
+      ],
+      "rows": [
+        [
+          750000,
+          27439,
+          208699
+        ]
+      ]
+    },
+    "education_counts": {
+      "sql": "SELECT education, COUNT(*) AS frequency FROM workspace.default.bank_loan GROUP BY education",
+      "columns": [
+        "education",
+        "frequency"
+      ],
+      "rows": [
+        [
+          "secondary",
+          401683
+        ],
+        [
+          "primary",
+          99510
+        ],
+        [
+          "tertiary",
+          227508
+        ],
+        [
+          "unknown",
+          21299
+        ]
+      ]
+    },
+    "bank_loan_schema": {
+      "sql": "DESCRIBE TABLE workspace.default.bank_loan",
+      "columns": [
+        "col_name",
+        "data_type",
+        "comment"
+      ],
+      "rows": [
+        [
+          "id",
+          "bigint",
+          null
+        ],
+        [
+          "age",
+          "bigint",
+          null
+        ],
+        [
+          "job",
+          "string",
+          null
+        ],
+        [
+          "marital",
+          "string",
+          null
+        ],
+        [
+          "education",
+          "string",
+          null
+        ],
+        [
+          "default",
+          "string",
+          null
+        ],
+        [
+          "balance",
+          "bigint",
+          null
+        ],
+        [
+          "housing",
+          "string",
+          null
+        ],
+        [
+          "loan",
+          "string",
+          null
+        ],
+        [
+          "contact",
+          "string",
+          null
+        ],
+        [
+          "day",
+          "bigint",
+          null
+        ],
+        [
+          "month",
+          "string",
+          null
+        ],
+        [
+          "duration",
+          "bigint",
+          null
+        ],
+        [
+          "campaign",
+          "bigint",
+          null
+        ],
+        [
+          "pdays",
+          "bigint",
+          null
+        ],
+        [
+          "previous",
+          "bigint",
+          null
+        ],
+        [
+          "poutcome",
+          "string",
+          null
+        ],
+        [
+          "y",
+          "bigint",
+          null
+        ]
+      ]
+    },
+    "stormtrooper_schema": {
+      "sql": "DESCRIBE TABLE workspace.default.stormtrooper",
+      "columns": [
+        "col_name",
+        "data_type",
+        "comment"
+      ],
+      "rows": [
+        [
+          "flight_id",
+          "string",
+          null
+        ],
+        [
+          "date_str",
+          "timestamp",
+          null
+        ],
+        [
+          "latitude",
+          "double",
+          null
+        ],
+        [
+          "longitude",
+          "double",
+          null
+        ],
+        [
+          "pressure_altitude",
+          "double",
+          null
+        ],
+        [
+          "cdo",
+          "double",
+          null
+        ],
+        [
+          "cth",
+          "double",
+          null
+        ],
+        [
+          "glm_event_density",
+          "double",
+          null
+        ],
+        [
+          "glm_optical_flux",
+          "double",
+          null
+        ],
+        [
+          "cdo025",
+          "double",
+          null
+        ],
+        [
+          "cth025",
+          "double",
+          null
+        ],
+        [
+          "cth025_diff_feet",
+          "double",
+          null
+        ],
+        [
+          "cdo_dist_km",
+          "double",
+          null
+        ]
+      ]
+    }
+  },
+  "status": "PASS"
+}

@@ -5,6 +5,18 @@ KEYS=('request_id','request_text','required_sources','required_columns','scope',
       'kind','chart_axes','chart_group_spec','chart_presentation_spec')
 
 
+def unparsed(previous):
+    """Retain human intent that failed before interpretation, never result facts."""
+    if previous.get('status')=='complete':return []
+    requests=deepcopy(previous.get('unparsed_user_intent') or [])
+    if previous.get('goal_pending') or previous.get('goal_interpretation_error'):
+        identity=previous.get('request_id');text=previous.get('request_text')
+        if identity and text and identity not in {r['request_id'] for r in requests}:
+            requests.append({'request_id':identity,'request_text':text,
+                'status':'human_requested_not_interpreted; NOT result evidence'})
+    return requests[-4:]
+
+
 def unfinished(previous):
     if previous.get('status')=='complete':return None
     goal=previous.get('goal') or {}

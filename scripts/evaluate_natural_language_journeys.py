@@ -37,8 +37,12 @@ def evaluate(spec,fixture,model):
             for turn in spec['turns']:
                 started=time.monotonic();outcome=r.submit(turn['prompt']);state=r.inspect()['recovery']
                 actual=None;scope_ok=False;operation_ok=False
-                if state.get('evidence_ids'):
-                    info=r.datasets.metadata[state['evidence_ids'][-1]]
+                scalar_ids=state.get('evidence_ids',[])
+                completed=(state.get('intent_plan') or {}).get('completed',[])
+                calculations=[s for s in completed if any(t['capability']=='calculation' for t in s['goal']['tasks'])]
+                if calculations:scalar_ids=calculations[-1]['evidence_ids']
+                if scalar_ids:
+                    info=r.datasets.metadata[scalar_ids[-1]]
                     result=r.datasets.frames[info.id]
                     if result.shape==(1,1):actual=float(result.iloc[0,0])
                     scope_ok=scope_matches(info,{'conditions':turn.get('conditions',[]),'any_conditions':[],
@@ -78,22 +82,23 @@ def evaluate(spec,fixture,model):
                     'operations':state.get('operations'),'model_calls':state.get('model_calls'),
                     'model_recovery':r.inspect()['model_recovery'],'raw_preserved':digest==stored_dataset_digest(r.datasets,raw.id),
                     'chart_count':len(charts),'elapsed_seconds':round(time.monotonic()-started,3)})
-                if outcome['status']=='incomplete':break
             return {'id':spec['id'],'status':'PASS' if len(turns)==len(spec['turns']) and all(t['status']=='PASS' for t in turns) else 'FAIL','turns':turns}
         finally:r.close()
 
 
 if __name__=='__main__':
-    p=argparse.ArgumentParser(description=__doc__);p.add_argument('--provider',choices=['databricks','ollama'],required=True)
+    p=argparse.ArgumentParser(description=__doc__);p.add_argument('--provider',choices=['databricks','ollama','azure'],required=True)
     p.add_argument('--output',type=Path,required=True);p.add_argument('--id',action='append');args=p.parse_args()
     from dotenv import load_dotenv
     load_dotenv(ROOT/'.env');os.environ['LANGSMITH_TRACING']='false';os.environ['LANGCHAIN_TRACING_V2']='false'
-    model=build_analysis_chat_model(RuntimePolicy(),provider=args.provider)
+    from scripts.evaluation_provenance import snapshot
+    build=snapshot()
+    model=build_analysis_chat_model(RuntimePolicy.from_env(),provider=args.provider)
     fixture=json.loads((ROOT/'tests/fixtures/natural_language_journeys.json').read_text());results=[]
     for spec in fixture['cases']:
         if args.id and spec['id'] not in args.id:continue
         results.append(evaluate(spec,fixture,model))
-        report={'provider':args.provider,'data':'synthetic local only','remote_sql_executions':0,'results':results}
+        report={'build':build,'provider':args.provider,'data':'synthetic local only','remote_sql_executions':0,'results':results}
         args.output.parent.mkdir(parents=True,exist_ok=True);args.output.write_text(json.dumps(report,ensure_ascii=False,indent=2)+'\n')
         print(json.dumps({'id':spec['id'],'status':results[-1]['status']}),flush=True)
     raise SystemExit(0 if all(r['status']=='PASS' for r in results) else 1)

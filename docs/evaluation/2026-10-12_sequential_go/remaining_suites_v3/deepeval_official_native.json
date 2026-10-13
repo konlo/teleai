@@ -1,0 +1,84 @@
+{
+  "generated_at": "2026-10-12T19:57:38.091133+00:00",
+  "source_report": "/Users/najongseong/git_repository/teleai/docs/evaluation/2026-10-12_sequential_go/remaining_suites_v3/deepeval_agent4_qualified.json",
+  "judge_model": "gemma4:e4b",
+  "judge_provider": "ollama",
+  "judge_transport": "native_ollama; think=false; context8192/output1024; no logprob weighting",
+  "source_mode": "live-local-model",
+  "limitations": [
+    "LLM judge scores supplement independent numeric/scope/artifact contracts.",
+    "Tool correctness covers only the explicitly configured legacy cases, not general autonomy."
+  ],
+  "results": [
+    {
+      "id": "L1_001",
+      "product_oracle_status": "PASS",
+      "model_calls": 3,
+      "tool_call_names": [
+        "inspect_live_schema"
+      ],
+      "tool_correctness": 0.0,
+      "allowed_tool_plans": [
+        [
+          "inspect_table_context"
+        ]
+      ],
+      "tool_metric_scope": "Tool selection only; independent result oracle remains authoritative",
+      "judge_score": 1.0,
+      "judge_reason": "The actual output correctly identifies the total column count (18) and lists all the columns, matching the authoritative values in the expected output. The structure difference (prose vs. JSON) is acceptable according to step 3, and all factual requirements from the input are met, leading to a high score."
+    },
+    {
+      "id": "L1_016",
+      "product_oracle_status": "FAIL",
+      "model_calls": 4,
+      "tool_call_names": [
+        "inspect_live_schema"
+      ],
+      "tool_correctness": 0.0,
+      "allowed_tool_plans": [
+        [
+          "aggregate_dataset"
+        ],
+        [
+          "local_analysis_sql"
+        ]
+      ],
+      "tool_metric_scope": "Tool selection only; independent result oracle remains authoritative",
+      "judge_score": 0.2,
+      "judge_reason": "The actual output completely fails to address the user's request, which was to find the average '예금 잔고' (deposit balance) of customers. Instead, it outputs a schema snapshot for a table named 'bank_loan', showing 18 columns. This constitutes a major factual error and a complete failure to deliver the requested calculation, resulting in a score significantly below the threshold for meeting requirements."
+    },
+    {
+      "id": "L1_017",
+      "product_oracle_status": "FAIL",
+      "model_calls": 4,
+      "tool_call_names": [
+        "inspect_live_schema",
+        "query_databricks"
+      ],
+      "tool_correctness": 0.0,
+      "allowed_tool_plans": [
+        [
+          "local_analysis_sql"
+        ]
+      ],
+      "tool_metric_scope": "Tool selection only; independent result oracle remains authoritative",
+      "judge_score": 0.2,
+      "judge_reason": "The evaluation requires comparing the ACTUAL_OUTPUT against the EXPECTED_OUTPUT, which mandates completing the user's request with a verified result. The ACTUAL_OUTPUT states, \"원격 조회가 실패하여 완료 여부를 확인해야 합니다. 중복 실행을 막기 위해 자동 재조회하지 않습니다. 분석은 완료되지 않았습니다,\" indicating failure to provide the requested average and maximum age for customers. This constitutes a concrete unmet INPUT requirement (providing the ages) and a factual contradiction with the expected successful delivery, leading to a low score."
+    },
+    {
+      "id": "L2_005",
+      "product_oracle_status": "NOT_COMPLETE",
+      "model_calls": 0,
+      "tool_call_names": [],
+      "tool_correctness": 0.0,
+      "allowed_tool_plans": [
+        [
+          "local_analysis_sql"
+        ]
+      ],
+      "tool_metric_scope": "Tool selection only; independent result oracle remains authoritative",
+      "judge_score": 0.2,
+      "judge_reason": "The evaluation requires comparing the ACTUAL_OUTPUT against the EXPECTED_OUTPUT based on the INPUT. The INPUT asks for a specific count of customers meeting criteria ('최종 학력'='tertiary', 'single', 20-29 years old, and '예금에 가입한 사람'). The ACTUAL_OUTPUT is an error message ('분석 중 오류가 발생했습니다...'), which fails to provide the required factual calculation or count. Since the core requirement of delivering the calculated number is unmet, the score must be significantly reduced."
+    }
+  ]
+}

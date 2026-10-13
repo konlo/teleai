@@ -32,7 +32,14 @@ class CompletionContractTests(unittest.TestCase):
         from utils.analysis_datasets import DatasetStore
         context = AnalysisToolContext(DatasetStore(), {}, [], lambda **_: None)
         names = {tool.name for tool in build_analysis_tools(context)}
-        names.add('query_databricks')  # Runtime's approval-gated replacement.
+        # Remote composite tools are registered by the runtime, not local_tools.
+        with tempfile.TemporaryDirectory() as root:
+            runtime = GraphAnalysisRuntime(root, 'contract', 'registered', ForbiddenModel(),
+                remote_factory=lambda store: lambda envelope: {}, connection_identity='fixture')
+            try:
+                names.update(runtime.context.allowed_tool_names)
+            finally:
+                runtime.close()
         for contract in CONTRACTS:
             with self.subTest(capability=contract.name):
                 self.assertTrue(set(contract.tools).issubset(names))
@@ -160,7 +167,7 @@ class CompletionContractTests(unittest.TestCase):
                 recovery = runtime.inspect()['recovery']
                 self.assertEqual(recovery['model_calls'], 0)
                 self.assertIn(str(frame.reading.mean()), result['text'])
-                self.assertIn('이미지를 생성했습니다', result['text'])
+                self.assertIn('저장된 이미지를 표시했습니다', result['text'])
                 self.assertTrue(recovery['evidence_ids'])
                 self.assertTrue(recovery['artifact_ids'])
                 for card_id in recovery['artifact_ids']:

@@ -1,0 +1,107 @@
+{
+  "generated_at": "2026-10-12T19:51:49.851239+00:00",
+  "source_report": "/Users/najongseong/git_repository/teleai/docs/evaluation/2026-10-12_sequential_go/remaining_suites_v3/deepeval_agent4_qualified.json",
+  "judge_model": "gemma4:e4b",
+  "judge_provider": "ollama",
+  "source_mode": "live-local-model",
+  "limitations": [
+    "LLM judge scores supplement independent numeric/scope/artifact contracts.",
+    "Tool correctness covers only the explicitly configured legacy cases, not general autonomy."
+  ],
+  "results": [
+    {
+      "id": "L1_001",
+      "product_oracle_status": "PASS",
+      "model_calls": 3,
+      "tool_call_names": [
+        "inspect_live_schema"
+      ],
+      "tool_correctness": 0.0,
+      "allowed_tool_plans": [
+        [
+          "inspect_table_context"
+        ]
+      ],
+      "tool_metric_scope": "Tool selection only; independent result oracle remains authoritative",
+      "judge_error": "RetryError",
+      "judge_error_chain": [
+        "RetryError",
+        "APITimeoutError",
+        "ReadTimeout",
+        "ReadTimeout",
+        "TimeoutError"
+      ]
+    },
+    {
+      "id": "L1_016",
+      "product_oracle_status": "FAIL",
+      "model_calls": 4,
+      "tool_call_names": [
+        "inspect_live_schema"
+      ],
+      "tool_correctness": 0.0,
+      "allowed_tool_plans": [
+        [
+          "aggregate_dataset"
+        ],
+        [
+          "local_analysis_sql"
+        ]
+      ],
+      "tool_metric_scope": "Tool selection only; independent result oracle remains authoritative",
+      "judge_error": "RetryError",
+      "judge_error_chain": [
+        "RetryError",
+        "APITimeoutError",
+        "ReadTimeout",
+        "ReadTimeout",
+        "TimeoutError"
+      ]
+    },
+    {
+      "id": "L1_017",
+      "product_oracle_status": "FAIL",
+      "model_calls": 4,
+      "tool_call_names": [
+        "inspect_live_schema",
+        "query_databricks"
+      ],
+      "tool_correctness": 0.0,
+      "allowed_tool_plans": [
+        [
+          "local_analysis_sql"
+        ]
+      ],
+      "tool_metric_scope": "Tool selection only; independent result oracle remains authoritative",
+      "judge_error": "RetryError",
+      "judge_error_chain": [
+        "RetryError",
+        "APITimeoutError",
+        "ReadTimeout",
+        "ReadTimeout",
+        "TimeoutError"
+      ]
+    },
+    {
+      "id": "L2_005",
+      "product_oracle_status": "NOT_COMPLETE",
+      "model_calls": 0,
+      "tool_call_names": [],
+      "tool_correctness": 0.0,
+      "allowed_tool_plans": [
+        [
+          "local_analysis_sql"
+        ]
+      ],
+      "tool_metric_scope": "Tool selection only; independent result oracle remains authoritative",
+      "judge_error": "RetryError",
+      "judge_error_chain": [
+        "RetryError",
+        "APITimeoutError",
+        "ReadTimeout",
+        "ReadTimeout",
+        "TimeoutError"
+      ]
+    }
+  ]
+}
