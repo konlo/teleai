@@ -5,7 +5,7 @@ from pathlib import Path
 import tempfile
 import unittest
 from types import SimpleNamespace
-from unittest.mock import MagicMock
+from unittest.mock import MagicMock, patch
 import httpx
 import jsonschema
 from langchain_core.messages import HumanMessage, SystemMessage
@@ -101,6 +101,7 @@ class JsonRoleContractTests(unittest.TestCase):
         invalid={**valid,'chart_kind':'scatter'}
         self.assertFalse(jsonschema.Draft202012Validator(compact).is_valid(invalid))
 
+    @patch.dict('os.environ',{'TELLY_INTENT_PROTOCOL':'v1'})
     def test_azure_inventory_goal_repair_then_real_graph_tool_result(self):
         # Simulate a provider that follows delivered JSON instructions, not an
         # oracle that supplies correct fields regardless of its actual input.
@@ -110,6 +111,9 @@ class JsonRoleContractTests(unittest.TestCase):
         def transport(request):
             nonlocal selection_attempts,subject_attempts
             payload=json.loads(request.content);seen.append(payload)
+            from tests.action_cycle_http_fixture import action_response
+            action=action_response(payload)
+            if action is not None:return action
             system=payload['messages'][0]['content']
             if 'JSON output contract:' not in system:
                 return response({})
@@ -156,7 +160,9 @@ class JsonRoleContractTests(unittest.TestCase):
                 self.assertNotIn('WHERE',calls[0]['query'])
                 self.assertIn('unfamiliar',result['text'])
                 self.assertFalse(runtime.inspect()['recovery'].get('goal_interpretation_error'))
-                self.assertIn('decision_evidence',encoded(json.loads(seen[-1]['messages'][0]['content'].split(
+                goal_payload=next(p for p in reversed(seen) if 'decision_evidence is an OBJECT'
+                    in p['messages'][0]['content'])
+                self.assertIn('decision_evidence',encoded(json.loads(goal_payload['messages'][0]['content'].split(
                     'not evidence of user intent.\n')[1])))
             finally:runtime.close()
 
@@ -170,12 +176,12 @@ class JsonRoleContractTests(unittest.TestCase):
             try:
                 result=runtime.submit('table list를 보여줘')
                 state=runtime.inspect()['recovery'];error_id=state['goal_error_id']
-                self.assertEqual(state['failure_stage'],'goal_task_selection')
+                self.assertEqual(state['failure_stage'],'intent_plan_validation')
                 self.assertIn(error_id,result['text'])
                 factory.return_value.assert_not_called()
                 report=summarize(runtime.diagnostics.path,error_id=error_id)
                 self.assertTrue(report['found'])
                 self.assertEqual(report['remote']['started'],0)
-                self.assertEqual(report['errors'][-1]['stage'],'goal_task_selection')
+                self.assertEqual(report['errors'][-1]['stage'],'intent_plan_validation')
                 self.assertNotIn(private,encoded(report)+brief(report)+Path(runtime.diagnostics.path).read_text())
             finally:runtime.close()

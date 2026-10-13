@@ -69,19 +69,23 @@ class JourneyRepairTests(unittest.TestCase):
                 sql_dialect='mysql',reference_context_loader=catalog)
             try:
                 class PopulationModel:
-                    def invoke(self,messages):
+                    def invoke(self,messages,**kwargs):
                         payload=json.loads(messages[-1].content)
                         self.payload=payload
                         return AIMessage(content=json.dumps({'conditions':[
                             {'column':'reading','op':'between','value':[12,19]},
                             {'column':'segment','op':'in','value':['X','Y']}],'any_conditions':[],
-                            'change':'modify','evidence_quote':'include Y too'}))
+                            'change':'modify','evidence_quote':'include Y too',
+                            'restriction_review':{'clauses':[{'kind':'predicate','status':'resolved',
+                                'quote':'include Y too','columns':['segment']}],'question':''}}))
                 reader=PopulationModel();i=r.recovery.goal_interpreter;i.population_model=reader
                 i.model_recovery=None
                 current={'request_id':'new','request_text':'Keep range; include Y too',
                          'confirmed_analysis':{'required_sources':['lab.observations'],
                                                'scope':{'conditions':plan['conditions']}}}
-                result=audit(i,current,{'tables':catalog()},plan)
+                data={'tables':[{'table':'lab.observations','columns':[
+                    {'name':'reading','dtype':'int'},{'name':'segment','dtype':'varchar'}]}]}
+                result=audit(i,current,data,plan)
                 self.assertEqual(result['conditions'][1]['value'],['X','Y'])
                 self.assertNotIn('proposed_goal',reader.payload)
                 self.assertEqual(reader.payload['previous_requested_population']['conditions'],plan['conditions'])
@@ -92,7 +96,9 @@ class JourneyRepairTests(unittest.TestCase):
         plan=goal('row_preview',{'limit':10},sources=['lab.other'])
         current={'confirmed_analysis':{'required_sources':['lab.observations'],
                                       'scope':{'conditions':[{'column':'reading','op':'gt','value':12}]}}}
-        self.assertFalse(applies(plan,current))
+        # Preview limits are not row predicates, but every new request still
+        # receives an independent original-text restriction review.
+        self.assertTrue(applies(plan,current))
         plan['conditions']=[{'column':'other_value','op':'gt','value':12}]
         self.assertTrue(applies(plan,current))
 
@@ -103,16 +109,17 @@ class JourneyRepairTests(unittest.TestCase):
             r=GraphAnalysisRuntime(root,'owner','ungrounded-population',GoalModel(goals=[plan]),
                 sql_dialect='mysql',reference_context_loader=catalog)
             try:
-                reader=SimpleNamespace(invoke=lambda messages:AIMessage(content=json.dumps({
+                reader=SimpleNamespace(invoke=lambda messages,**kwargs:AIMessage(content=json.dumps({
                     'conditions':[{'column':'other_value','op':'eq','value':'10'}],'any_conditions':[],
-                    'change':'new_source','evidence_quote':''})))
+                    'change':'new_source','evidence_quote':'',
+                    'restriction_review':{'clauses':[],'question':''}})))
                 i=r.recovery.goal_interpreter;i.population_model=reader;i.model_recovery=None
                 current={'request_id':'new','request_text':'other row 10개만 표로 보여줘'}
                 with self.assertRaisesRegex(ValueError,'ungrounded filter column'):
                     audit(i,current,{'tables':catalog()},plan)
             finally:r.close()
 
-    def test_llm_value_list_finishes_after_distinct_receipt_without_planner_call(self):
+    def test_llm_value_list_observes_receipt_and_selects_each_action(self):
         from dataclasses import asdict
         reference=[{'table':'lab.observations','observed_at':datetime.now(timezone.utc).isoformat(),
                     'columns':[{'name':'label','dtype':'longtext'}]}]
@@ -132,7 +139,10 @@ class JourneyRepairTests(unittest.TestCase):
                 result=r.submit('observations label에 들어있는 값 종류 모두 알려줘')
                 self.assertEqual(result['status'],'answered',result)
                 self.assertEqual(len(queries),1)
-                self.assertEqual(r.inspect()['recovery']['model_calls'],2)
+                state=r.inspect()['recovery']
+                self.assertGreaterEqual(state['model_calls'],4)
+                self.assertEqual([h['choices'][0]['tool'] for h in state['action_cycle_history']],
+                    ['inspect_value_list','query_databricks'])
                 self.assertEqual(r.inspect()['recovery']['value_list_evidence']['values'],['A','B'])
             finally:r.close()
 

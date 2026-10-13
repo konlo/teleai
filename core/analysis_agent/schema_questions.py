@@ -15,7 +15,7 @@ def observed_subject(observation, arguments, context):
     from core.analysis_catalog import _source_key
     table=(observation.get('table_context') or {}).get('table')
     if (observation.get('status')!='ready' or not table or not context
-            or _source_key(table)!=_source_key(arguments.get('table',''))):return None
+            or _source_key(table)!=_source_key(arguments.get('table') or arguments.get('source',''))):return None
     known={_source_key(t.get('table','')) for t in context.reference_context}
     known.update(_source_key(d.source) for d in context.datasets.metadata.values())
     if _source_key(table) not in known:return None
@@ -42,9 +42,9 @@ def prior_subject(current,messages,context):
     from langchain_core.messages import AIMessage,ToolMessage
     calls={c['id']:c for m in messages if isinstance(m,AIMessage) for c in m.tool_calls}
     for m in reversed(messages):
-        if not isinstance(m,ToolMessage) or m.name!='inspect_table_context':continue
+        if not isinstance(m,ToolMessage) or m.name not in {'inspect_table_context','inspect_live_schema'}:continue
         call=calls.get(m.tool_call_id)
-        if not call or call.get('name')!='inspect_table_context':continue
+        if not call or call.get('name') not in {'inspect_table_context','inspect_live_schema'}:continue
         try:
             data=json.loads(m.content)
             if not isinstance(data,dict):continue

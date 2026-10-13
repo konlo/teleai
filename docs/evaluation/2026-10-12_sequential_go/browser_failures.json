@@ -1,0 +1,436 @@
+{
+  "scope": "actual browser, Databricks/Ollama; unsuccessful attempts retained",
+  "runs": [
+    {
+      "run_id": "545d6e60d5df48e0b1a30bfad1668ebe",
+      "events": [
+        {
+          "time": "2026-10-12T15:47:49.092614+00:00",
+          "event": "run_started",
+          "run_id": "545d6e60d5df48e0b1a30bfad1668ebe",
+          "instance_id": "6c7c58fbadea",
+          "pid": 51376,
+          "runtime": {
+            "revision_at_first_runtime": "e947a03f923faf2de2eb6be9774e8766547b0924",
+            "packages": {
+              "langchain": "1.4.0",
+              "langchain-core": "1.6.2",
+              "langgraph": "1.2.11",
+              "streamlit": "1.63.0",
+              "sqlglot": "30.18.0"
+            },
+            "python_version": "3.11.13",
+            "identity_captured_at": "2026-10-12T15:47:42.694475+00:00",
+            "route": "langgraph-v1",
+            "model_class": "ChatOllama",
+            "require_remote_approval": false,
+            "loaded_delivery_guard": "d7ad371a60b6e59b",
+            "data_backend": "databricks",
+            "intent_mode": "llm",
+            "goal_version": 1,
+            "goal_model": "gemma4:e4b",
+            "planner_model": "gemma4:e4b"
+          },
+          "operation": "submit",
+          "process_peak_rss_bytes": 339640320
+        },
+        {
+          "time": "2026-10-12T15:48:32.820581+00:00",
+          "event": "intent_plan_accepted",
+          "run_id": "545d6e60d5df48e0b1a30bfad1668ebe",
+          "instance_id": "6c7c58fbadea",
+          "pid": 51376,
+          "request_id": "8545fe5c715446a3a0e591704a924b9c",
+          "steps": 1,
+          "interpretation_calls": 2,
+          "plan_sha256": "1fa63a43e1e6d9f77974a4c10c90a36992b8573b9a959b4482d15256ee538fd7",
+          "scope_mode": "per_task",
+          "reviewed": true
+        },
+        {
+          "time": "2026-10-12T15:48:32.823486+00:00",
+          "event": "error",
+          "run_id": "545d6e60d5df48e0b1a30bfad1668ebe",
+          "instance_id": "6c7c58fbadea",
+          "pid": 51376,
+          "error_category": null,
+          "error_id": "d09a7e024ae7",
+          "stage": "intent_plan_validation",
+          "error_type": "ValueError",
+          "attempt_budget": null,
+          "database_errno": null,
+          "os_errno": null,
+          "winerror": null,
+          "http_status": null,
+          "frames": [
+            {
+              "file": "goal_interpreter.py",
+              "line": 385,
+              "function": "interpret"
+            },
+            {
+              "file": "intent_plan.py",
+              "line": 193,
+              "function": "interpret"
+            },
+            {
+              "file": "task_execution.py",
+              "line": 31,
+              "function": "start"
+            },
+            {
+              "file": "task_execution.py",
+              "line": 80,
+              "function": "activate"
+            },
+            {
+              "file": "goal_contract.py",
+              "line": 242,
+              "function": "compile_goal"
+            }
+          ]
+        },
+        {
+          "time": "2026-10-12T15:48:32.831541+00:00",
+          "event": "run_completed",
+          "run_id": "545d6e60d5df48e0b1a30bfad1668ebe",
+          "instance_id": "6c7c58fbadea",
+          "pid": 51376,
+          "status": "blocked",
+          "elapsed_seconds": 43.742,
+          "process_peak_rss_bytes": 339640320,
+          "frame_cache_bytes": 0
+        }
+      ],
+      "model_calls": 2,
+      "database_dispatches": 0
+    },
+    {
+      "run_id": "b5d7be1aaff243be8ada2488fdb1ac22",
+      "events": [
+        {
+          "time": "2026-10-12T15:52:14.265990+00:00",
+          "event": "run_started",
+          "run_id": "b5d7be1aaff243be8ada2488fdb1ac22",
+          "instance_id": "11109c796e92",
+          "pid": 51549,
+          "runtime": {
+            "revision_at_first_runtime": "e947a03f923faf2de2eb6be9774e8766547b0924",
+            "packages": {
+              "langchain": "1.4.0",
+              "langchain-core": "1.6.2",
+              "langgraph": "1.2.11",
+              "streamlit": "1.63.0",
+              "sqlglot": "30.18.0"
+            },
+            "python_version": "3.11.13",
+            "identity_captured_at": "2026-10-12T15:52:13.739079+00:00",
+            "route": "langgraph-v1",
+            "model_class": "ChatOllama",
+            "require_remote_approval": false,
+            "loaded_delivery_guard": "d7ad371a60b6e59b",
+            "data_backend": "databricks",
+            "intent_mode": "llm",
+            "goal_version": 1,
+            "goal_model": "gemma4:e4b",
+            "planner_model": "gemma4:e4b"
+          },
+          "operation": "submit",
+          "process_peak_rss_bytes": 340295680
+        },
+        {
+          "time": "2026-10-12T15:52:56.681214+00:00",
+          "event": "intent_plan_rejected",
+          "run_id": "b5d7be1aaff243be8ada2488fdb1ac22",
+          "instance_id": "11109c796e92",
+          "pid": 51549,
+          "request_id": "91d225491ce64484b6c55df10d892cbc",
+          "phase": "REVIEW",
+          "attempt": 1,
+          "detail": "explicit source must be a literal CURRENT identity"
+        },
+        {
+          "time": "2026-10-12T15:53:24.807098+00:00",
+          "event": "intent_plan_rejected",
+          "run_id": "b5d7be1aaff243be8ada2488fdb1ac22",
+          "instance_id": "11109c796e92",
+          "pid": 51549,
+          "request_id": "91d225491ce64484b6c55df10d892cbc",
+          "phase": "REVIEW",
+          "attempt": 2,
+          "detail": "explicit source must be a literal CURRENT identity"
+        },
+        {
+          "time": "2026-10-12T15:53:51.104916+00:00",
+          "event": "intent_plan_rejected",
+          "run_id": "b5d7be1aaff243be8ada2488fdb1ac22",
+          "instance_id": "11109c796e92",
+          "pid": 51549,
+          "request_id": "91d225491ce64484b6c55df10d892cbc",
+          "phase": "REVIEW",
+          "attempt": 3,
+          "detail": "explicit source must be a literal CURRENT identity"
+        },
+        {
+          "time": "2026-10-12T15:53:51.105852+00:00",
+          "event": "error",
+          "run_id": "b5d7be1aaff243be8ada2488fdb1ac22",
+          "instance_id": "11109c796e92",
+          "pid": 51549,
+          "error_category": null,
+          "error_id": "821056663383",
+          "stage": "intent_plan_validation",
+          "error_type": "ValueError",
+          "attempt_budget": null,
+          "database_errno": null,
+          "os_errno": null,
+          "winerror": null,
+          "http_status": null,
+          "frames": [
+            {
+              "file": "intent_plan.py",
+              "line": 184,
+              "function": "interpret"
+            },
+            {
+              "file": "intent_plan.py",
+              "line": 62,
+              "function": "validate"
+            }
+          ]
+        },
+        {
+          "time": "2026-10-12T15:53:51.117128+00:00",
+          "event": "run_completed",
+          "run_id": "b5d7be1aaff243be8ada2488fdb1ac22",
+          "instance_id": "11109c796e92",
+          "pid": 51549,
+          "status": "blocked",
+          "elapsed_seconds": 94.664,
+          "process_peak_rss_bytes": 341934080,
+          "frame_cache_bytes": 0
+        }
+      ],
+      "model_calls": 4,
+      "database_dispatches": 0
+    },
+    {
+      "run_id": "e1fa2d4904a248e0999a82b3aafe70fb",
+      "events": [
+        {
+          "time": "2026-10-12T16:04:15.212982+00:00",
+          "event": "run_started",
+          "run_id": "e1fa2d4904a248e0999a82b3aafe70fb",
+          "instance_id": "097e8255f7bb",
+          "pid": 51985,
+          "runtime": {
+            "revision_at_first_runtime": "e947a03f923faf2de2eb6be9774e8766547b0924",
+            "packages": {
+              "langchain": "1.4.0",
+              "langchain-core": "1.6.2",
+              "langgraph": "1.2.11",
+              "streamlit": "1.63.0",
+              "sqlglot": "30.18.0"
+            },
+            "python_version": "3.11.13",
+            "identity_captured_at": "2026-10-12T16:04:14.695958+00:00",
+            "route": "langgraph-v1",
+            "model_class": "ChatOllama",
+            "require_remote_approval": false,
+            "loaded_delivery_guard": "d7ad371a60b6e59b",
+            "data_backend": "databricks",
+            "intent_mode": "llm",
+            "goal_version": 1,
+            "goal_model": "gemma4:e4b",
+            "planner_model": "gemma4:e4b"
+          },
+          "operation": "submit",
+          "process_peak_rss_bytes": 353599488
+        },
+        {
+          "time": "2026-10-12T16:05:08.237548+00:00",
+          "event": "intent_plan_rejected",
+          "run_id": "e1fa2d4904a248e0999a82b3aafe70fb",
+          "instance_id": "097e8255f7bb",
+          "pid": 51985,
+          "request_id": "5c902cc55128499387b82b1889155ea4",
+          "phase": "REVIEW",
+          "attempt": 1,
+          "detail": "Restriction evidence must quote the CURRENT request exactly"
+        },
+        {
+          "time": "2026-10-12T16:05:26.707370+00:00",
+          "event": "intent_plan_rejected",
+          "run_id": "e1fa2d4904a248e0999a82b3aafe70fb",
+          "instance_id": "097e8255f7bb",
+          "pid": 51985,
+          "request_id": "5c902cc55128499387b82b1889155ea4",
+          "phase": "REVIEW",
+          "attempt": 2,
+          "detail": "Restriction evidence must quote the CURRENT request exactly"
+        },
+        {
+          "time": "2026-10-12T16:05:44.305984+00:00",
+          "event": "intent_plan_rejected",
+          "run_id": "e1fa2d4904a248e0999a82b3aafe70fb",
+          "instance_id": "097e8255f7bb",
+          "pid": 51985,
+          "request_id": "5c902cc55128499387b82b1889155ea4",
+          "phase": "REVIEW",
+          "attempt": 3,
+          "detail": "Restriction evidence must quote the CURRENT request exactly"
+        },
+        {
+          "time": "2026-10-12T16:05:44.308251+00:00",
+          "event": "error",
+          "run_id": "e1fa2d4904a248e0999a82b3aafe70fb",
+          "instance_id": "097e8255f7bb",
+          "pid": 51985,
+          "error_category": null,
+          "error_id": "d576121ab5ff",
+          "stage": "intent_plan_validation",
+          "error_type": "ValueError",
+          "attempt_budget": null,
+          "database_errno": null,
+          "os_errno": null,
+          "winerror": null,
+          "http_status": null,
+          "frames": [
+            {
+              "file": "intent_plan.py",
+              "line": 207,
+              "function": "interpret"
+            },
+            {
+              "file": "intent_plan.py",
+              "line": 108,
+              "function": "validate"
+            },
+            {
+              "file": "population_requirements.py",
+              "line": 121,
+              "function": "validate"
+            }
+          ]
+        },
+        {
+          "time": "2026-10-12T16:05:44.320561+00:00",
+          "event": "run_completed",
+          "run_id": "e1fa2d4904a248e0999a82b3aafe70fb",
+          "instance_id": "097e8255f7bb",
+          "pid": 51985,
+          "status": "blocked",
+          "elapsed_seconds": 89.11,
+          "process_peak_rss_bytes": 355565568,
+          "frame_cache_bytes": 0
+        }
+      ],
+      "model_calls": 4,
+      "database_dispatches": 0
+    },
+    {
+      "run_id": "931309d7666244df86d7ea963f6c7c4b",
+      "events": [
+        {
+          "time": "2026-10-12T16:06:32.478810+00:00",
+          "event": "run_started",
+          "run_id": "931309d7666244df86d7ea963f6c7c4b",
+          "instance_id": "22ecd8c40402",
+          "pid": 52141,
+          "runtime": {
+            "revision_at_first_runtime": "e947a03f923faf2de2eb6be9774e8766547b0924",
+            "packages": {
+              "langchain": "1.4.0",
+              "langchain-core": "1.6.2",
+              "langgraph": "1.2.11",
+              "streamlit": "1.63.0",
+              "sqlglot": "30.18.0"
+            },
+            "python_version": "3.11.13",
+            "identity_captured_at": "2026-10-12T16:06:31.861173+00:00",
+            "route": "langgraph-v1",
+            "model_class": "ChatOllama",
+            "require_remote_approval": false,
+            "loaded_delivery_guard": "d7ad371a60b6e59b",
+            "data_backend": "databricks",
+            "intent_mode": "llm",
+            "goal_version": 1,
+            "goal_model": "gemma4:e4b",
+            "planner_model": "gemma4:e4b"
+          },
+          "operation": "submit",
+          "process_peak_rss_bytes": 341442560
+        },
+        {
+          "time": "2026-10-12T16:07:06.486566+00:00",
+          "event": "intent_plan_accepted",
+          "run_id": "931309d7666244df86d7ea963f6c7c4b",
+          "instance_id": "22ecd8c40402",
+          "pid": 52141,
+          "request_id": "e7cb9e7832c74ace91ebb21f7f77294d",
+          "steps": 1,
+          "interpretation_calls": 2,
+          "plan_sha256": "62fe00aeb5aad5f299c607a4e0cc55dcd150dd753e6fe5fb9c91da3f7ea3b6c3",
+          "scope_mode": "per_task",
+          "reviewed": true
+        },
+        {
+          "time": "2026-10-12T16:07:06.491428+00:00",
+          "event": "error",
+          "run_id": "931309d7666244df86d7ea963f6c7c4b",
+          "instance_id": "22ecd8c40402",
+          "pid": 52141,
+          "error_category": null,
+          "error_id": "4ca40e06b23e",
+          "stage": "intent_plan_validation",
+          "error_type": "ValueError",
+          "attempt_budget": null,
+          "database_errno": null,
+          "os_errno": null,
+          "winerror": null,
+          "http_status": null,
+          "frames": [
+            {
+              "file": "goal_interpreter.py",
+              "line": 385,
+              "function": "interpret"
+            },
+            {
+              "file": "intent_plan.py",
+              "line": 219,
+              "function": "interpret"
+            },
+            {
+              "file": "task_execution.py",
+              "line": 31,
+              "function": "start"
+            },
+            {
+              "file": "task_execution.py",
+              "line": 80,
+              "function": "activate"
+            },
+            {
+              "file": "goal_contract.py",
+              "line": 330,
+              "function": "compile_goal"
+            }
+          ]
+        },
+        {
+          "time": "2026-10-12T16:07:06.507720+00:00",
+          "event": "run_completed",
+          "run_id": "931309d7666244df86d7ea963f6c7c4b",
+          "instance_id": "22ecd8c40402",
+          "pid": 52141,
+          "status": "blocked",
+          "elapsed_seconds": 34.031,
+          "process_peak_rss_bytes": 341442560,
+          "frame_cache_bytes": 0
+        }
+      ],
+      "model_calls": 2,
+      "database_dispatches": 0
+    }
+  ]
+}

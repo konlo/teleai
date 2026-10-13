@@ -1,0 +1,51 @@
+2026-10-13 01:08:15.425 WARNING streamlit.runtime.scriptrunner_utils.script_run_context: Thread 'MainThread': missing ScriptRunContext! This warning can be ignored when running in bare mode.
+2026-10-13 01:08:16.021 Thread 'MainThread': missing ScriptRunContext! This warning can be ignored when running in bare mode.
+2026-10-13 01:08:26.529 Thread 'MainThread': missing ScriptRunContext! This warning can be ignored when running in bare mode.
+======================================================================
+FAIL: test_interruption_restart_preserves_verified_preview_and_pending_scope (tests.test_intent_task_scopes.TaskScopeTests.test_interruption_restart_preserves_verified_preview_and_pending_scope)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/najongseong/git_repository/teleai/tests/test_intent_task_scopes.py", line 147, in test_interruption_restart_preserves_verified_preview_and_pending_scope
+    self.assertEqual(failed['status'],'incomplete',failed)
+AssertionError: 'blocked' != 'incomplete'
+- blocked
++ incomplete
+ : {'status': 'blocked', 'text': '요청을 해석한 모델 응답이 실행 계약을 충족하지 못해 분석 도구 실행 전에 중단했습니다. (오류 ID: d7b17997376a) 기존 데이터와 결과는 보존했습니다.', 'elapsed_seconds': 0.009}
+
+======================================================================
+FAIL: test_preview_dependency_uses_only_verified_ten_rows (tests.test_intent_task_scopes.TaskScopeTests.test_preview_dependency_uses_only_verified_ten_rows)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/najongseong/git_repository/teleai/tests/test_intent_task_scopes.py", line 129, in test_preview_dependency_uses_only_verified_ten_rows
+    self.assertEqual(out['status'],'answered',out)
+AssertionError: 'blocked' != 'answered'
+- blocked
++ answered
+ : {'status': 'blocked', 'text': '요청을 해석한 모델 응답이 실행 계약을 충족하지 못해 분석 도구 실행 전에 중단했습니다. (오류 ID: a402050659f8) 기존 데이터와 결과는 보존했습니다.', 'elapsed_seconds': 0.006}
+
+======================================================================
+FAIL: test_repeated_chart_capability_keeps_two_receipts (tests.test_intent_task_scopes.TaskScopeTests.test_repeated_chart_capability_keeps_two_receipts)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/najongseong/git_repository/teleai/tests/test_intent_task_scopes.py", line 110, in test_repeated_chart_capability_keeps_two_receipts
+    self.assertEqual(out['status'],'answered',out)
+AssertionError: 'blocked' != 'answered'
+- blocked
++ answered
+ : {'status': 'blocked', 'text': '요청을 해석한 모델 응답이 실행 계약을 충족하지 못해 분석 도구 실행 전에 중단했습니다. (오류 ID: b245ac23dbb6) 기존 데이터와 결과는 보존했습니다.', 'elapsed_seconds': 0.006}
+
+======================================================================
+FAIL: test_two_readings_then_model_chosen_execution_with_independent_scope (tests.test_intent_task_scopes.TaskScopeTests.test_two_readings_then_model_chosen_execution_with_independent_scope)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/najongseong/git_repository/teleai/tests/test_intent_task_scopes.py", line 84, in test_two_readings_then_model_chosen_execution_with_independent_scope
+    self.assertEqual(out['status'],'answered',out)
+AssertionError: 'blocked' != 'answered'
+- blocked
++ answered
+ : {'status': 'blocked', 'text': '요청을 해석한 모델 응답이 실행 계약을 충족하지 못해 분석 도구 실행 전에 중단했습니다. (오류 ID: fa8b0e521a1f) 기존 데이터와 결과는 보존했습니다.', 'elapsed_seconds': 0.006}
+
+----------------------------------------------------------------------
+Ran 119 tests in 12.091s
+
+FAILED (failures=4)

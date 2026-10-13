@@ -89,6 +89,8 @@ def main() -> int:
     parser.add_argument("--output", required=True, type=Path)
     parser.add_argument("--judge-model")
     parser.add_argument("--judge-provider",choices=["ollama","databricks"],default="ollama")
+    parser.add_argument("--native-ollama-judge",action="store_true",
+                        help="Bounded native Ollama transport; official GEval without logprob weighting")
     parser.add_argument("--judge-id", action="append",
                         help="Judge only these case IDs; tool checks still cover the full report")
     parser.add_argument("--skip-judge", action="store_true")
@@ -108,8 +110,11 @@ def main() -> int:
         records = real_records(source)
     except ValueError as exc:
         parser.error(str(exc))
-    from evaluation_judge import make_judge, GROUNDING_STEPS
-    judge_model,judge_name=make_judge(args.judge_provider,args.judge_model)
+    from evaluation_judge import make_judge, make_bounded_native_judge, GROUNDING_STEPS
+    if args.native_ollama_judge and args.judge_provider!='ollama':
+        parser.error('Native judge transport is local Ollama only')
+    judge_model,judge_name=(make_bounded_native_judge(args.judge_model) if args.native_ollama_judge
+                           else make_judge(args.judge_provider,args.judge_model))
     results = []
     for record in records:
         case_id = record["id"]
@@ -156,6 +161,8 @@ def main() -> int:
         args.output.parent.mkdir(parents=True, exist_ok=True)
         args.output.write_text(json.dumps({"generated_at": datetime.now(timezone.utc).isoformat(),
             "source_report": str(args.report.resolve()), "judge_model": judge_name, "judge_provider":args.judge_provider,
+            "judge_transport":'native_ollama; think=false; context8192/output1024; no logprob weighting'
+                if args.native_ollama_judge else 'OpenAI-compatible',
             "source_mode":source['mode'],
             "limitations":["LLM judge scores supplement independent numeric/scope/artifact contracts.",
                            "Tool correctness covers only the explicitly configured legacy cases, not general autonomy."],

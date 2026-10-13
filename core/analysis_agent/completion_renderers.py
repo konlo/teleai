@@ -17,13 +17,16 @@ def render_remote_query(runtime, current):
     for key in successful_remote_call_ids(current):
         evidence = current['remote_query_evidence'][key]
         info = runtime.context.datasets.metadata[evidence['dataset_id']]
-        sources = query_sources(info.query)
+        sources = query_sources(info.query,dialect=getattr(runtime,'sql_dialect',
+            getattr(runtime.context,'sql_dialect','databricks')))
         catalog_result = bool(sources) and all(
             len(pieces := source.replace('`', '').split('.')) in {2, 3}
             and pieces[-2].casefold() == 'information_schema' for source in sources)
         if others and not catalog_result:
             # The existing chart/statistic/load renderer owns its actual output.
-            parts.append(f'원격 조회가 완료되어 결과 {info.rows:,}행을 저장했습니다.')
+            parts.append(f'완료된 원격 조회의 저장 결과 {info.rows:,}행을 재사용했습니다.'
+                         if evidence.get('reused') else
+                         f'원격 조회가 완료되어 결과 {info.rows:,}행을 저장했습니다.')
             continue
         limit = 200 if catalog_result else 10
         frame = preview_dataset(runtime.context.datasets, info.id, limit=limit)
@@ -75,12 +78,15 @@ def render_metadata(runtime, current):
         metadata = current['metadata_evidence']
         origin = ('로딩된 실제 결과' if metadata.get('authority') == 'approved_select_star_result'
                   else '확인된 스키마 스냅샷')
-        changed = ' 이전 스냅샷과 컬럼 구성이 달라 새 스키마를 사용했습니다.' if metadata.get('schema_changed') else ''
+        changed = ' 이전 스냅샷과 스키마 정보가 달라 새 스키마를 사용했습니다.' if metadata.get('schema_changed') else ''
         kind = metadata.get('kind', 'columns')
         if kind == 'dtypes':
             type_origin=('현재 DB 메타데이터' if metadata.get('type_authority')=='current_database_metadata' else origin)
+            native=metadata.get('type_authority')=='current_database_metadata'
+            type_label='DB 데이터 타입' if native else '결과 데이터 타입'
+            note='' if native else '\nDB 고유 타입은 별도 메타데이터 조회가 필요하며, 아래는 관측된 결과의 타입입니다.\n'
             parts.append(f"{type_origin} 기준으로 {metadata['table']}의 컬럼별 데이터 타입입니다.{changed}\n"
-                         + '| 컬럼 이름 | DB 데이터 타입 |\n| --- | --- |\n'
+                         +note+ '| 컬럼 이름 | '+type_label+' |\n| --- | --- |\n'
                          + '\n'.join('| '+str(column['name']).replace('|','&#124;').replace('\n',' ')+' | '+str(column['dtype']).replace('|','&#124;').replace('\n',' ')+' |' for column in metadata['schema']))
         elif kind in {'numeric_columns', 'categorical_columns'}:
             label = '수치형' if kind == 'numeric_columns' else '문자열/범주형'
@@ -336,7 +342,7 @@ def render_chart(runtime, current):
         card = runtime.artifacts[card_id]
         from utils.analysis_image_validation import validate_chart_image
         validate_chart_image(card.image)
-        action=('저장된 이미지를 표시했습니다.' if current.get('request_kind')=='chart_selection'
+        action=('저장된 이미지를 표시했습니다.' if current.get('request_kind')=='chart_selection' or current.get('chart_reused')
                 else '이미지를 생성했습니다.')
         parts.append(f'{card.title} {action}\n분석 범위: {card.scope}')
     return '\n\n'.join(parts)

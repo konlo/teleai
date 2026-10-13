@@ -1,0 +1,39 @@
+2026-10-13 01:07:06.684 WARNING streamlit.runtime.scriptrunner_utils.script_run_context: Thread 'MainThread': missing ScriptRunContext! This warning can be ignored when running in bare mode.
+2026-10-13 01:07:07.528 Thread 'MainThread': missing ScriptRunContext! This warning can be ignored when running in bare mode.
+======================================================================
+ERROR: test_analysis_chart_delivery (unittest.loader._FailedTest.test_analysis_chart_delivery)
+----------------------------------------------------------------------
+ImportError: Failed to import test module: test_analysis_chart_delivery
+Traceback (most recent call last):
+  File "/opt/homebrew/Cellar/python@3.11/3.11.13/Frameworks/Python.framework/Versions/3.11/lib/python3.11/unittest/loader.py", line 162, in loadTestsFromName
+    module = __import__(module_name)
+             ^^^^^^^^^^^^^^^^^^^^^^^
+ModuleNotFoundError: No module named 'tests.test_analysis_chart_delivery'
+
+
+======================================================================
+ERROR: test_compound_scalar_chart (unittest.loader._FailedTest.test_compound_scalar_chart)
+----------------------------------------------------------------------
+ImportError: Failed to import test module: test_compound_scalar_chart
+Traceback (most recent call last):
+  File "/opt/homebrew/Cellar/python@3.11/3.11.13/Frameworks/Python.framework/Versions/3.11/lib/python3.11/unittest/loader.py", line 162, in loadTestsFromName
+    module = __import__(module_name)
+             ^^^^^^^^^^^^^^^^^^^^^^^
+ModuleNotFoundError: No module named 'tests.test_compound_scalar_chart'
+
+
+======================================================================
+ERROR: test_sql_backend_boundaries (unittest.loader._FailedTest.test_sql_backend_boundaries)
+----------------------------------------------------------------------
+ImportError: Failed to import test module: test_sql_backend_boundaries
+Traceback (most recent call last):
+  File "/opt/homebrew/Cellar/python@3.11/3.11.13/Frameworks/Python.framework/Versions/3.11/lib/python3.11/unittest/loader.py", line 162, in loadTestsFromName
+    module = __import__(module_name)
+             ^^^^^^^^^^^^^^^^^^^^^^^
+ModuleNotFoundError: No module named 'tests.test_sql_backend_boundaries'
+
+
+----------------------------------------------------------------------
+Ran 102 tests in 25.345s
+
+FAILED (errors=3)

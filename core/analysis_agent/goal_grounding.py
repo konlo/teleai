@@ -10,7 +10,7 @@ import json
 FIELD = 'decision_evidence'
 ORIGINS = ('request', 'verified_previous', 'requested_previous_analysis',
            'selected_dataset', 'tables', 'requested_previous_subject',
-           'visible_output_references', 'schema_subject')
+           'visible_output_references', 'schema_subject', 'resolved_temporal_population')
 SCHEMA = {'type': 'array', 'maxItems': 160, 'items': {
     'type': 'object', 'additionalProperties': False,
     'required': ['path', 'origin', 'quote', 'reference'], 'properties': {
@@ -169,3 +169,33 @@ def bound_to_current(current):
     return (support.get('status')=='supported' and isinstance(request,str)
             and support.get('request_sha256')==sha256(request.encode()).hexdigest()
             and support.get('executable_goal_sha256')==sha256(canonical(current.get('goal')).encode()).hexdigest())
+
+
+def bind_observed_period(previous, goal, entries, data):
+    """Bind compiled dates to a real receipt without regenerating semantic intent.
+
+    This is limited to exact predicates produced by the source-period resolver.
+    Any other newly interpreted decision still needs the model's support record.
+    """
+    terms=(data.get('resolved_temporal_population') or {}).get('conditions',[])
+    if not terms:return entries
+    mapping=(deepcopy(entries) if isinstance(entries,dict) else
+             {item['path']:{k:v for k,v in item.items() if k!='path'} for item in entries})
+    old=deepcopy(mapping)
+    for path in list(mapping):
+        if path.startswith('/conditions/') or path.startswith('/any_conditions/'):
+            mapping.pop(path)
+    for key in ('conditions','any_conditions'):
+        for i,term in enumerate(goal[key]):
+            path=f'/{key}/{i}'
+            match=next((j for j,value in enumerate(terms) if canonical(value)==canonical(term)),None)
+            if match is not None:
+                mapping[path]={'origin':'resolved_temporal_population','quote':'',
+                    'reference':f'/conditions/{match}'}
+                continue
+            # Indexes can move when compiled dates replace a prior window.
+            # Reuse a model binding only for the identical original predicate.
+            for j,value in enumerate(previous[key]):
+                if canonical(value)==canonical(term) and f'/{key}/{j}' in old:
+                    mapping[path]=deepcopy(old[f'/{key}/{j}']);break
+    return mapping

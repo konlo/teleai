@@ -1,0 +1,921 @@
+{
+  "model": "gemma4:e4b",
+  "goal_model": "gemma4:e4b",
+  "mode": "actual Ollama, isolated synthetic raw data, no remote database",
+  "passed": 1,
+  "total": 2,
+  "cases": [
+    {
+      "id": "preview",
+      "prompt": "observations에서 열 개 행을 보여줘",
+      "status": "answered",
+      "text": "lab.observations의 데이터 10행, 3열을 표로 표시했습니다. 원본과 기존 분석 기준은 보존했습니다. 이 미리보기는 전체 분포 통계가 아닙니다.",
+      "seconds": 40.665,
+      "goal": {
+        "objective": "observations에서 열 개 행을 보여줘",
+        "mode": "execute",
+        "question": "",
+        "measure_conditions": [],
+        "ratio": null,
+        "source_reference": "selected_dataset",
+        "sources": [
+          "lab.observations"
+        ],
+        "columns": [
+          "reading",
+          "cohort",
+          "event_time"
+        ],
+        "fresh_source_required": false,
+        "tasks": [
+          {
+            "capability": "row_preview",
+            "options": {
+              "limit": 10
+            }
+          }
+        ],
+        "current_result_only": true,
+        "conditions": [],
+        "any_conditions": []
+      },
+      "model_calls": 3,
+      "goal_error": null,
+      "result": null,
+      "pass": true,
+      "diagnostics": [
+        {
+          "time": "2026-10-12T15:17:51.354381+00:00",
+          "event": "dataset_selected",
+          "run_id": null,
+          "instance_id": "104abb397b27",
+          "pid": 50127,
+          "dataset_id": "fc4c5fde-d30d-4792-bc92-9deac6f21e8c",
+          "root_id": "fc4c5fde-d30d-4792-bc92-9deac6f21e8c",
+          "role": "root",
+          "source": "lab.observations"
+        },
+        {
+          "time": "2026-10-12T15:17:51.354986+00:00",
+          "event": "run_started",
+          "run_id": "359484c239d541aaa33fcec8a723b2a5",
+          "instance_id": "104abb397b27",
+          "pid": 50127,
+          "runtime": {
+            "revision_at_first_runtime": "e947a03f923faf2de2eb6be9774e8766547b0924",
+            "packages": {
+              "langchain": "1.4.0",
+              "langchain-core": "1.6.2",
+              "langgraph": "1.2.11",
+              "streamlit": "1.63.0",
+              "sqlglot": "30.18.0"
+            },
+            "python_version": "3.11.13",
+            "identity_captured_at": "2026-10-12T15:17:51.233064+00:00",
+            "route": "langgraph-v1",
+            "model_class": "ChatOllama",
+            "require_remote_approval": false,
+            "loaded_delivery_guard": "d7ad371a60b6e59b",
+            "data_backend": "mysql",
+            "intent_mode": "llm",
+            "goal_version": 1,
+            "goal_model": "gemma4:e4b",
+            "planner_model": "gemma4:e4b"
+          },
+          "operation": "submit",
+          "process_peak_rss_bytes": 295501824
+        },
+        {
+          "time": "2026-10-12T15:17:51.363704+00:00",
+          "event": "model_inference_admitted",
+          "run_id": "359484c239d541aaa33fcec8a723b2a5",
+          "instance_id": "104abb397b27",
+          "pid": 50127,
+          "role": "intent_plan",
+          "call_kind": "auxiliary",
+          "calls_used": 0,
+          "call_limit": 9
+        },
+        {
+          "time": "2026-10-12T15:17:51.364252+00:00",
+          "event": "model_payload_budget",
+          "run_id": "359484c239d541aaa33fcec8a723b2a5",
+          "instance_id": "104abb397b27",
+          "pid": 50127,
+          "payload_bytes": 4550,
+          "input_tokens_estimate": null,
+          "input_tokens_upper_bound": 4550,
+          "payload_bytes_before_projection": 4550,
+          "template_headroom": 640,
+          "input_budget_units": 130048,
+          "output_reserved": 1024,
+          "context_window": 131072,
+          "tool_count": 0,
+          "message_count": 1,
+          "older_turns_compacted": false,
+          "within_budget": true,
+          "observations_compacted": false,
+          "schema_compacted": false,
+          "system_catalog_compacted": false,
+          "tool_menu_compacted": false,
+          "minimal_discovery_menu": false,
+          "reasoning_compacted": false,
+          "minimal_catalog": false,
+          "builtin_instructions_compacted": false,
+          "repair_history_compacted": false,
+          "components": {
+            "system_bytes": 1613,
+            "message_content_bytes": 2641,
+            "tool_calls_bytes": 0,
+            "reasoning_bytes": 0,
+            "tool_schema_bytes": 0,
+            "tool_names": []
+          },
+          "measurement": "conservative_utf8_token_upper_bound"
+        },
+        {
+          "time": "2026-10-12T15:18:01.341082+00:00",
+          "event": "model_inference_succeeded",
+          "run_id": "359484c239d541aaa33fcec8a723b2a5",
+          "instance_id": "104abb397b27",
+          "pid": 50127,
+          "role": "intent_plan",
+          "elapsed_seconds": 9.977
+        },
+        {
+          "time": "2026-10-12T15:18:01.342703+00:00",
+          "event": "intent_outline_selected",
+          "run_id": "359484c239d541aaa33fcec8a723b2a5",
+          "instance_id": "104abb397b27",
+          "pid": 50127,
+          "request_id": "5c48be2465c04ac48af0b4122d0cf976",
+          "mode": "execute",
+          "capabilities": [
+            "row_preview"
+          ]
+        },
+        {
+          "time": "2026-10-12T15:18:01.345160+00:00",
+          "event": "model_inference_admitted",
+          "run_id": "359484c239d541aaa33fcec8a723b2a5",
+          "instance_id": "104abb397b27",
+          "pid": 50127,
+          "role": "intent_plan",
+          "call_kind": "auxiliary",
+          "calls_used": 1,
+          "call_limit": 9
+        },
+        {
+          "time": "2026-10-12T15:18:01.345420+00:00",
+          "event": "model_payload_budget",
+          "run_id": "359484c239d541aaa33fcec8a723b2a5",
+          "instance_id": "104abb397b27",
+          "pid": 50127,
+          "payload_bytes": 6604,
+          "input_tokens_estimate": null,
+          "input_tokens_upper_bound": 6604,
+          "payload_bytes_before_projection": 6604,
+          "template_headroom": 640,
+          "input_budget_units": 126976,
+          "output_reserved": 4096,
+          "context_window": 131072,
+          "tool_count": 0,
+          "message_count": 1,
+          "older_turns_compacted": false,
+          "within_budget": true,
+          "observations_compacted": false,
+          "schema_compacted": false,
+          "system_catalog_compacted": false,
+          "tool_menu_compacted": false,
+          "minimal_discovery_menu": false,
+          "reasoning_compacted": false,
+          "minimal_catalog": false,
+          "builtin_instructions_compacted": false,
+          "repair_history_compacted": false,
+          "components": {
+            "system_bytes": 4998,
+            "message_content_bytes": 1327,
+            "tool_calls_bytes": 0,
+            "reasoning_bytes": 0,
+            "tool_schema_bytes": 0,
+            "tool_names": []
+          },
+          "measurement": "conservative_utf8_token_upper_bound"
+        },
+        {
+          "time": "2026-10-12T15:18:13.032341+00:00",
+          "event": "model_inference_succeeded",
+          "run_id": "359484c239d541aaa33fcec8a723b2a5",
+          "instance_id": "104abb397b27",
+          "pid": 50127,
+          "role": "intent_plan",
+          "elapsed_seconds": 11.687
+        },
+        {
+          "time": "2026-10-12T15:18:13.034295+00:00",
+          "event": "intent_plan_observed",
+          "run_id": "359484c239d541aaa33fcec8a723b2a5",
+          "instance_id": "104abb397b27",
+          "pid": 50127,
+          "request_id": "5c48be2465c04ac48af0b4122d0cf976",
+          "phase": "REVIEW",
+          "mode": "execute",
+          "population_shapes": [
+            {
+              "basis": "selected_original",
+              "changes_filters": null
+            }
+          ],
+          "step_count": 1,
+          "question_chars": 0
+        },
+        {
+          "time": "2026-10-12T15:18:13.043024+00:00",
+          "event": "intent_plan_accepted",
+          "run_id": "359484c239d541aaa33fcec8a723b2a5",
+          "instance_id": "104abb397b27",
+          "pid": 50127,
+          "request_id": "5c48be2465c04ac48af0b4122d0cf976",
+          "steps": 1,
+          "interpretation_calls": 2,
+          "plan_sha256": "225dd65c2b93dacfa31dd640aca7d4a71d7dd8f20bc8ff659db30b75b84a33ca",
+          "scope_mode": "per_task",
+          "reviewed": true
+        },
+        {
+          "time": "2026-10-12T15:18:13.055448+00:00",
+          "event": "model_action_observation",
+          "run_id": "359484c239d541aaa33fcec8a723b2a5",
+          "instance_id": "104abb397b27",
+          "pid": 50127,
+          "request_id": "5c48be2465c04ac48af0b4122d0cf976",
+          "observation_id": "369ff3d2babcb23de953d735ac93a5aeb8d60e5b115af9719a9ff95a80927fe5",
+          "missing_capabilities": [
+            "row_preview"
+          ],
+          "advisory_tool": "prepare_row_preview",
+          "failure_count": 0
+        },
+        {
+          "time": "2026-10-12T15:18:13.058442+00:00",
+          "event": "summarization_skipped",
+          "run_id": "359484c239d541aaa33fcec8a723b2a5",
+          "instance_id": "104abb397b27",
+          "pid": 50127,
+          "reason": "verified_context_model_view_compaction",
+          "message_count": 2
+        },
+        {
+          "time": "2026-10-12T15:18:13.059126+00:00",
+          "event": "model_call_started",
+          "run_id": "359484c239d541aaa33fcec8a723b2a5",
+          "instance_id": "104abb397b27",
+          "pid": 50127,
+          "span_id": "decbaa3803d6",
+          "message_count": 2
+        },
+        {
+          "time": "2026-10-12T15:18:13.060863+00:00",
+          "event": "context_budget",
+          "run_id": "359484c239d541aaa33fcec8a723b2a5",
+          "instance_id": "104abb397b27",
+          "pid": 50127,
+          "characters": 5850,
+          "limit": 32000
+        },
+        {
+          "time": "2026-10-12T15:18:13.061074+00:00",
+          "event": "model_tools_focused",
+          "run_id": "359484c239d541aaa33fcec8a723b2a5",
+          "instance_id": "104abb397b27",
+          "pid": 50127,
+          "mode": "progressive",
+          "tool_count": 9,
+          "registered_tool_count": 46
+        },
+        {
+          "time": "2026-10-12T15:18:13.061927+00:00",
+          "event": "model_payload_budget",
+          "run_id": "359484c239d541aaa33fcec8a723b2a5",
+          "instance_id": "104abb397b27",
+          "pid": 50127,
+          "payload_bytes": 12785,
+          "input_tokens_estimate": null,
+          "input_tokens_upper_bound": 12785,
+          "payload_bytes_before_projection": 12785,
+          "template_headroom": 1856,
+          "input_budget_units": 126976,
+          "output_reserved": 4096,
+          "context_window": 131072,
+          "tool_count": 9,
+          "message_count": 2,
+          "older_turns_compacted": false,
+          "within_budget": true,
+          "observations_compacted": false,
+          "schema_compacted": false,
+          "system_catalog_compacted": false,
+          "tool_menu_compacted": false,
+          "minimal_discovery_menu": false,
+          "reasoning_compacted": false,
+          "minimal_catalog": false,
+          "builtin_instructions_compacted": true,
+          "repair_history_compacted": false,
+          "components": {
+            "system_bytes": 5664,
+            "message_content_bytes": 2509,
+            "tool_calls_bytes": 0,
+            "reasoning_bytes": 0,
+            "tool_schema_bytes": 4058,
+            "tool_names": [
+              "prepare_row_preview",
+              "search_analysis_tools",
+              "resolve_analysis_intent",
+              "resolve_analysis_operation",
+              "list_analysis_context",
+              "read_analysis_skill",
+              "inspect_table_context",
+              "inspect_dataset",
+              "get_analysis_tool_contract"
+            ]
+          },
+          "measurement": "conservative_utf8_token_upper_bound"
+        },
+        {
+          "time": "2026-10-12T15:18:13.062017+00:00",
+          "event": "model_inference_admitted",
+          "run_id": "359484c239d541aaa33fcec8a723b2a5",
+          "instance_id": "104abb397b27",
+          "pid": 50127,
+          "role": "agent",
+          "call_kind": "agent",
+          "calls_used": 2,
+          "call_limit": 10
+        },
+        {
+          "time": "2026-10-12T15:18:31.987230+00:00",
+          "event": "model_inference_succeeded",
+          "run_id": "359484c239d541aaa33fcec8a723b2a5",
+          "instance_id": "104abb397b27",
+          "pid": 50127,
+          "role": "agent",
+          "elapsed_seconds": 18.925
+        },
+        {
+          "time": "2026-10-12T15:18:31.989281+00:00",
+          "event": "model_call_finished",
+          "run_id": "359484c239d541aaa33fcec8a723b2a5",
+          "instance_id": "104abb397b27",
+          "pid": 50127,
+          "span_id": "decbaa3803d6",
+          "status": "ok",
+          "elapsed_seconds": 18.93,
+          "message_count": 2,
+          "tool_call_count": 1,
+          "actual_input_tokens": 2931,
+          "actual_output_tokens": 243,
+          "prompt_eval_seconds": 10.295963,
+          "finish_reasons": [
+            "stop"
+          ]
+        },
+        {
+          "time": "2026-10-12T15:18:31.999669+00:00",
+          "event": "model_action_selected",
+          "run_id": "359484c239d541aaa33fcec8a723b2a5",
+          "instance_id": "104abb397b27",
+          "pid": 50127,
+          "request_id": "5c48be2465c04ac48af0b4122d0cf976",
+          "observation_id": "369ff3d2babcb23de953d735ac93a5aeb8d60e5b115af9719a9ff95a80927fe5",
+          "tools": [
+            "prepare_row_preview"
+          ],
+          "choice_count": 1,
+          "observed_failure_count": 0
+        },
+        {
+          "time": "2026-10-12T15:18:32.008056+00:00",
+          "event": "tool_started",
+          "run_id": "359484c239d541aaa33fcec8a723b2a5",
+          "instance_id": "104abb397b27",
+          "pid": 50127,
+          "tool": "prepare_row_preview"
+        },
+        {
+          "time": "2026-10-12T15:18:32.012519+00:00",
+          "event": "tool_completed",
+          "run_id": "359484c239d541aaa33fcec8a723b2a5",
+          "instance_id": "104abb397b27",
+          "pid": 50127,
+          "tool": "prepare_row_preview",
+          "status": "ready",
+          "error_code": null,
+          "elapsed_seconds": 0.004,
+          "applied_corrections": []
+        },
+        {
+          "time": "2026-10-12T15:18:32.016674+00:00",
+          "event": "intent_task_verified",
+          "run_id": "359484c239d541aaa33fcec8a723b2a5",
+          "instance_id": "104abb397b27",
+          "pid": 50127,
+          "request_id": "5c48be2465c04ac48af0b4122d0cf976",
+          "task_id": "s1",
+          "remaining": 0,
+          "evidence_ids": [],
+          "artifact_ids": []
+        },
+        {
+          "time": "2026-10-12T15:18:32.017286+00:00",
+          "event": "completion_checked",
+          "run_id": "359484c239d541aaa33fcec8a723b2a5",
+          "instance_id": "104abb397b27",
+          "pid": 50127,
+          "request_id": "5c48be2465c04ac48af0b4122d0cf976",
+          "status": "complete",
+          "reason": null,
+          "attempts": 0,
+          "required_capabilities": [
+            "row_preview"
+          ],
+          "missing_capabilities": [],
+          "model_calls": 3,
+          "tool_calls": 1,
+          "model_seconds": 40.616,
+          "dataset_ids": [],
+          "artifact_ids": []
+        },
+        {
+          "time": "2026-10-12T15:18:32.018799+00:00",
+          "event": "run_completed",
+          "run_id": "359484c239d541aaa33fcec8a723b2a5",
+          "instance_id": "104abb397b27",
+          "pid": 50127,
+          "status": "answered",
+          "elapsed_seconds": 40.663,
+          "process_peak_rss_bytes": 297058304,
+          "frame_cache_bytes": 0
+        },
+        {
+          "time": "2026-10-12T15:18:32.018832+00:00",
+          "event": "turn_slo",
+          "run_id": "359484c239d541aaa33fcec8a723b2a5",
+          "instance_id": "104abb397b27",
+          "pid": 50127,
+          "elapsed_seconds": 40.663,
+          "limit": 180.0,
+          "status": "ok"
+        }
+      ],
+      "stop_reason": null
+    },
+    {
+      "id": "filtered_sum",
+      "prompt": "observations에서 reading이 3~8인 것만 합계를 알려줘",
+      "status": "blocked",
+      "text": "요청을 해석한 모델 응답이 실행 계약을 충족하지 못해 분석 도구 실행 전에 중단했습니다. (오류 ID: 4b4d513782e7) 기존 데이터와 결과는 보존했습니다.",
+      "seconds": 44.265,
+      "goal": null,
+      "model_calls": 4,
+      "goal_error": "Relative period column must match the observed restriction column",
+      "result": null,
+      "pass": false,
+      "diagnostics": [
+        {
+          "time": "2026-10-12T15:18:32.063347+00:00",
+          "event": "dataset_selected",
+          "run_id": null,
+          "instance_id": "b15d7d829927",
+          "pid": 50127,
+          "dataset_id": "1b3dfeb6-6f34-4aff-8c1a-0656d149b28a",
+          "root_id": "1b3dfeb6-6f34-4aff-8c1a-0656d149b28a",
+          "role": "root",
+          "source": "lab.observations"
+        },
+        {
+          "time": "2026-10-12T15:18:32.063994+00:00",
+          "event": "run_started",
+          "run_id": "1c860a76fac14176845540653579057c",
+          "instance_id": "b15d7d829927",
+          "pid": 50127,
+          "runtime": {
+            "revision_at_first_runtime": "e947a03f923faf2de2eb6be9774e8766547b0924",
+            "packages": {
+              "langchain": "1.4.0",
+              "langchain-core": "1.6.2",
+              "langgraph": "1.2.11",
+              "streamlit": "1.63.0",
+              "sqlglot": "30.18.0"
+            },
+            "python_version": "3.11.13",
+            "identity_captured_at": "2026-10-12T15:17:51.233064+00:00",
+            "route": "langgraph-v1",
+            "model_class": "ChatOllama",
+            "require_remote_approval": false,
+            "loaded_delivery_guard": "598a61a2f1c46267",
+            "data_backend": "mysql",
+            "intent_mode": "llm",
+            "goal_version": 1,
+            "goal_model": "gemma4:e4b",
+            "planner_model": "gemma4:e4b"
+          },
+          "operation": "submit",
+          "process_peak_rss_bytes": 297058304
+        },
+        {
+          "time": "2026-10-12T15:18:32.067040+00:00",
+          "event": "model_inference_admitted",
+          "run_id": "1c860a76fac14176845540653579057c",
+          "instance_id": "b15d7d829927",
+          "pid": 50127,
+          "role": "intent_plan",
+          "call_kind": "auxiliary",
+          "calls_used": 0,
+          "call_limit": 9
+        },
+        {
+          "time": "2026-10-12T15:18:32.067237+00:00",
+          "event": "model_payload_budget",
+          "run_id": "1c860a76fac14176845540653579057c",
+          "instance_id": "b15d7d829927",
+          "pid": 50127,
+          "payload_bytes": 4570,
+          "input_tokens_estimate": null,
+          "input_tokens_upper_bound": 4570,
+          "payload_bytes_before_projection": 4570,
+          "template_headroom": 640,
+          "input_budget_units": 130048,
+          "output_reserved": 1024,
+          "context_window": 131072,
+          "tool_count": 0,
+          "message_count": 1,
+          "older_turns_compacted": false,
+          "within_budget": true,
+          "observations_compacted": false,
+          "schema_compacted": false,
+          "system_catalog_compacted": false,
+          "tool_menu_compacted": false,
+          "minimal_discovery_menu": false,
+          "reasoning_compacted": false,
+          "minimal_catalog": false,
+          "builtin_instructions_compacted": false,
+          "repair_history_compacted": false,
+          "components": {
+            "system_bytes": 1613,
+            "message_content_bytes": 2661,
+            "tool_calls_bytes": 0,
+            "reasoning_bytes": 0,
+            "tool_schema_bytes": 0,
+            "tool_names": []
+          },
+          "measurement": "conservative_utf8_token_upper_bound"
+        },
+        {
+          "time": "2026-10-12T15:18:39.179709+00:00",
+          "event": "model_inference_succeeded",
+          "run_id": "1c860a76fac14176845540653579057c",
+          "instance_id": "b15d7d829927",
+          "pid": 50127,
+          "role": "intent_plan",
+          "elapsed_seconds": 7.112
+        },
+        {
+          "time": "2026-10-12T15:18:39.182305+00:00",
+          "event": "intent_outline_selected",
+          "run_id": "1c860a76fac14176845540653579057c",
+          "instance_id": "b15d7d829927",
+          "pid": 50127,
+          "request_id": "b9c563c773244629b1726072a555cc96",
+          "mode": "execute",
+          "capabilities": [
+            "calculation"
+          ]
+        },
+        {
+          "time": "2026-10-12T15:18:39.187130+00:00",
+          "event": "model_inference_admitted",
+          "run_id": "1c860a76fac14176845540653579057c",
+          "instance_id": "b15d7d829927",
+          "pid": 50127,
+          "role": "intent_plan",
+          "call_kind": "auxiliary",
+          "calls_used": 1,
+          "call_limit": 9
+        },
+        {
+          "time": "2026-10-12T15:18:39.187455+00:00",
+          "event": "model_payload_budget",
+          "run_id": "1c860a76fac14176845540653579057c",
+          "instance_id": "b15d7d829927",
+          "pid": 50127,
+          "payload_bytes": 6665,
+          "input_tokens_estimate": null,
+          "input_tokens_upper_bound": 6665,
+          "payload_bytes_before_projection": 6665,
+          "template_headroom": 640,
+          "input_budget_units": 126976,
+          "output_reserved": 4096,
+          "context_window": 131072,
+          "tool_count": 0,
+          "message_count": 1,
+          "older_turns_compacted": false,
+          "within_budget": true,
+          "observations_compacted": false,
+          "schema_compacted": false,
+          "system_catalog_compacted": false,
+          "tool_menu_compacted": false,
+          "minimal_discovery_menu": false,
+          "reasoning_compacted": false,
+          "minimal_catalog": false,
+          "builtin_instructions_compacted": false,
+          "repair_history_compacted": false,
+          "components": {
+            "system_bytes": 4998,
+            "message_content_bytes": 1388,
+            "tool_calls_bytes": 0,
+            "reasoning_bytes": 0,
+            "tool_schema_bytes": 0,
+            "tool_names": []
+          },
+          "measurement": "conservative_utf8_token_upper_bound"
+        },
+        {
+          "time": "2026-10-12T15:18:52.676252+00:00",
+          "event": "model_inference_succeeded",
+          "run_id": "1c860a76fac14176845540653579057c",
+          "instance_id": "b15d7d829927",
+          "pid": 50127,
+          "role": "intent_plan",
+          "elapsed_seconds": 13.489
+        },
+        {
+          "time": "2026-10-12T15:18:52.679110+00:00",
+          "event": "intent_plan_observed",
+          "run_id": "1c860a76fac14176845540653579057c",
+          "instance_id": "b15d7d829927",
+          "pid": 50127,
+          "request_id": "b9c563c773244629b1726072a555cc96",
+          "phase": "REVIEW",
+          "mode": "execute",
+          "population_shapes": [
+            {
+              "basis": "selected_original",
+              "changes_filters": null
+            }
+          ],
+          "step_count": 1,
+          "question_chars": 0
+        },
+        {
+          "time": "2026-10-12T15:18:52.689376+00:00",
+          "event": "intent_plan_rejected",
+          "run_id": "1c860a76fac14176845540653579057c",
+          "instance_id": "b15d7d829927",
+          "pid": 50127,
+          "request_id": "b9c563c773244629b1726072a555cc96",
+          "phase": "REVIEW",
+          "attempt": 1,
+          "detail": "Relative period column must match the observed restriction column"
+        },
+        {
+          "time": "2026-10-12T15:18:52.689961+00:00",
+          "event": "model_inference_admitted",
+          "run_id": "1c860a76fac14176845540653579057c",
+          "instance_id": "b15d7d829927",
+          "pid": 50127,
+          "role": "intent_plan",
+          "call_kind": "auxiliary",
+          "calls_used": 2,
+          "call_limit": 9
+        },
+        {
+          "time": "2026-10-12T15:18:52.690721+00:00",
+          "event": "model_payload_budget",
+          "run_id": "1c860a76fac14176845540653579057c",
+          "instance_id": "b15d7d829927",
+          "pid": 50127,
+          "payload_bytes": 7781,
+          "input_tokens_estimate": null,
+          "input_tokens_upper_bound": 7781,
+          "payload_bytes_before_projection": 7781,
+          "template_headroom": 640,
+          "input_budget_units": 126976,
+          "output_reserved": 4096,
+          "context_window": 131072,
+          "tool_count": 0,
+          "message_count": 1,
+          "older_turns_compacted": false,
+          "within_budget": true,
+          "observations_compacted": false,
+          "schema_compacted": false,
+          "system_catalog_compacted": false,
+          "tool_menu_compacted": false,
+          "minimal_discovery_menu": false,
+          "reasoning_compacted": false,
+          "minimal_catalog": false,
+          "builtin_instructions_compacted": false,
+          "repair_history_compacted": false,
+          "components": {
+            "system_bytes": 4998,
+            "message_content_bytes": 2374,
+            "tool_calls_bytes": 0,
+            "reasoning_bytes": 0,
+            "tool_schema_bytes": 0,
+            "tool_names": []
+          },
+          "measurement": "conservative_utf8_token_upper_bound"
+        },
+        {
+          "time": "2026-10-12T15:19:04.947548+00:00",
+          "event": "model_inference_succeeded",
+          "run_id": "1c860a76fac14176845540653579057c",
+          "instance_id": "b15d7d829927",
+          "pid": 50127,
+          "role": "intent_plan",
+          "elapsed_seconds": 12.257
+        },
+        {
+          "time": "2026-10-12T15:19:04.952408+00:00",
+          "event": "intent_plan_observed",
+          "run_id": "1c860a76fac14176845540653579057c",
+          "instance_id": "b15d7d829927",
+          "pid": 50127,
+          "request_id": "b9c563c773244629b1726072a555cc96",
+          "phase": "REVIEW",
+          "mode": "execute",
+          "population_shapes": [
+            {
+              "basis": "selected_original",
+              "changes_filters": null
+            }
+          ],
+          "step_count": 1,
+          "question_chars": 0
+        },
+        {
+          "time": "2026-10-12T15:19:04.962696+00:00",
+          "event": "intent_plan_rejected",
+          "run_id": "1c860a76fac14176845540653579057c",
+          "instance_id": "b15d7d829927",
+          "pid": 50127,
+          "request_id": "b9c563c773244629b1726072a555cc96",
+          "phase": "REVIEW",
+          "attempt": 2,
+          "detail": "Relative period column must match the observed restriction column"
+        },
+        {
+          "time": "2026-10-12T15:19:04.963050+00:00",
+          "event": "model_inference_admitted",
+          "run_id": "1c860a76fac14176845540653579057c",
+          "instance_id": "b15d7d829927",
+          "pid": 50127,
+          "role": "intent_plan",
+          "call_kind": "auxiliary",
+          "calls_used": 3,
+          "call_limit": 9
+        },
+        {
+          "time": "2026-10-12T15:19:04.963484+00:00",
+          "event": "model_payload_budget",
+          "run_id": "1c860a76fac14176845540653579057c",
+          "instance_id": "b15d7d829927",
+          "pid": 50127,
+          "payload_bytes": 7781,
+          "input_tokens_estimate": null,
+          "input_tokens_upper_bound": 7781,
+          "payload_bytes_before_projection": 7781,
+          "template_headroom": 640,
+          "input_budget_units": 126976,
+          "output_reserved": 4096,
+          "context_window": 131072,
+          "tool_count": 0,
+          "message_count": 1,
+          "older_turns_compacted": false,
+          "within_budget": true,
+          "observations_compacted": false,
+          "schema_compacted": false,
+          "system_catalog_compacted": false,
+          "tool_menu_compacted": false,
+          "minimal_discovery_menu": false,
+          "reasoning_compacted": false,
+          "minimal_catalog": false,
+          "builtin_instructions_compacted": false,
+          "repair_history_compacted": false,
+          "components": {
+            "system_bytes": 4998,
+            "message_content_bytes": 2374,
+            "tool_calls_bytes": 0,
+            "reasoning_bytes": 0,
+            "tool_schema_bytes": 0,
+            "tool_names": []
+          },
+          "measurement": "conservative_utf8_token_upper_bound"
+        },
+        {
+          "time": "2026-10-12T15:19:16.283354+00:00",
+          "event": "model_inference_succeeded",
+          "run_id": "1c860a76fac14176845540653579057c",
+          "instance_id": "b15d7d829927",
+          "pid": 50127,
+          "role": "intent_plan",
+          "elapsed_seconds": 11.32
+        },
+        {
+          "time": "2026-10-12T15:19:16.288559+00:00",
+          "event": "intent_plan_observed",
+          "run_id": "1c860a76fac14176845540653579057c",
+          "instance_id": "b15d7d829927",
+          "pid": 50127,
+          "request_id": "b9c563c773244629b1726072a555cc96",
+          "phase": "REVIEW",
+          "mode": "execute",
+          "population_shapes": [
+            {
+              "basis": "selected_original",
+              "changes_filters": null
+            }
+          ],
+          "step_count": 1,
+          "question_chars": 0
+        },
+        {
+          "time": "2026-10-12T15:19:16.300611+00:00",
+          "event": "intent_plan_rejected",
+          "run_id": "1c860a76fac14176845540653579057c",
+          "instance_id": "b15d7d829927",
+          "pid": 50127,
+          "request_id": "b9c563c773244629b1726072a555cc96",
+          "phase": "REVIEW",
+          "attempt": 3,
+          "detail": "Relative period column must match the observed restriction column"
+        },
+        {
+          "time": "2026-10-12T15:19:16.303711+00:00",
+          "event": "error",
+          "run_id": "1c860a76fac14176845540653579057c",
+          "instance_id": "b15d7d829927",
+          "pid": 50127,
+          "error_category": null,
+          "error_id": "4b4d513782e7",
+          "stage": "intent_plan_validation",
+          "error_type": "ValueError",
+          "attempt_budget": null,
+          "database_errno": null,
+          "os_errno": null,
+          "winerror": null,
+          "http_status": null,
+          "frames": [
+            {
+              "file": "intent_plan.py",
+              "line": 292,
+              "function": "interpret"
+            },
+            {
+              "file": "intent_plan.py",
+              "line": 207,
+              "function": "validate"
+            },
+            {
+              "file": "population_requirements.py",
+              "line": 134,
+              "function": "validate"
+            }
+          ]
+        },
+        {
+          "time": "2026-10-12T15:19:16.303989+00:00",
+          "event": "goal_interpretation_failed",
+          "run_id": "1c860a76fac14176845540653579057c",
+          "instance_id": "b15d7d829927",
+          "pid": 50127,
+          "request_id": "b9c563c773244629b1726072a555cc96",
+          "error_id": "4b4d513782e7",
+          "stage": "intent_plan_validation",
+          "reason": "output_contract_unverified",
+          "database_tool_dispatched": false
+        },
+        {
+          "time": "2026-10-12T15:19:16.316142+00:00",
+          "event": "run_completed",
+          "run_id": "1c860a76fac14176845540653579057c",
+          "instance_id": "b15d7d829927",
+          "pid": 50127,
+          "status": "blocked",
+          "elapsed_seconds": 44.251,
+          "process_peak_rss_bytes": 297058304,
+          "frame_cache_bytes": 0
+        },
+        {
+          "time": "2026-10-12T15:19:16.316253+00:00",
+          "event": "turn_slo",
+          "run_id": "1c860a76fac14176845540653579057c",
+          "instance_id": "b15d7d829927",
+          "pid": 50127,
+          "elapsed_seconds": 44.251,
+          "limit": 180.0,
+          "status": "ok"
+        }
+      ],
+      "stop_reason": "goal_unverified"
+    }
+  ]
+}

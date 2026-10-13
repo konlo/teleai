@@ -1,0 +1,99 @@
+{
+  "run_id": "19f8ef3e56bd403e991cceaf96bf0bff",
+  "request_id": "5b2430c1c3d8480aaf1995779d2bf508",
+  "calls": [
+    {
+      "number": 1,
+      "role": "clarification_memory",
+      "purpose": "확인 답변을 원래 요청에 연결",
+      "elapsed_seconds": 4.118,
+      "completed_at_kst": "2026-10-11T12:35:28+09:00",
+      "outcome": "모델 응답 수신"
+    },
+    {
+      "number": 2,
+      "role": "subject_identity",
+      "purpose": "테이블·컬럼 식별자 구분",
+      "elapsed_seconds": 2.633,
+      "completed_at_kst": "2026-10-11T12:35:31+09:00",
+      "outcome": "모델 응답 수신"
+    },
+    {
+      "number": 3,
+      "role": "task_selection",
+      "purpose": "수행 작업 선택",
+      "elapsed_seconds": 12.524,
+      "completed_at_kst": "2026-10-11T12:35:43+09:00",
+      "outcome": "모델 응답 수신"
+    },
+    {
+      "number": 4,
+      "role": "population_basis",
+      "purpose": "전체 원본/표시 결과 등 분석 범위 판단",
+      "elapsed_seconds": 9.445,
+      "completed_at_kst": "2026-10-11T12:35:53+09:00",
+      "outcome": "모델 응답 수신"
+    },
+    {
+      "number": 5,
+      "role": "goal_interpreter",
+      "purpose": "실행 목표 계약 생성",
+      "elapsed_seconds": 13.687,
+      "completed_at_kst": "2026-10-11T12:36:07+09:00",
+      "outcome": "모델 응답 수신"
+    },
+    {
+      "number": 6,
+      "role": "goal_interpreter",
+      "purpose": "목표 의미 재검토",
+      "elapsed_seconds": 19.144,
+      "completed_at_kst": "2026-10-11T12:36:26+09:00",
+      "outcome": "모델 응답 수신"
+    },
+    {
+      "number": 7,
+      "role": "population_audit",
+      "purpose": "모집단·조건 독립 검토",
+      "elapsed_seconds": 7.621,
+      "completed_at_kst": "2026-10-11T12:36:33+09:00",
+      "outcome": "모델 응답 수신; restriction_review_incomplete로 계약 거절"
+    },
+    {
+      "number": 8,
+      "role": "population_audit",
+      "purpose": "모집단·조건 수정 재검토",
+      "elapsed_seconds": 5.805,
+      "completed_at_kst": "2026-10-11T12:36:39+09:00",
+      "outcome": "모델 응답 수신; restriction_review_incomplete로 계약 거절"
+    },
+    {
+      "number": 9,
+      "role": "goal_interpreter",
+      "purpose": "목표 계약 수정 재생성",
+      "elapsed_seconds": 10.099,
+      "completed_at_kst": "2026-10-11T12:36:49+09:00",
+      "outcome": "모델 응답 수신; 다음 모집단 검토는 호출 한도 차단"
+    }
+  ],
+  "budget": {
+    "time": "2026-10-11T03:36:49.842512+00:00",
+    "event": "model_attempt_budget_exhausted",
+    "run_id": "19f8ef3e56bd403e991cceaf96bf0bff",
+    "instance_id": "5c267fedea34",
+    "pid": 28702,
+    "reason": "calls",
+    "call_kind": "auxiliary",
+    "role": "population_audit",
+    "calls_used": 9,
+    "call_limit": 9,
+    "total_call_limit": 10,
+    "reserved_calls": 1,
+    "seconds_used": 85.088,
+    "seconds_limit": 180.0,
+    "seconds_remaining": 94.912,
+    "provider_failures": 0,
+    "auxiliary_calls": 9,
+    "retries": 0
+  },
+  "source_log": ".telly_runtime/v1/da3844135633f37cbccd9c7178cbcb807f27ca2801b8d3155b5d61fa114a44be/runtime.jsonl"
+}

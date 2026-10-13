@@ -160,7 +160,7 @@ class RecoveryState(AgentState):
 
 
 class RecoveryPlanningMiddleware(AgentMiddleware):
-    """Cheap local transitions before summarization. Remote calls still pass HITL."""
+    """Goal/observation preparation; LLM actions pass normal execution guards."""
     def __init__(self, recovery):
         self.recovery = recovery
 
@@ -1388,7 +1388,7 @@ class RecoveryMiddleware(AgentMiddleware):
                     current['remote_query_evidence'].pop(key, None)
         current['remote_query_ids'] = retained
         for key, call in calls.items():
-            if call.get('name') == 'query_databricks' and key not in current['remote_query_ids']:
+            if call.get('name') in {'query_databricks','analyze_source_histogram'} and key not in current['remote_query_ids']:
                 current['remote_query_ids'].append(key)
         from core.analysis_agent.remote_completion import catalog_read_requested
         current['remote_result_requested'] = bool(current['remote_query_ids']) or (bool(current.get('catalog_discovery_source')) if current.get('intent_origin')=='llm' else catalog_read_requested(current))
@@ -1420,17 +1420,34 @@ class RecoveryMiddleware(AgentMiddleware):
                         current['value_list_plan']=observation['value_list_plan']
                     if observation.get('refresh_query'):
                         current['value_list_refresh']=observation['refresh_query']
-            if name == 'query_databricks':
+            if name in {'query_databricks','analyze_source_histogram'} or (name=='inspect_live_schema' and observation.get('schema_query_plan')):
+                if message.tool_call_id not in current['remote_query_ids']:
+                    current['remote_query_ids'].append(message.tool_call_id)
+                current['remote_result_requested']=True
                 if observation.get('execution_state')=='rejected' and observation.get('repairable'):
                     rejected=current.setdefault('sql_rejected_call_ids',[])
                     if message.tool_call_id not in rejected:rejected.append(message.tool_call_id)
                 from core.analysis_agent.remote_completion import verified_receipt
-                evidence = verified_receipt(self.approval_ledger, self.context, call, observation)
+                receipt_call,receipt_observation=call,observation
+                if name in {'analyze_source_histogram','inspect_live_schema'}:
+                    plan=observation.get('source_histogram_plan') or observation.get('schema_query_plan') or {}
+                    receipt_call={'id':observation.get('receipt_id',message.tool_call_id),'args':plan}
+                    receipt_observation=observation.get('query_result') or {}
+                evidence = verified_receipt(self.approval_ledger, self.context, receipt_call, receipt_observation)
                 if evidence:
-                    if message.tool_call_id not in current['remote_query_evidence']:
+                    evidence_key=message.tool_call_id
+                    if name in {'analyze_source_histogram','inspect_live_schema'}:
+                        evidence_key=receipt_call['id']
+                        evidence={**evidence,'reused':bool(observation.get('reused'))}
+                        if evidence_key!=message.tool_call_id:
+                            current['remote_query_ids']=[key for key in current['remote_query_ids'] if key!=message.tool_call_id]
+                            current['remote_query_evidence'].pop(message.tool_call_id,None)
+                        if evidence_key not in current['remote_query_ids']:current['remote_query_ids'].append(evidence_key)
+                    if evidence_key not in current['remote_query_evidence']:
                         self.diagnostics.emit('remote_result_verified', request_id=current.get('request_id'),
-                            tool_call_id=message.tool_call_id, dataset_id=evidence['dataset_id'], rows=evidence['rows'])
-                    current['remote_query_evidence'][message.tool_call_id] = evidence
+                            tool_call_id=message.tool_call_id, dataset_id=evidence['dataset_id'], rows=evidence['rows'],
+                            cached_receipt=evidence.get('reused',False))
+                    current['remote_query_evidence'][evidence_key] = evidence
                     current.pop('unverified_execution_claim', None)
                     if self.context:
                         from core.analysis_agent.value_list import complete_from_receipts
@@ -1514,6 +1531,9 @@ class RecoveryMiddleware(AgentMiddleware):
             failed = observation.get('status') in {'error', 'rejected', 'needs_data', 'needs_context', 'needs_refresh', 'unavailable', 'no_valid_chart'}
             if failed:
                 current['failed'][name or message.tool_call_id] = observation
+                if name in {'analyze_source_histogram','inspect_live_schema'} and observation.get('status') in {'unavailable','rejected'}:
+                    current['failed']['query_databricks']=observation
+                    if observation.get('status')=='rejected':current['remote_rejected']=True
                 if name == 'query_databricks' and observation.get('status') == 'rejected':
                     current['remote_rejected'] = True
                 signature = self._signature(call or {'name': name, 'args': {}})
@@ -1546,7 +1566,7 @@ class RecoveryMiddleware(AgentMiddleware):
                             'values': [row[columns[0]] for row in preview[:requested]],
                         }
                         current['evidence_ids'] = [dataset_id]
-                if name == 'inspect_table_context' and not current.get('chart') and not current.get('calculation'):
+                if name in {'inspect_table_context','inspect_live_schema'} and not current.get('chart') and not current.get('calculation'):
                     current['failed'].pop('inspect_dataset', None)
                     context = observation.get('table_context', {})
                     expected=current.get('required_sources', [])
@@ -1976,7 +1996,7 @@ class RecoveryMiddleware(AgentMiddleware):
                             # materialization of every joined source row.
                             current['join_query_evidence'] = {'dataset_id': dataset_id,
                                 'source': info.source, 'basis': current.get('join_relationship_basis', 'explicit_request')}
-            if name in {'recommend_chart_images', 'render_chart_spec', 'render_count_rate_chart', 'render_histogram', 'prepare_histogram', 'show_chart','prepare_source_scatter'} and observation.get('cards') and (current.get('intent_origin')!='llm' or current.get('chart')):
+            if name in {'recommend_chart_images', 'render_chart_spec', 'render_count_rate_chart', 'render_histogram', 'prepare_histogram', 'show_chart','prepare_source_scatter','analyze_source_histogram'} and observation.get('cards') and (current.get('intent_origin')!='llm' or current.get('chart')):
                 current['chart'] = True
                 # prepare_histogram binds its input raw branch with dataset_id,
                 # but returns a chart over the derived frequency dataset.
@@ -1991,6 +2011,7 @@ class RecoveryMiddleware(AgentMiddleware):
                     if self._valid_card(card, current, candidate_dataset): valid.append(card.id)
                 if valid:
                     current['artifact_ids'] = valid
+                    current['chart_reused']=name=='show_chart'
                     if (name == 'render_count_rate_chart'
                             and self._count_rate_scope_valid(
                                 self.context.datasets.metadata.get(dataset_id), arguments, current)
@@ -2127,6 +2148,12 @@ class RecoveryMiddleware(AgentMiddleware):
                 and not getattr(executed,'query','')):
             return scope_matches(executed.conditions, requested)
         query = executed if isinstance(executed, str) else getattr(executed, 'query', '')
+        if query and not getattr(executed,'parent_id',None) and not getattr(executed,'parent_ids',None):
+            from core.analysis_agent.source_histogram import descriptor
+            binned=descriptor(query,dialect or self.sql_dialect)
+            if binned:
+                executed=query=binned['population_query']
+                histogram_column=binned['column']
         plan = current.get('plan') or {}
         if not histogram_column and query and query == plan.get('query'):
             # The exact schema-bound frequency plan deliberately excludes
@@ -2354,6 +2381,10 @@ class RecoveryMiddleware(AgentMiddleware):
             from core.analysis_agent.source_scatter import valid_card
             return valid_card(self.context,current,card) and self._fresh_for_request(
                 self.context.datasets.metadata.get(card.dataset_id),current)
+        if card.render_spec.get('mode')=='source_numeric_bins':
+            from core.analysis_agent.source_histogram import valid_card
+            return valid_card(self,current,card) and self._fresh_for_request(
+                self.context.datasets.metadata.get(card.dataset_id),current)
         from core.analysis_agent.chart_binding import axes_match
         if card.kind == 'scatter' and not axes_match(current, card.render_spec): return False
         group=current.get('chart_group_spec')
@@ -2552,6 +2583,10 @@ class RecoveryMiddleware(AgentMiddleware):
         if reason is None:
             try:
                 rendered = self._answer(current)
+                from core.analysis_agent.task_execution import advance,final_text
+                transition=advance(self,current,rendered)
+                if transition:return transition
+                rendered=final_text(current,rendered)
             except CompletionOutputError as error:
                 reason = 'completion_output_missing'
                 self.diagnostics.emit('completion_output_failed',
@@ -2673,9 +2708,18 @@ class RecoveryMiddleware(AgentMiddleware):
         # Free-form text is allowed only for requests with no analytical obligation.
         if success and not active_contracts(current) and last:
             text = text or last.content
+        completed_tasks=(current.get('intent_plan') or {}).get('completed',[])
+        if not success and completed_tasks:
+            text=('완료된 작업의 결과는 보존했습니다.\n\n'+
+                '\n\n'.join(s['text'] for s in completed_tasks)+'\n\n미완료 작업: '+text)
         kwargs = {'analysis_status': 'answered' if success else current['status'],
                   'analysis_controller_result': True,
                   'analysis_artifact_ids': list(dict.fromkeys(current.get('artifact_ids', []))) if success else []}
+        if completed_tasks:
+            kwargs['analysis_table_previews']=[deepcopy(s['receipts']['row_preview']) for s in completed_tasks
+                if s['receipts'].get('row_preview')]
+            if not success:
+                kwargs['analysis_artifact_ids']=list(dict.fromkeys(i for s in completed_tasks for i in s['artifact_ids']))
         if success and current.get('table_preview_evidence'):
             kwargs['analysis_table_preview']=deepcopy(current['table_preview_evidence'])
         message = (last.model_copy(update={'content': text, 'tool_calls': [],
@@ -2819,8 +2863,8 @@ class RecoveryMiddleware(AgentMiddleware):
                     'fresh':bool(current.get('fresh_source_required'))}}
                 count=sum(self._signature(c)==self._signature(call) for c in calls.values())
                 if count==0 or (count==1 and refresh and current.get('remote_query_evidence')):return call
-        # A verified histogram plan has only one safe remote query. Do not
-        # return to the model between planning, executing and rendering it.
+        # Offer the verified histogram query as a candidate. The LLM path
+        # still chooses it after observing the plan; controller paths dispatch.
         plan = current.get('plan')
         if (plan and self.remote_available and not remote_blocked(current)
                 and current.get('query_seen') != current.get('plan_call')
@@ -3363,6 +3407,11 @@ class RecoveryMiddleware(AgentMiddleware):
                     return {'name':'profile_dataset', 'args':arguments}
         if (self.context and current.get('metadata_kind') in {'columns', 'dtypes', 'numeric_columns', 'categorical_columns'}
                 and not current.get('metadata_evidence')):
+            if ('inspect_live_schema' in self.context.allowed_tool_names
+                    and len(current.get('required_sources',[]))==1
+                    and not any(c.get('name')=='inspect_live_schema' for c in calls.values())):
+                candidate={'name':'inspect_live_schema','args':{'source':current['required_sources'][0]}}
+                if self._proposed_scope_valid(candidate,deepcopy(current)):return candidate
             stale = current.get('failed', {}).get('inspect_table_context', {})
             if stale.get('status') == 'needs_refresh':
                 from core.analysis_catalog import resolve_table_context
@@ -3578,6 +3627,13 @@ class RecoveryMiddleware(AgentMiddleware):
                                     for c in calls.values())):
                     return {'name':'render_chart_spec','args':arguments}
         scope = current.get('scope', {})
+        if (self.context and 'analyze_source_histogram' in self.context.allowed_tool_names
+                and not current.get('artifact_ids')):
+            from core.analysis_agent.source_histogram import target
+            arguments=target(self.context,current)
+            candidate={'name':'analyze_source_histogram','args':arguments} if arguments else None
+            if candidate and not any(self._signature(c)==self._signature(candidate) for c in calls.values()):
+                return candidate
         if (self.context and current.get('categorical_distribution') and not current.get('artifact_ids')
                 and not (current.get('calculation') and not current.get('evidence_ids'))
                 and not current.get('plan') and not scope.get('unresolved')
@@ -4005,7 +4061,8 @@ class RecoveryMiddleware(AgentMiddleware):
         or propose another remote query; only a grounded local calculation
         may run when there is still a tool-call slot.
         """
-        if (self._limit_reason(current) not in {'model_call_budget', 'model_time_budget'}
+        if (current.get('intent_origin')=='llm'
+                or self._limit_reason(current) not in {'model_call_budget', 'model_time_budget'}
                 or len(current['sent_calls']) >= self.max_tool_calls
                 or current.get('remote_rejected')
                 or remote_blocked(current)
@@ -4056,7 +4113,7 @@ class RecoveryMiddleware(AgentMiddleware):
         replace that pending model step with this narrow local tool call.
         """
         current, calls = self._state(state)
-        if (current.get('status') != 'working'
+        if (current.get('intent_origin')=='llm' or current.get('status') != 'working'
                 or len(current['sent_calls']) >= self.max_tool_calls
                 or current.get('remote_rejected')
                 or remote_blocked(current)
@@ -4150,7 +4207,22 @@ class RecoveryMiddleware(AgentMiddleware):
                 and current.get('failed', {}).get('inspect_table_context', {}).get('status') == 'needs_refresh'):
             return {**self._finish(current, reason='schema_refresh_unavailable'), 'jump_to':'end'}
         if (active_contracts(current) or current.get('plan')) and self._complete(current):
-            return {**self._finish(current), 'jump_to': 'end'}
+            finished=self._finish(current)
+            if finished.get('jump_to')=='model':
+                return self.before_step({**state,'recovery':finished['recovery']})
+            return {**finished, 'jump_to': 'end'}
+        if current.get('intent_origin')=='llm':
+            reason=self._limit_reason(current)
+            if reason or current.get('local_continuation'):
+                return {**self._finish(current,reason=reason or 'local_continuation_unavailable'),
+                        'jump_to':'end'}
+            # A helper may prepare a safe candidate, but it cannot select the
+            # action on behalf of the model. Each received observation returns
+            # to inference before a dependent query/calculation/render step.
+            from core.analysis_agent.action_cycle import guidance
+            candidate=self._cached_chart_call(current) or self._next_local(current,calls)
+            current['model_started_at']=time.time()
+            return guidance(self,current,calls,candidate)
         # A model timeout does not consume the bounded execution budget of a
         # newly grounded exact-coordinate plan. SQL still passes ledger and
         # request guards; this never retries a failed remote execution.
@@ -4302,6 +4374,8 @@ class RecoveryMiddleware(AgentMiddleware):
         return True
 
     def _reject_scope_call(self, current, last):
+        from core.analysis_agent.action_cycle import record_rejection
+        record_rejection(current,last,current.get('scope_error') or 'request_scope_mismatch','scope_validation')
         if set(current.get('scope', {}).get('unresolved', [])) & {
                 'unbound_numeric_range', 'invalid_range_bounds', 'unsupported_range_syntax',
                 'ambiguous_column_source', 'unbound_categorical_list'}:
@@ -4422,6 +4496,8 @@ class RecoveryMiddleware(AgentMiddleware):
         return None
 
     def _reject_preflight_call(self, current, last, error):
+        from core.analysis_agent.action_cycle import record_rejection
+        record_rejection(current,last,error['error_code'],'input_validation')
         signatures = current.setdefault('rejected_preflight_signatures', [])
         signature = sha256(json.dumps([(call.get('name'), call.get('args'))
             for call in last.tool_calls], sort_keys=True, ensure_ascii=False,
@@ -4454,6 +4530,15 @@ class RecoveryMiddleware(AgentMiddleware):
 
     def _proposed_scope_valid(self, call, current):
         if current.get('explanation_only'): return False
+        if call.get('name')=='review_analysis_intent':
+            from core.analysis_agent.intent_replanning import valid
+            return valid(current,self.approval_ledger)
+        if call.get('name')=='inspect_live_schema':
+            from core.analysis_agent.live_schema import valid_call
+            return valid_call(self,current,call.get('args') or {})
+        if call.get('name')=='analyze_source_histogram':
+            from core.analysis_agent.source_histogram import valid_call
+            return valid_call(self,current,call.get('args') or {})
         from core.analysis_agent.extension_evidence import valid_call
         extension=valid_call(self.context,current,call) if self.context else None
         if extension is not None:return extension
@@ -4486,9 +4571,10 @@ class RecoveryMiddleware(AgentMiddleware):
                 and bool(args.get('fresh'))==bool(current.get('fresh_source_required'))
                 and self._scope_valid('SELECT * FROM data'+(' WHERE '+args['where_sql'] if args.get('where_sql') else ''),current))
         if call.get('name')=='query_databricks' and current.get('row_preview_spec'):
-            from core.analysis_agent.row_preview import valid_plan
+            from core.analysis_agent.row_preview import valid_plan,matches_plan
             args=call.get('args',{})
-            return (args==current.get('row_preview_plan') and valid_plan(self.context,current,args)
+            return (matches_plan(self.context,args,current.get('row_preview_plan') or {})
+                    and valid_plan(self.context,current,args)
                     and self._scope_valid(args.get('query',''),current))
         if current.get('value_list_requested') and call.get('name')=='inspect_value_list':
             from core.analysis_agent.value_list import target
@@ -4533,7 +4619,7 @@ class RecoveryMiddleware(AgentMiddleware):
             return call.get('name') in {'list_analysis_context', 'inspect_table_context', 'search_analysis_tools'}
         if current.get('histogram_bins') is not None and call.get('name') in {
                 'render_chart_spec','render_histogram','prepare_histogram','recommend_chart_images'}:
-            if (call.get('name') != 'render_chart_spec'
+            if (call.get('name') not in {'render_chart_spec','render_histogram'}
                     or call.get('args',{}).get('bins',20) != current['histogram_bins']):
                 current['scope_error']='histogram_bins_mismatch'
                 return False
@@ -4544,8 +4630,8 @@ class RecoveryMiddleware(AgentMiddleware):
         if call.get('name') == 'query_databricks' and current.get('catalog_discovery_source'):
             plan = current.get('discovery_plan') or {}
             arguments = call.get('args', {})
-            return bool(plan and all(arguments.get(key) == plan.get(key)
-                                     for key in ('source','query','reason')))
+            from core.analysis_agent.planned_sql import matches_plan
+            return bool(plan and matches_plan(self.context,arguments,plan))
         if call.get('name') == 'query_databricks' and current.get('metadata_query_plan'):
             plan = current['metadata_query_plan']
             args = call.get('args', {})
@@ -4732,6 +4818,9 @@ class RecoveryMiddleware(AgentMiddleware):
         if not messages or not isinstance(messages[-1], AIMessage): return None
         last = messages[-1]
         current, calls = self._state(state)
+        if current.get('intent_origin')=='llm':
+            from core.analysis_agent.action_cycle import record
+            record(self,current,last)
         from core.analysis_agent.remote_completion import deferred_execution_claim
         if not last.tool_calls:
             current['unverified_execution_claim'] = deferred_execution_claim(last.content)
@@ -4779,7 +4868,7 @@ class RecoveryMiddleware(AgentMiddleware):
             rescued = self._budget_local_rescue(current, calls, last=last)
             if rescued: return rescued
             return self._finish(current, last, reason)
-        if last.tool_calls and remote_block and any(c['name'] == 'query_databricks' for c in last.tool_calls):
+        if last.tool_calls and remote_block and any(c['name'] in {'query_databricks','analyze_source_histogram'} for c in last.tool_calls):
             return self._finish(current, last, 'remote_blocked')
         repaired=self._reject_repeated_local_failure(current,last)
         if repaired:return self._finish(current,last,reason) if final_model_tools else repaired
@@ -4796,7 +4885,7 @@ class RecoveryMiddleware(AgentMiddleware):
             revised = self._recheck_numeric_scope(current)
             if not revised or any(not self._proposed_scope_valid(call, current) for call in last.tool_calls):
                 return self._reject_scope_call(current, last)
-        if current.get('plan') and not remote_block:
+        if current.get('intent_origin')!='llm' and current.get('plan') and not remote_block:
             plan = current['plan']
             if current.get('query_seen') != current.get('plan_call'):
                 if not self._scope_valid(plan['query'], current, plan['value_column']):

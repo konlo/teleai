@@ -170,8 +170,9 @@ def resolve_table_context(reference_context, datasets, table):
     if requested in known_sources:
         wanted = requested
     else:
+        parts=requested.split('.')
         short_matches = {source for source in known_sources
-                         if source.rsplit('.', 1)[-1] == requested.rsplit('.', 1)[-1]}
+                         if source.split('.')[-len(parts):] == parts}
         if len(short_matches) != 1:
             return {'status':'needs_context',
                     'message':'저장된 테이블 정보가 없거나 짧은 이름이 모호합니다. catalog.schema.table 전체 이름을 지정하세요.'}

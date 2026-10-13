@@ -169,8 +169,20 @@ class AzureDatabricksServiceTests(unittest.TestCase):
             requests.append(payload)
             self.assertEqual(request.url.host, 'azure.example.invalid')
             self.assertIn('/deployments/fixture-deployment/', request.url.path)
+            from tests.action_cycle_http_fixture import action_response
+            action=action_response(payload)
+            if action is not None:return action
             self.assertEqual(payload['response_format'], {'type':'json_object'})
             response=plan
+            if any('intent_plan_outline_v2:' in str(m.get('content')) for m in payload['messages']):
+                response={'mode':'execute','objective':'show rows','question':'','steps':[{
+                    'id':'s1','request_quote':'catalog.lab.observations table row 10개 보여줘',
+                    'depends_on':[],'capability':'row_preview','grouped':False,'scope_change':'keep'}]}
+            if any('intent_plan_v2:' in str(m.get('content')) for m in payload['messages']):
+                from tests.test_intent_task_scopes import step,plan as scoped_plan
+                response=scoped_plan([step('s1','row_preview',{'limit':10},quote='catalog.lab.observations table row 10개 보여줘')])
+                response['steps'][0]['goal']={k:v for k,v in {**plan,'source_reference':'explicit'}.items()
+                    if k in ('sources','columns','source_reference','fresh_source_required','tasks')}
             if any('decision_evidence is an OBJECT' in str(m.get('content')) for m in payload['messages']):
                 from core.analysis_agent.goal_grounding import required_paths
                 response={**plan,'decision_evidence':{p:{'origin':'request',
@@ -179,12 +191,15 @@ class AzureDatabricksServiceTests(unittest.TestCase):
             if any('subject_identity_v1' in str(m.get('content')) for m in payload['messages']):
                 response={'candidate_roles':{source:'requested_table','table':'other','row':'other'}}
             if any('population_basis_v1' in str(m.get('content')) for m in payload['messages']):
-                body['choices'][0]['message']['content']=json.dumps({'basis':'source_population','quote':''})
-                return httpx.Response(200,json=body)
+                response={'basis':'source_population','quote':''}
             if any('goal_task_selection_v1' in str(m.get('content')) for m in payload['messages']):
                 response={'mode':'execute','capabilities':['row_preview'],'source_reference':'explicit',
                     'source_mentions':[{'name':source,'quote':source}],
                     'chart_kind':''}
+            if any('population_audit_v1' in str(m.get('content')) for m in payload['messages']):
+                response={'change':'keep','evidence_quote':'','conditions':[],
+                    'any_conditions':[],'removed_columns':[],'included_values':[],
+                    'restriction_review':{'clauses':[],'question':''}}
             return httpx.Response(200, json={'id':'fixture-response','object':'chat.completion',
                 'created':0,'model':'fixture-model','choices':[{'index':0,
                     'message':{'role':'assistant','content':json.dumps(response)}, 'finish_reason':'stop'}]})

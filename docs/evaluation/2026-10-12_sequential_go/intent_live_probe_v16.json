@@ -1,0 +1,296 @@
+{
+  "model": "gemma4:e4b",
+  "goal_model": "gemma4:e4b",
+  "mode": "actual Ollama, isolated synthetic raw data, no remote database",
+  "passed": 0,
+  "total": 1,
+  "cases": [
+    {
+      "id": "filtered_sum",
+      "prompt": "observations에서 reading이 3~8인 것만 합계를 알려줘",
+      "status": "blocked",
+      "text": "요청을 해석한 모델 응답이 실행 계약을 충족하지 못해 분석 도구 실행 전에 중단했습니다. (오류 ID: fdc68520d8fc) 기존 데이터와 결과는 보존했습니다.",
+      "seconds": 12.058,
+      "goal": null,
+      "model_calls": 2,
+      "goal_error": "source_scope means clearing ALL filters and cannot accompany value/time predicates. All matching rows with a condition is predicate, not source_scope. Reread CURRENT.",
+      "result": null,
+      "pass": false,
+      "diagnostics": [
+        {
+          "time": "2026-10-12T15:39:38.419125+00:00",
+          "event": "dataset_selected",
+          "run_id": null,
+          "instance_id": "e5fe6240ea99",
+          "pid": 51105,
+          "dataset_id": "8fc52ee8-b7fd-4ddc-aae9-6f2f0a20fa9e",
+          "root_id": "8fc52ee8-b7fd-4ddc-aae9-6f2f0a20fa9e",
+          "role": "root",
+          "source": "lab.observations"
+        },
+        {
+          "time": "2026-10-12T15:39:38.419698+00:00",
+          "event": "run_started",
+          "run_id": "fff33fdb3cac41518b67c033c08f3fb7",
+          "instance_id": "e5fe6240ea99",
+          "pid": 51105,
+          "runtime": {
+            "revision_at_first_runtime": "e947a03f923faf2de2eb6be9774e8766547b0924",
+            "packages": {
+              "langchain": "1.4.0",
+              "langchain-core": "1.6.2",
+              "langgraph": "1.2.11",
+              "streamlit": "1.63.0",
+              "sqlglot": "30.18.0"
+            },
+            "python_version": "3.11.13",
+            "identity_captured_at": "2026-10-12T15:39:38.318816+00:00",
+            "route": "langgraph-v1",
+            "model_class": "ChatOllama",
+            "require_remote_approval": false,
+            "loaded_delivery_guard": "d7ad371a60b6e59b",
+            "data_backend": "mysql",
+            "intent_mode": "llm",
+            "goal_version": 1,
+            "goal_model": "gemma4:e4b",
+            "planner_model": "gemma4:e4b"
+          },
+          "operation": "submit",
+          "process_peak_rss_bytes": 306610176
+        },
+        {
+          "time": "2026-10-12T15:39:38.424887+00:00",
+          "event": "model_inference_admitted",
+          "run_id": "fff33fdb3cac41518b67c033c08f3fb7",
+          "instance_id": "e5fe6240ea99",
+          "pid": 51105,
+          "role": "intent_plan",
+          "call_kind": "auxiliary",
+          "calls_used": 0,
+          "call_limit": 9
+        },
+        {
+          "time": "2026-10-12T15:39:38.425367+00:00",
+          "event": "model_payload_budget",
+          "run_id": "fff33fdb3cac41518b67c033c08f3fb7",
+          "instance_id": "e5fe6240ea99",
+          "pid": 51105,
+          "payload_bytes": 5246,
+          "input_tokens_estimate": null,
+          "input_tokens_upper_bound": 5246,
+          "payload_bytes_before_projection": 5246,
+          "template_headroom": 640,
+          "input_budget_units": 130048,
+          "output_reserved": 1024,
+          "context_window": 131072,
+          "tool_count": 0,
+          "message_count": 1,
+          "older_turns_compacted": false,
+          "within_budget": true,
+          "observations_compacted": false,
+          "schema_compacted": false,
+          "system_catalog_compacted": false,
+          "tool_menu_compacted": false,
+          "minimal_discovery_menu": false,
+          "reasoning_compacted": false,
+          "minimal_catalog": false,
+          "builtin_instructions_compacted": false,
+          "repair_history_compacted": false,
+          "components": {
+            "system_bytes": 2281,
+            "message_content_bytes": 2661,
+            "tool_calls_bytes": 0,
+            "reasoning_bytes": 0,
+            "tool_schema_bytes": 0,
+            "tool_names": []
+          },
+          "measurement": "conservative_utf8_token_upper_bound"
+        },
+        {
+          "time": "2026-10-12T15:39:46.399030+00:00",
+          "event": "model_inference_succeeded",
+          "run_id": "fff33fdb3cac41518b67c033c08f3fb7",
+          "instance_id": "e5fe6240ea99",
+          "pid": 51105,
+          "role": "intent_plan",
+          "elapsed_seconds": 7.974
+        },
+        {
+          "time": "2026-10-12T15:39:46.400485+00:00",
+          "event": "intent_outline_observed",
+          "run_id": "fff33fdb3cac41518b67c033c08f3fb7",
+          "instance_id": "e5fe6240ea99",
+          "pid": 51105,
+          "request_id": "dc2440da41bb4d32830a09e1ebdacb8d",
+          "mode": "execute",
+          "step_shapes": [
+            {
+              "grouped": false,
+              "restriction_kinds": [
+                "predicate",
+                "source_scope"
+              ]
+            }
+          ]
+        },
+        {
+          "time": "2026-10-12T15:39:46.400844+00:00",
+          "event": "intent_outline_rejected",
+          "run_id": "fff33fdb3cac41518b67c033c08f3fb7",
+          "instance_id": "e5fe6240ea99",
+          "pid": 51105,
+          "request_id": "dc2440da41bb4d32830a09e1ebdacb8d",
+          "attempt": 1,
+          "detail": "source_scope means clearing ALL filters and cannot accompany value/time predicates. All matching rows with a condition is predicate, not source_scope. Reread CURRENT."
+        },
+        {
+          "time": "2026-10-12T15:39:46.401142+00:00",
+          "event": "model_inference_admitted",
+          "run_id": "fff33fdb3cac41518b67c033c08f3fb7",
+          "instance_id": "e5fe6240ea99",
+          "pid": 51105,
+          "role": "intent_plan",
+          "call_kind": "auxiliary",
+          "calls_used": 1,
+          "call_limit": 9
+        },
+        {
+          "time": "2026-10-12T15:39:46.401569+00:00",
+          "event": "model_payload_budget",
+          "run_id": "fff33fdb3cac41518b67c033c08f3fb7",
+          "instance_id": "e5fe6240ea99",
+          "pid": 51105,
+          "payload_bytes": 5440,
+          "input_tokens_estimate": null,
+          "input_tokens_upper_bound": 5440,
+          "payload_bytes_before_projection": 5440,
+          "template_headroom": 640,
+          "input_budget_units": 130048,
+          "output_reserved": 1024,
+          "context_window": 131072,
+          "tool_count": 0,
+          "message_count": 1,
+          "older_turns_compacted": false,
+          "within_budget": true,
+          "observations_compacted": false,
+          "schema_compacted": false,
+          "system_catalog_compacted": false,
+          "tool_menu_compacted": false,
+          "minimal_discovery_menu": false,
+          "reasoning_compacted": false,
+          "minimal_catalog": false,
+          "builtin_instructions_compacted": false,
+          "repair_history_compacted": false,
+          "components": {
+            "system_bytes": 2281,
+            "message_content_bytes": 2851,
+            "tool_calls_bytes": 0,
+            "reasoning_bytes": 0,
+            "tool_schema_bytes": 0,
+            "tool_names": []
+          },
+          "measurement": "conservative_utf8_token_upper_bound"
+        },
+        {
+          "time": "2026-10-12T15:39:50.464526+00:00",
+          "event": "model_inference_succeeded",
+          "run_id": "fff33fdb3cac41518b67c033c08f3fb7",
+          "instance_id": "e5fe6240ea99",
+          "pid": 51105,
+          "role": "intent_plan",
+          "elapsed_seconds": 4.063
+        },
+        {
+          "time": "2026-10-12T15:39:50.466430+00:00",
+          "event": "intent_outline_observed",
+          "run_id": "fff33fdb3cac41518b67c033c08f3fb7",
+          "instance_id": "e5fe6240ea99",
+          "pid": 51105,
+          "request_id": "dc2440da41bb4d32830a09e1ebdacb8d",
+          "mode": "execute",
+          "step_shapes": [
+            {
+              "grouped": false,
+              "restriction_kinds": [
+                "predicate",
+                "source_scope"
+              ]
+            }
+          ]
+        },
+        {
+          "time": "2026-10-12T15:39:50.466800+00:00",
+          "event": "intent_outline_rejected",
+          "run_id": "fff33fdb3cac41518b67c033c08f3fb7",
+          "instance_id": "e5fe6240ea99",
+          "pid": 51105,
+          "request_id": "dc2440da41bb4d32830a09e1ebdacb8d",
+          "attempt": 2,
+          "detail": "source_scope means clearing ALL filters and cannot accompany value/time predicates. All matching rows with a condition is predicate, not source_scope. Reread CURRENT."
+        },
+        {
+          "time": "2026-10-12T15:39:50.468780+00:00",
+          "event": "error",
+          "run_id": "fff33fdb3cac41518b67c033c08f3fb7",
+          "instance_id": "e5fe6240ea99",
+          "pid": 51105,
+          "error_category": null,
+          "error_id": "fdc68520d8fc",
+          "stage": "intent_plan_validation",
+          "error_type": "ValueError",
+          "attempt_budget": null,
+          "database_errno": null,
+          "os_errno": null,
+          "winerror": null,
+          "http_status": null,
+          "frames": [
+            {
+              "file": "goal_interpreter.py",
+              "line": 385,
+              "function": "interpret"
+            },
+            {
+              "file": "intent_plan.py",
+              "line": 331,
+              "function": "interpret"
+            }
+          ]
+        },
+        {
+          "time": "2026-10-12T15:39:50.468863+00:00",
+          "event": "goal_interpretation_failed",
+          "run_id": "fff33fdb3cac41518b67c033c08f3fb7",
+          "instance_id": "e5fe6240ea99",
+          "pid": 51105,
+          "request_id": "dc2440da41bb4d32830a09e1ebdacb8d",
+          "error_id": "fdc68520d8fc",
+          "stage": "intent_plan_validation",
+          "reason": "output_contract_unverified",
+          "database_tool_dispatched": false
+        },
+        {
+          "time": "2026-10-12T15:39:50.474290+00:00",
+          "event": "run_completed",
+          "run_id": "fff33fdb3cac41518b67c033c08f3fb7",
+          "instance_id": "e5fe6240ea99",
+          "pid": 51105,
+          "status": "blocked",
+          "elapsed_seconds": 12.054,
+          "process_peak_rss_bytes": 307232768,
+          "frame_cache_bytes": 0
+        },
+        {
+          "time": "2026-10-12T15:39:50.474379+00:00",
+          "event": "turn_slo",
+          "run_id": "fff33fdb3cac41518b67c033c08f3fb7",
+          "instance_id": "e5fe6240ea99",
+          "pid": 51105,
+          "elapsed_seconds": 12.054,
+          "limit": 180.0,
+          "status": "ok"
+        }
+      ],
+      "stop_reason": "goal_unverified"
+    }
+  ]
+}

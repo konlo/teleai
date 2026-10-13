@@ -16,7 +16,8 @@ class BadNullAudit(GoalModel):
         current=json.loads(next(m.content for m in messages if isinstance(m.content,str) and m.content.startswith('{')))
         value={'change':'modify','evidence_quote':current['CURRENT_USER_REQUEST'],
             'included_values':[],'removed_columns':[],
-            'conditions':[{'column':'reading','op':'is_null','value':None}],'any_conditions':[]}
+            'conditions':[{'column':'reading','op':'is_null','value':None}],'any_conditions':[],
+            'restriction_review':{'clauses':[],'question':''}}
         return ChatResult(generations=[ChatGeneration(message=AIMessage(content=json.dumps(value)))])
 
 class PopulationNullAuthorityTests(unittest.TestCase):

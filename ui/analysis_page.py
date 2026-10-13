@@ -185,15 +185,19 @@ for message in messages:
             content=message.content
             if isinstance(content,str) and content.startswith('선택한 차트:'):content=content.split(', dataset_id=')[0]
             st.markdown(display_analysis_text(content,runtime.datasets.metadata))
-            table_proof=message.additional_kwargs.get('analysis_table_preview')
-            if isinstance(message,AIMessage) and table_proof:
+            table_proofs=message.additional_kwargs.get('analysis_table_previews')
+            if table_proofs is None:
+                proof=message.additional_kwargs.get('analysis_table_preview')
+                table_proofs=[proof] if proof else []
+            if isinstance(message,AIMessage) and table_proofs:
                 from core.analysis_agent.row_preview import frame as table_preview_frame
-                try:
-                    st.dataframe(table_preview_frame(runtime.datasets,table_proof),hide_index=True)
-                    shown_table_preview=True
-                except (KeyError,ValueError,OSError,TypeError) as exc:
-                    error_id=runtime.diagnostics.failure(exc,stage='table_preview_display')
-                    st.error(f'표 데이터를 표시하지 못했습니다 (오류 ID: {error_id}). 저장된 결과를 확인해야 합니다.')
+                for table_proof in table_proofs:
+                    try:
+                        st.dataframe(table_preview_frame(runtime.datasets,table_proof),hide_index=True)
+                        shown_table_preview=True
+                    except (KeyError,ValueError,OSError,TypeError) as exc:
+                        error_id=runtime.diagnostics.failure(exc,stage='table_preview_display')
+                        st.error(f'표 데이터를 표시하지 못했습니다 (오류 ID: {error_id}). 저장된 결과를 확인해야 합니다.')
     references=[key for key in chart_plan.get(message.id,[]) if key not in shown_chart_ids]
     if references:
         with st.chat_message('assistant'):

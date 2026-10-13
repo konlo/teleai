@@ -10,15 +10,37 @@ import tempfile
 import unittest
 from unittest.mock import patch
 from uuid import uuid4
+from types import SimpleNamespace
 
 import pandas as pd
 
 from langchain_core.language_models.chat_models import BaseChatModel
-from langchain_core.messages import AIMessage
+from langchain_core.messages import AIMessage, ToolMessage
 from langchain_core.outputs import ChatGeneration, ChatResult
 
 from scripts.evaluate_analysis_agent import (evaluate_case, evaluation_exit_status, fixture_reference_context,
-                                            load_frames, load_grading, load_specs, reference_oracle)
+                                            load_frames, load_grading, load_specs, reference_oracle,
+                                            grade_evidence)
+
+
+class MetadataInspectionPathTests(unittest.TestCase):
+    def test_metadata_inspection_newpath_still_checks_physical_source_and_columns(self):
+        for tool in ('inspect_table_context', 'inspect_live_schema'):
+            for table,columns,status,expected in (
+                ('lab.events',['metric','time'],'ready','PASS'),
+                ('other.events',['metric','time'],'ready','FAIL'),
+                ('lab.events',['metric'],'ready','FAIL'),
+                ('lab.events',['metric','time'],'unavailable','FAIL')):
+                with self.subTest(tool=tool,table=table,columns=columns,status=status):
+                    message=ToolMessage(name=tool,tool_call_id='observed',content=json.dumps({
+                        'status':status,'table_context':{'table':table,'columns':[
+                            {'name':name,'dtype':'int64'} for name in columns]}}))
+                    runtime=SimpleNamespace(events=lambda:[message],inspect=lambda:{
+                        'state':'idle','recovery':{'status':'complete'}})
+                    result=grade_evidence(runtime,{'status':'answered'},
+                        {'target_table':'lab.events'},{'kind':'metadata_columns'},
+                        ['metric','time'],None,None)
+                    self.assertEqual(result[0],expected,result)
 
 
 class EvaluationModel(BaseChatModel):

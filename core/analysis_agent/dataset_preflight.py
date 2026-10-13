@@ -4,10 +4,15 @@ def unknown_dataset_error(call, context):
     if context is None:
         return None
     arguments = call.get('args') or {}
+    source_alias=(call.get('name')=='prepare_histogram'
+        and not arguments.get('current_result_only')
+        and isinstance(arguments.get('source'),str)
+        and arguments.get('dataset_id')==arguments.get('source'))
     invalid = {key: value for key, value in arguments.items()
                if (key == 'dataset_id' or key.endswith('_dataset_id'))
                and isinstance(value, str) and value
-               and value not in context.datasets.metadata}
+               and value not in context.datasets.metadata
+               and not (source_alias and key=='dataset_id')}
     if not invalid:
         return None
     candidates = [{'dataset_id': info.id, 'source': info.source,

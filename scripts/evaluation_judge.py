@@ -3,6 +3,40 @@ import os
 from pathlib import Path
 
 
+def make_bounded_native_judge(model=None, timeout=60):
+    """Native local judge; no reasoning stream, logprob claim or secret/API key.
+
+    DeepEval's installed Ollama model catalog predates Gemma4. Explicit
+    capabilities avoid guessing support from that static catalog. Official
+    GEval remains unchanged; this adapter returns its schema and zero local cost.
+    """
+    from deepeval.models import OllamaModel
+    name=model or 'gemma4:e4b'
+
+    class BoundedJudge(OllamaModel):
+        def supports_log_probs(self):return False
+        def supports_temperature(self):return True
+        def supports_multimodal(self):return False
+        def supports_structured_outputs(self):return True
+        def supports_json_mode(self):return True
+        def arguments(self,prompt,schema):
+            if len(prompt.encode('utf-8'))+1024>8192:
+                raise ValueError('Judge input upper bound exceeds reserved context')
+            return dict(model=self.name,messages=[{'role':'user','content':prompt}],
+                format=schema.model_json_schema() if schema else None,think=False,
+                options={'temperature':0,'num_ctx':8192,'num_predict':1024})
+        def generate(self,prompt,schema=None):
+            response=self.load_model().chat(**self.arguments(prompt,schema))
+            return (schema.model_validate_json(response.message.content) if schema
+                else response.message.content),0
+        async def a_generate(self,prompt,schema=None):
+            response=await self.load_model(async_mode=True).chat(**self.arguments(prompt,schema))
+            return (schema.model_validate_json(response.message.content) if schema
+                else response.message.content),0
+
+    return BoundedJudge(model=name,base_url='http://localhost:11434',timeout=timeout),name
+
+
 def make_judge(provider, model=None, timeout=45):
     from deepeval.models import OpenAIModel
     if provider=='ollama':

@@ -1,0 +1,1303 @@
+{
+  "time_utc": "2026-10-11T01:58:42.888348+00:00",
+  "scope": "LLM action authority; internal contracts and actual targeted UI journey, not official benchmark or release GO",
+  "conversation": "447563e5-f4bc-46b9-bf75-629b4b6225db",
+  "provider": "ollama",
+  "model": "gemma4:e4b",
+  "data_backend": "databricks",
+  "native_database_types": "NOT_VERIFIED; result type labeling corrected",
+  "working_tree_hashes": {
+    "core/analysis_agent/action_cycle.py": "8d8b1d656f41980b6bdb3c9f0ab1b59cb501fcfd9cd11a0c499b8de63e64f5fd",
+    "core/analysis_agent/recovery.py": "90da9deab513506a348e1f193bb6f2685360941073b0e40f5f9e4e8483df14e1",
+    "core/analysis_agent/model_context.py": "9ca6ba923b6101e867994a044d0997ad38e96d9d2aced7defe720d6863f86d49",
+    "core/analysis_agent/planned_sql.py": "815a283ff358d1e46f4a580063d1ab71c1ddc00a29cd95480325b16f37c179bb",
+    "core/analysis_runtime_tools.py": "459bddff13e41114dc16d5f0179ea18226bfdb46069364f4afa2f1ed0a21cadd",
+    "utils/analysis_charts.py": "fe99046393d91f856b5d60f10cc012d914fc5d5a80d3ba9594276a44b975260e"
+  },
+  "verification": {
+    "chart_kind": "histogram",
+    "axis": "longitude",
+    "dataset_rows": 10,
+    "valid_values": 10,
+    "bin_count": 20,
+    "frequency_sum": 10,
+    "independent_bin_counts_match": true,
+    "legend_labels": [
+      "longitude"
+    ],
+    "png_verified": true,
+    "png_sha256": "978439c3e97ca8998ee172ad32066cf9ab570b98ead0f41864a8f2e2062f956f",
+    "original_payloads_checked": 2,
+    "original_payloads_unchanged": true,
+    "selection_unchanged": true,
+    "chart_source_dataset_is_ten_row_receipt": true
+  },
+  "tests": [
+    {
+      "scope": "full regression before final planned-SQL and raw-chart fixes",
+      "passed": 908,
+      "skipped": 4,
+      "subtests": 703,
+      "seconds": 271.42
+    },
+    {
+      "scope": "planned SQL source/limit/reason normalization, backend wire contracts",
+      "passed": 35,
+      "subtests": 34,
+      "seconds": 4.74
+    },
+    {
+      "scope": "final raw chart presentation, rejection observation and action/context/provider regressions",
+      "passed": 78,
+      "subtests": 25,
+      "seconds": 26.26
+    },
+    {
+      "scope": "final observation copy and chart preflight contracts",
+      "passed": 8,
+      "seconds": 9.42
+    }
+  ],
+  "runs": [
+    {
+      "report": {
+        "report_version": 1,
+        "found": true,
+        "run_id": "c0e8f41f1a124a358e0ad7af843ecdc9",
+        "log_integrity": {
+          "malformed_lines": 0,
+          "bounded_read": false,
+          "unreadable_files": 0
+        },
+        "time_utc": "2026-10-11T01:16:19.986984+00:00",
+        "instance_id": "b9b340e268ab",
+        "pid": 25652,
+        "runtime": {
+          "route": "langgraph-v1",
+          "model_class": "ChatOllama",
+          "goal_model": "gemma4:e4b",
+          "planner_model": "gemma4:e4b",
+          "data_backend": "databricks",
+          "revision_at_first_runtime": "e947a03f923faf2de2eb6be9774e8766547b0924",
+          "loaded_delivery_guard": "598a61a2f1c46267",
+          "require_remote_approval": false,
+          "python_version": "3.11.13",
+          "packages": {
+            "langchain": "1.4.0",
+            "langchain-core": "1.6.2",
+            "langgraph": "1.2.11",
+            "streamlit": "1.63.0",
+            "sqlglot": "30.18.0"
+          }
+        },
+        "status": "exhausted",
+        "elapsed_seconds": 269.514,
+        "last_event": "turn_slo",
+        "flags": [
+          "AGENT_NOT_COMPLETED"
+        ],
+        "model_calls": 4,
+        "inference_roles": {
+          "subject_identity": 1,
+          "task_selection": 1,
+          "measure_selection": 1,
+          "metadata_selection": 1,
+          "goal_interpreter": 2,
+          "agent": 4
+        },
+        "subject_decisions_reused": 0,
+        "population_audit": {
+          "rejections": 0,
+          "error_codes": {},
+          "conflicts": {},
+          "completed": 0
+        },
+        "restriction_review": {
+          "clarifications": 0,
+          "reference_repairs": 0,
+          "answer_bindings": 0,
+          "period_resolutions": 0,
+          "date_placeholder_repairs": 0
+        },
+        "action_cycle": {
+          "observations": 4,
+          "choices": 4,
+          "after_failure": 3
+        },
+        "input_budget": {
+          "payload_bytes": 21684,
+          "payload_bytes_before_projection": 21684,
+          "template_headroom": 2176,
+          "input_budget_units": 126976,
+          "output_reserved": 4096,
+          "context_window": 131072,
+          "tool_count": 9,
+          "message_count": 7,
+          "input_tokens_estimate": null,
+          "input_tokens_upper_bound": 21684,
+          "within_budget": true,
+          "older_turns_compacted": false,
+          "schema_compacted": false,
+          "system_catalog_compacted": false,
+          "tool_menu_compacted": false,
+          "minimal_discovery_menu": false,
+          "reasoning_compacted": false,
+          "observations_compacted": false,
+          "minimal_catalog": false,
+          "builtin_instructions_compacted": false,
+          "components": {
+            "system_bytes": 8015,
+            "message_content_bytes": 6735,
+            "tool_calls_bytes": 536,
+            "reasoning_bytes": 1088,
+            "tool_schema_bytes": 3807,
+            "tool_names": [
+              "search_analysis_tools",
+              "resolve_analysis_intent",
+              "resolve_analysis_operation",
+              "list_analysis_context",
+              "read_analysis_skill",
+              "inspect_table_context",
+              "inspect_dataset",
+              "get_analysis_tool_contract",
+              "query_databricks"
+            ]
+          },
+          "measurement": "conservative_utf8_token_upper_bound"
+        },
+        "proposed_tool_calls": 2,
+        "local_tools_started": {
+          "inspect_table_context": 1
+        },
+        "local_tools_rejected": {},
+        "last_tool_events": [
+          {
+            "event": "tool_started",
+            "tool": "inspect_table_context",
+            "status": null,
+            "error_code": null,
+            "ledger_status": null
+          },
+          {
+            "event": "tool_completed",
+            "tool": "inspect_table_context",
+            "status": null,
+            "error_code": null,
+            "ledger_status": null
+          },
+          {
+            "event": "remote_query_started",
+            "tool": null,
+            "status": null,
+            "error_code": null,
+            "ledger_status": "auto_authorized"
+          },
+          {
+            "event": "remote_query_finished",
+            "tool": null,
+            "status": "ready",
+            "error_code": null,
+            "ledger_status": "completed"
+          }
+        ],
+        "remote": {
+          "started": 1,
+          "finished": 1,
+          "states": {
+            "completed": 1
+          },
+          "cached_receipts": 0
+        },
+        "completion": {
+          "status": "exhausted",
+          "reason": "model_call_budget",
+          "required_capabilities": [
+            "remote_query",
+            "metadata"
+          ],
+          "missing_capabilities": [
+            "metadata"
+          ],
+          "attempts": 1
+        },
+        "recovery_replans": 1,
+        "deferred_reply_blocks": 0,
+        "error_count": 0,
+        "errors": []
+      },
+      "actions": [
+        {
+          "event": "model_action_selected",
+          "observation_id": "56681fd8d309874a2a8e26b8b5ec7b0ae6c30187162676c07335f3bd174581ad",
+          "tools": [
+            "inspect_table_context"
+          ],
+          "choice_count": 1,
+          "observed_failure_count": 0
+        },
+        {
+          "event": "model_action_selected",
+          "observation_id": "db6539b3434dc41b746dbc475c5641130447b1a00ce1b9ceeb1d8d8d98b72c8d",
+          "tools": [
+            "query_databricks"
+          ],
+          "choice_count": 1,
+          "observed_failure_count": 1
+        },
+        {
+          "event": "model_action_selected",
+          "observation_id": "016156ad2d03f4c1057db7defe87c1c482eaef452f95ec80055b9985a1920eca",
+          "tools": [],
+          "choice_count": 0,
+          "observed_failure_count": 1
+        },
+        {
+          "event": "model_action_selected",
+          "observation_id": "016156ad2d03f4c1057db7defe87c1c482eaef452f95ec80055b9985a1920eca",
+          "tools": [],
+          "choice_count": 0,
+          "observed_failure_count": 1
+        }
+      ]
+    },
+    {
+      "report": {
+        "report_version": 1,
+        "found": true,
+        "run_id": "17b6aac104154ff59ce4d974cf940297",
+        "log_integrity": {
+          "malformed_lines": 0,
+          "bounded_read": false,
+          "unreadable_files": 0
+        },
+        "time_utc": "2026-10-11T01:22:22.523756+00:00",
+        "instance_id": "c43b86884b72",
+        "pid": 26004,
+        "runtime": {
+          "route": "langgraph-v1",
+          "model_class": "ChatOllama",
+          "goal_model": "gemma4:e4b",
+          "planner_model": "gemma4:e4b",
+          "data_backend": "databricks",
+          "revision_at_first_runtime": "e947a03f923faf2de2eb6be9774e8766547b0924",
+          "loaded_delivery_guard": "d7ad371a60b6e59b",
+          "require_remote_approval": false,
+          "python_version": "3.11.13",
+          "packages": {
+            "langchain": "1.4.0",
+            "langchain-core": "1.6.2",
+            "langgraph": "1.2.11",
+            "streamlit": "1.63.0",
+            "sqlglot": "30.18.0"
+          }
+        },
+        "status": "answered",
+        "elapsed_seconds": 101.205,
+        "last_event": "turn_slo",
+        "flags": [],
+        "model_calls": 1,
+        "inference_roles": {
+          "subject_identity": 1,
+          "task_selection": 1,
+          "measure_selection": 1,
+          "metadata_selection": 1,
+          "goal_interpreter": 2,
+          "agent": 1
+        },
+        "subject_decisions_reused": 0,
+        "population_audit": {
+          "rejections": 0,
+          "error_codes": {},
+          "conflicts": {},
+          "completed": 0
+        },
+        "restriction_review": {
+          "clarifications": 0,
+          "reference_repairs": 0,
+          "answer_bindings": 0,
+          "period_resolutions": 0,
+          "date_placeholder_repairs": 0
+        },
+        "action_cycle": {
+          "observations": 1,
+          "choices": 1,
+          "after_failure": 0
+        },
+        "input_budget": {
+          "payload_bytes": 23385,
+          "payload_bytes_before_projection": 23385,
+          "template_headroom": 2304,
+          "input_budget_units": 126976,
+          "output_reserved": 4096,
+          "context_window": 131072,
+          "tool_count": 9,
+          "message_count": 9,
+          "input_tokens_estimate": null,
+          "input_tokens_upper_bound": 23385,
+          "within_budget": true,
+          "older_turns_compacted": false,
+          "schema_compacted": false,
+          "system_catalog_compacted": false,
+          "tool_menu_compacted": false,
+          "minimal_discovery_menu": false,
+          "reasoning_compacted": false,
+          "observations_compacted": false,
+          "minimal_catalog": false,
+          "builtin_instructions_compacted": false,
+          "components": {
+            "system_bytes": 6703,
+            "message_content_bytes": 7106,
+            "tool_calls_bytes": 536,
+            "reasoning_bytes": 3696,
+            "tool_schema_bytes": 3807,
+            "tool_names": [
+              "search_analysis_tools",
+              "resolve_analysis_intent",
+              "resolve_analysis_operation",
+              "list_analysis_context",
+              "read_analysis_skill",
+              "inspect_table_context",
+              "inspect_dataset",
+              "get_analysis_tool_contract",
+              "query_databricks"
+            ]
+          },
+          "measurement": "conservative_utf8_token_upper_bound"
+        },
+        "proposed_tool_calls": 1,
+        "local_tools_started": {
+          "inspect_table_context": 1
+        },
+        "local_tools_rejected": {},
+        "last_tool_events": [
+          {
+            "event": "tool_started",
+            "tool": "inspect_table_context",
+            "status": null,
+            "error_code": null,
+            "ledger_status": null
+          },
+          {
+            "event": "tool_completed",
+            "tool": "inspect_table_context",
+            "status": "ready",
+            "error_code": null,
+            "ledger_status": null
+          }
+        ],
+        "remote": {
+          "started": 0,
+          "finished": 0,
+          "states": {},
+          "cached_receipts": 0
+        },
+        "completion": {
+          "status": null,
+          "reason": null,
+          "required_capabilities": [
+            "metadata"
+          ],
+          "missing_capabilities": [],
+          "attempts": 0
+        },
+        "recovery_replans": 0,
+        "deferred_reply_blocks": 0,
+        "error_count": 0,
+        "errors": []
+      },
+      "actions": [
+        {
+          "event": "model_action_selected",
+          "observation_id": "8264fd796f5e0a9fedf9deed5d40839767fee30f8e4412aeea89b051c5095a7b",
+          "tools": [
+            "inspect_table_context"
+          ],
+          "choice_count": 1,
+          "observed_failure_count": 0
+        }
+      ]
+    },
+    {
+      "report": {
+        "report_version": 1,
+        "found": true,
+        "run_id": "8240ea4c6f7c4c09b49bf4176694cc93",
+        "log_integrity": {
+          "malformed_lines": 0,
+          "bounded_read": false,
+          "unreadable_files": 0
+        },
+        "time_utc": "2026-10-11T01:28:00.065751+00:00",
+        "instance_id": "cc9965fa2760",
+        "pid": 26254,
+        "runtime": {
+          "route": "langgraph-v1",
+          "model_class": "ChatOllama",
+          "goal_model": "gemma4:e4b",
+          "planner_model": "gemma4:e4b",
+          "data_backend": "databricks",
+          "revision_at_first_runtime": "e947a03f923faf2de2eb6be9774e8766547b0924",
+          "loaded_delivery_guard": "d7ad371a60b6e59b",
+          "require_remote_approval": false,
+          "python_version": "3.11.13",
+          "packages": {
+            "langchain": "1.4.0",
+            "langchain-core": "1.6.2",
+            "langgraph": "1.2.11",
+            "streamlit": "1.63.0",
+            "sqlglot": "30.18.0"
+          }
+        },
+        "status": "exhausted",
+        "elapsed_seconds": 216.006,
+        "last_event": "turn_slo",
+        "flags": [
+          "AGENT_NOT_COMPLETED"
+        ],
+        "model_calls": 2,
+        "inference_roles": {
+          "subject_identity": 1,
+          "task_selection": 1,
+          "population_basis": 1,
+          "goal_interpreter": 2,
+          "population_audit": 1,
+          "agent": 2
+        },
+        "subject_decisions_reused": 0,
+        "population_audit": {
+          "rejections": 0,
+          "error_codes": {},
+          "conflicts": {},
+          "completed": 1
+        },
+        "restriction_review": {
+          "clarifications": 0,
+          "reference_repairs": 0,
+          "answer_bindings": 0,
+          "period_resolutions": 0,
+          "date_placeholder_repairs": 0
+        },
+        "action_cycle": {
+          "observations": 2,
+          "choices": 2,
+          "after_failure": 0
+        },
+        "input_budget": {
+          "payload_bytes": 33014,
+          "payload_bytes_before_projection": 33014,
+          "template_headroom": 2816,
+          "input_budget_units": 126976,
+          "output_reserved": 4096,
+          "context_window": 131072,
+          "tool_count": 10,
+          "message_count": 15,
+          "input_tokens_estimate": null,
+          "input_tokens_upper_bound": 33014,
+          "within_budget": true,
+          "older_turns_compacted": false,
+          "schema_compacted": false,
+          "system_catalog_compacted": false,
+          "tool_menu_compacted": false,
+          "minimal_discovery_menu": false,
+          "reasoning_compacted": false,
+          "observations_compacted": false,
+          "minimal_catalog": false,
+          "builtin_instructions_compacted": false,
+          "components": {
+            "system_bytes": 7474,
+            "message_content_bytes": 11427,
+            "tool_calls_bytes": 840,
+            "reasoning_bytes": 6204,
+            "tool_schema_bytes": 4582,
+            "tool_names": [
+              "prepare_row_preview",
+              "search_analysis_tools",
+              "resolve_analysis_intent",
+              "resolve_analysis_operation",
+              "list_analysis_context",
+              "read_analysis_skill",
+              "inspect_table_context",
+              "inspect_dataset",
+              "get_analysis_tool_contract",
+              "query_databricks"
+            ]
+          },
+          "measurement": "conservative_utf8_token_upper_bound"
+        },
+        "proposed_tool_calls": 2,
+        "local_tools_started": {
+          "prepare_row_preview": 1
+        },
+        "local_tools_rejected": {},
+        "last_tool_events": [
+          {
+            "event": "tool_started",
+            "tool": "prepare_row_preview",
+            "status": null,
+            "error_code": null,
+            "ledger_status": null
+          },
+          {
+            "event": "tool_completed",
+            "tool": "prepare_row_preview",
+            "status": null,
+            "error_code": null,
+            "ledger_status": null
+          }
+        ],
+        "remote": {
+          "started": 0,
+          "finished": 0,
+          "states": {},
+          "cached_receipts": 0
+        },
+        "completion": {
+          "status": "exhausted",
+          "reason": "model_time_budget",
+          "required_capabilities": [
+            "row_preview",
+            "remote_query"
+          ],
+          "missing_capabilities": [
+            "row_preview",
+            "remote_query"
+          ],
+          "attempts": 0
+        },
+        "recovery_replans": 0,
+        "deferred_reply_blocks": 0,
+        "error_count": 0,
+        "errors": []
+      },
+      "actions": [
+        {
+          "event": "model_action_selected",
+          "observation_id": "7f506b0ade8024bec39d5359d0c8c52686ca2c2d8a71841ac7a5eb0020759b3f",
+          "tools": [
+            "prepare_row_preview"
+          ],
+          "choice_count": 1,
+          "observed_failure_count": 0
+        },
+        {
+          "event": "model_action_selected",
+          "observation_id": "06c1f12d05fab92ef18256bfba5942293ecdc80c147720994414ce3a5414f4d1",
+          "tools": [
+            "query_databricks"
+          ],
+          "choice_count": 1,
+          "observed_failure_count": 0
+        }
+      ]
+    },
+    {
+      "report": {
+        "report_version": 1,
+        "found": true,
+        "run_id": "48b5124b936f451882986ca50c9c020f",
+        "log_integrity": {
+          "malformed_lines": 0,
+          "bounded_read": false,
+          "unreadable_files": 0
+        },
+        "time_utc": "2026-10-11T01:33:51.975451+00:00",
+        "instance_id": "f3935328d394",
+        "pid": 26511,
+        "runtime": {
+          "route": "langgraph-v1",
+          "model_class": "ChatOllama",
+          "goal_model": "gemma4:e4b",
+          "planner_model": "gemma4:e4b",
+          "data_backend": "databricks",
+          "revision_at_first_runtime": "e947a03f923faf2de2eb6be9774e8766547b0924",
+          "loaded_delivery_guard": "d7ad371a60b6e59b",
+          "require_remote_approval": false,
+          "python_version": "3.11.13",
+          "packages": {
+            "langchain": "1.4.0",
+            "langchain-core": "1.6.2",
+            "langgraph": "1.2.11",
+            "streamlit": "1.63.0",
+            "sqlglot": "30.18.0"
+          }
+        },
+        "status": "exhausted",
+        "elapsed_seconds": 222.739,
+        "last_event": "turn_slo",
+        "flags": [
+          "AGENT_NOT_COMPLETED"
+        ],
+        "model_calls": 3,
+        "inference_roles": {
+          "subject_identity": 1,
+          "task_selection": 1,
+          "population_basis": 1,
+          "goal_interpreter": 2,
+          "population_audit": 1,
+          "agent": 3
+        },
+        "subject_decisions_reused": 0,
+        "population_audit": {
+          "rejections": 0,
+          "error_codes": {},
+          "conflicts": {},
+          "completed": 1
+        },
+        "restriction_review": {
+          "clarifications": 0,
+          "reference_repairs": 0,
+          "answer_bindings": 0,
+          "period_resolutions": 0,
+          "date_placeholder_repairs": 0
+        },
+        "action_cycle": {
+          "observations": 3,
+          "choices": 3,
+          "after_failure": 0
+        },
+        "input_budget": {
+          "payload_bytes": 18481,
+          "payload_bytes_before_projection": 36716,
+          "template_headroom": 2240,
+          "input_budget_units": 126976,
+          "output_reserved": 4096,
+          "context_window": 131072,
+          "tool_count": 10,
+          "message_count": 6,
+          "input_tokens_estimate": null,
+          "input_tokens_upper_bound": 18481,
+          "within_budget": true,
+          "older_turns_compacted": true,
+          "schema_compacted": false,
+          "system_catalog_compacted": false,
+          "tool_menu_compacted": false,
+          "minimal_discovery_menu": false,
+          "reasoning_compacted": true,
+          "observations_compacted": false,
+          "minimal_catalog": false,
+          "builtin_instructions_compacted": false,
+          "components": {
+            "system_bytes": 7867,
+            "message_content_bytes": 4850,
+            "tool_calls_bytes": 157,
+            "reasoning_bytes": 0,
+            "tool_schema_bytes": 4582,
+            "tool_names": [
+              "prepare_row_preview",
+              "search_analysis_tools",
+              "resolve_analysis_intent",
+              "resolve_analysis_operation",
+              "list_analysis_context",
+              "read_analysis_skill",
+              "inspect_table_context",
+              "inspect_dataset",
+              "get_analysis_tool_contract",
+              "query_databricks"
+            ]
+          },
+          "measurement": "conservative_utf8_token_upper_bound"
+        },
+        "proposed_tool_calls": 3,
+        "local_tools_started": {
+          "prepare_row_preview": 1
+        },
+        "local_tools_rejected": {},
+        "last_tool_events": [
+          {
+            "event": "tool_started",
+            "tool": "prepare_row_preview",
+            "status": null,
+            "error_code": null,
+            "ledger_status": null
+          },
+          {
+            "event": "tool_completed",
+            "tool": "prepare_row_preview",
+            "status": null,
+            "error_code": null,
+            "ledger_status": null
+          }
+        ],
+        "remote": {
+          "started": 0,
+          "finished": 0,
+          "states": {},
+          "cached_receipts": 0
+        },
+        "completion": {
+          "status": "exhausted",
+          "reason": "model_time_budget",
+          "required_capabilities": [
+            "row_preview",
+            "remote_query"
+          ],
+          "missing_capabilities": [
+            "row_preview",
+            "remote_query"
+          ],
+          "attempts": 1
+        },
+        "recovery_replans": 0,
+        "deferred_reply_blocks": 0,
+        "error_count": 0,
+        "errors": []
+      },
+      "actions": [
+        {
+          "event": "model_action_selected",
+          "observation_id": "e11cee2d9b7bac340cabfc440dfc1f5c64b70452857033a2eb694d2a79406313",
+          "tools": [
+            "prepare_row_preview"
+          ],
+          "choice_count": 1,
+          "observed_failure_count": 0
+        },
+        {
+          "event": "model_action_selected",
+          "observation_id": "a75d20da14003a9160aacd32d0dce80569a693561f81e43b234cbe7f03f548a2",
+          "tools": [
+            "query_databricks"
+          ],
+          "choice_count": 1,
+          "observed_failure_count": 0
+        },
+        {
+          "event": "model_action_selected",
+          "observation_id": "a75d20da14003a9160aacd32d0dce80569a693561f81e43b234cbe7f03f548a2",
+          "tools": [
+            "query_databricks"
+          ],
+          "choice_count": 1,
+          "observed_failure_count": 0
+        }
+      ]
+    },
+    {
+      "report": {
+        "report_version": 1,
+        "found": true,
+        "run_id": "6413e1bc31dd4d7380c885555a60740e",
+        "log_integrity": {
+          "malformed_lines": 0,
+          "bounded_read": false,
+          "unreadable_files": 0
+        },
+        "time_utc": "2026-10-11T01:44:29.516998+00:00",
+        "instance_id": "010480160fbe",
+        "pid": 26864,
+        "runtime": {
+          "route": "langgraph-v1",
+          "model_class": "ChatOllama",
+          "goal_model": "gemma4:e4b",
+          "planner_model": "gemma4:e4b",
+          "data_backend": "databricks",
+          "revision_at_first_runtime": "e947a03f923faf2de2eb6be9774e8766547b0924",
+          "loaded_delivery_guard": "d7ad371a60b6e59b",
+          "require_remote_approval": false,
+          "python_version": "3.11.13",
+          "packages": {
+            "langchain": "1.4.0",
+            "langchain-core": "1.6.2",
+            "langgraph": "1.2.11",
+            "streamlit": "1.63.0",
+            "sqlglot": "30.18.0"
+          }
+        },
+        "status": "answered",
+        "elapsed_seconds": 170.457,
+        "last_event": "turn_slo",
+        "flags": [],
+        "model_calls": 2,
+        "inference_roles": {
+          "subject_identity": 1,
+          "task_selection": 1,
+          "population_basis": 1,
+          "goal_interpreter": 2,
+          "population_audit": 1,
+          "agent": 2
+        },
+        "subject_decisions_reused": 0,
+        "population_audit": {
+          "rejections": 0,
+          "error_codes": {},
+          "conflicts": {},
+          "completed": 1
+        },
+        "restriction_review": {
+          "clarifications": 0,
+          "reference_repairs": 0,
+          "answer_bindings": 0,
+          "period_resolutions": 0,
+          "date_placeholder_repairs": 0
+        },
+        "action_cycle": {
+          "observations": 2,
+          "choices": 2,
+          "after_failure": 0
+        },
+        "input_budget": {
+          "payload_bytes": 16784,
+          "payload_bytes_before_projection": 39354,
+          "template_headroom": 2176,
+          "input_budget_units": 126976,
+          "output_reserved": 4096,
+          "context_window": 131072,
+          "tool_count": 10,
+          "message_count": 5,
+          "input_tokens_estimate": null,
+          "input_tokens_upper_bound": 16784,
+          "within_budget": true,
+          "older_turns_compacted": true,
+          "schema_compacted": false,
+          "system_catalog_compacted": false,
+          "tool_menu_compacted": false,
+          "minimal_discovery_menu": false,
+          "reasoning_compacted": true,
+          "observations_compacted": false,
+          "minimal_catalog": false,
+          "builtin_instructions_compacted": false,
+          "components": {
+            "system_bytes": 7476,
+            "message_content_bytes": 3591,
+            "tool_calls_bytes": 227,
+            "reasoning_bytes": 0,
+            "tool_schema_bytes": 4582,
+            "tool_names": [
+              "prepare_row_preview",
+              "search_analysis_tools",
+              "resolve_analysis_intent",
+              "resolve_analysis_operation",
+              "list_analysis_context",
+              "read_analysis_skill",
+              "inspect_table_context",
+              "inspect_dataset",
+              "get_analysis_tool_contract",
+              "query_databricks"
+            ]
+          },
+          "measurement": "conservative_utf8_token_upper_bound"
+        },
+        "proposed_tool_calls": 2,
+        "local_tools_started": {
+          "prepare_row_preview": 1
+        },
+        "local_tools_rejected": {},
+        "last_tool_events": [
+          {
+            "event": "tool_started",
+            "tool": "prepare_row_preview",
+            "status": null,
+            "error_code": null,
+            "ledger_status": null
+          },
+          {
+            "event": "tool_completed",
+            "tool": "prepare_row_preview",
+            "status": null,
+            "error_code": null,
+            "ledger_status": null
+          },
+          {
+            "event": "remote_query_started",
+            "tool": null,
+            "status": null,
+            "error_code": null,
+            "ledger_status": "auto_authorized"
+          },
+          {
+            "event": "remote_query_finished",
+            "tool": null,
+            "status": "ready",
+            "error_code": null,
+            "ledger_status": "completed"
+          }
+        ],
+        "remote": {
+          "started": 1,
+          "finished": 1,
+          "states": {
+            "completed": 1
+          },
+          "cached_receipts": 0
+        },
+        "completion": {
+          "status": null,
+          "reason": null,
+          "required_capabilities": [
+            "row_preview",
+            "remote_query"
+          ],
+          "missing_capabilities": [],
+          "attempts": 0
+        },
+        "recovery_replans": 0,
+        "deferred_reply_blocks": 0,
+        "error_count": 0,
+        "errors": []
+      },
+      "actions": [
+        {
+          "event": "model_action_selected",
+          "observation_id": "e11cee2d9b7bac340cabfc440dfc1f5c64b70452857033a2eb694d2a79406313",
+          "tools": [
+            "prepare_row_preview"
+          ],
+          "choice_count": 1,
+          "observed_failure_count": 0
+        },
+        {
+          "event": "model_action_selected",
+          "observation_id": "a75d20da14003a9160aacd32d0dce80569a693561f81e43b234cbe7f03f548a2",
+          "tools": [
+            "query_databricks"
+          ],
+          "choice_count": 1,
+          "observed_failure_count": 0
+        }
+      ]
+    },
+    {
+      "report": {
+        "report_version": 1,
+        "found": true,
+        "run_id": "16f608fc09a94ea89036f0b69aa25cbe",
+        "log_integrity": {
+          "malformed_lines": 0,
+          "bounded_read": false,
+          "unreadable_files": 0
+        },
+        "time_utc": "2026-10-11T01:48:32.898150+00:00",
+        "instance_id": "010480160fbe",
+        "pid": 26864,
+        "runtime": {
+          "route": "langgraph-v1",
+          "model_class": "ChatOllama",
+          "goal_model": "gemma4:e4b",
+          "planner_model": "gemma4:e4b",
+          "data_backend": "databricks",
+          "revision_at_first_runtime": "e947a03f923faf2de2eb6be9774e8766547b0924",
+          "loaded_delivery_guard": "d7ad371a60b6e59b",
+          "require_remote_approval": false,
+          "python_version": "3.11.13",
+          "packages": {
+            "langchain": "1.4.0",
+            "langchain-core": "1.6.2",
+            "langgraph": "1.2.11",
+            "streamlit": "1.63.0",
+            "sqlglot": "30.18.0"
+          }
+        },
+        "status": "exhausted",
+        "elapsed_seconds": 230.525,
+        "last_event": "turn_slo",
+        "flags": [
+          "AGENT_NOT_COMPLETED",
+          "NO_TOOL_EXECUTION_OBSERVED"
+        ],
+        "model_calls": 2,
+        "inference_roles": {
+          "subject_identity": 1,
+          "task_selection": 1,
+          "population_basis": 1,
+          "goal_interpreter": 2,
+          "population_audit": 1,
+          "agent": 2
+        },
+        "subject_decisions_reused": 0,
+        "population_audit": {
+          "rejections": 0,
+          "error_codes": {},
+          "conflicts": {},
+          "completed": 1
+        },
+        "restriction_review": {
+          "clarifications": 0,
+          "reference_repairs": 0,
+          "answer_bindings": 0,
+          "period_resolutions": 0,
+          "date_placeholder_repairs": 0
+        },
+        "action_cycle": {
+          "observations": 2,
+          "choices": 2,
+          "after_failure": 0
+        },
+        "input_budget": {
+          "payload_bytes": 22033,
+          "payload_bytes_before_projection": 51444,
+          "template_headroom": 2752,
+          "input_budget_units": 126976,
+          "output_reserved": 4096,
+          "context_window": 131072,
+          "tool_count": 15,
+          "message_count": 4,
+          "input_tokens_estimate": null,
+          "input_tokens_upper_bound": 22033,
+          "within_budget": true,
+          "older_turns_compacted": true,
+          "schema_compacted": false,
+          "system_catalog_compacted": false,
+          "tool_menu_compacted": false,
+          "minimal_discovery_menu": false,
+          "reasoning_compacted": false,
+          "observations_compacted": false,
+          "minimal_catalog": false,
+          "builtin_instructions_compacted": false,
+          "components": {
+            "system_bytes": 7604,
+            "message_content_bytes": 3739,
+            "tool_calls_bytes": 0,
+            "reasoning_bytes": 0,
+            "tool_schema_bytes": 9817,
+            "tool_names": [
+              "prepare_numeric_dataset",
+              "prepare_source_scatter",
+              "search_analysis_tools",
+              "resolve_analysis_intent",
+              "resolve_analysis_operation",
+              "list_analysis_context",
+              "read_analysis_skill",
+              "inspect_table_context",
+              "inspect_dataset",
+              "recommend_chart_images",
+              "render_chart_spec",
+              "prepare_histogram",
+              "render_histogram",
+              "get_analysis_tool_contract",
+              "query_databricks"
+            ]
+          },
+          "measurement": "conservative_utf8_token_upper_bound"
+        },
+        "proposed_tool_calls": 2,
+        "local_tools_started": {},
+        "local_tools_rejected": {},
+        "last_tool_events": [],
+        "remote": {
+          "started": 0,
+          "finished": 0,
+          "states": {},
+          "cached_receipts": 0
+        },
+        "completion": {
+          "status": "exhausted",
+          "reason": "model_time_budget",
+          "required_capabilities": [
+            "chart"
+          ],
+          "missing_capabilities": [
+            "chart"
+          ],
+          "attempts": 1
+        },
+        "recovery_replans": 0,
+        "deferred_reply_blocks": 0,
+        "error_count": 0,
+        "errors": []
+      },
+      "actions": [
+        {
+          "event": "model_action_selected",
+          "observation_id": "42141c9876ca34546188b280dc56c1725fb1c146aba226bb1b3a4a55a712051f",
+          "tools": [
+            "render_chart_spec"
+          ],
+          "choice_count": 1,
+          "observed_failure_count": 0
+        },
+        {
+          "event": "model_action_selected",
+          "observation_id": "42141c9876ca34546188b280dc56c1725fb1c146aba226bb1b3a4a55a712051f",
+          "tools": [
+            "render_chart_spec"
+          ],
+          "choice_count": 1,
+          "observed_failure_count": 0
+        }
+      ]
+    },
+    {
+      "report": {
+        "report_version": 1,
+        "found": true,
+        "run_id": "4c88cb56ab9f4776b30196625a2d3524",
+        "log_integrity": {
+          "malformed_lines": 0,
+          "bounded_read": false,
+          "unreadable_files": 0
+        },
+        "time_utc": "2026-10-11T01:57:31.175610+00:00",
+        "instance_id": "841c937d5254",
+        "pid": 27414,
+        "runtime": {
+          "route": "langgraph-v1",
+          "model_class": "ChatOllama",
+          "goal_model": "gemma4:e4b",
+          "planner_model": "gemma4:e4b",
+          "data_backend": "databricks",
+          "revision_at_first_runtime": "e947a03f923faf2de2eb6be9774e8766547b0924",
+          "loaded_delivery_guard": "d7ad371a60b6e59b",
+          "require_remote_approval": false,
+          "python_version": "3.11.13",
+          "packages": {
+            "langchain": "1.4.0",
+            "langchain-core": "1.6.2",
+            "langgraph": "1.2.11",
+            "streamlit": "1.63.0",
+            "sqlglot": "30.18.0"
+          }
+        },
+        "status": "answered",
+        "elapsed_seconds": 123.013,
+        "last_event": "turn_slo",
+        "flags": [],
+        "model_calls": 1,
+        "inference_roles": {
+          "subject_identity": 1,
+          "task_selection": 1,
+          "population_basis": 1,
+          "goal_interpreter": 2,
+          "population_audit": 1,
+          "agent": 1
+        },
+        "subject_decisions_reused": 0,
+        "population_audit": {
+          "rejections": 0,
+          "error_codes": {},
+          "conflicts": {},
+          "completed": 1
+        },
+        "restriction_review": {
+          "clarifications": 0,
+          "reference_repairs": 0,
+          "answer_bindings": 0,
+          "period_resolutions": 0,
+          "date_placeholder_repairs": 0
+        },
+        "action_cycle": {
+          "observations": 1,
+          "choices": 1,
+          "after_failure": 0
+        },
+        "input_budget": {
+          "payload_bytes": 21658,
+          "payload_bytes_before_projection": 53315,
+          "template_headroom": 2688,
+          "input_budget_units": 126976,
+          "output_reserved": 4096,
+          "context_window": 131072,
+          "tool_count": 15,
+          "message_count": 3,
+          "input_tokens_estimate": null,
+          "input_tokens_upper_bound": 21658,
+          "within_budget": true,
+          "older_turns_compacted": true,
+          "schema_compacted": false,
+          "system_catalog_compacted": false,
+          "tool_menu_compacted": false,
+          "minimal_discovery_menu": false,
+          "reasoning_compacted": false,
+          "observations_compacted": false,
+          "minimal_catalog": false,
+          "builtin_instructions_compacted": false,
+          "components": {
+            "system_bytes": 7218,
+            "message_content_bytes": 3508,
+            "tool_calls_bytes": 0,
+            "reasoning_bytes": 0,
+            "tool_schema_bytes": 10139,
+            "tool_names": [
+              "prepare_numeric_dataset",
+              "prepare_source_scatter",
+              "search_analysis_tools",
+              "resolve_analysis_intent",
+              "resolve_analysis_operation",
+              "list_analysis_context",
+              "read_analysis_skill",
+              "inspect_table_context",
+              "inspect_dataset",
+              "recommend_chart_images",
+              "render_chart_spec",
+              "prepare_histogram",
+              "render_histogram",
+              "get_analysis_tool_contract",
+              "query_databricks"
+            ]
+          },
+          "measurement": "conservative_utf8_token_upper_bound"
+        },
+        "proposed_tool_calls": 1,
+        "local_tools_started": {
+          "render_chart_spec": 1
+        },
+        "local_tools_rejected": {},
+        "last_tool_events": [
+          {
+            "event": "tool_started",
+            "tool": "render_chart_spec",
+            "status": null,
+            "error_code": null,
+            "ledger_status": null
+          },
+          {
+            "event": "tool_completed",
+            "tool": "render_chart_spec",
+            "status": "ready",
+            "error_code": null,
+            "ledger_status": null
+          }
+        ],
+        "remote": {
+          "started": 0,
+          "finished": 0,
+          "states": {},
+          "cached_receipts": 0
+        },
+        "completion": {
+          "status": null,
+          "reason": null,
+          "required_capabilities": [
+            "chart"
+          ],
+          "missing_capabilities": [],
+          "attempts": 0
+        },
+        "recovery_replans": 0,
+        "deferred_reply_blocks": 0,
+        "error_count": 0,
+        "errors": []
+      },
+      "actions": [
+        {
+          "event": "model_action_selected",
+          "observation_id": "4ea0576097ae437f6f7ab7dbb56721059567d39d5bf0f79aa660fd29fa08f5fd",
+          "tools": [
+            "render_chart_spec"
+          ],
+          "choice_count": 1,
+          "observed_failure_count": 0
+        }
+      ]
+    }
+  ],
+  "remaining": [
+    "model latency and long-context stability",
+    "large continuous-value DB bin aggregation",
+    "task-scoped populations/DAG",
+    "native DB type metadata retrieval",
+    "actual company Azure/Windows verification",
+    "official benchmark protocols"
+  ],
+  "final_runtime": {
+    "port": 8504,
+    "pid": 27611,
+    "health": "ok",
+    "note": "final rejection-observation instrumentation reloaded; restart is not a new model evaluation",
+    "saved_chart_restored_in_browser": true
+  },
+  "screenshots": {
+    "final_ui": ".telly_runtime/action_cycle_final_20261011.png",
+    "after_restart": ".telly_runtime/action_cycle_restored_20261011.png",
+    "first_chart_failure": ".telly_runtime/action_cycle_chart_first_failure_20261011.png"
+  }
+}

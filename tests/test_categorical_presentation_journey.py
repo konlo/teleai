@@ -25,7 +25,10 @@ class CategoricalPresentationJourneyTests(unittest.TestCase):
             r,raw=goals.LLMGoalTests().runtime(root,GoalModel(goals=[initial,initial,whole,whole]))
             try:
                 self.assertEqual(r.submit('filtered reading distribution')['status'],'answered')
-                audit=Mock(side_effect=AssertionError('typed entire-source contract is authoritative'))
+                audit=Mock(return_value=AIMessage(content=json.dumps({'change':'clear',
+                    'evidence_quote':'Draw entire source','conditions':[],'any_conditions':[],
+                    'removed_columns':['reading'],'included_values':[],
+                    'restriction_review':{'clauses':[],'question':''}})))
                 r.recovery.goal_interpreter.population_model=SimpleNamespace(invoke=audit)
                 with patch('core.analysis_agent.task_selection.select',return_value=selection):
                     result=r.submit('Draw entire source')
@@ -33,7 +36,7 @@ class CategoricalPresentationJourneyTests(unittest.TestCase):
                 current=r.inspect()['recovery'];card=r.artifacts[current['artifact_ids'][0]]
                 self.assertFalse(current['scope']['conditions'])
                 self.assertEqual(card.render_spec['total_count'],raw.rows)
-                audit.assert_not_called()
+                audit.assert_called_once()
                 self.assertEqual(r.context.selected_dataset_id,raw.id)
             finally:r.close()
 
@@ -139,10 +142,11 @@ class CategoricalPresentationJourneyTests(unittest.TestCase):
                 self.assertEqual(compiled['goal']['sources'],['lab.observations'])
                 i=r.recovery.goal_interpreter;i.model_recovery=None
                 seen=[]
-                def invoke(messages):
+                def invoke(messages, **kwargs):
                     seen.append(json.loads(messages[1].content)['previous_requested_population'])
                     return AIMessage(content=json.dumps({'conditions':[],'any_conditions':[],
-                        'change':'keep','evidence_quote':''}))
+                        'change':'keep','evidence_quote':'',
+                        'restriction_review':{'clauses':[],'question':''}}))
                 i.population_model=SimpleNamespace(invoke=invoke)
                 result=audit(i,current,{},compiled['goal'])
                 self.assertEqual(seen,[scope])
@@ -155,7 +159,7 @@ class CategoricalPresentationJourneyTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as root:
             r,raw=goals.LLMGoalTests().runtime(root,GoalModel(goals=[plan]))
             try:
-                with self.assertRaisesRegex(ValueError,'DISTINCT'):
+                with self.assertRaisesRegex(ValueError,'distinct measure and category'):
                     compile_goal({},plan,r.context)
                 self.assertFalse(r.artifacts)
             finally:r.close()
@@ -172,7 +176,7 @@ class CategoricalPresentationJourneyTests(unittest.TestCase):
             r,raw=goals.LLMGoalTests().runtime(root,GoalModel(goals=[goal('row_count')]))
             try:
                 i=r.recovery.goal_interpreter;i.model_recovery=None
-                i.selection_model=SimpleNamespace(invoke=lambda messages:AIMessage(content=json.dumps({
+                i.selection_model=SimpleNamespace(invoke=lambda messages, **kwargs:AIMessage(content=json.dumps({
                     'mode':'execute','capabilities':['chart'],'source_reference':'explicit',
                     'source_mentions':[{'name':'missing_observations','quote':'missing_observations'}],
                     'chart_kind':''})))
@@ -235,14 +239,16 @@ class CategoricalPresentationJourneyTests(unittest.TestCase):
             try:
                 i=r.recovery.goal_interpreter;i.model_recovery=None
                 calls=[]
-                def invoke(messages):
+                def invoke(messages, **kwargs):
                     calls.append(messages)
                     return AIMessage(content=json.dumps({'conditions':[],'any_conditions':[],
-                        'change':'clear','evidence_quote':'an earlier request'}))
+                        'change':'clear','evidence_quote':'an earlier request',
+                        'restriction_review':{'clauses':[],'question':''}}))
                 i.population_model=SimpleNamespace(invoke=invoke)
-                result=audit(i,{'request_id':'x','request_text':'add legend','confirmed_analysis':{
-                    'required_sources':['lab.observations'],'scope':scope}}, {},plan)
-                self.assertEqual(result['conditions'],scope['conditions'])
+                with self.assertRaisesRegex(ValueError,'exact quote'):
+                    audit(i,{'request_id':'x','request_text':'add legend','confirmed_analysis':{
+                        'required_sources':['lab.observations'],'scope':scope}}, {},plan)
+                self.assertEqual(plan['conditions'],scope['conditions'])
                 self.assertEqual(len(calls),2)
             finally:r.close()
 

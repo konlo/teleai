@@ -57,7 +57,7 @@ class AuxiliaryRecoveryTests(unittest.TestCase):
                     db.conn.execute("INSERT INTO model_recovery VALUES ('old',2,7.5,1,12345)")
                 ledger=ModelAttemptLedger(db)
                 self.assertEqual(ledger.get('old'),{'failures':2,'failed_seconds':7.5,
-                    'retries':1,'next_allowed_at':12345,'aux_calls':0,'aux_seconds':0.0})
+                    'retries':1,'next_allowed_at':12345,'aux_calls':0,'aux_seconds':0.0,'execution_seconds':0.0})
                 ledger.auxiliary_success('old',1.5)
                 self.assertEqual(ModelAttemptLedger(db).get('old')['aux_calls'],1)
                 self.assertEqual(ledger.get('old')['failures'],2)

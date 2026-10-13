@@ -518,12 +518,13 @@ def build_analysis_tools(context: AnalysisToolContext) -> list[ToolDefinition]:
 
     def render_chart_spec(dataset_id, kind, x, y="", category="", aggregation="none",
                           sort="none", top_n=50, bins=20, title="", x_label="",
-                          y_label="", orientation="vertical", cumulative=False):
+                          y_label="", orientation="vertical", cumulative=False,
+                          legend=False, stacked=False, palette='default'):
         card, summary, spec = build_chart_from_spec(
             datasets, dataset_id, kind=kind, x=x, y=y, category=category,
             aggregation=aggregation, sort=sort, top_n=top_n, bins=bins,
             title=title, x_label=x_label, y_label=y_label, orientation=orientation,
-            cumulative=cumulative)
+            cumulative=cumulative,legend=legend,stacked=stacked,palette=palette)
         context.artifacts[card.id] = card
         return {"status": "ready", "cards": [card_entry(card)],
                 "chart_spec": spec, "render_summary": summary}
@@ -604,6 +605,21 @@ def build_analysis_tools(context: AnalysisToolContext) -> list[ToolDefinition]:
             return None
 
         selected_id = dataset_id
+        source_alias_ignored=False
+        if not current_result_only and dataset_id==source:
+            # Source planning does not need a local dataset handle. Normalize
+            # only this exact typed source alias; arbitrary unknown/foreign
+            # handles remain errors and result-only requests cannot expand.
+            selected_id='';dataset_id='';source_alias_ignored=True
+        schema_only_ignored=False
+        supplied=metadata.get(selected_id)
+        if (supplied is not None and not current_result_only
+                and source_key(supplied.source)==identity
+                and _is_zero_row_schema_probe(supplied.query)):
+            # A schema handle proves column availability, never a row
+            # population. For source analysis it cannot pin reuse to LIMIT 0.
+            # Result-only requests still fail below instead of querying source.
+            selected_id='';dataset_id='';schema_only_ignored=True
         active = metadata.get(context.selected_dataset_id)
         if (not selected_id and not fresh_source_required and active is not None
                 and source_key(active.source) == identity
@@ -777,7 +793,9 @@ def build_analysis_tools(context: AnalysisToolContext) -> list[ToolDefinition]:
                 requested_conditions=[asdict(c) for c in conditions or ()])
             if result['status'] == 'ready' and result['dataset']['coverage'] == 'complete':
                 return ready(datasets.metadata[result['dataset']['id']])
-        return {'status':'planned','histogram_plan':plan}
+        return {'status':'planned','histogram_plan':plan,
+                'applied_corrections':(['schema_only_dataset_is_not_population'] if schema_only_ignored else [])+
+                    (['source_name_is_not_dataset_id'] if source_alias_ignored else [])}
 
     def render_histogram(dataset_id, value_column, weight_column, categorical=False, category="", bins=8, y_max=None,
                          stacked=False, legend=False, palette='default'):
@@ -1008,7 +1026,10 @@ def build_analysis_tools(context: AnalysisToolContext) -> list[ToolDefinition]:
               "x_label": {"type":"string","maxLength":120},
               "y_label": {"type":"string","maxLength":120},
               "orientation": {"type":"string","enum":["vertical","horizontal"]},
-              "cumulative": {"type":"boolean"}},
+              "cumulative": {"type":"boolean"},
+              "legend": {"type":"boolean","description":"원본 수치 histogram의 범례 표시"},
+              "stacked": {"type":"boolean","enum":[False],"description":"그룹 누적은 전용 그룹 chart 도구를 사용합니다."},
+              "palette": {"type":"string","enum":["default","high_contrast"],"description":"원본 수치 histogram의 색상"}},
              ["dataset_id","kind","x"], render_chart_spec),
         tool("render_count_rate_chart", "로딩된 raw dataset에서 그룹별 전체 행 수와 명시한 outcome 성공값의 비율을 계산해 이중 Y축 또는 2열 패널 PNG로 렌더링합니다. 성공률 분모는 outcome 비결측 행이며 points와 digest를 반환합니다. 성공값·분모·컬럼을 추측하지 않습니다.",
              {"dataset_id": string,

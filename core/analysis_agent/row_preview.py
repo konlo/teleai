@@ -4,6 +4,7 @@ from sqlglot import parse_one,exp
 from core.analysis_catalog import full_schema_source, resolve_table_context
 from utils.analysis_provenance import table_identity
 from utils.analysis_datasets import preview_dataset
+from core.analysis_agent.planned_sql import matches_plan
 
 
 def requested(text):
@@ -97,7 +98,7 @@ def accept_remote(context,current,receipt):
     plan=current.get('row_preview_plan') or {}
     info=context.datasets.metadata.get(receipt.get('dataset_id'))
     limit=current['row_preview_spec']['limit']
-    if (not info or info.query!=plan.get('query') or key(info.source)!=key(plan.get('source'))
+    if (not info or not matches_plan(context,{'query':info.query,'source':info.source},plan)
             or info.grain!='raw' or info.rows>limit
             or preview_source(info.query,context.sql_dialect) is None):
         return None

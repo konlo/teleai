@@ -1,0 +1,913 @@
+{
+  "model": "gemma4:e4b",
+  "goal_model": "gemma4:e4b",
+  "mode": "actual Ollama, isolated synthetic raw data, no remote database",
+  "passed": 0,
+  "total": 2,
+  "cases": [
+    {
+      "id": "negated_chart",
+      "prompt": "observations의 reading 히스토그램은 그리지 말고 컬럼 목록만 보여줘",
+      "status": "exhausted",
+      "text": "검증된 결과를 표시하는 데 실패했습니다. 완료로 처리하지 않았으며 기존 데이터는 보존했습니다.",
+      "seconds": 21.146,
+      "goal": {
+        "objective": "Show column list for the 'observations' table.",
+        "mode": "explain",
+        "source_reference": "explicit",
+        "sources": [],
+        "columns": [],
+        "conditions": [],
+        "any_conditions": [],
+        "measure_conditions": [],
+        "ratio": null,
+        "current_result_only": false,
+        "fresh_source_required": false,
+        "question": "",
+        "tasks": []
+      },
+      "model_calls": 3,
+      "goal_error": null,
+      "result": null,
+      "pass": false,
+      "diagnostics": [
+        {
+          "time": "2026-10-12T15:24:31.421641+00:00",
+          "event": "dataset_selected",
+          "run_id": null,
+          "instance_id": "70ae3a896a51",
+          "pid": 50576,
+          "dataset_id": "e04a5ee9-4348-4ccd-bf53-4b9bb830f289",
+          "root_id": "e04a5ee9-4348-4ccd-bf53-4b9bb830f289",
+          "role": "root",
+          "source": "lab.observations"
+        },
+        {
+          "time": "2026-10-12T15:24:31.422170+00:00",
+          "event": "run_started",
+          "run_id": "8af7b7a18e0e4b73b1e54100e103d7de",
+          "instance_id": "70ae3a896a51",
+          "pid": 50576,
+          "runtime": {
+            "revision_at_first_runtime": "e947a03f923faf2de2eb6be9774e8766547b0924",
+            "packages": {
+              "langchain": "1.4.0",
+              "langchain-core": "1.6.2",
+              "langgraph": "1.2.11",
+              "streamlit": "1.63.0",
+              "sqlglot": "30.18.0"
+            },
+            "python_version": "3.11.13",
+            "identity_captured_at": "2026-10-12T15:24:31.323543+00:00",
+            "route": "langgraph-v1",
+            "model_class": "ChatOllama",
+            "require_remote_approval": false,
+            "loaded_delivery_guard": "d7ad371a60b6e59b",
+            "data_backend": "mysql",
+            "intent_mode": "llm",
+            "goal_version": 1,
+            "goal_model": "gemma4:e4b",
+            "planner_model": "gemma4:e4b"
+          },
+          "operation": "submit",
+          "process_peak_rss_bytes": 291454976
+        },
+        {
+          "time": "2026-10-12T15:24:31.429551+00:00",
+          "event": "model_inference_admitted",
+          "run_id": "8af7b7a18e0e4b73b1e54100e103d7de",
+          "instance_id": "70ae3a896a51",
+          "pid": 50576,
+          "role": "intent_plan",
+          "call_kind": "auxiliary",
+          "calls_used": 0,
+          "call_limit": 9
+        },
+        {
+          "time": "2026-10-12T15:24:31.430098+00:00",
+          "event": "model_payload_budget",
+          "run_id": "8af7b7a18e0e4b73b1e54100e103d7de",
+          "instance_id": "70ae3a896a51",
+          "pid": 50576,
+          "payload_bytes": 4593,
+          "input_tokens_estimate": null,
+          "input_tokens_upper_bound": 4593,
+          "payload_bytes_before_projection": 4593,
+          "template_headroom": 640,
+          "input_budget_units": 130048,
+          "output_reserved": 1024,
+          "context_window": 131072,
+          "tool_count": 0,
+          "message_count": 1,
+          "older_turns_compacted": false,
+          "within_budget": true,
+          "observations_compacted": false,
+          "schema_compacted": false,
+          "system_catalog_compacted": false,
+          "tool_menu_compacted": false,
+          "minimal_discovery_menu": false,
+          "reasoning_compacted": false,
+          "minimal_catalog": false,
+          "builtin_instructions_compacted": false,
+          "repair_history_compacted": false,
+          "components": {
+            "system_bytes": 1613,
+            "message_content_bytes": 2684,
+            "tool_calls_bytes": 0,
+            "reasoning_bytes": 0,
+            "tool_schema_bytes": 0,
+            "tool_names": []
+          },
+          "measurement": "conservative_utf8_token_upper_bound"
+        },
+        {
+          "time": "2026-10-12T15:24:37.612962+00:00",
+          "event": "model_inference_succeeded",
+          "run_id": "8af7b7a18e0e4b73b1e54100e103d7de",
+          "instance_id": "70ae3a896a51",
+          "pid": 50576,
+          "role": "intent_plan",
+          "elapsed_seconds": 6.183
+        },
+        {
+          "time": "2026-10-12T15:24:37.616470+00:00",
+          "event": "intent_outline_selected",
+          "run_id": "8af7b7a18e0e4b73b1e54100e103d7de",
+          "instance_id": "70ae3a896a51",
+          "pid": 50576,
+          "request_id": "75cc01336ac746dba5a760c050451fa6",
+          "mode": "explain",
+          "capabilities": []
+        },
+        {
+          "time": "2026-10-12T15:24:37.620929+00:00",
+          "event": "model_inference_admitted",
+          "run_id": "8af7b7a18e0e4b73b1e54100e103d7de",
+          "instance_id": "70ae3a896a51",
+          "pid": 50576,
+          "role": "intent_plan",
+          "call_kind": "auxiliary",
+          "calls_used": 1,
+          "call_limit": 9
+        },
+        {
+          "time": "2026-10-12T15:24:37.621471+00:00",
+          "event": "model_payload_budget",
+          "run_id": "8af7b7a18e0e4b73b1e54100e103d7de",
+          "instance_id": "70ae3a896a51",
+          "pid": 50576,
+          "payload_bytes": 6529,
+          "input_tokens_estimate": null,
+          "input_tokens_upper_bound": 6529,
+          "payload_bytes_before_projection": 6529,
+          "template_headroom": 640,
+          "input_budget_units": 126976,
+          "output_reserved": 4096,
+          "context_window": 131072,
+          "tool_count": 0,
+          "message_count": 1,
+          "older_turns_compacted": false,
+          "within_budget": true,
+          "observations_compacted": false,
+          "schema_compacted": false,
+          "system_catalog_compacted": false,
+          "tool_menu_compacted": false,
+          "minimal_discovery_menu": false,
+          "reasoning_compacted": false,
+          "minimal_catalog": false,
+          "builtin_instructions_compacted": false,
+          "repair_history_compacted": false,
+          "components": {
+            "system_bytes": 4998,
+            "message_content_bytes": 1270,
+            "tool_calls_bytes": 0,
+            "reasoning_bytes": 0,
+            "tool_schema_bytes": 0,
+            "tool_names": []
+          },
+          "measurement": "conservative_utf8_token_upper_bound"
+        },
+        {
+          "time": "2026-10-12T15:24:40.850513+00:00",
+          "event": "model_inference_succeeded",
+          "run_id": "8af7b7a18e0e4b73b1e54100e103d7de",
+          "instance_id": "70ae3a896a51",
+          "pid": 50576,
+          "role": "intent_plan",
+          "elapsed_seconds": 3.23
+        },
+        {
+          "time": "2026-10-12T15:24:40.852284+00:00",
+          "event": "intent_plan_observed",
+          "run_id": "8af7b7a18e0e4b73b1e54100e103d7de",
+          "instance_id": "70ae3a896a51",
+          "pid": 50576,
+          "request_id": "75cc01336ac746dba5a760c050451fa6",
+          "phase": "REVIEW",
+          "mode": "explain",
+          "restriction_shapes": [],
+          "population_shapes": [],
+          "step_count": 0,
+          "question_chars": 0
+        },
+        {
+          "time": "2026-10-12T15:24:40.857340+00:00",
+          "event": "intent_plan_accepted",
+          "run_id": "8af7b7a18e0e4b73b1e54100e103d7de",
+          "instance_id": "70ae3a896a51",
+          "pid": 50576,
+          "request_id": "75cc01336ac746dba5a760c050451fa6",
+          "steps": 0,
+          "interpretation_calls": 2,
+          "plan_sha256": "369de83d5e795f4baf3006a1864a5e5da30c7cfe7d675d53a42c8b5de594a604",
+          "scope_mode": "per_task",
+          "reviewed": true
+        },
+        {
+          "time": "2026-10-12T15:24:40.862308+00:00",
+          "event": "model_action_observation",
+          "run_id": "8af7b7a18e0e4b73b1e54100e103d7de",
+          "instance_id": "70ae3a896a51",
+          "pid": 50576,
+          "request_id": "75cc01336ac746dba5a760c050451fa6",
+          "observation_id": "ef0a7f58aa30a30ffed78152f70734bf2b9098b7367a74a64f555b3a3318ca07",
+          "missing_capabilities": [],
+          "advisory_tool": null,
+          "failure_count": 0
+        },
+        {
+          "time": "2026-10-12T15:24:40.867006+00:00",
+          "event": "summarization_skipped",
+          "run_id": "8af7b7a18e0e4b73b1e54100e103d7de",
+          "instance_id": "70ae3a896a51",
+          "pid": 50576,
+          "reason": "verified_context_model_view_compaction",
+          "message_count": 2
+        },
+        {
+          "time": "2026-10-12T15:24:40.869461+00:00",
+          "event": "model_call_started",
+          "run_id": "8af7b7a18e0e4b73b1e54100e103d7de",
+          "instance_id": "70ae3a896a51",
+          "pid": 50576,
+          "span_id": "21291f6c3bf5",
+          "message_count": 2
+        },
+        {
+          "time": "2026-10-12T15:24:40.873574+00:00",
+          "event": "context_budget",
+          "run_id": "8af7b7a18e0e4b73b1e54100e103d7de",
+          "instance_id": "70ae3a896a51",
+          "pid": 50576,
+          "characters": 5218,
+          "limit": 32000
+        },
+        {
+          "time": "2026-10-12T15:24:40.874178+00:00",
+          "event": "model_payload_budget",
+          "run_id": "8af7b7a18e0e4b73b1e54100e103d7de",
+          "instance_id": "70ae3a896a51",
+          "pid": 50576,
+          "payload_bytes": 7625,
+          "input_tokens_estimate": null,
+          "input_tokens_upper_bound": 7625,
+          "payload_bytes_before_projection": 7625,
+          "template_headroom": 704,
+          "input_budget_units": 126976,
+          "output_reserved": 4096,
+          "context_window": 131072,
+          "tool_count": 0,
+          "message_count": 2,
+          "older_turns_compacted": false,
+          "within_budget": true,
+          "observations_compacted": false,
+          "schema_compacted": false,
+          "system_catalog_compacted": false,
+          "tool_menu_compacted": false,
+          "minimal_discovery_menu": false,
+          "reasoning_compacted": false,
+          "minimal_catalog": false,
+          "builtin_instructions_compacted": true,
+          "repair_history_compacted": false,
+          "components": {
+            "system_bytes": 5166,
+            "message_content_bytes": 2076,
+            "tool_calls_bytes": 0,
+            "reasoning_bytes": 0,
+            "tool_schema_bytes": 0,
+            "tool_names": []
+          },
+          "measurement": "conservative_utf8_token_upper_bound"
+        },
+        {
+          "time": "2026-10-12T15:24:40.874267+00:00",
+          "event": "model_inference_admitted",
+          "run_id": "8af7b7a18e0e4b73b1e54100e103d7de",
+          "instance_id": "70ae3a896a51",
+          "pid": 50576,
+          "role": "agent",
+          "call_kind": "agent",
+          "calls_used": 2,
+          "call_limit": 10
+        },
+        {
+          "time": "2026-10-12T15:24:52.553571+00:00",
+          "event": "model_inference_succeeded",
+          "run_id": "8af7b7a18e0e4b73b1e54100e103d7de",
+          "instance_id": "70ae3a896a51",
+          "pid": 50576,
+          "role": "agent",
+          "elapsed_seconds": 11.679
+        },
+        {
+          "time": "2026-10-12T15:24:52.554624+00:00",
+          "event": "model_call_finished",
+          "run_id": "8af7b7a18e0e4b73b1e54100e103d7de",
+          "instance_id": "70ae3a896a51",
+          "pid": 50576,
+          "span_id": "21291f6c3bf5",
+          "status": "ok",
+          "elapsed_seconds": 11.685,
+          "message_count": 2,
+          "tool_call_count": 0,
+          "actual_input_tokens": 1727,
+          "actual_output_tokens": 152,
+          "prompt_eval_seconds": 6.204565,
+          "finish_reasons": [
+            "stop"
+          ]
+        },
+        {
+          "time": "2026-10-12T15:24:52.559122+00:00",
+          "event": "model_action_selected",
+          "run_id": "8af7b7a18e0e4b73b1e54100e103d7de",
+          "instance_id": "70ae3a896a51",
+          "pid": 50576,
+          "request_id": "75cc01336ac746dba5a760c050451fa6",
+          "observation_id": "ef0a7f58aa30a30ffed78152f70734bf2b9098b7367a74a64f555b3a3318ca07",
+          "tools": [],
+          "choice_count": 0,
+          "observed_failure_count": 0
+        },
+        {
+          "time": "2026-10-12T15:24:52.559314+00:00",
+          "event": "completion_output_failed",
+          "run_id": "8af7b7a18e0e4b73b1e54100e103d7de",
+          "instance_id": "70ae3a896a51",
+          "pid": 50576,
+          "request_id": "75cc01336ac746dba5a760c050451fa6",
+          "capability": "reply",
+          "error_type": "empty_output"
+        },
+        {
+          "time": "2026-10-12T15:24:52.560507+00:00",
+          "event": "completion_checked",
+          "run_id": "8af7b7a18e0e4b73b1e54100e103d7de",
+          "instance_id": "70ae3a896a51",
+          "pid": 50576,
+          "request_id": "75cc01336ac746dba5a760c050451fa6",
+          "status": "exhausted",
+          "reason": "completion_output_missing",
+          "attempts": 0,
+          "required_capabilities": [],
+          "missing_capabilities": [],
+          "model_calls": 3,
+          "tool_calls": 0,
+          "model_seconds": 21.112,
+          "dataset_ids": [],
+          "artifact_ids": []
+        },
+        {
+          "time": "2026-10-12T15:24:52.564321+00:00",
+          "event": "run_completed",
+          "run_id": "8af7b7a18e0e4b73b1e54100e103d7de",
+          "instance_id": "70ae3a896a51",
+          "pid": 50576,
+          "status": "exhausted",
+          "elapsed_seconds": 21.142,
+          "process_peak_rss_bytes": 293175296,
+          "frame_cache_bytes": 0
+        },
+        {
+          "time": "2026-10-12T15:24:52.564457+00:00",
+          "event": "turn_slo",
+          "run_id": "8af7b7a18e0e4b73b1e54100e103d7de",
+          "instance_id": "70ae3a896a51",
+          "pid": 50576,
+          "elapsed_seconds": 21.142,
+          "limit": 180.0,
+          "status": "ok"
+        }
+      ],
+      "stop_reason": "completion_output_missing"
+    },
+    {
+      "id": "filtered_sum",
+      "prompt": "observations에서 reading이 3~8인 것만 합계를 알려줘",
+      "status": "blocked",
+      "text": "요청을 해석한 모델 응답이 실행 계약을 충족하지 못해 분석 도구 실행 전에 중단했습니다. (오류 ID: 0b707f2e64d9) 기존 데이터와 결과는 보존했습니다.",
+      "seconds": 49.099,
+      "goal": null,
+      "model_calls": 4,
+      "goal_error": "group columns ['cohort'] must be explicit goal columns ['reading']; ungrouped totals must omit group_columns or use []",
+      "result": null,
+      "pass": false,
+      "diagnostics": [
+        {
+          "time": "2026-10-12T15:24:52.599502+00:00",
+          "event": "dataset_selected",
+          "run_id": null,
+          "instance_id": "2787c55b9845",
+          "pid": 50576,
+          "dataset_id": "9f5a0b29-5e34-4b38-b40c-9042da702b0e",
+          "root_id": "9f5a0b29-5e34-4b38-b40c-9042da702b0e",
+          "role": "root",
+          "source": "lab.observations"
+        },
+        {
+          "time": "2026-10-12T15:24:52.599936+00:00",
+          "event": "run_started",
+          "run_id": "29631d5009b548099f5de605807be4d3",
+          "instance_id": "2787c55b9845",
+          "pid": 50576,
+          "runtime": {
+            "revision_at_first_runtime": "e947a03f923faf2de2eb6be9774e8766547b0924",
+            "packages": {
+              "langchain": "1.4.0",
+              "langchain-core": "1.6.2",
+              "langgraph": "1.2.11",
+              "streamlit": "1.63.0",
+              "sqlglot": "30.18.0"
+            },
+            "python_version": "3.11.13",
+            "identity_captured_at": "2026-10-12T15:24:31.323543+00:00",
+            "route": "langgraph-v1",
+            "model_class": "ChatOllama",
+            "require_remote_approval": false,
+            "loaded_delivery_guard": "598a61a2f1c46267",
+            "data_backend": "mysql",
+            "intent_mode": "llm",
+            "goal_version": 1,
+            "goal_model": "gemma4:e4b",
+            "planner_model": "gemma4:e4b"
+          },
+          "operation": "submit",
+          "process_peak_rss_bytes": 293175296
+        },
+        {
+          "time": "2026-10-12T15:24:52.601673+00:00",
+          "event": "model_inference_admitted",
+          "run_id": "29631d5009b548099f5de605807be4d3",
+          "instance_id": "2787c55b9845",
+          "pid": 50576,
+          "role": "intent_plan",
+          "call_kind": "auxiliary",
+          "calls_used": 0,
+          "call_limit": 9
+        },
+        {
+          "time": "2026-10-12T15:24:52.601792+00:00",
+          "event": "model_payload_budget",
+          "run_id": "29631d5009b548099f5de605807be4d3",
+          "instance_id": "2787c55b9845",
+          "pid": 50576,
+          "payload_bytes": 4570,
+          "input_tokens_estimate": null,
+          "input_tokens_upper_bound": 4570,
+          "payload_bytes_before_projection": 4570,
+          "template_headroom": 640,
+          "input_budget_units": 130048,
+          "output_reserved": 1024,
+          "context_window": 131072,
+          "tool_count": 0,
+          "message_count": 1,
+          "older_turns_compacted": false,
+          "within_budget": true,
+          "observations_compacted": false,
+          "schema_compacted": false,
+          "system_catalog_compacted": false,
+          "tool_menu_compacted": false,
+          "minimal_discovery_menu": false,
+          "reasoning_compacted": false,
+          "minimal_catalog": false,
+          "builtin_instructions_compacted": false,
+          "repair_history_compacted": false,
+          "components": {
+            "system_bytes": 1613,
+            "message_content_bytes": 2661,
+            "tool_calls_bytes": 0,
+            "reasoning_bytes": 0,
+            "tool_schema_bytes": 0,
+            "tool_names": []
+          },
+          "measurement": "conservative_utf8_token_upper_bound"
+        },
+        {
+          "time": "2026-10-12T15:25:00.696148+00:00",
+          "event": "model_inference_succeeded",
+          "run_id": "29631d5009b548099f5de605807be4d3",
+          "instance_id": "2787c55b9845",
+          "pid": 50576,
+          "role": "intent_plan",
+          "elapsed_seconds": 8.094
+        },
+        {
+          "time": "2026-10-12T15:25:00.698279+00:00",
+          "event": "intent_outline_selected",
+          "run_id": "29631d5009b548099f5de605807be4d3",
+          "instance_id": "2787c55b9845",
+          "pid": 50576,
+          "request_id": "e199d7fba1c1438a9b715d6681ce66e4",
+          "mode": "execute",
+          "capabilities": [
+            "calculation"
+          ]
+        },
+        {
+          "time": "2026-10-12T15:25:00.703462+00:00",
+          "event": "model_inference_admitted",
+          "run_id": "29631d5009b548099f5de605807be4d3",
+          "instance_id": "2787c55b9845",
+          "pid": 50576,
+          "role": "intent_plan",
+          "call_kind": "auxiliary",
+          "calls_used": 1,
+          "call_limit": 9
+        },
+        {
+          "time": "2026-10-12T15:25:00.703824+00:00",
+          "event": "model_payload_budget",
+          "run_id": "29631d5009b548099f5de605807be4d3",
+          "instance_id": "2787c55b9845",
+          "pid": 50576,
+          "payload_bytes": 6665,
+          "input_tokens_estimate": null,
+          "input_tokens_upper_bound": 6665,
+          "payload_bytes_before_projection": 6665,
+          "template_headroom": 640,
+          "input_budget_units": 126976,
+          "output_reserved": 4096,
+          "context_window": 131072,
+          "tool_count": 0,
+          "message_count": 1,
+          "older_turns_compacted": false,
+          "within_budget": true,
+          "observations_compacted": false,
+          "schema_compacted": false,
+          "system_catalog_compacted": false,
+          "tool_menu_compacted": false,
+          "minimal_discovery_menu": false,
+          "reasoning_compacted": false,
+          "minimal_catalog": false,
+          "builtin_instructions_compacted": false,
+          "repair_history_compacted": false,
+          "components": {
+            "system_bytes": 4998,
+            "message_content_bytes": 1388,
+            "tool_calls_bytes": 0,
+            "reasoning_bytes": 0,
+            "tool_schema_bytes": 0,
+            "tool_names": []
+          },
+          "measurement": "conservative_utf8_token_upper_bound"
+        },
+        {
+          "time": "2026-10-12T15:25:15.166843+00:00",
+          "event": "model_inference_succeeded",
+          "run_id": "29631d5009b548099f5de605807be4d3",
+          "instance_id": "2787c55b9845",
+          "pid": 50576,
+          "role": "intent_plan",
+          "elapsed_seconds": 14.463
+        },
+        {
+          "time": "2026-10-12T15:25:15.168808+00:00",
+          "event": "intent_plan_observed",
+          "run_id": "29631d5009b548099f5de605807be4d3",
+          "instance_id": "2787c55b9845",
+          "pid": 50576,
+          "request_id": "e199d7fba1c1438a9b715d6681ce66e4",
+          "phase": "REVIEW",
+          "mode": "execute",
+          "restriction_shapes": [
+            [
+              {
+                "kind": "relative_time",
+                "columns": [
+                  "reading"
+                ],
+                "status": "unresolved",
+                "scope_basis": null,
+                "relative_period": {
+                  "anchor": "unspecified",
+                  "amount": 1,
+                  "unit": "day",
+                  "column": "reading"
+                }
+              }
+            ]
+          ],
+          "population_shapes": [
+            {
+              "basis": "selected_original",
+              "changes_filters": null
+            }
+          ],
+          "step_count": 1,
+          "question_chars": 0
+        },
+        {
+          "time": "2026-10-12T15:25:15.186975+00:00",
+          "event": "intent_plan_rejected",
+          "run_id": "29631d5009b548099f5de605807be4d3",
+          "instance_id": "2787c55b9845",
+          "pid": 50576,
+          "request_id": "e199d7fba1c1438a9b715d6681ce66e4",
+          "phase": "REVIEW",
+          "attempt": 1,
+          "detail": "group columns ['cohort'] must be explicit goal columns ['reading']; ungrouped totals must omit group_columns or use []"
+        },
+        {
+          "time": "2026-10-12T15:25:15.187500+00:00",
+          "event": "model_inference_admitted",
+          "run_id": "29631d5009b548099f5de605807be4d3",
+          "instance_id": "2787c55b9845",
+          "pid": 50576,
+          "role": "intent_plan",
+          "call_kind": "auxiliary",
+          "calls_used": 2,
+          "call_limit": 9
+        },
+        {
+          "time": "2026-10-12T15:25:15.187961+00:00",
+          "event": "model_payload_budget",
+          "run_id": "29631d5009b548099f5de605807be4d3",
+          "instance_id": "2787c55b9845",
+          "pid": 50576,
+          "payload_bytes": 7805,
+          "input_tokens_estimate": null,
+          "input_tokens_upper_bound": 7805,
+          "payload_bytes_before_projection": 7805,
+          "template_headroom": 640,
+          "input_budget_units": 126976,
+          "output_reserved": 4096,
+          "context_window": 131072,
+          "tool_count": 0,
+          "message_count": 1,
+          "older_turns_compacted": false,
+          "within_budget": true,
+          "observations_compacted": false,
+          "schema_compacted": false,
+          "system_catalog_compacted": false,
+          "tool_menu_compacted": false,
+          "minimal_discovery_menu": false,
+          "reasoning_compacted": false,
+          "minimal_catalog": false,
+          "builtin_instructions_compacted": false,
+          "repair_history_compacted": false,
+          "components": {
+            "system_bytes": 4998,
+            "message_content_bytes": 2400,
+            "tool_calls_bytes": 0,
+            "reasoning_bytes": 0,
+            "tool_schema_bytes": 0,
+            "tool_names": []
+          },
+          "measurement": "conservative_utf8_token_upper_bound"
+        },
+        {
+          "time": "2026-10-12T15:25:28.532341+00:00",
+          "event": "model_inference_succeeded",
+          "run_id": "29631d5009b548099f5de605807be4d3",
+          "instance_id": "2787c55b9845",
+          "pid": 50576,
+          "role": "intent_plan",
+          "elapsed_seconds": 13.345
+        },
+        {
+          "time": "2026-10-12T15:25:28.533672+00:00",
+          "event": "intent_plan_observed",
+          "run_id": "29631d5009b548099f5de605807be4d3",
+          "instance_id": "2787c55b9845",
+          "pid": 50576,
+          "request_id": "e199d7fba1c1438a9b715d6681ce66e4",
+          "phase": "REVIEW",
+          "mode": "execute",
+          "restriction_shapes": [
+            [
+              {
+                "kind": "relative_time",
+                "columns": [
+                  "reading"
+                ],
+                "status": "unresolved",
+                "scope_basis": null,
+                "relative_period": {
+                  "anchor": "unspecified",
+                  "amount": 1,
+                  "unit": "day",
+                  "column": "reading"
+                }
+              }
+            ]
+          ],
+          "population_shapes": [
+            {
+              "basis": "selected_original",
+              "changes_filters": null
+            }
+          ],
+          "step_count": 1,
+          "question_chars": 0
+        },
+        {
+          "time": "2026-10-12T15:25:28.538622+00:00",
+          "event": "intent_plan_rejected",
+          "run_id": "29631d5009b548099f5de605807be4d3",
+          "instance_id": "2787c55b9845",
+          "pid": 50576,
+          "request_id": "e199d7fba1c1438a9b715d6681ce66e4",
+          "phase": "REVIEW",
+          "attempt": 2,
+          "detail": "group columns ['cohort'] must be explicit goal columns ['reading']; ungrouped totals must omit group_columns or use []"
+        },
+        {
+          "time": "2026-10-12T15:25:28.538919+00:00",
+          "event": "model_inference_admitted",
+          "run_id": "29631d5009b548099f5de605807be4d3",
+          "instance_id": "2787c55b9845",
+          "pid": 50576,
+          "role": "intent_plan",
+          "call_kind": "auxiliary",
+          "calls_used": 3,
+          "call_limit": 9
+        },
+        {
+          "time": "2026-10-12T15:25:28.539230+00:00",
+          "event": "model_payload_budget",
+          "run_id": "29631d5009b548099f5de605807be4d3",
+          "instance_id": "2787c55b9845",
+          "pid": 50576,
+          "payload_bytes": 7805,
+          "input_tokens_estimate": null,
+          "input_tokens_upper_bound": 7805,
+          "payload_bytes_before_projection": 7805,
+          "template_headroom": 640,
+          "input_budget_units": 126976,
+          "output_reserved": 4096,
+          "context_window": 131072,
+          "tool_count": 0,
+          "message_count": 1,
+          "older_turns_compacted": false,
+          "within_budget": true,
+          "observations_compacted": false,
+          "schema_compacted": false,
+          "system_catalog_compacted": false,
+          "tool_menu_compacted": false,
+          "minimal_discovery_menu": false,
+          "reasoning_compacted": false,
+          "minimal_catalog": false,
+          "builtin_instructions_compacted": false,
+          "repair_history_compacted": false,
+          "components": {
+            "system_bytes": 4998,
+            "message_content_bytes": 2400,
+            "tool_calls_bytes": 0,
+            "reasoning_bytes": 0,
+            "tool_schema_bytes": 0,
+            "tool_names": []
+          },
+          "measurement": "conservative_utf8_token_upper_bound"
+        },
+        {
+          "time": "2026-10-12T15:25:41.662267+00:00",
+          "event": "model_inference_succeeded",
+          "run_id": "29631d5009b548099f5de605807be4d3",
+          "instance_id": "2787c55b9845",
+          "pid": 50576,
+          "role": "intent_plan",
+          "elapsed_seconds": 13.123
+        },
+        {
+          "time": "2026-10-12T15:25:41.664602+00:00",
+          "event": "intent_plan_observed",
+          "run_id": "29631d5009b548099f5de605807be4d3",
+          "instance_id": "2787c55b9845",
+          "pid": 50576,
+          "request_id": "e199d7fba1c1438a9b715d6681ce66e4",
+          "phase": "REVIEW",
+          "mode": "execute",
+          "restriction_shapes": [
+            [
+              {
+                "kind": "relative_time",
+                "columns": [
+                  "reading"
+                ],
+                "status": "unresolved",
+                "scope_basis": null,
+                "relative_period": {
+                  "anchor": "unspecified",
+                  "amount": 1,
+                  "unit": "day",
+                  "column": "reading"
+                }
+              }
+            ]
+          ],
+          "population_shapes": [
+            {
+              "basis": "selected_original",
+              "changes_filters": null
+            }
+          ],
+          "step_count": 1,
+          "question_chars": 0
+        },
+        {
+          "time": "2026-10-12T15:25:41.676170+00:00",
+          "event": "intent_plan_rejected",
+          "run_id": "29631d5009b548099f5de605807be4d3",
+          "instance_id": "2787c55b9845",
+          "pid": 50576,
+          "request_id": "e199d7fba1c1438a9b715d6681ce66e4",
+          "phase": "REVIEW",
+          "attempt": 3,
+          "detail": "group columns ['cohort'] must be explicit goal columns ['reading']; ungrouped totals must omit group_columns or use []"
+        },
+        {
+          "time": "2026-10-12T15:25:41.680760+00:00",
+          "event": "error",
+          "run_id": "29631d5009b548099f5de605807be4d3",
+          "instance_id": "2787c55b9845",
+          "pid": 50576,
+          "error_category": null,
+          "error_id": "0b707f2e64d9",
+          "stage": "intent_plan_validation",
+          "error_type": "ValueError",
+          "attempt_budget": null,
+          "database_errno": null,
+          "os_errno": null,
+          "winerror": null,
+          "http_status": null,
+          "frames": [
+            {
+              "file": "intent_plan.py",
+              "line": 310,
+              "function": "interpret"
+            },
+            {
+              "file": "intent_plan.py",
+              "line": 245,
+              "function": "validate"
+            },
+            {
+              "file": "goal_contract.py",
+              "line": 127,
+              "function": "validate_goal"
+            },
+            {
+              "file": "goal_options.py",
+              "line": 51,
+              "function": "validate_options"
+            }
+          ]
+        },
+        {
+          "time": "2026-10-12T15:25:41.681004+00:00",
+          "event": "goal_interpretation_failed",
+          "run_id": "29631d5009b548099f5de605807be4d3",
+          "instance_id": "2787c55b9845",
+          "pid": 50576,
+          "request_id": "e199d7fba1c1438a9b715d6681ce66e4",
+          "error_id": "0b707f2e64d9",
+          "stage": "intent_plan_validation",
+          "reason": "output_contract_unverified",
+          "database_tool_dispatched": false
+        },
+        {
+          "time": "2026-10-12T15:25:41.693265+00:00",
+          "event": "run_completed",
+          "run_id": "29631d5009b548099f5de605807be4d3",
+          "instance_id": "2787c55b9845",
+          "pid": 50576,
+          "status": "blocked",
+          "elapsed_seconds": 49.093,
+          "process_peak_rss_bytes": 293175296,
+          "frame_cache_bytes": 0
+        },
+        {
+          "time": "2026-10-12T15:25:41.693426+00:00",
+          "event": "turn_slo",
+          "run_id": "29631d5009b548099f5de605807be4d3",
+          "instance_id": "2787c55b9845",
+          "pid": 50576,
+          "elapsed_seconds": 49.093,
+          "limit": 180.0,
+          "status": "ok"
+        }
+      ],
+      "stop_reason": "goal_unverified"
+    }
+  ]
+}

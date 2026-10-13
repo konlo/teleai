@@ -1,0 +1,1754 @@
+.................... [  2%]
+................................... [  5%]
+........................................................ [ 11%]
+...............F..................... [ 15%]
+....................................................... [ 21%]
+.......................................................................... [ 29%]
+....................................... [ 33%]
+....................................................................... [ 40%]
+..........................................F....F....FF........................................ [ 50%]
+........................................................................................ [ 59%]
+................................. [ 63%]
+................................................ [ 68%]
+....................................................ssss... [ 74%]
+.................F.......................... [ 79%]
+............................................................................................... [ 89%]
+................................... [ 93%]
+................................................. [ 98%]
+.................                                                    [100%]
+=================================== FAILURES ===================================
+_ FailureBatchTests.test_grouped_histogram_requires_an_observed_numeric_measure_before_sql (kind='bar') _
+ValueError: A grouped chart needs distinct measure and category columns; omit category for a single variable distribution
+
+During handling of the above exception, another exception occurred:
+
+self = <test_agent_failure_batch.FailureBatchTests testMethod=test_grouped_histogram_requires_an_observed_numeric_measure_before_sql>
+
+    def test_grouped_histogram_requires_an_observed_numeric_measure_before_sql(self):
+        from core.analysis_agent.goal_contract import compile_goal, pending_state
+        from langchain_core.messages import HumanMessage
+        schema=[{'table':'lab.observations','observed_at':datetime.now(timezone.utc).isoformat(),
+                 'columns':[{'name':'reading','dtype':'longtext'},{'name':'cohort','dtype':'int'}]}]
+        plan=goal('chart',{'kind':'histogram','axes':{'x':'reading'},'category':'cohort'},columns=['reading','cohort'])
+        with tempfile.TemporaryDirectory() as root:
+            r=GraphAnalysisRuntime(root,'owner','bad-group',GoalModel(goals=[plan]),sql_dialect='mysql',reference_context_loader=lambda:schema)
+            try:
+                state=pending_state(HumanMessage(content='분포를 그려줘',id='new'),{},r.context)
+                with self.assertRaisesRegex(ValueError,'requires a numeric x measure'):
+                    compile_goal(state,plan,r.context)
+                self.assertEqual(len(r.datasets.metadata),0)
+            finally:r.close()
+        for kind in ('bar','scatter'):
+>           with self.subTest(kind=kind),self.assertRaisesRegex(ValueError,'category groups a numeric histogram only'):
+E           AssertionError: "category groups a numeric histogram only" does not match "A grouped chart needs distinct measure and category columns; omit category for a single variable distribution"
+
+tests/test_agent_failure_batch.py:106: AssertionError
+_ FailureBatchTests.test_grouped_histogram_requires_an_observed_numeric_measure_before_sql (kind='scatter') _
+ValueError: A grouped chart needs distinct measure and category columns; omit category for a single variable distribution
+
+During handling of the above exception, another exception occurred:
+
+self = <test_agent_failure_batch.FailureBatchTests testMethod=test_grouped_histogram_requires_an_observed_numeric_measure_before_sql>
+
+    def test_grouped_histogram_requires_an_observed_numeric_measure_before_sql(self):
+        from core.analysis_agent.goal_contract import compile_goal, pending_state
+        from langchain_core.messages import HumanMessage
+        schema=[{'table':'lab.observations','observed_at':datetime.now(timezone.utc).isoformat(),
+                 'columns':[{'name':'reading','dtype':'longtext'},{'name':'cohort','dtype':'int'}]}]
+        plan=goal('chart',{'kind':'histogram','axes':{'x':'reading'},'category':'cohort'},columns=['reading','cohort'])
+        with tempfile.TemporaryDirectory() as root:
+            r=GraphAnalysisRuntime(root,'owner','bad-group',GoalModel(goals=[plan]),sql_dialect='mysql',reference_context_loader=lambda:schema)
+            try:
+                state=pending_state(HumanMessage(content='분포를 그려줘',id='new'),{},r.context)
+                with self.assertRaisesRegex(ValueError,'requires a numeric x measure'):
+                    compile_goal(state,plan,r.context)
+                self.assertEqual(len(r.datasets.metadata),0)
+            finally:r.close()
+        for kind in ('bar','scatter'):
+>           with self.subTest(kind=kind),self.assertRaisesRegex(ValueError,'category groups a numeric histogram only'):
+E           AssertionError: "category groups a numeric histogram only" does not match "A grouped chart needs distinct measure and category columns; omit category for a single variable distribution"
+
+tests/test_agent_failure_batch.py:106: AssertionError
+_ CompletionContractTests.test_compound_statistics_and_chart_select_raw_among_prior_subsets _
+
+self = <test_analysis_completion_contract.CompletionContractTests testMethod=test_compound_statistics_and_chart_select_raw_among_prior_subsets>
+
+    def test_compound_statistics_and_chart_select_raw_among_prior_subsets(self):
+        frame = pd.DataFrame({'reading': [2., 4., 10., 20., 30., 40.]})
+        with tempfile.TemporaryDirectory() as root:
+            runtime = GraphAnalysisRuntime(root, 'owner', 'compound', ForbiddenModel(),intent_mode='contract_fixture')
+            try:
+                raw = runtime.datasets.register(frame, source='fixture.signals',
+                    coverage='unknown', predicate_known=True, snapshot='fixture:v1')
+                subset = runtime.datasets.register(frame.iloc[:3].copy(), source=raw.source,
+                    coverage='unknown', predicate_known=True, snapshot='fixture:v1',
+                    parent_id=raw.id, conditions=[{'column':'reading','op':'le','value':10}])
+                runtime.context.reference_context[:] = [fixture_reference_context(raw.source, frame)]
+                runtime.select_dataset(raw.id)
+                render = next(t.run for t in build_analysis_tools(runtime.context) if t.name == 'render_chart_spec')
+                # Both an original and a filtered chart exist from previous EDA.
+                render(dataset_id=raw.id, kind='histogram', x='reading')
+                render(dataset_id=subset.id, kind='histogram', x='reading')
+                digest = stored_dataset_digest(runtime.datasets, raw.id)
+                result = runtime.submit('현재 로딩된 6행 표본에서 reading 평균을 계산하고 reading 히스토그램도 보여줘')
+                self.assertEqual(result['status'], 'answered', result)
+                recovery = runtime.inspect()['recovery']
+                self.assertEqual(recovery['model_calls'], 0)
+                self.assertIn(str(frame.reading.mean()), result['text'])
+>               self.assertIn('이미지를 생성했습니다', result['text'])
+E               AssertionError: '이미지를 생성했습니다' not found in 'reading 분포 저장된 이미지를 표시했습니다.\n분석 범위: 보유 6행 기준 · unknown · raw · 표시 데이터 6개 · 집계 none\n\n보유 데이터로 계산한 결과입니다. 출처: fixture.signals\n분석 범위: 현재 보유한 일부 데이터\n\n평균: 17.666666666666668'
+
+tests/test_analysis_completion_contract.py:163: AssertionError
+_ CompletionContractTests.test_repair_contracts_reference_real_registered_tools (capability='metadata') _
+
+self = <test_analysis_completion_contract.CompletionContractTests testMethod=test_repair_contracts_reference_real_registered_tools>
+
+    def test_repair_contracts_reference_real_registered_tools(self):
+        from core.analysis_tool_contract import AnalysisToolContext
+        from utils.analysis_datasets import DatasetStore
+        context = AnalysisToolContext(DatasetStore(), {}, [], lambda **_: None)
+        names = {tool.name for tool in build_analysis_tools(context)}
+        names.add('query_databricks')  # Runtime's approval-gated replacement.
+        for contract in CONTRACTS:
+            with self.subTest(capability=contract.name):
+>               self.assertTrue(set(contract.tools).issubset(names))
+E               AssertionError: False is not true
+
+tests/test_analysis_completion_contract.py:38: AssertionError
+_ CompletionContractTests.test_repair_contracts_reference_real_registered_tools (capability='chart') _
+
+self = <test_analysis_completion_contract.CompletionContractTests testMethod=test_repair_contracts_reference_real_registered_tools>
+
+    def test_repair_contracts_reference_real_registered_tools(self):
+        from core.analysis_tool_contract import AnalysisToolContext
+        from utils.analysis_datasets import DatasetStore
+        context = AnalysisToolContext(DatasetStore(), {}, [], lambda **_: None)
+        names = {tool.name for tool in build_analysis_tools(context)}
+        names.add('query_databricks')  # Runtime's approval-gated replacement.
+        for contract in CONTRACTS:
+            with self.subTest(capability=contract.name):
+>               self.assertTrue(set(contract.tools).issubset(names))
+E               AssertionError: False is not true
+
+tests/test_analysis_completion_contract.py:38: AssertionError
+_ CategoricalPresentationJourneyTests.test_a_bad_population_audit_cannot_widen_a_reviewed_unchanged_style_request _
+
+self = <test_categorical_presentation_journey.CategoricalPresentationJourneyTests testMethod=test_a_bad_population_audit_cannot_widen_a_reviewed_unchanged_style_request>
+
+    def test_a_bad_population_audit_cannot_widen_a_reviewed_unchanged_style_request(self):
+        from core.analysis_agent.population_audit import audit
+        scope={'conditions':[{'column':'reading','op':'ge','value':3}],'any_conditions':[]}
+        plan=goal('chart',{'kind':'histogram'},columns=['reading'],conditions=scope['conditions'])
+        with tempfile.TemporaryDirectory() as root:
+            r,raw=goals.LLMGoalTests().runtime(root,GoalModel(goals=[plan]))
+            try:
+                i=r.recovery.goal_interpreter;i.model_recovery=None
+                calls=[]
+                def invoke(messages):
+                    calls.append(messages)
+                    return AIMessage(content=json.dumps({'conditions':[],'any_conditions':[],
+                        'change':'clear','evidence_quote':'an earlier request',
+                        'restriction_review':{'clauses':[],'question':''}}))
+                i.population_model=SimpleNamespace(invoke=invoke)
+                with self.assertRaisesRegex(ValueError,'exact quote'):
+>                   audit(i,{'request_id':'x','request_text':'add legend','confirmed_analysis':{
+                        'required_sources':['lab.observations'],'scope':scope}}, {},plan)
+
+tests/test_categorical_presentation_journey.py:249:
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+core/analysis_agent/population_audit.py:199: in audit
+    if interpreter.model_recovery else invoke())
+                                       ^^^^^^^^
+core/analysis_agent/population_audit.py:196: in invoke
+    def invoke():return invoke_role(population_model,req,interpreter.budget)
+                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+core/analysis_agent/json_contract.py:94: in invoke_role
+    return budget.wrap_model_call(request, lambda r: model.invoke([r.system_message, *r.messages],stream=False))
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+core/analysis_agent/model_context.py:402: in wrap_model_call
+    return handler(request.override(messages=messages,tools=tools,system_message=system))
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+>   return budget.wrap_model_call(request, lambda r: model.invoke([r.system_message, *r.messages],stream=False))
+                                                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   TypeError: CategoricalPresentationJourneyTests.test_a_bad_population_audit_cannot_widen_a_reviewed_unchanged_style_request.<locals>.invoke() got an unexpected keyword argument 'stream'
+
+core/analysis_agent/json_contract.py:94: TypeError
+_ CategoricalPresentationJourneyTests.test_literal_subject_survives_a_subsequent_invalid_task_selection _
+
+self = <test_categorical_presentation_journey.CategoricalPresentationJourneyTests testMethod=test_literal_subject_survives_a_subsequent_invalid_task_selection>
+
+    def test_literal_subject_survives_a_subsequent_invalid_task_selection(self):
+        from core.analysis_agent.task_selection import select,schema_for,validate
+        schema=schema_for({})
+        single=next(v for v in schema['anyOf'] if v['properties']['capabilities'].get('const')==['row_count'])
+        self.assertEqual(single['properties']['chart_kind'],{'const':''})
+        valid={'mode':'execute','capabilities':['row_count'],'source_reference':'explicit',
+            'source_mentions':[],'chart_kind':'scatter'}
+        self.assertEqual(validate(valid,'how many rows')['chart_kind'],'')
+        with tempfile.TemporaryDirectory() as root:
+            r,raw=goals.LLMGoalTests().runtime(root,GoalModel(goals=[goal('row_count')]))
+            try:
+                i=r.recovery.goal_interpreter;i.model_recovery=None
+                i.selection_model=SimpleNamespace(invoke=lambda messages:AIMessage(content=json.dumps({
+                    'mode':'execute','capabilities':['chart'],'source_reference':'explicit',
+                    'source_mentions':[{'name':'missing_observations','quote':'missing_observations'}],
+                    'chart_kind':''})))
+                current={'request_id':'bad-selection','request_text':'missing_observations row count'}
+                with patch('core.analysis_agent.subject_identity.read',return_value=[{
+                        'name':'missing_observations','quote':'missing_observations'}]),self.assertRaises(ValueError):
+>                   select(i,current,{'request':current['request_text']})
+
+tests/test_categorical_presentation_journey.py:186:
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+core/analysis_agent/task_selection.py:301: in select
+    if interpreter.model_recovery else invoke())
+                                       ^^^^^^^^
+core/analysis_agent/task_selection.py:298: in invoke
+    def invoke():return invoke_role(model,req,interpreter.budget)
+                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+core/analysis_agent/json_contract.py:94: in invoke_role
+    return budget.wrap_model_call(request, lambda r: model.invoke([r.system_message, *r.messages],stream=False))
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+core/analysis_agent/model_context.py:402: in wrap_model_call
+    return handler(request.override(messages=messages,tools=tools,system_message=system))
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+>   return budget.wrap_model_call(request, lambda r: model.invoke([r.system_message, *r.messages],stream=False))
+                                                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   TypeError: CategoricalPresentationJourneyTests.test_literal_subject_survives_a_subsequent_invalid_task_selection.<locals>.<lambda>() got an unexpected keyword argument 'stream'
+
+core/analysis_agent/json_contract.py:94: TypeError
+_ CategoricalPresentationJourneyTests.test_self_grouped_histogram_is_rejected_before_tools_run _
+ValueError: A grouped chart needs distinct measure and category columns; omit category for a single variable distribution
+
+During handling of the above exception, another exception occurred:
+
+self = <test_categorical_presentation_journey.CategoricalPresentationJourneyTests testMethod=test_self_grouped_histogram_is_rejected_before_tools_run>
+
+    def test_self_grouped_histogram_is_rejected_before_tools_run(self):
+        from core.analysis_agent.goal_contract import compile_goal
+        plan=goal('chart',{'kind':'histogram','axes':{'x':'reading'},'category':'reading'},columns=['reading'])
+        with tempfile.TemporaryDirectory() as root:
+            r,raw=goals.LLMGoalTests().runtime(root,GoalModel(goals=[plan]))
+            try:
+>               with self.assertRaisesRegex(ValueError,'DISTINCT'):
+E               AssertionError: "DISTINCT" does not match "A grouped chart needs distinct measure and category columns; omit category for a single variable distribution"
+
+tests/test_categorical_presentation_journey.py:162: AssertionError
+_ CategoricalPresentationJourneyTests.test_source_alias_is_normalized_before_population_audit _
+
+self = <test_categorical_presentation_journey.CategoricalPresentationJourneyTests testMethod=test_source_alias_is_normalized_before_population_audit>
+
+    def test_source_alias_is_normalized_before_population_audit(self):
+        from core.analysis_agent.goal_contract import compile_goal
+        from core.analysis_agent.population_audit import audit
+        scope={'conditions':[{'column':'reading','op':'ge','value':3}],'any_conditions':[]}
+        plan=goal('chart',{'kind':'histogram','axes':{'x':'reading'}},sources=['observations'],
+            columns=['reading'],conditions=scope['conditions'])
+        with tempfile.TemporaryDirectory() as root:
+            r,raw=goals.LLMGoalTests().runtime(root,GoalModel(goals=[plan]))
+            try:
+                current={'request_id':'x','request_text':'add legend','confirmed_analysis':{
+                    'required_sources':['lab.observations'],'scope':scope}}
+                compiled=compile_goal(current,plan,r.context)
+                self.assertEqual(compiled['goal']['sources'],['lab.observations'])
+                i=r.recovery.goal_interpreter;i.model_recovery=None
+                seen=[]
+                def invoke(messages):
+                    seen.append(json.loads(messages[1].content)['previous_requested_population'])
+                    return AIMessage(content=json.dumps({'conditions':[],'any_conditions':[],
+                        'change':'keep','evidence_quote':'',
+                        'restriction_review':{'clauses':[],'question':''}}))
+                i.population_model=SimpleNamespace(invoke=invoke)
+>               result=audit(i,current,{},compiled['goal'])
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_categorical_presentation_journey.py:151:
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+core/analysis_agent/population_audit.py:199: in audit
+    if interpreter.model_recovery else invoke())
+                                       ^^^^^^^^
+core/analysis_agent/population_audit.py:196: in invoke
+    def invoke():return invoke_role(population_model,req,interpreter.budget)
+                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+core/analysis_agent/json_contract.py:94: in invoke_role
+    return budget.wrap_model_call(request, lambda r: model.invoke([r.system_message, *r.messages],stream=False))
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+core/analysis_agent/model_context.py:402: in wrap_model_call
+    return handler(request.override(messages=messages,tools=tools,system_message=system))
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+r = namespace(state={'recovery': {'request_id': 'x', 'request_text': 'add legend', 'confirmed_analysis': {'required_source...}', additional_kwargs={}, response_metadata={})], tools=[], override=<function audit.<locals>.override at 0x17ea927a0>)
+
+>   return budget.wrap_model_call(request, lambda r: model.invoke([r.system_message, *r.messages],stream=False))
+                                                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   TypeError: CategoricalPresentationJourneyTests.test_source_alias_is_normalized_before_population_audit.<locals>.invoke() got an unexpected keyword argument 'stream'
+
+core/analysis_agent/json_contract.py:94: TypeError
+_ PendingIntentPopulationTests.test_literal_subject_reader_receives_observed_fields_of_current_subject _
+
+self = <test_pending_intent_population.PendingIntentPopulationTests testMethod=test_literal_subject_reader_receives_observed_fields_of_current_subject>
+
+    def test_literal_subject_reader_receives_observed_fields_of_current_subject(self):
+        from unittest.mock import patch
+        from core.analysis_agent.subject_identity import read
+        from langchain_core.messages import AIMessage
+        import json
+        captured=[]
+        def invoke(messages):
+            captured.append(json.loads(messages[1].content))
+            return AIMessage(content=json.dumps({'candidate_roles':{'cohort':'other','DB':'other'}}))
+        model=SimpleNamespace(invoke=invoke)
+        interpreter=SimpleNamespace(selection_model=model,model_recovery=None,
+            budget=SimpleNamespace(wrap_model_call=lambda r,h:h(r)),
+            diagnostics=SimpleNamespace(emit=lambda *a,**k:None))
+        data={'verified_previous':{'required_sources':['lab.observations']},
+              'tables':self.context().reference_context}
+        with patch('core.analysis_agent.model_roles.json_role',return_value=model):
+>           self.assertEqual(read(interpreter,{'request_id':'next','request_text':'cohort DB 값'},data),[])
+                             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_pending_intent_population.py:185:
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+core/analysis_agent/subject_identity.py:87: in read
+    if interpreter.model_recovery else invoke())
+                                       ^^^^^^^^
+core/analysis_agent/subject_identity.py:84: in invoke
+    def invoke():return invoke_role(model,req,interpreter.budget)
+                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+core/analysis_agent/json_contract.py:94: in invoke_role
+    return budget.wrap_model_call(request, lambda r: model.invoke([r.system_message, *r.messages],stream=False))
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+tests/test_pending_intent_population.py:180: in <lambda>
+    budget=SimpleNamespace(wrap_model_call=lambda r,h:h(r)),
+                                                      ^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+r = namespace(state={'recovery': {'request_id': 'next', 'request_text': 'cohort DB 값'}}, system_message=SystemMessage(cont...pulationTests.test_literal_subject_reader_receives_observed_fields_of_current_subject.<locals>.invoke at 0x341152340>))
+
+>   return budget.wrap_model_call(request, lambda r: model.invoke([r.system_message, *r.messages],stream=False))
+                                                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   TypeError: PendingIntentPopulationTests.test_literal_subject_reader_receives_observed_fields_of_current_subject.<locals>.invoke() got an unexpected keyword argument 'stream'
+
+core/analysis_agent/json_contract.py:94: TypeError
+=============================== warnings summary ===============================
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_count_rate_dual_axis_uses_real_png_and_exact_denominators
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_every_declared_reference_oracle_is_executable_without_a_model
+  reference:L2_061:20: UserWarning: Glyph 51217 (\N{HANGUL SYLLABLE JEOB}) missing from font(s) DejaVu Sans.
+
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_count_rate_dual_axis_uses_real_png_and_exact_denominators
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_every_declared_reference_oracle_is_executable_without_a_model
+  reference:L2_061:20: UserWarning: Glyph 52489 (\N{HANGUL SYLLABLE COG}) missing from font(s) DejaVu Sans.
+
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_count_rate_dual_axis_uses_real_png_and_exact_denominators
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_every_declared_reference_oracle_is_executable_without_a_model
+  reference:L2_061:20: UserWarning: Glyph 50900 (\N{HANGUL SYLLABLE WEOL}) missing from font(s) DejaVu Sans.
+
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_count_rate_dual_axis_uses_real_png_and_exact_denominators
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_every_declared_reference_oracle_is_executable_without_a_model
+  reference:L2_061:20: UserWarning: Glyph 52509 (\N{HANGUL SYLLABLE CONG}) missing from font(s) DejaVu Sans.
+
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_count_rate_dual_axis_uses_real_png_and_exact_denominators
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_every_declared_reference_oracle_is_executable_without_a_model
+  reference:L2_061:20: UserWarning: Glyph 44148 (\N{HANGUL SYLLABLE GEON}) missing from font(s) DejaVu Sans.
+
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_count_rate_dual_axis_uses_real_png_and_exact_denominators
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_every_declared_reference_oracle_is_executable_without_a_model
+  reference:L2_061:20: UserWarning: Glyph 49688 (\N{HANGUL SYLLABLE SU}) missing from font(s) DejaVu Sans.
+
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_count_rate_dual_axis_uses_real_png_and_exact_denominators
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_every_declared_reference_oracle_is_executable_without_a_model
+  reference:L2_061:20: UserWarning: Glyph 44032 (\N{HANGUL SYLLABLE GA}) missing from font(s) DejaVu Sans.
+
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_count_rate_dual_axis_uses_real_png_and_exact_denominators
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_every_declared_reference_oracle_is_executable_without_a_model
+  reference:L2_061:20: UserWarning: Glyph 51077 (\N{HANGUL SYLLABLE IB}) missing from font(s) DejaVu Sans.
+
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_count_rate_dual_axis_uses_real_png_and_exact_denominators
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_every_declared_reference_oracle_is_executable_without_a_model
+  reference:L2_061:20: UserWarning: Glyph 51204 (\N{HANGUL SYLLABLE JEON}) missing from font(s) DejaVu Sans.
+
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_count_rate_dual_axis_uses_real_png_and_exact_denominators
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_every_declared_reference_oracle_is_executable_without_a_model
+  reference:L2_061:20: UserWarning: Glyph 54872 (\N{HANGUL SYLLABLE HWAN}) missing from font(s) DejaVu Sans.
+
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_count_rate_dual_axis_uses_real_png_and_exact_denominators
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_every_declared_reference_oracle_is_executable_without_a_model
+  reference:L2_061:20: UserWarning: Glyph 50984 (\N{HANGUL SYLLABLE YUL}) missing from font(s) DejaVu Sans.
+
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_count_rate_dual_axis_uses_real_png_and_exact_denominators
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_every_declared_reference_oracle_is_executable_without_a_model
+  reference:L2_061:20: UserWarning: Glyph 48324 (\N{HANGUL SYLLABLE BYEOL}) missing from font(s) DejaVu Sans.
+
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_count_rate_dual_axis_uses_real_png_and_exact_denominators
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_every_declared_reference_oracle_is_executable_without_a_model
+  reference:L2_061:20: UserWarning: Glyph 47560 (\N{HANGUL SYLLABLE MA}) missing from font(s) DejaVu Sans.
+
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_count_rate_dual_axis_uses_real_png_and_exact_denominators
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_every_declared_reference_oracle_is_executable_without_a_model
+  reference:L2_061:20: UserWarning: Glyph 52992 (\N{HANGUL SYLLABLE KE}) missing from font(s) DejaVu Sans.
+
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_count_rate_dual_axis_uses_real_png_and_exact_denominators
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_every_declared_reference_oracle_is_executable_without_a_model
+  reference:L2_061:20: UserWarning: Glyph 54021 (\N{HANGUL SYLLABLE TING}) missing from font(s) DejaVu Sans.
+
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_count_rate_dual_axis_uses_real_png_and_exact_denominators
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_every_declared_reference_oracle_is_executable_without_a_model
+  reference:L2_061:20: UserWarning: Glyph 48143 (\N{HANGUL SYLLABLE MIC}) missing from font(s) DejaVu Sans.
+
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_count_rate_dual_axis_uses_real_png_and_exact_denominators
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_every_declared_reference_oracle_is_executable_without_a_model
+  reference:L2_061:20: UserWarning: Glyph 50696 (\N{HANGUL SYLLABLE YE}) missing from font(s) DejaVu Sans.
+
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_count_rate_dual_axis_uses_real_png_and_exact_denominators
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_every_declared_reference_oracle_is_executable_without_a_model
+  reference:L2_061:20: UserWarning: Glyph 44552 (\N{HANGUL SYLLABLE GEUM}) missing from font(s) DejaVu Sans.
+
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_count_rate_dual_axis_uses_real_png_and_exact_denominators
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_every_declared_reference_oracle_is_executable_without_a_model
+  reference:L2_061:20: UserWarning: Glyph 51060 (\N{HANGUL SYLLABLE I}) missing from font(s) DejaVu Sans.
+
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_count_rate_dual_axis_uses_real_png_and_exact_denominators
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_every_declared_reference_oracle_is_executable_without_a_model
+  reference:L2_061:20: UserWarning: Glyph 51473 (\N{HANGUL SYLLABLE JUNG}) missing from font(s) DejaVu Sans.
+
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_count_rate_dual_axis_uses_real_png_and_exact_denominators
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_every_declared_reference_oracle_is_executable_without_a_model
+  reference:L2_061:20: UserWarning: Glyph 52629 (\N{HANGUL SYLLABLE CUG}) missing from font(s) DejaVu Sans.
+
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_count_rate_dual_axis_uses_real_png_and_exact_denominators
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_every_declared_reference_oracle_is_executable_without_a_model
+  reference:L2_061:20: UserWarning: Glyph 52628 (\N{HANGUL SYLLABLE CU}) missing from font(s) DejaVu Sans.
+
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_count_rate_dual_axis_uses_real_png_and_exact_denominators
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_every_declared_reference_oracle_is_executable_without_a_model
+  reference:L2_061:21: UserWarning: FigureCanvasAgg is non-interactive, and thus cannot be shown
+
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_count_rate_dual_axis_uses_real_png_and_exact_denominators
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_every_declared_reference_oracle_is_executable_without_a_model
+  reference:L2_064:18: UserWarning: set_ticklabels() should only be used with a fixed number of ticks, i.e. after set_ticks() or using a FixedLocator. Otherwise, ticks may be mislabeled.
+
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_count_rate_dual_axis_uses_real_png_and_exact_denominators
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_every_declared_reference_oracle_is_executable_without_a_model
+  reference:L2_064:20: UserWarning: Glyph 51649 (\N{HANGUL SYLLABLE JIG}) missing from font(s) DejaVu Sans.
+
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_count_rate_dual_axis_uses_real_png_and_exact_denominators
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_every_declared_reference_oracle_is_executable_without_a_model
+  reference:L2_064:20: UserWarning: Glyph 50629 (\N{HANGUL SYLLABLE EOB}) missing from font(s) DejaVu Sans.
+
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_count_rate_dual_axis_uses_real_png_and_exact_denominators
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_every_declared_reference_oracle_is_executable_without_a_model
+  reference:L2_064:20: UserWarning: Glyph 44256 (\N{HANGUL SYLLABLE GO}) missing from font(s) DejaVu Sans.
+
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_count_rate_dual_axis_uses_real_png_and_exact_denominators
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_every_declared_reference_oracle_is_executable_without_a_model
+  reference:L2_064:20: UserWarning: Glyph 44061 (\N{HANGUL SYLLABLE GAEG}) missing from font(s) DejaVu Sans.
+
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_count_rate_dual_axis_uses_real_png_and_exact_denominators
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_every_declared_reference_oracle_is_executable_without_a_model
+  reference:L2_064:20: UserWarning: Glyph 49688 (\N{HANGUL SYLLABLE SU}) missing from font(s) DejaVu Sans.
+
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_count_rate_dual_axis_uses_real_png_and_exact_denominators
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_every_declared_reference_oracle_is_executable_without_a_model
+  reference:L2_064:20: UserWarning: Glyph 44032 (\N{HANGUL SYLLABLE GA}) missing from font(s) DejaVu Sans.
+
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_count_rate_dual_axis_uses_real_png_and_exact_denominators
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_every_declared_reference_oracle_is_executable_without_a_model
+  reference:L2_064:20: UserWarning: Glyph 51077 (\N{HANGUL SYLLABLE IB}) missing from font(s) DejaVu Sans.
+
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_count_rate_dual_axis_uses_real_png_and_exact_denominators
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_every_declared_reference_oracle_is_executable_without_a_model
+  reference:L2_064:20: UserWarning: Glyph 49457 (\N{HANGUL SYLLABLE SEONG}) missing from font(s) DejaVu Sans.
+
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_count_rate_dual_axis_uses_real_png_and_exact_denominators
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_every_declared_reference_oracle_is_executable_without_a_model
+  reference:L2_064:20: UserWarning: Glyph 44277 (\N{HANGUL SYLLABLE GONG}) missing from font(s) DejaVu Sans.
+
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_count_rate_dual_axis_uses_real_png_and_exact_denominators
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_every_declared_reference_oracle_is_executable_without_a_model
+  reference:L2_064:20: UserWarning: Glyph 47456 (\N{HANGUL SYLLABLE RYUL}) missing from font(s) DejaVu Sans.
+
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_count_rate_dual_axis_uses_real_png_and_exact_denominators
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_every_declared_reference_oracle_is_executable_without_a_model
+  reference:L2_064:20: UserWarning: Glyph 48324 (\N{HANGUL SYLLABLE BYEOL}) missing from font(s) DejaVu Sans.
+
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_count_rate_dual_axis_uses_real_png_and_exact_denominators
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_every_declared_reference_oracle_is_executable_without_a_model
+  reference:L2_064:20: UserWarning: Glyph 44508 (\N{HANGUL SYLLABLE GYU}) missing from font(s) DejaVu Sans.
+
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_count_rate_dual_axis_uses_real_png_and_exact_denominators
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_every_declared_reference_oracle_is_executable_without_a_model
+  reference:L2_064:20: UserWarning: Glyph 47784 (\N{HANGUL SYLLABLE MO}) missing from font(s) DejaVu Sans.
+
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_count_rate_dual_axis_uses_real_png_and_exact_denominators
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_every_declared_reference_oracle_is_executable_without_a_model
+  reference:L2_064:20: UserWarning: Glyph 48143 (\N{HANGUL SYLLABLE MIC}) missing from font(s) DejaVu Sans.
+
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_count_rate_dual_axis_uses_real_png_and_exact_denominators
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_every_declared_reference_oracle_is_executable_without_a_model
+  reference:L2_064:20: UserWarning: Glyph 47560 (\N{HANGUL SYLLABLE MA}) missing from font(s) DejaVu Sans.
+
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_count_rate_dual_axis_uses_real_png_and_exact_denominators
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_every_declared_reference_oracle_is_executable_without_a_model
+  reference:L2_064:20: UserWarning: Glyph 52992 (\N{HANGUL SYLLABLE KE}) missing from font(s) DejaVu Sans.
+
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_count_rate_dual_axis_uses_real_png_and_exact_denominators
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_every_declared_reference_oracle_is_executable_without_a_model
+  reference:L2_064:20: UserWarning: Glyph 54021 (\N{HANGUL SYLLABLE TING}) missing from font(s) DejaVu Sans.
+
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_count_rate_dual_axis_uses_real_png_and_exact_denominators
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_every_declared_reference_oracle_is_executable_without_a_model
+  reference:L2_064:20: UserWarning: Glyph 48708 (\N{HANGUL SYLLABLE BI}) missing from font(s) DejaVu Sans.
+
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_count_rate_dual_axis_uses_real_png_and_exact_denominators
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_every_declared_reference_oracle_is_executable_without_a_model
+  reference:L2_064:20: UserWarning: Glyph 44368 (\N{HANGUL SYLLABLE GYO}) missing from font(s) DejaVu Sans.
+
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_count_rate_dual_axis_uses_real_png_and_exact_denominators
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_every_declared_reference_oracle_is_executable_without_a_model
+  reference:L2_064:21: UserWarning: FigureCanvasAgg is non-interactive, and thus cannot be shown
+
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_count_rate_dual_axis_uses_real_png_and_exact_denominators
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_every_declared_reference_oracle_is_executable_without_a_model
+  reference:L2_065:20: UserWarning: Glyph 53457 (\N{HANGUL SYLLABLE TAB}) missing from font(s) DejaVu Sans.
+
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_count_rate_dual_axis_uses_real_png_and_exact_denominators
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_every_declared_reference_oracle_is_executable_without_a_model
+  reference:L2_065:20: UserWarning: Glyph 49849 (\N{HANGUL SYLLABLE SEUNG}) missing from font(s) DejaVu Sans.
+
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_count_rate_dual_axis_uses_real_png_and_exact_denominators
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_every_declared_reference_oracle_is_executable_without_a_model
+  reference:L2_065:20: UserWarning: Glyph 46321 (\N{HANGUL SYLLABLE DEUNG}) missing from font(s) DejaVu Sans.
+
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_count_rate_dual_axis_uses_real_png_and_exact_denominators
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_every_declared_reference_oracle_is_executable_without_a_model
+  reference:L2_065:20: UserWarning: Glyph 44553 (\N{HANGUL SYLLABLE GEUB}) missing from font(s) DejaVu Sans.
+
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_count_rate_dual_axis_uses_real_png_and_exact_denominators
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_every_declared_reference_oracle_is_executable_without_a_model
+  reference:L2_065:20: UserWarning: Glyph 44061 (\N{HANGUL SYLLABLE GAEG}) missing from font(s) DejaVu Sans.
+
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_count_rate_dual_axis_uses_real_png_and_exact_denominators
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_every_declared_reference_oracle_is_executable_without_a_model
+  reference:L2_065:20: UserWarning: Glyph 49688 (\N{HANGUL SYLLABLE SU}) missing from font(s) DejaVu Sans.
+
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_count_rate_dual_axis_uses_real_png_and_exact_denominators
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_every_declared_reference_oracle_is_executable_without_a_model
+  reference:L2_065:20: UserWarning: Glyph 49373 (\N{HANGUL SYLLABLE SAENG}) missing from font(s) DejaVu Sans.
+
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_count_rate_dual_axis_uses_real_png_and_exact_denominators
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_every_declared_reference_oracle_is_executable_without_a_model
+  reference:L2_065:20: UserWarning: Glyph 51316 (\N{HANGUL SYLLABLE JON}) missing from font(s) DejaVu Sans.
+
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_count_rate_dual_axis_uses_real_png_and_exact_denominators
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_every_declared_reference_oracle_is_executable_without_a_model
+  reference:L2_065:20: UserWarning: Glyph 50984 (\N{HANGUL SYLLABLE YUL}) missing from font(s) DejaVu Sans.
+
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_count_rate_dual_axis_uses_real_png_and_exact_denominators
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_every_declared_reference_oracle_is_executable_without_a_model
+  reference:L2_065:20: UserWarning: Glyph 48324 (\N{HANGUL SYLLABLE BYEOL}) missing from font(s) DejaVu Sans.
+
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_count_rate_dual_axis_uses_real_png_and_exact_denominators
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_every_declared_reference_oracle_is_executable_without_a_model
+  reference:L2_065:20: UserWarning: Glyph 44508 (\N{HANGUL SYLLABLE GYU}) missing from font(s) DejaVu Sans.
+
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_count_rate_dual_axis_uses_real_png_and_exact_denominators
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_every_declared_reference_oracle_is_executable_without_a_model
+  reference:L2_065:20: UserWarning: Glyph 47784 (\N{HANGUL SYLLABLE MO}) missing from font(s) DejaVu Sans.
+
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_count_rate_dual_axis_uses_real_png_and_exact_denominators
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_every_declared_reference_oracle_is_executable_without_a_model
+  reference:L2_065:20: UserWarning: Glyph 48143 (\N{HANGUL SYLLABLE MIC}) missing from font(s) DejaVu Sans.
+
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_count_rate_dual_axis_uses_real_png_and_exact_denominators
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_every_declared_reference_oracle_is_executable_without_a_model
+  reference:L2_065:21: UserWarning: FigureCanvasAgg is non-interactive, and thus cannot be shown
+
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_count_rate_dual_axis_uses_real_png_and_exact_denominators
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_every_declared_reference_oracle_is_executable_without_a_model
+  reference:L2_066:19: UserWarning: Glyph 51068 (\N{HANGUL SYLLABLE IL}) missing from font(s) DejaVu Sans.
+
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_count_rate_dual_axis_uses_real_png_and_exact_denominators
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_every_declared_reference_oracle_is_executable_without_a_model
+  reference:L2_066:19: UserWarning: Glyph 51088 (\N{HANGUL SYLLABLE JA}) missing from font(s) DejaVu Sans.
+
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_count_rate_dual_axis_uses_real_png_and_exact_denominators
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_every_declared_reference_oracle_is_executable_without_a_model
+  reference:L2_066:19: UserWarning: Glyph 51217 (\N{HANGUL SYLLABLE JEOB}) missing from font(s) DejaVu Sans.
+
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_count_rate_dual_axis_uses_real_png_and_exact_denominators
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_every_declared_reference_oracle_is_executable_without_a_model
+  reference:L2_066:19: UserWarning: Glyph 52489 (\N{HANGUL SYLLABLE COG}) missing from font(s) DejaVu Sans.
+
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_count_rate_dual_axis_uses_real_png_and_exact_denominators
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_every_declared_reference_oracle_is_executable_without_a_model
+  reference:L2_066:19: UserWarning: Glyph 49688 (\N{HANGUL SYLLABLE SU}) missing from font(s) DejaVu Sans.
+
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_count_rate_dual_axis_uses_real_png_and_exact_denominators
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_every_declared_reference_oracle_is_executable_without_a_model
+  reference:L2_066:19: UserWarning: Glyph 44032 (\N{HANGUL SYLLABLE GA}) missing from font(s) DejaVu Sans.
+
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_count_rate_dual_axis_uses_real_png_and_exact_denominators
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_every_declared_reference_oracle_is_executable_without_a_model
+  reference:L2_066:19: UserWarning: Glyph 51077 (\N{HANGUL SYLLABLE IB}) missing from font(s) DejaVu Sans.
+
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_count_rate_dual_axis_uses_real_png_and_exact_denominators
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_every_declared_reference_oracle_is_executable_without_a_model
+  reference:L2_066:19: UserWarning: Glyph 47456 (\N{HANGUL SYLLABLE RYUL}) missing from font(s) DejaVu Sans.
+
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_count_rate_dual_axis_uses_real_png_and_exact_denominators
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_every_declared_reference_oracle_is_executable_without_a_model
+  reference:L2_066:19: UserWarning: Glyph 50900 (\N{HANGUL SYLLABLE WEOL}) missing from font(s) DejaVu Sans.
+
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_count_rate_dual_axis_uses_real_png_and_exact_denominators
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_every_declared_reference_oracle_is_executable_without_a_model
+  reference:L2_066:19: UserWarning: Glyph 51473 (\N{HANGUL SYLLABLE JUNG}) missing from font(s) DejaVu Sans.
+
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_count_rate_dual_axis_uses_real_png_and_exact_denominators
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_every_declared_reference_oracle_is_executable_without_a_model
+  reference:L2_066:19: UserWarning: Glyph 48324 (\N{HANGUL SYLLABLE BYEOL}) missing from font(s) DejaVu Sans.
+
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_count_rate_dual_axis_uses_real_png_and_exact_denominators
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_every_declared_reference_oracle_is_executable_without_a_model
+  reference:L2_066:19: UserWarning: Glyph 44148 (\N{HANGUL SYLLABLE GEON}) missing from font(s) DejaVu Sans.
+
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_count_rate_dual_axis_uses_real_png_and_exact_denominators
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_every_declared_reference_oracle_is_executable_without_a_model
+  reference:L2_066:19: UserWarning: Glyph 48143 (\N{HANGUL SYLLABLE MIC}) missing from font(s) DejaVu Sans.
+
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_count_rate_dual_axis_uses_real_png_and_exact_denominators
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_every_declared_reference_oracle_is_executable_without_a_model
+  reference:L2_066:19: UserWarning: Glyph 49457 (\N{HANGUL SYLLABLE SEONG}) missing from font(s) DejaVu Sans.
+
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_count_rate_dual_axis_uses_real_png_and_exact_denominators
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_every_declared_reference_oracle_is_executable_without_a_model
+  reference:L2_066:19: UserWarning: Glyph 44277 (\N{HANGUL SYLLABLE GONG}) missing from font(s) DejaVu Sans.
+
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_count_rate_dual_axis_uses_real_png_and_exact_denominators
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_every_declared_reference_oracle_is_executable_without_a_model
+  reference:L2_066:20: UserWarning: FigureCanvasAgg is non-interactive, and thus cannot be shown
+
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_count_rate_dual_axis_uses_real_png_and_exact_denominators
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_every_declared_reference_oracle_is_executable_without_a_model
+  reference:L2_089:28: UserWarning: Glyph 50900 (\N{HANGUL SYLLABLE WEOL}) missing from font(s) DejaVu Sans.
+
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_count_rate_dual_axis_uses_real_png_and_exact_denominators
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_every_declared_reference_oracle_is_executable_without_a_model
+  reference:L2_089:28: UserWarning: Glyph 44256 (\N{HANGUL SYLLABLE GO}) missing from font(s) DejaVu Sans.
+
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_count_rate_dual_axis_uses_real_png_and_exact_denominators
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_every_declared_reference_oracle_is_executable_without_a_model
+  reference:L2_089:28: UserWarning: Glyph 44061 (\N{HANGUL SYLLABLE GAEG}) missing from font(s) DejaVu Sans.
+
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_count_rate_dual_axis_uses_real_png_and_exact_denominators
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_every_declared_reference_oracle_is_executable_without_a_model
+  reference:L2_089:28: UserWarning: Glyph 49688 (\N{HANGUL SYLLABLE SU}) missing from font(s) DejaVu Sans.
+
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_count_rate_dual_axis_uses_real_png_and_exact_denominators
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_every_declared_reference_oracle_is_executable_without_a_model
+  reference:L2_089:28: UserWarning: Glyph 48324 (\N{HANGUL SYLLABLE BYEOL}) missing from font(s) DejaVu Sans.
+
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_count_rate_dual_axis_uses_real_png_and_exact_denominators
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_every_declared_reference_oracle_is_executable_without_a_model
+  reference:L2_089:28: UserWarning: Glyph 51217 (\N{HANGUL SYLLABLE JEOB}) missing from font(s) DejaVu Sans.
+
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_count_rate_dual_axis_uses_real_png_and_exact_denominators
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_every_declared_reference_oracle_is_executable_without_a_model
+  reference:L2_089:28: UserWarning: Glyph 52489 (\N{HANGUL SYLLABLE COG}) missing from font(s) DejaVu Sans.
+
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_count_rate_dual_axis_uses_real_png_and_exact_denominators
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_every_declared_reference_oracle_is_executable_without_a_model
+  reference:L2_089:28: UserWarning: Glyph 51204 (\N{HANGUL SYLLABLE JEON}) missing from font(s) DejaVu Sans.
+
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_count_rate_dual_axis_uses_real_png_and_exact_denominators
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_every_declared_reference_oracle_is_executable_without_a_model
+  reference:L2_089:28: UserWarning: Glyph 54872 (\N{HANGUL SYLLABLE HWAN}) missing from font(s) DejaVu Sans.
+
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_count_rate_dual_axis_uses_real_png_and_exact_denominators
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_every_declared_reference_oracle_is_executable_without_a_model
+  reference:L2_089:28: UserWarning: Glyph 50984 (\N{HANGUL SYLLABLE YUL}) missing from font(s) DejaVu Sans.
+
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_count_rate_dual_axis_uses_real_png_and_exact_denominators
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_every_declared_reference_oracle_is_executable_without_a_model
+  reference:L2_089:28: UserWarning: Glyph 51221 (\N{HANGUL SYLLABLE JEONG}) missing from font(s) DejaVu Sans.
+
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_count_rate_dual_axis_uses_real_png_and_exact_denominators
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_every_declared_reference_oracle_is_executable_without_a_model
+  reference:L2_089:28: UserWarning: Glyph 44592 (\N{HANGUL SYLLABLE GI}) missing from font(s) DejaVu Sans.
+
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_count_rate_dual_axis_uses_real_png_and_exact_denominators
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_every_declared_reference_oracle_is_executable_without_a_model
+  reference:L2_089:28: UserWarning: Glyph 50696 (\N{HANGUL SYLLABLE YE}) missing from font(s) DejaVu Sans.
+
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_count_rate_dual_axis_uses_real_png_and_exact_denominators
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_every_declared_reference_oracle_is_executable_without_a_model
+  reference:L2_089:28: UserWarning: Glyph 44552 (\N{HANGUL SYLLABLE GEUM}) missing from font(s) DejaVu Sans.
+
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_count_rate_dual_axis_uses_real_png_and_exact_denominators
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_every_declared_reference_oracle_is_executable_without_a_model
+  reference:L2_089:28: UserWarning: Glyph 44032 (\N{HANGUL SYLLABLE GA}) missing from font(s) DejaVu Sans.
+
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_count_rate_dual_axis_uses_real_png_and_exact_denominators
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_every_declared_reference_oracle_is_executable_without_a_model
+  reference:L2_089:28: UserWarning: Glyph 51077 (\N{HANGUL SYLLABLE IB}) missing from font(s) DejaVu Sans.
+
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_count_rate_dual_axis_uses_real_png_and_exact_denominators
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_every_declared_reference_oracle_is_executable_without_a_model
+  reference:L2_089:28: UserWarning: Glyph 47560 (\N{HANGUL SYLLABLE MA}) missing from font(s) DejaVu Sans.
+
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_count_rate_dual_axis_uses_real_png_and_exact_denominators
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_every_declared_reference_oracle_is_executable_without_a_model
+  reference:L2_089:28: UserWarning: Glyph 52992 (\N{HANGUL SYLLABLE KE}) missing from font(s) DejaVu Sans.
+
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_count_rate_dual_axis_uses_real_png_and_exact_denominators
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_every_declared_reference_oracle_is_executable_without_a_model
+  reference:L2_089:28: UserWarning: Glyph 54021 (\N{HANGUL SYLLABLE TING}) missing from font(s) DejaVu Sans.
+
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_count_rate_dual_axis_uses_real_png_and_exact_denominators
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_every_declared_reference_oracle_is_executable_without_a_model
+  reference:L2_089:28: UserWarning: Glyph 52896 (\N{HANGUL SYLLABLE KAEM}) missing from font(s) DejaVu Sans.
+
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_count_rate_dual_axis_uses_real_png_and_exact_denominators
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_every_declared_reference_oracle_is_executable_without_a_model
+  reference:L2_089:28: UserWarning: Glyph 54168 (\N{HANGUL SYLLABLE PE}) missing from font(s) DejaVu Sans.
+
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_count_rate_dual_axis_uses_real_png_and_exact_denominators
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_every_declared_reference_oracle_is_executable_without_a_model
+  reference:L2_089:28: UserWarning: Glyph 51064 (\N{HANGUL SYLLABLE IN}) missing from font(s) DejaVu Sans.
+
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_count_rate_dual_axis_uses_real_png_and_exact_denominators
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_every_declared_reference_oracle_is_executable_without_a_model
+  reference:L2_089:28: UserWarning: Glyph 49457 (\N{HANGUL SYLLABLE SEONG}) missing from font(s) DejaVu Sans.
+
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_count_rate_dual_axis_uses_real_png_and_exact_denominators
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_every_declared_reference_oracle_is_executable_without_a_model
+  reference:L2_089:28: UserWarning: Glyph 44284 (\N{HANGUL SYLLABLE GWA}) missing from font(s) DejaVu Sans.
+
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_count_rate_dual_axis_uses_real_png_and_exact_denominators
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_every_declared_reference_oracle_is_executable_without_a_model
+  reference:L2_089:28: UserWarning: Glyph 51648 (\N{HANGUL SYLLABLE JI}) missing from font(s) DejaVu Sans.
+
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_count_rate_dual_axis_uses_real_png_and_exact_denominators
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_every_declared_reference_oracle_is_executable_without_a_model
+  reference:L2_089:28: UserWarning: Glyph 54364 (\N{HANGUL SYLLABLE PYO}) missing from font(s) DejaVu Sans.
+
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_count_rate_dual_axis_uses_real_png_and_exact_denominators
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_every_declared_reference_oracle_is_executable_without_a_model
+  reference:L2_089:28: UserWarning: Glyph 45824 (\N{HANGUL SYLLABLE DAE}) missing from font(s) DejaVu Sans.
+
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_count_rate_dual_axis_uses_real_png_and_exact_denominators
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_every_declared_reference_oracle_is_executable_without_a_model
+  reference:L2_089:28: UserWarning: Glyph 49884 (\N{HANGUL SYLLABLE SI}) missing from font(s) DejaVu Sans.
+
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_count_rate_dual_axis_uses_real_png_and_exact_denominators
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_every_declared_reference_oracle_is_executable_without_a_model
+  reference:L2_089:28: UserWarning: Glyph 48372 (\N{HANGUL SYLLABLE BO}) missing from font(s) DejaVu Sans.
+
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_count_rate_dual_axis_uses_real_png_and_exact_denominators
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_every_declared_reference_oracle_is_executable_without_a_model
+  reference:L2_089:28: UserWarning: Glyph 46300 (\N{HANGUL SYLLABLE DEU}) missing from font(s) DejaVu Sans.
+
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_count_rate_dual_axis_uses_real_png_and_exact_denominators
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_every_declared_reference_oracle_is_executable_without_a_model
+  reference:L2_089:29: UserWarning: FigureCanvasAgg is non-interactive, and thus cannot be shown
+
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_every_declared_reference_oracle_is_executable_without_a_model
+  reference:L1_096:11: UserWarning: Glyph 53685 (\N{HANGUL SYLLABLE TONG}) missing from font(s) DejaVu Sans.
+
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_every_declared_reference_oracle_is_executable_without_a_model
+  reference:L1_096:11: UserWarning: Glyph 49888 (\N{HANGUL SYLLABLE SIN}) missing from font(s) DejaVu Sans.
+
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_every_declared_reference_oracle_is_executable_without_a_model
+  reference:L1_096:11: UserWarning: Glyph 49688 (\N{HANGUL SYLLABLE SU}) missing from font(s) DejaVu Sans.
+
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_every_declared_reference_oracle_is_executable_without_a_model
+  reference:L1_096:11: UserWarning: Glyph 45800 (\N{HANGUL SYLLABLE DAN}) missing from font(s) DejaVu Sans.
+
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_every_declared_reference_oracle_is_executable_without_a_model
+  reference:L1_096:11: UserWarning: Glyph 44256 (\N{HANGUL SYLLABLE GO}) missing from font(s) DejaVu Sans.
+
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_every_declared_reference_oracle_is_executable_without_a_model
+  reference:L1_096:11: UserWarning: Glyph 44061 (\N{HANGUL SYLLABLE GAEG}) missing from font(s) DejaVu Sans.
+
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_every_declared_reference_oracle_is_executable_without_a_model
+  reference:L1_096:11: UserWarning: Glyph 48324 (\N{HANGUL SYLLABLE BYEOL}) missing from font(s) DejaVu Sans.
+
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_every_declared_reference_oracle_is_executable_without_a_model
+  reference:L1_096:12: UserWarning: FigureCanvasAgg is non-interactive, and thus cannot be shown
+
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_every_declared_reference_oracle_is_executable_without_a_model
+  reference:L1_097:11: UserWarning: Glyph 44208 (\N{HANGUL SYLLABLE GYEOL}) missing from font(s) DejaVu Sans.
+
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_every_declared_reference_oracle_is_executable_without_a_model
+  reference:L1_097:11: UserWarning: Glyph 44284 (\N{HANGUL SYLLABLE GWA}) missing from font(s) DejaVu Sans.
+
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_every_declared_reference_oracle_is_executable_without_a_model
+  reference:L1_097:11: UserWarning: Glyph 44256 (\N{HANGUL SYLLABLE GO}) missing from font(s) DejaVu Sans.
+
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_every_declared_reference_oracle_is_executable_without_a_model
+  reference:L1_097:11: UserWarning: Glyph 44061 (\N{HANGUL SYLLABLE GAEG}) missing from font(s) DejaVu Sans.
+
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_every_declared_reference_oracle_is_executable_without_a_model
+  reference:L1_097:11: UserWarning: Glyph 49688 (\N{HANGUL SYLLABLE SU}) missing from font(s) DejaVu Sans.
+
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_every_declared_reference_oracle_is_executable_without_a_model
+  reference:L1_097:11: UserWarning: Glyph 51060 (\N{HANGUL SYLLABLE I}) missing from font(s) DejaVu Sans.
+
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_every_declared_reference_oracle_is_executable_without_a_model
+  reference:L1_097:11: UserWarning: Glyph 51204 (\N{HANGUL SYLLABLE JEON}) missing from font(s) DejaVu Sans.
+
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_every_declared_reference_oracle_is_executable_without_a_model
+  reference:L1_097:11: UserWarning: Glyph 47560 (\N{HANGUL SYLLABLE MA}) missing from font(s) DejaVu Sans.
+
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_every_declared_reference_oracle_is_executable_without_a_model
+  reference:L1_097:11: UserWarning: Glyph 52992 (\N{HANGUL SYLLABLE KE}) missing from font(s) DejaVu Sans.
+
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_every_declared_reference_oracle_is_executable_without_a_model
+  reference:L1_097:11: UserWarning: Glyph 54021 (\N{HANGUL SYLLABLE TING}) missing from font(s) DejaVu Sans.
+
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_every_declared_reference_oracle_is_executable_without_a_model
+  reference:L1_097:11: UserWarning: Glyph 48324 (\N{HANGUL SYLLABLE BYEOL}) missing from font(s) DejaVu Sans.
+
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_every_declared_reference_oracle_is_executable_without_a_model
+  reference:L1_097:12: UserWarning: FigureCanvasAgg is non-interactive, and thus cannot be shown
+
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_every_declared_reference_oracle_is_executable_without_a_model
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_every_declared_reference_oracle_is_executable_without_a_model
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_every_declared_reference_oracle_is_executable_without_a_model
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_explicit_chart_cases_use_real_png_and_declarative_data
+  /Users/najongseong/git_repository/teleai/scripts/evaluate_analysis_agent.py:151: MatplotlibDeprecationWarning: vert: bool was deprecated in Matplotlib 3.11 and will be removed in 3.13. Use orientation: {'vertical', 'horizontal'} instead.
+    result = original_boxplot(axis, x, *args, **kwargs)
+
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_every_declared_reference_oracle_is_executable_without_a_model
+  reference:L1_100:8: UserWarning: Glyph 51217 (\N{HANGUL SYLLABLE JEOB}) missing from font(s) DejaVu Sans.
+
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_every_declared_reference_oracle_is_executable_without_a_model
+  reference:L1_100:8: UserWarning: Glyph 52489 (\N{HANGUL SYLLABLE COG}) missing from font(s) DejaVu Sans.
+
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_every_declared_reference_oracle_is_executable_without_a_model
+  reference:L1_100:8: UserWarning: Glyph 54943 (\N{HANGUL SYLLABLE HOES}) missing from font(s) DejaVu Sans.
+
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_every_declared_reference_oracle_is_executable_without_a_model
+  reference:L1_100:8: UserWarning: Glyph 49688 (\N{HANGUL SYLLABLE SU}) missing from font(s) DejaVu Sans.
+
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_every_declared_reference_oracle_is_executable_without_a_model
+  reference:L1_100:8: UserWarning: Glyph 52896 (\N{HANGUL SYLLABLE KAEM}) missing from font(s) DejaVu Sans.
+
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_every_declared_reference_oracle_is_executable_without_a_model
+  reference:L1_100:8: UserWarning: Glyph 54168 (\N{HANGUL SYLLABLE PE}) missing from font(s) DejaVu Sans.
+
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_every_declared_reference_oracle_is_executable_without_a_model
+  reference:L1_100:8: UserWarning: Glyph 51064 (\N{HANGUL SYLLABLE IN}) missing from font(s) DejaVu Sans.
+
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_every_declared_reference_oracle_is_executable_without_a_model
+  reference:L1_100:8: UserWarning: Glyph 48149 (\N{HANGUL SYLLABLE BAG}) missing from font(s) DejaVu Sans.
+
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_every_declared_reference_oracle_is_executable_without_a_model
+  reference:L1_100:8: UserWarning: Glyph 49828 (\N{HANGUL SYLLABLE SEU}) missing from font(s) DejaVu Sans.
+
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_every_declared_reference_oracle_is_executable_without_a_model
+  reference:L1_100:8: UserWarning: Glyph 54540 (\N{HANGUL SYLLABLE PEUL}) missing from font(s) DejaVu Sans.
+
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_every_declared_reference_oracle_is_executable_without_a_model
+  reference:L1_100:8: UserWarning: Glyph 47215 (\N{HANGUL SYLLABLE ROS}) missing from font(s) DejaVu Sans.
+
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_every_declared_reference_oracle_is_executable_without_a_model
+  reference:L1_100:9: UserWarning: FigureCanvasAgg is non-interactive, and thus cannot be shown
+
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_every_declared_reference_oracle_is_executable_without_a_model
+  reference:L1_080:11: UserWarning: Glyph 44368 (\N{HANGUL SYLLABLE GYO}) missing from font(s) DejaVu Sans.
+
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_every_declared_reference_oracle_is_executable_without_a_model
+  reference:L1_080:11: UserWarning: Glyph 50977 (\N{HANGUL SYLLABLE YUG}) missing from font(s) DejaVu Sans.
+
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_every_declared_reference_oracle_is_executable_without_a_model
+  reference:L1_080:11: UserWarning: Glyph 49688 (\N{HANGUL SYLLABLE SU}) missing from font(s) DejaVu Sans.
+
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_every_declared_reference_oracle_is_executable_without_a_model
+  reference:L1_080:11: UserWarning: Glyph 51456 (\N{HANGUL SYLLABLE JUN}) missing from font(s) DejaVu Sans.
+
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_every_declared_reference_oracle_is_executable_without_a_model
+  reference:L1_080:11: UserWarning: Glyph 44256 (\N{HANGUL SYLLABLE GO}) missing from font(s) DejaVu Sans.
+
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_every_declared_reference_oracle_is_executable_without_a_model
+  reference:L1_080:11: UserWarning: Glyph 44061 (\N{HANGUL SYLLABLE GAEG}) missing from font(s) DejaVu Sans.
+
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_every_declared_reference_oracle_is_executable_without_a_model
+  reference:L1_080:11: UserWarning: Glyph 48324 (\N{HANGUL SYLLABLE BYEOL}) missing from font(s) DejaVu Sans.
+
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_every_declared_reference_oracle_is_executable_without_a_model
+  reference:L1_080:12: UserWarning: FigureCanvasAgg is non-interactive, and thus cannot be shown
+
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_every_declared_reference_oracle_is_executable_without_a_model
+  reference:L1_081:11: UserWarning: Glyph 48372 (\N{HANGUL SYLLABLE BO}) missing from font(s) DejaVu Sans.
+
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_every_declared_reference_oracle_is_executable_without_a_model
+  reference:L1_081:11: UserWarning: Glyph 50976 (\N{HANGUL SYLLABLE YU}) missing from font(s) DejaVu Sans.
+
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_every_declared_reference_oracle_is_executable_without_a_model
+  reference:L1_081:11: UserWarning: Glyph 50668 (\N{HANGUL SYLLABLE YEO}) missing from font(s) DejaVu Sans.
+
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_every_declared_reference_oracle_is_executable_without_a_model
+  reference:L1_081:11: UserWarning: Glyph 48512 (\N{HANGUL SYLLABLE BU}) missing from font(s) DejaVu Sans.
+
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_every_declared_reference_oracle_is_executable_without_a_model
+  reference:L1_081:11: UserWarning: Glyph 44256 (\N{HANGUL SYLLABLE GO}) missing from font(s) DejaVu Sans.
+
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_every_declared_reference_oracle_is_executable_without_a_model
+  reference:L1_081:11: UserWarning: Glyph 44061 (\N{HANGUL SYLLABLE GAEG}) missing from font(s) DejaVu Sans.
+
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_every_declared_reference_oracle_is_executable_without_a_model
+  reference:L1_081:11: UserWarning: Glyph 49688 (\N{HANGUL SYLLABLE SU}) missing from font(s) DejaVu Sans.
+
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_every_declared_reference_oracle_is_executable_without_a_model
+  reference:L1_081:11: UserWarning: Glyph 51452 (\N{HANGUL SYLLABLE JU}) missing from font(s) DejaVu Sans.
+
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_every_declared_reference_oracle_is_executable_without_a_model
+  reference:L1_081:11: UserWarning: Glyph 53469 (\N{HANGUL SYLLABLE TAEG}) missing from font(s) DejaVu Sans.
+
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_every_declared_reference_oracle_is_executable_without_a_model
+  reference:L1_081:11: UserWarning: Glyph 45824 (\N{HANGUL SYLLABLE DAE}) missing from font(s) DejaVu Sans.
+
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_every_declared_reference_oracle_is_executable_without_a_model
+  reference:L1_081:11: UserWarning: Glyph 52636 (\N{HANGUL SYLLABLE CUL}) missing from font(s) DejaVu Sans.
+
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_every_declared_reference_oracle_is_executable_without_a_model
+  reference:L1_081:12: UserWarning: FigureCanvasAgg is non-interactive, and thus cannot be shown
+
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_every_declared_reference_oracle_is_executable_without_a_model
+  reference:L1_082:11: UserWarning: Glyph 48372 (\N{HANGUL SYLLABLE BO}) missing from font(s) DejaVu Sans.
+
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_every_declared_reference_oracle_is_executable_without_a_model
+  reference:L1_082:11: UserWarning: Glyph 50976 (\N{HANGUL SYLLABLE YU}) missing from font(s) DejaVu Sans.
+
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_every_declared_reference_oracle_is_executable_without_a_model
+  reference:L1_082:11: UserWarning: Glyph 50668 (\N{HANGUL SYLLABLE YEO}) missing from font(s) DejaVu Sans.
+
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_every_declared_reference_oracle_is_executable_without_a_model
+  reference:L1_082:11: UserWarning: Glyph 48512 (\N{HANGUL SYLLABLE BU}) missing from font(s) DejaVu Sans.
+
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_every_declared_reference_oracle_is_executable_without_a_model
+  reference:L1_082:11: UserWarning: Glyph 44256 (\N{HANGUL SYLLABLE GO}) missing from font(s) DejaVu Sans.
+
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_every_declared_reference_oracle_is_executable_without_a_model
+  reference:L1_082:11: UserWarning: Glyph 44061 (\N{HANGUL SYLLABLE GAEG}) missing from font(s) DejaVu Sans.
+
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_every_declared_reference_oracle_is_executable_without_a_model
+  reference:L1_082:11: UserWarning: Glyph 49688 (\N{HANGUL SYLLABLE SU}) missing from font(s) DejaVu Sans.
+
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_every_declared_reference_oracle_is_executable_without_a_model
+  reference:L1_082:11: UserWarning: Glyph 44060 (\N{HANGUL SYLLABLE GAE}) missing from font(s) DejaVu Sans.
+
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_every_declared_reference_oracle_is_executable_without_a_model
+  reference:L1_082:11: UserWarning: Glyph 51064 (\N{HANGUL SYLLABLE IN}) missing from font(s) DejaVu Sans.
+
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_every_declared_reference_oracle_is_executable_without_a_model
+  reference:L1_082:11: UserWarning: Glyph 45824 (\N{HANGUL SYLLABLE DAE}) missing from font(s) DejaVu Sans.
+
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_every_declared_reference_oracle_is_executable_without_a_model
+  reference:L1_082:11: UserWarning: Glyph 52636 (\N{HANGUL SYLLABLE CUL}) missing from font(s) DejaVu Sans.
+
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_every_declared_reference_oracle_is_executable_without_a_model
+  reference:L1_082:12: UserWarning: FigureCanvasAgg is non-interactive, and thus cannot be shown
+
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_every_declared_reference_oracle_is_executable_without_a_model
+  reference:L1_084:13: UserWarning: Glyph 50900 (\N{HANGUL SYLLABLE WEOL}) missing from font(s) DejaVu Sans.
+
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_every_declared_reference_oracle_is_executable_without_a_model
+  reference:L1_084:13: UserWarning: Glyph 51217 (\N{HANGUL SYLLABLE JEOB}) missing from font(s) DejaVu Sans.
+
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_every_declared_reference_oracle_is_executable_without_a_model
+  reference:L1_084:13: UserWarning: Glyph 52489 (\N{HANGUL SYLLABLE COG}) missing from font(s) DejaVu Sans.
+
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_every_declared_reference_oracle_is_executable_without_a_model
+  reference:L1_084:13: UserWarning: Glyph 44148 (\N{HANGUL SYLLABLE GEON}) missing from font(s) DejaVu Sans.
+
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_every_declared_reference_oracle_is_executable_without_a_model
+  reference:L1_084:13: UserWarning: Glyph 49688 (\N{HANGUL SYLLABLE SU}) missing from font(s) DejaVu Sans.
+
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_every_declared_reference_oracle_is_executable_without_a_model
+  reference:L1_084:13: UserWarning: Glyph 48324 (\N{HANGUL SYLLABLE BYEOL}) missing from font(s) DejaVu Sans.
+
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_every_declared_reference_oracle_is_executable_without_a_model
+  reference:L1_084:13: UserWarning: Glyph 47560 (\N{HANGUL SYLLABLE MA}) missing from font(s) DejaVu Sans.
+
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_every_declared_reference_oracle_is_executable_without_a_model
+  reference:L1_084:13: UserWarning: Glyph 52992 (\N{HANGUL SYLLABLE KE}) missing from font(s) DejaVu Sans.
+
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_every_declared_reference_oracle_is_executable_without_a_model
+  reference:L1_084:13: UserWarning: Glyph 54021 (\N{HANGUL SYLLABLE TING}) missing from font(s) DejaVu Sans.
+
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_every_declared_reference_oracle_is_executable_without_a_model
+  reference:L1_084:14: UserWarning: FigureCanvasAgg is non-interactive, and thus cannot be shown
+
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_every_declared_reference_oracle_is_executable_without_a_model
+  reference:L1_085:11: UserWarning: Glyph 44032 (\N{HANGUL SYLLABLE GA}) missing from font(s) DejaVu Sans.
+
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_every_declared_reference_oracle_is_executable_without_a_model
+  reference:L1_085:11: UserWarning: Glyph 51077 (\N{HANGUL SYLLABLE IB}) missing from font(s) DejaVu Sans.
+
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_every_declared_reference_oracle_is_executable_without_a_model
+  reference:L1_085:11: UserWarning: Glyph 50668 (\N{HANGUL SYLLABLE YEO}) missing from font(s) DejaVu Sans.
+
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_every_declared_reference_oracle_is_executable_without_a_model
+  reference:L1_085:11: UserWarning: Glyph 48512 (\N{HANGUL SYLLABLE BU}) missing from font(s) DejaVu Sans.
+
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_every_declared_reference_oracle_is_executable_without_a_model
+  reference:L1_085:11: UserWarning: Glyph 44256 (\N{HANGUL SYLLABLE GO}) missing from font(s) DejaVu Sans.
+
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_every_declared_reference_oracle_is_executable_without_a_model
+  reference:L1_085:11: UserWarning: Glyph 44061 (\N{HANGUL SYLLABLE GAEG}) missing from font(s) DejaVu Sans.
+
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_every_declared_reference_oracle_is_executable_without_a_model
+  reference:L1_085:11: UserWarning: Glyph 49688 (\N{HANGUL SYLLABLE SU}) missing from font(s) DejaVu Sans.
+
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_every_declared_reference_oracle_is_executable_without_a_model
+  reference:L1_085:11: UserWarning: Glyph 51221 (\N{HANGUL SYLLABLE JEONG}) missing from font(s) DejaVu Sans.
+
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_every_declared_reference_oracle_is_executable_without_a_model
+  reference:L1_085:11: UserWarning: Glyph 44592 (\N{HANGUL SYLLABLE GI}) missing from font(s) DejaVu Sans.
+
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_every_declared_reference_oracle_is_executable_without_a_model
+  reference:L1_085:11: UserWarning: Glyph 50696 (\N{HANGUL SYLLABLE YE}) missing from font(s) DejaVu Sans.
+
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_every_declared_reference_oracle_is_executable_without_a_model
+  reference:L1_085:11: UserWarning: Glyph 44552 (\N{HANGUL SYLLABLE GEUM}) missing from font(s) DejaVu Sans.
+
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_every_declared_reference_oracle_is_executable_without_a_model
+  reference:L1_085:12: UserWarning: FigureCanvasAgg is non-interactive, and thus cannot be shown
+
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_every_declared_reference_oracle_is_executable_without_a_model
+  reference:L1_087:10: UserWarning: Glyph 49345 (\N{HANGUL SYLLABLE SANG}) missing from font(s) DejaVu Sans.
+
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_every_declared_reference_oracle_is_executable_without_a_model
+  reference:L1_087:10: UserWarning: Glyph 45812 (\N{HANGUL SYLLABLE DAM}) missing from font(s) DejaVu Sans.
+
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_every_declared_reference_oracle_is_executable_without_a_model
+  reference:L1_087:10: UserWarning: Glyph 49884 (\N{HANGUL SYLLABLE SI}) missing from font(s) DejaVu Sans.
+
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_every_declared_reference_oracle_is_executable_without_a_model
+  reference:L1_087:10: UserWarning: Glyph 44036 (\N{HANGUL SYLLABLE GAN}) missing from font(s) DejaVu Sans.
+
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_every_declared_reference_oracle_is_executable_without_a_model
+  reference:L1_087:10: UserWarning: Glyph 52488 (\N{HANGUL SYLLABLE CO}) missing from font(s) DejaVu Sans.
+
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_every_declared_reference_oracle_is_executable_without_a_model
+  reference:L1_087:10: UserWarning: Glyph 51217 (\N{HANGUL SYLLABLE JEOB}) missing from font(s) DejaVu Sans.
+
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_every_declared_reference_oracle_is_executable_without_a_model
+  reference:L1_087:10: UserWarning: Glyph 52489 (\N{HANGUL SYLLABLE COG}) missing from font(s) DejaVu Sans.
+
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_every_declared_reference_oracle_is_executable_without_a_model
+  reference:L1_087:10: UserWarning: Glyph 54943 (\N{HANGUL SYLLABLE HOES}) missing from font(s) DejaVu Sans.
+
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_every_declared_reference_oracle_is_executable_without_a_model
+  reference:L1_087:10: UserWarning: Glyph 49688 (\N{HANGUL SYLLABLE SU}) missing from font(s) DejaVu Sans.
+
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_every_declared_reference_oracle_is_executable_without_a_model
+  reference:L1_087:11: UserWarning: FigureCanvasAgg is non-interactive, and thus cannot be shown
+
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_every_declared_reference_oracle_is_executable_without_a_model
+  reference:L1_089:11: UserWarning: Glyph 53457 (\N{HANGUL SYLLABLE TAB}) missing from font(s) DejaVu Sans.
+
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_every_declared_reference_oracle_is_executable_without_a_model
+  reference:L1_089:11: UserWarning: Glyph 49849 (\N{HANGUL SYLLABLE SEUNG}) missing from font(s) DejaVu Sans.
+
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_every_declared_reference_oracle_is_executable_without_a_model
+  reference:L1_089:11: UserWarning: Glyph 46321 (\N{HANGUL SYLLABLE DEUNG}) missing from font(s) DejaVu Sans.
+
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_every_declared_reference_oracle_is_executable_without_a_model
+  reference:L1_089:11: UserWarning: Glyph 44553 (\N{HANGUL SYLLABLE GEUB}) missing from font(s) DejaVu Sans.
+
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_every_declared_reference_oracle_is_executable_without_a_model
+  reference:L1_089:11: UserWarning: Glyph 49892 (\N{HANGUL SYLLABLE SIL}) missing from font(s) DejaVu Sans.
+
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_every_declared_reference_oracle_is_executable_without_a_model
+  reference:L1_089:11: UserWarning: Glyph 44061 (\N{HANGUL SYLLABLE GAEG}) missing from font(s) DejaVu Sans.
+
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_every_declared_reference_oracle_is_executable_without_a_model
+  reference:L1_089:11: UserWarning: Glyph 49688 (\N{HANGUL SYLLABLE SU}) missing from font(s) DejaVu Sans.
+
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_every_declared_reference_oracle_is_executable_without_a_model
+  reference:L1_089:11: UserWarning: Glyph 53440 (\N{HANGUL SYLLABLE TA}) missing from font(s) DejaVu Sans.
+
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_every_declared_reference_oracle_is_executable_without_a_model
+  reference:L1_089:11: UserWarning: Glyph 51060 (\N{HANGUL SYLLABLE I}) missing from font(s) DejaVu Sans.
+
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_every_declared_reference_oracle_is_executable_without_a_model
+  reference:L1_089:11: UserWarning: Glyph 45769 (\N{HANGUL SYLLABLE NIG}) missing from font(s) DejaVu Sans.
+
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_every_declared_reference_oracle_is_executable_without_a_model
+  reference:L1_089:11: UserWarning: Glyph 48324 (\N{HANGUL SYLLABLE BYEOL}) missing from font(s) DejaVu Sans.
+
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_every_declared_reference_oracle_is_executable_without_a_model
+  reference:L1_089:12: UserWarning: FigureCanvasAgg is non-interactive, and thus cannot be shown
+
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_every_declared_reference_oracle_is_executable_without_a_model
+  reference:L1_091:11: UserWarning: Glyph 49324 (\N{HANGUL SYLLABLE SA}) missing from font(s) DejaVu Sans.
+
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_every_declared_reference_oracle_is_executable_without_a_model
+  reference:L1_091:11: UserWarning: Glyph 47581 (\N{HANGUL SYLLABLE MANG}) missing from font(s) DejaVu Sans.
+
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_every_declared_reference_oracle_is_executable_without_a_model
+  reference:L1_091:11: UserWarning: Glyph 49373 (\N{HANGUL SYLLABLE SAENG}) missing from font(s) DejaVu Sans.
+
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_every_declared_reference_oracle_is_executable_without_a_model
+  reference:L1_091:11: UserWarning: Glyph 51316 (\N{HANGUL SYLLABLE JON}) missing from font(s) DejaVu Sans.
+
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_every_declared_reference_oracle_is_executable_without_a_model
+  reference:L1_091:11: UserWarning: Glyph 50668 (\N{HANGUL SYLLABLE YEO}) missing from font(s) DejaVu Sans.
+
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_every_declared_reference_oracle_is_executable_without_a_model
+  reference:L1_091:11: UserWarning: Glyph 48512 (\N{HANGUL SYLLABLE BU}) missing from font(s) DejaVu Sans.
+
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_every_declared_reference_oracle_is_executable_without_a_model
+  reference:L1_091:11: UserWarning: Glyph 49849 (\N{HANGUL SYLLABLE SEUNG}) missing from font(s) DejaVu Sans.
+
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_every_declared_reference_oracle_is_executable_without_a_model
+  reference:L1_091:11: UserWarning: Glyph 44061 (\N{HANGUL SYLLABLE GAEG}) missing from font(s) DejaVu Sans.
+
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_every_declared_reference_oracle_is_executable_without_a_model
+  reference:L1_091:11: UserWarning: Glyph 49688 (\N{HANGUL SYLLABLE SU}) missing from font(s) DejaVu Sans.
+
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_every_declared_reference_oracle_is_executable_without_a_model
+  reference:L1_091:11: UserWarning: Glyph 53440 (\N{HANGUL SYLLABLE TA}) missing from font(s) DejaVu Sans.
+
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_every_declared_reference_oracle_is_executable_without_a_model
+  reference:L1_091:11: UserWarning: Glyph 51060 (\N{HANGUL SYLLABLE I}) missing from font(s) DejaVu Sans.
+
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_every_declared_reference_oracle_is_executable_without_a_model
+  reference:L1_091:11: UserWarning: Glyph 45769 (\N{HANGUL SYLLABLE NIG}) missing from font(s) DejaVu Sans.
+
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_every_declared_reference_oracle_is_executable_without_a_model
+  reference:L1_091:12: UserWarning: FigureCanvasAgg is non-interactive, and thus cannot be shown
+
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_every_declared_reference_oracle_is_executable_without_a_model
+  reference:L1_092:8: UserWarning: Glyph 50836 (\N{HANGUL SYLLABLE YO}) missing from font(s) DejaVu Sans.
+
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_every_declared_reference_oracle_is_executable_without_a_model
+  reference:L1_092:8: UserWarning: Glyph 44552 (\N{HANGUL SYLLABLE GEUM}) missing from font(s) DejaVu Sans.
+
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_every_declared_reference_oracle_is_executable_without_a_model
+  reference:L1_092:8: UserWarning: Glyph 53440 (\N{HANGUL SYLLABLE TA}) missing from font(s) DejaVu Sans.
+
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_every_declared_reference_oracle_is_executable_without_a_model
+  reference:L1_092:8: UserWarning: Glyph 51060 (\N{HANGUL SYLLABLE I}) missing from font(s) DejaVu Sans.
+
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_every_declared_reference_oracle_is_executable_without_a_model
+  reference:L1_092:8: UserWarning: Glyph 45769 (\N{HANGUL SYLLABLE NIG}) missing from font(s) DejaVu Sans.
+
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_every_declared_reference_oracle_is_executable_without_a_model
+  reference:L1_092:8: UserWarning: Glyph 53457 (\N{HANGUL SYLLABLE TAB}) missing from font(s) DejaVu Sans.
+
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_every_declared_reference_oracle_is_executable_without_a_model
+  reference:L1_092:8: UserWarning: Glyph 49849 (\N{HANGUL SYLLABLE SEUNG}) missing from font(s) DejaVu Sans.
+
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_every_declared_reference_oracle_is_executable_without_a_model
+  reference:L1_092:8: UserWarning: Glyph 48149 (\N{HANGUL SYLLABLE BAG}) missing from font(s) DejaVu Sans.
+
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_every_declared_reference_oracle_is_executable_without_a_model
+  reference:L1_092:8: UserWarning: Glyph 49828 (\N{HANGUL SYLLABLE SEU}) missing from font(s) DejaVu Sans.
+
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_every_declared_reference_oracle_is_executable_without_a_model
+  reference:L1_092:8: UserWarning: Glyph 54540 (\N{HANGUL SYLLABLE PEUL}) missing from font(s) DejaVu Sans.
+
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_every_declared_reference_oracle_is_executable_without_a_model
+  reference:L1_092:8: UserWarning: Glyph 47215 (\N{HANGUL SYLLABLE ROS}) missing from font(s) DejaVu Sans.
+
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_every_declared_reference_oracle_is_executable_without_a_model
+  reference:L1_092:9: UserWarning: FigureCanvasAgg is non-interactive, and thus cannot be shown
+
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_every_declared_reference_oracle_is_executable_without_a_model
+  reference:L1_094:11: UserWarning: Glyph 53457 (\N{HANGUL SYLLABLE TAB}) missing from font(s) DejaVu Sans.
+
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_every_declared_reference_oracle_is_executable_without_a_model
+  reference:L1_094:11: UserWarning: Glyph 49849 (\N{HANGUL SYLLABLE SEUNG}) missing from font(s) DejaVu Sans.
+
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_every_declared_reference_oracle_is_executable_without_a_model
+  reference:L1_094:11: UserWarning: Glyph 51648 (\N{HANGUL SYLLABLE JI}) missing from font(s) DejaVu Sans.
+
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_every_declared_reference_oracle_is_executable_without_a_model
+  reference:L1_094:11: UserWarning: Glyph 44061 (\N{HANGUL SYLLABLE GAEG}) missing from font(s) DejaVu Sans.
+
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_every_declared_reference_oracle_is_executable_without_a_model
+  reference:L1_094:11: UserWarning: Glyph 49688 (\N{HANGUL SYLLABLE SU}) missing from font(s) DejaVu Sans.
+
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_every_declared_reference_oracle_is_executable_without_a_model
+  reference:L1_094:11: UserWarning: Glyph 48324 (\N{HANGUL SYLLABLE BYEOL}) missing from font(s) DejaVu Sans.
+
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_every_declared_reference_oracle_is_executable_without_a_model
+  reference:L1_094:12: UserWarning: FigureCanvasAgg is non-interactive, and thus cannot be shown
+
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_every_declared_reference_oracle_is_executable_without_a_model
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_failed_chart_png_and_metadata_survive_temporary_runtime_cleanup
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_histogram_requires_real_plotted_values_and_png
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_no_chart_cannot_pass
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_wrong_column_chart_cannot_pass
+  reference:L1_076:10: UserWarning: Glyph 50672 (\N{HANGUL SYLLABLE YEON}) missing from font(s) DejaVu Sans.
+
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_every_declared_reference_oracle_is_executable_without_a_model
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_failed_chart_png_and_metadata_survive_temporary_runtime_cleanup
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_histogram_requires_real_plotted_values_and_png
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_no_chart_cannot_pass
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_wrong_column_chart_cannot_pass
+  reference:L1_076:10: UserWarning: Glyph 47161 (\N{HANGUL SYLLABLE RYEONG}) missing from font(s) DejaVu Sans.
+
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_every_declared_reference_oracle_is_executable_without_a_model
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_failed_chart_png_and_metadata_survive_temporary_runtime_cleanup
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_histogram_requires_real_plotted_values_and_png
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_no_chart_cannot_pass
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_wrong_column_chart_cannot_pass
+  reference:L1_076:10: UserWarning: Glyph 51064 (\N{HANGUL SYLLABLE IN}) missing from font(s) DejaVu Sans.
+
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_every_declared_reference_oracle_is_executable_without_a_model
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_failed_chart_png_and_metadata_survive_temporary_runtime_cleanup
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_histogram_requires_real_plotted_values_and_png
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_no_chart_cannot_pass
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_wrong_column_chart_cannot_pass
+  reference:L1_076:10: UserWarning: Glyph 50896 (\N{HANGUL SYLLABLE WEON}) missing from font(s) DejaVu Sans.
+
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_every_declared_reference_oracle_is_executable_without_a_model
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_failed_chart_png_and_metadata_survive_temporary_runtime_cleanup
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_histogram_requires_real_plotted_values_and_png
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_no_chart_cannot_pass
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_wrong_column_chart_cannot_pass
+  reference:L1_076:10: UserWarning: Glyph 49688 (\N{HANGUL SYLLABLE SU}) missing from font(s) DejaVu Sans.
+
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_every_declared_reference_oracle_is_executable_without_a_model
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_failed_chart_png_and_metadata_survive_temporary_runtime_cleanup
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_histogram_requires_real_plotted_values_and_png
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_no_chart_cannot_pass
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_wrong_column_chart_cannot_pass
+  reference:L1_076:10: UserWarning: Glyph 44256 (\N{HANGUL SYLLABLE GO}) missing from font(s) DejaVu Sans.
+
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_every_declared_reference_oracle_is_executable_without_a_model
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_failed_chart_png_and_metadata_survive_temporary_runtime_cleanup
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_histogram_requires_real_plotted_values_and_png
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_no_chart_cannot_pass
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_wrong_column_chart_cannot_pass
+  reference:L1_076:10: UserWarning: Glyph 44061 (\N{HANGUL SYLLABLE GAEG}) missing from font(s) DejaVu Sans.
+
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_every_declared_reference_oracle_is_executable_without_a_model
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_failed_chart_png_and_metadata_survive_temporary_runtime_cleanup
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_histogram_requires_real_plotted_values_and_png
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_no_chart_cannot_pass
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_wrong_column_chart_cannot_pass
+  reference:L1_076:10: UserWarning: Glyph 48516 (\N{HANGUL SYLLABLE BUN}) missing from font(s) DejaVu Sans.
+
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_every_declared_reference_oracle_is_executable_without_a_model
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_failed_chart_png_and_metadata_survive_temporary_runtime_cleanup
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_histogram_requires_real_plotted_values_and_png
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_no_chart_cannot_pass
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_wrong_column_chart_cannot_pass
+  reference:L1_076:10: UserWarning: Glyph 54252 (\N{HANGUL SYLLABLE PO}) missing from font(s) DejaVu Sans.
+
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_every_declared_reference_oracle_is_executable_without_a_model
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_failed_chart_png_and_metadata_survive_temporary_runtime_cleanup
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_histogram_requires_real_plotted_values_and_png
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_no_chart_cannot_pass
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_wrong_column_chart_cannot_pass
+  reference:L1_076:11: UserWarning: FigureCanvasAgg is non-interactive, and thus cannot be shown
+
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_every_declared_reference_oracle_is_executable_without_a_model
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_explicit_chart_cases_use_real_png_and_declarative_data
+  reference:L1_077:8: UserWarning: Glyph 51092 (\N{HANGUL SYLLABLE JAN}) missing from font(s) DejaVu Sans.
+
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_every_declared_reference_oracle_is_executable_without_a_model
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_explicit_chart_cases_use_real_png_and_declarative_data
+  reference:L1_077:8: UserWarning: Glyph 50529 (\N{HANGUL SYLLABLE AEG}) missing from font(s) DejaVu Sans.
+
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_every_declared_reference_oracle_is_executable_without_a_model
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_explicit_chart_cases_use_real_png_and_declarative_data
+  reference:L1_077:8: UserWarning: Glyph 44256 (\N{HANGUL SYLLABLE GO}) missing from font(s) DejaVu Sans.
+
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_every_declared_reference_oracle_is_executable_without_a_model
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_explicit_chart_cases_use_real_png_and_declarative_data
+  reference:L1_077:8: UserWarning: Glyph 44061 (\N{HANGUL SYLLABLE GAEG}) missing from font(s) DejaVu Sans.
+
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_every_declared_reference_oracle_is_executable_without_a_model
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_explicit_chart_cases_use_real_png_and_declarative_data
+  reference:L1_077:8: UserWarning: Glyph 44228 (\N{HANGUL SYLLABLE GYE}) missing from font(s) DejaVu Sans.
+
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_every_declared_reference_oracle_is_executable_without_a_model
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_explicit_chart_cases_use_real_png_and_declarative_data
+  reference:L1_077:8: UserWarning: Glyph 51340 (\N{HANGUL SYLLABLE JWA}) missing from font(s) DejaVu Sans.
+
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_every_declared_reference_oracle_is_executable_without_a_model
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_explicit_chart_cases_use_real_png_and_declarative_data
+  reference:L1_077:8: UserWarning: Glyph 48149 (\N{HANGUL SYLLABLE BAG}) missing from font(s) DejaVu Sans.
+
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_every_declared_reference_oracle_is_executable_without_a_model
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_explicit_chart_cases_use_real_png_and_declarative_data
+  reference:L1_077:8: UserWarning: Glyph 49828 (\N{HANGUL SYLLABLE SEU}) missing from font(s) DejaVu Sans.
+
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_every_declared_reference_oracle_is_executable_without_a_model
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_explicit_chart_cases_use_real_png_and_declarative_data
+  reference:L1_077:8: UserWarning: Glyph 54540 (\N{HANGUL SYLLABLE PEUL}) missing from font(s) DejaVu Sans.
+
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_every_declared_reference_oracle_is_executable_without_a_model
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_explicit_chart_cases_use_real_png_and_declarative_data
+  reference:L1_077:8: UserWarning: Glyph 47215 (\N{HANGUL SYLLABLE ROS}) missing from font(s) DejaVu Sans.
+
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_every_declared_reference_oracle_is_executable_without_a_model
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_explicit_chart_cases_use_real_png_and_declarative_data
+  reference:L1_077:9: UserWarning: FigureCanvasAgg is non-interactive, and thus cannot be shown
+
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_every_declared_reference_oracle_is_executable_without_a_model
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_explicit_chart_cases_use_real_png_and_declarative_data
+  reference:L1_078:11: UserWarning: Glyph 51649 (\N{HANGUL SYLLABLE JIG}) missing from font(s) DejaVu Sans.
+
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_every_declared_reference_oracle_is_executable_without_a_model
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_explicit_chart_cases_use_real_png_and_declarative_data
+  reference:L1_078:11: UserWarning: Glyph 50629 (\N{HANGUL SYLLABLE EOB}) missing from font(s) DejaVu Sans.
+
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_every_declared_reference_oracle_is_executable_without_a_model
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_explicit_chart_cases_use_real_png_and_declarative_data
+  reference:L1_078:11: UserWarning: Glyph 44256 (\N{HANGUL SYLLABLE GO}) missing from font(s) DejaVu Sans.
+
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_every_declared_reference_oracle_is_executable_without_a_model
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_explicit_chart_cases_use_real_png_and_declarative_data
+  reference:L1_078:11: UserWarning: Glyph 44061 (\N{HANGUL SYLLABLE GAEG}) missing from font(s) DejaVu Sans.
+
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_every_declared_reference_oracle_is_executable_without_a_model
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_explicit_chart_cases_use_real_png_and_declarative_data
+  reference:L1_078:11: UserWarning: Glyph 49688 (\N{HANGUL SYLLABLE SU}) missing from font(s) DejaVu Sans.
+
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_every_declared_reference_oracle_is_executable_without_a_model
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_explicit_chart_cases_use_real_png_and_declarative_data
+  reference:L1_078:11: UserWarning: Glyph 48324 (\N{HANGUL SYLLABLE BYEOL}) missing from font(s) DejaVu Sans.
+
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_every_declared_reference_oracle_is_executable_without_a_model
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_explicit_chart_cases_use_real_png_and_declarative_data
+  reference:L1_078:12: UserWarning: FigureCanvasAgg is non-interactive, and thus cannot be shown
+
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_every_declared_reference_oracle_is_executable_without_a_model
+  reference:L1_083:10: UserWarning: Glyph 49345 (\N{HANGUL SYLLABLE SANG}) missing from font(s) DejaVu Sans.
+
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_every_declared_reference_oracle_is_executable_without_a_model
+  reference:L1_083:10: UserWarning: Glyph 45812 (\N{HANGUL SYLLABLE DAM}) missing from font(s) DejaVu Sans.
+
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_every_declared_reference_oracle_is_executable_without_a_model
+  reference:L1_083:10: UserWarning: Glyph 49884 (\N{HANGUL SYLLABLE SI}) missing from font(s) DejaVu Sans.
+
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_every_declared_reference_oracle_is_executable_without_a_model
+  reference:L1_083:10: UserWarning: Glyph 44036 (\N{HANGUL SYLLABLE GAN}) missing from font(s) DejaVu Sans.
+
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_every_declared_reference_oracle_is_executable_without_a_model
+  reference:L1_083:10: UserWarning: Glyph 52488 (\N{HANGUL SYLLABLE CO}) missing from font(s) DejaVu Sans.
+
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_every_declared_reference_oracle_is_executable_without_a_model
+  reference:L1_083:10: UserWarning: Glyph 48712 (\N{HANGUL SYLLABLE BIN}) missing from font(s) DejaVu Sans.
+
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_every_declared_reference_oracle_is_executable_without_a_model
+  reference:L1_083:10: UserWarning: Glyph 46020 (\N{HANGUL SYLLABLE DO}) missing from font(s) DejaVu Sans.
+
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_every_declared_reference_oracle_is_executable_without_a_model
+  reference:L1_083:10: UserWarning: Glyph 53685 (\N{HANGUL SYLLABLE TONG}) missing from font(s) DejaVu Sans.
+
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_every_declared_reference_oracle_is_executable_without_a_model
+  reference:L1_083:10: UserWarning: Glyph 54868 (\N{HANGUL SYLLABLE HWA}) missing from font(s) DejaVu Sans.
+
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_every_declared_reference_oracle_is_executable_without_a_model
+  reference:L1_083:10: UserWarning: Glyph 48516 (\N{HANGUL SYLLABLE BUN}) missing from font(s) DejaVu Sans.
+
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_every_declared_reference_oracle_is_executable_without_a_model
+  reference:L1_083:10: UserWarning: Glyph 54252 (\N{HANGUL SYLLABLE PO}) missing from font(s) DejaVu Sans.
+
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_every_declared_reference_oracle_is_executable_without_a_model
+  reference:L1_083:11: UserWarning: FigureCanvasAgg is non-interactive, and thus cannot be shown
+
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_every_declared_reference_oracle_is_executable_without_a_model
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_explicit_chart_cases_use_real_png_and_declarative_data
+  reference:L1_086:10: UserWarning: Glyph 45208 (\N{HANGUL SYLLABLE NA}) missing from font(s) DejaVu Sans.
+
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_every_declared_reference_oracle_is_executable_without_a_model
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_explicit_chart_cases_use_real_png_and_declarative_data
+  reference:L1_086:10: UserWarning: Glyph 51060 (\N{HANGUL SYLLABLE I}) missing from font(s) DejaVu Sans.
+
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_every_declared_reference_oracle_is_executable_without_a_model
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_explicit_chart_cases_use_real_png_and_declarative_data
+  reference:L1_086:10: UserWarning: Glyph 49464 (\N{HANGUL SYLLABLE SE}) missing from font(s) DejaVu Sans.
+
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_every_declared_reference_oracle_is_executable_without_a_model
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_explicit_chart_cases_use_real_png_and_declarative_data
+  reference:L1_086:10: UserWarning: Glyph 51092 (\N{HANGUL SYLLABLE JAN}) missing from font(s) DejaVu Sans.
+
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_every_declared_reference_oracle_is_executable_without_a_model
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_explicit_chart_cases_use_real_png_and_declarative_data
+  reference:L1_086:10: UserWarning: Glyph 50529 (\N{HANGUL SYLLABLE AEG}) missing from font(s) DejaVu Sans.
+
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_every_declared_reference_oracle_is_executable_without_a_model
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_explicit_chart_cases_use_real_png_and_declarative_data
+  reference:L1_086:10: UserWarning: Glyph 44256 (\N{HANGUL SYLLABLE GO}) missing from font(s) DejaVu Sans.
+
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_every_declared_reference_oracle_is_executable_without_a_model
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_explicit_chart_cases_use_real_png_and_declarative_data
+  reference:L1_086:10: UserWarning: Glyph 44061 (\N{HANGUL SYLLABLE GAEG}) missing from font(s) DejaVu Sans.
+
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_every_declared_reference_oracle_is_executable_without_a_model
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_explicit_chart_cases_use_real_png_and_declarative_data
+  reference:L1_086:10: UserWarning: Glyph 44228 (\N{HANGUL SYLLABLE GYE}) missing from font(s) DejaVu Sans.
+
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_every_declared_reference_oracle_is_executable_without_a_model
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_explicit_chart_cases_use_real_png_and_declarative_data
+  reference:L1_086:10: UserWarning: Glyph 51340 (\N{HANGUL SYLLABLE JWA}) missing from font(s) DejaVu Sans.
+
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_every_declared_reference_oracle_is_executable_without_a_model
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_explicit_chart_cases_use_real_png_and_declarative_data
+  reference:L1_086:11: UserWarning: FigureCanvasAgg is non-interactive, and thus cannot be shown
+
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_every_declared_reference_oracle_is_executable_without_a_model
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_titanic_histogram_grades_non_null_age_distribution
+  reference:L1_093:10: UserWarning: Glyph 45208 (\N{HANGUL SYLLABLE NA}) missing from font(s) DejaVu Sans.
+
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_every_declared_reference_oracle_is_executable_without_a_model
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_titanic_histogram_grades_non_null_age_distribution
+  reference:L1_093:10: UserWarning: Glyph 51060 (\N{HANGUL SYLLABLE I}) missing from font(s) DejaVu Sans.
+
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_every_declared_reference_oracle_is_executable_without_a_model
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_titanic_histogram_grades_non_null_age_distribution
+  reference:L1_093:10: UserWarning: Glyph 49849 (\N{HANGUL SYLLABLE SEUNG}) missing from font(s) DejaVu Sans.
+
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_every_declared_reference_oracle_is_executable_without_a_model
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_titanic_histogram_grades_non_null_age_distribution
+  reference:L1_093:10: UserWarning: Glyph 44061 (\N{HANGUL SYLLABLE GAEG}) missing from font(s) DejaVu Sans.
+
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_every_declared_reference_oracle_is_executable_without_a_model
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_titanic_histogram_grades_non_null_age_distribution
+  reference:L1_093:10: UserWarning: Glyph 49688 (\N{HANGUL SYLLABLE SU}) missing from font(s) DejaVu Sans.
+
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_every_declared_reference_oracle_is_executable_without_a_model
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_titanic_histogram_grades_non_null_age_distribution
+  reference:L1_093:10: UserWarning: Glyph 53440 (\N{HANGUL SYLLABLE TA}) missing from font(s) DejaVu Sans.
+
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_every_declared_reference_oracle_is_executable_without_a_model
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_titanic_histogram_grades_non_null_age_distribution
+  reference:L1_093:10: UserWarning: Glyph 45769 (\N{HANGUL SYLLABLE NIG}) missing from font(s) DejaVu Sans.
+
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_every_declared_reference_oracle_is_executable_without_a_model
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_titanic_histogram_grades_non_null_age_distribution
+  reference:L1_093:10: UserWarning: Glyph 50672 (\N{HANGUL SYLLABLE YEON}) missing from font(s) DejaVu Sans.
+
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_every_declared_reference_oracle_is_executable_without_a_model
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_titanic_histogram_grades_non_null_age_distribution
+  reference:L1_093:10: UserWarning: Glyph 47161 (\N{HANGUL SYLLABLE RYEONG}) missing from font(s) DejaVu Sans.
+
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_every_declared_reference_oracle_is_executable_without_a_model
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_titanic_histogram_grades_non_null_age_distribution
+  reference:L1_093:10: UserWarning: Glyph 48516 (\N{HANGUL SYLLABLE BUN}) missing from font(s) DejaVu Sans.
+
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_every_declared_reference_oracle_is_executable_without_a_model
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_titanic_histogram_grades_non_null_age_distribution
+  reference:L1_093:10: UserWarning: Glyph 54252 (\N{HANGUL SYLLABLE PO}) missing from font(s) DejaVu Sans.
+
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_every_declared_reference_oracle_is_executable_without_a_model
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_titanic_histogram_grades_non_null_age_distribution
+  reference:L1_093:11: UserWarning: FigureCanvasAgg is non-interactive, and thus cannot be shown
+
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_every_declared_reference_oracle_is_executable_without_a_model
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_ordered_frequency_line_uses_real_png_and_exact_counts
+  reference:L1_098:11: UserWarning: Glyph 51068 (\N{HANGUL SYLLABLE IL}) missing from font(s) DejaVu Sans.
+
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_every_declared_reference_oracle_is_executable_without_a_model
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_ordered_frequency_line_uses_real_png_and_exact_counts
+  reference:L1_098:11: UserWarning: Glyph 51088 (\N{HANGUL SYLLABLE JA}) missing from font(s) DejaVu Sans.
+
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_every_declared_reference_oracle_is_executable_without_a_model
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_ordered_frequency_line_uses_real_png_and_exact_counts
+  reference:L1_098:11: UserWarning: Glyph 51217 (\N{HANGUL SYLLABLE JEOB}) missing from font(s) DejaVu Sans.
+
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_every_declared_reference_oracle_is_executable_without_a_model
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_ordered_frequency_line_uses_real_png_and_exact_counts
+  reference:L1_098:11: UserWarning: Glyph 52489 (\N{HANGUL SYLLABLE COG}) missing from font(s) DejaVu Sans.
+
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_every_declared_reference_oracle_is_executable_without_a_model
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_ordered_frequency_line_uses_real_png_and_exact_counts
+  reference:L1_098:11: UserWarning: Glyph 44148 (\N{HANGUL SYLLABLE GEON}) missing from font(s) DejaVu Sans.
+
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_every_declared_reference_oracle_is_executable_without_a_model
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_ordered_frequency_line_uses_real_png_and_exact_counts
+  reference:L1_098:11: UserWarning: Glyph 49688 (\N{HANGUL SYLLABLE SU}) missing from font(s) DejaVu Sans.
+
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_every_declared_reference_oracle_is_executable_without_a_model
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_ordered_frequency_line_uses_real_png_and_exact_counts
+  reference:L1_098:11: UserWarning: Glyph 50900 (\N{HANGUL SYLLABLE WEOL}) missing from font(s) DejaVu Sans.
+
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_every_declared_reference_oracle_is_executable_without_a_model
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_ordered_frequency_line_uses_real_png_and_exact_counts
+  reference:L1_098:11: UserWarning: Glyph 51473 (\N{HANGUL SYLLABLE JUNG}) missing from font(s) DejaVu Sans.
+
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_every_declared_reference_oracle_is_executable_without_a_model
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_ordered_frequency_line_uses_real_png_and_exact_counts
+  reference:L1_098:11: UserWarning: Glyph 48324 (\N{HANGUL SYLLABLE BYEOL}) missing from font(s) DejaVu Sans.
+
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_every_declared_reference_oracle_is_executable_without_a_model
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_ordered_frequency_line_uses_real_png_and_exact_counts
+  reference:L1_098:11: UserWarning: Glyph 47560 (\N{HANGUL SYLLABLE MA}) missing from font(s) DejaVu Sans.
+
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_every_declared_reference_oracle_is_executable_without_a_model
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_ordered_frequency_line_uses_real_png_and_exact_counts
+  reference:L1_098:11: UserWarning: Glyph 52992 (\N{HANGUL SYLLABLE KE}) missing from font(s) DejaVu Sans.
+
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_every_declared_reference_oracle_is_executable_without_a_model
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_ordered_frequency_line_uses_real_png_and_exact_counts
+  reference:L1_098:11: UserWarning: Glyph 54021 (\N{HANGUL SYLLABLE TING}) missing from font(s) DejaVu Sans.
+
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_every_declared_reference_oracle_is_executable_without_a_model
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_ordered_frequency_line_uses_real_png_and_exact_counts
+  reference:L1_098:12: UserWarning: FigureCanvasAgg is non-interactive, and thus cannot be shown
+
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_every_declared_reference_oracle_is_executable_without_a_model
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_grouped_boxplot_cases_use_real_png_and_exact_grouped_data
+  reference:L2_042:10: UserWarning: Glyph 51649 (\N{HANGUL SYLLABLE JIG}) missing from font(s) DejaVu Sans.
+
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_every_declared_reference_oracle_is_executable_without_a_model
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_grouped_boxplot_cases_use_real_png_and_exact_grouped_data
+  reference:L2_042:10: UserWarning: Glyph 50629 (\N{HANGUL SYLLABLE EOB}) missing from font(s) DejaVu Sans.
+
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_every_declared_reference_oracle_is_executable_without_a_model
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_grouped_boxplot_cases_use_real_png_and_exact_grouped_data
+  reference:L2_042:10: UserWarning: Glyph 51092 (\N{HANGUL SYLLABLE JAN}) missing from font(s) DejaVu Sans.
+
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_every_declared_reference_oracle_is_executable_without_a_model
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_grouped_boxplot_cases_use_real_png_and_exact_grouped_data
+  reference:L2_042:10: UserWarning: Glyph 50529 (\N{HANGUL SYLLABLE AEG}) missing from font(s) DejaVu Sans.
+
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_every_declared_reference_oracle_is_executable_without_a_model
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_grouped_boxplot_cases_use_real_png_and_exact_grouped_data
+  reference:L2_042:10: UserWarning: Glyph 48324 (\N{HANGUL SYLLABLE BYEOL}) missing from font(s) DejaVu Sans.
+
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_every_declared_reference_oracle_is_executable_without_a_model
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_grouped_boxplot_cases_use_real_png_and_exact_grouped_data
+  reference:L2_042:10: UserWarning: Glyph 44228 (\N{HANGUL SYLLABLE GYE}) missing from font(s) DejaVu Sans.
+
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_every_declared_reference_oracle_is_executable_without_a_model
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_grouped_boxplot_cases_use_real_png_and_exact_grouped_data
+  reference:L2_042:10: UserWarning: Glyph 51340 (\N{HANGUL SYLLABLE JWA}) missing from font(s) DejaVu Sans.
+
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_every_declared_reference_oracle_is_executable_without_a_model
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_grouped_boxplot_cases_use_real_png_and_exact_grouped_data
+  reference:L2_042:10: UserWarning: Glyph 48516 (\N{HANGUL SYLLABLE BUN}) missing from font(s) DejaVu Sans.
+
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_every_declared_reference_oracle_is_executable_without_a_model
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_grouped_boxplot_cases_use_real_png_and_exact_grouped_data
+  reference:L2_042:10: UserWarning: Glyph 54252 (\N{HANGUL SYLLABLE PO}) missing from font(s) DejaVu Sans.
+
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_every_declared_reference_oracle_is_executable_without_a_model
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_grouped_boxplot_cases_use_real_png_and_exact_grouped_data
+  reference:L2_042:10: UserWarning: Glyph 48143 (\N{HANGUL SYLLABLE MIC}) missing from font(s) DejaVu Sans.
+
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_every_declared_reference_oracle_is_executable_without_a_model
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_grouped_boxplot_cases_use_real_png_and_exact_grouped_data
+  reference:L2_042:10: UserWarning: Glyph 51060 (\N{HANGUL SYLLABLE I}) missing from font(s) DejaVu Sans.
+
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_every_declared_reference_oracle_is_executable_without_a_model
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_grouped_boxplot_cases_use_real_png_and_exact_grouped_data
+  reference:L2_042:10: UserWarning: Glyph 49345 (\N{HANGUL SYLLABLE SANG}) missing from font(s) DejaVu Sans.
+
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_every_declared_reference_oracle_is_executable_without_a_model
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_grouped_boxplot_cases_use_real_png_and_exact_grouped_data
+  reference:L2_042:10: UserWarning: Glyph 52824 (\N{HANGUL SYLLABLE CI}) missing from font(s) DejaVu Sans.
+
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_every_declared_reference_oracle_is_executable_without_a_model
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_grouped_boxplot_cases_use_real_png_and_exact_grouped_data
+  reference:L2_042:11: UserWarning: FigureCanvasAgg is non-interactive, and thus cannot be shown
+
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_every_declared_reference_oracle_is_executable_without_a_model
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_grouped_boxplot_cases_use_real_png_and_exact_grouped_data
+  reference:L2_045:10: UserWarning: Glyph 53457 (\N{HANGUL SYLLABLE TAB}) missing from font(s) DejaVu Sans.
+
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_every_declared_reference_oracle_is_executable_without_a_model
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_grouped_boxplot_cases_use_real_png_and_exact_grouped_data
+  reference:L2_045:10: UserWarning: Glyph 49849 (\N{HANGUL SYLLABLE SEUNG}) missing from font(s) DejaVu Sans.
+
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_every_declared_reference_oracle_is_executable_without_a_model
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_grouped_boxplot_cases_use_real_png_and_exact_grouped_data
+  reference:L2_045:10: UserWarning: Glyph 46321 (\N{HANGUL SYLLABLE DEUNG}) missing from font(s) DejaVu Sans.
+
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_every_declared_reference_oracle_is_executable_without_a_model
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_grouped_boxplot_cases_use_real_png_and_exact_grouped_data
+  reference:L2_045:10: UserWarning: Glyph 44553 (\N{HANGUL SYLLABLE GEUB}) missing from font(s) DejaVu Sans.
+
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_every_declared_reference_oracle_is_executable_without_a_model
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_grouped_boxplot_cases_use_real_png_and_exact_grouped_data
+  reference:L2_045:10: UserWarning: Glyph 50836 (\N{HANGUL SYLLABLE YO}) missing from font(s) DejaVu Sans.
+
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_every_declared_reference_oracle_is_executable_without_a_model
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_grouped_boxplot_cases_use_real_png_and_exact_grouped_data
+  reference:L2_045:10: UserWarning: Glyph 44552 (\N{HANGUL SYLLABLE GEUM}) missing from font(s) DejaVu Sans.
+
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_every_declared_reference_oracle_is_executable_without_a_model
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_grouped_boxplot_cases_use_real_png_and_exact_grouped_data
+  reference:L2_045:10: UserWarning: Glyph 48324 (\N{HANGUL SYLLABLE BYEOL}) missing from font(s) DejaVu Sans.
+
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_every_declared_reference_oracle_is_executable_without_a_model
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_grouped_boxplot_cases_use_real_png_and_exact_grouped_data
+  reference:L2_045:10: UserWarning: Glyph 48516 (\N{HANGUL SYLLABLE BUN}) missing from font(s) DejaVu Sans.
+
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_every_declared_reference_oracle_is_executable_without_a_model
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_grouped_boxplot_cases_use_real_png_and_exact_grouped_data
+  reference:L2_045:10: UserWarning: Glyph 54252 (\N{HANGUL SYLLABLE PO}) missing from font(s) DejaVu Sans.
+
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_every_declared_reference_oracle_is_executable_without_a_model
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_grouped_boxplot_cases_use_real_png_and_exact_grouped_data
+  reference:L2_045:10: UserWarning: Glyph 48143 (\N{HANGUL SYLLABLE MIC}) missing from font(s) DejaVu Sans.
+
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_every_declared_reference_oracle_is_executable_without_a_model
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_grouped_boxplot_cases_use_real_png_and_exact_grouped_data
+  reference:L2_045:10: UserWarning: Glyph 51060 (\N{HANGUL SYLLABLE I}) missing from font(s) DejaVu Sans.
+
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_every_declared_reference_oracle_is_executable_without_a_model
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_grouped_boxplot_cases_use_real_png_and_exact_grouped_data
+  reference:L2_045:10: UserWarning: Glyph 49345 (\N{HANGUL SYLLABLE SANG}) missing from font(s) DejaVu Sans.
+
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_every_declared_reference_oracle_is_executable_without_a_model
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_grouped_boxplot_cases_use_real_png_and_exact_grouped_data
+  reference:L2_045:10: UserWarning: Glyph 52824 (\N{HANGUL SYLLABLE CI}) missing from font(s) DejaVu Sans.
+
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_every_declared_reference_oracle_is_executable_without_a_model
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_grouped_boxplot_cases_use_real_png_and_exact_grouped_data
+  reference:L2_045:11: UserWarning: FigureCanvasAgg is non-interactive, and thus cannot be shown
+
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_every_declared_reference_oracle_is_executable_without_a_model
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_grouped_boxplot_cases_use_real_png_and_exact_grouped_data
+  reference:L2_050:10: UserWarning: Glyph 50696 (\N{HANGUL SYLLABLE YE}) missing from font(s) DejaVu Sans.
+
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_every_declared_reference_oracle_is_executable_without_a_model
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_grouped_boxplot_cases_use_real_png_and_exact_grouped_data
+  reference:L2_050:10: UserWarning: Glyph 44552 (\N{HANGUL SYLLABLE GEUM}) missing from font(s) DejaVu Sans.
+
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_every_declared_reference_oracle_is_executable_without_a_model
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_grouped_boxplot_cases_use_real_png_and_exact_grouped_data
+  reference:L2_050:10: UserWarning: Glyph 44032 (\N{HANGUL SYLLABLE GA}) missing from font(s) DejaVu Sans.
+
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_every_declared_reference_oracle_is_executable_without_a_model
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_grouped_boxplot_cases_use_real_png_and_exact_grouped_data
+  reference:L2_050:10: UserWarning: Glyph 51077 (\N{HANGUL SYLLABLE IB}) missing from font(s) DejaVu Sans.
+
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_every_declared_reference_oracle_is_executable_without_a_model
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_grouped_boxplot_cases_use_real_png_and_exact_grouped_data
+  reference:L2_050:10: UserWarning: Glyph 50668 (\N{HANGUL SYLLABLE YEO}) missing from font(s) DejaVu Sans.
+
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_every_declared_reference_oracle_is_executable_without_a_model
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_grouped_boxplot_cases_use_real_png_and_exact_grouped_data
+  reference:L2_050:10: UserWarning: Glyph 48512 (\N{HANGUL SYLLABLE BU}) missing from font(s) DejaVu Sans.
+
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_every_declared_reference_oracle_is_executable_without_a_model
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_grouped_boxplot_cases_use_real_png_and_exact_grouped_data
+  reference:L2_050:10: UserWarning: Glyph 49345 (\N{HANGUL SYLLABLE SANG}) missing from font(s) DejaVu Sans.
+
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_every_declared_reference_oracle_is_executable_without_a_model
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_grouped_boxplot_cases_use_real_png_and_exact_grouped_data
+  reference:L2_050:10: UserWarning: Glyph 45812 (\N{HANGUL SYLLABLE DAM}) missing from font(s) DejaVu Sans.
+
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_every_declared_reference_oracle_is_executable_without_a_model
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_grouped_boxplot_cases_use_real_png_and_exact_grouped_data
+  reference:L2_050:10: UserWarning: Glyph 49884 (\N{HANGUL SYLLABLE SI}) missing from font(s) DejaVu Sans.
+
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_every_declared_reference_oracle_is_executable_without_a_model
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_grouped_boxplot_cases_use_real_png_and_exact_grouped_data
+  reference:L2_050:10: UserWarning: Glyph 44036 (\N{HANGUL SYLLABLE GAN}) missing from font(s) DejaVu Sans.
+
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_every_declared_reference_oracle_is_executable_without_a_model
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_grouped_boxplot_cases_use_real_png_and_exact_grouped_data
+  reference:L2_050:10: UserWarning: Glyph 52488 (\N{HANGUL SYLLABLE CO}) missing from font(s) DejaVu Sans.
+
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_every_declared_reference_oracle_is_executable_without_a_model
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_grouped_boxplot_cases_use_real_png_and_exact_grouped_data
+  reference:L2_050:10: UserWarning: Glyph 48324 (\N{HANGUL SYLLABLE BYEOL}) missing from font(s) DejaVu Sans.
+
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_every_declared_reference_oracle_is_executable_without_a_model
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_grouped_boxplot_cases_use_real_png_and_exact_grouped_data
+  reference:L2_050:10: UserWarning: Glyph 48708 (\N{HANGUL SYLLABLE BI}) missing from font(s) DejaVu Sans.
+
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_every_declared_reference_oracle_is_executable_without_a_model
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_grouped_boxplot_cases_use_real_png_and_exact_grouped_data
+  reference:L2_050:10: UserWarning: Glyph 44368 (\N{HANGUL SYLLABLE GYO}) missing from font(s) DejaVu Sans.
+
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_every_declared_reference_oracle_is_executable_without_a_model
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_grouped_boxplot_cases_use_real_png_and_exact_grouped_data
+  reference:L2_050:11: UserWarning: FigureCanvasAgg is non-interactive, and thus cannot be shown
+
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_every_declared_reference_oracle_is_executable_without_a_model
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_ordered_frequency_line_uses_real_png_and_exact_counts
+  reference:L2_068:14: UserWarning: Glyph 50900 (\N{HANGUL SYLLABLE WEOL}) missing from font(s) DejaVu Sans.
+
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_every_declared_reference_oracle_is_executable_without_a_model
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_ordered_frequency_line_uses_real_png_and_exact_counts
+  reference:L2_068:14: UserWarning: Glyph 45572 (\N{HANGUL SYLLABLE NU}) missing from font(s) DejaVu Sans.
+
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_every_declared_reference_oracle_is_executable_without_a_model
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_ordered_frequency_line_uses_real_png_and_exact_counts
+  reference:L2_068:14: UserWarning: Glyph 51201 (\N{HANGUL SYLLABLE JEOG}) missing from font(s) DejaVu Sans.
+
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_every_declared_reference_oracle_is_executable_without_a_model
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_ordered_frequency_line_uses_real_png_and_exact_counts
+  reference:L2_068:14: UserWarning: Glyph 51217 (\N{HANGUL SYLLABLE JEOB}) missing from font(s) DejaVu Sans.
+
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_every_declared_reference_oracle_is_executable_without_a_model
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_ordered_frequency_line_uses_real_png_and_exact_counts
+  reference:L2_068:14: UserWarning: Glyph 52489 (\N{HANGUL SYLLABLE COG}) missing from font(s) DejaVu Sans.
+
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_every_declared_reference_oracle_is_executable_without_a_model
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_ordered_frequency_line_uses_real_png_and_exact_counts
+  reference:L2_068:14: UserWarning: Glyph 44148 (\N{HANGUL SYLLABLE GEON}) missing from font(s) DejaVu Sans.
+
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_every_declared_reference_oracle_is_executable_without_a_model
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_ordered_frequency_line_uses_real_png_and_exact_counts
+  reference:L2_068:14: UserWarning: Glyph 49688 (\N{HANGUL SYLLABLE SU}) missing from font(s) DejaVu Sans.
+
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_every_declared_reference_oracle_is_executable_without_a_model
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_ordered_frequency_line_uses_real_png_and_exact_counts
+  reference:L2_068:14: UserWarning: Glyph 48324 (\N{HANGUL SYLLABLE BYEOL}) missing from font(s) DejaVu Sans.
+
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_every_declared_reference_oracle_is_executable_without_a_model
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_ordered_frequency_line_uses_real_png_and_exact_counts
+  reference:L2_068:14: UserWarning: Glyph 47560 (\N{HANGUL SYLLABLE MA}) missing from font(s) DejaVu Sans.
+
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_every_declared_reference_oracle_is_executable_without_a_model
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_ordered_frequency_line_uses_real_png_and_exact_counts
+  reference:L2_068:14: UserWarning: Glyph 52992 (\N{HANGUL SYLLABLE KE}) missing from font(s) DejaVu Sans.
+
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_every_declared_reference_oracle_is_executable_without_a_model
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_ordered_frequency_line_uses_real_png_and_exact_counts
+  reference:L2_068:14: UserWarning: Glyph 54021 (\N{HANGUL SYLLABLE TING}) missing from font(s) DejaVu Sans.
+
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_every_declared_reference_oracle_is_executable_without_a_model
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_ordered_frequency_line_uses_real_png_and_exact_counts
+  reference:L2_068:14: UserWarning: Glyph 44257 (\N{HANGUL SYLLABLE GOG}) missing from font(s) DejaVu Sans.
+
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_every_declared_reference_oracle_is_executable_without_a_model
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_ordered_frequency_line_uses_real_png_and_exact_counts
+  reference:L2_068:14: UserWarning: Glyph 49440 (\N{HANGUL SYLLABLE SEON}) missing from font(s) DejaVu Sans.
+
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_every_declared_reference_oracle_is_executable_without_a_model
+tests/test_actual_agent_evaluation.py::ActualAgentEvaluationTests::test_ordered_frequency_line_uses_real_png_and_exact_counts
+  reference:L2_068:15: UserWarning: FigureCanvasAgg is non-interactive, and thus cannot be shown
+
+tests/test_data_preservation_acceptance.py::DataPreservationAcceptanceTests::test_grounded_filtered_histogram_completes_without_model_or_reload
+tests/test_data_preservation_acceptance.py::DataPreservationAcceptanceTests::test_grounded_filtered_histogram_completes_without_model_or_reload
+  /Users/najongseong/git_repository/teleai/utils/analysis_charts.py:239: UserWarning: Glyph 8722 (\N{MINUS SIGN}) missing from font(s) Apple SD Gothic Neo.
+    buffer = BytesIO(); FigureCanvasAgg(fig); _apply_unicode_font(fig); fig.tight_layout(); fig.savefig(buffer,format='png',dpi=110)
+
+tests/test_data_preservation_acceptance.py::DataPreservationAcceptanceTests::test_grounded_filtered_histogram_completes_without_model_or_reload
+tests/test_data_preservation_acceptance.py::DataPreservationAcceptanceTests::test_grounded_filtered_histogram_completes_without_model_or_reload
+  /Users/najongseong/git_repository/teleai/scripts/evaluate_analysis_agent.py:168: UserWarning: Glyph 8722 (\N{MINUS SIGN}) missing from font(s) Apple SD Gothic Neo.
+    result = original_save(figure, destination, *args, **kwargs)
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+SUBFAILED(kind='bar') tests/test_agent_failure_batch.py::FailureBatchTests::test_grouped_histogram_requires_an_observed_numeric_measure_before_sql
+SUBFAILED(kind='scatter') tests/test_agent_failure_batch.py::FailureBatchTests::test_grouped_histogram_requires_an_observed_numeric_measure_before_sql
+FAILED tests/test_analysis_completion_contract.py::CompletionContractTests::test_compound_statistics_and_chart_select_raw_among_prior_subsets
+SUBFAILED(capability='metadata') tests/test_analysis_completion_contract.py::CompletionContractTests::test_repair_contracts_reference_real_registered_tools
+SUBFAILED(capability='chart') tests/test_analysis_completion_contract.py::CompletionContractTests::test_repair_contracts_reference_real_registered_tools
+FAILED tests/test_categorical_presentation_journey.py::CategoricalPresentationJourneyTests::test_a_bad_population_audit_cannot_widen_a_reviewed_unchanged_style_request
+FAILED tests/test_categorical_presentation_journey.py::CategoricalPresentationJourneyTests::test_literal_subject_survives_a_subsequent_invalid_task_selection
+FAILED tests/test_categorical_presentation_journey.py::CategoricalPresentationJourneyTests::test_self_grouped_histogram_is_rejected_before_tools_run
+FAILED tests/test_categorical_presentation_journey.py::CategoricalPresentationJourneyTests::test_source_alias_is_normalized_before_population_audit
+FAILED tests/test_pending_intent_population.py::PendingIntentPopulationTests::test_literal_subject_reader_receives_observed_fields_of_current_subject
+10 failed, 939 passed, 4 skipped, 640 warnings, 724 subtests passed in 333.03s (0:05:33)

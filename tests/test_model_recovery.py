@@ -193,6 +193,7 @@ class ModelRecoveryTests(unittest.TestCase):
                     self.assertEqual(first['status'],'incomplete',first)
                     saved=dict(r.agent.get_state(r.config).values['recovery'])
                     saved['model_started_at']=1.
+                    saved['request_started_at']=1.
                     r.agent.update_state(r.config,{'recovery':saved})
                     result=r.resume()
                 self.assertEqual(result['status'],'answered',result)

@@ -9,6 +9,30 @@ from tests.test_llm_goal import GoalModel, goal
 from utils.analysis_datasets import stored_dataset_digest
 
 class ChartInputRecoveryTests(unittest.TestCase):
+    def test_model_selected_raw_histogram_honors_declared_presentation_without_reloading(self):
+        g=goal('chart',{'kind':'histogram','axes':{'x':'reading'},'legend':True,
+            'palette':'high_contrast','stacked':False},columns=['reading'])
+        model=GoalModel(goals=[g],calls=[{'name':'render_chart_spec','args':{
+            'dataset_id':'$fixture','kind':'histogram','x':'reading','legend':True,
+            'palette':'high_contrast','stacked':False,'bins':4}}])
+        with tempfile.TemporaryDirectory() as root:
+            r=GraphAnalysisRuntime(root,'owner','raw-presentation',model)
+            raw=r.datasets.register(pd.DataFrame({'reading':[2.,4.,10.,20.]}),
+                source='lab.observations',coverage='complete',predicate_known=True)
+            r.select_dataset(raw.id);model.evaluation_dataset_id=raw.id
+            before=stored_dataset_digest(r.datasets,raw.id)
+            try:
+                out=r.submit('reading 히스토그램에 범례와 고대비 색상을 사용해줘')
+                self.assertEqual(out['status'],'answered',out)
+                state=r.inspect()['recovery'];card=r.artifacts[state['artifact_ids'][0]]
+                self.assertEqual(card.render_spec['legend_labels'],['reading'])
+                self.assertEqual(sum(card.render_spec['counts']),4)
+                self.assertEqual(card.render_spec['palette'],'high_contrast')
+                self.assertFalse(state['remote_query_ids'])
+                self.assertEqual(state['action_cycle_history'][0]['choices'][0]['tool'],'render_chart_spec')
+                self.assertEqual(stored_dataset_digest(r.datasets,raw.id),before)
+            finally:r.close()
+
     def test_compound_mean_and_chart_repairs_missing_legend_after_goal_retries(self):
         with tempfile.TemporaryDirectory() as root:
             g=goal('calculation',{'operations':['AVG']},columns=['reading'])
@@ -46,6 +70,9 @@ class ChartInputRecoveryTests(unittest.TestCase):
                 self.assertIn('chart_presentation_mismatch',str(feedback[-1].content))
                 self.assertIn('legend',str(feedback[-1].content))
                 self.assertNotIn('Rewrite the SELECT',str(feedback[-1].content))
+                decision=state['action_cycle_history'][-1]
+                self.assertTrue(decision['observed_call_ids'])
+                self.assertEqual(state['action_validation_observations'][0]['phase'],'input_validation')
             finally:r.close()
 
     def test_repeated_wrong_legend_stops_without_false_chart_completion(self):

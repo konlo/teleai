@@ -1,3 +1,4 @@
+from copy import deepcopy
 """Persistent analysis runtime with policy-controlled Databricks tools."""
 from contextlib import contextmanager
 from core.analysis_agent.file_lock import acquire_lock, release_lock
@@ -85,6 +86,8 @@ class GraphAnalysisRuntime:
         from core.analysis_agent.execution_plan import ExecutionPlans
         self.plans=ExecutionPlans(self.db)
         self.context.runtime_services={'asset_db':self.db,'policy':self.policy.public,
+            'resolve_source_period':lambda current,source,spec:__import__(
+                'core.analysis_agent.source_period_probe',fromlist=['observe']).observe(self,current,source,spec),
             'approval_required':lambda:self.policy.require_remote_approval,
             'current':lambda:getattr(self.context,'current_analysis',{}),
             'plan':lambda:self.plans.inspect(getattr(self.context,'current_analysis',{}).get('request_id','')),
@@ -172,6 +175,19 @@ class GraphAnalysisRuntime:
         self.diagnostic_identity['goal_model']=getattr(recovery.goal_interpreter.model,'model',type(model).__name__)
         self.diagnostic_identity['planner_model']=getattr(model,'model',type(model).__name__)
         self.recovery=recovery
+        if intent_mode=='llm' and (tool_allowlist is None or 'review_analysis_intent' in tool_allowlist):
+            @tool
+            def review_analysis_intent(reason: str, runtime: ToolRuntime):
+                """현재 목표가 원래 사용자 의도와 다르거나 실행할 수 없을 때 재계획합니다.
+
+                관찰된 문제를 reason에 설명하세요. 같은 원래 요청을 모델이 다시
+                해석하며 원본·조회 장부·호출/시간 예산을 보존합니다. 요청당1회,
+                미확정 조회나 이미 검증한 출력이 있을 때는 변경할 수 없습니다.
+                SQL이나 새 요청을 이 도구로 실행하지 않습니다.
+                """
+                from core.analysis_agent.intent_replanning import execute
+                return execute(recovery,runtime.state.get('recovery') or {},reason,runtime.tool_call_id)
+            registered.append(review_analysis_intent)
         self.model_attempts = ModelAttemptLedger(self.db)
         recovery.model_attempts = self.model_attempts
         model_recovery = ModelRecoveryMiddleware(self.model_attempts,self.diagnostics,self.policy,
@@ -260,10 +276,46 @@ class GraphAnalysisRuntime:
                             'message':('Databricks 접근이 거부되었습니다(403). 연결 권한과 설정을 확인해주세요. 조회는 제출되지 않았습니다.' if getattr(exc,'http_status',None)==403 and self.sql_dialect!='mysql' else '조회가 완료되지 않았습니다. 임의로 재시도하거나 수치를 추정하지 마세요. 실행 기록과 연결 상태를 확인하고, 제출 여부가 불명확한 조회는 자동 재실행하지 않습니다.')})
             if tool_allowlist is None or 'query_databricks' in tool_allowlist:
                 registered.append(query_databricks)
+                if (not self.policy.require_remote_approval and
+                        (tool_allowlist is None or 'inspect_live_schema' in tool_allowlist)):
+                    @tool
+                    def inspect_live_schema(source: str, runtime: ToolRuntime) -> dict:
+                        """현재 분석 출처의 실제 스키마를 확인합니다. stale/이름만 있는
+                        스냅샷은 guarded SQL의 SELECT * LIMIT 0으로 갱신합니다.
+                        데이터 행과 기존 원본은 로딩·교체하지 않습니다. 저장된 신선한
+                        관찰은 재사용합니다. DB 고유 자료형과 저장소 타입은 구분합니다.
+                        """
+                        from core.analysis_agent.live_schema import execute
+                        return normalize_tool_result(execute(recovery,runtime.state.get('recovery') or {},
+                            source,query_databricks.func,runtime))
+                    registered.append(inspect_live_schema)
+                if (not self.policy.require_remote_approval and
+                        (tool_allowlist is None or 'analyze_source_histogram' in tool_allowlist)):
+                    @tool
+                    def analyze_source_histogram(source: str, column: str, runtime: ToolRuntime,
+                            bins: int = 20, where_sql: str = '', fresh: bool = False,
+                            legend: bool = False, palette: str = 'default') -> dict:
+                        """관측된 원본 테이블의 수치 히스토그램을 조회·검증하고 PNG로 반환합니다.
+
+                        전체 수치를 DB에서 2~100 구간의 빈도로 집계합니다. 원본 전체를
+                        전송하지 않습니다. 확정 목표의 필터를 where_sql에 유지하세요.
+                        완료된 동일 연결·SQL 결과는 재사용하고 fresh=true일 때만 다시 조회합니다.
+                        출처는 테이블명이며 column은 실제 수치 컬럼입니다.
+                        """
+                        from core.analysis_agent.source_histogram import execute
+                        return normalize_tool_result(execute(recovery,runtime.state.get('recovery') or {},
+                            dict(source=source,column=column,bins=bins,where_sql=where_sql,
+                                 fresh=fresh,legend=legend,palette=palette),query_databricks.func,runtime))
+                    registered.append(analyze_source_histogram)
                 # Preserve the node name so legacy interrupted checkpoints can resume.
                 middleware.append(HumanInTheLoopMiddleware(interrupt_on={
                     'query_databricks':{'allowed_decisions':['approve','reject']}}
                     if self.policy.require_remote_approval else {}))
+        # Native remote tools are registered after the local menu is built.
+        # Discovery must retain their real contracts as well.
+        for entry in middleware:
+            if isinstance(entry,ProgressiveToolsMiddleware):
+                entry.registered={tool.name:tool for tool in registered}
         from core.analysis_tool_contract import COMMON_TOOL_RESULT_SCHEMA
         self.context.registered_contracts={entry.name:{'name':entry.name,'description':entry.description,
             'parameters':entry.args_schema if isinstance(entry.args_schema,dict) else entry.tool_call_schema.model_json_schema(),
@@ -283,7 +335,8 @@ class GraphAnalysisRuntime:
             try:records=[self.ledger.get(request_id)]
             except KeyError:return {'status':'needs_context','error_code':'query_not_found'}
         else:
-            ids=(getattr(self.context,'current_analysis',{}) or {}).get('remote_query_ids',[])
+            current=getattr(self.context,'current_analysis',{}) or {}
+            ids=list(dict.fromkeys(current.get('remote_query_ids',[])+current.get('observation_query_ids',[])))
             records=[self.ledger.get(key) for key in ids]
         control=getattr(self.remote_execute,'control',None)
         return {'status':'ready','queries':[{**{k:r.get(k) for k in ('id','status','source','result')},
@@ -507,6 +560,13 @@ class GraphAnalysisRuntime:
                 previous=self.agent.get_state(self.config).values.get('recovery') or {}
                 value={**value,'messages':[human],
                        'recovery':pending_state(human,previous,self.context)}
+        run_current=(value.get('recovery') if isinstance(value,dict) else None) or (
+            self.agent.get_state(self.config).values.get('recovery') or {})
+        new_human=latest_user_request(value.get('messages',[])) if isinstance(value,dict) else None
+        fresh_request=new_human is not None
+        run_request_id=new_human.id if fresh_request else run_current.get('request_id')
+        prior_seconds=0. if fresh_request else self.model_attempts.get(run_request_id)['execution_seconds']
+        self.model_recovery.begin_active_run(run_request_id,prior_seconds)
         try:
             result={}
             completed_load_id=''
@@ -535,6 +595,8 @@ class GraphAnalysisRuntime:
                     if observation.get('status')=='ready':
                         completed_load_id=observation.get('dataset',{}).get('id','')
             if result.get('__interrupt__'):
+                paused=self.agent.get_state(self.config).values.get('recovery') or {}
+                self.model_attempts.charge_execution(paused.get('request_id'),time.monotonic()-started)
                 self.diagnostics.emit('run_paused', run_id=run_id, reason='approval')
                 return {'status':'awaiting_approval','requests':self._pending()}
             messages=self.agent.get_state(self.config).values.get('messages',[])
@@ -561,6 +623,7 @@ class GraphAnalysisRuntime:
                         and (not loaded.query or not validate_query(loaded.query,dialect=self.sql_dialect).args.get('distinct'))):
                     self._select_dataset_unlocked(completed_load_id)
             elapsed=round(time.monotonic()-started,3)
+            self.model_attempts.charge_execution(recovery.get('request_id'),elapsed)
             self.diagnostics.emit('run_completed', run_id=run_id, status=outcome,
                 elapsed_seconds=elapsed, process_peak_rss_bytes=process_peak_rss_bytes(),
                 frame_cache_bytes=self.datasets.frames.bytes)
@@ -571,6 +634,10 @@ class GraphAnalysisRuntime:
                     'elapsed_seconds':elapsed}
         except Exception as exc:
             elapsed=round(time.monotonic()-started,3)
+            # Persist budget separately; changing a paused graph checkpoint
+            # here can clear its pending interrupt/tool continuation.
+            interrupted=self.agent.get_state(self.config).values.get('recovery') or {}
+            self.model_attempts.charge_execution(interrupted.get('request_id'),elapsed)
             error_id=self.diagnostics.failure(exc, run_id=run_id, stage='agent_stream')
             self.diagnostics.emit('run_completed',status='incomplete',elapsed_seconds=elapsed,
                                   error_id=error_id)

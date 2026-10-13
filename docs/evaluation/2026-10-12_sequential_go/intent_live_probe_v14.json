@@ -1,0 +1,183 @@
+{
+  "model": "gemma4:e4b",
+  "goal_model": "gemma4:e4b",
+  "mode": "actual Ollama, isolated synthetic raw data, no remote database",
+  "passed": 0,
+  "total": 1,
+  "cases": [
+    {
+      "id": "filtered_sum",
+      "prompt": "observations에서 reading이 3~8인 것만 합계를 알려줘",
+      "status": "blocked",
+      "text": "요청을 해석한 모델 응답이 실행 계약을 충족하지 못해 분석 도구 실행 전에 중단했습니다. (오류 ID: 3a71565cddf9) 기존 데이터와 결과는 보존했습니다.",
+      "seconds": 8.128,
+      "goal": null,
+      "model_calls": 1,
+      "goal_error": "Invalid intent outline",
+      "result": null,
+      "pass": false,
+      "diagnostics": [
+        {
+          "time": "2026-10-12T15:34:14.529496+00:00",
+          "event": "dataset_selected",
+          "run_id": null,
+          "instance_id": "05a6d5d424fd",
+          "pid": 50887,
+          "dataset_id": "14c47dc8-d935-48a4-845c-da47b89e9f3b",
+          "root_id": "14c47dc8-d935-48a4-845c-da47b89e9f3b",
+          "role": "root",
+          "source": "lab.observations"
+        },
+        {
+          "time": "2026-10-12T15:34:14.530201+00:00",
+          "event": "run_started",
+          "run_id": "8a830e4f9a20466992ca38a61c18c6f2",
+          "instance_id": "05a6d5d424fd",
+          "pid": 50887,
+          "runtime": {
+            "revision_at_first_runtime": "e947a03f923faf2de2eb6be9774e8766547b0924",
+            "packages": {
+              "langchain": "1.4.0",
+              "langchain-core": "1.6.2",
+              "langgraph": "1.2.11",
+              "streamlit": "1.63.0",
+              "sqlglot": "30.18.0"
+            },
+            "python_version": "3.11.13",
+            "identity_captured_at": "2026-10-12T15:34:14.409121+00:00",
+            "route": "langgraph-v1",
+            "model_class": "ChatOllama",
+            "require_remote_approval": false,
+            "loaded_delivery_guard": "d7ad371a60b6e59b",
+            "data_backend": "mysql",
+            "intent_mode": "llm",
+            "goal_version": 1,
+            "goal_model": "gemma4:e4b",
+            "planner_model": "gemma4:e4b"
+          },
+          "operation": "submit",
+          "process_peak_rss_bytes": 302268416
+        },
+        {
+          "time": "2026-10-12T15:34:14.535626+00:00",
+          "event": "model_inference_admitted",
+          "run_id": "8a830e4f9a20466992ca38a61c18c6f2",
+          "instance_id": "05a6d5d424fd",
+          "pid": 50887,
+          "role": "intent_plan",
+          "call_kind": "auxiliary",
+          "calls_used": 0,
+          "call_limit": 9
+        },
+        {
+          "time": "2026-10-12T15:34:14.536146+00:00",
+          "event": "model_payload_budget",
+          "run_id": "8a830e4f9a20466992ca38a61c18c6f2",
+          "instance_id": "05a6d5d424fd",
+          "pid": 50887,
+          "payload_bytes": 5246,
+          "input_tokens_estimate": null,
+          "input_tokens_upper_bound": 5246,
+          "payload_bytes_before_projection": 5246,
+          "template_headroom": 640,
+          "input_budget_units": 130048,
+          "output_reserved": 1024,
+          "context_window": 131072,
+          "tool_count": 0,
+          "message_count": 1,
+          "older_turns_compacted": false,
+          "within_budget": true,
+          "observations_compacted": false,
+          "schema_compacted": false,
+          "system_catalog_compacted": false,
+          "tool_menu_compacted": false,
+          "minimal_discovery_menu": false,
+          "reasoning_compacted": false,
+          "minimal_catalog": false,
+          "builtin_instructions_compacted": false,
+          "repair_history_compacted": false,
+          "components": {
+            "system_bytes": 2281,
+            "message_content_bytes": 2661,
+            "tool_calls_bytes": 0,
+            "reasoning_bytes": 0,
+            "tool_schema_bytes": 0,
+            "tool_names": []
+          },
+          "measurement": "conservative_utf8_token_upper_bound"
+        },
+        {
+          "time": "2026-10-12T15:34:22.639955+00:00",
+          "event": "model_inference_succeeded",
+          "run_id": "8a830e4f9a20466992ca38a61c18c6f2",
+          "instance_id": "05a6d5d424fd",
+          "pid": 50887,
+          "role": "intent_plan",
+          "elapsed_seconds": 8.104
+        },
+        {
+          "time": "2026-10-12T15:34:22.644608+00:00",
+          "event": "error",
+          "run_id": "8a830e4f9a20466992ca38a61c18c6f2",
+          "instance_id": "05a6d5d424fd",
+          "pid": 50887,
+          "error_category": null,
+          "error_id": "3a71565cddf9",
+          "stage": "intent_plan_validation",
+          "error_type": "ValueError",
+          "attempt_budget": null,
+          "database_errno": null,
+          "os_errno": null,
+          "winerror": null,
+          "http_status": null,
+          "frames": [
+            {
+              "file": "goal_interpreter.py",
+              "line": 385,
+              "function": "interpret"
+            },
+            {
+              "file": "intent_plan.py",
+              "line": 308,
+              "function": "interpret"
+            }
+          ]
+        },
+        {
+          "time": "2026-10-12T15:34:22.644742+00:00",
+          "event": "goal_interpretation_failed",
+          "run_id": "8a830e4f9a20466992ca38a61c18c6f2",
+          "instance_id": "05a6d5d424fd",
+          "pid": 50887,
+          "request_id": "6b85e200d601438ab428ef7a8d1c8794",
+          "error_id": "3a71565cddf9",
+          "stage": "intent_plan_validation",
+          "reason": "output_contract_unverified",
+          "database_tool_dispatched": false
+        },
+        {
+          "time": "2026-10-12T15:34:22.651120+00:00",
+          "event": "run_completed",
+          "run_id": "8a830e4f9a20466992ca38a61c18c6f2",
+          "instance_id": "05a6d5d424fd",
+          "pid": 50887,
+          "status": "blocked",
+          "elapsed_seconds": 8.121,
+          "process_peak_rss_bytes": 302268416,
+          "frame_cache_bytes": 0
+        },
+        {
+          "time": "2026-10-12T15:34:22.651211+00:00",
+          "event": "turn_slo",
+          "run_id": "8a830e4f9a20466992ca38a61c18c6f2",
+          "instance_id": "05a6d5d424fd",
+          "pid": 50887,
+          "elapsed_seconds": 8.121,
+          "limit": 180.0,
+          "status": "ok"
+        }
+      ],
+      "stop_reason": "goal_unverified"
+    }
+  ]
+}

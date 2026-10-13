@@ -1,0 +1,42 @@
+{
+  "original31": "First 8 turns overlapped with CPU/memory-heavy full unit suite; latency is not an isolated benchmark. Actual functional failures retained.",
+  "full_suite_v1": "Finished, 939passed/10failed/4skipped; compatibility fixes53passed afterward.",
+  "full_suite_v2": "Interrupted before completion to avoid affecting further real model timings; not reported as PASS. Re-run after model suites.",
+  "latest_frozen_replays": {
+    "single_live_model_workload": true,
+    "agent_build_frozen": true,
+    "heavy_tests_after_model_suites": true,
+    "provider": "ollama",
+    "model": "gemma4:e4b",
+    "model_http_timeout_seconds": 60,
+    "turn_execution_budget_seconds": 180,
+    "call_budget_per_human_request": 10,
+    "configured_context_tokens": 131072,
+    "observed_residency": {
+      "host_ram_bytes": 17179869184,
+      "model_display_size": "3.9 GB",
+      "ollama_processor": "100% GPU",
+      "qualification": "One observed ollama ps snapshot, not a memory-pressure or causal latency diagnosis"
+    },
+    "company_azure_windows": "NOT_RUN",
+    "original31_exact_inputs_unchanged": true,
+    "sequential_ai10_exact_inputs_unchanged": true,
+    "expected_values_never_sent_to_model": true
+  },
+  "supplementary_judge": {
+    "provider": "native Ollama",
+    "model": "gemma4:e4b",
+    "thinking": false,
+    "context_tokens": 8192,
+    "max_output_tokens": 1024,
+    "logprob_weighting": false,
+    "agent_settings_changed": false,
+    "judge_failures_preserved": "deepeval_official_venv.json",
+    "scores": [
+      1.0,
+      0.2,
+      0.2,
+      0.2
+    ]
+  }
+}

@@ -30,7 +30,8 @@ def response_schema(capabilities=None, mode=None, chart_kind=None, numeric_colum
             'sources':strings,'columns':strings,
             **{k:{'type':'array','items':alternative if k=='any_conditions' else condition}
                for k in ('conditions','any_conditions','measure_conditions')},
-            'ratio':{'type':['object','null']},'current_result_only':{'type':'boolean'},
+            'ratio':{'anyOf':[{'type':'null'},{'type':'object','additionalProperties':False,
+                'required':['column'],'properties':{'column':{'type':'string','minLength':1},'aggregation':{'type':'string'}}}]},'current_result_only':{'type':'boolean'},
             'fresh_source_required':{'type':'boolean'},'question':{'const':''} if mode in {'execute','explain'} else {'type':'string'},
             'tasks':task_array}}
 
@@ -186,6 +187,11 @@ def pending_state(human, previous, context):
     from core.analysis_agent.intent_memory import unfinished
     requested=unfinished(previous)
     if requested:current['requested_analysis']=requested
+    from core.analysis_agent.intent_memory import unparsed
+    current['unparsed_user_intent']=unparsed(previous)
+    from core.analysis_agent.clarification_memory import carry
+    clarification=carry(previous)
+    if clarification:current['pending_clarification']=clarification
     subject=prior_subject(previous,[],context)
     if subject:current['schema_subject']=subject
     if previous.get('status')!='complete' and previous.get('requested_subject'):

@@ -1,0 +1,331 @@
+{
+  "date": "2026-10-12",
+  "backend": "databricks",
+  "model": "gemma4:e4b",
+  "baseline_audit": {
+    "calls": 2,
+    "elapsed_seconds": 20.048,
+    "declared_predicate_column": "longitude",
+    "actual_predicates": 0,
+    "passed": false
+  },
+  "fixed_audit": {
+    "calls": 1,
+    "elapsed_seconds": 10.236,
+    "kind": "source_scope",
+    "actual_predicates": 0,
+    "passed": true
+  },
+  "tests": {
+    "passed": 161,
+    "subtests_passed": 64,
+    "elapsed_seconds": 14.54
+  },
+  "web_runs": [
+    {
+      "run_id": "098b326c68474527a0bbb783d59ddd89",
+      "inference_roles": [
+        {
+          "role": "clarification_memory",
+          "elapsed_seconds": 8.805
+        },
+        {
+          "role": "subject_identity",
+          "elapsed_seconds": 2.723
+        },
+        {
+          "role": "task_selection",
+          "elapsed_seconds": 12.343
+        },
+        {
+          "role": "population_basis",
+          "elapsed_seconds": 9.78
+        },
+        {
+          "role": "population_basis",
+          "elapsed_seconds": 2.032
+        },
+        {
+          "role": "goal_interpreter",
+          "elapsed_seconds": 14.213
+        },
+        {
+          "role": "goal_interpreter",
+          "elapsed_seconds": 21.073
+        },
+        {
+          "role": "population_audit",
+          "elapsed_seconds": 10.288
+        },
+        {
+          "role": "population_audit",
+          "elapsed_seconds": 5.919
+        },
+        {
+          "role": "agent",
+          "elapsed_seconds": 38.645
+        }
+      ],
+      "scope_reviews": [
+        {
+          "attempt": 1,
+          "change": "modify",
+          "predicate_shapes": [],
+          "restriction_shapes": [
+            {
+              "kind": "source_scope",
+              "status": "resolved",
+              "columns": [],
+              "quote_in_request": true,
+              "quote_sha256": "5c8f7f59271331a30a532f2ee025bd5062106b0f595139ab41a58def253460bd"
+            }
+          ],
+          "has_question": false
+        },
+        {
+          "attempt": 2,
+          "change": "clear",
+          "predicate_shapes": [],
+          "restriction_shapes": [
+            {
+              "kind": "source_scope",
+              "status": "resolved",
+              "columns": [],
+              "quote_in_request": true,
+              "quote_sha256": "5c8f7f59271331a30a532f2ee025bd5062106b0f595139ab41a58def253460bd"
+            }
+          ],
+          "has_question": false
+        }
+      ],
+      "tool_results": [
+        {
+          "tool": "prepare_histogram",
+          "status": "needs_data",
+          "applied_corrections": []
+        }
+      ],
+      "status": "exhausted",
+      "elapsed_seconds": 126.071
+    },
+    {
+      "run_id": "41f797c01fdd4b51b6e7f681d1ed1012",
+      "inference_roles": [
+        {
+          "role": "clarification_memory",
+          "elapsed_seconds": 4.157
+        },
+        {
+          "role": "subject_identity",
+          "elapsed_seconds": 2.496
+        },
+        {
+          "role": "task_selection",
+          "elapsed_seconds": 11.609
+        },
+        {
+          "role": "population_basis",
+          "elapsed_seconds": 10.453
+        },
+        {
+          "role": "goal_interpreter",
+          "elapsed_seconds": 14.502
+        },
+        {
+          "role": "goal_interpreter",
+          "elapsed_seconds": 21.344
+        },
+        {
+          "role": "population_audit",
+          "elapsed_seconds": 8.377
+        },
+        {
+          "role": "agent",
+          "elapsed_seconds": 50.048
+        },
+        {
+          "role": "agent",
+          "elapsed_seconds": 68.612
+        }
+      ],
+      "scope_reviews": [
+        {
+          "attempt": 1,
+          "change": "clear",
+          "predicate_shapes": [],
+          "restriction_shapes": [
+            {
+              "kind": "source_scope",
+              "status": "resolved",
+              "columns": [],
+              "quote_in_request": true,
+              "quote_sha256": "5c8f7f59271331a30a532f2ee025bd5062106b0f595139ab41a58def253460bd"
+            }
+          ],
+          "has_question": false
+        }
+      ],
+      "tool_results": [
+        {
+          "tool": "prepare_histogram",
+          "status": "needs_data",
+          "applied_corrections": []
+        }
+      ],
+      "status": "exhausted",
+      "elapsed_seconds": 191.825
+    },
+    {
+      "run_id": "b4e303d1d70446c182a2e54c11ca8217",
+      "inference_roles": [
+        {
+          "role": "clarification_memory",
+          "elapsed_seconds": 9.066
+        },
+        {
+          "role": "subject_identity",
+          "elapsed_seconds": 2.576
+        },
+        {
+          "role": "task_selection",
+          "elapsed_seconds": 11.732
+        },
+        {
+          "role": "population_basis",
+          "elapsed_seconds": 11.474
+        },
+        {
+          "role": "goal_interpreter",
+          "elapsed_seconds": 14.142
+        },
+        {
+          "role": "goal_interpreter",
+          "elapsed_seconds": 22.527
+        },
+        {
+          "role": "population_audit",
+          "elapsed_seconds": 11.375
+        },
+        {
+          "role": "agent",
+          "elapsed_seconds": 43.274
+        },
+        {
+          "role": "agent",
+          "elapsed_seconds": 62.312
+        }
+      ],
+      "scope_reviews": [
+        {
+          "attempt": 1,
+          "change": "modify",
+          "predicate_shapes": [],
+          "restriction_shapes": [
+            {
+              "kind": "source_scope",
+              "status": "resolved",
+              "columns": [],
+              "quote_in_request": true,
+              "quote_sha256": "5c8f7f59271331a30a532f2ee025bd5062106b0f595139ab41a58def253460bd"
+            }
+          ],
+          "has_question": false
+        }
+      ],
+      "tool_results": [
+        {
+          "tool": "prepare_histogram",
+          "status": "planned",
+          "applied_corrections": [
+            "schema_only_dataset_is_not_population"
+          ]
+        }
+      ],
+      "status": "exhausted",
+      "elapsed_seconds": 188.744
+    },
+    {
+      "run_id": "75fe63c9776f491aba8f1c6f00ede6d0",
+      "inference_roles": [
+        {
+          "role": "clarification_memory",
+          "elapsed_seconds": 4.064
+        },
+        {
+          "role": "subject_identity",
+          "elapsed_seconds": 2.506
+        },
+        {
+          "role": "task_selection",
+          "elapsed_seconds": 11.884
+        },
+        {
+          "role": "population_basis",
+          "elapsed_seconds": 12.829
+        },
+        {
+          "role": "goal_interpreter",
+          "elapsed_seconds": 14.376
+        },
+        {
+          "role": "goal_interpreter",
+          "elapsed_seconds": 25.733
+        },
+        {
+          "role": "population_audit",
+          "elapsed_seconds": 11.157
+        },
+        {
+          "role": "agent",
+          "elapsed_seconds": 45.408
+        },
+        {
+          "role": "agent",
+          "elapsed_seconds": 91.361
+        }
+      ],
+      "scope_reviews": [
+        {
+          "attempt": 1,
+          "change": "clear",
+          "predicate_shapes": [],
+          "restriction_shapes": [
+            {
+              "kind": "source_scope",
+              "status": "resolved",
+              "columns": [],
+              "quote_in_request": true,
+              "quote_sha256": "5c8f7f59271331a30a532f2ee025bd5062106b0f595139ab41a58def253460bd"
+            }
+          ],
+          "has_question": false
+        }
+      ],
+      "tool_results": [],
+      "status": "exhausted",
+      "elapsed_seconds": 219.591
+    }
+  ],
+  "preservation": {
+    "original_assets_unchanged": true,
+    "original_files_unchanged": true,
+    "selection_unchanged": true
+  },
+  "oracle": {
+    "status": "ok",
+    "query": "SELECT COUNT(*) AS total_rows, COUNT(`longitude`) AS valid_rows, MIN(`longitude`) AS minimum, MAX(`longitude`) AS maximum FROM `workspace`.`default`.`stormtrooper`",
+    "total_rows": 9524806,
+    "valid_rows": 9524806,
+    "minimum": -179.99983,
+    "maximum": 179.99963,
+    "elapsed_seconds": 17.937
+  },
+  "whole_source_chart_verified": false,
+  "go_updated": false,
+  "latest_tool_input_replay": {
+    "status": "planned",
+    "remote_calls": 0,
+    "correction": "source_name_is_not_dataset_id"
+  },
+  "runtime_pid": 38917
+}

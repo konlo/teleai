@@ -48,6 +48,8 @@ def _databricks_schema(schema):
 class AzureAnalysisChatModel(AzureChatOpenAI):
     """Keep legacy Azure token parameters configurable across deployments."""
     token_parameter: Literal['max_tokens', 'max_completion_tokens'] = 'max_tokens'
+    context_window_tokens: int | None = None
+    input_token_encoding: str | None = None
 
     def _get_request_payload(self, *args, **kwargs):
         payload = super()._get_request_payload(*args, **kwargs)
@@ -86,15 +88,22 @@ def build_analysis_chat_model(policy, *, provider=None, environ=None):
     config = os.environ if environ is None else environ
     selected = provider.strip().casefold() if provider else configured_provider(config)
     if selected == 'azure':
+        from core.analysis_agent.context_settings import azure_limits
+        name,context,output,encoding=azure_limits(config)
         # No temperature/top_p/seed overrides: some company deployments are
         # reasoning models that reject those parameters. The graph owns retry.
-        return AzureAnalysisChatModel(**azure_options(config), max_tokens=4096,
+        return AzureAnalysisChatModel(**azure_options(config), max_tokens=output,
+            **({'model':name} if name else {}), context_window_tokens=context,
+            input_token_encoding=encoding,
             timeout=policy.model_timeout_seconds, max_retries=0)
     if selected == 'ollama':
+        from core.analysis_agent.context_settings import ollama_limits
+        name=config.get('OLLAMA_MODEL','gemma4:e4b')
+        context,output=ollama_limits(config,name)
         return ChatOllama(
-            model=config.get('OLLAMA_MODEL', 'gemma4:e4b'),
+            model=name,
             base_url=config.get('OLLAMA_BASE_URL', 'http://localhost:11434'),
-            reasoning=True, temperature=0, num_ctx=16384, num_predict=4096,
+            reasoning=True, temperature=0, num_ctx=context, num_predict=output,
             client_kwargs={'timeout': policy.model_timeout_seconds},
         )
     if selected != 'databricks':

@@ -63,4 +63,11 @@ class MetadataOutputContractTests(unittest.TestCase):
         self.assertNotIn('recorded_at',app.markdown[0].value)
         self.assertNotIn('lab.alpha',app.markdown[0].value)
 
+    def test_loaded_storage_type_is_not_labeled_as_native_database_type(self):
+        text=render_metadata(None,{'metadata_evidence':{'kind':'dtypes','table':'lab.alpha',
+            'authority':'approved_select_star_result','schema':[{'name':'reading','dtype':'float64'}]}})
+        self.assertIn('결과 데이터 타입',text)
+        self.assertIn('별도 메타데이터 조회',text)
+        self.assertNotIn('| DB 데이터 타입 |',text)
+
 if __name__=='__main__':unittest.main()

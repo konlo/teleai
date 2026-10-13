@@ -69,7 +69,7 @@ CONTRACTS = (
                        ('query_databricks',), renderers.render_remote_query, remote_queries_ready),
     CompletionContract('preview', 'preview_limit', 'preview_evidence', ('inspect_dataset',), renderers.render_preview),
     CompletionContract('data_load', 'data_load', 'load_evidence_id', ('query_databricks',), renderers.render_data_load),
-    CompletionContract('metadata', 'metadata_kind', 'metadata_evidence', ('inspect_table_context',), renderers.render_metadata),
+    CompletionContract('metadata', 'metadata_kind', 'metadata_evidence', ('inspect_table_context','inspect_live_schema'), renderers.render_metadata),
     CompletionContract('profile', 'profile_kind', 'profile_evidence', ('profile_dataset',), renderers.render_profile),
     CompletionContract('join', 'join', 'join_evidence', ('join_datasets', 'query_databricks'), renderers.render_join,
                        lambda current: bool(current.get('join_evidence') or current.get('join_query_evidence'))),
@@ -81,7 +81,7 @@ CONTRACTS = (
     CompletionContract('outliers', 'outlier_spec', 'outlier_evidence', ('detect_outliers', 'select_outlier_rows'), renderers.render_outliers),
     CompletionContract('outlier_aggregate', 'outlier_aggregate_requested', 'outlier_aggregate_evidence', ('aggregate_dataset', 'compare_group_aggregates'), renderers.render_outlier_aggregate, _outlier_aggregate_ready),
     CompletionContract('count_rate', 'count_rate_layout', 'count_rate_evidence', ('render_count_rate_chart',), renderers.render_chart, _count_rate_ready),
-    CompletionContract('chart', 'chart', 'artifact_ids', ('render_chart_spec', 'recommend_chart_images', 'render_histogram', 'prepare_histogram', 'show_chart', 'render_count_rate_chart','prepare_source_scatter'), renderers.render_chart),
+    CompletionContract('chart', 'chart', 'artifact_ids', ('analyze_source_histogram','render_chart_spec', 'recommend_chart_images', 'render_histogram', 'prepare_histogram', 'show_chart', 'render_count_rate_chart','prepare_source_scatter'), renderers.render_chart),
     CompletionContract('calculation', 'calculation', 'evidence_ids', ('local_analysis_sql', 'aggregate_dataset', 'query_databricks'), renderers.render_calculation),
 )
 if len({contract.name for contract in CONTRACTS}) != len(CONTRACTS):

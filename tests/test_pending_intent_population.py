@@ -172,7 +172,7 @@ class PendingIntentPopulationTests(unittest.TestCase):
         from langchain_core.messages import AIMessage
         import json
         captured=[]
-        def invoke(messages):
+        def invoke(messages, **kwargs):
             captured.append(json.loads(messages[1].content))
             return AIMessage(content=json.dumps({'candidate_roles':{'cohort':'other','DB':'other'}}))
         model=SimpleNamespace(invoke=invoke)
